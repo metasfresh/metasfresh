@@ -14,6 +14,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.Services;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -436,6 +440,11 @@ public final class Msg
 				final Amount amount = (Amount)arg;
 				argNorm = TranslatableStrings.amount(amount).translate(adLanguage);
 			}
+			else if(arg instanceof ReferenceListAwareEnum)
+			{
+				final ReferenceListAwareEnum referenceListAwareEnum = (ReferenceListAwareEnum)arg;
+				argNorm = normalizeArgBeforeFormat_ReferenceListAwareEnum(referenceListAwareEnum, adLanguage);
+			}
 			else
 			{
 				argNorm = arg;
@@ -443,6 +452,25 @@ public final class Msg
 
 			args[i] = argNorm;
 		}
+	}
+
+	private static Object normalizeArgBeforeFormat_ReferenceListAwareEnum(
+			@NonNull final ReferenceListAwareEnum referenceListAwareEnum,
+			final String adLanguage)
+	{
+		final int adReferenceId = ReferenceListAwareEnums.getAD_Reference_ID(referenceListAwareEnum);
+		if(adReferenceId > 0)
+		{
+			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+			final IADReferenceDAO.ADRefListItem adRefListItem = adReferenceDAO.retrieveListItemOrNull(adReferenceId, referenceListAwareEnum.getCode());
+			if(adRefListItem != null)
+			{
+				return adRefListItem.getName().translate(adLanguage);
+			}
+		}
+
+		// Fallback
+		return referenceListAwareEnum.toString();
 	}
 
 	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)

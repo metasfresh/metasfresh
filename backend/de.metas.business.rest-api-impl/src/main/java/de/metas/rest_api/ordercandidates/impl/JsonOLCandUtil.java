@@ -1,19 +1,19 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
 import de.metas.JsonObjectMapperHolder;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /*
  * #%L
@@ -64,7 +64,27 @@ class JsonOLCandUtil
 		}
 	}
 
-	public static JsonOLCandCreateBulkRequest fromResource(@NonNull final String resourceName)
+	public static class JsonOLCandUtilException extends RuntimeException
+	{
+		private static final long serialVersionUID = -626001461757553239L;
+
+		public JsonOLCandUtilException(final String msg, final Throwable cause)
+		{
+			super(msg, cause);
+		}
+	}
+
+	public static JsonOLCandCreateBulkRequest loadJsonOLCandCreateBulkRequest(@NonNull final String resourceName)
+	{
+		return fromRessource(resourceName, JsonOLCandCreateBulkRequest.class);
+	}
+
+	public static JsonOLCandCreateRequest loadJsonOLCandCreateRequest(@NonNull final String resourceName)
+	{
+		return fromRessource(resourceName, JsonOLCandCreateRequest.class);
+	}
+
+	private static <T> T fromRessource(@NonNull final String resourceName, @NonNull final Class<T> clazz)
 	{
 		final InputStream inputStream = Check.assumeNotNull(
 				JsonOLCandUtil.class.getResourceAsStream(resourceName),
@@ -74,7 +94,7 @@ class JsonOLCandUtil
 
 		try
 		{
-			return jsonObjectMapper.readValue(inputStream, JsonOLCandCreateBulkRequest.class);
+			return jsonObjectMapper.readValue(inputStream, clazz);
 		}
 		catch (final JsonParseException e)
 		{
@@ -87,16 +107,6 @@ class JsonOLCandUtil
 		catch (final IOException e)
 		{
 			throw new JsonOLCandUtilException("IOException", e);
-		}
-	}
-
-	public static class JsonOLCandUtilException extends RuntimeException
-	{
-		private static final long serialVersionUID = -626001461757553239L;
-
-		public JsonOLCandUtilException(final String msg, final Throwable cause)
-		{
-			super(msg, cause);
 		}
 	}
 }

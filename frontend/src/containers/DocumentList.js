@@ -5,7 +5,6 @@ import { Map as iMap, Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get } from 'lodash';
 import deepUnfreeze from 'deep-unfreeze';
-
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { locationSearchRequest, getViewRowsByIds } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
@@ -155,6 +154,7 @@ class DocumentListContainer extends Component {
      * middleware reacting to route changes and reducers
      */
     if (
+      (nextProps.viewId !== nextProps.queryViewId && nextProps.queryViewId) || // for the case when you applied a filter and come back via browser back button
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&

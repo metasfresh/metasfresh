@@ -1,22 +1,5 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.InputStream;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -26,6 +9,22 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareIn
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.io.InputStream;
+import java.util.List;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -78,44 +77,57 @@ public class XmlToOLCandsServiceTest
 	}
 
 	@Test
-	public void createJsonOLCandCreateBulkRequest()
+	public void createJsonOLCandCreateBulkRequest_KV()
 	{
-		// assertThat(orderCandidatesRestEndpoint).isNotNull();
-
 		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
 		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
 
-		final JsonOLCandCreateBulkRequest result = performTest(xmlInvoice);
+		final JsonOLCandCreateBulkRequest result = performTest_KV(xmlInvoice);
 		expect(result).toMatchSnapshot();
 	}
 
 	@Test
-	public void createJsonOLCandCreateBulkRequest2()
+	public void createJsonOLCandCreateBulkRequest_KV_2()
 	{
 		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
 		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
 		xmlInvoice.getPayload().getInvoice().setRequestId("KV_" + "2009_01:001"); // the XML invoice'S ID might have a prepended "KV_" which we return
 
-		final JsonOLCandCreateBulkRequest result = performTest(xmlInvoice);
+		final JsonOLCandCreateBulkRequest result = performTest_KV(xmlInvoice);
 		expect(result).toMatchSnapshot();
 	}
 
-	private JsonOLCandCreateBulkRequest performTest(@NonNull final RequestType xmlInvoice)
+	private JsonOLCandCreateBulkRequest performTest_KV(@NonNull final RequestType xmlInvoice)
 	{
-		final SyncAdvise orgSyncAdvise = SyncAdvise.READ_ONLY;
-		final SyncAdvise bPartnersSyncAdvise = SyncAdvise.READ_ONLY;
-		final SyncAdvise productsSyncAdvise = SyncAdvise.READ_ONLY;
+		// given
+		final SyncAdvise billerSyncAdvise = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.DONT_UPDATE)
+				.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+				.build();
 
-		// invoke the merhod under test
+		final SyncAdvise debitorSyncAdvise = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.DONT_UPDATE)
+				.ifNotExists(SyncAdvise.IfNotExists.FAIL)
+				.build();
+
+		final SyncAdvise productSyncAdvise = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.DONT_UPDATE)
+				.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+				.build();
+
+		// when
 		final JsonOLCandCreateBulkRequest result = xmlToOLCandsService
-				.createJsonOLCandCreateBulkRequest(xmlInvoice, HealthCareInvoiceDocSubType.KV, orgSyncAdvise, bPartnersSyncAdvise, productsSyncAdvise);
+				.createJsonOLCandCreateBulkRequest(xmlInvoice, HealthCareInvoiceDocSubType.KV, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
 
+		// then
 		assertThat(result).isNotNull();
 		final List<JsonOLCandCreateRequest> requests = result.getRequests();
 
 		assertThat(requests).hasSize(21); // the XML file has 21 services
-		assertThat(requests).allSatisfy(r -> assertThat(r.getProduct().getSyncAdvise()).isSameAs(productsSyncAdvise));
-		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getSyncAdvise()).isSameAs(bPartnersSyncAdvise));
+		assertThat(requests).allSatisfy(r -> assertThat(r.getOrg().getSyncAdvise()).isEqualTo(billerSyncAdvise));
+		assertThat(requests).allSatisfy(r -> assertThat(r.getOrg().getBpartner().getSyncAdvise()).isEqualTo(billerSyncAdvise));
+		assertThat(requests).allSatisfy(r -> assertThat(r.getProduct().getSyncAdvise()).isEqualTo(productSyncAdvise));
+		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getSyncAdvise()).isEqualTo(debitorSyncAdvise));
 
 		assertThat(requests).allSatisfy(r -> assertThat(r.getExternalHeaderId()).isEqualTo("2009_01:001_EAN-2011234567890_EAN-7634567890000"));
 		assertThat(requests).allSatisfy(r -> assertThat(r.getPoReference()).isEqualTo("2009_01:001")); // this is the "invoice-ID as given by the examples file

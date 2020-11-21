@@ -88,7 +88,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 				.columnName(field.getFieldName())
 				.displayName(field.getCaption())
 				.widgetType(field.getWidgetType())
-				.lookupDescriptor(field.getLookupDescriptor())
+				.lookupDescriptor(field.getLookupDescriptorForFiltering())
 				.build();
 	}
 }

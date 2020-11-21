@@ -163,11 +163,11 @@ WHERE r_request.isactive = 'Y'::bpchar
   AND getdate() > r_request.datenextaction
 ;
 
+commit;
 
 /**
   Drop table column
  */
-
-alter table r_request
-    drop column startdate
+SELECT db_alter_table('r_request', 'alter table r_request drop column startdate')
 ;
+

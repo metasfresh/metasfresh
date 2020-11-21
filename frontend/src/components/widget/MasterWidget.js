@@ -217,17 +217,23 @@ class MasterWidget extends PureComponent {
    * @param {*} field
    */
   handleZoomInto = (field) => {
-    const { dataId, windowId, tabId, rowId } = this.props;
+    const { dataId, windowId, tabId, rowId, entity } = this.props;
+    const fallBackEntity = entity ? entity : 'window';
 
-    getZoomIntoWindow('window', windowId, dataId, tabId, rowId, field).then(
-      (res) => {
-        const url = `/window/${res.data.documentPath.windowId}/${
-          res.data.documentPath.documentId
-        }`;
+    getZoomIntoWindow(
+      fallBackEntity,
+      windowId,
+      dataId,
+      tabId,
+      rowId,
+      field
+    ).then((res) => {
+      const url = `/${fallBackEntity}/${res.data.documentPath.windowId}/${
+        res.data.documentPath.documentId
+      }`;
 
-        res && res.data && window.open(url, '_blank');
-      }
-    );
+      res && res.data && window.open(url, '_blank');
+    });
   };
 
   /**

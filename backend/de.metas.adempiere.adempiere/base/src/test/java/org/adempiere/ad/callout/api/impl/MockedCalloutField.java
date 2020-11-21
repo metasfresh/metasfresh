@@ -25,6 +25,8 @@ package org.adempiere.ad.callout.api.impl;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -282,6 +284,12 @@ public class MockedCalloutField implements ICalloutField
 
 	@Override
 	public void fireDataStatusEEvent(ValueNamePair errorLog)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isLookupValuesContainingId(@NonNull final RepoIdAware id)
 	{
 		throw new UnsupportedOperationException();
 	}

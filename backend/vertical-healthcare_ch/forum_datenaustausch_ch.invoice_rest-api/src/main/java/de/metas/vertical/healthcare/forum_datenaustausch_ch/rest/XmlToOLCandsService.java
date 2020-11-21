@@ -342,11 +342,10 @@ public class XmlToOLCandsService
 				payload.getBody(),
 				context);
 
-		final ImmutableList<JsonOLCandCreateRequest> requests = builders
+		return builders
 				.stream()
 				.map(JsonOLCandCreateRequestBuilder::build)
 				.collect(ImmutableList.toImmutableList());
-		return requests;
 	}
 
 	private String createPOReference(@NonNull final PayloadType payload)
@@ -415,12 +414,10 @@ public class XmlToOLCandsService
 		requestBuilder
 				.externalHeaderId(createExternalHeaderId(requestBuilder));
 
-		final ImmutableList<JsonOLCandCreateRequestBuilder> allBuilders = insertServicesIntoBuilder(
+		return insertServicesIntoBuilder(
 				requestBuilder.build(),
 				body.getServices(),
 				context);
-
-		return allBuilders;
 	}
 
 	private BillerAddressType getBiller(@NonNull final BodyType body)
@@ -497,6 +494,7 @@ public class XmlToOLCandsService
 		bPartner.setGlobalId(patient.getSsn());
 		bPartner.setExternalId(patientExternalId);
 		bPartner.setName(patientName);
+		bPartner.setLanguage("de_CH");
 		bPartnerInfo.bpartner(bPartner);
 
 		final JsonRequestLocation patientLocation = createJsonBPartnerLocation(
@@ -582,8 +580,7 @@ public class XmlToOLCandsService
 		{
 			joiner.add(person.getFamilyname());
 		}
-		final String patientName = joiner.toString();
-		return patientName;
+		return joiner.toString();
 	}
 
 	private JsonOrganization createBillerOrg(
@@ -592,14 +589,13 @@ public class XmlToOLCandsService
 	{
 		final Name name = createName(biller);
 
-		final JsonOrganization org = JsonOrganization
+		return JsonOrganization
 				.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
 				.code(createBPartnerExternalId(biller).getValue())
 				.name(name.getSingleStringName())
 				.bpartner(createJsonBPartnerInfo(biller, context))
 				.build();
-		return org;
 	}
 
 	private JsonDocTypeInfo createJsonDocTypeInfo(@NonNull final HealthCareInvoiceDocSubType docSubType)
@@ -670,21 +666,19 @@ public class XmlToOLCandsService
 		}
 
 		final JsonRequestContact jsonRequestContact = new JsonRequestContact();
-		jsonRequestContact.setExternalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"));
+		jsonRequestContact.setExternalId(JsonExternalId.of(billerBPartnerExternalId.getValue() + "_singlePerson"));
 		jsonRequestContact.setFirstName(name.getFirstName());
 		jsonRequestContact.setLastName(coalesce(name.getLastName(), name.getSingleStringName()));
 		jsonRequestContact.setName(name.getSingleStringName());
 		jsonRequestContact.setEmail(email);
 
-		final JsonRequestBPartnerLocationAndContact bPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
+		return JsonRequestBPartnerLocationAndContact.builder()
 				.bpartnerLookupAdvise(BPartnerLookupAdvise.GLN)
 				.syncAdvise(context.getBillerSyncAdvise())
 				.bpartner(bPartner)
 				.contact(jsonRequestContact)
 				.location(location)
 				.build();
-
-		return bPartnerInfo;
 	}
 
 	private Name createName(@NonNull final BillerAddressType biller)
@@ -719,6 +713,7 @@ public class XmlToOLCandsService
 		String singleStringName;
 	}
 
+	@Nullable
 	private String extracFirstEmailOrNull(@Nullable final OnlineAddressType online)
 	{
 		if (online == null || online.getEmail().isEmpty())
@@ -743,6 +738,7 @@ public class XmlToOLCandsService
 		return JsonExternalId.of(externalId.getValue());
 	}
 
+	@NonNull
 	private JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)
 	{
 		return JsonExternalId.of("EAN-" + biller.getEanParty());
@@ -785,7 +781,9 @@ public class XmlToOLCandsService
 		location.setCountryCode(coalesce(countrycode, "CH"));
 
 		location.setBillTo(true);
+		location.setBillToDefault(true);
 		location.setShipTo(true);
+		location.setShipToDefault(true);
 
 		return location;
 	}
@@ -793,13 +791,6 @@ public class XmlToOLCandsService
 	private JsonExternalId createLocationExternalId(@NonNull final JsonExternalId bPartnerExternalId)
 	{
 		return JsonExternalId.of(bPartnerExternalId.getValue() + "_singleAddress");
-	}
-
-	JsonOLCandCreateRequestBuilder copyBuilder(@NonNull final JsonOLCandCreateRequestBuilder builder)
-	{
-		return builder
-				.build()
-				.toBuilder();
 	}
 
 	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServicesIntoBuilder(
@@ -945,14 +936,13 @@ public class XmlToOLCandsService
 			@NonNull final String productName,
 			@NonNull final HighLevelContext context)
 	{
-		final JsonProductInfo product = JsonProductInfo.builder()
+		return JsonProductInfo.builder()
 				.syncAdvise(context.getProductsSyncAdvise())
 				.code(productCode)
 				.name(productName)
 				.type(Type.SERVICE)
 				.uomCode(UOM_CODE)
 				.build();
-		return product;
 	}
 
 	private BigDecimal createPrice(@NonNull final RecordOtherType recordOtherType)
@@ -972,7 +962,6 @@ public class XmlToOLCandsService
 		final BigDecimal unitFactorToUse = coalesce(unitFactor, ONE); // tax point value (TPV) of the applied service
 		final BigDecimal externalFactorToUse = coalesce(externalFactor, ONE);
 
-		final BigDecimal price = unitToUse.multiply(unitFactorToUse).multiply(externalFactorToUse);
-		return price;
+		return unitToUse.multiply(unitFactorToUse).multiply(externalFactorToUse);
 	}
 }

@@ -1,15 +1,14 @@
 package de.metas.ui.web.websocket;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.async.Debouncer;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +16,9 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -45,12 +44,11 @@ import lombok.NonNull;
 
 /**
  * Websocket events sender.
- *
+ * <p>
  * NOTE: by default, all methods will send the events after the current DB transaction is committed.
  * If there is no current transaction, the events will be sent right away.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Component
 public class WebsocketSender implements InitializingBean
@@ -64,14 +62,27 @@ public class WebsocketSender implements InitializingBean
 	@Value("${metasfresh.webui.websocket.logEventsEnabled:false}")
 	private boolean logEventsEnabledDefault;
 
+	private final Debouncer<WebsocketEvent> debouncer;
+
 	public WebsocketSender(final SimpMessagingTemplate websocketMessagingTemplate)
 	{
 		this.websocketMessagingTemplate = websocketMessagingTemplate;
-		autoflushQueue = new WebsocketEventsQueue("AUTOFLUSH", websocketMessagingTemplate, eventsLog, /* autoflush */true);
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		this.debouncer = Debouncer.<WebsocketEvent>builder()
+				.name(WebsocketSender.class.getSimpleName() + "-debouncer")
+				.bufferMaxSize(sysConfigBL.getIntValue("webui.WebsocketSender.debouncer.bufferMaxSize", 500))
+				.delayInMillis(sysConfigBL.getIntValue("webui.WebsocketSender.debouncer.delayInMillis", 200))
+				.distinct(true)
+				.consumer(this::sendEventsNow)
+				.build();
+		logger.info("debouncer: {}", debouncer);
+
+		autoflushQueue = new WebsocketEventsQueue("AUTOFLUSH", /* autoflush */debouncer, true);
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception
+	public void afterPropertiesSet()
 	{
 		eventsLog.setLogEventsEnabled(logEventsEnabledDefault);
 	}
@@ -118,7 +129,7 @@ public class WebsocketSender implements InitializingBean
 	{
 		final String name = trx.getTrxName();
 		final boolean autoflush = false;
-		final WebsocketEventsQueue queue = new WebsocketEventsQueue(name, websocketMessagingTemplate, eventsLog, autoflush);
+		final WebsocketEventsQueue queue = new WebsocketEventsQueue(name, debouncer, autoflush);
 
 		// Bind
 		trx.getTrxListenerManager()
@@ -143,67 +154,93 @@ public class WebsocketSender implements InitializingBean
 		return eventsLog.getLoggedEvents(destinationFilter);
 	}
 
+	private void sendEventsNow(final List<WebsocketEvent> events)
+	{
+		events.forEach(this::sendEventNow);
+	}
+
+	private void sendEventNow(final WebsocketEvent event)
+	{
+		logger.debug("Sending {}", event);
+
+		final WebsocketTopicName destination = event.getDestination();
+		final Object payload = event.getPayload();
+		final boolean converted = event.isConverted();
+
+		if (converted)
+		{
+			final Message<?> message = (Message<?>)payload;
+			websocketMessagingTemplate.send(destination.getAsString(), message);
+		}
+		else
+		{
+			websocketMessagingTemplate.convertAndSend(destination.getAsString(), payload);
+		}
+
+		eventsLog.logEvent(destination, payload);
+		System.out.println("\tSent to " + destination + ": " + payload);
+	}
+
 	@lombok.Value
 	@lombok.Builder
-	private static final class WebsocketEvent
+	private static class WebsocketEvent
 	{
-		private final WebsocketTopicName destination;
-		private final Object payload;
-		private final boolean converted;
+		WebsocketTopicName destination;
+		Object payload;
+		boolean converted;
 	}
 
 	private static class WebsocketEventsQueue
 	{
-		/** internal name, used for logging */
+		/**
+		 * internal name, used for logging
+		 */
 		private final String name;
-		private final SimpMessagingTemplate websocketMessagingTemplate;
-		private final WebsocketEventsLog eventsLog;
 		private final boolean autoflush;
 		private final List<WebsocketEvent> events = new ArrayList<>();
+		private final Debouncer<WebsocketEvent> debouncer;
 
 		public WebsocketEventsQueue(
 				@NonNull final String name,
-				@NonNull final SimpMessagingTemplate websocketMessagingTemplate,
-				@NonNull final WebsocketEventsLog eventsLog,
+				final Debouncer<WebsocketEvent> debouncer,
 				final boolean autoflush)
 		{
 			this.name = name;
-			this.websocketMessagingTemplate = websocketMessagingTemplate;
-			this.eventsLog = eventsLog;
 			this.autoflush = autoflush;
+			this.debouncer = debouncer;
 		}
 
 		public void enqueueObject(final WebsocketTopicName destination, final Object payload)
 		{
-			final boolean converted = false;
+			final WebsocketEvent event = WebsocketEvent.builder()
+					.destination(destination)
+					.payload(payload)
+					.converted(false)
+					.build();
 			if (autoflush)
 			{
-				sendEvent(destination, payload, converted);
+				debouncer.add(event);
 			}
 			else
 			{
-				enqueue(WebsocketEvent.builder()
-						.destination(destination)
-						.payload(payload)
-						.converted(converted)
-						.build());
+				enqueue(event);
 			}
 		}
 
 		public void enqueueMessage(final WebsocketTopicName destination, final Message<?> message)
 		{
-			final boolean converted = true;
+			final WebsocketEvent event = WebsocketEvent.builder()
+					.destination(destination)
+					.payload(message)
+					.converted(true)
+					.build();
 			if (autoflush)
 			{
-				sendEvent(destination, message, converted);
+				debouncer.add(event);
 			}
 			else
 			{
-				enqueue(WebsocketEvent.builder()
-						.destination(destination)
-						.payload(message)
-						.converted(converted)
-						.build());
+				enqueue(event);
 			}
 		}
 
@@ -220,34 +257,7 @@ public class WebsocketSender implements InitializingBean
 			final List<WebsocketEvent> eventsToSend = new ArrayList<>(events);
 			events.clear();
 
-			eventsToSend.forEach(this::sendEvent);
-		}
-
-		private void sendEvent(final WebsocketEvent event)
-		{
-			final WebsocketTopicName destination = event.getDestination();
-			final Object payload = event.getPayload();
-			final boolean converted = event.isConverted();
-			sendEvent(destination, payload, converted);
-		}
-
-		private void sendEvent(
-				@NonNull final WebsocketTopicName destination, 
-				@Nullable final Object payload, 
-				final boolean converted)
-		{
-			logger.debug("[name={}] Sending to destination={}: payload={}", name, destination, payload);
-
-			if (converted)
-			{
-				final Message<?> message = (Message<?>)payload;
-				websocketMessagingTemplate.send(destination.getAsString(), message);
-			}
-			else
-			{
-				websocketMessagingTemplate.convertAndSend(destination.getAsString(), payload);
-				eventsLog.logEvent(destination, payload);
-			}
+			debouncer.addAll(eventsToSend);
 		}
 	}
 }

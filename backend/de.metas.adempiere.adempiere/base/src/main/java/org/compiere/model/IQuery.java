@@ -234,9 +234,6 @@ public interface IQuery<T>
 
 	/**
 	 * Count items that match query criteria
-	 *
-	 * @return count
-	 * @throws DBException
 	 */
 	int count() throws DBException;
 
@@ -246,9 +243,6 @@ public interface IQuery<T>
 	 * Using this method you can combine pure SQL where clause with pure Java filters in a seamless way.
 	 * <p>
 	 * NOTE: using post-filters is introducing some limitations mainly on {@link #setLimit(int)} and {@link #iterate(Class)} methods.
-	 *
-	 * @param postQueryFilter
-	 * @return this
 	 */
 	IQuery<T> setPostQueryFilter(IQueryFilter<T> postQueryFilter);
 
@@ -262,7 +256,6 @@ public interface IQuery<T>
 	 * Check if there items for query criteria.
 	 *
 	 * @return true if exists, false otherwise
-	 * @throws DBException
 	 */
 	boolean anyMatch() throws DBException;
 
@@ -297,19 +290,15 @@ public interface IQuery<T>
 	 * Only records that are NOT in T_Selection with AD_PInstance_ID.
 	 * <p>
 	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
-	 *
-	 * @param AD_PInstance_ID
 	 */
 	IQuery<T> setNotInSelection(PInstanceId pinstanceId);
 
 	/**
 	 * Select only active records (i.e. IsActive='Y')
-	 *
-	 * @param onlyActiveRecords
 	 */
 	IQuery<T> setOnlyActiveRecords(boolean onlyActiveRecords);
 
-	public enum Aggregate
+	enum Aggregate
 	{
 		COUNT("COUNT", false), //
 		SUM("SUM", false), //
@@ -335,12 +324,7 @@ public interface IQuery<T>
 	/**
 	 * Aggregate given expression on this criteria
 	 *
-	 * @param <T>
-	 * @param columnName
-	 * @param sqlFunction
-	 * @param returnType
 	 * @return aggregated value
-	 * @throws DBException
 	 */
 	<AT> AT aggregate(String columnName, Aggregate aggregateType, Class<AT> returnType) throws DBException;
 
@@ -543,7 +527,6 @@ public interface IQuery<T>
 	/**
 	 * Retrieves the records and then splits them in groups based on the indexing key provided by <code>keyFunction</code>.
 	 *
-	 * @param modelClass
 	 * @param keyFunction key function used to provide the key used to split the returned records.
 	 * @return collection of record groups.
 	 */
@@ -598,16 +581,12 @@ public interface IQuery<T>
 	/**
 	 * Use the result of this query and insert it in given <code>toModelClass</code>'s table.
 	 *
-	 * @param toModelClass
 	 * @return executor which will assist you with the INSERT.
 	 */
 	<ToModelType> IQueryInsertExecutor<ToModelType, T> insertDirectlyInto(Class<ToModelType> toModelClass);
 
 	/**
 	 * Return a stream of all records that match the query criteria.
-	 *
-	 * @return Stream
-	 * @throws DBException
 	 */
 	default Stream<T> stream() throws DBException
 	{

@@ -2,7 +2,6 @@ package de.metas.rest_api.invoice.impl;
 
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
-import static de.metas.util.Check.isEmpty;
 import static de.metas.util.Check.isNotBlank;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
@@ -14,7 +13,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import de.metas.rest_api.common.MetasfreshId;
-import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;

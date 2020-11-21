@@ -62,6 +62,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.request.RequestTypeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -99,6 +100,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -106,6 +108,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public class OrderBL implements IOrderBL
 {
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -854,9 +857,10 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public BPartnerLocationId getBillToLocationIdOrNull(@NonNull final I_C_Order order)
+	public BPartnerLocationId getBillToLocationId(@NonNull final I_C_Order order)
 	{
 		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+
 		return billToBPLocationId != null
 				? billToBPLocationId
 				: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
@@ -1024,6 +1028,19 @@ public class OrderBL implements IOrderBL
 		final I_C_Order order = ordersRepo.getById(orderId);
 		final ProjectId orderProjectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
 		return orderProjectId;
+	}
+
+	@Override
+	public Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(@NonNull final I_C_Order order)
+	{
+		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
+
+		if (docType.getR_RequestType_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(RequestTypeId.ofRepoIdOrNull(docType.getR_RequestType_ID()));
 	}
 
 	@Override

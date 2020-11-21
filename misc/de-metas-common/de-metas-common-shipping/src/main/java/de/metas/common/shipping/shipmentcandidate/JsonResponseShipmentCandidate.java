@@ -78,7 +78,10 @@ public class JsonResponseShipmentCandidate
 	JsonAttributeSetInstance attributeSetInstance;
 
 	@ApiModelProperty(position = 100, required = true)
-	JsonCustomer customer;
+	JsonCustomer shipBPartner;
+
+	@ApiModelProperty(position = 105)
+	JsonCustomer billBPartner;
 
 	@ApiModelProperty(position = 110, required = true,
 			value = "The shipment schedule's quantity to deliver, possibly in different UOMs")
@@ -120,7 +123,8 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("numberOfItemsForSameShipment") @Nullable final Integer numberOfItemsForSameShipment,
 			@JsonProperty("product") @NonNull final JsonProduct product,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
-			@JsonProperty("customer") @NonNull final JsonCustomer customer,
+			@JsonProperty("shipBPartner") @NonNull final JsonCustomer shipBPartner,
+			@JsonProperty("billBPartner") @Nullable final JsonCustomer billBPartner,
 			@JsonProperty("quantities") @NonNull @Singular final List<JsonQuantity> quantities,
 			@JsonProperty("shipperInternalSearchKey") @Nullable final String shipperInternalSearchKey,
 			@JsonProperty("orderedQty") @NonNull final List<JsonQuantity> orderedQty,
@@ -137,7 +141,8 @@ public class JsonResponseShipmentCandidate
 		this.numberOfItemsForSameShipment = numberOfItemsForSameShipment;
 		this.product = product;
 		this.attributeSetInstance = attributeSetInstance;
-		this.customer = customer;
+		this.shipBPartner = shipBPartner;
+		this.billBPartner = billBPartner;
 		this.quantities = quantities;
 		this.shipperInternalSearchKey = shipperInternalSearchKey;
 		this.orderedQty = orderedQty;

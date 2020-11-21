@@ -460,7 +460,6 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public Set<ProductId> retrieveHighPriceProducts(@NonNull final BigDecimal minimumPrice, @NonNull final LocalDate date)
 	{
-
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ProductPrice.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_M_ProductPrice.COLUMNNAME_PriceStd, Operator.GREATER_OR_EQUAL, minimumPrice)
@@ -491,7 +490,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addOnlyActiveRecordsFilter()
 				.create();
 
-		final IQuery<I_M_PriceList_Version> currencyPriceLisVersiontQuery = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+		final IQuery<I_M_PriceList_Version> currencyPriceListVersionQuery = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
 				.addInSubQueryFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList.COLUMNNAME_M_PriceList_ID, currencyPriceListQuery)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(
@@ -501,7 +500,7 @@ public class PriceListDAO implements IPriceListDAO
 						DateTruncQueryFilterModifier.DAY)
 				.create();
 
-		filters.addInSubQueryFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, currencyPriceLisVersiontQuery);
+		filters.addInSubQueryFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, currencyPriceListVersionQuery);
 
 		return filters;
 	}

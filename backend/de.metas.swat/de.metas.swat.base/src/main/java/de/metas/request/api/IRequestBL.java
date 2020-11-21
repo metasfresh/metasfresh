@@ -1,10 +1,10 @@
 package de.metas.request.api;
 
-import org.compiere.model.I_R_Request;
-import org.eevolution.model.I_DD_OrderLine;
-
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_R_Request;
+import org.eevolution.model.I_DD_OrderLine;
 
 /*
  * #%L
@@ -16,12 +16,12 @@ import de.metas.util.ISingletonService;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,13 +41,15 @@ public interface IRequestBL extends ISingletonService
 	 * <li>qualityNotice
 	 * <li>org
 	 * <li>linked salesrep of the org, etc.
-	 * 
+	 * <p>
 	 * Note that the quantities are not relevant in the requests. Therefore, the qualityDiscountPercent is not even set in the request.
 	 * We can have requests with no quality notices, in case the base inout line was created with qualityDiscountPercent but with no quality notice.
-	 * 
+	 *
 	 * @param line
 	 */
 	I_R_Request createRequestFromInOutLine(I_M_InOutLine line);
 
 	I_R_Request createRequestFromDDOrderLine(I_DD_OrderLine line);
+
+	I_R_Request createRequestFromOrder(I_C_Order order);
 }

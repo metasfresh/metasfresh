@@ -1,32 +1,9 @@
 package de.metas.ui.web.view;
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.MutableInt;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
@@ -44,6 +21,28 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.MutableInt;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -83,10 +82,8 @@ public class ViewsRepository implements IViewsRepository
 	private final ImmutableMap<WindowId, IViewsIndexStorage> viewsIndexStorages;
 	private final IViewsIndexStorage defaultViewsIndexStorage;
 
-	/**
-	 * @param DO_NOT_DELETE_neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
-	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
-	 */
+	private final Executor async;
+
 	public ViewsRepository(
 			@NonNull final List<IViewFactory> viewFactories,
 			@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NonNull final Optional<List<IViewsIndexStorage>> viewIndexStorages,
@@ -107,6 +104,15 @@ public class ViewsRepository implements IViewsRepository
 
 		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60));
 		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeout);
+
+		async = createAsyncExecutor();
+	}
+
+	private static Executor createAsyncExecutor()
+	{
+		final CustomizableThreadFactory asyncThreadFactory = new CustomizableThreadFactory(ViewsRepository.class.getSimpleName());
+		asyncThreadFactory.setDaemon(true);
+		return Executors.newSingleThreadExecutor(asyncThreadFactory);
 	}
 
 	@PostConstruct
@@ -402,8 +408,19 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	@Async
-	public void notifyRecordsChanged(@NonNull final TableRecordReferenceSet recordRefs)
+	public void notifyRecordsChangedAsync(@NonNull final TableRecordReferenceSet recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			logger.trace("No changed records provided. Skip notifying views.");
+			return;
+		}
+
+		async.execute(() -> notifyRecordsChangedNow(recordRefs));
+	}
+
+	@Override
+	public void notifyRecordsChangedNow(@NonNull final TableRecordReferenceSet recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{
@@ -415,14 +432,14 @@ public class ViewsRepository implements IViewsRepository
 		{
 			for (final IViewsIndexStorage viewsIndexStorage : viewsIndexStorages.values())
 			{
-				notifyRecordsChanged(recordRefs, viewsIndexStorage);
+				notifyRecordsChangedNow(recordRefs, viewsIndexStorage);
 			}
 
-			notifyRecordsChanged(recordRefs, defaultViewsIndexStorage);
+			notifyRecordsChangedNow(recordRefs, defaultViewsIndexStorage);
 		}
 	}
 
-	private void notifyRecordsChanged(
+	private void notifyRecordsChangedNow(
 			@NonNull final TableRecordReferenceSet recordRefs,
 			@NonNull final IViewsIndexStorage viewsIndexStorage)
 	{
@@ -456,4 +473,5 @@ public class ViewsRepository implements IViewsRepository
 		WindowId windowId;
 		JSONViewDataType viewType;
 	}
+
 }

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-import { replace } from 'react-router-redux';
+import { push } from 'react-router-redux';
 import queryString from 'query-string';
 
 import * as types from '../constants/ActionTypes';
@@ -297,7 +297,7 @@ export function updateUri(pathname, query, updatedQuery) {
     const queryUrl = queryString.stringify(queryObject);
     const url = `${pathname}?${queryUrl}`;
 
-    dispatch(replace(url));
+    dispatch(push(url));
   };
 }
 

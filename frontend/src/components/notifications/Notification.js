@@ -2,9 +2,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-
+import { SHOW_READ_MORE_FROM } from '../../constants/Constants';
 import { deleteNotification } from '../../actions/AppActions';
-
 class Notification extends Component {
   constructor(props) {
     super(props);
@@ -96,7 +95,7 @@ class Notification extends Component {
   render() {
     const { item } = this.props;
     const { isClosing, isDisplayedMore } = this.state;
-    const { notifType, msg, title, count } = item;
+    const { notifType, msg } = item;
     let { shortMsg } = item;
     let progress = item.progress;
 
@@ -114,34 +113,19 @@ class Notification extends Component {
         onMouseEnter={() => this.handleClosing(false)}
         onMouseLeave={() => this.handleClosing(true)}
       >
-        <div className="notification-header">
-          {title}{' '}
-          {count > 1 && (
-            <span
-              className={classnames(
-                'tag tag-sm tag-default',
-                { [`tag-${notifType}`]: notifType },
-                { 'tag-error': !notifType }
-              )}
-            >
-              {count}
-            </span>
-          )}
-          <i
-            onClick={() => this.handleCloseButton()}
-            className="meta-icon-close-1"
-          />
-        </div>
         <div className="notification-content">
-          {shortMsg ? shortMsg + ' ' : msg}
-          {shortMsg && msg && !isDisplayedMore && (
-            <u
-              className="text-right text-small pointer"
-              onClick={this.handleToggleMore}
-            >
-              (read more)
-            </u>
-          )}
+          {shortMsg && msg.length > SHOW_READ_MORE_FROM ? shortMsg + ' ' : msg}
+          {msg.length > SHOW_READ_MORE_FROM &&
+            shortMsg &&
+            msg &&
+            !isDisplayedMore && (
+              <u
+                className="text-right text-small pointer"
+                onClick={this.handleToggleMore}
+              >
+                (read more)
+              </u>
+            )}
           {isDisplayedMore ? <p>{msg}</p> : ''}
         </div>
         <div

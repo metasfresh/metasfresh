@@ -69,16 +69,16 @@ public class HealthcareChInvoice440RestController
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(required = false, defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(required = false, defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(required = false, defaultValue = "DONT_UPDATE") //
+			@ApiParam(defaultValue = "DONT_UPDATE") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(required = false, defaultValue = "CREATE") //
+			@ApiParam(defaultValue = "CREATE") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		// Districts / Kantone are supposed to live at Org=*, because we don't want them to be duplicated;
@@ -108,16 +108,16 @@ public class HealthcareChInvoice440RestController
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(required = false, defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(required = false, defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
+			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient needs to already exist in metasfresh.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(required = false, defaultValue = "DONT_UPDATE") //
+			@ApiParam(defaultValue = "DONT_UPDATE") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(required = false, defaultValue = "CREATE") //
+			@ApiParam(defaultValue = "CREATE") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		// Districts / Kantone are supposed to live at Org=*, because we don't want them to be duplicated;
@@ -147,23 +147,23 @@ public class HealthcareChInvoice440RestController
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(required = false, defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(required = false, defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
-			@ApiParam(required = false, defaultValue = "DONT_UPDATE") //
+			@ApiParam(defaultValue = "DONT_UPDATE") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
 
-			@ApiParam(required = false, defaultValue = "CREATE") //
+			@ApiParam(defaultValue = "CREATE") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
 	{
 		// The only kinds of debitors that xmlToOLCandsService is implemented to create are health insurances
 		// Those insurances are supposed to live at Org=*, because we don't want them to be duplicated;
 		// Likewise, we don't want normal Org>0 users to edit them.
 		final SyncAdvise debitorSyncAdvise = SyncAdvise.builder()
-				.ifExists(IfExists.UPDATE_REMOVE)
+				.ifExists(IfExists.UPDATE_MERGE)
 				.ifNotExists(IfNotExists.CREATE)
 				.build();
 

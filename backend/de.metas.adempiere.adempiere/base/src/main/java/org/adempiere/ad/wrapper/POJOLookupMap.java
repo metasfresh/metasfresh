@@ -96,6 +96,13 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	private static final ThreadLocal<POJOLookupMap> threadInstanceRef = new ThreadLocal<>();
 
+	@NonNull
+	public static POJOLookupMap getNonNull()
+	{
+		return Check.assumeNotNull(get(), "POJOLookupMap.get() shall not return null at this point");
+	}
+
+	@Nullable
 	public static POJOLookupMap get()
 	{
 		final POJOLookupMap threadInstance = threadInstanceRef.get();
