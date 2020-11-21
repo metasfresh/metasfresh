@@ -29,8 +29,8 @@ import de.metas.i18n.Language;
 import de.metas.report.DocumentPrintOptions;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
-import de.metas.report.PrintFormatId;
 import de.metas.report.DocumentReportInfo;
+import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -134,6 +134,7 @@ public class OrderDocumentReportAdvisor implements DocumentReportAdvisor
 		if (printTotals.isPresent())
 		{
 			return DocumentPrintOptions.builder()
+					.sourceName("Order document: C_Order_ID=" + order.getC_Order_ID())
 					.option(DocumentPrintOptions.OPTION_IsPrintTotals, printTotals.isTrue())
 					.build();
 		}

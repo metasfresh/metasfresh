@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,10 +20,9 @@
  * #L%
  */
 
-package de.metas.ui.web.print.json;
+package de.metas.report;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,21 +31,18 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class JSONDocumentPrintingOption
+public class DocumentPrintOptionValue
 {
-	@NonNull
-	String caption;
-
-	@Nullable
-	String description;
+	public static final DocumentPrintOptionValue MISSING = builder().value(OptionalBoolean.UNKNOWN).sourceName(null).build();
 
 	@NonNull
-	String internalName;
+	OptionalBoolean value;
 
-	boolean value;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable
-	String debugSourceName;
+	String sourceName;
+
+	public boolean isTrue()
+	{
+		return getValue().isTrue();
+	}
 }

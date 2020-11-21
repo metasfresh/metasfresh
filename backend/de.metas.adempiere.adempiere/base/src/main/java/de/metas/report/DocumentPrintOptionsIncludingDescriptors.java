@@ -23,7 +23,6 @@
 package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -52,7 +51,7 @@ public class DocumentPrintOptionsIncludingDescriptors
 		return descriptors.getOptions();
 	}
 
-	public OptionalBoolean getOptionValue(@NonNull final String name)
+	public DocumentPrintOptionValue getOptionValue(@NonNull final String name)
 	{
 		return values.getOption(name);
 	}

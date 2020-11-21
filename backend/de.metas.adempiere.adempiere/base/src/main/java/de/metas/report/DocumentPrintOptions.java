@@ -26,38 +26,73 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.IdentityHashSet;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
 public final class DocumentPrintOptions
 {
-	public static final DocumentPrintOptions NONE = builder().build();
+	public static final DocumentPrintOptions NONE = builder().sourceName("none").build();
 
 	public static final String OPTION_IsPrintLogo = DocumentPrintOptionDescriptor.PROCESS_PARAM_PRINTER_OPTIONS_PREFIX + "IsPrintLogo";
 	public static final String OPTION_IsPrintTotals = DocumentPrintOptionDescriptor.PROCESS_PARAM_PRINTER_OPTIONS_PREFIX + "IsPrintTotals";
 
+	private final String sourceName;
+
 	@NonNull
 	private final ImmutableMap<String, Boolean> options;
 
-	@Builder
+	@Nullable
+	private final DocumentPrintOptions fallback;
+
+	@Builder(toBuilder = true)
 	private DocumentPrintOptions(
-			@NonNull @Singular final ImmutableMap<String, Boolean> options)
+			@Nullable final String sourceName,
+			@NonNull @Singular final ImmutableMap<String, Boolean> options,
+			@Nullable final DocumentPrintOptions fallback)
 	{
+		this.sourceName = sourceName;
 		this.options = options;
+		this.fallback = fallback != null && !fallback.isNone() ? fallback : null;
+
+		assertNoCycles();
 	}
 
-	public static DocumentPrintOptions ofMap(final Map<String, String> map)
+	private void assertNoCycles()
 	{
-		if (map.isEmpty())
+		if (fallback == null)
+		{
+			return;
+		}
+
+		final IdentityHashSet<DocumentPrintOptions> trace = new IdentityHashSet<>();
+		DocumentPrintOptions current = this;
+		while (current != null)
+		{
+			if (!trace.add(current))
+			{
+				throw new AdempiereException("Cycle in printing options fallback detected: " + trace);
+			}
+			current = current.fallback;
+		}
+	}
+
+	public static DocumentPrintOptions ofMap(
+			@NonNull final Map<String, String> map,
+			@Nullable final String sourceName)
+	{
+		if (map.isEmpty() && sourceName == null)
 		{
 			return NONE;
 		}
@@ -74,33 +109,64 @@ public final class DocumentPrintOptions
 			options.put(name, value);
 		}
 
-		if (options.isEmpty())
-		{
-			return NONE;
-		}
-
-		return new DocumentPrintOptions(ImmutableMap.copyOf(options));
+		return builder()
+				.sourceName(sourceName)
+				.options(options)
+				.build();
 	}
 
-	public boolean isNone()
+	public boolean isEmpty()
 	{
 		return options.isEmpty();
 	}
 
-	public ImmutableSet<String> getOptionNames()
+	private boolean isNone()
 	{
-		return options.keySet();
+		return this.equals(NONE);
 	}
 
-	public OptionalBoolean getOption(@NonNull final String name)
+	public ImmutableSet<String> getOptionNames()
+	{
+		if (fallback != null && !fallback.isEmpty())
+		{
+			return ImmutableSet.<String>builder()
+					.addAll(options.keySet())
+					.addAll(fallback.getOptionNames())
+					.build();
+		}
+		else
+		{
+			return options.keySet();
+		}
+	}
+
+	public DocumentPrintOptionValue getOption(@NonNull final String name)
 	{
 		final Boolean value = options.get(name);
-		return OptionalBoolean.ofNullableBoolean(value);
+		if (value != null)
+		{
+			return DocumentPrintOptionValue.builder()
+					.value(OptionalBoolean.ofBoolean(value))
+					.sourceName(sourceName)
+					.build();
+		}
+		else if (fallback != null)
+		{
+			return fallback.getOption(name);
+		}
+		else
+		{
+			return DocumentPrintOptionValue.MISSING;
+		}
 	}
 
 	public DocumentPrintOptions mergeWithFallback(@NonNull final DocumentPrintOptions fallback)
 	{
-		if (fallback.isNone())
+		if (this == fallback)
+		{
+			throw new IllegalArgumentException("Merging with itself is not allowed");
+		}
+		else if (fallback.isNone())
 		{
 			return this;
 		}
@@ -110,18 +176,19 @@ public final class DocumentPrintOptions
 		}
 		else
 		{
-			final LinkedHashMap<String, Boolean> newOptions = new LinkedHashMap<>(this.options);
-			for (final String name : fallback.options.keySet())
+			final DocumentPrintOptions newFallback;
+			if (this.fallback != null)
 			{
-				newOptions.computeIfAbsent(name, fallback.options::get);
+				newFallback = this.fallback.mergeWithFallback(fallback);
+			}
+			else
+			{
+				newFallback = fallback;
 			}
 
-			if (newOptions.equals(this.options))
-			{
-				return this;
-			}
-
-			return new DocumentPrintOptions(ImmutableMap.copyOf(newOptions));
+			return !Objects.equals(this.fallback, newFallback)
+					? toBuilder().fallback(newFallback).build()
+					: this;
 		}
 	}
 

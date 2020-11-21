@@ -79,7 +79,7 @@ public class DocumentPrintRestController
 				.documentPath(documentPath)
 				.userId(userSession.getLoggedUserId())
 				.roleId(userSession.getLoggedRoleId())
-				.printOptions(DocumentPrintOptions.ofMap(requestParams))
+				.printOptions(DocumentPrintOptions.ofMap(requestParams, "user HTTP request"))
 				.build());
 
 		final byte[] reportData = documentPrint.getReportData();

@@ -252,7 +252,7 @@ public class DocumentReportService
 
 	private static List<ProcessInfoParameter> toProcessInfoParameters(@NonNull final DocumentPrintOptions printOptions)
 	{
-		if (printOptions.isNone())
+		if (printOptions.isEmpty())
 		{
 			return ImmutableList.of();
 		}

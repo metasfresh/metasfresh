@@ -26,6 +26,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.AdProcessId;
 import de.metas.report.DocumentPrintOptionDescriptor;
+import de.metas.report.DocumentPrintOptionValue;
 import de.metas.report.DocumentPrintOptionsIncludingDescriptors;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.DocumentReportRequest;
@@ -38,7 +39,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
@@ -106,7 +106,7 @@ public class WebuiDocumentPrintService
 	}
 
 	private static JSONDocumentPrintingOptions toJSONDocumentPrintingOptions(
-			@NonNull DocumentPrintOptionsIncludingDescriptors printOptions,
+			@NonNull final DocumentPrintOptionsIncludingDescriptors printOptions,
 			@NonNull final String adLanguage)
 	{
 		final ArrayList<JSONDocumentPrintingOption> jsonOptionsList = new ArrayList<>();
@@ -116,13 +116,14 @@ public class WebuiDocumentPrintService
 			final String caption = option.getName().translate(adLanguage);
 			final String description = option.getDescription().translate(adLanguage);
 			final String internalName = option.getInternalName();
-			final OptionalBoolean value = printOptions.getOptionValue(internalName);
+			final DocumentPrintOptionValue value = printOptions.getOptionValue(internalName);
 
 			jsonOptionsList.add(JSONDocumentPrintingOption.builder()
 					.caption(caption)
 					.description(description)
 					.internalName(internalName)
 					.value(value.isTrue())
+					.debugSourceName(value.getSourceName())
 					.build());
 		}
 

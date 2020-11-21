@@ -66,8 +66,8 @@ public class DocTypePrintOptionsRepository
 				.create()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						record -> toDocTypePrintOptionsKey(record),
-						record -> toDocumentPrintOptions(record)));
+						DocTypePrintOptionsRepository::toDocTypePrintOptionsKey,
+						DocTypePrintOptionsRepository::toDocumentPrintOptions));
 
 		return !map.isEmpty()
 				? new DocTypePrintOptionsMap(map)
@@ -86,6 +86,7 @@ public class DocTypePrintOptionsRepository
 	private static DocumentPrintOptions toDocumentPrintOptions(@NonNull final I_C_DocType_PrintOptions record)
 	{
 		return DocumentPrintOptions.builder()
+				.sourceName("DocType options: C_DocType_ID=" + record.getC_DocType_ID() + ", flavor=" + DocumentReportFlavor.ofNullableCode(record.getDocumentFlavor()))
 				.option(DocumentPrintOptions.OPTION_IsPrintLogo, record.isPRINTER_OPTS_IsPrintLogo())
 				.option(DocumentPrintOptions.OPTION_IsPrintTotals, record.isPRINTER_OPTS_IsPrintTotals())
 				.build();

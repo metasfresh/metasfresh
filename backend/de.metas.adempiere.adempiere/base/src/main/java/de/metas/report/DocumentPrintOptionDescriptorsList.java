@@ -49,7 +49,8 @@ public class DocumentPrintOptionDescriptorsList
 
 	public DocumentPrintOptions getDefaults()
 	{
-		final DocumentPrintOptions.DocumentPrintOptionsBuilder builder = DocumentPrintOptions.builder();
+		final DocumentPrintOptions.DocumentPrintOptionsBuilder builder = DocumentPrintOptions.builder()
+				.sourceName("AD_Process defaults");
 
 		for (final DocumentPrintOptionDescriptor option : options)
 		{
