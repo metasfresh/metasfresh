@@ -84,17 +84,6 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	@Nullable
-	public I_AD_Archive archive(
-			final LayoutEngine layout,
-			final ArchiveInfo archiveInfo,
-			final boolean force,
-			final String trxName)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public @NonNull ArchiveResult archive(@NonNull final ArchiveRequest request)
 	{
 		if (request.isForce() || isToArchive(request))

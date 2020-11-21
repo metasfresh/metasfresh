@@ -178,10 +178,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 */
 	private String m_printerName = null; // metas: us316: commented: Ini.getProperty(Ini.P_PRINTER);
 	/**
-	 * View
-	 */
-	private View m_view = null;
-	/**
 	 * Transaction Name
 	 */
 	private String m_trxName = null;
@@ -211,8 +207,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 			m_layout.setPrintFormat(pf, false);
 			m_layout.setPrintData(printData, m_query, true);    // format changes data
 		}
-		if (m_view != null)
-			m_view.revalidate();
 	}    // setPrintFormat
 
 	/**
@@ -256,8 +250,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 		if (m_layout != null)
 			m_layout.setPrintData(printData, m_query, true);
-		if (m_view != null)
-			m_view.revalidate();
 
 		// m_printData.dump();
 	}    // setPrintData
@@ -376,81 +368,11 @@ public class ReportEngine implements PrintServiceAttributeListener
 		return 0;
 	}    // getColumnCount
 
-	/**************************************************************************
-	 * Get View Panel
-	 *
-	 * @return view panel
-	 */
-	public View getView()
-	{
-		if (m_layout == null)
-			layout();
-		if (m_view == null)
-			m_view = new View(m_layout);
-		return m_view;
-	}    // getView
-
-	/**************************************************************************
-	 * Print Report
-	 */
+	@Deprecated
 	public void print()
 	{
-		log.info("print: {}", archiveInfo);
-
-		if (m_layout == null)
-			layout();
-
-		// Paper Attributes: media-printable-area, orientation-requested, media
-		PrintRequestAttributeSet prats = m_layout.getPaper().getPrintRequestAttributeSet();
-		// add: copies, job-name, priority
-		if (archiveInfo.isDocumentCopy() || archiveInfo.getCopies().isZero())
-			prats.add(new Copies(1));
-		else
-			prats.add(new Copies(archiveInfo.getCopies().toInt()));
-		Locale locale = Language.getLoginLanguage().getLocale();
-		prats.add(new JobName(m_printFormat.getName(), locale));
-		prats.add(PrintUtil.getJobPriority(m_layout.getNumberOfPages(), archiveInfo.getCopies().toInt(), true));
-
-		try
-		{
-			// PrinterJob
-			PrinterJob job = getPrinterJob(archiveInfo.getPrinterName());
-			// job.getPrintService().addPrintServiceAttributeListener(this);
-			job.setPageable(m_layout.getPageable(false));    // no copy
-			// Dialog
-			try
-			{
-				if (archiveInfo.isWithDialog() && !job.printDialog(prats))
-					return;
-			}
-			catch (Exception e)
-			{
-				log.warn("Operating System Print Issue, check & try again", e);
-				return;
-			}
-
-			// submit
-			boolean printCopy = archiveInfo.isDocumentCopy() && archiveInfo.getCopies().isGreaterThanOne();
-			Services.get(IArchiveBL.class).archive(m_layout, archiveInfo, false, ITrx.TRXNAME_None);
-			// ArchiveEngine.get().archive(m_layout, m_info);
-			PrintUtil.print(job, prats, false, printCopy);
-
-			// Document: Print Copies
-			if (printCopy)
-			{
-				log.info("Copy " + (archiveInfo.getCopies().toInt() - 1));
-				prats.add(new Copies(archiveInfo.getCopies().toInt() - 1));
-				job = getPrinterJob(archiveInfo.getPrinterName());
-				// job.getPrintService().addPrintServiceAttributeListener(this);
-				job.setPageable(m_layout.getPageable(true));        // Copy
-				PrintUtil.print(job, prats, false, false);
-			}
-		}
-		catch (Exception e)
-		{
-			log.error("", e);
-		}
-	}    // print
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Print Service Attribute Listener.
@@ -498,8 +420,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 		if (m_layout == null)
 			layout();
 		m_layout.pageSetupDialog(getPrinterJob(m_printerName));
-		if (m_view != null)
-			m_view.revalidate();
 	}    // pageSetupDialog
 
 	/**
@@ -965,7 +885,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 
 		try
 		{
-			// 03744: begin
 			if (getPrintFormat().getJasperProcess_ID() > 0)
 			{
 				final byte[] data = createPdfDataInvokeReportProcess();
@@ -974,13 +893,8 @@ public class ReportEngine implements PrintServiceAttributeListener
 			}
 			else
 			{
-				// 03744: end
-				if (m_layout == null)
-					layout();
-				Services.get(IArchiveBL.class).archive(m_layout, archiveInfo, false, ITrx.TRXNAME_None);
-				// ArchiveEngine.get().archive(m_layout, m_info);
-				Document.getPDFAsFile(fileName, m_layout.getPageable(false));
-			} // 03744
+				throw new AdempiereException("legacy report engine are no longer supported");
+			}
 		}
 		catch (Exception e)
 		{

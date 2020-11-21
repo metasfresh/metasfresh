@@ -22,20 +22,17 @@ package org.adempiere.archive.api;
  * #L%
  */
 
-import java.io.InputStream;
-import java.util.Optional;
-
 import de.metas.report.PrintCopies;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.print.layout.LayoutEngine;
 
-import de.metas.process.ProcessInfo;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * Archive related business logic
@@ -64,8 +61,6 @@ public interface IArchiveBL extends ISingletonService
 	I_AD_Archive archive(byte[] data, ArchiveInfo archiveInfo, boolean force, String trxName);
 
 	/**
-	 * Like {@link #archive(LayoutEngine, ArchiveInfo, boolean, String)}, but allows to only create the <code>AD_Archive</code> without saving the record.
-	 *
 	 * Task http://dewiki908/mediawiki/index.php/09752_For_Umsatzreport_and_Mengenstatistiken%2C_two_printing_queue..._%28107420055849%29
 	 *
 	 * @deprecated Please use {@link #archive(ArchiveRequest)}
@@ -76,14 +71,6 @@ public interface IArchiveBL extends ISingletonService
 
 	@NonNull
 	ArchiveResult archive(@NonNull ArchiveRequest request);
-
-	/**
-	 * Converts to PDF and archives given <code>layout</code>.
-	 *
-	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
-	 */
-	@Deprecated
-	I_AD_Archive archive(LayoutEngine layout, ArchiveInfo archiveInfo, boolean force, String trxName);
 
 	String getContentType(I_AD_Archive archive);
 
