@@ -1,26 +1,7 @@
 package de.metas.ui.web.order.products_proposal.model;
 
-import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
@@ -39,6 +20,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
@@ -56,6 +38,22 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -180,6 +178,7 @@ public final class ProductsProposalRowsLoader
 				.flatMap(this::loadAndStreamRowsForPriceListVersionId)
 				.sorted(Comparator.comparing(ProductsProposalRow::getSeqNo)
 						.thenComparing(ProductsProposalRow::getProductName))
+				.filter(p -> !Services.get(IProductDAO.class).getById(p.getProductId()).isDiscontinued())
 				.collect(ImmutableList.toImmutableList());
 	}
 

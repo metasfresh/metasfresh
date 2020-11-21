@@ -24,9 +24,12 @@ package de.metas.rest_api.shipping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.UnmodifiableIterator;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -107,6 +110,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -565,7 +569,7 @@ class ShipmentCandidateAPIService
 	{
 		if (shipmentSchedule.getOrderAndLineId() == null)
 		{
-			return;//nothing to do
+			return;// nothing to do
 		}
 
 		final I_C_OrderLine orderLine = ids2OrderLines.get(shipmentSchedule.getOrderAndLineId());
@@ -605,8 +609,7 @@ class ShipmentCandidateAPIService
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						orderRecord -> OrderId.ofRepoId(orderRecord.getC_Order_ID()),
-						Function.identity()
-				));
+						Function.identity()));
 		return orderIdToOrderRecord;
 	}
 
@@ -622,8 +625,7 @@ class ShipmentCandidateAPIService
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						(orderLine) -> OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()),
-						Function.identity()
-				));
+						Function.identity()));
 	}
 
 	@NonNull
@@ -676,13 +678,55 @@ class ShipmentCandidateAPIService
 	private List<ShipmentSchedule> loadShipmentSchedulesToExport(@NonNull final QueryLimit limit)
 	{
 		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
-				.limit(limit)
 				.canBeExportedFrom(SystemTime.asInstant())
+				.onlyIfAllFromOrderExportable(true)
 				.exportStatus(APIExportStatus.Pending)
 				.includeWithQtyToDeliverZero(true)
+				.fromCompleteOrderOrNullOrder(true)
+				.orderByOrderId(true)
 				.build();
 
-		return shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+		final List<ShipmentSchedule> shipmentSchedulesOrderedByOrderId = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
+		List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
+
+		int counter = 0;
+		for (ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
+		{
+			if (schedule.getOrderAndLineId() == null && counter < limit.toInt() - 1)
+			{
+				schedulesToBeExported.add(schedule);
+				counter++;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (counter == limit.toInt())
+		{
+			return schedulesToBeExported;
+		}
+
+		final List<ShipmentSchedule> nonNullOrderShipmentSchedules = shipmentSchedulesOrderedByOrderId.stream()
+				.filter(sched -> sched.getOrderAndLineId() != null)
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableListMultimap<OrderId, ShipmentSchedule> schedulesForOrderIds = Multimaps.index(nonNullOrderShipmentSchedules, sched -> sched.getOrderAndLineId().getOrderId());
+
+		int ordersLeftToExport = limit.toInt() - counter;
+
+		final UnmodifiableIterator<OrderId> orderIdIterator = schedulesForOrderIds.keySet().iterator();
+
+		while (orderIdIterator.hasNext() && ordersLeftToExport > 0)
+		{
+			final OrderId currentOrderId = orderIdIterator.next();
+			schedulesToBeExported.addAll(schedulesForOrderIds.get(currentOrderId));
+			ordersLeftToExport--;
+		}
+
+		return schedulesToBeExported;
+
 	}
 
 	private ImmutableMap<ShipperId, String> loadShipperInternalNameByIds(@NonNull final IdsRegistry idsRegistry)
@@ -708,7 +752,7 @@ class ShipmentCandidateAPIService
 
 		if (shipperId == null)
 		{
-			return;//nothing to do
+			return;// nothing to do
 		}
 
 		candidateBuilder.shipperInternalSearchKey(shipperId2InternalName.get(shipperId));
@@ -725,7 +769,7 @@ class ShipmentCandidateAPIService
 
 		if (orderId == null)
 		{
-			return; //nothing to do
+			return; // nothing to do
 		}
 
 		final I_C_Order orderRecord = id2Order.get(orderId);
