@@ -89,7 +89,7 @@ class DocumentReferences extends Component {
     if (ctrlKeyPressed) {
       window.open(url, '_blank');
     } else {
-      dispatch(push(url));
+      dispatch(push(`${url}`));
     }
   };
 
