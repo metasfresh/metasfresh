@@ -1,4 +1,4 @@
-import { produce /*, original*/ } from 'immer';
+import { produce } from 'immer';
 import { createSelector } from 'reselect';
 import { get } from 'lodash';
 

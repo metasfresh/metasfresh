@@ -392,7 +392,6 @@ ActionButton.propTypes = {
   dataId: PropTypes.any,
   docId: PropTypes.any,
   activeTab: PropTypes.string,
-  readonly: PropTypes.boolean,
   processStatus: PropTypes.string,
 };
 
