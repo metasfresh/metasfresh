@@ -1,56 +1,12 @@
 package de.metas.bpartner.service.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -70,6 +26,26 @@ import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
@@ -353,7 +329,7 @@ public class BPartnerBL implements IBPartnerBL
 	private void updateAddressNoSave(final I_C_BPartner_Location bpLocation, final I_C_BPartner bpartner)
 	{
 		final ILocationBL locationBL = Services.get(ILocationBL.class);
-		
+
 		final String address = locationBL.mkAddress(
 				bpLocation.getC_Location(),
 				bpartner,
@@ -400,56 +376,39 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Language getLanguage(final Properties ctx_NOTUSED, final int bpartnerId)
+	public Optional<Language> getLanguage(@NonNull final BPartnerId bpartnerId)
 	{
-		if (bpartnerId > 0)
-		{
-			final I_C_BPartner bp = bpartnersRepo.getById(bpartnerId);
-			if (null != bp)
-			{
-				final String lang = bp.getAD_Language();
-				if (!Check.isEmpty(lang, true))
-				{
-					return Language.getLanguage(lang);
-				}
-			}
-			return null;
-		}
-		return null;
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		return bpartner != null
+				? getLanguage(bpartner)
+				: Optional.empty();
 	}
 
 	@Override
-	public I_C_BPartner getBPartnerForModel(final Object model)
+	public Optional<BPartnerId> getBPartnerIdForModel(@Nullable final Object model)
 	{
-		// 09527 get the most suitable language:
 		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
-		if (bpartnerAware == null)
-		{
-			return null;
-		}
-		if (bpartnerAware.getC_BPartner_ID() <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.create(bpartnerAware.getC_BPartner(), I_C_BPartner.class);
+		return bpartnerAware != null
+				? BPartnerId.optionalOfRepoId(bpartnerAware.getC_BPartner_ID())
+				: Optional.empty();
 	}
 
 	@Override
-	public Language getLanguageForModel(final Object model)
+	public Optional<Language> getLanguageForModel(@Nullable final Object model)
 	{
 		// 09527 get the most suitable language:
-		final I_C_BPartner bpartner = getBPartnerForModel(model);
-		if (bpartner == null)
-		{
-			return null;
-		}
-		final String lang = bpartner.getAD_Language();
-		if (Check.isEmpty(lang, true))
-		{
-			return null;
-		}
+		return getBPartnerIdForModel(model)
+				.map(bpartnersRepo::getById)
+				.flatMap(this::getLanguage);
+	}
 
-		return Language.getLanguage(lang);
+	@Override
+	public Optional<Language> getLanguage(@NonNull final I_C_BPartner bpartner)
+	{
+		final String adLanguage = bpartner.getAD_Language();
+		return Check.isNotBlank(adLanguage)
+				? Optional.ofNullable(Language.getLanguage(adLanguage))
+				: Optional.empty();
 	}
 
 	@Override
@@ -706,5 +665,11 @@ public class BPartnerBL implements IBPartnerBL
 		final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
 		return PaymentRule.optionalOfCode(bpGroup.getPaymentRule());
+	}
+
+	@Override
+	public BPartnerPrintFormatMap getPrintFormats(final @NonNull BPartnerId bpartnerId)
+	{
+		return bpartnersRepo.getPrintFormats(bpartnerId);
 	}
 }

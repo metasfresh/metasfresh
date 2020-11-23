@@ -50,6 +50,8 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
@@ -60,7 +62,7 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
-import org.compiere.print.ReportEngine;
+import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
@@ -73,7 +75,6 @@ import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
@@ -501,26 +502,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("Could not create PDF", e);
-		}
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.MANUFACTURING_ORDER, getPP_Order_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}
-
-	private File createPDF(final File file)
-	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.MANUFACTURING_ORDER, getPP_Order_ID());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	} // createPDF
 
 	@Override
 	public String getDocumentInfo()

@@ -1,34 +1,28 @@
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.banking.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_I_BankStatement;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Trace;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.service.BankStatementCreateRequest;
@@ -45,31 +39,37 @@ import de.metas.impexp.processing.ImportGroup;
 import de.metas.impexp.processing.ImportProcessResult;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_I_BankStatement;
+import org.compiere.model.X_I_BankStatement;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Trace;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2020 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class BankStatementImportProcessTest
@@ -139,18 +139,28 @@ public class BankStatementImportProcessTest
 	private I_I_BankStatement createRecordToImport(
 			@Nullable final BankStatementId bankStatementId,
 			@Nullable final CurrencyId currencyId,
-			@NonNull final String trxAmt,
+			@Nullable final String trxAmt,
 			@Nullable final String statementLineDate,
 			@Nullable final String valutaDate,
-			@Nullable final String lineDescription)
+			@Nullable final String lineDescription,
+			@Nullable final String amtFormat,
+			@Nullable final String debitOrCreditIndicator,
+			@Nullable final String debitOrCreditAmt,
+			@Nullable final String debitStmtAmt,
+			@Nullable final String creditStmtAmt)
 	{
 		final I_I_BankStatement record = newInstance(I_I_BankStatement.class);
 		record.setC_BankStatement_ID(bankStatementId != null ? bankStatementId.getRepoId() : -1);
 
 		record.setC_Currency_ID(CurrencyId.toRepoId(currencyId));
-		record.setStmtAmt(new BigDecimal(trxAmt));
-		record.setTrxAmt(new BigDecimal(trxAmt));
+		record.setStmtAmt(amtOrNull(trxAmt));
+		record.setTrxAmt(amtOrNull(trxAmt));
 		record.setLineDescription(lineDescription);
+		record.setAmtFormat(amtFormat);
+		record.setDebitOrCreditIndicator(debitOrCreditIndicator);
+		record.setDebitOrCreditAmt(amtOrNull(debitOrCreditAmt));
+		record.setDebitStmtAmt(amtOrNull(debitStmtAmt));
+		record.setCreditStmtAmt(amtOrNull(creditStmtAmt));
 
 		if (statementLineDate != null)
 		{
@@ -166,6 +176,17 @@ public class BankStatementImportProcessTest
 		return record;
 	}
 
+	@SuppressWarnings("ConstantConditions")
+	@Nullable
+	BigDecimal amtOrNull(@Nullable final String amt)
+	{
+		if (Check.isNotBlank(amt))
+		{
+			return new BigDecimal(amt);
+		}
+		return null;
+	}
+
 	private ImportProcessResult importRecords(final I_I_BankStatement... importRecords)
 	{
 		final ImmutableList<I_I_BankStatement> importRecordsList = ImmutableList.copyOf(importRecords);
@@ -175,14 +196,14 @@ public class BankStatementImportProcessTest
 			protected void updateAndValidateImportRecords()
 			{
 				System.out.println("updateAndValidateImportRecords() does nothing when running in unit test mode"
-						+ "\n\t call trace: " + Trace.toOneLineStackTraceString());
+										   + "\n\t call trace: " + Trace.toOneLineStackTraceString());
 			}
 
 			@Override
 			protected void resetStandardColumns()
 			{
 				System.out.println("resetStandardColumns() does nothing when running in unit test mode"
-						+ "\n\t call trace: " + Trace.toOneLineStackTraceString());
+										   + "\n\t call trace: " + Trace.toOneLineStackTraceString());
 			}
 
 			@Override
@@ -207,14 +228,14 @@ public class BankStatementImportProcessTest
 	}
 
 	@Test
-	public void importToExistingBankStatement()
+	void importToExistingBankStatement()
 	{
 		final BankStatementId bankStatementId = bankStatementDAO.createBankStatement(BankStatementCreateRequest.builder()
-				.orgId(OrgId.ANY)
-				.orgBankAccountId(euroOrgBankAccountId)
-				.name("Bank Statement 1")
-				.statementDate(LocalDate.parse("2020-03-22"))
-				.build());
+																							 .orgId(OrgId.ANY)
+																							 .orgBankAccountId(euroOrgBankAccountId)
+																							 .name("Bank Statement 1")
+																							 .statementDate(LocalDate.parse("2020-03-22"))
+																							 .build());
 
 		final RecordBuilder recordBuilder = record()
 				.bankStatementId(bankStatementId)
@@ -252,6 +273,102 @@ public class BankStatementImportProcessTest
 			assertThat(lines.get(1).getStmtAmt()).isEqualByComparingTo("33.33");
 			assertThat(lines.get(1).getTrxAmt()).isEqualByComparingTo("33.33");
 			assertThat(lines.get(1).getDescription()).isEqualTo("description for line 2");
+		}
+	}
+
+	@Nested
+	class GetAmtFormat
+	{
+		private BankStatementId bankStatementId;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			bankStatementId = bankStatementDAO.createBankStatement(
+					BankStatementCreateRequest.builder()
+							.orgId(OrgId.ANY)
+							.orgBankAccountId(euroOrgBankAccountId)
+							.name("Bank Statement 1")
+							.statementDate(LocalDate.parse("2020-03-22"))
+							.build()
+			);
+		}
+
+		@Test
+		void formatExists()
+		{
+			final I_I_BankStatement statement = mkRecord().amtFormat("dummy").build();
+
+			assertThat(BankStatementImportProcess.getAmtFormat(statement)).isEqualTo("dummy");
+		}
+
+		@Test
+		void invalidFormat()
+		{
+			final I_I_BankStatement statement = mkRecord().build();
+
+			assertThatExceptionOfType(AdempiereException.class)
+					.isThrownBy(() -> BankStatementImportProcess.getAmtFormat(statement))
+					.withMessageContaining("Invalid")
+					.withMessageContaining("format");
+		}
+
+		@Test
+		void formatNotExists_AmountPlusIndicator()
+		{
+			final I_I_BankStatement statement = mkRecord().debitOrCreditIndicator("H").debitOrCreditAmt("123.456").build();
+
+			assertThat(BankStatementImportProcess.getAmtFormat(statement)).isEqualTo(X_I_BankStatement.AMTFORMAT_AmountPlusIndicator);
+		}
+
+		@Test
+		void formatNotExists_DebitPlusCredit_Debit()
+		{
+			final I_I_BankStatement statement = mkRecord().debitStmtAmt("123.456").build();
+
+			assertThat(BankStatementImportProcess.getAmtFormat(statement)).isEqualTo(X_I_BankStatement.AMTFORMAT_DebitPlusCredit);
+		}
+
+		@Test
+		void formatNotExists_DebitPlusCredit_Credit()
+		{
+			final I_I_BankStatement statement = mkRecord().creditStmtAmt("123.456").build();
+
+			assertThat(BankStatementImportProcess.getAmtFormat(statement)).isEqualTo(X_I_BankStatement.AMTFORMAT_DebitPlusCredit);
+		}
+
+		@Test
+		void formatNotExists_Straight()
+		{
+			final I_I_BankStatement statement = mkRecord().trxAmt("123.456").build();
+
+			assertThat(BankStatementImportProcess.getAmtFormat(statement)).isEqualTo(X_I_BankStatement.AMTFORMAT_Straight);
+		}
+
+		@Test
+		void integrationAllAmtFormats()
+		{
+			importRecords(
+					mkRecord().debitOrCreditIndicator("S").debitOrCreditAmt("123.456").lineDescription("1. A+I").build(),
+					mkRecord().debitStmtAmt("223.456").lineDescription("2. D+C").build(),
+					mkRecord().creditStmtAmt("323.456").lineDescription("3. D+C").build(),
+					mkRecord().trxAmt("423.456").lineDescription("4. S").build()
+			);
+
+			final List<I_C_BankStatementLine> lines = bankStatementDAO.getLinesByBankStatementId(bankStatementId);
+			assertThat(lines)
+					.extracting(l -> tuple(l.getStmtAmt().toString(), l.getTrxAmt().toString(), l.getDescription()))
+					.containsExactlyInAnyOrder(
+							tuple("-123.456", "-123.456", "1. A+I"),
+							tuple("-223.456", "-223.456", "2. D+C"),
+							tuple("323.456", "323.456", "3. D+C"),
+							tuple("423.456", "423.456", "4. S")
+					);
+		}
+
+		private RecordBuilder mkRecord()
+		{
+			return record().bankStatementId(bankStatementId).statementLineDate("2020-03-22").currencyId(euroCurrencyId);
 		}
 	}
 }

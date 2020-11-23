@@ -1,159 +1,142 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_PI_Item_Product
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_M_HU_PI_Item_Product 
 {
 
-    /** TableName=M_HU_PI_Item_Product */
-    public static final String Table_Name = "M_HU_PI_Item_Product";
+	String Table_Name = "M_HU_PI_Item_Product";
 
-    /** AD_Table_ID=540508 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540508 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Description = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set TU-EAN.
@@ -162,7 +145,7 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEAN_TU (java.lang.String EAN_TU);
+	void setEAN_TU (@Nullable java.lang.String EAN_TU);
 
 	/**
 	 * Get TU-EAN.
@@ -171,12 +154,10 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEAN_TU();
+	@Nullable java.lang.String getEAN_TU();
 
-    /** Column definition for EAN_TU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_EAN_TU = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "EAN_TU", null);
-    /** Column name EAN_TU */
-    public static final String COLUMNNAME_EAN_TU = "EAN_TU";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_EAN_TU = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "EAN_TU", null);
+	String COLUMNNAME_EAN_TU = "EAN_TU";
 
 	/**
 	 * Set GTIN.
@@ -185,7 +166,7 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setGTIN (java.lang.String GTIN);
+	void setGTIN (@Nullable java.lang.String GTIN);
 
 	/**
 	 * Get GTIN.
@@ -194,37 +175,56 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getGTIN();
+	@Nullable java.lang.String getGTIN();
 
-    /** Column definition for GTIN */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_GTIN = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "GTIN", null);
-    /** Column name GTIN */
-    public static final String COLUMNNAME_GTIN = "GTIN";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_GTIN = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "GTIN", null);
+	String COLUMNNAME_GTIN = "GTIN";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set LU fallback packaging GTIN.
+	 * Used if a LU packaging GTIN is required, but no HU is assigned in metasfresh.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGTIN_LU_PackingMaterial_Fallback (@Nullable java.lang.String GTIN_LU_PackingMaterial_Fallback);
+
+	/**
+	 * Get LU fallback packaging GTIN.
+	 * Used if a LU packaging GTIN is required, but no HU is assigned in metasfresh.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGTIN_LU_PackingMaterial_Fallback();
+
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_GTIN_LU_PackingMaterial_Fallback = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "GTIN_LU_PackingMaterial_Fallback", null);
+	String COLUMNNAME_GTIN_LU_PackingMaterial_Fallback = "GTIN_LU_PackingMaterial_Fallback";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Jedes Produkt erlauben.
@@ -233,7 +233,7 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAllowAnyProduct (boolean IsAllowAnyProduct);
+	void setIsAllowAnyProduct (boolean IsAllowAnyProduct);
 
 	/**
 	 * Get Jedes Produkt erlauben.
@@ -242,160 +242,147 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllowAnyProduct();
+	boolean isAllowAnyProduct();
 
-    /** Column definition for IsAllowAnyProduct */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsAllowAnyProduct = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsAllowAnyProduct", null);
-    /** Column name IsAllowAnyProduct */
-    public static final String COLUMNNAME_IsAllowAnyProduct = "IsAllowAnyProduct";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsAllowAnyProduct = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "IsAllowAnyProduct", null);
+	String COLUMNNAME_IsAllowAnyProduct = "IsAllowAnyProduct";
 
 	/**
-	 * Set Standard-Produkt.
+	 * Set Default for Product.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDefaultForProduct (boolean IsDefaultForProduct);
+	void setIsDefaultForProduct (boolean IsDefaultForProduct);
 
 	/**
-	 * Get Standard-Produkt.
+	 * Get Default for Product.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDefaultForProduct();
+	boolean isDefaultForProduct();
 
-    /** Column definition for IsDefaultForProduct */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsDefaultForProduct = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsDefaultForProduct", null);
-    /** Column name IsDefaultForProduct */
-    public static final String COLUMNNAME_IsDefaultForProduct = "IsDefaultForProduct";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsDefaultForProduct = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "IsDefaultForProduct", null);
+	String COLUMNNAME_IsDefaultForProduct = "IsDefaultForProduct";
 
 	/**
-	 * Set Unbestimmte Kapazität.
+	 * Set Infinite Capacity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInfiniteCapacity (boolean IsInfiniteCapacity);
+	void setIsInfiniteCapacity (boolean IsInfiniteCapacity);
 
 	/**
-	 * Get Unbestimmte Kapazität.
+	 * Get Infinite Capacity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInfiniteCapacity();
+	boolean isInfiniteCapacity();
 
-    /** Column definition for IsInfiniteCapacity */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsInfiniteCapacity = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "IsInfiniteCapacity", null);
-    /** Column name IsInfiniteCapacity */
-    public static final String COLUMNNAME_IsInfiniteCapacity = "IsInfiniteCapacity";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_IsInfiniteCapacity = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "IsInfiniteCapacity", null);
+	String COLUMNNAME_IsInfiniteCapacity = "IsInfiniteCapacity";
 
 	/**
-	 * Set LU Fallback-Verpackungscode.
-	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 * Set LU fallback packaging code.
+	 * Used if a LU packaging code is required, but no HU is assigned in metasfresh
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PackagingCode_LU_Fallback_ID (int M_HU_PackagingCode_LU_Fallback_ID);
+	void setM_HU_PackagingCode_LU_Fallback_ID (int M_HU_PackagingCode_LU_Fallback_ID);
 
 	/**
-	 * Get LU Fallback-Verpackungscode.
-	 * Wird benutzt wenn die Ausgabe eines LU Verpackungscodes erforderlich ist, aber in metasfresh keine HU erfasst wurde.
+	 * Get LU fallback packaging code.
+	 * Used if a LU packaging code is required, but no HU is assigned in metasfresh
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PackagingCode_LU_Fallback_ID();
+	int getM_HU_PackagingCode_LU_Fallback_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode_LU_Fallback();
+	@Nullable de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode_LU_Fallback();
 
-	public void setM_HU_PackagingCode_LU_Fallback(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode_LU_Fallback);
+	void setM_HU_PackagingCode_LU_Fallback(@Nullable de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode_LU_Fallback);
 
-    /** Column definition for M_HU_PackagingCode_LU_Fallback_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode> COLUMN_M_HU_PackagingCode_LU_Fallback_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode>(I_M_HU_PI_Item_Product.class, "M_HU_PackagingCode_LU_Fallback_ID", de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
-    /** Column name M_HU_PackagingCode_LU_Fallback_ID */
-    public static final String COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID = "M_HU_PackagingCode_LU_Fallback_ID";
+	ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PackagingCode> COLUMN_M_HU_PackagingCode_LU_Fallback_ID = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "M_HU_PackagingCode_LU_Fallback_ID", de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+	String COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID = "M_HU_PackagingCode_LU_Fallback_ID";
 
 	/**
-	 * Set Packvorschrift Position.
+	 * Set Packing Instruction Item.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Item_ID (int M_HU_PI_Item_ID);
+	void setM_HU_PI_Item_ID (int M_HU_PI_Item_ID);
 
 	/**
-	 * Get Packvorschrift Position.
+	 * Get Packing Instruction Item.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_Item_ID();
+	int getM_HU_PI_Item_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item();
+	de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item();
 
-	public void setM_HU_PI_Item(de.metas.handlingunits.model.I_M_HU_PI_Item M_HU_PI_Item);
+	void setM_HU_PI_Item(de.metas.handlingunits.model.I_M_HU_PI_Item M_HU_PI_Item);
 
-    /** Column definition for M_HU_PI_Item_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PI_Item> COLUMN_M_HU_PI_Item_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PI_Item>(I_M_HU_PI_Item_Product.class, "M_HU_PI_Item_ID", de.metas.handlingunits.model.I_M_HU_PI_Item.class);
-    /** Column name M_HU_PI_Item_ID */
-    public static final String COLUMNNAME_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
+	ModelColumn<I_M_HU_PI_Item_Product, de.metas.handlingunits.model.I_M_HU_PI_Item> COLUMN_M_HU_PI_Item_ID = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "M_HU_PI_Item_ID", de.metas.handlingunits.model.I_M_HU_PI_Item.class);
+	String COLUMNNAME_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
 
 	/**
-	 * Set Packvorschrift.
+	 * Set Packing Instruction.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift.
+	 * Get Packing Instruction.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_Item_Product_ID();
+	int getM_HU_PI_Item_Product_ID();
 
-    /** Column definition for M_HU_PI_Item_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "M_HU_PI_Item_Product_ID", null);
-    /** Column name M_HU_PI_Item_Product_ID */
-    public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "M_HU_PI_Item_Product_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Name.
@@ -404,7 +391,7 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (@Nullable java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -413,138 +400,123 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	@Nullable java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Name = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Menge.
-	 * Menge
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	void setQty (BigDecimal Qty);
 
 	/**
-	 * Get Menge.
-	 * Menge
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Qty = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Set UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUPC (java.lang.String UPC);
+	void setUPC (@Nullable java.lang.String UPC);
 
 	/**
 	 * Get UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUPC();
+	@Nullable java.lang.String getUPC();
 
-    /** Column definition for UPC */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "UPC", null);
-    /** Column name UPC */
-    public static final String COLUMNNAME_UPC = "UPC";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_UPC = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "UPC", null);
+	String COLUMNNAME_UPC = "UPC";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Gültig ab.
-	 * Gültig ab inklusiv (erster Tag)
+	 * Set Valid From.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
+	void setValidFrom (java.sql.Timestamp ValidFrom);
 
 	/**
-	 * Get Gültig ab.
-	 * Gültig ab inklusiv (erster Tag)
+	 * Get Valid From.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidFrom();
+	java.sql.Timestamp getValidFrom();
 
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_ValidFrom = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
-	 * Set Gültig bis.
-	 * Gültig bis inklusiv (letzter Tag)
+	 * Set Valid to.
+	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidTo (java.sql.Timestamp ValidTo);
+	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
 
 	/**
-	 * Get Gültig bis.
-	 * Gültig bis inklusiv (letzter Tag)
+	 * Get Valid to.
+	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidTo();
+	@Nullable java.sql.Timestamp getValidTo();
 
-    /** Column definition for ValidTo */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_ValidTo = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, Object>(I_M_HU_PI_Item_Product.class, "ValidTo", null);
-    /** Column name ValidTo */
-    public static final String COLUMNNAME_ValidTo = "ValidTo";
+	ModelColumn<I_M_HU_PI_Item_Product, Object> COLUMN_ValidTo = new ModelColumn<>(I_M_HU_PI_Item_Product.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 }

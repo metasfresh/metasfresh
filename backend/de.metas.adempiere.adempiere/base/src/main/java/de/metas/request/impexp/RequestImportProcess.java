@@ -1,10 +1,8 @@
-package de.metas.request.impexp;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,9 @@ package de.metas.request.impexp;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.request.impexp;
+
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
@@ -28,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -195,8 +197,8 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 	 */
 	@Override
 	protected ImportRecordResult importRecord(
-			final IMutable<Object> state_NOTUSED,
-			final I_I_Request importRecord,
+			final @NonNull IMutable<Object> state_NOTUSED,
+			final @NonNull I_I_Request importRecord,
 			final boolean isInsertOnly_NOTUSED)
 	{
 		//

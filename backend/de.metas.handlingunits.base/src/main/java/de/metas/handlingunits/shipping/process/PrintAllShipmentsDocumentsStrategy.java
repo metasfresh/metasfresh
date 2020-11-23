@@ -8,16 +8,10 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.server.OutputType;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Env;
-
-import java.util.List;
 
 import static de.metas.report.ExecuteReportStrategyUtil.PdfDataProvider;
 import static de.metas.report.ExecuteReportStrategyUtil.concatenatePDFs;
@@ -41,20 +35,20 @@ public class PrintAllShipmentsDocumentsStrategy implements ExecuteReportStrategy
 
 		final ImmutableList.Builder<PdfDataProvider> result = ImmutableList.builder();
 
-		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 		final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 		final ImmutableList<InOutId> inOutIds = inOutDAO.retrieveByShipperTransportation(shipperTransportationId);
 		for (final InOutId io : inOutIds)
 		{
-			final List<I_AD_Archive> archives = archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(I_M_InOut.Table_Name, io), 1);
-
-			final ImmutableList<PdfDataProvider> pdfDataList = archives.stream()
-					.map(archiveBL::getBinaryData)
+			final TableRecordReference inoutRef = TableRecordReference.of(I_M_InOut.Table_Name, io);
+			final PdfDataProvider pdfData = archiveBL.getLastArchiveBinaryData(inoutRef)
 					.map(PdfDataProvider::forData)
-					.collect(GuavaCollectors.toImmutableList());
-			result.addAll(pdfDataList);
+					.orElse(null);
+			if(pdfData != null)
+			{
+				result.add(pdfData);
+			}
 		}
 		return result.build();
 	}

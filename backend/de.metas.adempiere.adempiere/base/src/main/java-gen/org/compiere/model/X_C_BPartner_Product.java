@@ -1,319 +1,214 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Product
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_BPartner_Product, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1818758757L;
+	private static final long serialVersionUID = -105180983L;
 
     /** Standard Constructor */
-    public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
+    public X_C_BPartner_Product (final Properties ctx, final int C_BPartner_Product_ID, @Nullable final String trxName)
     {
       super (ctx, C_BPartner_Product_ID, trxName);
-      /** if (C_BPartner_Product_ID == 0)
-        {
-			setC_BPartner_ID (0);
-			setC_BPartner_Product_ID (0);
-			setIsCurrentVendor (false); // N
-			setIsDropShip (false); // N
-			setIsExcludedFromSale (false); // N
-			setM_Product_ID (0);
-			setShelfLifeMinDays (0);
-			setShelfLifeMinPct (0);
-			setUsedForCustomer (false); // N
-			setUsedForVendor (true); // Y
-        } */
     }
 
     /** Load Constructor */
-    public X_C_BPartner_Product (Properties ctx, ResultSet rs, String trxName)
+    public X_C_BPartner_Product (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set Geschäftspartner-Produkt.
-		@param C_BPartner_Product_ID Geschäftspartner-Produkt	  */
 	@Override
-	public void setC_BPartner_Product_ID (int C_BPartner_Product_ID)
+	public void setC_BPartner_Product_ID (final int C_BPartner_Product_ID)
 	{
 		if (C_BPartner_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_Product_ID, Integer.valueOf(C_BPartner_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Product_ID, C_BPartner_Product_ID);
 	}
 
-	/** Get Geschäftspartner-Produkt.
-		@return Geschäftspartner-Produkt	  */
 	@Override
-	public int getC_BPartner_Product_ID () 
+	public int getC_BPartner_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Product_ID);
 	}
 
-	/** Set C_BPartner_Vendor_ID.
-		@param C_BPartner_Vendor_ID C_BPartner_Vendor_ID	  */
 	@Override
-	public void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID)
+	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
 	{
 		if (C_BPartner_Vendor_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, Integer.valueOf(C_BPartner_Vendor_ID));
+			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
 	}
 
-	/** Get C_BPartner_Vendor_ID.
-		@return C_BPartner_Vendor_ID	  */
 	@Override
-	public int getC_BPartner_Vendor_ID () 
+	public int getC_BPartner_Vendor_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Vendor_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
 	}
 
-	/** Set Auszeichnungsname.
-		@param CustomerLabelName Auszeichnungsname	  */
 	@Override
-	public void setCustomerLabelName (java.lang.String CustomerLabelName)
+	public void setCustomerLabelName (final java.lang.String CustomerLabelName)
 	{
 		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
 	}
 
-	/** Get Auszeichnungsname.
-		@return Auszeichnungsname	  */
 	@Override
-	public java.lang.String getCustomerLabelName () 
+	public java.lang.String getCustomerLabelName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
+		return get_ValueAsString(COLUMNNAME_CustomerLabelName);
 	}
 
-	/** Set Zugesicherte Lieferzeit.
-		@param DeliveryTime_Promised 
-		Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
-	  */
 	@Override
-	public void setDeliveryTime_Promised (int DeliveryTime_Promised)
+	public void setDeliveryTime_Promised (final int DeliveryTime_Promised)
 	{
-		set_Value (COLUMNNAME_DeliveryTime_Promised, Integer.valueOf(DeliveryTime_Promised));
+		set_Value (COLUMNNAME_DeliveryTime_Promised, DeliveryTime_Promised);
 	}
 
-	/** Get Zugesicherte Lieferzeit.
-		@return Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
-	  */
 	@Override
-	public int getDeliveryTime_Promised () 
+	public int getDeliveryTime_Promised() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DeliveryTime_Promised);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DeliveryTime_Promised);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set CU-EAN.
-		@param EAN_CU CU-EAN	  */
 	@Override
-	public void setEAN_CU (java.lang.String EAN_CU)
+	public void setEAN_CU (final java.lang.String EAN_CU)
 	{
 		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
 	}
 
-	/** Get CU-EAN.
-		@return CU-EAN	  */
 	@Override
-	public java.lang.String getEAN_CU () 
+	public java.lang.String getEAN_CU() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
+		return get_ValueAsString(COLUMNNAME_EAN_CU);
 	}
 
-	/** Set Sperre Verkauf Grund.
-		@param ExclusionFromSaleReason Sperre Verkauf Grund	  */
 	@Override
-	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason)
+	public void setExclusionFromSaleReason (final java.lang.String ExclusionFromSaleReason)
 	{
 		set_Value (COLUMNNAME_ExclusionFromSaleReason, ExclusionFromSaleReason);
 	}
 
-	/** Get Sperre Verkauf Grund.
-		@return Sperre Verkauf Grund	  */
 	@Override
-	public java.lang.String getExclusionFromSaleReason () 
+	public java.lang.String getExclusionFromSaleReason() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExclusionFromSaleReason);
+		return get_ValueAsString(COLUMNNAME_ExclusionFromSaleReason);
 	}
 
-	/** Set Zutaten.
-		@param Ingredients Zutaten	  */
 	@Override
-	public void setIngredients (java.lang.String Ingredients)
+	public void setGTIN (final java.lang.String GTIN)
+	{
+		set_Value (COLUMNNAME_GTIN, GTIN);
+	}
+
+	@Override
+	public java.lang.String getGTIN() 
+	{
+		return get_ValueAsString(COLUMNNAME_GTIN);
+	}
+
+	@Override
+	public void setIngredients (final java.lang.String Ingredients)
 	{
 		set_Value (COLUMNNAME_Ingredients, Ingredients);
 	}
 
-	/** Get Zutaten.
-		@return Zutaten	  */
 	@Override
-	public java.lang.String getIngredients () 
+	public java.lang.String getIngredients() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Ingredients);
+		return get_ValueAsString(COLUMNNAME_Ingredients);
 	}
 
-	/** Set Gegenwärtiger Lieferant.
-		@param IsCurrentVendor 
-		Diesen Lieferanten für Bepreisung und Lagerauffüllung verwenden
-	  */
 	@Override
-	public void setIsCurrentVendor (boolean IsCurrentVendor)
+	public void setIsCurrentVendor (final boolean IsCurrentVendor)
 	{
-		set_Value (COLUMNNAME_IsCurrentVendor, Boolean.valueOf(IsCurrentVendor));
+		set_Value (COLUMNNAME_IsCurrentVendor, IsCurrentVendor);
 	}
 
-	/** Get Gegenwärtiger Lieferant.
-		@return Diesen Lieferanten für Bepreisung und Lagerauffüllung verwenden
-	  */
 	@Override
-	public boolean isCurrentVendor () 
+	public boolean isCurrentVendor() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCurrentVendor);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCurrentVendor);
 	}
 
-	/** Set Streckengeschäft.
-		@param IsDropShip 
-		Beim Streckengeschäft wird die Ware direkt vom Lieferanten zum Kunden geliefert
-	  */
 	@Override
-	public void setIsDropShip (boolean IsDropShip)
+	public void setIsDropShip (final boolean IsDropShip)
 	{
-		set_Value (COLUMNNAME_IsDropShip, Boolean.valueOf(IsDropShip));
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
 	}
 
-	/** Get Streckengeschäft.
-		@return Beim Streckengeschäft wird die Ware direkt vom Lieferanten zum Kunden geliefert
-	  */
 	@Override
-	public boolean isDropShip () 
+	public boolean isDropShip() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDropShip);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
 	}
 
-	/** Set Exclusion from sales documents.
-		@param IsExcludedFromSale Exclusion from sales documents	  */
 	@Override
-	public void setIsExcludedFromSale (boolean IsExcludedFromSale)
+	public void setIsExcludedFromSale (final boolean IsExcludedFromSale)
 	{
-		set_Value (COLUMNNAME_IsExcludedFromSale, Boolean.valueOf(IsExcludedFromSale));
+		set_Value (COLUMNNAME_IsExcludedFromSale, IsExcludedFromSale);
 	}
 
-	/** Get Exclusion from sales documents.
-		@return Exclusion from sales documents	  */
 	@Override
-	public boolean isExcludedFromSale () 
+	public boolean isExcludedFromSale() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsExcludedFromSale);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludedFromSale);
 	}
 
-	/** Set Hersteller.
-		@param Manufacturer 
-		Manufacturer of the Product
-	  */
 	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
+	public void setManufacturer (final java.lang.String Manufacturer)
 	{
 		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
 	}
 
-	/** Get Hersteller.
-		@return Manufacturer of the Product
-	  */
 	@Override
-	public java.lang.String getManufacturer () 
+	public java.lang.String getManufacturer() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+		return get_ValueAsString(COLUMNNAME_Manufacturer);
 	}
 
 	@Override
@@ -323,363 +218,221 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Merkmale.
-		@param M_AttributeSetInstance_ID 
-		Merkmals Ausprägungen zum Produkt
-	  */
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
-	/** Get Merkmale.
-		@return Merkmals Ausprägungen zum Produkt
-	  */
 	@Override
-	public int getM_AttributeSetInstance_ID () 
+	public int getM_AttributeSetInstance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Mindestbestellmenge.
-		@param Order_Min 
-		Mindestbestellmenge in Mengeneinheit
-	  */
 	@Override
-	public void setOrder_Min (java.math.BigDecimal Order_Min)
+	public void setOrder_Min (final BigDecimal Order_Min)
 	{
 		set_Value (COLUMNNAME_Order_Min, Order_Min);
 	}
 
-	/** Get Mindestbestellmenge.
-		@return Mindestbestellmenge in Mengeneinheit
-	  */
 	@Override
-	public java.math.BigDecimal getOrder_Min () 
+	public BigDecimal getOrder_Min() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Min);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Packungsgröße.
-		@param Order_Pack 
-		Größe einer Bestellpackung in Mengeneinheit (z.B. Satz von 5 Einheiten)
-	  */
 	@Override
-	public void setOrder_Pack (java.math.BigDecimal Order_Pack)
+	public void setOrder_Pack (final BigDecimal Order_Pack)
 	{
 		set_Value (COLUMNNAME_Order_Pack, Order_Pack);
 	}
 
-	/** Get Packungsgröße.
-		@return Größe einer Bestellpackung in Mengeneinheit (z.B. Satz von 5 Einheiten)
-	  */
 	@Override
-	public java.math.BigDecimal getOrder_Pack () 
+	public BigDecimal getOrder_Pack() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Pack);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Pack);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Produktkategorie.
-		@param ProductCategory Produktkategorie	  */
 	@Override
-	public void setProductCategory (java.lang.String ProductCategory)
+	public void setProductCategory (final java.lang.String ProductCategory)
 	{
 		set_Value (COLUMNNAME_ProductCategory, ProductCategory);
 	}
 
-	/** Get Produktkategorie.
-		@return Produktkategorie	  */
 	@Override
-	public java.lang.String getProductCategory () 
+	public java.lang.String getProductCategory() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductCategory);
+		return get_ValueAsString(COLUMNNAME_ProductCategory);
 	}
 
-	/** Set Produktbeschreibung.
-		@param ProductDescription 
-		Produktbeschreibung
-	  */
 	@Override
-	public void setProductDescription (java.lang.String ProductDescription)
+	public void setProductDescription (final java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
 
-	/** Get Produktbeschreibung.
-		@return Produktbeschreibung
-	  */
 	@Override
-	public java.lang.String getProductDescription () 
+	public java.lang.String getProductDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
+		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
 
-	/** Set Produktname.
-		@param ProductName 
-		Name des Produktes
-	  */
 	@Override
-	public void setProductName (java.lang.String ProductName)
+	public void setProductName (final java.lang.String ProductName)
 	{
 		set_Value (COLUMNNAME_ProductName, ProductName);
 	}
 
-	/** Get Produktname.
-		@return Name des Produktes
-	  */
 	@Override
-	public java.lang.String getProductName () 
+	public java.lang.String getProductName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
-	/** Set Produktnummer.
-		@param ProductNo Produktnummer	  */
 	@Override
-	public void setProductNo (java.lang.String ProductNo)
+	public void setProductNo (final java.lang.String ProductNo)
 	{
 		set_Value (COLUMNNAME_ProductNo, ProductNo);
 	}
 
-	/** Get Produktnummer.
-		@return Produktnummer	  */
 	@Override
-	public java.lang.String getProductNo () 
+	public java.lang.String getProductNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
+		return get_ValueAsString(COLUMNNAME_ProductNo);
 	}
 
-	/** Set Qualitäts-Einstufung.
-		@param QualityRating 
-		Method for rating vendors
-	  */
 	@Override
-	public void setQualityRating (java.math.BigDecimal QualityRating)
+	public void setQualityRating (final BigDecimal QualityRating)
 	{
 		set_Value (COLUMNNAME_QualityRating, QualityRating);
 	}
 
-	/** Get Qualitäts-Einstufung.
-		@return Method for rating vendors
-	  */
 	@Override
-	public java.math.BigDecimal getQualityRating () 
+	public BigDecimal getQualityRating() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityRating);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityRating);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set Mindesthaltbarkeit Tage.
-		@param ShelfLifeMinDays 
-		Minimum Shelf Life in days based on Product Instance Guarantee Date
-	  */
 	@Override
-	public void setShelfLifeMinDays (int ShelfLifeMinDays)
+	public void setShelfLifeMinDays (final int ShelfLifeMinDays)
 	{
-		set_Value (COLUMNNAME_ShelfLifeMinDays, Integer.valueOf(ShelfLifeMinDays));
+		set_Value (COLUMNNAME_ShelfLifeMinDays, ShelfLifeMinDays);
 	}
 
-	/** Get Mindesthaltbarkeit Tage.
-		@return Minimum Shelf Life in days based on Product Instance Guarantee Date
-	  */
 	@Override
-	public int getShelfLifeMinDays () 
+	public int getShelfLifeMinDays() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_ShelfLifeMinDays);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_ShelfLifeMinDays);
 	}
 
-	/** Set Mindesthaltbarkeit %.
-		@param ShelfLifeMinPct 
-		Minimum Shelf Life in percent based on Product Instance Guarantee Date
-	  */
 	@Override
-	public void setShelfLifeMinPct (int ShelfLifeMinPct)
+	public void setShelfLifeMinPct (final int ShelfLifeMinPct)
 	{
-		set_Value (COLUMNNAME_ShelfLifeMinPct, Integer.valueOf(ShelfLifeMinPct));
+		set_Value (COLUMNNAME_ShelfLifeMinPct, ShelfLifeMinPct);
 	}
 
-	/** Get Mindesthaltbarkeit %.
-		@return Minimum Shelf Life in percent based on Product Instance Guarantee Date
-	  */
 	@Override
-	public int getShelfLifeMinPct () 
+	public int getShelfLifeMinPct() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_ShelfLifeMinPct);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_ShelfLifeMinPct);
 	}
 
-	/** Set UPC/EAN.
-		@param UPC 
-		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC (final java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
 
-	/** Get UPC/EAN.
-		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
 	@Override
-	public java.lang.String getUPC () 
+	public java.lang.String getUPC() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return get_ValueAsString(COLUMNNAME_UPC);
 	}
 
-	/** Set Verwendet für Kunden.
-		@param UsedForCustomer Verwendet für Kunden	  */
 	@Override
-	public void setUsedForCustomer (boolean UsedForCustomer)
+	public void setUsedForCustomer (final boolean UsedForCustomer)
 	{
-		set_Value (COLUMNNAME_UsedForCustomer, Boolean.valueOf(UsedForCustomer));
+		set_Value (COLUMNNAME_UsedForCustomer, UsedForCustomer);
 	}
 
-	/** Get Verwendet für Kunden.
-		@return Verwendet für Kunden	  */
 	@Override
-	public boolean isUsedForCustomer () 
+	public boolean isUsedForCustomer() 
 	{
-		Object oo = get_Value(COLUMNNAME_UsedForCustomer);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_UsedForCustomer);
 	}
 
-	/** Set Verwendet für Lieferant.
-		@param UsedForVendor Verwendet für Lieferant	  */
 	@Override
-	public void setUsedForVendor (boolean UsedForVendor)
+	public void setUsedForVendor (final boolean UsedForVendor)
 	{
-		set_Value (COLUMNNAME_UsedForVendor, Boolean.valueOf(UsedForVendor));
+		set_Value (COLUMNNAME_UsedForVendor, UsedForVendor);
 	}
 
-	/** Get Verwendet für Lieferant.
-		@return Verwendet für Lieferant	  */
 	@Override
-	public boolean isUsedForVendor () 
+	public boolean isUsedForVendor() 
 	{
-		Object oo = get_Value(COLUMNNAME_UsedForVendor);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_UsedForVendor);
 	}
 
-	/** Set Lieferanten Kategorie.
-		@param VendorCategory 
-		Lieferanten Kategorie
-	  */
 	@Override
-	public void setVendorCategory (java.lang.String VendorCategory)
+	public void setVendorCategory (final java.lang.String VendorCategory)
 	{
 		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
 	}
 
-	/** Get Lieferanten Kategorie.
-		@return Lieferanten Kategorie
-	  */
 	@Override
-	public java.lang.String getVendorCategory () 
+	public java.lang.String getVendorCategory() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_VendorCategory);
+		return get_ValueAsString(COLUMNNAME_VendorCategory);
 	}
 
-	/** Set Produkt-Nr. Geschäftspartner.
-		@param VendorProductNo 
-		Product Key of the Business Partner
-	  */
 	@Override
-	public void setVendorProductNo (java.lang.String VendorProductNo)
+	public void setVendorProductNo (final java.lang.String VendorProductNo)
 	{
 		set_Value (COLUMNNAME_VendorProductNo, VendorProductNo);
 	}
 
-	/** Get Produkt-Nr. Geschäftspartner.
-		@return Product Key of the Business Partner
-	  */
 	@Override
-	public java.lang.String getVendorProductNo () 
+	public java.lang.String getVendorProductNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_VendorProductNo);
+		return get_ValueAsString(COLUMNNAME_VendorProductNo);
 	}
 }

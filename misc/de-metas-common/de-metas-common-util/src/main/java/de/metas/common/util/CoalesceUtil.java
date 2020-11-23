@@ -54,7 +54,7 @@ public class CoalesceUtil
 	 * @see #coalesce(Object...)
 	 */
 	// NOTE: this method is optimized for common usage
-	public <T> T coalesce(final T value1, final T value2, final T value3)
+	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
 	}

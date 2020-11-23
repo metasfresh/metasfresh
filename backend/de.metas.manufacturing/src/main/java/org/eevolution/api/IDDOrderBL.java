@@ -39,6 +39,8 @@ import de.metas.util.ISingletonService;
 
 public interface IDDOrderBL extends ISingletonService
 {
+	I_DD_Order getById(int ddOrderId);
+
 	/**
 	 * Gets Qty that needs to be received so far to destination locator.
 	 *

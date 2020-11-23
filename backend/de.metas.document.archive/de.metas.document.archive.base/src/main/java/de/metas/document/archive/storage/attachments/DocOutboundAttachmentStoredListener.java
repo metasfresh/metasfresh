@@ -7,6 +7,7 @@ import lombok.NonNull;
 
 import java.net.URI;
 
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +69,7 @@ public class DocOutboundAttachmentStoredListener implements AttachmentStoredList
 		for (final I_C_Doc_Outbound_Log docOutboundLogRecord : docOutboundLogRecords)
 		{
 			final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = DocOutboundUtils.createOutboundLogLineRecord(docOutboundLogRecord);
-			docOutboundLogLineRecord.setAction(X_C_Doc_Outbound_Log_Line.ACTION_AttachmentStored);
+			docOutboundLogLineRecord.setAction(ArchiveAction.ATTACHMENT_STORED.getCode());
 			docOutboundLogLineRecord.setStoreURI(storageIdentifier.toString());
 
 			saveRecord(docOutboundLogLineRecord);

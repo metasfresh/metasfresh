@@ -306,30 +306,7 @@ public class BankStatementImportTableSqlUpdater
 						.append(selection.toSqlWhereClause());
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 
-		// update StmtAmt from DebitStmtAmt and CreditStmtAmt
-		sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET StmtAmt = (coalesce(CreditStmtAmt, 0) - coalesce(DebitStmtAmt,0)) "
-				+ "WHERE (StmtAmt IS NULL OR StmtAmt = 0) "
-				+ "AND I_IsImported<>'Y'")
-						.append(selection.toSqlWhereClause());
 
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET TrxAmt=StmtAmt - InterestAmt - ChargeAmt "
-				+ "WHERE (TrxAmt IS NULL OR TrxAmt = 0) "
-				+ "AND I_IsImported<>'Y'")
-						.append(selection.toSqlWhereClause());
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE I_BankStatement "
-				+ "SET I_isImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Amount, ' "
-				+ "WHERE TrxAmt + ChargeAmt + InterestAmt <> StmtAmt "
-				+ "AND I_isImported<>'Y'")
-						.append(selection.toSqlWhereClause());
-
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void updateValutaDate(final ImportRecordsSelection selection)

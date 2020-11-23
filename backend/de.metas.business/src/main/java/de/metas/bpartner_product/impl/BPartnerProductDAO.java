@@ -96,7 +96,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 			queryFilters.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
 		}
 
-		queryFilters.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);
+		queryFilters.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId);
 
 		return queryBL
 				.createQueryBuilder(org.compiere.model.I_C_BPartner_Product.class, ctx, ITrx.TRXNAME_None)
@@ -121,7 +121,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 		return queryBL
 				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productIds)
+				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.list(I_C_BPartner_Product.class);
 	}
@@ -143,7 +143,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 			@NonNull final OrgId orgId)
 	{
 		return retrieveAllVendorsQuery(productId, orgId)
-				.addInArrayFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, vendorIds)
+				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, vendorIds)
 				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor) // current vendors first
 				.orderByDescending(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID)
 				.create()
@@ -161,7 +161,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId);
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId);
 	}
 
 	@Override
@@ -301,7 +301,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 		final I_C_BPartner_Product record = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, customerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, customerId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_ProductNo, customerProductNo)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_UsedForCustomer, true)
 				.addOnlyActiveRecordsFilter()
@@ -328,7 +328,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 		final I_C_BPartner_Product record = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product.class)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, customerId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, customerId)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_ProductName, customerProductName)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMN_UsedForCustomer, true)
 				.addOnlyActiveRecordsFilter()

@@ -151,7 +151,6 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
@@ -170,6 +169,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
 
 	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
+	@Override
+	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
+	{
+		return Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+	}
 
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
