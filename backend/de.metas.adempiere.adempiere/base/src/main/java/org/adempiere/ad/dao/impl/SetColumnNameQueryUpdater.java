@@ -25,7 +25,6 @@ package org.adempiere.ad.dao.impl;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.util.StringUtils;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
