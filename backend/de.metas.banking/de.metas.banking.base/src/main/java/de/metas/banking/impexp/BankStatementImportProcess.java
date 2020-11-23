@@ -21,6 +21,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -286,11 +287,11 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	{
 		final String lineDescription = Joiner.on(" / ")
 				.skipNulls()
-				.join(importRecord.getLineDescription(),
-					  importRecord.getLineDescriptionExtra_1(),
-					  importRecord.getLineDescriptionExtra_2(),
-					  importRecord.getLineDescriptionExtra_3(),
-					  importRecord.getLineDescriptionExtra_4());
+				.join(StringUtils.trimBlankToNull(importRecord.getLineDescription()),
+					  StringUtils.trimBlankToNull(importRecord.getLineDescriptionExtra_1()),
+					  StringUtils.trimBlankToNull(importRecord.getLineDescriptionExtra_2()),
+					  StringUtils.trimBlankToNull(importRecord.getLineDescriptionExtra_3()),
+					  StringUtils.trimBlankToNull(importRecord.getLineDescriptionExtra_4()));
 
 		importRecord.setLineDescription(lineDescription);
 	}
