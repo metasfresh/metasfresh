@@ -275,7 +275,6 @@ MenuOverlayItem.propTypes = {
 const mapStateToProps = (state) => {
   return {
     breadcrumb: state.menuHandler.breadcrumb,
-    views: state.viewHandler.views,
   };
 };
 export default connect(mapStateToProps)(MenuOverlayItem);
