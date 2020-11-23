@@ -38,6 +38,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.organization.OrgId;
@@ -73,6 +74,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -98,6 +100,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class DesadvBL implements IDesadvBL
 {
+	private final static transient Logger logger = LogManager.getLogger(DesadvBL.class);
+
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 
 	/**
@@ -122,6 +126,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient HURepository huRepository;
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
@@ -500,7 +505,7 @@ public class DesadvBL implements IDesadvBL
 			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 			packRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
 
-			final List<I_M_HU_PackingMaterial> huPackingMaterials = Services.get(IHUPackingMaterialDAO.class).retrievePackingMaterials(tuPIItemProduct);
+			final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
 			if (huPackingMaterials.size() == 1)
 			{
 				final I_C_BPartner_Product bPartnerProductRecord = partnerProductDAO
@@ -512,6 +517,11 @@ public class DesadvBL implements IDesadvBL
 				{
 					packRecord.setGTIN_TU_PackingMaterial(bPartnerProductRecord.getGTIN());
 				}
+			}
+			else
+			{
+				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_DesadvLine_Pack_ID={}",
+						tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), packRecord.getEDI_DesadvLine_Pack_ID());
 			}
 
 			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
