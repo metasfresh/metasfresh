@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import java.nio.charset.Charset;
 import java.util.Objects;
 
 /*
@@ -69,7 +70,7 @@ public class ImpFormatRepository
 				.manualImport(impFormatRecord.isManualImport())
 				.importTableDescriptor(importTableDescriptor)
 				.columns(columns)
-				.charset(impFormatRecord.getFileCharset())
+				.charset(Charset.forName(impFormatRecord.getFileCharset()))
 				.skipFirstNRows(impFormatRecord.getSkipFirstNRows())
 				.build();
 	}

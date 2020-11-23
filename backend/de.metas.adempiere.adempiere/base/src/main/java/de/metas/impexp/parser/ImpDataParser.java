@@ -38,22 +38,22 @@ import java.util.stream.Stream;
 public final class ImpDataParser
 {
 	private final boolean multiline;
-	private final ImpDataLineParser lineParser;
-	private final String charset;
+	private final @NonNull ImpDataLineParser lineParser;
+	private final @NonNull Charset charset;
 	private final int skipFirstNRows;
 
 	@Builder
 	private ImpDataParser(
 			final boolean multiline,
 			@NonNull final ImpDataLineParser lineParser,
-			@NonNull final String charset,
+			@NonNull final Charset charset,
 			final int skipFirstNRows
 	)
 	{
 		this.multiline = multiline;
 		this.lineParser = lineParser;
 		this.charset = charset;
-		this.skipFirstNRows = skipFirstNRows;
+		this.skipFirstNRows = Math.max(skipFirstNRows,0);
 	}
 
 	public Stream<ImpDataLine> streamDataLines(final Resource resource)
@@ -72,11 +72,11 @@ public final class ImpDataParser
 		{
 			if (multiline)
 			{
-				return FileImportReader.readMultiLines(data, Charset.forName(charset)).stream();
+				return FileImportReader.readMultiLines(data, charset).stream();
 			}
 			else
 			{
-				return FileImportReader.readRegularLines(data, Charset.forName(charset)).stream();
+				return FileImportReader.readRegularLines(data, charset).stream();
 			}
 		}
 		catch (final IOException ex)
