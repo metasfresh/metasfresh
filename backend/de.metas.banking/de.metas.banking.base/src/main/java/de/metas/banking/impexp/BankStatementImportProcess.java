@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.banking.impexp;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -32,34 +54,13 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_BankStatement>
 {
@@ -103,13 +104,13 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	}
 
 	@Override
-	protected I_I_BankStatement retrieveImportRecord(Properties ctx, ResultSet rs)
+	protected I_I_BankStatement retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_BankStatement(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly)
+	protected ImportRecordResult importRecord(final @NonNull IMutable<Object> state, final @NonNull I_I_BankStatement importRecord, final boolean isInsertOnly)
 	{
 		final BankStatementId existingBankStatementId = retrieveExistingBankStatementId(importRecord);
 		final boolean isNewBankStatement = existingBankStatementId == null;
@@ -142,6 +143,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		return isNewBankStatement ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
+	@Nullable
 	private BankStatementId retrieveExistingBankStatementId(@NonNull final I_I_BankStatement importRecord)
 	{
 		final BankStatementId existingBankStatementId = BankStatementId.ofRepoIdOrNull(importRecord.getC_BankStatement_ID());
@@ -245,34 +247,40 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	{
 		final String amtFormat = getAmtFormat(importRecord);
 
-		if (X_I_BankStatement.AMTFORMAT_AmountPlusIndicator.equals(amtFormat))
+		switch (amtFormat)
 		{
-			final BigDecimal trxAmt;
-			final boolean isDebit = X_I_BankStatement.DEBITORCREDITINDICATOR_Debit.equals(importRecord.getDebitOrCreditIndicator());
-			if (isDebit)
+			case X_I_BankStatement.AMTFORMAT_AmountPlusIndicator:
 			{
-				trxAmt = importRecord.getDebitOrCreditAmt().negate();
-			}
-			else
-			{
-				trxAmt = importRecord.getDebitOrCreditAmt();
-			}
+				final BigDecimal trxAmt;
+				final boolean isDebit = X_I_BankStatement.DEBITORCREDITINDICATOR_Debit.equals(importRecord.getDebitOrCreditIndicator());
+				if (isDebit)
+				{
+					trxAmt = importRecord.getDebitOrCreditAmt().negate();
+				}
+				else
+				{
+					trxAmt = importRecord.getDebitOrCreditAmt();
+				}
 
-			importRecord.setTrxAmt(trxAmt);
-			final BigDecimal stmtAmt = trxAmt.add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
-			importRecord.setStmtAmt(stmtAmt);
-		}
-		else if (X_I_BankStatement.AMTFORMAT_DebitPlusCredit.equals(amtFormat))
-		{
-			final BigDecimal stmtAmt = importRecord.getCreditStmtAmt().subtract(importRecord.getDebitStmtAmt());
-			importRecord.setStmtAmt(stmtAmt);
-			final BigDecimal trxAmt = stmtAmt.subtract(importRecord.getChargeAmt()).subtract(importRecord.getInterestAmt());
-			importRecord.setTrxAmt(trxAmt);
-		}
-		else if (X_I_BankStatement.AMTFORMAT_Straight.equals(amtFormat))
-		{
-			final BigDecimal stmtAmt = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
-			importRecord.setStmtAmt(stmtAmt);
+				importRecord.setTrxAmt(trxAmt);
+				final BigDecimal stmtAmt = trxAmt.add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
+				importRecord.setStmtAmt(stmtAmt);
+				break;
+			}
+			case X_I_BankStatement.AMTFORMAT_DebitPlusCredit:
+			{
+				final BigDecimal stmtAmt = importRecord.getCreditStmtAmt().subtract(importRecord.getDebitStmtAmt());
+				importRecord.setStmtAmt(stmtAmt);
+				final BigDecimal trxAmt = stmtAmt.subtract(importRecord.getChargeAmt()).subtract(importRecord.getInterestAmt());
+				importRecord.setTrxAmt(trxAmt);
+				break;
+			}
+			case X_I_BankStatement.AMTFORMAT_Straight:
+			{
+				final BigDecimal stmtAmt = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
+				importRecord.setStmtAmt(stmtAmt);
+				break;
+			}
 		}
 
 		{
@@ -301,7 +309,8 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 	 * @return {@link I_I_BankStatement#getAmtFormat()} if exists. Try to autodetect if not exists.
 	 */
 	@NonNull
-	private static String getAmtFormat(@NonNull final I_I_BankStatement importRecord)
+	@VisibleForTesting
+	static String getAmtFormat(@NonNull final I_I_BankStatement importRecord)
 	{
 		if (Check.isNotBlank(importRecord.getAmtFormat()))
 		{
@@ -318,7 +327,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		{
 			return X_I_BankStatement.AMTFORMAT_DebitPlusCredit;
 		}
-		else if (importRecord.getTrxAmt().signum() != 0 || importRecord.getStmtAmt().signum() != 0)
+		else if (importRecord.getTrxAmt().signum() != 0)
 		{
 			return X_I_BankStatement.AMTFORMAT_Straight;
 		}
