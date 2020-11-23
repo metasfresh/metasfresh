@@ -408,9 +408,9 @@ export function fetchDocument({
             })
           );
 
-          if (isModal) {
-            // modals without included views shouldn't fetch quick actions on init
-            shouldFetchQuickActions = !(includedWindowId && includedViewId);
+          // modals without included views shouldn't fetch quick actions on init
+          if (isModal && !(includedWindowId && includedViewId)) {
+            shouldFetchQuickActions = false;
           }
         }
 
