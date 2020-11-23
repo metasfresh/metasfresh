@@ -543,7 +543,7 @@ public interface I_I_BankStatement
 	/**
 	 * Set DebitOrCreditIndicator.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -552,7 +552,7 @@ public interface I_I_BankStatement
 	/**
 	 * Get DebitOrCreditIndicator.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

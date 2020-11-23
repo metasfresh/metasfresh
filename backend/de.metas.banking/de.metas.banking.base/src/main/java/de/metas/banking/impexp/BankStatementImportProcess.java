@@ -248,7 +248,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		if (X_I_BankStatement.AMTFORMAT_AmountPlusIndicator.equals(amtFormat))
 		{
 			final BigDecimal trxAmt;
-			final boolean isDebit = "S".equals(importRecord.getDebitOrCreditIndicator());
+			final boolean isDebit = X_I_BankStatement.DEBITORCREDITINDICATOR_Debit.equals(importRecord.getDebitOrCreditIndicator());
 			if (isDebit)
 			{
 				trxAmt = importRecord.getDebitOrCreditAmt().negate();
