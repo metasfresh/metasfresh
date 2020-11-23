@@ -1,4 +1,4 @@
-import { produce } from 'immer';
+import { produce, original } from 'immer';
 import { createSelector } from 'reselect';
 import { get } from 'lodash';
 
@@ -14,6 +14,13 @@ export const initialSingleActionsState = {
   actions: [],
   pending: false,
   error: false,
+  // because the quickactions are fetched asynchronously
+  // we might end up in a situation, when we've already removed
+  // them but the request didn't finish yet. Then on successfull response
+  // we'll have the new instance added anyway. To avoid that, we set this flag
+  // on deleting a pending quickactions item and remove it completely
+  // when the response comes in.
+  toDelete: false,
 };
 
 export const getQuickActionsId = ({ windowId, viewId }) =>
@@ -41,12 +48,17 @@ const reducer = produce((draftState, action) => {
     }
     case FETCH_QUICK_ACTIONS_SUCCESS: {
       const { id, actions } = action.payload;
+      const current = original(draftState[id]);
 
-      draftState[id] = {
-        actions,
-        pending: false,
-        error: false,
-      };
+      if (current.toDelete) {
+        delete draftState[id];
+      } else {
+        draftState[id] = {
+          actions,
+          pending: false,
+          error: false,
+        };
+      }
 
       return;
     }
@@ -60,9 +72,17 @@ const reducer = produce((draftState, action) => {
     }
     case DELETE_QUICK_ACTIONS: {
       const { id } = action.payload;
+      const current = original(draftState[id]);
 
       if (draftState[id]) {
-        delete draftState[id];
+        if (current.pending) {
+          draftState[id] = {
+            ...draftState[id],
+            toDelete: true,
+          };
+        } else {
+          delete draftState[id];
+        }
       }
 
       return;

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Map as iMap, Set as iSet } from 'immutable';
+import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get } from 'lodash';
 import deepUnfreeze from 'deep-unfreeze';
@@ -11,6 +11,8 @@ import { connectWS, disconnectWS } from '../utils/websockets';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
+import { getQuickActionsId } from '../reducers/actionsHandler';
+
 import {
   addViewLocationData,
   createView,
@@ -39,7 +41,7 @@ import {
 import { updateRawModal, indicatorState } from '../actions/WindowActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { deleteFilter } from '../actions/FiltersActions';
-import { fetchQuickActions } from '../actions/Actions';
+import { fetchQuickActions, deleteQuickActions } from '../actions/Actions';
 
 import {
   DLpropTypes,
@@ -68,7 +70,7 @@ class DocumentListContainer extends Component {
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
-      initialValuesNulled: iMap(),
+      initialValuesNulled: new Map(),
     };
 
     this.fetchLayoutAndData();
@@ -85,12 +87,20 @@ class DocumentListContainer extends Component {
   };
 
   componentWillUnmount() {
-    const { isModal, windowId, viewId, deleteView, deleteTable } = this.props;
+    const {
+      isModal,
+      windowId,
+      viewId,
+      deleteView,
+      deleteTable,
+      deleteQuickActions,
+    } = this.props;
 
     this.mounted = false;
     disconnectWS.call(this);
 
     deleteTable(getTableId({ windowId, viewId }));
+    deleteQuickActions(getQuickActionsId({ windowId, viewId }));
     deleteView(windowId, isModal);
   }
 
@@ -121,9 +131,9 @@ class DocumentListContainer extends Component {
       sort,
       filters,
       viewData: { pending },
+      deleteQuickActions,
     } = this.props;
     const staticFilterCleared = filters ? filters.staticFilterCleared : false;
-
     const included =
       includedView && includedView.windowId && includedView.viewId;
     const location = document.location;
@@ -169,6 +179,7 @@ class DocumentListContainer extends Component {
       // the data and layout again
       if (!(pending || (nextViewData && nextViewData.pending))) {
         deleteTable(getTableId({ windowId, viewId }));
+        deleteQuickActions(getQuickActionsId({ windowId, viewId }));
 
         const entityRelatedId = getEntityRelatedId({ windowId, viewId });
         deleteFilter(entityRelatedId);
@@ -184,7 +195,7 @@ class DocumentListContainer extends Component {
 
         this.setState(
           {
-            initialValuesNulled: iMap(),
+            initialValuesNulled: new Map(),
             panelsState: GEO_PANEL_STATES[0],
           },
           () => {
@@ -812,6 +823,7 @@ export default connect(
     fetchHeaderProperties,
     setBreadcrumb,
     fetchQuickActions,
+    deleteQuickActions,
   },
   null,
   { forwardRef: true }
