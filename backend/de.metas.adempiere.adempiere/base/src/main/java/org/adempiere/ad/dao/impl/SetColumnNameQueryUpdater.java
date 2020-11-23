@@ -106,10 +106,6 @@ import lombok.NonNull;
 		{
 			return TimeUtil.asTimestamp(value);
 		}
-		else if (value instanceof Boolean)
-		{
-			return StringUtils.ofBoolean((Boolean)value);
-		}
 		else
 		{
 			return value;
