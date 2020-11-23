@@ -266,16 +266,17 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 		{
 			final BigDecimal stmtAmt = importRecord.getCreditStmtAmt().subtract(importRecord.getDebitStmtAmt());
 			importRecord.setStmtAmt(stmtAmt);
-			final BigDecimal trxAmt = stmtAmt.subtract(importRecord.getInterestAmt()).subtract(importRecord.getChargeAmt());
+			final BigDecimal trxAmt = stmtAmt.subtract(importRecord.getChargeAmt()).subtract(importRecord.getInterestAmt());
 			importRecord.setTrxAmt(trxAmt);
 		}
 		else if (X_I_BankStatement.AMTFORMAT_Straight.equals(amtFormat))
 		{
-			importRecord.setStmtAmt(importRecord.getTrxAmt());
+			final BigDecimal stmtAmt = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
+			importRecord.setStmtAmt(stmtAmt);
 		}
 
 		{
-			final BigDecimal sum = importRecord.getTrxAmt().add(importRecord.getInterestAmt()).add(importRecord.getChargeAmt());
+			final BigDecimal sum = importRecord.getTrxAmt().add(importRecord.getChargeAmt()).add(importRecord.getInterestAmt());
 			if (importRecord.getStmtAmt().compareTo(sum) != 0)
 			{
 				throw new AdempiereException("Invalid amount");
