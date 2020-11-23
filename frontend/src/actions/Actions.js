@@ -30,12 +30,9 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
     const table = getTable(state, tableId);
     const selectedIds = table.selected;
     const { includedView } = state.viewHandler;
+    const viewProfileId =
+      includedView.windowId === windowId ? includedView.viewProfileId : null;
     let fetchActions = true;
-    let viewProfileId = null;
-
-    if (includedView.windowId === windowId) {
-      viewProfileId = includedView.viewProfileId;
-    }
 
     if (viewId) {
       const quickActionsId = getQuickActionsId({
@@ -43,10 +40,10 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
         viewId,
       });
       const quickActions = getQuickActions(state, quickActionsId);
-      fetch = !quickActions.pending;
+      fetchActions = quickActions.pending === false;
     }
 
-    if (fetch) {
+    if (fetchActions) {
       dispatch(
         fetchQuickActions({
           windowId,
@@ -86,18 +83,15 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
     // we're only interested in included view's quick actions if it
     // actually exists
     if (includedView) {
+      let [fetchWindowId, fetchViewId, parentView, childView] = Array(5).fill(
+        null
+      );
       let fetch = false;
-      let fetchWindowId = null;
-      let fetchViewId = null;
-      let parentView = null;
-      let childView = null;
-      let viewProfileId = null;
+      const viewProfileId =
+        includedView.windowId === windowId ? includedView.viewProfileId : null;
+
       const isParent = includedView.parentId === windowId;
       const isChild = includedView.windowId === windowId;
-
-      if (includedView.windowId === windowId) {
-        viewProfileId = includedView.viewProfileId;
-      }
 
       if (isParent) {
         fetchWindowId = includedView.windowId;
@@ -110,9 +104,7 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
         const childQuickActions = getQuickActions(state, childQuickActionsId);
 
         // only update quick actions if they're not already requested
-        if (!childQuickActions.pending) {
-          fetch = true;
-        }
+        fetch = childQuickActions.pending === false;
       } else if (isChild) {
         fetchWindowId = includedView.parentId;
         parentView = getView(state, fetchWindowId, isModal);
@@ -123,9 +115,7 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
         });
         const parentQuickActions = getQuickActions(state, parentQuickActionsId);
 
-        if (!parentQuickActions.pending) {
-          fetch = true;
-        }
+        fetch = parentQuickActions.pending === false;
       }
 
       if ((isParent || isChild) && fetch) {
@@ -232,9 +222,9 @@ export function deleteTopActions() {
  * @method fetchTopActions
  * @summary Fetches tab's top actions
  *
- * @param {*} windowType
- * @param {*} docId
- * @param {*} tabId
+ * @param {number} windowType
+ * @param {string} docId
+ * @param {string} tabId
  */
 export function fetchTopActions(windowType, docId, tabId) {
   return (dispatch) => {
