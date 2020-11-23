@@ -162,11 +162,7 @@ public final class DocumentPrintOptions
 
 	public DocumentPrintOptions mergeWithFallback(@NonNull final DocumentPrintOptions fallback)
 	{
-		if (this == fallback)
-		{
-			throw new IllegalArgumentException("Merging with itself is not allowed");
-		}
-		else if (fallback.isNone())
+		if (fallback.isNone())
 		{
 			return this;
 		}
@@ -176,6 +172,11 @@ public final class DocumentPrintOptions
 		}
 		else
 		{
+			if (this == fallback)
+			{
+				throw new IllegalArgumentException("Merging with itself is not allowed");
+			}
+
 			final DocumentPrintOptions newFallback;
 			if (this.fallback != null)
 			{
