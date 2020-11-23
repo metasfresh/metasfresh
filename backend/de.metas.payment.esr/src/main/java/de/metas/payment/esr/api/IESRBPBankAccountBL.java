@@ -11,7 +11,6 @@ import de.metas.util.ISingletonService;
 public interface IESRBPBankAccountBL extends ISingletonService
 {
 	/**
-	 * @param bankAccount
 	 * @return the <code>C_BP_BankAccount.AccountNo</code> of the given <code>bankAccount</code>, or <code>000000</code>, if the account's <code>C_Bank</code> is the ESR-PostBank.
 	 */
 	String retrieveBankAccountNo(I_C_BP_BankAccount bankAccount);
@@ -19,9 +18,6 @@ public interface IESRBPBankAccountBL extends ISingletonService
 	/**
 	 * Returns an "unrendered" (i.e. without the "-") version of the given <code>bankAccount</code>'s <code>ESR_RenderedAccountNo</code>. Assumes that the given <code>bankAccount</code> is an ESR
 	 * bank account. Never returns <code>null</code>.
-	 * 
-	 * @param bankAccount
-	 * @return 
 	 */
 	String retrieveESRAccountNo(I_C_BP_BankAccount bankAccount);
 }

@@ -1,5 +1,29 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.currency.CurrencyRepository;
+import de.metas.greeting.GreetingRepository;
+import de.metas.organization.OrgId;
+import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
+import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
+import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.rest_api.utils.BPartnerQueryService;
+import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
+
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
 import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
@@ -12,29 +36,6 @@ import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
-import org.adempiere.ad.table.MockLogEntriesRepository;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.currency.CurrencyRepository;
-import de.metas.greeting.GreetingRepository;
-import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
-import de.metas.rest_api.utils.BPartnerQueryService;
 
 /*
  * #%L
@@ -60,6 +61,7 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 
 class JsonRetrieverServiceTest
 {
+	private final OrgId orgId = OrgId.ofRepoId(10);
 	private JsonRetrieverService jsonRetrieverService;
 
 	@BeforeAll
@@ -104,10 +106,11 @@ class JsonRetrieverServiceTest
 	@Test
 	void retrieveBPartnerComposite_byBPartnerCompositeLookupKeys()
 	{
-		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys = ImmutableList
-				.of(
+		final OrgAndBPartnerCompositeLookupKeyList bpartnerLookupKeys = OrgAndBPartnerCompositeLookupKeyList.of(
+				orgId, ImmutableList.of(
 						BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)),
-						BPartnerCompositeLookupKey.ofCode(C_BPARTNER_VALUE));
+						BPartnerCompositeLookupKey.ofCode(C_BPARTNER_VALUE))
+		);
 
 		final Optional<BPartnerComposite> result = jsonRetrieverService.getBPartnerComposite(bpartnerLookupKeys);
 
@@ -115,16 +118,21 @@ class JsonRetrieverServiceTest
 		expect(result.get()).toMatchSnapshot();
 	}
 
-	/** verifies that if a bpartner is found&loaded by one lookup property, it is also cached to be found by the other properties */
+	/**
+	 * verifies that if a bpartner is found&loaded by one lookup property, it is also cached to be found by the other properties
+	 */
 	@Test
 	void retrieveBPartnerComposite_retrieveBPartnerCompositeAssertCacheHit()
 	{
-
-		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKey = ImmutableList.of(BPartnerCompositeLookupKey.ofCode(C_BPARTNER_VALUE));
+		final OrgAndBPartnerCompositeLookupKeyList bpartnerLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofSingleLookupKey(
+				orgId, BPartnerCompositeLookupKey.ofCode(C_BPARTNER_VALUE)
+		);
 		final Optional<BPartnerComposite> result = jsonRetrieverService.getBPartnerComposite(bpartnerLookupKey);
 
-		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKey2 = ImmutableList.of(BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)));
-		final Optional<BPartnerComposite> result2 = jsonRetrieverService.getBPartnerCompositeAssertCacheHit(bpartnerLookupKey2);
+		final OrgAndBPartnerCompositeLookupKey bpartnerLookupKey2 = OrgAndBPartnerCompositeLookupKey.of(
+				BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)),
+				orgId);
+		final Optional<BPartnerComposite> result2 = jsonRetrieverService.getBPartnerCompositeAssertCacheHit(ImmutableList.of(bpartnerLookupKey2));
 
 		assertThat(result2).isNotSameAs(result); // not sameAs, because the composite is mutable and the retriever shall give us own own instance each time.
 		assertThat(result2).isEqualTo(result);

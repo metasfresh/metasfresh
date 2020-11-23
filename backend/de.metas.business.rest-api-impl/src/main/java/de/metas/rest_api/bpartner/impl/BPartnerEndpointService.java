@@ -1,22 +1,13 @@
 package de.metas.rest_api.bpartner.impl;
 
-import java.time.Instant;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.organization.OrgId;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
@@ -32,6 +23,15 @@ import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Optional;
+
 
 /*
  * #%L
@@ -67,17 +67,30 @@ public class BPartnerEndpointService
 		this.jsonRetriever = jsonServiceFactory.createRetriever(); // we can have one long-term-instance
 	}
 
-	public Optional<JsonResponseComposite> retrieveBPartner(@NonNull final IdentifierString bpartnerIdentifier)
+	/**
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
+	 */
+	public Optional<JsonResponseComposite> retrieveBPartner(
+			@Nullable final String orgCode,
+			@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
+		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		return optBpartnerComposite;
 	}
 
+	/**
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
+	 */
 	public Optional<JsonResponseLocation> retrieveBPartnerLocation(
+			@Nullable final String orgCode,
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString locationIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
+		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBpartnerComposite.isPresent())
 		{
 			return Optional.empty();
@@ -109,11 +122,17 @@ public class BPartnerEndpointService
 		}
 	}
 
+	/**
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
+	 */
 	public Optional<JsonResponseContact> retrieveBPartnerContact(
+			@Nullable final String orgCode,
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString contactIdentifier)
 	{
-		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.getJsonBPartnerComposite(bpartnerIdentifier);
+		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty();

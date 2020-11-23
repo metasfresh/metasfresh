@@ -1,15 +1,14 @@
 package de.metas.ui.web.window.model;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-
+import com.google.common.base.MoreObjects;
+import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
-import lombok.NonNull;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 /*
  * #%L
@@ -52,7 +51,7 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private final Document getDocument()
+	private Document getDocument()
 	{
 		final Document document = _documentRef.get();
 		if (document == null)
@@ -133,4 +132,13 @@ import lombok.NonNull;
 		// TODO dataSave: save document but also update the DocumentsCollection!
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public boolean isLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
+	{
+		//Querying all values because getLookupValueById doesn't take validation rul into consideration.
+		// TODO: Implement possibility to fetch sqllookupbyid with validation rule considered.
+		return getDocument().getFieldLookupValues(columnName).containsId(id);
+	}
+
 }

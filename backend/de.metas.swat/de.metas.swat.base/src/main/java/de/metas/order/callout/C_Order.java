@@ -26,16 +26,15 @@ package de.metas.order.callout;
  */
 
 
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.IOrderBL;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.order.DeliveryViaRule;
-import de.metas.order.IOrderBL;
-import de.metas.util.Services;
 
 /**
  * @author cg

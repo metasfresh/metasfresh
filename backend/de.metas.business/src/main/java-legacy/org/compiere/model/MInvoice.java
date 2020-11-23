@@ -25,10 +25,8 @@ import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -36,7 +34,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -101,8 +98,6 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
-	private static final AdMessageKey ERR_NoBaseConversionBetweenCurrencies = AdMessageKey.of("NoBaseConversionBetweenCurrencies");
-
 	/**
 	 * Get Payments Of BPartner
 	 *
@@ -1184,32 +1179,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}    // for all lines
 
-		// verify that we can deal with the invoice's currency
-		// Update total revenue and balance / credit limit (reversed on AllocationLine.processIt)
-		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
-				getGrandTotal(true),    // CM adjusted
-				CurrencyId.ofRepoId(getC_Currency_ID()),
-				TimeUtil.asLocalDate(getDateAcct()),
-				CurrencyConversionTypeId.ofRepoIdOrNull(getC_ConversionType_ID()),
-				ClientId.ofRepoId(getAD_Client_ID()),
-				OrgId.ofRepoId(getAD_Org_ID()));
-
-		if (invAmt == null)
-		{
-			final Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
-			final Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
-
-			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-			final I_C_BPartner bpartner = bpartnerDAO.getById(getC_BPartner_ID());
-
-			throw new AdempiereException(
-					ERR_NoBaseConversionBetweenCurrencies,
-					bpartner.getName(),
-					bpartner.getValue(),
-					currency.getCurrencyCode().toThreeLetterCode(),
-					currencyTo.getCurrencyCode().toThreeLetterCode());
-		}
-
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() > 0)
 		{
@@ -1226,10 +1195,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));
-			}
-			if (amt == null)
-			{
-				throw new AdempiereException("Could not convert C_Currency_ID=" + getC_Currency_ID() + " to Project C_Currency_ID=" + C_CurrencyTo_ID);
 			}
 			BigDecimal newAmt = project.getInvoicedAmt();
 			if (newAmt == null)

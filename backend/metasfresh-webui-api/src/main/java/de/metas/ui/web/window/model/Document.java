@@ -21,7 +21,9 @@ import javax.annotation.Nullable;
 import de.metas.document.engine.IDocument;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -1546,6 +1548,12 @@ public final class Document
 	{
 		return getField(fieldName).getLookupValuesForQuery(query);
 	}
+
+	public Optional<LookupValue> getLookupValueById(@NonNull final String fieldName, @NonNull final RepoIdAware id)
+	{
+		return getField(fieldName).getLookupValueById(id);
+	}
+
 
 	public Optional<Document> getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{

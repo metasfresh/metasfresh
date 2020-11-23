@@ -22,6 +22,9 @@ package org.adempiere.ad.callout.api;
  * #L%
  */
 
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+
 /**
  * Callout record. This is the underlying record for which a field callout or tab callout is invoked.
  * 
@@ -64,4 +67,5 @@ public interface ICalloutRecord
 
 	void dataRefreshRecursively();
 
+	boolean isLookupValuesContainingId(@NonNull String columnName, @NonNull RepoIdAware id);
 }

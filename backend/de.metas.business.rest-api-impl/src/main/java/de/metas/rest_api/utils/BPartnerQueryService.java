@@ -41,9 +41,9 @@ import lombok.NonNull;
 @Service
 public class BPartnerQueryService
 {
-	public BPartnerQuery createQuery(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
+	public BPartnerQuery createQuery(@NonNull final OrgAndBPartnerCompositeLookupKeyList queryLookupKeys)
 	{
-		return createBPartnerQuery(queryLookupKeys, null);
+		return createBPartnerQuery(queryLookupKeys.getCompositeLookupKeys(), queryLookupKeys.getOrgId());
 	}
 
 	public BPartnerQuery createQuery(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys, @NonNull final OrgId onlyOrgId)
