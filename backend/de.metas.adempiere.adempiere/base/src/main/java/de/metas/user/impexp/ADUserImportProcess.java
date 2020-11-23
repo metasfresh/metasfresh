@@ -1,10 +1,8 @@
-package de.metas.user.impexp;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.user.impexp;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.user.impexp;
 
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
@@ -193,8 +193,8 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	 * @param isInsertOnly ignored. This import is only for updates.
 	 */
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,
-			final I_I_User importRecord,
+	protected ImportRecordResult importRecord(final @NonNull IMutable<Object> state,
+			final @NonNull I_I_User importRecord,
 			final boolean isInsertOnly) throws Exception
 	{
 		//
