@@ -34,10 +34,6 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfo;
-import de.metas.report.server.OutputType;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -61,9 +57,7 @@ import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -622,36 +616,6 @@ public class DocumentCollection
 		}
 	}
 
-	public DocumentPrint createDocumentPrint(final DocumentPath documentPath)
-	{
-		final Document document = getDocumentReadonly(documentPath);
-		final int windowNo = document.getWindowNo();
-		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-
-		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
-		final TableRecordReference recordRef = getTableRecordReference(documentPath);
-
-		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
-				.setCtx(Env.getCtx())
-				.setAD_Process_ID(printProcessId)
-				.setWindowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
-				.setRecord(recordRef)
-				.setPrintPreview(true)
-				.setJRDesiredOutputType(OutputType.PDF)
-				//
-				.buildAndPrepareExecution()
-				.onErrorThrowException()
-				.switchContextWhenRunning()
-				.executeSync()
-				.getResult();
-
-		return DocumentPrint.builder()
-				.filename(processExecutionResult.getReportFilename())
-				.reportContentType(processExecutionResult.getReportContentType())
-				.reportData(processExecutionResult.getReportData())
-				.build();
-	}
-
 	public DocumentWebsocketPublisher getWebsocketPublisher()
 	{
 		return websocketPublisher;
@@ -906,19 +870,6 @@ public class DocumentCollection
 			}
 			return document.getFieldView(fieldName).getValueAsInt(defaultValue);
 		}
-	}
-
-	@Immutable
-	@Value
-	@Builder
-	public static class DocumentPrint
-	{
-		@NonNull
-		String filename;
-		@NonNull
-		String reportContentType;
-		@NonNull
-		byte[] reportData;
 	}
 
 	@Immutable

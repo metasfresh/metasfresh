@@ -8,6 +8,10 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.organization.OrgId;
+import de.metas.report.DocumentReportFlavor;
+import de.metas.report.DocumentReportRequest;
+import de.metas.report.DocumentReportResult;
+import de.metas.report.DocumentReportService;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
@@ -32,11 +36,11 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.X_AD_Rule;
-import org.compiere.print.ReportCtl;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -237,18 +241,19 @@ public final class ProcessExecutor
 				//
 				// Prepare report
 				final boolean isReport = pi.isReportingProcess();
-				final boolean hasProcessClass = !Check.isEmpty(pi.getClassName());
+				final boolean hasProcessClass = !Check.isBlank(pi.getClassName());
 				if (isReport && hasProcessClass)
 				{
-					// nothing do to, the Jasper process class implementation is responsible for triggering the report preview if any
+					// nothing to do, the Jasper process class implementation is responsible for triggering the report preview if any
 					return;
 				}
 				else if (isReport)
 				{
-					ReportCtl.builder()
-							.setProcessInfo(pi)
-							.start();
+					// TODO: check if this case is still valid. I think we always have a process classname set
+					final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+					final DocumentReportResult reportResult = documentReportService.createReport(toDocumentReportRequest(pi));
 					pi.getResult().setSummary("Report");
+					pi.getResult().setReportData(reportResult.getData());
 				}
 			}
 
@@ -318,6 +323,23 @@ public final class ProcessExecutor
 		{
 			pi.getResult().propagateErrorIfAny();
 		}
+	}
+
+	private static DocumentReportRequest toDocumentReportRequest(final ProcessInfo processInfo)
+	{
+		return DocumentReportRequest.builder()
+				.flavor(DocumentReportFlavor.PRINT)
+				.reportProcessId(processInfo.getAdProcessId())
+				.documentRef(processInfo.getRecordRefOrNull())
+				.clientId(processInfo.getClientId())
+				.orgId(processInfo.getOrgId())
+				.userId(processInfo.getUserId())
+				.roleId(processInfo.getRoleId())
+				.windowNo(processInfo.getWindowNo())
+				.tabNo(processInfo.getTabNo())
+				.printPreview(processInfo.isPrintPreview())
+				.reportLanguage(processInfo.getReportLanguage())
+				.build();
 	}
 
 	private IAutoCloseable switchContextIfNeeded()

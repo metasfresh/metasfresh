@@ -164,7 +164,7 @@ public class ProcessRestController
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
 					.header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
-					.body(processExecutionResult.getReportData());
+					.body(processExecutionResult.getReportDataAsByteArray());
 		}
 		else
 		{

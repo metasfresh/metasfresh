@@ -68,8 +68,6 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MTreeNode;
-import org.compiere.print.ReportCtl;
-import org.compiere.print.SwingViewerProvider;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
@@ -315,8 +313,6 @@ public final class AMenu extends CFrame
 	{
 		// Default Image
 		this.setIconImage(Adempiere.getProductIconSmall());
-
-		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
 	}	// initSystem
 
 	// UI

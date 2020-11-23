@@ -1,26 +1,6 @@
 package de.metas.ui.web.session;
 
-import java.time.Duration;
-import java.time.ZoneId;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.function.Supplier;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -41,6 +21,25 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+
+import java.time.Duration;
+import java.time.ZoneId;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -74,7 +73,7 @@ public class UserSession
 {
 	/**
 	 * Gets current {@link UserSession} if any
-	 *
+	 * <p>
 	 * NOTE: please use this method only if there is no other way to get the {@link UserSession}
 	 *
 	 * @return {@link UserSession} or null
@@ -111,7 +110,7 @@ public class UserSession
 		{
 			return null;
 		}
-		
+
 		final UserId loggedUserId = userSession.getLoggedUserIdIfExists().orElse(null);
 		if (!UserId.equals(loggedUserId, adUserId))
 		{
@@ -123,7 +122,7 @@ public class UserSession
 
 	/**
 	 * Gets current {@link UserSession}.
-	 *
+	 * <p>
 	 * NOTE: please use this method only if there is no other way to get the {@link UserSession}
 	 *
 	 * @return user session; never returns null
@@ -150,7 +149,9 @@ public class UserSession
 		return getCurrent().getUserRolePermissions();
 	}
 
-	/** @return true if we are running in a webui thread (i.e. NOT a background daemon thread) */
+	/**
+	 * @return true if we are running in a webui thread (i.e. NOT a background daemon thread)
+	 */
 	public static boolean isWebuiThread()
 	{
 		return RequestContextHolder.getRequestAttributes() != null;
@@ -184,7 +185,7 @@ public class UserSession
 
 	/**
 	 * Never call it directly. Consider calling {@link Env#getCtx()}.
-	 * 
+	 *
 	 * @return effective session context
 	 */
 	Properties getCtx()
@@ -259,7 +260,7 @@ public class UserSession
 
 	/**
 	 * Sets user preferred language.
-	 *
+	 * <p>
 	 * Fires {@link LanguagedChangedEvent}.
 	 *
 	 * @param adLanguage
@@ -353,6 +354,11 @@ public class UserSession
 		return getData().getUserName();
 	}
 
+	public RoleId getLoggedRoleId()
+	{
+		return getData().getLoggedRoleId();
+	}
+
 	public String getRoleName()
 	{
 		return getData().getRoleName();
@@ -408,7 +414,9 @@ public class UserSession
 		return userFullnameOld;
 	}
 
-	/** @return websocket notifications endpoint on which the frontend shall listen */
+	/**
+	 * @return websocket notifications endpoint on which the frontend shall listen
+	 */
 	public WebsocketTopicName getWebsocketEndpoint()
 	{
 		return WebsocketTopicNames.buildUserSessionTopicName(getLoggedUserId());
@@ -492,7 +500,6 @@ public class UserSession
 	}
 
 	/**
-	 * 
 	 * @deprecated avoid using this method; usually it's workaround-ish / quick and dirty fix
 	 */
 	@Deprecated
@@ -507,7 +514,6 @@ public class UserSession
 	 * Usually it is user triggered.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 *
 	 */
 	@lombok.Value
 	public static class LanguagedChangedEvent

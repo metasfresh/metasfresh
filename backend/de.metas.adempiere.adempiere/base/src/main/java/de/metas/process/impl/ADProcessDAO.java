@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -152,7 +153,7 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public void registerTableProcess(final int adTableId, final AdWindowId adWindowId, final AdProcessId adProcessId)
+	public void registerTableProcess(final int adTableId, @Nullable final AdWindowId adWindowId, final AdProcessId adProcessId)
 	{
 		final AdTabId adTabId = null;
 		final RelatedProcessDescriptorKey key = RelatedProcessDescriptorKey.of(adTableId, adWindowId, adTabId);
@@ -304,12 +305,9 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public Collection<I_AD_Process_Para> retrieveProcessParameters(final I_AD_Process process)
+	public Collection<I_AD_Process_Para> retrieveProcessParameters(final AdProcessId adProcessId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(process);
-		final String trxName = InterfaceWrapperHelper.getTrxName(process);
-		final AdProcessId adProcessId = AdProcessId.ofRepoId(process.getAD_Process_ID());
-		return retrieveProcessParameters(ctx, adProcessId, trxName).values();
+		return retrieveProcessParameters(Env.getCtx(), adProcessId, ITrx.TRXNAME_None).values();
 	}
 
 	@Override
@@ -319,14 +317,18 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Cached(cacheName = I_AD_Process_Para.Table_Name + "#by#" + I_AD_Process_Para.COLUMNNAME_AD_Process_ID)
-	public Map<String, I_AD_Process_Para> retrieveProcessParameters(@CacheCtx final Properties ctx, final AdProcessId adProcessId, @CacheTrx final String trxName)
+	public ImmutableMap<String, I_AD_Process_Para> retrieveProcessParameters(
+			@CacheCtx final Properties ctx,
+			final AdProcessId adProcessId,
+			@CacheTrx final String trxName)
 	{
 		return queryBL.createQueryBuilder(I_AD_Process_Para.class, ctx, trxName)
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, adProcessId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_Process_Para.COLUMNNAME_SeqNo)
 				.create()
-				.map(I_AD_Process_Para.class, I_AD_Process_Para::getColumnName);
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(I_AD_Process_Para::getColumnName, Function.identity()));
 	}
 
 	@Override

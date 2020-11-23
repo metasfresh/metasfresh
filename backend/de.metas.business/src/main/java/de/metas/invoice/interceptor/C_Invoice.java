@@ -19,6 +19,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
@@ -288,7 +289,9 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final I_C_Payment payment = order.getC_Payment();
+			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+			final PaymentId paymentId = PaymentId.ofRepoId(order.getC_Payment_ID());
+			final I_C_Payment payment = paymentBL.getById(paymentId);
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			paymentDAO.save(payment);
 
@@ -302,7 +305,9 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final I_C_Payment payment = order.getC_Payment();
+			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+			final PaymentId paymentId = PaymentId.ofRepoId(order.getC_Payment_ID());
+			final I_C_Payment payment = paymentBL.getById(paymentId);
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
 			testAndMarkAsPaid(invoice);
 		}

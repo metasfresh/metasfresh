@@ -46,6 +46,8 @@ import de.metas.order.IMatchPODAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -57,14 +59,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
-import org.compiere.print.ReportEngine;
+import org.compiere.SpringContextHolder;
+import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -790,26 +792,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("Could not create PDF file", e);
-		}
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.INVOICE, getC_Invoice_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}    // getPDF
-
-	private File createPDF(final File file)
-	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.INVOICE, getC_Invoice_ID(), get_TrxName());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	}    // createPDF
 
 	@Override
 	public boolean processIt(final String processAction)

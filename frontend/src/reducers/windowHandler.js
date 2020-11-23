@@ -49,6 +49,9 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -95,7 +98,7 @@ const initialModalState = {
 
 export const initialState = {
   connectionError: false,
-
+  printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
   modal: initialModalState,
   overlay: {
@@ -754,6 +757,33 @@ export default function windowHandler(state = initialState, action) {
             ...state.master.topActions,
             actions: [],
           },
+        },
+      };
+    }
+    case SET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: action.payload,
+      };
+    }
+    case RESET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: {},
+      };
+    }
+    case TOGGLE_PRINTING_OPTION: {
+      const newPrintingOptions = [...state.printingOptions.options];
+
+      newPrintingOptions.map((item) => {
+        if (item.internalName === action.payload) item.value = !item.value;
+        return item;
+      });
+      return {
+        ...state,
+        printingOptions: {
+          ...state.printingOptions,
+          options: newPrintingOptions,
         },
       };
     }

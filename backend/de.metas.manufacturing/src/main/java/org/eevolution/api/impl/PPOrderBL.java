@@ -117,6 +117,12 @@ public class PPOrderBL implements IPPOrderBL
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
 
 	@Override
+	public I_PP_Order getById(@NonNull final PPOrderId id)
+	{
+		return ppOrdersRepo.getById(id);
+	}
+
+	@Override
 	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
 	{
 		return CreateOrderCommand.builder()

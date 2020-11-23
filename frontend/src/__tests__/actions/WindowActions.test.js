@@ -18,7 +18,13 @@ import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
 import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
 import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
 import actionsFixtures from '../../../test_setup/fixtures/window/actions.json';
+import printingOptions from '../../../test_setup/fixtures/window/printingOptions.json';
 import { setProcessSaved, setProcessPending } from '../../actions/AppActions';
+import {
+  setPrintingOptions,
+  resetPrintingOptions,
+  togglePrintingOption,
+} from '../../actions/WindowActions';
 
 const createStore = function(state = {}) {
   const res = merge.recursive(
@@ -244,6 +250,42 @@ describe('WindowActions thunks', () => {
             expect.arrayContaining(expectedActions)
           );
         });
+    });
+  });
+
+  describe('Printing Actions', () => {
+    it('setting printing options in the store', () => {
+      const state = createStore();
+      const store = mockStore(state);
+      const expectedAction = [
+        { type: ACTION_TYPES.SET_PRINTING_OPTIONS, payload: printingOptions },
+      ];
+
+      store.dispatch(setPrintingOptions(printingOptions));
+      expect(store.getActions()).toEqual(expectedAction);
+    });
+
+    it('reset printing options is called', () => {
+      const state = createStore();
+      const store = mockStore(state);
+      const expectedAction = [{ type: ACTION_TYPES.RESET_PRINTING_OPTIONS }];
+
+      store.dispatch(resetPrintingOptions());
+      expect(store.getActions()).toEqual(expectedAction);
+    });
+
+    it('triggers action to toggle the printing option', () => {
+      const state = createStore();
+      const store = mockStore(state);
+      const expectedAction = [
+        {
+          type: ACTION_TYPES.TOGGLE_PRINTING_OPTION,
+          payload: 'PRINTER_OPTS_IsPrintLogo',
+        },
+      ];
+
+      store.dispatch(togglePrintingOption('PRINTER_OPTS_IsPrintLogo'));
+      expect(store.getActions()).toEqual(expectedAction);
     });
   });
 });
