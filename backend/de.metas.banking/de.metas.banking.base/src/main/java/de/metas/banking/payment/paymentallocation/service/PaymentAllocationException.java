@@ -13,17 +13,18 @@ package de.metas.banking.payment.paymentallocation.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.i18n.AdMessageKey;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} in case of any failure.
@@ -31,6 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
  * @author tsa
  *
  */
+@SuppressWarnings("serial")
 public class PaymentAllocationException extends AdempiereException
 {
 	public static final PaymentAllocationException wrapIfNeeded(final Throwable throwable)
@@ -40,21 +42,23 @@ public class PaymentAllocationException extends AdempiereException
 		{
 			return (PaymentAllocationException)cause;
 		}
-
-		return new PaymentAllocationException(cause.getLocalizedMessage(), cause);
+		else
+		{
+			return new PaymentAllocationException(cause.getLocalizedMessage(), cause);
+		}
 	}
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -6596237632566193452L;
-
-	public PaymentAllocationException(final String message)
+	protected PaymentAllocationException(final AdMessageKey adMessage)
 	{
-		super(message);
+		super(adMessage);
 	}
 
-	public PaymentAllocationException(final String message, final Throwable cause)
+	protected PaymentAllocationException()
+	{
+		super("");
+	}
+
+	private PaymentAllocationException(final String message, final Throwable cause)
 	{
 		super(message, cause);
 	}

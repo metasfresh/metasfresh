@@ -1,24 +1,8 @@
-/**
- *
- */
-package de.metas.invoicecandidate.api.impl;
-
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.assumeGreaterThanZero;
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,59 +20,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.MNote;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
+package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -108,13 +46,17 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceSchedule;
-import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -181,32 +123,88 @@ import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
+import org.compiere.model.MNote;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class InvoiceCandBL implements IInvoiceCandBL
 {
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = "InvoiceCandBL_Invoicing_Skipped_IsToClear";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = "InvoiceCandBL_Invoicing_Skipped_IsInDispute";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_DateToInvoice";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = "InvoiceCandBL_Invoicing_Skipped_Error";
-	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = "InvoiceCandBL_Invoicing_Skipped_Processed";
-	private static final String MSG_FixProblemDeleteWaitForRegeneration = "FixProblemDeleteWaitForRegeneration";
-	private static final String MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P = "InvoiceCandBL_Status_InvoiceSchedule_Missing";
-	private static final String MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P = "InvoiceCandBL_Below_Invoice_Min_Amt";
-	private static final String MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P = "InvoiceCandBL_Status_Order_Not_CO";
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Processed");
+	private static final AdMessageKey MSG_FixProblemDeleteWaitForRegeneration = AdMessageKey.of("FixProblemDeleteWaitForRegeneration");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P = AdMessageKey.of("InvoiceCandBL_Status_InvoiceSchedule_Missing");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P = AdMessageKey.of("InvoiceCandBL_Below_Invoice_Min_Amt");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P = AdMessageKey.of("InvoiceCandBL_Status_Order_Not_CO");
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
 
 	// task 08927
 	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS = new ModelDynAttributeAccessor<>(Boolean.class);
-
-	/**
-	 * Note: we only use this internally; by having it as timestamp, we avoid useless conversions between it and {@link LocalDate}
-	 *
-	 * @task 08451
-	 */
-	private static final Timestamp DATE_TO_INVOICE_MAX_DATE = Timestamp.valueOf("9999-12-31 23:59:59");
 
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
@@ -221,11 +219,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	/**
 	 * Sets the given IC's <code>DateToInvoice</code> value:
 	 * <ul>
-	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_NachLieferung} or {@link X_C_Invoice_Candidate#INVOICERULE_NachLieferungAuftrag}: <code>DeliveryDate</code> or {@link #DATE_TO_INVOICE_MAX_DATE} if
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_AfterDelivery} or {@link X_C_Invoice_Candidate#INVOICERULE_AfterOrderDelivered}: <code>DeliveryDate</code> or {@link Env#MAX_DATE} if
 	 * there was no delivery yet
-	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_KundenintervallNachLieferung}: basically the result of {@link #mkDateToInvoiceForInvoiceSchedule(I_C_InvoiceSchedule, Timestamp)} or or
-	 * {@link #DATE_TO_INVOICE_MAX_DATE} if there was no delivery yet
-	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_Sofort} : <code>DateOrdered</code>
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_CustomerScheduleAfterDelivery}: basically the result of {@link InvoiceSchedule#calculateNextDateToInvoice(LocalDate)} or
+	 * {@link Env#MAX_DATE} if there was no delivery yet
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_Immediate} : <code>DateOrdered</code>
 	 * <li>else (which should not happen, unless a new invoice rule is introduced): <code>Created</code>
 	 * </ul>
 	 *
@@ -255,7 +253,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			case CustomerScheduleAfterDelivery:
 				if (icRecord.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
 				{
-					return DATE_TO_INVOICE_MAX_DATE;
+					return Env.MAX_DATE;
 				}
 				else
 				{
@@ -263,7 +261,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					if (deliveryDate == null)
 					{
 						// task 08451: we have an invoice schedule, but no delivery yet. Set the date to the far future
-						return DATE_TO_INVOICE_MAX_DATE;
+						return Env.MAX_DATE;
 					}
 					else
 					{
@@ -297,8 +295,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		// if there is no delivery yet, then we set the date to the far future
-		logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is stocked; -> return {} as dateToInvoice", productId.getRepoId(), DATE_TO_INVOICE_MAX_DATE);
-		return deliveryDate != null ? deliveryDate : DATE_TO_INVOICE_MAX_DATE;
+		logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is stocked; -> return {} as dateToInvoice", productId.getRepoId(), Env.MAX_DATE);
+		return deliveryDate != null ? deliveryDate : Env.MAX_DATE;
 	}
 
 	void setInvoiceScheduleAmtStatus(final Properties ctx, final I_C_Invoice_Candidate ic)
@@ -371,7 +369,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal newQtyToInvoiceOverrideFulfilled = ic.getQtyToInvoice_OverrideFulfilled().multiply(factor).add(qtyInvoicedDiff);
 
 		final BigDecimal qtyToInvoiceOverride = getQtyToInvoice_OverrideOrNull(ic);
-		if (qtyToInvoiceOverride == null)
+		if (qtyToInvoiceOverride == null || qtyToInvoiceOverride.signum() == 0)
 		{
 			// basically this is just for good measure. The model interceptor C_Invoice_Candidate.resetQtyToInvoiceFulFilled() actually does the job.
 			ic.setQtyToInvoice_OverrideFulfilled(null);
@@ -586,7 +584,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			logger.info("BPartner has no Schedule");
 
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
-			final String msg = Services.get(IMsgBL.class).getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { billBPartner.getName() });
+			final String msg = Services.get(IMsgBL.class).getMsg(ctx, MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { billBPartner.getName() });
 			amendSchedulerResult(ic, msg);
 			ic.setInvoiceScheduleAmtStatus(msg);
 			return -1;
@@ -864,6 +862,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return true;
 		}
 
+		if (ic.isSimulation())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
+					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+			return true;
+		}
+
 		// flagged via field color
 		// ignore candidates that can't be invoiced yet
 		final LocalDate dateToInvoice = getDateToInvoice(ic);
@@ -1088,7 +1093,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return TimeUtil.asLocalDate(getDateToInvoiceTS(ic));
 	}
 
-	/** For class-internal use */
+	/**
+	 * For class-internal use
+	 */
 	private Timestamp getDateToInvoiceTS(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Timestamp dateToInvoiceOverride = ic.getDateToInvoice_Override();
@@ -1197,8 +1204,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final I_C_Invoice_Candidate invoiceCand = ila.getC_Invoice_Candidate();
 
 		final ICompositeQueryUpdater<I_C_Invoice_Detail> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice_Detail.class)
-				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
-				.addSetColumnValue(org.adempiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceLine.getC_Invoice_ID());
+				.addSetColumnValue(org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
+				.addSetColumnValue(org.compiere.model.I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceLine.getC_Invoice_ID());
 		queryBL
 				.createQueryBuilder(I_C_Invoice_Detail.class, ila)
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID())
@@ -1337,6 +1344,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
 				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
 
+				invoiceCandidate.setApprovalForInvoicing(false);
+
 				// #870
 				// Make sure that, when an invoice is reversed, the QtyToInvoice_Override and PriceEntered_Override are set back in the invoice candidate based on the values in the allocations
 				{
@@ -1349,7 +1358,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					Services.get(ITrxManager.class)
 							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 							.newEventListener(TrxEventTiming.AFTER_COMMIT)
-							.registerWeakly(false) // register "hard", because that's how it was before
 							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
 				}
@@ -1407,6 +1415,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							+ ", (=>overlap=" + overlap + ")";
 				}
 
+				invoiceCandDAO.save(invoiceCandidate);
+
 				createUpdateIla(
 						invoiceCandidate,
 						reversalLine,
@@ -1417,19 +1427,31 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	/**
-	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
+	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID.
 	 */
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{
-		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.create(Env.getCtx(), invoiceCandidateId, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
-
+		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-
 		invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
-
 		invoiceCandidate.setQtyToInvoice_OverrideFulfilled(ZERO);
-
 		InterfaceWrapperHelper.save(invoiceCandidate);
+	}
+
+	private void setApprovalForInvoicing(final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	{
+		if (invoiceCandidates.isEmpty())
+		{
+			return;
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			invoiceCandidate.setApprovalForInvoicing(approved);
+			invoiceCandDAO.save(invoiceCandidate);
+		}
 	}
 
 	@Override
@@ -1469,7 +1491,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				invoiceCandDAO.invalidateCands(invoiceCands);
 			}
 
-			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<>();
+			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new TreeSet<>(Comparator.comparing(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID));
 
 			if (il.getC_OrderLine_ID() > 0)
 			{
@@ -1552,7 +1574,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				}
 				createUpdateIla(icToLink, il, qtysInvoiced, note);
 				// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
+			}
 
+			//
+			// Unset ApprovalForInvoicing flag in case we credit memoed + reinvoiceable our invoice
+			if (isCreditMemo && creditMemoReinvoicable)
+			{
+				setApprovalForInvoicing(toLinkAgainstIl, false);
 			}
 		}
 	}
@@ -1732,7 +1760,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-			final String msgAskForRegeneration = Services.get(IMsgBL.class).translate(ctx, MSG_FixProblemDeleteWaitForRegeneration);
+			final String msgAskForRegeneration = Services.get(IMsgBL.class).getMsg(ctx, MSG_FixProblemDeleteWaitForRegeneration);
 			errorMessageToUse = new StringBuilder(errorMsg)
 					.append("\n").append(msgAskForRegeneration)
 					.toString();
@@ -1783,7 +1811,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Calculate Maximum invoiceable quantity by considering ordered qty and delivered qty.
-	 *
+	 * <p>
 	 * Normally the returning value is <code>qtyOrdered</code>, but in case we have a over delivery, then we shall consider <code>qtyDelivered</code> as invoiceable quantity.
 	 *
 	 * @param qtyOrdered
@@ -2045,7 +2073,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				if (processedOverride.isTrue())
 				{
 					candidate.setProcessed_Override(null);
-					InterfaceWrapperHelper.save(candidate);
+					invoiceCandDAO.save(candidate);
 				}
 			}
 		}
@@ -2087,7 +2115,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		if (!icRecord.isFreightCost())
 		{
-			return;	// nothing to do
+			return;    // nothing to do
 		}
 		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 
@@ -2195,6 +2223,96 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return queueDAO.retrieveUnprocessedWorkPackagesByEnqueuedRecord(
 				InvoiceCandWorkpackageProcessor.class,
 				TableRecordReference.of(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId));
+	}
+
+	@Override
+	public I_C_Invoice voidAndRecreateInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		// first make sure that payments have the flag auto-allocate set
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
+		final I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
+
+		final List<I_C_Payment> availablePayments = allocationDAO.retrieveInvoicePayments(inv);
+
+		for (final I_C_Payment payment : availablePayments)
+		{
+			payment.setIsAutoAllocateAvailableAmt(true);
+			InterfaceWrapperHelper.save(payment);
+		}
+
+		// first fetch invoice candidates
+		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
+
+		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
+		for (final MInvoiceLine ilPO : invoicePO.getLines(true))
+		{
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(ilPO, I_C_InvoiceLine.class);
+			invoiceCands.addAll(invoiceCandDB.retrieveIcForIl(il));
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+
+		// void invoice
+		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		// update invalids
+		invoiceCandBL.updateInvalid()
+				.setContext(ctx, trxName)
+				.setOnlyC_Invoice_Candidates(invoiceCands.iterator())
+				.update();
+
+		for (final I_C_Invoice_Candidate ic : invoiceCands)
+		{
+			InterfaceWrapperHelper.refresh(ic); // this is important ;-)
+			final Timestamp today = SystemTime.asDayTimestamp();
+			// if the invoice was a future invoice, use same date
+			if (today.before(invoicePO.getDateInvoiced()))
+			{
+				ic.setDateInvoiced(invoicePO.getDateInvoiced());
+			}
+			// we set this to null in order to have the new invoice with the current date
+			else
+			{
+				ic.setDateInvoiced(null);
+			}
+			InterfaceWrapperHelper.save(ic, trxName);
+		}
+
+		// recreate invoice for those specific invoice candidates
+		final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
+				.setContext(ctx, trxName)
+				.setInvoicingParams(new PlainInvoicingParams()
+						.setStoreInvoicesInResult(true)
+						.setAssumeOneInvoice(true))
+				.generateInvoices(invoiceCands.iterator());
+
+		final I_C_Invoice newInvoice;
+		if (result.getInvoiceCount() == 1)
+		{
+			newInvoice = result.getC_Invoices().get(0);
+		}
+		else if (result.getInvoiceCount() > 1)
+		{
+			throw new AdempiereException("Internal error: More then one invoices were generated for given candidate (" + result + ")");
+		}
+		else
+		{
+			newInvoice = null;
+		}
+
+		return newInvoice;
+	}
+
+	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
+	@Override
+	public @NonNull InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable final String extraWhereClause)
+	{
+		return new GetInvoiceCandidatesAmtSelectionSummaryCommand(extraWhereClause).execute();
 	}
 
 }

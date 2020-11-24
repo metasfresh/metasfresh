@@ -1,7 +1,10 @@
 package de.metas.payment.paymentterm;
 
+import java.util.Optional;
+
 import org.compiere.model.I_C_PaymentTerm;
 
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 
@@ -34,5 +37,7 @@ public interface IPaymentTermRepository extends ISingletonService
 	PaymentTermId getDefaultPaymentTermIdOrNull();
 
 	I_C_PaymentTerm getById(PaymentTermId paymentTermId);
+
+	Optional<PaymentTermId> retrievePaymentTermId(PaymentTermQuery build);
 
 }

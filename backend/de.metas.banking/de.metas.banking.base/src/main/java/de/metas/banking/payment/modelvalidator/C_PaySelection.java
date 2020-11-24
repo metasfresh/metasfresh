@@ -13,15 +13,14 @@ package de.metas.banking.payment.modelvalidator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,33 +36,33 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.service.IBankingBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @Interceptor(I_C_PaySelection.class)
 public class C_PaySelection
 {
-	public static final transient C_PaySelection instance = new C_PaySelection();
-
 	private static final AdMessageKey MSG_PaySelection_CannotChangeBPBankAccount_InvalidCurrency = AdMessageKey.of("PaySelection.CannotChangeBPBankAccount.InvalidCurrency");
 
-	private C_PaySelection()
+	private final BankAccountService bankAccountService;
+
+	public C_PaySelection(
+			@NonNull final BankAccountService bankAccountService)
 	{
-		super();
+		this.bankAccountService = bankAccountService;
 	}
 
 	/**
 	 * Remove line if currency does not match.
-	 *
-	 * @param paySelectionLine
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID })
 	public void validateBankAccountCurrency(final I_C_PaySelection paySelection)
 	{
 		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.create(paySelection.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
@@ -107,8 +106,7 @@ public class C_PaySelection
 	 * @param paySelection
 	 * @task 08267
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID, I_C_PaySelection.COLUMNNAME_PayDate })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_PaySelection.COLUMNNAME_C_BP_BankAccount_ID, I_C_PaySelection.COLUMNNAME_PayDate })
 	public void updateNameIfNotSet(final I_C_PaySelection paySelection)
 	{
 
@@ -126,9 +124,10 @@ public class C_PaySelection
 			name.append("_");
 		}
 
-		if (paySelection.getC_BP_BankAccount_ID() > 0)
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(paySelection.getC_BP_BankAccount_ID());
+		if (bankAccountId != null)
 		{
-			final String bankAccountName = Services.get(IBankingBL.class).createBankAccountName(paySelection.getC_BP_BankAccount());
+			final String bankAccountName = bankAccountService.createBankAccountName(bankAccountId);
 			name.append(bankAccountName);
 		}
 

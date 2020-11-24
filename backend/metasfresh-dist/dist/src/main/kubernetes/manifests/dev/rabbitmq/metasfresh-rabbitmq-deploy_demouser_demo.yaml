@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "metasfresh-rabbitmq-mf15-dev"
@@ -9,6 +9,11 @@ metadata:
     de.metas.deployment.name: "metasfresh-rabbitmq-mf15-dev"
   namespace: "default"
 spec:
+  selector:
+    matchLabels:
+      de.metas.deployment.type: metasfresh-rabbitmq
+      de.metas.deployment.user: "mf15"
+      de.metas.deployment.stage: "dev"
   replicas: 1
   strategy:
     type: Recreate

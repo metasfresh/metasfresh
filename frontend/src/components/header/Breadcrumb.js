@@ -97,7 +97,9 @@ class Breadcrumb extends Component {
    */
   handleClick = (e, menu) => {
     const { handleMenuOverlay, windowType, filters, dispatch } = this.props;
-    if (!filters.clearAll) {
+    const { type } = menu;
+
+    if (!filters.clearAll && type && type === 'window') {
       dispatch(clearAllFilters(true));
     }
 

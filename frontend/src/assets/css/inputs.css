@@ -753,6 +753,11 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     justify-content: space-between;
 }
 
+.device-widget-wrapper {
+  float:right;
+  margin-top: -28px;
+}
+
 .lookup-wrapper {
     display: flex;
     padding: 0;
@@ -880,6 +885,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     z-index: 50;
     margin-top:5px;
     width: 450px;
+}
+
+.attributes-dropup {
+  bottom: 35px;
 }
 
 /* Others */

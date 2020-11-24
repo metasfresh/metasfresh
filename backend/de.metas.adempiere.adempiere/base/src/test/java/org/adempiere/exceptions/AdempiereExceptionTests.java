@@ -29,9 +29,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.Null;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -54,7 +55,7 @@ public class AdempiereExceptionTests
 		final AdempiereException expectedCause = newAdempiereException();
 
 		final Throwable actualCause = AdempiereException.extractCause(new ExecutionException(expectedCause));
-		Assert.assertSame(expectedCause, actualCause);
+		Assertions.assertSame(expectedCause, actualCause);
 	}
 
 	@Test
@@ -63,7 +64,7 @@ public class AdempiereExceptionTests
 		final AdempiereException expectedCause = newAdempiereException();
 
 		final Throwable actualCause = AdempiereException.extractCause(new InvocationTargetException(expectedCause));
-		Assert.assertSame(expectedCause, actualCause);
+		Assertions.assertSame(expectedCause, actualCause);
 	}
 
 	@Test
@@ -71,7 +72,7 @@ public class AdempiereExceptionTests
 	{
 		final AdempiereException expected = newAdempiereException();
 		final AdempiereException actual = AdempiereException.wrapIfNeeded(expected);
-		Assert.assertSame(expected, actual);
+		Assertions.assertSame(expected, actual);
 	}
 
 	@Test
@@ -79,9 +80,9 @@ public class AdempiereExceptionTests
 	{
 		final Throwable rootEx = new RuntimeException("error-" + random.nextInt());
 		final AdempiereException actual = AdempiereException.wrapIfNeeded(rootEx);
-		Assert.assertNotSame(rootEx, actual);
-		Assert.assertSame(rootEx, actual.getCause());
-		Assert.assertEquals(rootEx.getLocalizedMessage(), actual.getCause().getLocalizedMessage());
+		Assertions.assertNotSame(rootEx, actual);
+		Assertions.assertSame(rootEx, actual.getCause());
+		Assertions.assertEquals(rootEx.getLocalizedMessage(), actual.getCause().getLocalizedMessage());
 	}
 
 	@Test
@@ -90,7 +91,7 @@ public class AdempiereExceptionTests
 		final Throwable rootEx = new AdempiereException("error-" + random.nextInt());
 		final Throwable rootExBoxed = box(rootEx, 10); // box it 10 times
 		final AdempiereException actual = AdempiereException.wrapIfNeeded(rootExBoxed);
-		Assert.assertSame(rootEx, actual);
+		Assertions.assertSame(rootEx, actual);
 	}
 
 	@Test
@@ -99,10 +100,10 @@ public class AdempiereExceptionTests
 		final Throwable rootEx = new RuntimeException("error-" + random.nextInt());
 		final Throwable rootExBoxed = box(rootEx, 10); // box it 10 times
 		final AdempiereException actual = AdempiereException.wrapIfNeeded(rootExBoxed);
-		Assert.assertNotSame(rootEx, actual);
-		Assert.assertNotSame(rootEx, actual);
-		Assert.assertSame(rootEx, actual.getCause());
-		Assert.assertEquals(rootEx.getLocalizedMessage(), actual.getCause().getLocalizedMessage());
+		Assertions.assertNotSame(rootEx, actual);
+		Assertions.assertNotSame(rootEx, actual);
+		Assertions.assertSame(rootEx, actual.getCause());
+		Assertions.assertEquals(rootEx.getLocalizedMessage(), actual.getCause().getLocalizedMessage());
 	}
 
 	private final Throwable box(final Throwable throwable, final int depth) throws Exception
@@ -124,7 +125,7 @@ public class AdempiereExceptionTests
 	{
 		final AdempiereException ex = newAdempiereException()
 				.setParameter("param", null);
-		Assert.assertEquals(ImmutableMap.of("param", Null.NULL), ex.getParameters());
+		Assertions.assertEquals(ImmutableMap.of("param", Null.NULL), ex.getParameters());
 	}
 
 	@Test
@@ -136,7 +137,7 @@ public class AdempiereExceptionTests
 				.setParameter("param3", null)
 				.setParameter("param4", "value4");
 
-		Assert.assertEquals(ImmutableMap.of(
+		Assertions.assertEquals(ImmutableMap.of(
 				"param1", Null.NULL,
 				"param2", "value2",
 				"param3", Null.NULL,
@@ -149,13 +150,13 @@ public class AdempiereExceptionTests
 		final AdempiereException ex = newAdempiereException()
 				.setParameter("param1", "value1")
 				.setParameter("param2", "value2");
-		Assert.assertEquals(ImmutableMap.of(
+		Assertions.assertEquals(ImmutableMap.of(
 				"param1", "value1",
 				"param2", "value2"), ex.getParameters());
 
 		// Remove "param1" and test
 		ex.setParameter("param1", null);
-		Assert.assertEquals(ImmutableMap.of(
+		Assertions.assertEquals(ImmutableMap.of(
 				"param1", Null.NULL,
 				"param2", "value2"), ex.getParameters());
 	}
@@ -183,4 +184,19 @@ public class AdempiereExceptionTests
 		assertThat(adempiereException.hasParameter("someParam")).isTrue();
 	}
 
+	@Test
+	public void test_setRecord()
+	{
+		final TableRecordReference recordRef = TableRecordReference.of("MyTable", 1234);
+
+		final AdempiereException adempiereException = newAdempiereException()
+				.setRecord(recordRef);
+
+		assertThat(adempiereException.getRecord()).isSameAs(recordRef);
+
+		assertThat(adempiereException.getParameters())
+				.isEqualTo(ImmutableMap.<String, Object> builder()
+						.put(AdempiereException.PARAMETER_RecordRef, recordRef)
+						.build());
+	}
 }

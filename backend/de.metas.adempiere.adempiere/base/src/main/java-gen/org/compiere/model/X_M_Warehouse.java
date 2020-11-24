@@ -14,7 +14,7 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1855069483L;
+	private static final long serialVersionUID = -268664953L;
 
     /** Standard Constructor */
     public X_M_Warehouse (Properties ctx, int M_Warehouse_ID, String trxName)
@@ -500,5 +500,17 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	public java.lang.String getValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
+	}
+
+	@Override
+	public void setIsReceiveAsSourceHU (boolean IsReceiveAsSourceHU)
+	{
+		set_Value (COLUMNNAME_IsReceiveAsSourceHU, Boolean.valueOf(IsReceiveAsSourceHU));
+	}
+
+	@Override
+	public boolean isReceiveAsSourceHU()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReceiveAsSourceHU);
 	}
 }

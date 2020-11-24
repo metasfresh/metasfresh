@@ -31,19 +31,20 @@ public interface I_AD_Archive extends de.metas.document.archive.model.I_AD_Archi
 	 */
 	//@formatter:off
 	// task 09417
-	public static final String COLUMNNAME_IsDirectEnqueue = "IsDirectEnqueue";
-	public void setIsDirectEnqueue(boolean IsDirectPrint);
-	public boolean isDirectEnqueue();
+	String COLUMNNAME_IsDirectEnqueue = "IsDirectEnqueue";
+	void setIsDirectEnqueue(boolean IsDirectPrint);
+	boolean isDirectEnqueue();
 	//@formatter:on
 
 	/**
-	 * If <code>true</code>, the printing module shall also directly create a <code>C_Print_Job</code>, for this archive. 
+	 * If <code>true</code>, the printing module shall also directly create a <code>C_Print_Job</code>, for this archive.
 	 */
 	//@formatter:off
 	// task 09417
-	public static final String COLUMNNAME_IsCreatePrintJob = "IsCreatePrintJob";
-	public void setIsCreatePrintJob(boolean IsCreatePrintJob);
-	public boolean isCreatePrintJob();
+	String COLUMNNAME_IsDirectProcessQueueItem = "IsDirectProcessQueueItem";
+	void setIsDirectProcessQueueItem (boolean IsDirectEnqueue);
+	boolean isDirectProcessQueueItem();
+	org.adempiere.model.ModelColumn<I_AD_Archive, Object> COLUMN_IsDirectProcessQueueItem = new org.adempiere.model.ModelColumn<I_AD_Archive, Object>(I_AD_Archive.class, "IsDirectProcessQueueItem", null);
 	//@formatter:on
-	
+
 }

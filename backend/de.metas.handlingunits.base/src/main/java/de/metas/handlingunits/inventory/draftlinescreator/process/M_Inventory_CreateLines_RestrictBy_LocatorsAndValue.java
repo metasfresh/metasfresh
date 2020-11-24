@@ -1,14 +1,19 @@
 package de.metas.handlingunits.inventory.draftlinescreator.process;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_Inventory;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 
+import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LeastRecentTransactionStrategy;
+import de.metas.organization.IOrgDAO;
 import de.metas.process.Param;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -35,22 +40,25 @@ import lombok.NonNull;
 
 public class M_Inventory_CreateLines_RestrictBy_LocatorsAndValue extends DraftInventoryBase
 {
+	private final HuForInventoryLineFactory huForInventoryLineFactory = SpringContextHolder.instance.getBean(HuForInventoryLineFactory.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	@Param(parameterName = "MinValueOfGoods")
 	private BigDecimal minimumPrice;
 
 	@Param(parameterName = "MaxNumberOfLocators")
 	private int maxLocators;
 
-	private final HuForInventoryLineFactory huForInventoryLineFactory = Adempiere.getBean(HuForInventoryLineFactory.class);
-
 	@Override
-	protected LeastRecentTransactionStrategy createStrategy(@NonNull final I_M_Inventory inventoryRecord)
+	protected LeastRecentTransactionStrategy createStrategy(@NonNull final Inventory inventory)
 	{
-		return LeastRecentTransactionStrategy
-				.builder()
+		final ZoneId timeZone = orgDAO.getTimeZone(inventory.getOrgId());
+		final LocalDate movementDate = TimeUtil.asLocalDate(inventory.getMovementDate(), timeZone);
+
+		return HUsForInventoryStrategies.leastRecentTransaction()
 				.maxLocators(maxLocators)
 				.minimumPrice(minimumPrice)
-				.movementDate(TimeUtil.asLocalDate(inventoryRecord.getMovementDate()))
+				.movementDate(movementDate)
 				.huForInventoryLineFactory(huForInventoryLineFactory)
 				.build();
 	}

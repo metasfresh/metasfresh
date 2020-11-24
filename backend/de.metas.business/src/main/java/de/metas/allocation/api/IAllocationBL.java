@@ -1,7 +1,5 @@
 package de.metas.allocation.api;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
 
@@ -12,23 +10,8 @@ public interface IAllocationBL extends ISingletonService
 {
 	/**
 	 * Creates a new allocation builder.
-	 *
-	 * @param ctxProvider an object that the {@link InterfaceWrapperHelper} can use to get the <code>ctx</code>and <code>trxName</code>.
-	 * @param implClazz the allocation builder implementation to use. Other modules can bring their own implementations. The implementing class needs to have a constructor with one <code>Object</code>
-	 *            where the given <code>ctxProvider</code> will be passed.
-	 *            <p>
-	 *            <b>IMPORTANT: when using an class that is included in another class, then this included class needs to be <code>static</code></b>
-	 * @return
 	 */
-	<T extends DefaultAllocationBuilder> T newBuilder(IContextAware ctxProvider, Class<T> implClazz);
-
-	/**
-	 * Convenience method that calls {@link #newBuilder(Object, Class)} with the {@link DefaultAllocationBuilder} class.
-	 *
-	 * @param ctxProvider
-	 * @return
-	 */
-	DefaultAllocationBuilder newBuilder(IContextAware ctxProvider);
+	C_AllocationHdr_Builder newBuilder();
 
 	/**
 	 * This method creates an allocation between the given invoice and incoming payments that belong to the same C_BPartner, have the {@link I_C_Payment#isAutoAllocateAvailableAmt()} flag set and are
@@ -57,8 +40,6 @@ public interface IAllocationBL extends ISingletonService
 			boolean ignoreIsAutoAllocateAvailableAmt);
 
 	/**
-	 *
-	 * @param allocationHdr
 	 * @return <code>true</code> if the given allocationHdr is the reversal of another allocationHdr.
 	 */
 	boolean isReversal(I_C_AllocationHdr allocationHdr);

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
@@ -20,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.fullTextSearch.FullTextSearchSqlDocumentFilterConverter;
@@ -43,28 +66,6 @@ import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 public class SqlViewBinding implements SqlEntityBinding
 {
@@ -201,7 +202,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
-	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	public ImmutableMap<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return widgetTypesByFieldName;
 	}
@@ -385,6 +386,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		{
 			filterConverters.converter(FullTextSearchSqlDocumentFilterConverter.instance);
 			filterConverters.converter(GeoLocationFilterConverter.instance);
+			filterConverters.converter(FactAcctFilterConverter.instance);
 			// filterConverters2.whenFilterIdStartsWith(FacetsDocumentFilterDescriptorsProviderFactory.FILTER_ID_PREFIX, converter);
 		}
 

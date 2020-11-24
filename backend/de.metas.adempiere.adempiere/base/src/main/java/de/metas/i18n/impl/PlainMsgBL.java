@@ -144,12 +144,6 @@ public class PlainMsgBL implements IMsgBL
 	}
 
 	@Override
-	public ITranslatableString parseTranslatableString(final String text)
-	{
-		return TranslatableStrings.constant(text);
-	}
-
-	@Override
 	public void cacheReset()
 	{
 		// nothing

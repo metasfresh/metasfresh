@@ -1,6 +1,6 @@
 package de.metas.order.inoutcandidate;
 
-import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
@@ -12,9 +12,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import com.google.maps.errors.OverDailyLimitException;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.callcenter.form.CalloutR_Group;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;

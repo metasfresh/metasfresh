@@ -26,12 +26,12 @@ package org.adempiere.mm.attributes.listeners.inAusLand;
 import java.util.Arrays;
 import java.util.List;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 
 public class InvoiceInAusLandModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener

@@ -22,16 +22,8 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
@@ -41,7 +33,18 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+
+import java.util.Properties;
 
 /**
  * Listener triggered by {@link IHUAssignmentBL} when a HU is assigned/un-assigned from an Receipt Line.
@@ -54,6 +57,7 @@ import de.metas.util.Services;
 public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentListenerAdapter
 {
 	public static final transient ReceiptInOutLineHUAssignmentListener instance = new ReceiptInOutLineHUAssignmentListener();
+	private final SourceHUsService sourceHuService = SourceHUsService.get();
 
 	private ReceiptInOutLineHUAssignmentListener()
 	{
@@ -81,6 +85,12 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// Active HU
 		activateHU(hu, inoutLine, trxName);
+
+		//mark as source HU if required
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		sourceHuService.addSourceHUMarkerIfCarringComponents(huId, productId, warehouseId);
 	}
 
 	private void activateHU(final I_M_HU hu, final I_M_InOutLine inoutLine, final String trxName)

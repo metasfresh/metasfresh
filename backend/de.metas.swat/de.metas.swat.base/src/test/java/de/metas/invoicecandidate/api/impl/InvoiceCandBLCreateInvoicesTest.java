@@ -1,9 +1,5 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -26,32 +22,27 @@ import static org.junit.Assert.assertThat;
  * #L%
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
@@ -77,14 +68,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS) // without this, this test fails when run in eclipse together with all tests of this project
+@ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceCandBLCreateInvoicesTest
 {
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	// services
 	private InvoiceCandBLCreateInvoices invoiceCandBLCreateInvoices;
 	protected IOrderLineBL orderLineBL;
@@ -151,7 +137,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		}
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		icTestSupport = new AbstractICTestSupport();
@@ -166,6 +152,8 @@ public class InvoiceCandBLCreateInvoicesTest
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 
 	}
 
@@ -185,17 +173,14 @@ public class InvoiceCandBLCreateInvoicesTest
 		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
 		pojoLookupMap.getRecords(I_C_Invoice_Candidate_Recompute.class).forEach(pojoLookupMap::delete);
 
-		final Properties ctx = Env.getCtx();
-		final String trxName = Trx.createTrxName();
-
 		invoiceCandBLCreateInvoices
-				.setContext(ctx, trxName)
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setIgnoreInvoiceSchedule(true)
 				.generateInvoices(Collections.singletonList(ic).iterator());
 
-		Assert.assertEquals("Invalid " + ic + ": IsError", true, ic.isError());
-		Assert.assertNotNull("Invalid " + ic + ": ErrorMsg", ic.getErrorMsg());
-		Assert.assertTrue("Invalid " + ic + ": AD_Note", ic.getAD_Note_ID() <= 0);
+		assertThat(ic.isError()).isTrue();
+		assertThat(ic.getErrorMsg()).isNotNull();
+		assertThat(ic.getAD_Note_ID()).isLessThanOrEqualTo(0);
 	}
 
 	/**
@@ -209,9 +194,6 @@ public class InvoiceCandBLCreateInvoicesTest
 	public void test_submitAlreadyProcessedCandidate()
 	{
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
-
-		final Properties ctx = Env.getCtx();
-		final String trxName = Trx.createTrxName();
 
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
@@ -265,12 +247,14 @@ public class InvoiceCandBLCreateInvoicesTest
 		// final boolean ignoreInvoiceSchedule = true;
 		// invoiceCandBLCreateInvoices.generateInvoices(ctx, invoiceCandidates.iterator(), ignoreInvoiceSchedule, result, NullLoggable.instance, trxName);
 		invoiceCandBLCreateInvoices
-				.setContext(ctx, trxName)
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setCollector(result)
 				.setIgnoreInvoiceSchedule(true)
 				.generateInvoices(invoiceCandidates.iterator());
 
-		Assert.assertEquals("Invalid invoice count: " + result, 1, result.getInvoiceCount());
+		assertThat(result.getInvoiceCount())
+				.as("invoice count for " + result)
+				.isEqualTo(1);
 		// NOTE: the rest of the assumptions are in MockedDummyInvoiceGenerator
 	}
 
@@ -283,9 +267,6 @@ public class InvoiceCandBLCreateInvoicesTest
 	public void test_DiscountInvoiceCandidates()
 	{
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
-
-		final Properties ctx = Env.getCtx();
-		final String trxName = Trx.createTrxName();
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
@@ -318,7 +299,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		// final boolean ignoreInvoiceSchedule = true;
 		// invoiceCandBLCreateInvoices.generateInvoices(ctx, invoiceCandidates.iterator(), ignoreInvoiceSchedule, result, NullLoggable.instance, trxName);
 		invoiceCandBLCreateInvoices
-				.setContext(ctx, trxName)
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setCollector(result)
 				.setIgnoreInvoiceSchedule(true)
 				.generateInvoices(invoiceCandidates.iterator());
@@ -329,14 +310,18 @@ public class InvoiceCandBLCreateInvoicesTest
 		final BigDecimal discount2After = ic2.getDiscount();
 		final BigDecimal discount_override2After = ic2.getDiscount_Override();
 
-		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription(), discount1After, comparesEqualTo(discount1));
-		assertThat(discount_override1, comparesEqualTo(BigDecimal.ZERO));
-		assertThat(discount_override1After, comparesEqualTo(BigDecimal.ZERO));
+		assertThat(discount1After)
+				.as("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription())
+				.isEqualByComparingTo(discount1);
+		assertThat(discount_override1).isEqualByComparingTo("0");
+		assertThat(discount_override1After).isEqualByComparingTo("0");
 
 		//
-		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription(), discount2After, comparesEqualTo(discount2));
-		assertThat(discount_override2, comparesEqualTo(BigDecimal.ZERO));
-		assertThat(discount_override2After, comparesEqualTo(BigDecimal.ZERO));
+		assertThat(discount2After)
+				.as("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription())
+				.isEqualByComparingTo(discount2);
+		assertThat(discount_override2).isEqualByComparingTo("0");
+		assertThat(discount_override2After).isEqualByComparingTo("0");
 	}
 
 	/**
@@ -348,9 +333,6 @@ public class InvoiceCandBLCreateInvoicesTest
 	public void test_PriceEnteredInvoiceCandidates()
 	{
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
-
-		final Properties ctx = Env.getCtx();
-		final String trxName = Trx.createTrxName();
 
 		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
@@ -413,7 +395,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		// final boolean ignoreInvoiceSchedule = true;
 		// invoiceCandBLCreateInvoices.generateInvoices(ctx, invoiceCandidates.iterator(), ignoreInvoiceSchedule, result, NullLoggable.instance, trxName);
 		invoiceCandBLCreateInvoices
-				.setContext(ctx, trxName)
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setCollector(result)
 				.setIgnoreInvoiceSchedule(true)
 				.generateInvoices(invoiceCandidates.iterator());
@@ -426,13 +408,17 @@ public class InvoiceCandBLCreateInvoicesTest
 		final BigDecimal discount2After = ic2.getDiscount();
 		final BigDecimal discount_override2After = ic2.getDiscount_Override();
 
-		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription(), discount1After, comparesEqualTo(discount1));
-		assertThat(discount_override1, not(comparesEqualTo(BigDecimal.ZERO)));
-		assertThat(discount_override1After, not(comparesEqualTo(BigDecimal.ZERO)));
+		assertThat(discount1After)
+				.as("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription())
+				.isEqualByComparingTo(discount1);
+		assertThat(discount_override1).isNotEqualByComparingTo("0");
+		assertThat(discount_override1After).isNotEqualByComparingTo("0");
 
 		//
-		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription(), discount2After, comparesEqualTo(discount2));
-		assertThat(discount_override2, comparesEqualTo(BigDecimal.ZERO));
-		assertThat(discount_override2After, comparesEqualTo(BigDecimal.ZERO));
+		assertThat(discount2After)
+				.as("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription())
+				.isEqualByComparingTo(discount2);
+		assertThat(discount_override2).isEqualByComparingTo("0");
+		assertThat(discount_override2After).isEqualByComparingTo("0");
 	}
 }

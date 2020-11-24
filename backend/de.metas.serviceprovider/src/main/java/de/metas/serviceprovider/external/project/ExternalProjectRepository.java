@@ -95,6 +95,7 @@ public class ExternalProjectRepository
 		}
 
 		return ExternalProjectReference.builder()
+				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(record.getS_ExternalProjectReference_ID()))
 				.externalProjectReference(record.getExternalReference())
 				.projectOwner(record.getExternalProjectOwner())
 				.externalProjectType(externalProjectType.get())

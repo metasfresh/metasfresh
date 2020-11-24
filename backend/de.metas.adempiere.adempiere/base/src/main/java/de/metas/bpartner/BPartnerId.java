@@ -1,24 +1,8 @@
-package de.metas.bpartner;
-
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +19,20 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.bpartner;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -63,12 +61,12 @@ public class BPartnerId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final BPartnerId bpartnerId)
+	public static int toRepoId(@Nullable final BPartnerId bpartnerId)
 	{
 		return toRepoIdOr(bpartnerId, -1);
 	}
 
-	public static int toRepoIdOr(final BPartnerId bpartnerId, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final BPartnerId bpartnerId, final int defaultValue)
 	{
 		return bpartnerId != null ? bpartnerId.getRepoId() : defaultValue;
 	}

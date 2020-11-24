@@ -69,7 +69,7 @@ public interface IHUIterator
 	int DEPTH_FIRSTHUCHILD_HU_Item = 3;
 
 	/**
-	 * Get/Create {@link IHUContext}
+	 * Get/Create {@link IHUContext}, based on current {@link #getCtx()} context.
 	 */
 	IHUContext getHUContext();
 

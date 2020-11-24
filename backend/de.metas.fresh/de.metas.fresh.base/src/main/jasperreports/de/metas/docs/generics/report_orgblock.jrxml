@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_orgblock" pageWidth="225" pageHeight="842" columnWidth="225" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="7a1b6560-d1ef-4d70-acd9-642f0804e306">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -36,21 +37,21 @@ FROM
 	<title>
 		<band height="100" splitType="Stretch">
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="297463df-7dd0-4d18-adad-c8ac6ee8aaf4" x="37" y="0" width="142" height="12"/>
+				<reportElement x="37" y="0" width="142" height="12" uuid="297463df-7dd0-4d18-adad-c8ac6ee8aaf4"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="28b124c8-7a94-4ce5-90df-7e978c7fbfab" x="37" y="11" width="142" height="12"/>
+				<reportElement x="37" y="11" width="142" height="12" uuid="28b124c8-7a94-4ce5-90df-7e978c7fbfab"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="1431cdbf-1301-49a6-af76-2d2ba3a76ad4" x="37" y="33" width="142" height="12">
+				<reportElement x="37" y="33" width="142" height="12" uuid="1431cdbf-1301-49a6-af76-2d2ba3a76ad4">
 					<printWhenExpression><![CDATA[$F{phone}.equals("-")
 ?new Boolean(false)
 :new Boolean(true)]]></printWhenExpression>
@@ -61,7 +62,7 @@ FROM
 				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="7d7a9e70-529b-4146-ac4c-d8a7e78a5624" x="37" y="44" width="142" height="12">
+				<reportElement x="37" y="44" width="142" height="12" uuid="7d7a9e70-529b-4146-ac4c-d8a7e78a5624">
 					<printWhenExpression><![CDATA[$F{fax}.equals("-")
 	?new Boolean(false)
 	:new Boolean(true)]]></printWhenExpression>
@@ -72,14 +73,14 @@ FROM
 				<textFieldExpression><![CDATA[$R{orgfax} + " " + $F{fax}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="63844d65-924b-417a-b6a3-52eb03cc7a72" x="37" y="55" width="142" height="12"/>
+				<reportElement x="37" y="55" width="142" height="12" uuid="63844d65-924b-417a-b6a3-52eb03cc7a72"/>
 				<textElement>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="e3a762a7-0af4-4579-bc6c-59da19b88de9" x="37" y="66" width="142" height="12">
+				<reportElement x="37" y="66" width="142" height="12" uuid="e3a762a7-0af4-4579-bc6c-59da19b88de9">
 					<printWhenExpression><![CDATA[$F{vataxid} ==null
 ?new Boolean(false)
 :new Boolean(true)]]></printWhenExpression>
@@ -90,7 +91,7 @@ FROM
 				<textFieldExpression><![CDATA[$R{vataxid} + " " + $F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement uuid="382642ff-3a69-4cd5-ae1c-f374c3c8226d" x="37" y="22" width="142" height="12"/>
+				<reportElement x="37" y="22" width="142" height="12" uuid="382642ff-3a69-4cd5-ae1c-f374c3c8226d"/>
 				<textElement markup="none">
 					<font size="9"/>
 				</textElement>

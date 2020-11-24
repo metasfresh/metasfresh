@@ -1,5 +1,139 @@
 package de.metas.handlingunits;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.handlingunits.allocation.IAllocationDestination;
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.IHUContextProcessor;
+import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
+import de.metas.handlingunits.allocation.impl.AbstractAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategyFactory;
+import de.metas.handlingunits.allocation.strategy.AllocationStrategySupportingServicesFacade;
+import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
+import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
+import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
+import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.impl.ListAttributeStorage;
+import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.handlingunits.attribute.strategy.impl.CopyAttributeSplitterStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.LinearDistributionAttributeSplitterStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttributeTransferStrategy;
+import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.handlingunits.test.HUListAssertsBuilder;
+import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
+import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
+import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.Quantity;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
+import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_Test;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.util.DDNetworkBuilder;
+import org.eevolution.util.ProductBOMBuilder;
+import org.junit.Assert;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
 import static de.metas.business.BusinessTestHelper.createBPartner;
 import static de.metas.business.BusinessTestHelper.createProduct;
 import static de.metas.business.BusinessTestHelper.createUOMConversion;
@@ -31,134 +165,6 @@ import static org.junit.Assert.assertThat;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.adempiere.mm.attributes.spi.impl.WeightGrossAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightNetAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAdjustAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_Test;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.util.DDNetworkBuilder;
-import org.eevolution.util.ProductBOMBuilder;
-import org.junit.Assert;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.allocation.IAllocationDestination;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.impl.AbstractAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.AbstractProducerDestination;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.allocation.impl.MTransactionAllocationSourceDestination;
-import de.metas.handlingunits.allocation.transfer.IHUJoinBL;
-import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
-import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
-import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
-import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
-import de.metas.handlingunits.attribute.impl.WeightableFactory;
-import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
-import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.storage.impl.ListAttributeStorage;
-import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
-import de.metas.handlingunits.attribute.strategy.impl.CopyAttributeSplitterStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.LinearDistributionAttributeSplitterStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttributeTransferStrategy;
-import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
-import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
-import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
-import de.metas.handlingunits.storage.impl.PlainProductStorage;
-import de.metas.handlingunits.test.HUListAssertsBuilder;
-import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
-import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
-import de.metas.inoutcandidate.picking_bom.PickingBOMService;
-import de.metas.materialtransaction.MTransactionUtil;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Capacity;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
 
 /**
  * This class sets up basic master data like attributes and HU-items.
@@ -340,7 +346,7 @@ public class HUTestHelper
 	public I_M_Warehouse defaultWarehouse;
 	public I_M_Warehouse issueWarehouse;
 	// Empties:
-	public I_M_Warehouse warehouse_Empties;
+	private I_M_Warehouse warehouse_Empties;
 	private DDNetworkBuilder emptiesDDNetworkBuilder;
 
 	public Properties ctx;
@@ -406,7 +412,10 @@ public class HUTestHelper
 			AdempiereTestHelper.get().init();
 		}
 
-		CachedHUAndItemsDAO.DEBUG = false;
+		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
+		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
+		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -587,12 +596,12 @@ public class HUTestHelper
 		attr_Volume = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_Volume_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_FragileSticker = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_FragileSticker_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, false);
 
-		attr_WeightGross = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightGross_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
-		attr_WeightNet = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightNet_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
-		attr_WeightTare = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTare_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
-		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(WeightableFactory.ATTR_WeightTareAdjust_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
+		attr_WeightGross = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightGross.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightGrossAttributeValueCallout.class, uomKg, true);
+		attr_WeightNet = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightNet.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightNetAttributeValueCallout.class, uomKg, true);
+		attr_WeightTare = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightTare.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAttributeValueCallout.class, uomKg, true);
+		attr_WeightTareAdjust = attributesTestHelper.createM_Attribute(Weightables.ATTR_WeightTareAdjust.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, WeightTareAdjustAttributeValueCallout.class, uomKg, true);
 
-		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
+		attr_CostPrice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_CostPrice.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, null, null, true);
 
 		attr_QualityDiscountPercent = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityDiscountPercent_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_QualityNotice = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_QualityNotice_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
@@ -603,32 +612,30 @@ public class HUTestHelper
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test2, QUALITYNOTICE_Test2);
 			createAttributeListValue(attr_QualityNotice, QUALITYNOTICE_Test3, QUALITYNOTICE_Test3);
 		}
-		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
-		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
-		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumber = attributesTestHelper.createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
-		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
-		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 
 		// FIXME: this is a workaround because we are not handling the UOM conversions in our HU tests
-		createUOMConversion(
-				null,  // product,
-				uomEach,  // uomFrom,
-				uomKg, // uomTo,
-				BigDecimal.ONE,
-				BigDecimal.ONE);
+		createUOMConversion(CreateUOMConversionRequest.builder()
+				.fromUomId(UomId.ofRepoId(uomEach.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomKg.getC_UOM_ID()))
+				.fromToMultiplier(BigDecimal.ONE)
+				.build());
 
 		// Create 1-to-1 conversion between "Each" and PCE / Stk
-		createUOMConversion(
-				null,  // product,
-				uomEach,  // uomFrom,
-				uomPCE, // uomTo,
-				BigDecimal.ONE,
-				BigDecimal.ONE);
+		createUOMConversion(CreateUOMConversionRequest.builder()
+				.fromUomId(UomId.ofRepoId(uomEach.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomPCE.getC_UOM_ID()))
+				.fromToMultiplier(BigDecimal.ONE)
+				.build());
 
 		//
 		// Create and configure Pallete
@@ -951,6 +958,11 @@ public class HUTestHelper
 		return huContext;
 	}
 
+	public IMutableHUContext createMutableHUContextForProcessingOutOfTrx()
+	{
+		return createMutableHUContextForProcessing(ITrx.TRXNAME_None);
+	}
+
 	public IMutableHUContext createMutableHUContextForProcessing(final String trxName)
 	{
 		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
@@ -969,7 +981,7 @@ public class HUTestHelper
 
 	public IMutableHUContext createMutableHUContextOutOfTransaction()
 	{
-		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ITrx.TRXNAME_None);
+		return Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public IMutableHUContext createMutableHUContextInNewTransaction()
@@ -1111,7 +1123,7 @@ public class HUTestHelper
 
 		final I_M_HU_PI_Item itemDefinition = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
-		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
+		itemDefinition.setIncluded_HU_PI_ID(includedHuDefinition != null ? includedHuDefinition.getM_HU_PI_ID() : -17);
 		itemDefinition.setM_HU_PI_Version(version);
 		itemDefinition.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		if (!Objects.equals(qty, QTY_NA))
@@ -1148,23 +1160,48 @@ public class HUTestHelper
 		return assignProduct(itemPI, productId, capacity, uom);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom)
+	public I_M_HU_PI_Item_Product assignProduct(
+			final I_M_HU_PI_Item itemPI,
+			final ProductId productId,
+			final BigDecimal capacity,
+			final I_C_UOM uom)
 	{
-		final I_C_BPartner bpartner = null;
-		return assignProduct(itemPI, productId, capacity, uom, bpartner);
+		final BPartnerId bpartnerId = null;
+		return assignProduct(
+				itemPI,
+				productId,
+				Quantity.of(capacity, uom),
+				bpartnerId);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final ProductId productId, final BigDecimal capacity, final I_C_UOM uom, final I_C_BPartner bpartner)
+	public I_M_HU_PI_Item_Product assignProduct(
+			final I_M_HU_PI_Item itemPI,
+			final ProductId productId,
+			final Quantity capacity)
+	{
+		final BPartnerId bpartnerId = null;
+		return assignProduct(
+				itemPI,
+				productId,
+				capacity,
+				bpartnerId);
+	}
+
+	public I_M_HU_PI_Item_Product assignProduct(
+			@NonNull final I_M_HU_PI_Item itemPI,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity capacity,
+			@Nullable final BPartnerId bpartnerId)
 	{
 		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
 
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product_ID(productId.getRepoId());
-		itemDefProduct.setQty(capacity);
-		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
+		itemDefProduct.setQty(capacity.toBigDecimal());
+		itemDefProduct.setC_UOM_ID(capacity.getUomId().getRepoId());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-		itemDefProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		itemDefProduct.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		InterfaceWrapperHelper.save(itemDefProduct);
 
 		return itemDefProduct;
@@ -1270,19 +1307,24 @@ public class HUTestHelper
 
 	public Object createDummyReferenceModel(final I_C_BPartner bpartner)
 	{
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
+		return createDummyReferenceModel(bpartnerId);
+	}
+
+	public Object createDummyReferenceModel(final BPartnerId bpartnerId)
+	{
 		final I_Test referencedModel = InterfaceWrapperHelper.newInstance(I_Test.class, contextProvider);
 
-		if (bpartner != null)
+		if (bpartnerId != null)
 		{
-			referencedModel.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			referencedModel.setC_BPartner_ID(bpartnerId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(referencedModel);
 		return referencedModel;
-
 	}
 
-	public AbstractAllocationSourceDestination createDummySourceDestination(
+	public GenericAllocationSourceDestination createDummySourceDestination(
 			final ProductId productId,
 			final BigDecimal qtyCapacity,
 			final boolean fullyLoaded)
@@ -1290,7 +1332,7 @@ public class HUTestHelper
 		return createDummySourceDestination(productId, qtyCapacity, uomEach, fullyLoaded);
 	}
 
-	public AbstractAllocationSourceDestination createDummySourceDestination(
+	public GenericAllocationSourceDestination createDummySourceDestination(
 			final ProductId productId,
 			final BigDecimal qtyCapacity,
 			final I_C_UOM uom,
@@ -1309,28 +1351,6 @@ public class HUTestHelper
 		return new GenericAllocationSourceDestination(storage, referencedModel);
 	}
 
-	@Deprecated
-	public List<I_M_HU> createHUs(
-			final IHUContext huContext,
-			final I_M_HU_PI huPI,
-			final I_M_Product productToLoad,
-			final BigDecimal qtyToLoad,
-			final I_C_UOM qtyToLoadUOM)
-	{
-		final ProductId productIdToLoad = ProductId.ofRepoId(productToLoad.getM_Product_ID());
-		return createHUs(huContext, huPI, productIdToLoad, qtyToLoad, qtyToLoadUOM);
-	}
-
-	/**
-	 * Create HUs using {@link HUProducerDestination}.<br>
-	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
-	 *
-	 * @param huPI
-	 * @param productIdToLoad
-	 * @param qtyToLoad
-	 * @param qtyToLoadUOM
-	 * @return created HUs
-	 */
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
 			final I_M_HU_PI huPI,
@@ -1338,9 +1358,22 @@ public class HUTestHelper
 			final BigDecimal qtyToLoad,
 			final I_C_UOM qtyToLoadUOM)
 	{
+		return createHUs(huContext, huPI, productIdToLoad, Quantity.of(qtyToLoad, qtyToLoadUOM));
+	}
+
+	/**
+	 * Create HUs using {@link HUProducerDestination}.<br>
+	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
+	 */
+	public List<I_M_HU> createHUs(
+			final IHUContext huContext,
+			final I_M_HU_PI huPI,
+			final ProductId productIdToLoad,
+			final Quantity qtyToLoad)
+	{
 		final IAllocationSource source = createDummySourceDestination(productIdToLoad,
 				new BigDecimal("100000000"),  // qtyCapacity
-				qtyToLoadUOM,  // UOM
+				qtyToLoad.getUOM(),  // UOM
 				true // fullyLoaded => empty
 		);
 
@@ -1352,10 +1385,11 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
 				productIdToLoad,
-				Quantity.of(qtyToLoad, qtyToLoadUOM),
+				qtyToLoad,
 				getTodayZonedDateTime(),  // date
 				referenceModel,
-				false);
+				false // forceQtyAllocation
+		);
 
 		loader.load(request);
 
@@ -1364,11 +1398,6 @@ public class HUTestHelper
 
 	/**
 	 * Generate HUs for given Customer Unit qty
-	 *
-	 * @param huContext
-	 * @param allocationDestination
-	 * @param cuQty
-	 * @return created HUs
 	 */
 	public List<I_M_HU> createHUs(
 			final IHUContext huContext,
@@ -1413,18 +1442,24 @@ public class HUTestHelper
 
 	/**
 	 *
-	 * @param huContext
+	 * @param huContextEffective
 	 * @param loadingUnitPIItem the PI item with type = HU that link's the LU's PI with the TU's PI. This methods passes it to the {@link ILUTUProducerAllocationDestination}.
 	 * @param tuPIItemProduct
 	 * @param totalQtyCU
-	 * @return
 	 */
-	public List<I_M_HU> createLUs(
-			@NonNull final IHUContext huContext,
+	@Builder(builderMethodName = "newLUs", builderClassName = "LUsBuilder")
+	private List<I_M_HU> createLUs(
+			@Nullable final IHUContext huContext,
 			@NonNull final I_M_HU_PI_Item loadingUnitPIItem,
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
-			@NonNull final BigDecimal totalQtyCU)
+			@NonNull final BigDecimal totalQtyCU,
+			@Nullable final LocatorId locatorId,
+			@Nullable final String huStatus)
 	{
+		final IHUContext huContextEffective = huContext != null
+				? huContext
+				: createMutableHUContextForProcessingOutOfTrx();
+
 		final BPartnerId bpartnerId = null;
 		final int bpartnerLocationId = -1;
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(tuPIItemProduct.getM_Product_ID());
@@ -1445,31 +1480,59 @@ public class HUTestHelper
 		luProducerDestination.setLUPI(loadingUnitPIItem.getM_HU_PI_Version().getM_HU_PI());
 		luProducerDestination.setLUItemPI(loadingUnitPIItem);
 		luProducerDestination.setMaxLUsInfinite(); // allow creating as much LUs as needed
+		if (locatorId != null)
+		{
+			luProducerDestination.setLocatorId(locatorId);
+		}
+		if (huStatus != null)
+		{
+			luProducerDestination.setHUStatus(huStatus);
+		}
 
 		//
 		// Create LUs
-		final List<I_M_HU> luHUs = createHUs(huContext, luProducerDestination, totalQtyCU);
+		final List<I_M_HU> luHUs = createHUs(huContextEffective, luProducerDestination, totalQtyCU);
 		return luHUs;
 	}
 
-	public I_M_HU createLU(final IHUContext huContext,
+	public class LUsBuilder
+	{
+		public HuId buildSingleLUId()
+		{
+			final I_M_HU lu = buildSingleLU();
+			return HuId.ofRepoId(lu.getM_HU_ID());
+		}
+
+		public I_M_HU buildSingleLU()
+		{
+			final List<I_M_HU> luHUs = this.build();
+			if (luHUs.isEmpty())
+			{
+				throw new IllegalStateException("We expected only one LU but we got none");
+			}
+			else if (luHUs.size() == 1)
+			{
+				return luHUs.get(0);
+			}
+			else
+			{
+				throw new IllegalStateException("We exected only one LU  but we got " + luHUs.size() + ": " + luHUs);
+			}
+		}
+	}
+
+	public I_M_HU createLU(
+			final IHUContext huContext,
 			final I_M_HU_PI_Item loadingUnitPIItem,
 			final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final BigDecimal totalQtyCU)
 	{
-		final List<I_M_HU> luHUs = createLUs(huContext, loadingUnitPIItem, tuPIItemProduct, totalQtyCU);
-		if (luHUs.isEmpty())
-		{
-			throw new IllegalStateException("We expected only one LU but we got none");
-		}
-		else if (luHUs.size() == 1)
-		{
-			return luHUs.get(0);
-		}
-		else
-		{
-			throw new IllegalStateException("We exected only one LU  but we got " + luHUs.size() + ": " + luHUs);
-		}
+		return newLUs()
+				.huContext(huContext)
+				.loadingUnitPIItem(loadingUnitPIItem)
+				.tuPIItemProduct(tuPIItemProduct)
+				.totalQtyCU(totalQtyCU)
+				.buildSingleLU();
 	}
 
 	public List<I_M_HU> retrieveAllHandlingUnits()
@@ -1608,7 +1671,7 @@ public class HUTestHelper
 		assertThat("This method only works if the given 'huPI' has exactly one child-HU item", piItemsForChildHU.size(), is(1));
 
 		lutuProducer.setLUItemPI(piItemsForChildHU.get(0));
-		lutuProducer.setTUPI(piItemsForChildHU.get(0).getIncluded_HU_PI());
+		lutuProducer.setTUPI(handlingUnitsDAO.getIncludedPI(piItemsForChildHU.get(0)));
 
 		final HULoader loader = HULoader.of(source, lutuProducer);
 

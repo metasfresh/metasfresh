@@ -14,9 +14,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -53,11 +53,9 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class HUReservationServiceTest
 {
-	@Rule
-	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
 	private static final BigDecimal TWOHUNDRET = new BigDecimal("200");
 
 	private LUTUProducerDestinationTestSupport data;
@@ -72,7 +70,7 @@ public class HUReservationServiceTest
 
 	private HUReservationRepository huReservationRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -88,7 +86,6 @@ public class HUReservationServiceTest
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 	}
 
 	@Test
@@ -108,7 +105,7 @@ public class HUReservationServiceTest
 
 		assertThat(result).isNotNull();
 		assertThat(result.getReservedQtySum().toBigDecimal()).isEqualByComparingTo("1");
-		assertThat(result.getReservedQtySum().getUOMId()).isEqualTo(cuUOM.getC_UOM_ID());
+		assertThat(result.getReservedQtySum().getUomId().getRepoId()).isEqualTo(cuUOM.getC_UOM_ID());
 
 		// final Map<HuId, Quantity> vhuId2reservedQtys = result.getVhuId2reservedQtys();
 		assertThat(result.getVhuIds()).hasSize(1);

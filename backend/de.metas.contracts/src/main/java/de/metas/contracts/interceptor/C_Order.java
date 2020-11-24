@@ -8,8 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Customer_Retention;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
 /*
@@ -38,7 +37,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.CustomerRetentionRepository;
@@ -47,7 +45,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -187,9 +184,7 @@ public class C_Order
 	public void updateCustomerRetention(final I_C_Order order)
 	{
 
-		final ContractOrderService contractOrderService = Adempiere.getBean(ContractOrderService.class);
-
-		final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
+		final CustomerRetentionRepository customerRetentionRepo = SpringContextHolder.instance.getBean(CustomerRetentionRepository.class);
 
 		if (!order.isSOTrx())
 		{
@@ -199,24 +194,7 @@ public class C_Order
 
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
-		if (!contractOrderService.isContractSalesOrder(orderId))
-		{
-			// nothing to do
-			return;
-		}
+		customerRetentionRepo.updateCustomerRetentionOnOrderComplete(orderId);
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-
-		I_C_Customer_Retention customerRetention = customerRetentionRepo.retrieveCustomerRetention(bpartnerId);
-
-		if (Check.isEmpty(customerRetention))
-		{
-			customerRetention = customerRetentionRepo.createNewCustomerRetention(bpartnerId);
-		}
-
-		if (Check.isEmpty(customerRetention.getCustomerRetention()))
-		{
-			customerRetentionRepo.setNewCustomer(bpartnerId);
-		}
 	}
 }

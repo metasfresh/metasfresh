@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
+import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -24,7 +25,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -184,7 +185,7 @@ public class HUShippingFacade
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(completeShipments)
 				.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
-				.computeShipmentDate(true) // if this is ever used, it should be on true to keep legacy
+				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY) // if this is ever used, it should be on true to keep legacy
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?><definitions name="LoginService" targetNamespace="http://dpd.com/common/service/LoginService/2.0" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:jaxws="http://java.sun.com/xml/ns/jaxws" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dpd.com/common/service/LoginService/2.0" xmlns:types="http://dpd.com/common/service/types/LoginService/2.0" xmlns:types_authentication="http://dpd.com/common/service/types/Authentication/2.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <types>
         <xsd:schema targetNamespace="http://dpd.com/common/service/LoginService/2.0" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:jaxws="http://java.sun.com/xml/ns/jaxws" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dpd.com/common/service/LoginService/2.0" xmlns:types="http://dpd.com/common/service/types/LoginService/2.0" xmlns:types_authentication="http://dpd.com/common/service/types/Authentication/2.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-            <xsd:import namespace="http://dpd.com/common/service/types/LoginService/2.0" schemaLocation="https://public-ws-stage.dpd.com/services/LoginService/V2_0/?xsd=LoginService-Public_2_0.xsd">
+            <xsd:import namespace="http://dpd.com/common/service/types/LoginService/2.0" schemaLocation="./LoginService-Public_2_0.xsd">
             </xsd:import>
-            <xsd:import namespace="http://dpd.com/common/service/types/Authentication/2.0" schemaLocation="https://public-ws-stage.dpd.com/services/LoginService/V2_0/?xsd=Authentication_2_0.xsd">
+            <xsd:import namespace="http://dpd.com/common/service/types/Authentication/2.0" schemaLocation="./Authentication_2_0.xsd">
             </xsd:import>
         </xsd:schema>
     </types>

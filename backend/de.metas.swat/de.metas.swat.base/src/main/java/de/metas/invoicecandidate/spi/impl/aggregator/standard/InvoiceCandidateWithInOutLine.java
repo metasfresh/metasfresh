@@ -1,7 +1,7 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import static de.metas.util.Check.fail;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 import java.math.BigDecimal;
@@ -36,7 +36,7 @@ import org.compiere.model.I_M_InOutLine;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inout.IInOutBL;
-import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;

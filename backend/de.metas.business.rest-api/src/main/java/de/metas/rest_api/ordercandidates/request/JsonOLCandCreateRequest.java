@@ -152,8 +152,9 @@ public final class JsonOLCandCreateRequest
 	@ApiModelProperty(value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
 			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
 			+ "Also note that:\n"
+			+ "- you should avoid white-spaces in the value string"
 			+ "- the pricing system needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
-			+ "- if a new business partner is created on the fly, the detault business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
+			+ "- if a new business partner is created on the fly, the default business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
 	@JsonInclude(Include.NON_NULL)
 	String pricingSystemCode;
 
@@ -218,6 +219,12 @@ public final class JsonOLCandCreateRequest
 	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
 	String shipper;
+	
+	
+	@ApiModelProperty(value = "Specifies the value or the externalId of the payment term that will propagate to the created order")
+	@JsonInclude(Include.NON_NULL)
+	String paymentTerm;
+	
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -251,7 +258,8 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
-			@JsonProperty("shipper") final @Nullable String shipper)
+			@JsonProperty("shipper") final @Nullable String shipper,
+			@JsonProperty("paymentTerm") final @Nullable String paymentTerm)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -284,6 +292,8 @@ public final class JsonOLCandCreateRequest
 		this.paymentRule = paymentRule;
 		this.salesPartnerCode = salesPartnerCode;
 		this.shipper = shipper;
+		
+		this.paymentTerm = paymentTerm;
 	}
 
 	/**

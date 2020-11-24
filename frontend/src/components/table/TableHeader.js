@@ -1,17 +1,11 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
-import { shouldRenderColumn } from '../../utils/tableHelpers';
 import PropTypes from 'prop-types';
-import { setActiveSort } from '../../actions/TableActions';
-import { connect } from 'react-redux';
 
-class TableHeader extends PureComponent {
-  constructor(props) {
-    super(props);
+import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
+import { getTableId } from '../../reducers/tables';
 
-    this.state = {};
-  }
-
+export default class TableHeader extends PureComponent {
   UNSAFE_componentWillMount() {
     this.setInitialState();
   }
@@ -34,8 +28,19 @@ class TableHeader extends PureComponent {
     if (!sortable) {
       return;
     }
-    const { sort, deselect, page, tabId, setActiveSort } = this.props;
+
+    const {
+      onSortTable,
+      deselect,
+      page,
+      tabId,
+      windowType,
+      docId,
+      viewId,
+      setActiveSort,
+    } = this.props;
     const stateFields = this.state.fields;
+    const tableId = getTableId({ windowId: windowType, viewId, docId, tabId });
     let fields = {};
     let sortingValue = null;
 
@@ -51,13 +56,17 @@ class TableHeader extends PureComponent {
       fields[field] = sortingValue;
     }
 
+    // TODO: We don't have to spread `fields` as it's a new object anyway
     this.setState({
       fields: { ...fields },
     });
 
-    sort(sortingValue, field, true, page, tabId);
-    setActiveSort(true);
-    setTimeout(() => setActiveSort(false), 1000);
+    onSortTable(sortingValue, field, true, page, tabId);
+    setActiveSort(tableId, true);
+
+    setTimeout(() => {
+      setActiveSort(tableId, false);
+    }, 1000);
     deselect();
   };
 
@@ -89,7 +98,7 @@ class TableHeader extends PureComponent {
   };
 
   renderCols = (cols) => {
-    const { getSizeClass, sort } = this.props;
+    const { onSortTable } = this.props;
 
     return (
       cols &&
@@ -97,7 +106,7 @@ class TableHeader extends PureComponent {
         if (shouldRenderColumn(item)) {
           return (
             <th key={index} className={getSizeClass(item)}>
-              {sort
+              {onSortTable
                 ? this.renderSorting(
                     item.fields[0].field,
                     item.caption,
@@ -126,23 +135,14 @@ class TableHeader extends PureComponent {
 
 TableHeader.propTypes = {
   orderBy: PropTypes.array,
-  sort: PropTypes.any,
+  onSortTable: PropTypes.func,
   tabId: PropTypes.any,
+  windowType: PropTypes.string,
+  docId: PropTypes.string,
+  viewId: PropTypes.string,
   deselect: PropTypes.any,
   page: PropTypes.any,
-  getSizeClass: PropTypes.func,
   cols: PropTypes.any,
   indentSupported: PropTypes.any,
-  setActiveSort: PropTypes.any,
+  setActiveSort: PropTypes.func,
 };
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    setActiveSort: (data) => dispatch(setActiveSort(data)),
-  };
-};
-
-export default connect(
-  null,
-  mapDispatchToProps
-)(TableHeader);

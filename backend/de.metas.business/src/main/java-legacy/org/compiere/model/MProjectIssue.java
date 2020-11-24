@@ -130,7 +130,9 @@ public class MProjectIssue extends X_C_ProjectIssue
 	public MProject getParent()
 	{
 		if (m_parent == null && getC_Project_ID() != 0)
+		{
 			m_parent = new MProject (getCtx(), getC_Project_ID(), get_TrxName());
+		}
 		return m_parent;
 	}	//	getParent
 
@@ -141,7 +143,9 @@ public class MProjectIssue extends X_C_ProjectIssue
 	public boolean process()
 	{
 		if (!save())
+		{
 			return false;
+		}
 		if (getM_Product_ID() == 0)
 		{
 			log.error("No Product");
@@ -170,23 +174,25 @@ public class MProjectIssue extends X_C_ProjectIssue
 		mTrx.setC_ProjectIssue_ID(getC_ProjectIssue_ID());
 		//
 		final I_M_Locator loc = Services.get(IWarehouseDAO.class).getLocatorByRepoId(getM_Locator_ID());
-		if (Services.get(IStorageBL.class).add(getCtx(), loc.getM_Warehouse_ID(), getM_Locator_ID(),
+		Services.get(IStorageBL.class).add(getCtx(), loc.getM_Warehouse_ID(), getM_Locator_ID(),
 				getM_Product_ID(), getM_AttributeSetInstance_ID(), getM_AttributeSetInstance_ID(),
-				getMovementQty().negate(), null, null, get_TrxName()))
+				getMovementQty().negate(), null, null, get_TrxName());
+		
+		if (mTrx.save(get_TrxName()))
 		{
-			if (mTrx.save(get_TrxName()))
+			setProcessed (true);
+			if (save())
 			{
-				setProcessed (true);
-				if (save())
-					return true;
-				else
-					log.error("Issue not saved");		//	requires trx !!
+				return true;
 			}
-			else
-				log.error("Transaction not saved");	//	requires trx !!
+			else {
+				log.error("Issue not saved");		//	requires trx !!
+			}
 		}
-		else
-			log.error("Storage not updated");			//	OK
+		else {
+			log.error("Transaction not saved");	//	requires trx !!
+		}
+		
 		//
 		return false;
 	}	//	process

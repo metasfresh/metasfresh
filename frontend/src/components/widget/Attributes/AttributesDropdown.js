@@ -1,19 +1,19 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
-
 import RawWidget from '../RawWidget';
+import classnames from 'classnames';
+import { DROPUP_START } from '../../../constants/Constants';
 
 /**
  * @file Class based component.
  * @module AttributesDropdown
  * @extends Component
  */
-class AttributesDropdown extends Component {
+class AttributesDropdown extends PureComponent {
   constructor(props) {
     super(props);
-
     this.state = {
       patchCallbacks: Map(),
     };
@@ -125,8 +125,17 @@ class AttributesDropdown extends Component {
    * @todo Write the documentation
    */
   render() {
+    const { rowIndex } = this.props;
+
     return (
-      <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
+      <div
+        className={classnames(
+          'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
+          {
+            'attributes-dropup': rowIndex > DROPUP_START,
+          }
+        )}
+      >
         {this.renderFields()}
       </div>
     );
@@ -160,6 +169,7 @@ AttributesDropdown.propTypes = {
   handlePatch: PropTypes.func.isRequired,
   disableOnClickOutside: PropTypes.func.isRequired,
   enableOnClickOutside: PropTypes.func.isRequired,
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
 };
 
 export default onClickOutside(AttributesDropdown);

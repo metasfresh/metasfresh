@@ -22,6 +22,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 
 /**
@@ -41,7 +42,7 @@ public class DocLine_Cash extends DocLine<Doc_Cash>
 	{
 		super (InterfaceWrapperHelper.getPO(line), doc);
 		m_CashType = line.getCashType();
-		m_C_BP_BankAccount_ID = line.getC_BP_BankAccount_ID();
+		m_C_BP_BankAccount_ID = BankAccountId.ofRepoIdOrNull(line.getC_BP_BankAccount_ID());
 		m_C_Invoice_ID = line.getC_Invoice_ID();
 		//
 		if (m_C_Invoice_ID > 0)
@@ -77,7 +78,7 @@ public class DocLine_Cash extends DocLine<Doc_Cash>
 	public static final String  CASHTYPE_TRANSFER = "T";
 
 	//  References
-	private int     m_C_BP_BankAccount_ID = 0;
+	private BankAccountId m_C_BP_BankAccount_ID = null;
 	private int     m_C_Invoice_ID = 0;
 
 	//  Amounts
@@ -99,7 +100,7 @@ public class DocLine_Cash extends DocLine<Doc_Cash>
 	 *  Get Bank Account
 	 *  @return Bank Account
 	 */
-	public int getC_BP_BankAccount_ID()
+	public BankAccountId getC_BP_BankAccount_ID()
 	{
 		return m_C_BP_BankAccount_ID;
 	}   //  getC_BP_BankAccount_ID

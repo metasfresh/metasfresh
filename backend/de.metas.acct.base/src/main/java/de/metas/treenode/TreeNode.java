@@ -1,18 +1,8 @@
-package de.metas.treenode;
-
-import de.metas.elementvalue.ElementValueId;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +19,17 @@ import lombok.experimental.NonFinal;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.treenode;
+
+import de.metas.acct.api.impl.ElementValueId;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+
 @Data
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

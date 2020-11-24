@@ -74,6 +74,11 @@ public final class CacheInvalidateRequest
 		return rootRecord(rootTableName, rootId.getRepoId());
 	}
 
+	public static CacheInvalidateRequest allChildRecords(@NonNull final String rootTableName, @NonNull final RepoIdAware rootId, @NonNull final String childTableName)
+	{
+		return allChildRecords(rootTableName, rootId.getRepoId(), childTableName);
+	}
+
 	public static CacheInvalidateRequest allChildRecords(@NonNull final String rootTableName, final int rootRecordId, @NonNull final String childTableName)
 	{
 		Check.assume(rootRecordId >= 0, "rootRecordId >= 0");

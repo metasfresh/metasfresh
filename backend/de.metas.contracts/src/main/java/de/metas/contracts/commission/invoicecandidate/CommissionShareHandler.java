@@ -1,24 +1,5 @@
 package de.metas.contracts.commission.invoicecandidate;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -55,6 +36,24 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Iterator;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
  * #%L
@@ -257,6 +256,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 					false /* isSOTrx */);
 		}
 		icRecord.setC_Tax_ID(taxId);
+		icRecord.setIsSimulation(commissionShareRecord.isSimulation());
+
 		return icRecord;
 	}
 

@@ -16,17 +16,13 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
@@ -46,9 +42,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -72,8 +65,6 @@ import mockit.Verifications;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
 	private static final ZonedDateTime PURCHASE_DATE_PROMISED = SystemTime.asZonedDateTime();
@@ -81,10 +72,9 @@ public class PurchaseOrderFromItemFactoryTest
 	private I_C_UOM EACH;
 	private Quantity PURCHASE_CANDIDATE_QTY_TO_PURCHASE;
 
-	@Mocked
 	private OrderUserNotifications orderUserNotifications;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -92,13 +82,17 @@ public class PurchaseOrderFromItemFactoryTest
 		this.EACH = createUOM("Ea");
 		this.PURCHASE_CANDIDATE_QTY_TO_PURCHASE = Quantity.of(BigDecimal.TEN, EACH);
 
+		orderUserNotifications = Mockito.mock(OrderUserNotifications.class);
+
 		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope.
-		// @formatter:off
-		final OrderLineBL orderLineBL = new OrderLineBL();
-		new Expectations(OrderLineBL.class)
-		{{
-			orderLineBL.updatePrices((I_C_OrderLine)any); times = 1;
-		}};	// @formatter:on
+		final OrderLineBL orderLineBL = new OrderLineBL()
+		{
+			@Override
+			public void updatePrices(I_C_OrderLine orderLine)
+			{
+				// do nothing
+			}
+		};
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 	}
 
@@ -118,17 +112,15 @@ public class PurchaseOrderFromItemFactoryTest
 
 		setAndRunMethodUnderTest(deviatingDatePromised, PURCHASE_CANDIDATE_QTY_TO_PURCHASE);
 
-		// @formatter:off
-		new Verifications()
-		{{
-			NotificationRequest request;
-			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
+		final ArgumentCaptor<NotificationRequest> requestCaptor = ArgumentCaptor.forClass(NotificationRequest.class);
+		Mockito.verify(orderUserNotifications)
+				.notifyOrderCompleted(requestCaptor.capture());
 
-			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
-			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_DatePromised);
-			assertThat(adMessageAndParams.getParams()).hasSize(3);
-		}};	// @formatter:on
+		final NotificationRequest request = requestCaptor.getValue();
+		final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
+		assertThat(adMessageAndParams).isNotNull();
+		assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_DatePromised);
+		assertThat(adMessageAndParams.getParams()).hasSize(3);
 	}
 
 	@Test
@@ -138,17 +130,15 @@ public class PurchaseOrderFromItemFactoryTest
 
 		setAndRunMethodUnderTest(PURCHASE_DATE_PROMISED, deviatingPurchasedQty);
 
-		// @formatter:off
-		new Verifications()
-		{{
-			NotificationRequest request;
-			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
+		final ArgumentCaptor<NotificationRequest> requestCaptor = ArgumentCaptor.forClass(NotificationRequest.class);
+		Mockito.verify(orderUserNotifications)
+				.notifyOrderCompleted(requestCaptor.capture());
 
-			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
-			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity);
-			assertThat(adMessageAndParams.getParams()).hasSize(3);
-		}};	// @formatter:on
+		final NotificationRequest request = requestCaptor.getValue();
+		final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
+		assertThat(adMessageAndParams).isNotNull();
+		assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity);
+		assertThat(adMessageAndParams.getParams()).hasSize(3);
 	}
 
 	@Test
@@ -159,17 +149,15 @@ public class PurchaseOrderFromItemFactoryTest
 
 		setAndRunMethodUnderTest(deviatingDatePromised, deviatingPurchasedQty);
 
-		// @formatter:off
-		new Verifications()
-		{{
-			NotificationRequest request;
-			orderUserNotifications.notifyOrderCompleted(request = withCapture()); times = 1;
+		final ArgumentCaptor<NotificationRequest> requestCaptor = ArgumentCaptor.forClass(NotificationRequest.class);
+		Mockito.verify(orderUserNotifications)
+				.notifyOrderCompleted(requestCaptor.capture());
 
-			final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
-			assertThat(adMessageAndParams).isNotNull();
-			assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity_AND_DatePromised);
-			assertThat(adMessageAndParams.getParams()).hasSize(3);
-		}};	// @formatter:on
+		final NotificationRequest request = requestCaptor.getValue();
+		final ADMessageAndParams adMessageAndParams = request.getAdMessageAndParams();
+		assertThat(adMessageAndParams).isNotNull();
+		assertThat(adMessageAndParams.getAdMessage()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity_AND_DatePromised);
+		assertThat(adMessageAndParams.getParams()).hasSize(3);
 	}
 
 	private void setAndRunMethodUnderTest(final ZonedDateTime deviatingDatePromised, final Quantity deviatingPurchasedQty)

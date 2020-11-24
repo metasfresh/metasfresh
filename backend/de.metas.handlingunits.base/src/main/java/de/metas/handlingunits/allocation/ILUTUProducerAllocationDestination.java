@@ -33,7 +33,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 
 /**
@@ -60,7 +59,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 
 	/**
 	 *
-	 * @param qtyCUPerTU quantity, {@link IHUCapacityDefinition#DEFAULT}, {@link IHUCapacityDefinition#INFINITY}
+	 * @param qtyCUPerTU quantity
 	 */
 	void addCUPerTU(ProductId cuProductId, BigDecimal qtyCUPerTU, I_C_UOM cuUOM);
 
@@ -79,7 +78,7 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * @param cuProductId
 	 * @return TU capacity or <code>null</code>
 	 */
-	CapacityInterface getCUPerTU(ProductId cuProductId);
+	Capacity getCUPerTU(ProductId cuProductId);
 
 	I_M_HU_PI getLUPI();
 

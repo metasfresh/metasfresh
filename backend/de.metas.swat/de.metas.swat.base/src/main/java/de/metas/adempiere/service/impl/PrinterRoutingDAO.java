@@ -22,122 +22,109 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.model.I_AD_PrinterRouting;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
+import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import de.metas.adempiere.model.I_AD_PrinterRouting;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 
+import javax.annotation.Nullable;
+
 public class PrinterRoutingDAO implements IPrinterRoutingDAO
 {
-	private final Logger log = LogManager.getLogger(getClass());
+	private final transient Logger logger = LogManager.getLogger(PrinterRoutingDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final CCache<PrinterRoutingsQuery, List<I_AD_PrinterRouting>> query2routingsCache = CCache
+			.<PrinterRoutingsQuery, List<I_AD_PrinterRouting>>builder()
+			.cacheName(I_AD_PrinterRouting.Table_Name + "#by#PrinterRoutingsQuery")
+			.tableName(I_AD_PrinterRouting.Table_Name)
+			.build();
 
 	@Override
-	public <T> List<T> fetchPrinterRoutings(
-			@CacheCtx final Properties ctx,
-			final int AD_Client_ID, final int AD_Org_ID,
-			final int AD_Role_ID, final int AD_User_ID,
-			final int C_DocType_ID, final int AD_Process_ID,
-			final int AD_Table_ID,
-			final String printerType,
-			final Class<T> clazz)
+	public List<I_AD_PrinterRouting> fetchPrinterRoutings(@NonNull final PrinterRoutingsQuery query)
 	{
-		if (LogManager.isLevelFine())
+		return query2routingsCache.getOrLoad(query, q -> fetchPrinterRoutings0(q));
+	}
+
+	private List<I_AD_PrinterRouting> fetchPrinterRoutings0(@NonNull final PrinterRoutingsQuery query)
+	{
+		logger.debug("fetchPrinterRoutings - Invoked with query={}", query);
+
+		final IQueryBuilder<I_AD_Printer> printerQueryBuilder = queryBL
+				.createQueryBuilder(I_AD_Printer.class)// only routings that reference active printers
+				.addOnlyActiveRecordsFilter();
+		if (Check.isNotBlank(query.getPrinterType()))
 		{
-			log.debug("AD_Client_ID=" + AD_Client_ID + ", AD_Org_ID=" + AD_Org_ID
-					+ ", AD_Role_ID=" + AD_Role_ID + ", AD_User_ID=" + AD_User_ID
-					+ ", C_DocType_ID=" + C_DocType_ID + ", AD_Process_ID=" + AD_Process_ID
-					+ ", AD_Table_ID= " + AD_Table_ID
-					+ ", printerType=" + printerType);
+			printerQueryBuilder.addEqualsFilter(I_AD_Printer.COLUMNNAME_PrinterType, query.getPrinterType());
 		}
 
-		final List<Object> params = new ArrayList<>();
-		final StringBuffer whereClause = new StringBuffer(
-				I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID + " IN (0,?)"
-						+ " AND " + I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID + " IN (0,?)"
-						+ " AND ("
-						+ "	" + I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID + "=?"
-						+ "	OR " + I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID + "=0"
-						+ "	OR " + I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID + " IS NULL"
-						+ ")"
-						+ " AND ("
-						+ "	" + I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID + "=?"
-						+ "	OR " + I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID + " IS NULL"
-						+ ")"
-
-						+ " AND ("
-						+ "	" + I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID + "=?"
-						+ "	OR " + I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID + " IS NULL"
-						+ ")"
-
-						+ " AND ("
-						+ "	" + I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID + "=?"
-						+ "	OR " + I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID + " IS NULL"
-						+ ")"
-						+ " AND ("
-						+ "	" + I_AD_PrinterRouting.COLUMNNAME_AD_User_ID + "=?"
-						+ "	OR " + I_AD_PrinterRouting.COLUMNNAME_AD_User_ID + " IS NULL"
-						+ ")");
-		params.add(AD_Client_ID);
-		params.add(AD_Org_ID);
-		params.add(C_DocType_ID);
-		params.add(AD_Process_ID);
-		params.add(AD_Table_ID);
-		params.add(AD_Role_ID);
-		params.add(AD_User_ID);
-
-		// Printer whereClause
-		whereClause.append(
-				" AND EXISTS(SELECT 1 FROM " + I_AD_Printer.Table_Name + " p"
-						+ "	WHERE p." + I_AD_Printer.COLUMNNAME_AD_Printer_ID + "=" + I_AD_PrinterRouting.Table_Name + "." + I_AD_PrinterRouting.COLUMNNAME_AD_Printer_ID
-						+ "	AND p." + I_AD_Printer.COLUMNNAME_IsActive + "=?");
-		params.add(true); // AD_Printer.IsActive
-		if (printerType != null)
+		final IQueryBuilder<I_AD_PrinterRouting> routingQueryBuilder = printerQueryBuilder
+				.andCollectChildren(I_AD_PrinterRouting.COLUMN_AD_Printer_ID)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID, query.getClientId(), ClientId.SYSTEM)
+				.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
+		if (query.getDocTypeId() != null)
 		{
-			whereClause.append(" AND p." + I_AD_Printer.COLUMNNAME_PrinterType + "=?");
-			params.add(printerType);
+			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID, query.getDocTypeId(), null);
 		}
-		whereClause.append(")");
+		if (query.getProcessId() != null)
+		{
+			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Process_ID, query.getProcessId(), null);
+		}
+		if (query.getTableId() != null)
+		{
+			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID, query.getTableId(), null);
+		}
+		if (query.getRoleId() != null)
+		{
+			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID, query.getRoleId(), null);
+		}
+		if (query.getUserId() != null)
+		{
+			routingQueryBuilder.addInArrayFilter(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID, query.getUserId(), null);
+		}
 
-		final String orderBy = I_AD_PrinterRouting.COLUMNNAME_SeqNo
-				+ ", " + I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID + " DESC"
-				+ ", " + I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID + " DESC"
-				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID + ",0) DESC"
-				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID + ",0) DESC"
-				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_AD_User_ID + ",0) DESC"
-				+ ", COALESCE(" + I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID + ",0) DESC"
-				+ ", " + I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID;
+		routingQueryBuilder
+				.orderBy(I_AD_PrinterRouting.COLUMNNAME_SeqNo)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Client_ID)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Org_ID)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_C_DocType_ID)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Role_ID)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_User_ID)
+				.orderByDescending(I_AD_PrinterRouting.COLUMNNAME_AD_Table_ID)
+				.orderBy(I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID);
 
-		return new Query(ctx, I_AD_PrinterRouting.Table_Name, whereClause.toString(), null)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.setOrderBy(orderBy)
-				.list(clazz);
+		return routingQueryBuilder
+				.create()
+				.list();
 	}
 
 	@Override
-	public I_AD_Printer findPrinterByName(final Properties ctx, final String printerName)
+	public I_AD_Printer findPrinterByName(@Nullable final String printerName)
 	{
-		if (Check.isEmpty(printerName))
+		if (Check.isBlank(printerName))
 		{
 			return null;
 		}
-		final String trxName = null;
-		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 
-		final String whereClause = I_AD_Printer.COLUMNNAME_PrinterName + "=?"
-				+ " AND " + I_AD_Printer.COLUMNNAME_AD_Client_ID + " IN (0,?)";
-		return new Query(ctx, I_AD_Printer.Table_Name, whereClause, trxName)
-				.setParameters(printerName, AD_Client_ID)
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_Printer.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Printer.COLUMNNAME_PrinterName, printerName)
+				.addOnlyContextClientOrSystem()
+				.create()
 				.firstOnly(I_AD_Printer.class);
 	}
 }

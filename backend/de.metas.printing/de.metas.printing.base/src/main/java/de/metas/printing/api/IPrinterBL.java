@@ -12,7 +12,6 @@ public interface IPrinterBL extends ISingletonService
 	/**
 	 * If <code>printerHW</code> has not yet any tray matching for <code>tray</code>, then this method creates one.
 	 *
-	 * @param printerHW
 	 * @return {@code true} if a matching was created.
 	 */
 	boolean createConfigAndDefaultPrinterMatching(I_AD_PrinterHW printerHW);
@@ -26,23 +25,13 @@ public interface IPrinterBL extends ISingletonService
 
 	/**
 	 * If there is not yet any calibration record for the given tray matching, then this method created one. Note that the method uses the trxName of the given <code>printerTrayMatching</code>.
-	 *
-	 * @param printerTrayMatching
-	 * @return
 	 */
 	I_AD_PrinterHW_Calibration createCalibrationIfNoneExists(I_AD_PrinterTray_Matching printerTrayMatching);
 
 	/**
 	 * For the given <code>AD_Printer_Matching</code>, this method makes sure that all <code>_AD_PrinterTray_Matchings</code> have a locgical tray and a hardware tray that belong to the printer matching's logial and hardware printer.
-	 *
-	 * @param printerMatching
 	 */
 	void updatePrinterTrayMatching(I_AD_Printer_Matching printerMatching);
 
-	/**
-	 * checks if the given printer is PDF printer
-	 * @param AD_PrinterHW
-	 * @return
-	 */
-	boolean isPDFPrinter(I_AD_PrinterHW AD_PrinterHW);
+	boolean isAttachToPrintPackagePrinter(I_AD_PrinterHW AD_PrinterHW);
 }

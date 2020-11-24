@@ -7,8 +7,11 @@ import { push, syncHistoryWithStore } from 'react-router-redux';
 
 import '../assets/css/styles.css';
 import {
+  initCurrentActiveLocale,
+  setCurrentActiveLocale,
+} from '../utils/locale';
+import {
   addNotification,
-  languageSuccess,
   logoutSuccess,
   setProcessSaved,
   initHotkeys,
@@ -23,7 +26,6 @@ import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import CustomRouter from './CustomRouter';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
-import { LOCAL_LANG } from '../constants/Constants';
 import Auth from '../services/Auth';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
@@ -53,10 +55,7 @@ export default class App extends Component {
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common['Content-Type'] = 'application/json';
 
-    const cachedLang = localStorage.getItem(LOCAL_LANG);
-    if (cachedLang) {
-      languageSuccess(cachedLang);
-    }
+    initCurrentActiveLocale();
 
     axios.interceptors.response.use(
       function(response) {
@@ -158,7 +157,7 @@ export default class App extends Component {
           ? navigator.language
           : defaultValue;
 
-      languageSuccess(lang);
+      setCurrentActiveLocale(lang);
     });
 
     counterpart.setMissingEntryGenerator(() => '');

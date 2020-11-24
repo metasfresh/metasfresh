@@ -1,10 +1,8 @@
-package de.metas.handlingunits.movement.api.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,30 +20,9 @@ package de.metas.handlingunits.movement.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
+package de.metas.handlingunits.movement.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -67,12 +44,32 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Generate {@link I_M_Movement} to move given {@link I_M_HU}s
- *
- * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
  */
 public class HUMovementBuilder
 {
@@ -91,6 +88,7 @@ public class HUMovementBuilder
 	private I_M_Warehouse _warehouseFrom;
 	private I_M_Locator _locatorFrom;
 	private I_M_Warehouse _warehouseTo;
+	@Nullable
 	private I_M_Locator _locatorTo;
 	private String _description;
 	private final Set<I_M_HU> _husToMove = new TreeSet<>(HUByIdComparator.instance);
@@ -119,7 +117,7 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	private final IContextAware getContextInitial()
+	private IContextAware getContextInitial()
 	{
 		Check.assumeNotNull(_contextInitial, "_contextInitial not null");
 		return _contextInitial;
@@ -131,7 +129,7 @@ public class HUMovementBuilder
 		return _huContext;
 	}
 
-	private final void setHUContext(final IHUContext huContext)
+	private void setHUContext(final IHUContext huContext)
 	{
 		Check.assumeNotNull(huContext, "huContext not null");
 		Check.assumeNull(_huContext, "huContext not already configured");
@@ -149,13 +147,6 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	public HUMovementBuilder setWarehouseFrom(final I_M_Warehouse warehouseFrom)
-	{
-		_warehouseFrom = warehouseFrom;
-		_locatorFrom = null;
-		return this;
-	}
-
 	public HUMovementBuilder setLocatorFrom(@NonNull final I_M_Locator locatorFrom)
 	{
 		_warehouseFrom = locatorFrom.getM_Warehouse();
@@ -163,18 +154,18 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	private final I_M_Warehouse getWarehouseFrom()
+	private I_M_Warehouse getWarehouseFrom()
 	{
 		Check.assumeNotNull(_warehouseFrom, "_warehouseFrom not null");
 		return _warehouseFrom;
 	}
 
-	private final I_M_Locator getLocatorFrom()
+	private I_M_Locator getLocatorFrom()
 	{
 		if (_locatorFrom == null)
 		{
 			final I_M_Warehouse warehouseFrom = getWarehouseFrom();
-			_locatorFrom = warehouseBL.getDefaultLocator(warehouseFrom);
+			_locatorFrom = warehouseBL.getDefaultLocator(WarehouseId.ofRepoId(warehouseFrom.getM_Warehouse_ID()));
 		}
 		return _locatorFrom;
 	}
@@ -186,7 +177,7 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	private final I_M_Warehouse getWarehouseTo()
+	private I_M_Warehouse getWarehouseTo()
 	{
 		Check.assumeNotNull(_warehouseTo, "_warehouseTo not null");
 		return _warehouseTo;
@@ -199,17 +190,17 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	private final I_M_Locator getLocatorTo()
+	private I_M_Locator getLocatorTo()
 	{
 		if (_locatorTo == null)
 		{
 			final I_M_Warehouse warehouseTo = getWarehouseTo();
-			_locatorTo = warehouseBL.getDefaultLocator(warehouseTo);
+			_locatorTo = warehouseBL.getDefaultLocator(WarehouseId.ofRepoId(warehouseTo.getM_Warehouse_ID()));
 		}
 		return _locatorTo;
 	}
 
-	private final String getDescription()
+	private String getDescription()
 	{
 		return _description;
 	}
@@ -243,7 +234,7 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	private final Set<I_M_HU> getHUsToMove()
+	private Set<I_M_HU> getHUsToMove()
 	{
 		return _husToMove;
 	}
@@ -253,7 +244,7 @@ public class HUMovementBuilder
 		return _husMoved;
 	}
 
-	private final void addHUMoved(final I_M_HU hu)
+	private void addHUMoved(final I_M_HU hu)
 	{
 		_husMoved.add(hu);
 	}
@@ -264,11 +255,12 @@ public class HUMovementBuilder
 	 *
 	 * @return movement
 	 */
+	@Nullable
 	public I_M_Movement createMovement()
 	{
 		final IContextAware contextInitial = getContextInitial();
 		huTrxBL.createHUContextProcessorExecutor(contextInitial)
-				.run((IHUContextProcessor)huContext -> {
+				.run(huContext -> {
 					setHUContext(huContext);
 					createMovement0();
 					return IHUContextProcessor.NULL_RESULT; // we don't care about the result
@@ -288,7 +280,7 @@ public class HUMovementBuilder
 	}
 
 	@VisibleForTesting
-	/* package */ void createMovement0()
+		/* package */ void createMovement0()
 	{
 		//
 		// Get the HUs to move
@@ -341,8 +333,6 @@ public class HUMovementBuilder
 
 	/**
 	 * Take out the given HU from it's parent (if it's not already a top level HU)
-	 *
-	 * @param hu
 	 */
 	private void extractHUFromParentIfNeeded(final I_M_HU hu)
 	{
@@ -356,7 +346,7 @@ public class HUMovementBuilder
 		huTrxBL.setParentHU(huContext, parentHUItem, hu);
 	}
 
-	private final I_M_Movement getCreateMovementHeader()
+	private I_M_Movement getCreateMovementHeader()
 	{
 		if (_movement != null)
 		{
@@ -382,7 +372,7 @@ public class HUMovementBuilder
 		return _movement;
 	}
 
-	private final I_M_Movement getMovementHeaderOrNull()
+	private I_M_Movement getMovementHeaderOrNull()
 	{
 		return _movement;
 	}

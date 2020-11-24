@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
+import de.metas.user.UserId;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
@@ -46,39 +47,37 @@ import com.google.common.collect.ImmutableList;
 @Immutable
 public class PrintingQueueProcessingInfo
 {
-	private final List<Integer> AD_User_ToPrint_IDs;
-	private final int AD_User_PrintJob_ID;
+	private final List<UserId> AD_User_ToPrint_IDs;
+	private final UserId AD_User_PrintJob_ID;
 	private final boolean createWithSpecificHostKey;
 
-	public PrintingQueueProcessingInfo(final int aD_User_PrintJob_ID,
-			final List<Integer> aD_User_ToPrint_IDs,
+	public PrintingQueueProcessingInfo(
+			final UserId aD_User_PrintJob_ID,
+			final ImmutableList<UserId> aD_User_ToPrint_IDs,
 			final boolean createWithSpecificHostKey)
 	{
-		super();
 		this.AD_User_PrintJob_ID = aD_User_PrintJob_ID;
-		this.AD_User_ToPrint_IDs = ImmutableList.<Integer> copyOf(aD_User_ToPrint_IDs);
+		this.AD_User_ToPrint_IDs = ImmutableList.<UserId> copyOf(aD_User_ToPrint_IDs);
 		this.createWithSpecificHostKey = createWithSpecificHostKey;
 	}
 
 	/**
-	 * Return the<code>AD_User_ID</code>'s to be used for printing.<br>
+	 * Return the<code>AD_User_ID</code>s to be used for printing.<br>
 	 * Notes:
 	 * <ul>
 	 * <li>the IDs are always ordered by their value
 	 * <li>the list is never empty because that would mean "nothing to print" and therefore there would be no queue source instance to start with.
 	 * </ul>
 	 */
-	public List<Integer> getAD_User_ToPrint_IDs()
+	public List<UserId> getAD_User_ToPrint_IDs()
 	{
 		return AD_User_ToPrint_IDs;
 	}
 
 	/**
 	 * The user who shall be the printjob's AD_User_ID/contact
-	 * 
-	 * @return
 	 */
-	public int getAD_User_PrintJob_ID()
+	public UserId getAD_User_PrintJob_ID()
 	{
 		return AD_User_PrintJob_ID;
 	}

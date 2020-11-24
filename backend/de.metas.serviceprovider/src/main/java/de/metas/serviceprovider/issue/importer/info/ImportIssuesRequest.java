@@ -25,6 +25,7 @@ package de.metas.serviceprovider.issue.importer.info;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.util.Check;
@@ -43,6 +44,9 @@ public class ImportIssuesRequest
 {
 	@NonNull
 	String oAuthToken;
+
+	@NonNull
+	ExternalProjectReferenceId externalProjectReferenceId;
 
 	@NonNull
 	String repoId;

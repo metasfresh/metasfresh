@@ -129,7 +129,7 @@ public class S_ExternalReference
 
 	private void validateIssueId(@NonNull final IssueId issueId)
 	{
-		final Optional<IssueEntity> issueEntity = issueRepository.getByIdOptional(issueId, false);
+		final Optional<IssueEntity> issueEntity = issueRepository.getByIdOptional(issueId);
 
 		if (!issueEntity.isPresent())
 		{

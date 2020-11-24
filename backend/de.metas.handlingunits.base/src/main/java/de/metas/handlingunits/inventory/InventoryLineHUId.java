@@ -50,7 +50,7 @@ public class InventoryLineHUId implements RepoIdAware
 
 	private InventoryLineHUId(int repoId)
 	{
-		this.repoId = assumeGreaterThanZero(repoId, "inventoryLineHUId");
+		this.repoId = assumeGreaterThanZero(repoId, "M_InventoryLine_HU_ID");
 	}
 
 	@Override

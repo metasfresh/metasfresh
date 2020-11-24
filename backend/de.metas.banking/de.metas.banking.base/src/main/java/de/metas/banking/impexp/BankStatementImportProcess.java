@@ -15,9 +15,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.TimeUtil;
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
-import de.metas.banking.api.BankAccountId;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest.ElectronicFundsTransfer;
@@ -33,7 +33,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /*

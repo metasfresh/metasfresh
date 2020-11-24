@@ -34,9 +34,13 @@ const getLanguageSpecific = (data, key) => {
  * WARNING: Retarded Cypress request can't catch errors
  */
 const wrapRequest = req => {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     req.then(response => {
-      resolve(response.body.length ? response.body[0] : response.body.values);
+      try {
+        resolve(response.body.result ? response.body.result[0] : response.body.values);
+      } catch (e) {
+        reject(e);
+      }
     });
   });
 };

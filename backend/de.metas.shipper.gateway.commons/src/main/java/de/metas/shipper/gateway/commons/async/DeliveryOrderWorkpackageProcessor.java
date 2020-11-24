@@ -25,7 +25,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -161,7 +161,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		archiveStorage.setBinaryData(archive, labelData);
 		archive.setIsReport(false);
 		archive.setIsDirectEnqueue(true);
-		archive.setIsCreatePrintJob(true);
+		archive.setIsDirectProcessQueueItem(true);
 		InterfaceWrapperHelper.save(archive);
 	}
 }

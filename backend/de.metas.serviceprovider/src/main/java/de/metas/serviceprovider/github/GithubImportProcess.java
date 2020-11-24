@@ -37,6 +37,7 @@ import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
@@ -74,7 +75,7 @@ public class GithubImportProcess extends JavaProcess
 
 		final ImmutableList<ImportIssuesRequest> importIssuesRequests =
 				importAllProjects() ?  buildRequestsForAllRepos(allActiveGithubProjects, githubIssueLinkMatcher)
-									:  ImmutableList.of(buildSpecificRequest(issueNumbers, githubIssueLinkMatcher));
+									:  ImmutableList.of(buildSpecificRequest(allActiveGithubProjects, issueNumbers, githubIssueLinkMatcher));
 
 		issueImporterService.importIssues(importIssuesRequests, githubImporterService);
 
@@ -84,6 +85,16 @@ public class GithubImportProcess extends JavaProcess
 	protected void setDateFrom(@NonNull final LocalDate dateFrom)
 	{
 		this.dateFrom = dateFrom;
+	}
+
+	protected void setIssueNumbers(@NonNull final String issueNumbers)
+	{
+		this.issueNumbers = issueNumbers;
+	}
+
+	protected void setExternalProjectReferenceId(@NonNull final ExternalProjectReferenceId externalProjectReferenceId)
+	{
+		this.externalProjectReferenceId = externalProjectReferenceId.getRepoId();
 	}
 
 	@NonNull
@@ -97,11 +108,18 @@ public class GithubImportProcess extends JavaProcess
 	}
 
 	@NonNull
-	private ImportIssuesRequest buildSpecificRequest(@Nullable final String issueNumbers,
+	private ImportIssuesRequest buildSpecificRequest(@NonNull final ImmutableList<ExternalProjectReference> allActiveGithubProjects,
+													 @Nullable final String issueNumbers,
 													 @Nullable final GithubIssueLinkMatcher githubIssueLinkMatcher)
 	{
 		final ExternalProjectReference externalProject =
-				externalProjectRepository.getById(ExternalProjectReferenceId.ofRepoId(this.externalProjectReferenceId));
+				allActiveGithubProjects
+						.stream()
+						.filter(githubProject -> githubProject.getExternalProjectReferenceId().getRepoId() == this.externalProjectReferenceId)
+						.findFirst()
+						.orElseThrow(() -> new AdempiereException("The selected project is not a Github one!")
+											.appendParametersToMessage()
+											.setParameter("Selected externalProjectReferencedId", externalProjectReferenceId));
 
 		final ImmutableList<String> issueNoList = Check.isNotBlank(issueNumbers)
 				? Stream.of( issueNumbers.split(",") )
@@ -120,6 +138,7 @@ public class GithubImportProcess extends JavaProcess
 	{
 		return ImportIssuesRequest.builder()
 				.externalProjectType(externalProjectReference.getExternalProjectType())
+				.externalProjectReferenceId(externalProjectReference.getExternalProjectReferenceId())
 				.repoId(externalProjectReference.getExternalProjectReference())
 				.repoOwner(externalProjectReference.getProjectOwner())
 				.orgId(externalProjectReference.getOrgId())

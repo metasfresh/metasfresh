@@ -10,10 +10,12 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -39,7 +41,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class InvoicesView extends AbstractCustomView<InvoiceRow>
+public class InvoicesView extends AbstractCustomView<InvoiceRow> implements IEditableView
 {
 	public static InvoicesView cast(final IView view)
 	{
@@ -84,5 +86,17 @@ public class InvoicesView extends AbstractCustomView<InvoiceRow>
 	{
 		final InvoiceRows invoiceRows = getRowsData();
 		invoiceRows.addInvoice(invoiceId);
+	}
+
+	@Override
+	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
+	{
+		throw new UnsupportedOperationException();
 	}
 }

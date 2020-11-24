@@ -15,7 +15,8 @@ export class Builder {
    *
    * - Only the tests which need customised Price* types should create their own (by copying the contents of this method and modifying as needed).
    */
-  static createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, isSalesPriceList) {
+  static createBasicPriceEntities(priceSystemName, ignored_priceListVersionName, priceListName, isSalesPriceList) {
+    // TODO: remove PLVName
     cy.fixture('price/pricesystem.json').then(priceSystemJson => {
       Object.assign(new Pricesystem(), priceSystemJson)
         .setName(priceSystemName)
@@ -24,7 +25,7 @@ export class Builder {
 
     let priceListVersion;
     cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-      priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson).setName(priceListVersionName);
+      priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson);
     });
 
     cy.fixture('price/pricelist.json').then(pricelistJson => {

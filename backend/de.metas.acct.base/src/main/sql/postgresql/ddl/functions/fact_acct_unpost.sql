@@ -32,7 +32,7 @@ BEGIN
     -- Make sure it was not already locked.
     v_lockSQL := 'UPDATE ' || p_TableName || ' SET Processing=''Y'' WHERE ' || p_TableName || '_ID=' || p_Record_ID;
      IF (p_Force <> 'Y') THEN
-             v_lockSQL := v_lockSQL || ' AND Processing=''N'' ';
+             v_lockSQL := v_lockSQL || ' AND COALESCE(Processing,''N'')=''N''/*be lenient towards Processing IS NULL*/';
      END IF;
     EXECUTE v_lockSQL;
     GET DIAGNOSTICS rowcount = ROW_COUNT;

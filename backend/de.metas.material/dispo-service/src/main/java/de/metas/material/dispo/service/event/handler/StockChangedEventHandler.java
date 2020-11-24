@@ -31,7 +31,7 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.Loggables;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 

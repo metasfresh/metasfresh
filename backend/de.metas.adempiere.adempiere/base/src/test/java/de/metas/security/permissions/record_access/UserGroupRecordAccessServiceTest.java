@@ -1,11 +1,13 @@
 package de.metas.security.permissions.record_access;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.event.log.EventLogsRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -61,7 +63,7 @@ public class UserGroupRecordAccessServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new EventLogService());
+		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
 
 		userGroupRecordAccessService = new RecordAccessService(
 				new RecordAccessConfigService(Optional.<List<RecordAccessHandler>> empty()),

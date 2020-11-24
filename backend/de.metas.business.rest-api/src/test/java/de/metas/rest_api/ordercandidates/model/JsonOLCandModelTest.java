@@ -9,11 +9,11 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
@@ -60,11 +60,12 @@ public class JsonOLCandModelTest
 	@Test
 	public void test_JsonBPartner() throws Exception
 	{
-		final JsonRequestBPartner pPartner = new JsonRequestBPartner();
-		pPartner.setCode("bp1");
-		pPartner.setName("bp1 name");
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setCode("bp1");
+		bpartner.setName("bp1 name");
+		bpartner.setVatId("RO 27324777");
 
-		testSerializeDeserialize(pPartner, JSONObjectMapper.forClass(JsonRequestBPartner.class));
+		testSerializeDeserialize(bpartner, JSONObjectMapper.forClass(JsonRequestBPartner.class));
 	}
 
 	@Test

@@ -52,7 +52,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.MockedPackagingDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

@@ -1,6 +1,6 @@
 package de.metas.util.lang;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;

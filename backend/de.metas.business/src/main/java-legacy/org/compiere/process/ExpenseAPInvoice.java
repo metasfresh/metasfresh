@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
@@ -34,6 +33,7 @@ import org.compiere.util.Env;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.Msg;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;

@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -26,6 +24,8 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;

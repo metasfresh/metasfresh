@@ -13,7 +13,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;

@@ -13,8 +13,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketEndpointAware;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -152,9 +153,9 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 
 	@Override
 	@JsonIgnore
-	public String getWebsocketEndpoint()
+	public WebsocketTopicName getWebsocketEndpoint()
 	{
-		return WebSocketConfig.buildDocumentTopicName(windowId, id);
+		return WebsocketTopicNames.buildDocumentTopicName(windowId, id);
 	}
 
 	public void staleTabs(@NonNull final Collection<DetailId> tabIds)

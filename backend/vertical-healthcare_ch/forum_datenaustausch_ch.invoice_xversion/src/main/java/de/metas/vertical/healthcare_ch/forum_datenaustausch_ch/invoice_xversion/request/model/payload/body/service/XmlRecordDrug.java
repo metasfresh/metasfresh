@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector.ServiceMod;
@@ -45,6 +46,18 @@ public class XmlRecordDrug implements XmlService
 
 	@Nullable
 	XmlXtraDrug xtraDrug;
+
+	@Override
+	public String getName()
+	{
+		return recordService.getName();
+	}
+
+	@Override
+	public XMLGregorianCalendar getDateBegin()
+	{
+		return recordService.getDateBegin();
+	}
 
 	@Override
 	public Integer getRecordId()

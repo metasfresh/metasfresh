@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -11,7 +12,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
@@ -19,6 +19,7 @@ import com.google.common.collect.Multimaps;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -86,6 +87,11 @@ public final class Amount implements Comparable<Amount>
 	}
 
 	public BigDecimal getAsBigDecimal()
+	{
+		return toBigDecimal();
+	}
+
+	public BigDecimal toBigDecimal()
 	{
 		return value;
 	}
@@ -243,5 +249,14 @@ public final class Amount implements Comparable<Amount>
 		{
 			return new Amount(value.subtract(amtToSubtract.value), currencyCode);
 		}
+	}
+
+	public Amount multiply(@NonNull Percent percent, @NonNull final CurrencyPrecision precision)
+	{
+		final BigDecimal newValue = percent.computePercentageOf(value, precision.toInt(), precision.getRoundingMode());
+
+		return !newValue.equals(value)
+				? new Amount(newValue, currencyCode)
+				: this;
 	}
 }

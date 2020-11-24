@@ -1,6 +1,6 @@
 package de.metas.pricing.conditions;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.time.Instant;

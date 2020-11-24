@@ -1,12 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import cx from 'classnames';
 
 import { getLayout, patchRequest } from '../../api';
-import { addNotification } from '../../actions/AppActions';
 import { completeRequest, createInstance } from '../../actions/GenericActions';
 import { parseToDisplay } from '../../utils/documentListHelper';
+
 import RawWidget from '../widget/RawWidget';
 
 class TableQuickInput extends Component {
@@ -60,7 +59,13 @@ class TableQuickInput extends Component {
   }
 
   initQuickInput = () => {
-    const { dispatch, docType, docId, tabId, closeBatchEntry } = this.props;
+    const {
+      addNotification,
+      docType,
+      docId,
+      tabId,
+      closeBatchEntry,
+    } = this.props;
     const { layout } = this.state;
 
     this.setState(
@@ -78,26 +83,27 @@ class TableQuickInput extends Component {
           })
           .catch((err) => {
             if (err.response.status === 404) {
-              dispatch(
-                addNotification(
-                  'Batch entry error',
-                  'Batch entry is not available.',
-                  5000,
-                  'error'
-                )
+              addNotification(
+                'Batch entry error',
+                'Batch entry is not available.',
+                5000,
+                'error'
               );
               closeBatchEntry();
             }
           });
 
         !layout &&
-          getLayout('window', docType, tabId, 'quickInput', docId).then(
-            (layout) => {
+          getLayout('window', docType, tabId, 'quickInput', docId)
+            .then((layout) => {
               this.setState({
                 layout: layout.data.elements,
               });
-            }
-          );
+            })
+            .catch((err) => {
+              // eslint-disable-next-line no-console
+              console.error(err);
+            });
       }
     );
   };
@@ -198,11 +204,7 @@ class TableQuickInput extends Component {
 
         return (
           <RawWidget
-            ref={(c) => {
-              if (c) {
-                this.rawWidgets.push(c);
-              }
-            }}
+            ref={this.setWidgetsRef}
             fieldFormGroupClass={stylingLayout[idx].formGroup}
             fieldLabelClass={stylingLayout[idx].label}
             fieldInputClass={stylingLayout[idx].field}
@@ -234,20 +236,18 @@ class TableQuickInput extends Component {
   };
 
   onSubmit = (e) => {
-    const { dispatch, docType, docId, tabId } = this.props;
+    const { addNotification, docType, docId, tabId } = this.props;
     const { id, data } = this.state;
     e.preventDefault();
 
     document.activeElement.blur();
 
     if (!this.validateForm(data)) {
-      return dispatch(
-        addNotification(
-          'Error',
-          'Mandatory fields are not filled!',
-          5000,
-          'error'
-        )
+      return addNotification(
+        'Error',
+        'Mandatory fields are not filled!',
+        5000,
+        'error'
       );
     }
 
@@ -263,15 +263,21 @@ class TableQuickInput extends Component {
           id
         );
       })
-      .then(() => {
-        this.initQuickInput();
-      });
+      .then(this.initQuickInput);
   };
 
   validateForm = (data) => {
     return !Object.keys(data).filter(
       (key) => data[key].mandatory && !data[key].value
     ).length;
+  };
+
+  setRef = (ref) => {
+    this.form = ref;
+  };
+
+  setWidgetsRef = (ref) => {
+    this.rawWidgets.push(ref);
   };
 
   render() {
@@ -282,7 +288,7 @@ class TableQuickInput extends Component {
       <form
         onSubmit={this.onSubmit}
         className="row quick-input-container"
-        ref={(c) => (this.form = c)}
+        ref={this.setRef}
       >
         {this.renderFields(layout, data, docId, 'window', id)}
         <div className="col-sm-12 col-md-3 col-lg-2 hint">
@@ -295,7 +301,7 @@ class TableQuickInput extends Component {
 }
 
 TableQuickInput.propTypes = {
-  dispatch: PropTypes.func.isRequired,
+  addNotification: PropTypes.func.isRequired,
   closeBatchEntry: PropTypes.func,
   forceHeight: PropTypes.number,
   docType: PropTypes.any,
@@ -303,4 +309,4 @@ TableQuickInput.propTypes = {
   tabId: PropTypes.string,
 };
 
-export default connect()(TableQuickInput);
+export default TableQuickInput;

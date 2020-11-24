@@ -25,14 +25,14 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
 
 import java.math.BigDecimal;
 
-import org.junit.Ignore;
-import org.junit.Test;
 
 import de.metas.handlingunits.client.terminal.editor.model.ISplittableHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
 import de.metas.handlingunits.client.terminal.mmovement.model.ILTCUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModelTest;
 import de.metas.handlingunits.model.I_M_HU;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests keys and their quantities in correlation to the LTCU model
@@ -40,7 +40,7 @@ import de.metas.handlingunits.model.I_M_HU;
  * @author al
  */
 // Ignored for now (not working, not completed)
-@Ignore
+@Disabled
 public class HUSplitDefaultQtyHandlerTest extends AbstractLTCUModelTest
 {
 	public HUSplitDefaultQtyHandlerTest()

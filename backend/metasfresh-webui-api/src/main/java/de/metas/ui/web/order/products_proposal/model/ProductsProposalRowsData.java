@@ -64,6 +64,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ProductsProposalRowsData implements IEditableRowsData<ProductsProposalRow>
 {
 	private final DocumentIdIntSequence nextRowIdSequence;
@@ -178,7 +179,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		changeRow(ctx.getRowId(), row -> ProductsProposalRowReducers.reduce(row, request));
 	}
 
-	public void patchRow(@NonNull final DocumentId rowId, @NonNull ProductsProposalRowChangeRequest request)
+	public void patchRow(@NonNull final DocumentId rowId, @NonNull final ProductsProposalRowChangeRequest request)
 	{
 		changeRow(rowId, row -> ProductsProposalRowReducers.reduce(row, request));
 	}
@@ -251,7 +252,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.build();
 	}
 
-	private ProductsProposalRow createRow(ProductsProposalRowAddRequest request)
+	private ProductsProposalRow createRow(final ProductsProposalRowAddRequest request)
 	{
 		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())

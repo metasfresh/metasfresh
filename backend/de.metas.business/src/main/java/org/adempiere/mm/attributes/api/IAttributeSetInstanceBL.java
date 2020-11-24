@@ -1,18 +1,18 @@
 package org.adempiere.mm.attributes.api;
 
-import java.util.function.Predicate;
-
+import com.google.common.base.Predicates;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import com.google.common.base.Predicates;
-
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
+import java.util.function.Predicate;
 
 /**
  * Service to create and update AttributeInstances and AttributeSetInstances.
@@ -103,15 +103,14 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeId attributeId, Object value);
 
 	/**
-	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)}, but the {@link AttributeId} is loaded from the given {@code attributeValue}.
-	 *
-	 * @param attributeValue {@code M_Attribute.Value} of the attribute for which an attribute instance shall be created.
+	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)}, 
+	 * but the {@link AttributeId} is loaded from the given {@code attributeCode}.
 	 */
-	void setAttributeInstanceValue(AttributeSetInstanceId asiId, String attributeValue, Object value);
+	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeCode attributeCode, Object value);
 
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
 
-	void updateASIAttributeFromModel(String attributeCode, Object fromModel);
+	void updateASIAttributeFromModel(AttributeCode attributeCode, Object fromModel);
 
 	boolean isStorageRelevant(I_M_AttributeInstance ai);
 
@@ -126,4 +125,6 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * The given {@code asiAware} is <b>not</b> saved, but the the respective ASI and AIs are saved
 	 */
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
+
+	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
 }

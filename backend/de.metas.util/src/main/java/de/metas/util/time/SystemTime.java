@@ -1,5 +1,18 @@
 package de.metas.util.time;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -25,18 +38,6 @@ package de.metas.util.time;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 /**
  * Code taken from the book "Test Driven", Chapter 7 ("Test-driving the
  * unpredictable") by Lasse Koskela.
@@ -46,7 +47,7 @@ import java.util.GregorianCalendar;
 @UtilityClass
 public class SystemTime
 {
-	private final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
+	private static final TimeSource defaultTimeSource = new SystemTimeSource();
 
 	private TimeSource timeSource;
 
@@ -61,7 +62,7 @@ public class SystemTime
 	 */
 	public ZoneId zoneId()
 	{
-		return ZoneId.systemDefault();
+		return getTimeSource().zoneId();
 	}
 
 	public GregorianCalendar asGregorianCalendar()
@@ -158,10 +159,25 @@ public class SystemTime
 
 	/**
 	 * @param newTimeSource the given TimeSource will be used for the time returned by the
-	 *                      methods of this class (unless it is null).
+	 *            methods of this class (unless it is null).
 	 */
 	public void setTimeSource(@Nullable final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
+	}
+
+	private static final class SystemTimeSource implements TimeSource
+	{
+		@Override
+		public long millis()
+		{
+			return System.currentTimeMillis();
+		}
+
+		@Override
+		public ZoneId zoneId()
+		{
+			return ZoneId.systemDefault();
+		}
 	}
 }

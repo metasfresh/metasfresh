@@ -40,7 +40,7 @@ describe('Serial letter tests', function() {
     cy.visitWindow('540173', 'NEW');
     cy.writeIntoLookupListField('AD_Table_ID', printFormatLetter, printFormatLetter);
     cy.writeIntoLookupListField('AD_PrintFormat_ID', printFormatName, printFormatName);
-    cy.clickOnCheckBox('IsCreatePrintJob');
+    // cy.clickOnCheckBox('IsCreatePrintJob');
   });
 
   it('creates Marketing platform', function() {

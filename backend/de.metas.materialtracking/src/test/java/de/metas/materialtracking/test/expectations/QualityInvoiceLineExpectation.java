@@ -250,15 +250,10 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 	 * <ul>
 	 * <li>keep logic in sync with {@link InvoiceDetailWriter}.save
 	 * </ul>
-	 *
-	 * @param message
-	 * @param detail
 	 */
 	@OverridingMethodsMustInvokeSuper
-	public String assertExpected(final String message, final I_C_Invoice_Detail detail)
+	public String assertExpected(final String message, @NonNull final I_C_Invoice_Detail detail)
 	{
-		Assert.assertNotNull("detail not null", detail);
-
 		final String prefix = createPrefix(message, detail);
 
 		if (printBefore != null)
@@ -271,7 +266,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (productSet)
 		{
-			assertModelEquals(prefix + "Product", this.product, detail.getM_Product());
+			assertModelEquals(prefix + "Product", this.product.getM_Product_ID(), detail.getM_Product_ID());
 		}
 		if (productNameSet)
 		{
@@ -287,7 +282,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (uomSet)
 		{
-			assertModelEquals(prefix + "UOM", this.uom, detail.getC_UOM());
+			assertModelEquals(prefix + "UOM", this.uom.getC_UOM_ID(), detail.getC_UOM_ID());
 		}
 		if (descriptionSet)
 		{

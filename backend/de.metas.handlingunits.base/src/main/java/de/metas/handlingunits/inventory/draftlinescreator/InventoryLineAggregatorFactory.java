@@ -13,7 +13,6 @@ import de.metas.inventory.AggregationType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -42,12 +41,24 @@ import lombok.Value;
 @Service
 public class InventoryLineAggregatorFactory
 {
-
-	public InventoryLineAggregator createFor(@NonNull final DocBaseAndSubType docBaseAndSubType)
+	public InventoryLineAggregator createForDocBaseAndSubType(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
 		final AggregationType aggregationMode = AggregationType.getByDocTypeOrNull(docBaseAndSubType);
 		Check.assumeNotNull(aggregationMode, "Unexpected docBaseAndSubType={} with no registered aggegationMode", docBaseAndSubType);
 
+		try
+		{
+			return createForAggregationMode(aggregationMode);
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("docBaseAndSubType", docBaseAndSubType);
+		}
+	}
+
+	public InventoryLineAggregator createForAggregationMode(@NonNull final AggregationType aggregationMode)
+	{
 		switch (aggregationMode)
 		{
 			case SINGLE_HU:
@@ -57,10 +68,8 @@ public class InventoryLineAggregatorFactory
 				return MultipleHUInventoryLineAggregator.INSTANCE;
 
 			default:
-				final String message = StringUtils.formatMessage("Unexpected aggegationMode for docBaseAndSubType={}", docBaseAndSubType);
-				throw new AdempiereException(message)
-						.appendParametersToMessage()
-						.setParameter("aggegationMode", aggregationMode);
+				throw new AdempiereException("Unexpected aggegationMode: " + aggregationMode)
+						.appendParametersToMessage();
 		}
 	}
 

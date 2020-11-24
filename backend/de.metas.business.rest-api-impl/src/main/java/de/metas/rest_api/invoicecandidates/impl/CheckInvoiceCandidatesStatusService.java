@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.TimeUtil;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

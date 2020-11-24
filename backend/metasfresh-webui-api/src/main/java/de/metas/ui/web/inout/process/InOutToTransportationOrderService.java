@@ -22,9 +22,20 @@
 
 package de.metas.ui.web.inout.process;
 
+import java.util.List;
+import java.util.Objects;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Package;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -39,14 +50,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Package;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Objects;
 
 @Service
 public class InOutToTransportationOrderService
@@ -83,7 +86,10 @@ public class InOutToTransportationOrderService
 				{
 					continue;
 				}
-				huShipperTransportationBL.addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(inOut));
+
+				final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.ofShipment(inOut);
+				huShipperTransportationBL.addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
+
 				InterfaceWrapperHelper.save(inOut);
 				Loggables.addLog("M_InOut={} added to M_ShipperTransportation_ID={}", inOut.getM_InOut_ID(), shipperTransportationId);
 			}

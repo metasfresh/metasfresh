@@ -43,7 +43,7 @@ public class Issue
 	String htmlUrl;
 
 	@JsonProperty("number")
-	String number;
+	Integer number;
 
 	@JsonProperty("title")
 	String title;

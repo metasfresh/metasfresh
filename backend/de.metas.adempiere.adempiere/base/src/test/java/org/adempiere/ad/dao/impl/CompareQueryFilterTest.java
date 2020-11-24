@@ -178,6 +178,19 @@ public class CompareQueryFilterTest
 		performTestWithLike(model, "abcd", false);
 	}
 
+	@Test
+	public void testCompare_Like2()
+	{
+		final I_Test model = newInstance(I_Test.class);
+		model.setDescription("zabcad");
+
+		performTestWithLike(model, "abcd", false);
+		performTestWithLike(model, "z%", true);
+		performTestWithLike(model, "a%", false);
+		performTestWithLike(model, "d%", false);
+		performTestWithLike(model, "%d", true);
+	}
+
 	private void performTestWithLike(
 			final I_Test model,
 			final String value,

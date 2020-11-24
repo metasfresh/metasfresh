@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
-import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 

@@ -43,5 +43,7 @@ public class AggregationTypeTest
 	{
 		final DocBaseAndSubType docBaseAndSubType = type.getDocBaseAndSubType();
 		assertThat(AggregationType.getByDocTypeOrNull(docBaseAndSubType)).isSameAs(type);
+
+		InventoryDocSubType.ofCode(docBaseAndSubType.getDocSubType());
 	}
 }

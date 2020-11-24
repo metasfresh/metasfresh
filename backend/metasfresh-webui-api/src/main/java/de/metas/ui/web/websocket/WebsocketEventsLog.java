@@ -34,7 +34,7 @@ import de.metas.logging.LogManager;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-public final class WebsocketEventsLog
+final class WebsocketEventsLog
 {
 	private static final Logger logger = LogManager.getLogger(WebsocketEventsLog.class);
 
@@ -42,7 +42,7 @@ public final class WebsocketEventsLog
 	private final AtomicInteger logEventsMaxSize = new AtomicInteger(500);
 	private final List<WebsocketEventLogRecord> loggedEvents = new LinkedList<>();
 
-	public void logEvent(final String destination, final Object event)
+	public void logEvent(final WebsocketTopicName destination, final Object event)
 	{
 		if (!logEventsEnabled.get())
 		{

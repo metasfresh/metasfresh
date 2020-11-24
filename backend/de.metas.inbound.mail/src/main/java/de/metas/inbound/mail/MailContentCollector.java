@@ -1,24 +1,22 @@
 package de.metas.inbound.mail;
 
+import de.metas.logging.LogManager;
+import de.metas.util.FileUtil;
+import groovy.transform.ToString;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.mail.BodyPart;
+import javax.mail.Multipart;
+import javax.mail.Part;
+import javax.mail.internet.ContentType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-
-import javax.mail.BodyPart;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.internet.ContentType;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.util.FileUtils;
-import groovy.transform.ToString;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -182,8 +180,8 @@ final class MailContentCollector
 
 	private void collectAttachment(final String fileName, final ContentType contentType, final InputStream inputStream)
 	{
-		final String fileExt = FileUtils.getFileExtension(fileName);
-		final String fileBaseName = FileUtils.getFileBaseName(fileName);
+		final String fileExt = FileUtil.getFileExtension(fileName);
+		final String fileBaseName = FileUtil.getFileBaseName(fileName);
 
 		try
 		{

@@ -2,20 +2,29 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.NamePair;
 
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.devices.DeviceDescriptor;
+import de.metas.ui.web.devices.DeviceDescriptorsList;
 import de.metas.ui.web.devices.DeviceWebSocketProducerFactory;
-import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
@@ -26,6 +35,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -53,17 +63,13 @@ import lombok.NonNull;
  * Collection of helper methods for building HU attributes layout, extracting widgetType etc.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-/* package */final class HUEditorRowAttributesHelper
+@UtilityClass
+public final class HUEditorRowAttributesHelper
 {
-	private HUEditorRowAttributesHelper()
-	{
-	}
-
 	public static ViewRowAttributesLayout createLayout(final IAttributeStorage attributeStorage)
 	{
-		final int warehouseId = attributeStorage.getM_Warehouse_ID();
+		final WarehouseId warehouseId = attributeStorage.getWarehouseId().orElse(null);
 		final List<DocumentLayoutElementDescriptor> elements = attributeStorage.getAttributeValues()
 				.stream()
 				.map(av -> createLayoutElement(av, warehouseId))
@@ -72,55 +78,57 @@ import lombok.NonNull;
 		return ViewRowAttributesLayout.of(elements);
 	}
 
-	private static DocumentLayoutElementDescriptor createLayoutElement(final IAttributeValue attributeValue, final int warehouseId)
+	private static DocumentLayoutElementDescriptor createLayoutElement(
+			@NonNull final IAttributeValue attributeValue,
+			@Nullable final WarehouseId warehouseId)
 	{
 		final I_M_Attribute attribute = attributeValue.getM_Attribute();
+		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
+
 		final IModelTranslationMap attributeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(attribute);
 		final ITranslatableString caption = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, attribute.getName());
 		final ITranslatableString description = attributeTrlMap.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, attribute.getDescription());
 
-		final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
-		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
+		final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
 
 		return DocumentLayoutElementDescriptor.builder()
 				.setCaption(caption)
 				.setDescription(description)
 				.setWidgetType(widgetType)
-				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeName)
+				.addField(DocumentLayoutElementFieldDescriptor.builder(attributeCode.getCode())
 						.setPublicField(true)
-						.addDevices(createDevices(attribute.getValue(), warehouseId)))
+						.setDevices(getDeviceDescriptors(attributeCode, warehouseId)))
 				.build();
 	}
 
-	private static List<JSONDeviceDescriptor> createDevices(final String attributeCode, final int warehouseId)
+	public static DeviceDescriptorsList getDeviceDescriptors(
+			@NonNull final AttributeCode attributeCode,
+			@Nullable final WarehouseId warehouseId)
 	{
-		return Services.get(IDevicesHubFactory.class)
+		final ImmutableList<DeviceDescriptor> deviceDescriptors = Services.get(IDevicesHubFactory.class)
 				.getDefaultAttributesDevicesHub()
 				.getAttributeDeviceAccessors(attributeCode)
 				.stream(warehouseId)
-				.map(attributeDeviceAccessor -> createDevice(attributeDeviceAccessor))
+				.map(attributeDeviceAccessor -> toDeviceDescriptor(attributeDeviceAccessor))
 				.collect(GuavaCollectors.toImmutableList());
 
+		return DeviceDescriptorsList.ofList(deviceDescriptors);
 	}
 
-	private static JSONDeviceDescriptor createDevice(final AttributeDeviceAccessor attributeDeviceAccessor)
+	private static DeviceDescriptor toDeviceDescriptor(final AttributeDeviceAccessor attributeDeviceAccessor)
 	{
 		final String deviceId = attributeDeviceAccessor.getPublicId();
-		return JSONDeviceDescriptor.builder()
-				.setDeviceId(deviceId)
-				.setCaption(attributeDeviceAccessor.getDisplayName())
-				.setWebsocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
+
+		return DeviceDescriptor.builder()
+				.deviceId(deviceId)
+				.caption(attributeDeviceAccessor.getDisplayName())
+				.websocketEndpoint(DeviceWebSocketProducerFactory.buildDeviceTopicName(deviceId))
 				.build();
 	}
 
-	public static String extractAttributeName(final IAttributeValue attributeValue)
+	public static AttributeCode extractAttributeCode(final org.compiere.model.I_M_Attribute attribute)
 	{
-		return extractAttributeName(attributeValue.getM_Attribute());
-	}
-
-	public static String extractAttributeName(final org.compiere.model.I_M_Attribute attribute)
-	{
-		return attribute.getValue();
+		return AttributeCode.ofString(attribute.getValue());
 	}
 
 	public static Object extractJSONValue(
@@ -134,6 +142,7 @@ import lombok.NonNull;
 		return jsonValue;
 	}
 
+	@Nullable
 	private static Object extractValueAndResolve(
 			@NonNull final IAttributeStorage attributesStorage,
 			@NonNull final IAttributeValue attributeValue)
@@ -147,7 +156,9 @@ import lombok.NonNull;
 		final IAttributeValuesProvider valuesProvider = attributeValue.getAttributeValuesProvider();
 		final Evaluatee evalCtx = valuesProvider.prepareContext(attributesStorage);
 		final NamePair valueNP = valuesProvider.getAttributeValueOrNull(evalCtx, value);
-		return LookupValue.fromNamePair(valueNP);
+		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(I_M_Attribute.Table_Name);
+
+		return LookupValue.fromNamePair(valueNP, null, tooltipType);
 	}
 
 	public static DocumentFieldWidgetType extractWidgetType(final IAttributeValue attributeValue)

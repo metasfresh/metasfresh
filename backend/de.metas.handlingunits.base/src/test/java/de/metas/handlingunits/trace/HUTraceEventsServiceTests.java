@@ -16,8 +16,9 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -40,8 +41,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Injectable;
 
 /*
  * #%L
@@ -69,15 +68,16 @@ public class HUTraceEventsServiceTests
 {
 	private HUTraceEventsService huTraceEventsService;
 
-	@Injectable
 	private HUAccessService huAccessService;
 
 	private I_C_UOM uom;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		huAccessService = Mockito.spy(new HUAccessService());
 		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
@@ -111,20 +111,20 @@ public class HUTraceEventsServiceTests
 		final I_M_HU vhu12 = createVHU(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod12 = newProduct("prod12");
-		final Quantity qty12 = Quantity.of(12, uom);
+		// final Quantity qty12 = Quantity.of(12, uom);
 
 		final I_M_HU luHu21 = saveFluent(newInstance(I_M_HU.class));
 		final I_M_HU vhu21 = createVHU(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod21 = newProduct("prod21");
-		final Quantity qty21 = Quantity.of(21, uom);
+		// final Quantity qty21 = Quantity.of(21, uom);
 
 		final I_M_HU luHu22 = saveFluent(newInstance(I_M_HU.class));
 		final I_M_HU vhu22 = createVHU(X_M_HU.HUSTATUS_Active);
 		vhu22.setHUStatus(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod22 = newProduct("prod22");
-		final Quantity qty22 = Quantity.of(22, uom);
+		// final Quantity qty22 = Quantity.of(22, uom);
 
 		{
 			final TableRecordReference ref1 = TableRecordReference.of(user1);
@@ -170,24 +170,21 @@ public class HUTraceEventsServiceTests
 			SystemTime.resetTimeSource();
 
 			// set up the mocked huAccessService
-			// @formatter:off
-			new Expectations()
-			{{
-				huAccessService.retrieveHuAssignments(user1); result = ImmutableList.of(huAssignment11, huAssignment12);
-				huAccessService.retrieveHuAssignments(user2); result = ImmutableList.of(huAssignment21, huAssignment22, huAssignment22double);
-				
+			{
+				Mockito.doReturn(ImmutableList.of(huAssignment11, huAssignment12)).when(huAccessService).retrieveHuAssignments(user1);
+				Mockito.doReturn(ImmutableList.of(huAssignment21, huAssignment22, huAssignment22double)).when(huAccessService).retrieveHuAssignments(user2);
+
 				// the LU HUs are already top level HUs themselves, so the method shall return their IDs
-				huAccessService.retrieveTopLevelHuId(luHu11); result = luHu11.getM_HU_ID();
-				huAccessService.retrieveTopLevelHuId(luHu12); result = luHu12.getM_HU_ID();
-				huAccessService.retrieveTopLevelHuId(luHu21); result = luHu21.getM_HU_ID();
-				huAccessService.retrieveTopLevelHuId(luHu22); result = luHu22.getM_HU_ID();
-				
-				huAccessService.retrieveProductAndQty(vhu11); result = Optional.of(ImmutablePair.of(prod11, qty11));
-				huAccessService.retrieveProductAndQty(vhu12); result = Optional.of(ImmutablePair.of(prod12, qty12));
-				huAccessService.retrieveProductAndQty(vhu21); result = Optional.of(ImmutablePair.of(prod21, qty21));
-				huAccessService.retrieveProductAndQty(vhu22); result = Optional.of(ImmutablePair.of(prod22, qty22));
-			}};
-			// @formatter:on
+				Mockito.doReturn(luHu11.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(luHu11);
+				Mockito.doReturn(luHu12.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(luHu12);
+				Mockito.doReturn(luHu21.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(luHu21);
+				Mockito.doReturn(luHu22.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(luHu22);
+
+				Mockito.doReturn(Optional.of(ImmutablePair.of(prod11, qty11))).when(huAccessService).retrieveProductAndQty(vhu11);
+				Mockito.doReturn(Optional.of(ImmutablePair.of(prod12, qty11))).when(huAccessService).retrieveProductAndQty(vhu12);
+				Mockito.doReturn(Optional.of(ImmutablePair.of(prod21, qty11))).when(huAccessService).retrieveProductAndQty(vhu21);
+				Mockito.doReturn(Optional.of(ImmutablePair.of(prod22, qty11))).when(huAccessService).retrieveProductAndQty(vhu22);
+			}
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
@@ -267,13 +264,8 @@ public class HUTraceEventsServiceTests
 		save(sourceTrxLine);
 
 		// set up the mocked huAccessService to make sure the trxLines are not discarded because they don't have a product
-		// @formatter:off
-		new Expectations()
-		{{
-			huAccessService.retrieveProductAndQty(vhu); minTimes=0; result = Optional.of(ImmutablePair.of(null, null)); // just return something, doesn't matter what
-			huAccessService.retrieveProductAndQty(sourceVhu); minTimes=0; result = Optional.of(ImmutablePair.of(null, null));
-		}};
-		// @formatter:on
+		Mockito.doReturn(Optional.of(ImmutablePair.of(null, null))).when(huAccessService).retrieveProductAndQty(vhu);
+		Mockito.doReturn(Optional.of(ImmutablePair.of(null, null))).when(huAccessService).retrieveProductAndQty(sourceVhu);
 
 		final ImmutableList<I_M_HU_Trx_Line> trxLines = ImmutableList.of(trxLine, sourceTrxLine);
 
@@ -305,14 +297,9 @@ public class HUTraceEventsServiceTests
 		shipmentScheduleQtyPicked.setVHU(vhu1);
 		save(shipmentScheduleQtyPicked);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			huAccessService.retrieveTopLevelHuId(tu1);   minTimes=0; result = tu1.getM_HU_ID();
-			huAccessService.retrieveTopLevelHuId(vhu1);  minTimes=0; result = tu1.getM_HU_ID();
-			huAccessService.retrieveProductAndQty(vhu1); minTimes=0; result = Optional.of(ImmutablePair.of(vhu1Product, vhu1Qty));
-		}};
-		// @formatter:on
+		Mockito.doReturn(tu1.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(tu1);
+		Mockito.doReturn(tu1.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(vhu1);
+		Mockito.doReturn(Optional.of(ImmutablePair.of(vhu1Product, vhu1Qty))).when(huAccessService).retrieveProductAndQty(vhu1);
 
 		huTraceEventsService.createAndAddFor(shipmentScheduleQtyPicked);
 

@@ -1,12 +1,15 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -14,20 +17,21 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidate;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateFactory;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyRepository;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
-import io.github.jsonSnapshot.SnapshotMatcher;
 
 /*
  * #%L
@@ -63,24 +67,15 @@ class SalesInvoiceCandidateFactoryTest
 		salesInvoiceCandidateFactory = new SalesInvoiceCandidateFactory(moneyService, new CommissionProductService());
 	}
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		SnapshotMatcher.start(
-				AdempiereTestHelper.SNAPSHOT_CONFIG,
-				AdempiereTestHelper.createSnapshotJsonFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
-
 	@Test
 	void forRecord()
 	{
-		SystemTime.setTimeSource(() -> 1583223780929L); // approximately 2020-03-03 09:23CET
+		final Instant fixedTime = LocalDate.parse("2020-03-03")
+				.atTime(LocalTime.parse("09:23:00"))
+				.atZone(ZoneId.of("CET"))
+				.toInstant();
+
+		SystemTime.setTimeSource(fixedTime::toEpochMilli);
 
 		final I_C_UOM uomRecord = BusinessTestHelper.createUOM("uom");
 		final I_C_Currency currencyRecord = BusinessTestHelper.createCurrency("TobiDollar");
@@ -110,12 +105,21 @@ class SalesInvoiceCandidateFactoryTest
 
 		// invoke the method under test
 		final Optional<SalesInvoiceCandidate> result = salesInvoiceCandidateFactory.forRecord(icRecord);
-		assertThat(result).isPresent();
 
-		assertThat(result.get().getForecastCommissionPoints().toBigDecimal()).isEqualByComparingTo("100"); // (Entered - ToInvoiceInUOM - InvoicedInUOM) * PriceActual
-		assertThat(result.get().getCommissionPointsToInvoice().toBigDecimal()).isEqualByComparingTo("300"); // toInvoiceInUOM * priceActual
-		assertThat(result.get().getInvoicedCommissionPoints().toBigDecimal()).isEqualByComparingTo("100"); // invoicedInUOM * priceActual
-
-		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
+		assertThat(result)
+				.get()
+				.isEqualTo(SalesInvoiceCandidate.builder()
+						.id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
+						.orgId(OrgId.ofRepoId(10))
+						.salesRepBPartnerId(BPartnerId.ofRepoId(20))
+						.customerBPartnerId(BPartnerId.ofRepoId(30))
+						.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+						.commissionDate(LocalDate.parse("2020-03-21"))
+						.updated(fixedTime)
+						.forecastCommissionPoints(CommissionPoints.of("100")) // (Entered - ToInvoiceInUOM - InvoicedInUOM) * PriceActual
+						.commissionPointsToInvoice(CommissionPoints.of("300")) // toInvoiceInUOM * priceActual
+						.invoicedCommissionPoints(CommissionPoints.of("100")) // invoicedInUOM * priceActual
+						.tradedCommissionPercent(Percent.ZERO)
+						.build());
 	}
 }

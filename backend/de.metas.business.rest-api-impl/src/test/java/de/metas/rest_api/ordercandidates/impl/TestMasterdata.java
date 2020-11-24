@@ -1,6 +1,6 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -18,6 +18,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -36,6 +37,7 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -94,7 +96,8 @@ final class TestMasterdata
 			@Nullable final PricingSystemId salesPricingSystemId,
 			@NonNull final CountryId countryId,
 			@Nullable final GLN gln,
-			@Nullable final String bpLocationExternalId)
+			@Nullable final String bpLocationExternalId,
+			@Nullable final String vatId)
 	{
 
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
@@ -111,6 +114,7 @@ final class TestMasterdata
 		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
 		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		bpRecord.setC_BP_Group_ID(groupRecord.getC_BP_Group_ID());
+		bpRecord.setVATaxID(vatId);
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()
@@ -280,6 +284,17 @@ final class TestMasterdata
 
 		return ShipperId.ofRepoId(shipper.getM_Shipper_ID());
 
+	}
+
+	public PaymentTermId createPaymentTerm(final String value, final String externalId)
+	{
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setValue(value);
+		paymentTerm.setExternalId(externalId);
+
+		saveRecord(paymentTerm);
+
+		return PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
 	}
 
 	public BPartnerId createSalesRep(final String salesRepCode)

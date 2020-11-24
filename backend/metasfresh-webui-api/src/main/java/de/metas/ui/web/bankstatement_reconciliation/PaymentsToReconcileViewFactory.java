@@ -1,23 +1,3 @@
-package de.metas.ui.web.bankstatement_reconciliation;
-
-import java.util.stream.Stream;
-
-import de.metas.i18n.TranslatableStrings;
-import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.IViewsIndexStorage;
-import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewCloseAction;
-import de.metas.ui.web.view.ViewFactory;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.util.Check;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -40,6 +20,28 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.bankstatement_reconciliation;
+
+import java.util.stream.Stream;
+
+import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
+import de.metas.ui.web.view.ViewFactory;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+
 @ViewFactory(windowId = PaymentsToReconcileViewFactory.WINDOW_ID_String)
 public class PaymentsToReconcileViewFactory implements IViewFactory, IViewsIndexStorage
 {
@@ -61,7 +63,7 @@ public class PaymentsToReconcileViewFactory implements IViewFactory, IViewsIndex
 	}
 
 	@Override
-	public IView createView(final CreateViewRequest request)
+	public IView createView(final @NonNull CreateViewRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -94,6 +96,7 @@ public class PaymentsToReconcileViewFactory implements IViewFactory, IViewsIndex
 		throw new UnsupportedOperationException();
 	}
 
+	@Nullable
 	@Override
 	public PaymentsToReconcileView getByIdOrNull(@NonNull final ViewId paymentsToReconcileViewId)
 	{

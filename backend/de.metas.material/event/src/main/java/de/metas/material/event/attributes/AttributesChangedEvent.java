@@ -3,6 +3,9 @@ package de.metas.material.event.attributes;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -36,7 +39,6 @@ import lombok.Value;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @Builder
 public class AttributesChangedEvent implements MaterialEvent
@@ -62,4 +64,26 @@ public class AttributesChangedEvent implements MaterialEvent
 	AttributesKeyWithASI newStorageAttributes;
 
 	int huId;
+
+	@JsonCreator
+	@Builder
+	private AttributesChangedEvent(
+			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
+			@JsonProperty("date") @NonNull final Instant date,
+			@JsonProperty("productId") final int productId,
+			@JsonProperty("qty") @NonNull final BigDecimal qty,
+			@JsonProperty("oldStorageAttributes") @NonNull final AttributesKeyWithASI oldStorageAttributes,
+			@JsonProperty("newStorageAttributes") @NonNull final AttributesKeyWithASI newStorageAttributes,
+			@JsonProperty("huId") final int huId)
+	{
+		this.eventDescriptor = eventDescriptor;
+		this.warehouseId = warehouseId;
+		this.date = date;
+		this.productId = productId;
+		this.qty = qty;
+		this.oldStorageAttributes = oldStorageAttributes;
+		this.newStorageAttributes = newStorageAttributes;
+		this.huId = huId;
+	}
 }

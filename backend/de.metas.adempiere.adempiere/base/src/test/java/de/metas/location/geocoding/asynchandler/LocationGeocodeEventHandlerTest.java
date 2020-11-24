@@ -22,46 +22,41 @@
 
 package de.metas.location.geocoding.asynchandler;
 
-import de.metas.event.IEventBusFactory;
-import de.metas.location.LocationId;
-import de.metas.location.geocoding.GeoCoordinatesRequest;
-import de.metas.location.geocoding.GeocodingService;
-import de.metas.location.geocoding.GeographicalCoordinates;
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Tested;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import java.math.BigDecimal;
-import java.util.Optional;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.location.LocationId;
+import de.metas.location.geocoding.GeoCoordinatesRequest;
+import de.metas.location.geocoding.GeocodingService;
+import de.metas.location.geocoding.GeographicalCoordinates;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/**
- * Must use jUnit 4 because our version of junit5 and jmockit are incompatible and an error is thrown.
- */
 public class LocationGeocodeEventHandlerTest
 {
-
-	@Injectable
 	private GeocodingService geocodingService;
-
-	@Injectable
-	private IEventBusFactory iEventBusFactory;
-
-	@Tested
 	private LocationGeocodeEventHandler eventHandler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		geocodingService = Mockito.mock(GeocodingService.class);
+
+		eventHandler = new LocationGeocodeEventHandler(
+				PlainEventBusFactory.newInstance(),
+				geocodingService);
 	}
 
 	@Test
@@ -74,41 +69,34 @@ public class LocationGeocodeEventHandlerTest
 		final String postal = "53179";
 		final String city = "Bonn";
 
-		// create location
-		final I_C_Country countryDE = InterfaceWrapperHelper.newInstance(I_C_Country.class);
-		countryDE.setCountryCode("DE");
-		InterfaceWrapperHelper.saveRecord(countryDE);
+		final I_C_Location location;
+		{
+			final I_C_Country countryDE = InterfaceWrapperHelper.newInstance(I_C_Country.class);
+			countryDE.setCountryCode("DE");
+			InterfaceWrapperHelper.saveRecord(countryDE);
 
-		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		location.setAddress1(address1);
-		location.setPostal(postal);
-		location.setCity(city);
-		location.setC_Country_ID(countryDE.getC_Country_ID());
-		InterfaceWrapperHelper.saveRecord(location);
+			location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+			location.setAddress1(address1);
+			location.setPostal(postal);
+			location.setCity(city);
+			location.setC_Country_ID(countryDE.getC_Country_ID());
+			InterfaceWrapperHelper.saveRecord(location);
+		}
+
+		Mockito.doReturn(Optional.of(GeographicalCoordinates.builder().latitude(latitude).longitude(longitude).build()))
+				.when(geocodingService)
+				.findBestCoordinates(GeoCoordinatesRequest.builder()
+						.countryCode2("DE")
+						.address(address1)
+						.postal(postal)
+						.city(city)
+						.build());
 
 		// create request
 		final LocationGeocodeEventRequest locationGeocodeEventRequest = LocationGeocodeEventRequest.of(LocationId.ofRepoId(location.getC_Location_ID()));
-
-		new Expectations()
-		{{
-			final GeoCoordinatesRequest expectedRequest = GeoCoordinatesRequest.builder()
-					.countryCode2("DE")
-					.address(address1)
-					.postal(postal)
-					.city(city)
-					.build();
-			geocodingService.findBestCoordinates(expectedRequest);
-			final GeographicalCoordinates desiredResponse = GeographicalCoordinates.builder()
-					.latitude(latitude)
-					.longitude(longitude)
-					.build();
-			result = Optional.of(desiredResponse);
-		}};
-
 		eventHandler.handleEvent(locationGeocodeEventRequest);
 
 		InterfaceWrapperHelper.refresh(location);
-
 		assertThat(location)
 				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue)
 				.containsExactly(latitude, longitude, X_C_Location.GEOCODINGSTATUS_Resolved, null);
@@ -122,41 +110,37 @@ public class LocationGeocodeEventHandlerTest
 		final String postal = "doesn't ";
 		final String city = "exist";
 
-		// create location
-		final I_C_Country countryDE = InterfaceWrapperHelper.newInstance(I_C_Country.class);
-		countryDE.setCountryCode("DE");
-		InterfaceWrapperHelper.saveRecord(countryDE);
+		final I_C_Location location;
+		{
+			final I_C_Country countryDE = InterfaceWrapperHelper.newInstance(I_C_Country.class);
+			countryDE.setCountryCode("DE");
+			InterfaceWrapperHelper.saveRecord(countryDE);
 
-		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		location.setAddress1(address1);
-		location.setAddress2(address2);
-		location.setPostal(postal);
-		location.setCity(city);
-		location.setC_Country_ID(countryDE.getC_Country_ID());
-		InterfaceWrapperHelper.saveRecord(location);
+			location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+			location.setAddress1(address1);
+			location.setAddress2(address2);
+			location.setPostal(postal);
+			location.setCity(city);
+			location.setC_Country_ID(countryDE.getC_Country_ID());
+			InterfaceWrapperHelper.saveRecord(location);
+		}
+
+		Mockito.doReturn(Optional.empty())
+				.when(geocodingService)
+				.findBestCoordinates(GeoCoordinatesRequest.builder()
+						.countryCode2("DE")
+						.address(address1 + " " + address2)
+						.postal(postal)
+						.city(city)
+						.build());
 
 		// create request
 		final LocationGeocodeEventRequest locationGeocodeEventRequest = LocationGeocodeEventRequest.of(LocationId.ofRepoId(location.getC_Location_ID()));
-
-		new Expectations()
-		{{
-			final GeoCoordinatesRequest expectedRequest = GeoCoordinatesRequest.builder()
-					.countryCode2("DE")
-					.address(address1 + " " + address2)
-					.postal(postal)
-					.city(city)
-					.build();
-			geocodingService.findBestCoordinates(expectedRequest);
-			result = Optional.empty();
-		}};
-
 		eventHandler.handleEvent(locationGeocodeEventRequest);
 
 		InterfaceWrapperHelper.refresh(location);
-
 		assertThat(location)
 				.extracting(I_C_Location::getLatitude, I_C_Location::getLongitude, I_C_Location::getGeocodingStatus, I_C_Location::getGeocoding_Issue)
 				.containsExactly(BigDecimal.ZERO, BigDecimal.ZERO, X_C_Location.GEOCODINGSTATUS_NotResolved, null);
 	}
-
 }

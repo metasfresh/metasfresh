@@ -1,5 +1,7 @@
 package de.metas.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.util
@@ -13,99 +15,122 @@ package de.metas.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import de.metas.util.NumberUtils;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 public class NumberUtilsTest
 {
-	@Test
-	public void test_stripTrailingDecimalZeros_NULL()
+	@Nested
+	public class stripTrailingDecimalZeros
 	{
-		Assert.assertNull("Invalid stripTrailingDecimalZeros result for NULL",
-				NumberUtils.stripTrailingDecimalZeros(null));
+		@Test
+		public void nullValue()
+		{
+			assertThat(NumberUtils.stripTrailingDecimalZeros(null)).isNull();
+		}
+
+		@Test
+		public void zeros()
+		{
+			test_stripTrailingDecimalZeros("0", "0");
+			test_stripTrailingDecimalZeros("0", "0.0");
+			test_stripTrailingDecimalZeros("0", "0.00");
+			test_stripTrailingDecimalZeros("0", "0.0000000000000000000000000000000");
+		}
+
+		@Test
+		public void standardTests()
+		{
+			test_stripTrailingDecimalZeros("0", "0");
+			test_stripTrailingDecimalZeros("10", "10");
+			test_stripTrailingDecimalZeros("10", "10.0");
+			test_stripTrailingDecimalZeros("100000000", "100000000.0");
+			test_stripTrailingDecimalZeros("10.1", "10.1");
+			test_stripTrailingDecimalZeros("10.1", "10.10");
+			test_stripTrailingDecimalZeros("10.1", "10.1000000000");
+			test_stripTrailingDecimalZeros("10.1234567", "10.1234567");
+			test_stripTrailingDecimalZeros("10.1234567", "10.12345670");
+			test_stripTrailingDecimalZeros("10.1234567", "10.123456700000");
+
+			test_stripTrailingDecimalZeros("-10", "-10");
+			test_stripTrailingDecimalZeros("-10", "-10.0");
+			test_stripTrailingDecimalZeros("-100000000", "-100000000.0");
+			test_stripTrailingDecimalZeros("-10.1", "-10.1");
+			test_stripTrailingDecimalZeros("-10.1", "-10.10");
+			test_stripTrailingDecimalZeros("-10.1", "-10.1000000000");
+			test_stripTrailingDecimalZeros("-10.1234567", "-10.1234567");
+			test_stripTrailingDecimalZeros("-10.1234567", "-10.12345670");
+			test_stripTrailingDecimalZeros("-10.1234567", "-10.123456700000");
+		}
+
+		private void test_stripTrailingDecimalZeros(final String expectedNumberStr, String numberStr)
+		{
+			final BigDecimal expectedNumber = new BigDecimal(expectedNumberStr);
+			final BigDecimal number = new BigDecimal(numberStr);
+
+			final BigDecimal actualNumber = NumberUtils.stripTrailingDecimalZeros(number);
+
+			assertThat(actualNumber)
+					.as("numberStr=" + numberStr)
+					.isEqualTo(expectedNumber);
+		}
 	}
 
-	@Test
-	public void test_stripTrailingDecimalZeros_Zeros()
+	@Nested
+	public class getErrorMarginForScale
 	{
-		test_stripTrailingDecimalZeros("0", "0");
-		test_stripTrailingDecimalZeros("0", "0.0");
-		test_stripTrailingDecimalZeros("0", "0.00");
-		test_stripTrailingDecimalZeros("0", "0.0000000000000000000000000000000");
+		@Test
+		public void standardTests()
+		{
+			test_getErrorMarginForScale("0", 0);
+			test_getErrorMarginForScale("0.1", 1);
+			test_getErrorMarginForScale("0.01", 2);
+			test_getErrorMarginForScale("0.001", 3);
+			//
+			test_getErrorMarginForScale("10", -1);
+			test_getErrorMarginForScale("100", -2);
+			test_getErrorMarginForScale("1000", -3);
+		}
+
+		private void test_getErrorMarginForScale(final String expectedValueStr, final int scale)
+		{
+			assertThat(NumberUtils.getErrorMarginForScale(scale))
+					.withFailMessage("Invalid ErrorMargin for scale=" + scale)
+					.isEqualTo(new BigDecimal(expectedValueStr));
+		}
 	}
 
-	@Test
-	public void test_stripTrailingDecimalZeros()
+	@Nested
+	public class randomBigDecimal
 	{
-		test_stripTrailingDecimalZeros("0", "0");
-		test_stripTrailingDecimalZeros("10", "10");
-		test_stripTrailingDecimalZeros("10", "10.0");
-		test_stripTrailingDecimalZeros("100000000", "100000000.0");
-		test_stripTrailingDecimalZeros("10.1", "10.1");
-		test_stripTrailingDecimalZeros("10.1", "10.10");
-		test_stripTrailingDecimalZeros("10.1", "10.1000000000");
-		test_stripTrailingDecimalZeros("10.1234567", "10.1234567");
-		test_stripTrailingDecimalZeros("10.1234567", "10.12345670");
-		test_stripTrailingDecimalZeros("10.1234567", "10.123456700000");
+		@RepeatedTest(100)
+		public void between_100_and_900_scale_3()
+		{
+			test("100", "900", 3);
+		}
 
-		test_stripTrailingDecimalZeros("-10", "-10");
-		test_stripTrailingDecimalZeros("-10", "-10.0");
-		test_stripTrailingDecimalZeros("-100000000", "-100000000.0");
-		test_stripTrailingDecimalZeros("-10.1", "-10.1");
-		test_stripTrailingDecimalZeros("-10.1", "-10.10");
-		test_stripTrailingDecimalZeros("-10.1", "-10.1000000000");
-		test_stripTrailingDecimalZeros("-10.1234567", "-10.1234567");
-		test_stripTrailingDecimalZeros("-10.1234567", "-10.12345670");
-		test_stripTrailingDecimalZeros("-10.1234567", "-10.123456700000");
+		private void test(final String valueMinStr, final String valueMaxStr, final int scale)
+		{
+			final BigDecimal valueMin = new BigDecimal(valueMinStr);
+			final BigDecimal valueMax = new BigDecimal(valueMaxStr);
 
+			final BigDecimal value = NumberUtils.randomBigDecimal(valueMin, valueMax, scale);
+
+			assertThat(value).isGreaterThanOrEqualTo(valueMin);
+			assertThat(value).isLessThanOrEqualTo(valueMax);
+			assertThat(value.scale()).isLessThanOrEqualTo(scale);
+		}
 	}
-
-	private void test_stripTrailingDecimalZeros(final String expectedNumberStr, String numberStr)
-	{
-		final BigDecimal expectedNumber = new BigDecimal(expectedNumberStr);
-		final BigDecimal number = new BigDecimal(numberStr);
-
-		final BigDecimal actualNumber = NumberUtils.stripTrailingDecimalZeros(number);
-
-		Assert.assertEquals("Invalid stripTrailingDecimalZeros result for " + numberStr, expectedNumber, actualNumber);
-	}
-
-	@Test
-	public void test_getErrorMarginForScale()
-	{
-		test_getErrorMarginForScale("0", 0);
-		test_getErrorMarginForScale("0.1", 1);
-		test_getErrorMarginForScale("0.01", 2);
-		test_getErrorMarginForScale("0.001", 3);
-		//
-		test_getErrorMarginForScale("10", -1);
-		test_getErrorMarginForScale("100", -2);
-		test_getErrorMarginForScale("1000", -3);
-	}
-
-	private void test_getErrorMarginForScale(final String expectedValueStr, final int scale)
-	{
-		final BigDecimal expectedValue = new BigDecimal(expectedValueStr);
-
-		final String message = "Invalid ErrorMargin for scale=" + scale;
-		Assert.assertEquals(message,
-				expectedValue,
-				NumberUtils.getErrorMarginForScale(scale)
-				);
-	}
-
 }

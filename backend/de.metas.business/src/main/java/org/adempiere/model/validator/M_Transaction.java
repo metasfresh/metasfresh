@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
@@ -51,7 +50,7 @@ public class M_Transaction
 		final BigDecimal diffQtyOrdered = BigDecimal.ZERO;
 
 		// FIXME: consider to do it async, after commit to make sure we are consistent!
-		final boolean updated = Services.get(IStorageBL.class).add(ctx,
+		Services.get(IStorageBL.class).add(ctx,
 				locator.getM_Warehouse_ID(),
 				locator.getM_Locator_ID(),
 				mtrx.getM_Product_ID(),
@@ -61,9 +60,5 @@ public class M_Transaction
 				diffQtyReserved,
 				diffQtyOrdered,
 				trxName);
-		if (!updated)
-		{
-			throw new AdempiereException("Cannot update M_Storage for " + mtrx);
-		}
 	}
 }

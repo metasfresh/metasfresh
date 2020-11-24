@@ -1,15 +1,19 @@
-/** Generated Model - DO NOT CHANGE */
+/**
+ * Generated Model - DO NOT CHANGE
+ */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for C_Order
- *  @author Adempiere (generated) 
+/**
+ * Generated Model for C_Order
+ *
+ * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
+public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -17,391 +21,464 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	 */
 	private static final long serialVersionUID = -394691916L;
 
-    /** Standard Constructor */
-    public X_C_Order (Properties ctx, int C_Order_ID, String trxName)
-    {
-      super (ctx, C_Order_ID, trxName);
-      /** if (C_Order_ID == 0)
-        {
-			setC_BPartner_ID (0);
-			setC_BPartner_Location_ID (0);
-			setC_Currency_ID (0); // @C_Currency_ID@
-			setC_DocType_ID (0); // 0
-			setC_DocTypeTarget_ID (0);
-			setC_Order_ID (0);
-			setC_PaymentTerm_ID (0);
-			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setDateOrdered (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setDatePromised (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setDeliveryRule (null); // F
-			setDeliveryViaRule (null);
-			setDocAction (null); // CO
-			setDocStatus (null); // DR
-			setDocumentNo (null);
-			setFreightAmt (BigDecimal.ZERO);
-			setFreightCostRule (null); // I
-			setGrandTotal (BigDecimal.ZERO);
-			setInvoiceRule (null); // I
-			setIsApproved (false); // @IsApproved@
-			setIsCreditApproved (false);
-			setIsDelivered (false);
-			setIsDiscountPrinted (false); // N
-			setIsDropShip (false); // N
-			setIsInvoiced (false);
-			setIsPrinted (false);
-			setIsSalesPartnerRequired (false); // N
-			setIsSelected (false);
-			setIsSelfService (false);
-			setIsSOTrx (false); // @IsSOTrx@
-			setIsTaxIncluded (false);
-			setIsTransferred (false);
-			setIsUseBillToAddress (false); // N
-			setIsUseBPartnerAddress (false); // N
-			setM_PricingSystem_ID (0);
-			setM_Warehouse_ID (0);
-			setPaymentRule (null);
-			setPosted (false); // N
-			setPriorityRule (null); // 5
-			setProcessed (false);
-			setSendEMail (false);
-			setTotalLines (BigDecimal.ZERO);
-        } */
-    }
-
-    /** Load Constructor */
-    public X_C_Order (Properties ctx, ResultSet rs, String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
-
-
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Buchende Organisation.
-		@param AD_OrgTrx_ID 
-		Performing or initiating organization
-	  */
-	@Override
-	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
+	/**
+	 * Standard Constructor
+	 */
+	public X_C_Order(Properties ctx, int C_Order_ID, String trxName)
 	{
-		if (AD_OrgTrx_ID < 1) 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
+		super(ctx, C_Order_ID, trxName);
+		/** if (C_Order_ID == 0)
+		 {
+		 setC_BPartner_ID (0);
+		 setC_BPartner_Location_ID (0);
+		 setC_Currency_ID (0); // @C_Currency_ID@
+		 setC_DocType_ID (0); // 0
+		 setC_DocTypeTarget_ID (0);
+		 setC_Order_ID (0);
+		 setC_PaymentTerm_ID (0);
+		 setDateAcct (new Timestamp( System.currentTimeMillis() )); // @#Date@
+		 setDateOrdered (new Timestamp( System.currentTimeMillis() )); // @#Date@
+		 setDatePromised (new Timestamp( System.currentTimeMillis() )); // @#Date@
+		 setDeliveryRule (null); // F
+		 setDeliveryViaRule (null);
+		 setDocAction (null); // CO
+		 setDocStatus (null); // DR
+		 setDocumentNo (null);
+		 setFreightAmt (BigDecimal.ZERO);
+		 setFreightCostRule (null); // I
+		 setGrandTotal (BigDecimal.ZERO);
+		 setInvoiceRule (null); // I
+		 setIsApproved (false); // @IsApproved@
+		 setIsCreditApproved (false);
+		 setIsDelivered (false);
+		 setIsDiscountPrinted (false); // N
+		 setIsDropShip (false); // N
+		 setIsInvoiced (false);
+		 setIsPrinted (false);
+		 setIsSalesPartnerRequired (false); // N
+		 setIsSelected (false);
+		 setIsSelfService (false);
+		 setIsSOTrx (false); // @IsSOTrx@
+		 setIsTaxIncluded (false);
+		 setIsTransferred (false);
+		 setIsUseBillToAddress (false); // N
+		 setIsUseBPartnerAddress (false); // N
+		 setM_PricingSystem_ID (0);
+		 setM_Warehouse_ID (0);
+		 setPaymentRule (null);
+		 setPosted (false); // N
+		 setPriorityRule (null); // 5
+		 setProcessed (false);
+		 setSendEMail (false);
+		 setTotalLines (BigDecimal.ZERO);
+		 } */
 	}
 
-	/** Get Buchende Organisation.
-		@return Performing or initiating organization
-	  */
+	/**
+	 * Load Constructor
+	 */
+	public X_C_Order(Properties ctx, ResultSet rs, String trxName)
+	{
+		super(ctx, rs, trxName);
+	}
+
+	/**
+	 * Load Meta Data
+	 */
 	@Override
-	public int getAD_OrgTrx_ID () 
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo(ctx, Table_Name, get_TrxName());
+		return poi;
+	}
+
+	/**
+	 * Set Buchende Organisation.
+	 *
+	 * @param AD_OrgTrx_ID Performing or initiating organization
+	 */
+	@Override
+	public void setAD_OrgTrx_ID(int AD_OrgTrx_ID)
+	{
+		if (AD_OrgTrx_ID < 1)
+			set_Value(COLUMNNAME_AD_OrgTrx_ID, null);
+		else
+			set_Value(COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
+	}
+
+	/**
+	 * Get Buchende Organisation.
+	 *
+	 * @return Performing or initiating organization
+	 */
+	@Override
+	public int getAD_OrgTrx_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
+	/**
+	 * Set Ansprechpartner.
+	 *
+	 * @param AD_User_ID User within the system - Internal or Business Partner Contact
+	 */
 	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setAD_User_ID(int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
-			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+		if (AD_User_ID < 0)
+			set_Value(COLUMNNAME_AD_User_ID, null);
+		else
+			set_Value(COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
+	/**
+	 * Get Ansprechpartner.
+	 *
+	 * @return User within the system - Internal or Business Partner Contact
+	 */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set AmountRefunded.
-		@param AmountRefunded AmountRefunded	  */
+	/**
+	 * Set AmountRefunded.
+	 *
+	 * @param AmountRefunded AmountRefunded
+	 */
 	@Override
-	public void setAmountRefunded (java.math.BigDecimal AmountRefunded)
+	public void setAmountRefunded(java.math.BigDecimal AmountRefunded)
 	{
-		set_Value (COLUMNNAME_AmountRefunded, AmountRefunded);
+		set_Value(COLUMNNAME_AmountRefunded, AmountRefunded);
 	}
 
-	/** Get AmountRefunded.
-		@return AmountRefunded	  */
+	/**
+	 * Get AmountRefunded.
+	 *
+	 * @return AmountRefunded
+	 */
 	@Override
-	public java.math.BigDecimal getAmountRefunded () 
+	public java.math.BigDecimal getAmountRefunded()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmountRefunded);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set AmountTendered.
-		@param AmountTendered AmountTendered	  */
+	/**
+	 * Set AmountTendered.
+	 *
+	 * @param AmountTendered AmountTendered
+	 */
 	@Override
-	public void setAmountTendered (java.math.BigDecimal AmountTendered)
+	public void setAmountTendered(java.math.BigDecimal AmountTendered)
 	{
-		set_Value (COLUMNNAME_AmountTendered, AmountTendered);
+		set_Value(COLUMNNAME_AmountTendered, AmountTendered);
 	}
 
-	/** Get AmountTendered.
-		@return AmountTendered	  */
+	/**
+	 * Get AmountTendered.
+	 *
+	 * @return AmountTendered
+	 */
 	@Override
-	public java.math.BigDecimal getAmountTendered () 
+	public java.math.BigDecimal getAmountTendered()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmountTendered);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Rechnungspartner.
-		@param Bill_BPartner_ID 
-		Geschäftspartner für die Rechnungsstellung
-	  */
+	/**
+	 * Set Rechnungspartner.
+	 *
+	 * @param Bill_BPartner_ID Geschäftspartner für die Rechnungsstellung
+	 */
 	@Override
-	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	public void setBill_BPartner_ID(int Bill_BPartner_ID)
 	{
-		if (Bill_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+		if (Bill_BPartner_ID < 1)
+			set_Value(COLUMNNAME_Bill_BPartner_ID, null);
+		else
+			set_Value(COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
 	}
 
-	/** Get Rechnungspartner.
-		@return Geschäftspartner für die Rechnungsstellung
-	  */
+	/**
+	 * Get Rechnungspartner.
+	 *
+	 * @return Geschäftspartner für die Rechnungsstellung
+	 */
 	@Override
-	public int getBill_BPartner_ID () 
+	public int getBill_BPartner_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Rechnungspartner-Memo.
-		@param Bill_BPartner_Memo Rechnungspartner-Memo	  */
+	/**
+	 * Set Rechnungspartner-Memo.
+	 *
+	 * @param Bill_BPartner_Memo Rechnungspartner-Memo
+	 */
 	@Override
-	public void setBill_BPartner_Memo (java.lang.String Bill_BPartner_Memo)
+	public void setBill_BPartner_Memo(java.lang.String Bill_BPartner_Memo)
 	{
-		throw new IllegalArgumentException ("Bill_BPartner_Memo is virtual column");	}
+		throw new IllegalArgumentException("Bill_BPartner_Memo is virtual column");
+	}
 
-	/** Get Rechnungspartner-Memo.
-		@return Rechnungspartner-Memo	  */
+	/**
+	 * Get Rechnungspartner-Memo.
+	 *
+	 * @return Rechnungspartner-Memo
+	 */
 	@Override
-	public java.lang.String getBill_BPartner_Memo () 
+	public java.lang.String getBill_BPartner_Memo()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Bill_BPartner_Memo);
 	}
 
-	/** Set Rechnungsstandort.
-		@param Bill_Location_ID 
-		Business Partner Location for invoicing
-	  */
+	/**
+	 * Set Rechnungsstandort.
+	 *
+	 * @param Bill_Location_ID Business Partner Location for invoicing
+	 */
 	@Override
-	public void setBill_Location_ID (int Bill_Location_ID)
+	public void setBill_Location_ID(int Bill_Location_ID)
 	{
-		if (Bill_Location_ID < 1) 
-			set_Value (COLUMNNAME_Bill_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_Bill_Location_ID, Integer.valueOf(Bill_Location_ID));
+		if (Bill_Location_ID < 1)
+			set_Value(COLUMNNAME_Bill_Location_ID, null);
+		else
+			set_Value(COLUMNNAME_Bill_Location_ID, Integer.valueOf(Bill_Location_ID));
 	}
 
-	/** Get Rechnungsstandort.
-		@return Business Partner Location for invoicing
-	  */
+	/**
+	 * Get Rechnungsstandort.
+	 *
+	 * @return Business Partner Location for invoicing
+	 */
 	@Override
-	public int getBill_Location_ID () 
+	public int getBill_Location_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_Location_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Abw. Rechnungsadresse.
-		@param BillToAddress Abw. Rechnungsadresse	  */
+	/**
+	 * Set Abw. Rechnungsadresse.
+	 *
+	 * @param BillToAddress Abw. Rechnungsadresse
+	 */
 	@Override
-	public void setBillToAddress (java.lang.String BillToAddress)
+	public void setBillToAddress(java.lang.String BillToAddress)
 	{
-		set_Value (COLUMNNAME_BillToAddress, BillToAddress);
+		set_Value(COLUMNNAME_BillToAddress, BillToAddress);
 	}
 
-	/** Get Abw. Rechnungsadresse.
-		@return Abw. Rechnungsadresse	  */
+	/**
+	 * Get Abw. Rechnungsadresse.
+	 *
+	 * @return Abw. Rechnungsadresse
+	 */
 	@Override
-	public java.lang.String getBillToAddress () 
+	public java.lang.String getBillToAddress()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BillToAddress);
 	}
 
-	/** Set Rechnungskontakt.
-		@param Bill_User_ID 
-		Ansprechpartner des Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Set Rechnungskontakt.
+	 *
+	 * @param Bill_User_ID Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	 */
 	@Override
-	public void setBill_User_ID (int Bill_User_ID)
+	public void setBill_User_ID(int Bill_User_ID)
 	{
-		if (Bill_User_ID < 1) 
-			set_Value (COLUMNNAME_Bill_User_ID, null);
-		else 
-			set_Value (COLUMNNAME_Bill_User_ID, Integer.valueOf(Bill_User_ID));
+		if (Bill_User_ID < 1)
+			set_Value(COLUMNNAME_Bill_User_ID, null);
+		else
+			set_Value(COLUMNNAME_Bill_User_ID, Integer.valueOf(Bill_User_ID));
 	}
 
-	/** Get Rechnungskontakt.
-		@return Ansprechpartner des Geschäftspartners für die Rechnungsstellung
-	  */
+	/**
+	 * Get Rechnungskontakt.
+	 *
+	 * @return Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	 */
 	@Override
-	public int getBill_User_ID () 
+	public int getBill_User_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Anschrift-Text.
-		@param BPartnerAddress Anschrift-Text	  */
+	/**
+	 * Set Anschrift-Text.
+	 *
+	 * @param BPartnerAddress Anschrift-Text
+	 */
 	@Override
-	public void setBPartnerAddress (java.lang.String BPartnerAddress)
+	public void setBPartnerAddress(java.lang.String BPartnerAddress)
 	{
-		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
+		set_Value(COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
 
-	/** Get Anschrift-Text.
-		@return Anschrift-Text	  */
+	/**
+	 * Get Anschrift-Text.
+	 *
+	 * @return Anschrift-Text
+	 */
 	@Override
-	public java.lang.String getBPartnerAddress () 
+	public java.lang.String getBPartnerAddress()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress);
 	}
 
-	/** Set Kostenstelle.
-		@param C_Activity_ID 
-		Kostenstelle
-	  */
+	/**
+	 * Set Kostenstelle.
+	 *
+	 * @param C_Activity_ID Kostenstelle
+	 */
 	@Override
-	public void setC_Activity_ID (int C_Activity_ID)
+	public void setC_Activity_ID(int C_Activity_ID)
 	{
-		if (C_Activity_ID < 1) 
-			set_Value (COLUMNNAME_C_Activity_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
+		if (C_Activity_ID < 1)
+			set_Value(COLUMNNAME_C_Activity_ID, null);
+		else
+			set_Value(COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
 	}
 
-	/** Get Kostenstelle.
-		@return Kostenstelle
-	  */
+	/**
+	 * Get Kostenstelle.
+	 *
+	 * @return Kostenstelle
+	 */
 	@Override
-	public int getC_Activity_ID () 
+	public int getC_Activity_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
+	/**
+	 * Set Geschäftspartner.
+	 *
+	 * @param C_BPartner_ID Identifies a Business Partner
+	 */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID(int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		if (C_BPartner_ID < 1)
+			set_Value(COLUMNNAME_C_BPartner_ID, null);
+		else
+			set_Value(COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
+	/**
+	 * Get Geschäftspartner.
+	 *
+	 * @return Identifies a Business Partner
+	 */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifies the (ship to) address for this Business Partner
-	  */
+	/**
+	 * Set Standort.
+	 *
+	 * @param C_BPartner_Location_ID Identifies the (ship to) address for this Business Partner
+	 */
 	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID(int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+		if (C_BPartner_Location_ID < 1)
+			set_Value(COLUMNNAME_C_BPartner_Location_ID, null);
+		else
+			set_Value(COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
 	}
 
-	/** Get Standort.
-		@return Identifies the (ship to) address for this Business Partner
-	  */
+	/**
+	 * Get Standort.
+	 *
+	 * @return Identifies the (ship to) address for this Business Partner
+	 */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Geschäftspartner-Memo.
-		@param C_BPartner_Memo Geschäftspartner-Memo	  */
+	/**
+	 * Set Geschäftspartner-Memo.
+	 *
+	 * @param C_BPartner_Memo Geschäftspartner-Memo
+	 */
 	@Override
-	public void setC_BPartner_Memo (java.lang.String C_BPartner_Memo)
+	public void setC_BPartner_Memo(java.lang.String C_BPartner_Memo)
 	{
-		throw new IllegalArgumentException ("C_BPartner_Memo is virtual column");	}
+		throw new IllegalArgumentException("C_BPartner_Memo is virtual column");
+	}
 
-	/** Get Geschäftspartner-Memo.
-		@return Geschäftspartner-Memo	  */
+	/**
+	 * Get Geschäftspartner-Memo.
+	 *
+	 * @return Geschäftspartner-Memo
+	 */
 	@Override
-	public java.lang.String getC_BPartner_Memo () 
+	public java.lang.String getC_BPartner_Memo()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_C_BPartner_Memo);
 	}
 
-	/** Set Zugeordneter Vertriebspartner.
-		@param C_BPartner_SalesRep_ID Zugeordneter Vertriebspartner	  */
+	/**
+	 * Set Zugeordneter Vertriebspartner.
+	 *
+	 * @param C_BPartner_SalesRep_ID Zugeordneter Vertriebspartner
+	 */
 	@Override
-	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID)
+	public void setC_BPartner_SalesRep_ID(int C_BPartner_SalesRep_ID)
 	{
-		if (C_BPartner_SalesRep_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, Integer.valueOf(C_BPartner_SalesRep_ID));
+		if (C_BPartner_SalesRep_ID < 1)
+			set_Value(COLUMNNAME_C_BPartner_SalesRep_ID, null);
+		else
+			set_Value(COLUMNNAME_C_BPartner_SalesRep_ID, Integer.valueOf(C_BPartner_SalesRep_ID));
 	}
 
-	/** Get Zugeordneter Vertriebspartner.
-		@return Zugeordneter Vertriebspartner	  */
+	/**
+	 * Get Zugeordneter Vertriebspartner.
+	 *
+	 * @return Zugeordneter Vertriebspartner
+	 */
 	@Override
-	public int getC_BPartner_SalesRep_ID () 
+	public int getC_BPartner_SalesRep_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_SalesRep_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -417,28 +494,31 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
 	}
 
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bank Account of the Business Partner
-	  */
+	/**
+	 * Set Bankverbindung.
+	 *
+	 * @param C_BP_BankAccount_ID Bank Account of the Business Partner
+	 */
 	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
+	public void setC_BP_BankAccount_ID(int C_BP_BankAccount_ID)
 	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+		if (C_BP_BankAccount_ID < 1)
+			set_Value(COLUMNNAME_C_BP_BankAccount_ID, null);
+		else
+			set_Value(COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
 	}
 
-	/** Get Bankverbindung.
-		@return Bank Account of the Business Partner
-	  */
+	/**
+	 * Get Bankverbindung.
+	 *
+	 * @return Bank Account of the Business Partner
+	 */
 	@Override
-	public int getC_BP_BankAccount_ID () 
+	public int getC_BP_BankAccount_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -454,28 +534,31 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
 	}
 
-	/** Set Werbemassnahme.
-		@param C_Campaign_ID 
-		Marketing Campaign
-	  */
+	/**
+	 * Set Werbemassnahme.
+	 *
+	 * @param C_Campaign_ID Marketing Campaign
+	 */
 	@Override
-	public void setC_Campaign_ID (int C_Campaign_ID)
+	public void setC_Campaign_ID(int C_Campaign_ID)
 	{
-		if (C_Campaign_ID < 1) 
-			set_Value (COLUMNNAME_C_Campaign_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
+		if (C_Campaign_ID < 1)
+			set_Value(COLUMNNAME_C_Campaign_ID, null);
+		else
+			set_Value(COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
 	}
 
-	/** Get Werbemassnahme.
-		@return Marketing Campaign
-	  */
+	/**
+	 * Get Werbemassnahme.
+	 *
+	 * @return Marketing Campaign
+	 */
 	@Override
-	public int getC_Campaign_ID () 
+	public int getC_Campaign_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -491,238 +574,271 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_C_CashLine_ID, org.compiere.model.I_C_CashLine.class, C_CashLine);
 	}
 
-	/** Set Cash Journal Line.
-		@param C_CashLine_ID 
-		Cash Journal Line
-	  */
+	/**
+	 * Set Cash Journal Line.
+	 *
+	 * @param C_CashLine_ID Cash Journal Line
+	 */
 	@Override
-	public void setC_CashLine_ID (int C_CashLine_ID)
+	public void setC_CashLine_ID(int C_CashLine_ID)
 	{
-		if (C_CashLine_ID < 1) 
-			set_Value (COLUMNNAME_C_CashLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_CashLine_ID, Integer.valueOf(C_CashLine_ID));
+		if (C_CashLine_ID < 1)
+			set_Value(COLUMNNAME_C_CashLine_ID, null);
+		else
+			set_Value(COLUMNNAME_C_CashLine_ID, Integer.valueOf(C_CashLine_ID));
 	}
 
-	/** Get Cash Journal Line.
-		@return Cash Journal Line
-	  */
+	/**
+	 * Get Cash Journal Line.
+	 *
+	 * @return Cash Journal Line
+	 */
 	@Override
-	public int getC_CashLine_ID () 
+	public int getC_CashLine_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_CashLine_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Kosten.
-		@param C_Charge_ID 
-		Additional document charges
-	  */
+	/**
+	 * Set Kosten.
+	 *
+	 * @param C_Charge_ID Additional document charges
+	 */
 	@Override
-	public void setC_Charge_ID (int C_Charge_ID)
+	public void setC_Charge_ID(int C_Charge_ID)
 	{
-		if (C_Charge_ID < 1) 
-			set_Value (COLUMNNAME_C_Charge_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+		if (C_Charge_ID < 1)
+			set_Value(COLUMNNAME_C_Charge_ID, null);
+		else
+			set_Value(COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
 	}
 
-	/** Get Kosten.
-		@return Additional document charges
-	  */
+	/**
+	 * Get Kosten.
+	 *
+	 * @return Additional document charges
+	 */
 	@Override
-	public int getC_Charge_ID () 
+	public int getC_Charge_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Kursart.
-		@param C_ConversionType_ID 
-		Currency Conversion Rate Type
-	  */
+	/**
+	 * Set Kursart.
+	 *
+	 * @param C_ConversionType_ID Currency Conversion Rate Type
+	 */
 	@Override
-	public void setC_ConversionType_ID (int C_ConversionType_ID)
+	public void setC_ConversionType_ID(int C_ConversionType_ID)
 	{
-		if (C_ConversionType_ID < 1) 
-			set_Value (COLUMNNAME_C_ConversionType_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_ConversionType_ID, Integer.valueOf(C_ConversionType_ID));
+		if (C_ConversionType_ID < 1)
+			set_Value(COLUMNNAME_C_ConversionType_ID, null);
+		else
+			set_Value(COLUMNNAME_C_ConversionType_ID, Integer.valueOf(C_ConversionType_ID));
 	}
 
-	/** Get Kursart.
-		@return Currency Conversion Rate Type
-	  */
+	/**
+	 * Get Kursart.
+	 *
+	 * @return Currency Conversion Rate Type
+	 */
 	@Override
-	public int getC_ConversionType_ID () 
+	public int getC_ConversionType_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ConversionType_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Währung.
-		@param C_Currency_ID 
-		The Currency for this record
-	  */
+	/**
+	 * Set Währung.
+	 *
+	 * @param C_Currency_ID The Currency for this record
+	 */
 	@Override
-	public void setC_Currency_ID (int C_Currency_ID)
+	public void setC_Currency_ID(int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+		if (C_Currency_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_C_Currency_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
-	/** Get Währung.
-		@return The Currency for this record
-	  */
+	/**
+	 * Get Währung.
+	 *
+	 * @return The Currency for this record
+	 */
 	@Override
-	public int getC_Currency_ID () 
+	public int getC_Currency_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Document type or rules
-	  */
+	/**
+	 * Set Belegart.
+	 *
+	 * @param C_DocType_ID Document type or rules
+	 */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	public void setC_DocType_ID(int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+		if (C_DocType_ID < 0)
+			set_ValueNoCheck(COLUMNNAME_C_DocType_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
-	/** Get Belegart.
-		@return Document type or rules
-	  */
+	/**
+	 * Get Belegart.
+	 *
+	 * @return Document type or rules
+	 */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Zielbelegart.
-		@param C_DocTypeTarget_ID 
-		Target document type for conversing documents
-	  */
+	/**
+	 * Set Zielbelegart.
+	 *
+	 * @param C_DocTypeTarget_ID Target document type for conversing documents
+	 */
 	@Override
-	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID)
+	public void setC_DocTypeTarget_ID(int C_DocTypeTarget_ID)
 	{
-		if (C_DocTypeTarget_ID < 1) 
-			set_Value (COLUMNNAME_C_DocTypeTarget_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_DocTypeTarget_ID, Integer.valueOf(C_DocTypeTarget_ID));
+		if (C_DocTypeTarget_ID < 1)
+			set_Value(COLUMNNAME_C_DocTypeTarget_ID, null);
+		else
+			set_Value(COLUMNNAME_C_DocTypeTarget_ID, Integer.valueOf(C_DocTypeTarget_ID));
 	}
 
-	/** Get Zielbelegart.
-		@return Target document type for conversing documents
-	  */
+	/**
+	 * Get Zielbelegart.
+	 *
+	 * @return Target document type for conversing documents
+	 */
 	@Override
-	public int getC_DocTypeTarget_ID () 
+	public int getC_DocTypeTarget_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeTarget_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
+	/**
+	 * Set Gebühr.
+	 *
+	 * @param ChargeAmt Gebühr
+	 */
 	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	public void setChargeAmt(java.math.BigDecimal ChargeAmt)
 	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+		set_Value(COLUMNNAME_ChargeAmt, ChargeAmt);
 	}
 
-	/** Get Gebühr.
-		@return Gebühr	  */
+	/**
+	 * Get Gebühr.
+	 *
+	 * @return Gebühr
+	 */
 	@Override
-	public java.math.BigDecimal getChargeAmt () 
+	public java.math.BigDecimal getChargeAmt()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Rabatt %.
-		@param CompleteOrderDiscount 
-		Abschlag in Prozent
-	  */
+	/**
+	 * Set Rabatt %.
+	 *
+	 * @param CompleteOrderDiscount Abschlag in Prozent
+	 */
 	@Override
-	public void setCompleteOrderDiscount (java.math.BigDecimal CompleteOrderDiscount)
+	public void setCompleteOrderDiscount(java.math.BigDecimal CompleteOrderDiscount)
 	{
-		set_Value (COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
+		set_Value(COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
 	}
 
-	/** Get Rabatt %.
-		@return Abschlag in Prozent
-	  */
+	/**
+	 * Get Rabatt %.
+	 *
+	 * @return Abschlag in Prozent
+	 */
 	@Override
-	public java.math.BigDecimal getCompleteOrderDiscount () 
+	public java.math.BigDecimal getCompleteOrderDiscount()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CompleteOrderDiscount);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Copy From.
-		@param CopyFrom 
-		Copy From Record
-	  */
+	/**
+	 * Set Copy From.
+	 *
+	 * @param CopyFrom Copy From Record
+	 */
 	@Override
-	public void setCopyFrom (java.lang.String CopyFrom)
+	public void setCopyFrom(java.lang.String CopyFrom)
 	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+		set_Value(COLUMNNAME_CopyFrom, CopyFrom);
 	}
 
-	/** Get Copy From.
-		@return Copy From Record
-	  */
+	/**
+	 * Get Copy From.
+	 *
+	 * @return Copy From Record
+	 */
 	@Override
-	public java.lang.String getCopyFrom () 
+	public java.lang.String getCopyFrom()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
 	}
 
-	/** Set Auftrag.
-		@param C_Order_ID 
-		Order
-	  */
+	/**
+	 * Set Auftrag.
+	 *
+	 * @param C_Order_ID Order
+	 */
 	@Override
-	public void setC_Order_ID (int C_Order_ID)
+	public void setC_Order_ID(int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+		if (C_Order_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_C_Order_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
 	}
 
-	/** Get Auftrag.
-		@return Order
-	  */
+	/**
+	 * Get Auftrag.
+	 *
+	 * @return Order
+	 */
 	@Override
-	public int getC_Order_ID () 
+	public int getC_Order_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -738,53 +854,59 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
 	}
 
-	/** Set Zahlung.
-		@param C_Payment_ID 
-		Payment identifier
-	  */
+	/**
+	 * Set Zahlung.
+	 *
+	 * @param C_Payment_ID Payment identifier
+	 */
 	@Override
-	public void setC_Payment_ID (int C_Payment_ID)
+	public void setC_Payment_ID(int C_Payment_ID)
 	{
-		if (C_Payment_ID < 1) 
-			set_Value (COLUMNNAME_C_Payment_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+		if (C_Payment_ID < 1)
+			set_Value(COLUMNNAME_C_Payment_ID, null);
+		else
+			set_Value(COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
 	}
 
-	/** Get Zahlung.
-		@return Payment identifier
-	  */
+	/**
+	 * Get Zahlung.
+	 *
+	 * @return Payment identifier
+	 */
 	@Override
-	public int getC_Payment_ID () 
+	public int getC_Payment_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
-		Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
+	/**
+	 * Set Zahlungsbedingung.
+	 *
+	 * @param C_PaymentTerm_ID Die Bedingungen für die Bezahlung dieses Vorgangs
+	 */
 	@Override
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	public void setC_PaymentTerm_ID(int C_PaymentTerm_ID)
 	{
-		if (C_PaymentTerm_ID < 1) 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+		if (C_PaymentTerm_ID < 1)
+			set_Value(COLUMNNAME_C_PaymentTerm_ID, null);
+		else
+			set_Value(COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
-	/** Get Zahlungsbedingung.
-		@return Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
+	/**
+	 * Get Zahlungsbedingung.
+	 *
+	 * @return Die Bedingungen für die Bezahlung dieses Vorgangs
+	 */
 	@Override
-	public int getC_PaymentTerm_ID () 
+	public int getC_PaymentTerm_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -800,1053 +922,1329 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_C_POS_ID, org.compiere.model.I_C_POS.class, C_POS);
 	}
 
-	/** Set POS-Terminal.
-		@param C_POS_ID 
-		Point of Sales Terminal
-	  */
+	/**
+	 * Set POS-Terminal.
+	 *
+	 * @param C_POS_ID Point of Sales Terminal
+	 */
 	@Override
-	public void setC_POS_ID (int C_POS_ID)
+	public void setC_POS_ID(int C_POS_ID)
 	{
-		if (C_POS_ID < 1) 
-			set_Value (COLUMNNAME_C_POS_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_POS_ID, Integer.valueOf(C_POS_ID));
+		if (C_POS_ID < 1)
+			set_Value(COLUMNNAME_C_POS_ID, null);
+		else
+			set_Value(COLUMNNAME_C_POS_ID, Integer.valueOf(C_POS_ID));
 	}
 
-	/** Get POS-Terminal.
-		@return Point of Sales Terminal
-	  */
+	/**
+	 * Get POS-Terminal.
+	 *
+	 * @return Point of Sales Terminal
+	 */
 	@Override
-	public int getC_POS_ID () 
+	public int getC_POS_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_POS_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Projekt.
-		@param C_Project_ID 
-		Financial Project
-	  */
+	/**
+	 * Set Projekt.
+	 *
+	 * @param C_Project_ID Financial Project
+	 */
 	@Override
-	public void setC_Project_ID (int C_Project_ID)
+	public void setC_Project_ID(int C_Project_ID)
 	{
-		if (C_Project_ID < 1) 
-			set_Value (COLUMNNAME_C_Project_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+		if (C_Project_ID < 1)
+			set_Value(COLUMNNAME_C_Project_ID, null);
+		else
+			set_Value(COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
 	}
 
-	/** Get Projekt.
-		@return Financial Project
-	  */
+	/**
+	 * Get Projekt.
+	 *
+	 * @return Financial Project
+	 */
 	@Override
-	public int getC_Project_ID () 
+	public int getC_Project_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Create Copy.
-		@param CreateCopy Create Copy	  */
+	/**
+	 * Set Create Copy.
+	 *
+	 * @param CreateCopy Create Copy
+	 */
 	@Override
-	public void setCreateCopy (java.lang.String CreateCopy)
+	public void setCreateCopy(java.lang.String CreateCopy)
 	{
-		set_Value (COLUMNNAME_CreateCopy, CreateCopy);
+		set_Value(COLUMNNAME_CreateCopy, CreateCopy);
 	}
 
-	/** Get Create Copy.
-		@return Create Copy	  */
+	/**
+	 * Get Create Copy.
+	 *
+	 * @return Create Copy
+	 */
 	@Override
-	public java.lang.String getCreateCopy () 
+	public java.lang.String getCreateCopy()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreateCopy);
 	}
 
-	/** Set Erzeuge Auftrag.
-		@param CreateNewFromProposal 
-		Erzeugt aus dem bestehenden Angebot einen neuen Auftrag
-	  */
+	/**
+	 * Set Erzeuge Auftrag.
+	 *
+	 * @param CreateNewFromProposal Erzeugt aus dem bestehenden Angebot einen neuen Auftrag
+	 */
 	@Override
-	public void setCreateNewFromProposal (java.lang.String CreateNewFromProposal)
+	public void setCreateNewFromProposal(java.lang.String CreateNewFromProposal)
 	{
-		set_Value (COLUMNNAME_CreateNewFromProposal, CreateNewFromProposal);
+		set_Value(COLUMNNAME_CreateNewFromProposal, CreateNewFromProposal);
 	}
 
-	/** Get Erzeuge Auftrag.
-		@return Erzeugt aus dem bestehenden Angebot einen neuen Auftrag
-	  */
+	/**
+	 * Get Erzeuge Auftrag.
+	 *
+	 * @return Erzeugt aus dem bestehenden Angebot einen neuen Auftrag
+	 */
 	@Override
-	public java.lang.String getCreateNewFromProposal () 
+	public java.lang.String getCreateNewFromProposal()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreateNewFromProposal);
 	}
 
-	/** Set Buchungsdatum.
-		@param DateAcct 
-		Accounting Date
-	  */
+	/**
+	 * Set Buchungsdatum.
+	 *
+	 * @param DateAcct Accounting Date
+	 */
 	@Override
-	public void setDateAcct (java.sql.Timestamp DateAcct)
+	public void setDateAcct(java.sql.Timestamp DateAcct)
 	{
-		set_Value (COLUMNNAME_DateAcct, DateAcct);
+		set_Value(COLUMNNAME_DateAcct, DateAcct);
 	}
 
-	/** Get Buchungsdatum.
-		@return Accounting Date
-	  */
+	/**
+	 * Get Buchungsdatum.
+	 *
+	 * @return Accounting Date
+	 */
 	@Override
-	public java.sql.Timestamp getDateAcct () 
+	public java.sql.Timestamp getDateAcct()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Auftragsdatum.
-		@param DateOrdered 
-		Date of Order
-	  */
+	/**
+	 * Set Auftragsdatum.
+	 *
+	 * @param DateOrdered Date of Order
+	 */
 	@Override
-	public void setDateOrdered (java.sql.Timestamp DateOrdered)
+	public void setDateOrdered(java.sql.Timestamp DateOrdered)
 	{
-		set_Value (COLUMNNAME_DateOrdered, DateOrdered);
+		set_Value(COLUMNNAME_DateOrdered, DateOrdered);
 	}
 
-	/** Get Auftragsdatum.
-		@return Date of Order
-	  */
+	/**
+	 * Get Auftragsdatum.
+	 *
+	 * @return Date of Order
+	 */
 	@Override
-	public java.sql.Timestamp getDateOrdered () 
+	public java.sql.Timestamp getDateOrdered()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
-	/** Set Date printed.
-		@param DatePrinted 
-		Date the document was printed.
-	  */
+	/**
+	 * Set Date printed.
+	 *
+	 * @param DatePrinted Date the document was printed.
+	 */
 	@Override
-	public void setDatePrinted (java.sql.Timestamp DatePrinted)
+	public void setDatePrinted(java.sql.Timestamp DatePrinted)
 	{
-		set_Value (COLUMNNAME_DatePrinted, DatePrinted);
+		set_Value(COLUMNNAME_DatePrinted, DatePrinted);
 	}
 
-	/** Get Date printed.
-		@return Date the document was printed.
-	  */
+	/**
+	 * Get Date printed.
+	 *
+	 * @return Date the document was printed.
+	 */
 	@Override
-	public java.sql.Timestamp getDatePrinted () 
+	public java.sql.Timestamp getDatePrinted()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePrinted);
 	}
 
-	/** Set Zugesagter Termin.
-		@param DatePromised 
-		Date Order was promised
-	  */
+	/**
+	 * Set Zugesagter Termin.
+	 *
+	 * @param DatePromised Date Order was promised
+	 */
 	@Override
-	public void setDatePromised (java.sql.Timestamp DatePromised)
+	public void setDatePromised(java.sql.Timestamp DatePromised)
 	{
-		set_Value (COLUMNNAME_DatePromised, DatePromised);
+		set_Value(COLUMNNAME_DatePromised, DatePromised);
 	}
 
-	/** Get Zugesagter Termin.
-		@return Date Order was promised
-	  */
+	/**
+	 * Get Zugesagter Termin.
+	 *
+	 * @return Date Order was promised
+	 */
 	@Override
-	public java.sql.Timestamp getDatePromised () 
+	public java.sql.Timestamp getDatePromised()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
 	}
 
-	/** 
+	/**
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
 	 */
-	public static final int DELIVERYRULE_AD_Reference_ID=151;
-	/** AfterReceipt = R */
+	public static final int DELIVERYRULE_AD_Reference_ID = 151;
+	/**
+	 * AfterReceipt = R
+	 */
 	public static final String DELIVERYRULE_AfterReceipt = "R";
-	/** Availability = A */
+	/**
+	 * Availability = A
+	 */
 	public static final String DELIVERYRULE_Availability = "A";
-	/** CompleteLine = L */
+	/**
+	 * CompleteLine = L
+	 */
 	public static final String DELIVERYRULE_CompleteLine = "L";
-	/** CompleteOrder = O */
+	/**
+	 * CompleteOrder = O
+	 */
 	public static final String DELIVERYRULE_CompleteOrder = "O";
-	/** Force = F */
+	/**
+	 * Force = F
+	 */
 	public static final String DELIVERYRULE_Force = "F";
-	/** Manual = M */
+	/**
+	 * Manual = M
+	 */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** MitNaechsterAbolieferung = S */
+	/**
+	 * MitNaechsterAbolieferung = S
+	 */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
-	/** Set Lieferart.
-		@param DeliveryRule 
-		Defines the timing of Delivery
-	  */
+
+	/**
+	 * Set Lieferart.
+	 *
+	 * @param DeliveryRule Defines the timing of Delivery
+	 */
 	@Override
-	public void setDeliveryRule (java.lang.String DeliveryRule)
+	public void setDeliveryRule(java.lang.String DeliveryRule)
 	{
 
-		set_Value (COLUMNNAME_DeliveryRule, DeliveryRule);
+		set_Value(COLUMNNAME_DeliveryRule, DeliveryRule);
 	}
 
-	/** Get Lieferart.
-		@return Defines the timing of Delivery
-	  */
+	/**
+	 * Get Lieferart.
+	 *
+	 * @return Defines the timing of Delivery
+	 */
 	@Override
-	public java.lang.String getDeliveryRule () 
+	public java.lang.String getDeliveryRule()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DeliveryRule);
 	}
 
-	/** 
+	/**
 	 * DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
 	 */
-	public static final int DELIVERYVIARULE_AD_Reference_ID=152;
-	/** Pickup = P */
+	public static final int DELIVERYVIARULE_AD_Reference_ID = 152;
+	/**
+	 * Pickup = P
+	 */
 	public static final String DELIVERYVIARULE_Pickup = "P";
-	/** Delivery = D */
+	/**
+	 * Delivery = D
+	 */
 	public static final String DELIVERYVIARULE_Delivery = "D";
-	/** Shipper = S */
+	/**
+	 * Shipper = S
+	 */
 	public static final String DELIVERYVIARULE_Shipper = "S";
-	/** Set Lieferung.
-		@param DeliveryViaRule 
-		Wie der Auftrag geliefert wird
-	  */
+
+	/**
+	 * Set Lieferung.
+	 *
+	 * @param DeliveryViaRule Wie der Auftrag geliefert wird
+	 */
 	@Override
-	public void setDeliveryViaRule (java.lang.String DeliveryViaRule)
+	public void setDeliveryViaRule(java.lang.String DeliveryViaRule)
 	{
 
-		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
+		set_Value(COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
 
-	/** Get Lieferung.
-		@return Wie der Auftrag geliefert wird
-	  */
+	/**
+	 * Get Lieferung.
+	 *
+	 * @return Wie der Auftrag geliefert wird
+	 */
 	@Override
-	public java.lang.String getDeliveryViaRule () 
+	public java.lang.String getDeliveryViaRule()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
+	/**
+	 * Set Beschreibung.
+	 *
+	 * @param Description Beschreibung
+	 */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription(java.lang.String Description)
 	{
-		set_Value (COLUMNNAME_Description, Description);
+		set_Value(COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
+	/**
+	 * Get Beschreibung.
+	 *
+	 * @return Beschreibung
+	 */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Schlusstext.
-		@param DescriptionBottom Schlusstext	  */
+	/**
+	 * Set Schlusstext.
+	 *
+	 * @param DescriptionBottom Schlusstext
+	 */
 	@Override
-	public void setDescriptionBottom (java.lang.String DescriptionBottom)
+	public void setDescriptionBottom(java.lang.String DescriptionBottom)
 	{
-		set_Value (COLUMNNAME_DescriptionBottom, DescriptionBottom);
+		set_Value(COLUMNNAME_DescriptionBottom, DescriptionBottom);
 	}
 
-	/** Get Schlusstext.
-		@return Schlusstext	  */
+	/**
+	 * Get Schlusstext.
+	 *
+	 * @return Schlusstext
+	 */
 	@Override
-	public java.lang.String getDescriptionBottom () 
+	public java.lang.String getDescriptionBottom()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DescriptionBottom);
 	}
 
-	/** 
+	/**
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
 	 */
-	public static final int DOCACTION_AD_Reference_ID=135;
-	/** Complete = CO */
+	public static final int DOCACTION_AD_Reference_ID = 135;
+	/**
+	 * Complete = CO
+	 */
 	public static final String DOCACTION_Complete = "CO";
-	/** Approve = AP */
+	/**
+	 * Approve = AP
+	 */
 	public static final String DOCACTION_Approve = "AP";
-	/** Reject = RJ */
+	/**
+	 * Reject = RJ
+	 */
 	public static final String DOCACTION_Reject = "RJ";
-	/** Post = PO */
+	/**
+	 * Post = PO
+	 */
 	public static final String DOCACTION_Post = "PO";
-	/** Void = VO */
+	/**
+	 * Void = VO
+	 */
 	public static final String DOCACTION_Void = "VO";
-	/** Close = CL */
+	/**
+	 * Close = CL
+	 */
 	public static final String DOCACTION_Close = "CL";
-	/** Reverse_Correct = RC */
+	/**
+	 * Reverse_Correct = RC
+	 */
 	public static final String DOCACTION_Reverse_Correct = "RC";
-	/** Reverse_Accrual = RA */
+	/**
+	 * Reverse_Accrual = RA
+	 */
 	public static final String DOCACTION_Reverse_Accrual = "RA";
-	/** Invalidate = IN */
+	/**
+	 * Invalidate = IN
+	 */
 	public static final String DOCACTION_Invalidate = "IN";
-	/** Re_Activate = RE */
+	/**
+	 * Re_Activate = RE
+	 */
 	public static final String DOCACTION_Re_Activate = "RE";
-	/** None = -- */
+	/**
+	 * None = --
+	 */
 	public static final String DOCACTION_None = "--";
-	/** Prepare = PR */
+	/**
+	 * Prepare = PR
+	 */
 	public static final String DOCACTION_Prepare = "PR";
-	/** Unlock = XL */
+	/**
+	 * Unlock = XL
+	 */
 	public static final String DOCACTION_Unlock = "XL";
-	/** WaitComplete = WC */
+	/**
+	 * WaitComplete = WC
+	 */
 	public static final String DOCACTION_WaitComplete = "WC";
-	/** UnClose = UC */
+	/**
+	 * UnClose = UC
+	 */
 	public static final String DOCACTION_UnClose = "UC";
-	/** Set Belegverarbeitung.
-		@param DocAction 
-		The targeted status of the document
-	  */
+
+	/**
+	 * Set Belegverarbeitung.
+	 *
+	 * @param DocAction The targeted status of the document
+	 */
 	@Override
-	public void setDocAction (java.lang.String DocAction)
+	public void setDocAction(java.lang.String DocAction)
 	{
 
-		set_Value (COLUMNNAME_DocAction, DocAction);
+		set_Value(COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Belegverarbeitung.
-		@return The targeted status of the document
-	  */
+	/**
+	 * Get Belegverarbeitung.
+	 *
+	 * @return The targeted status of the document
+	 */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** 
+	/**
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
-	public static final int DOCSTATUS_AD_Reference_ID=131;
-	/** Drafted = DR */
+	public static final int DOCSTATUS_AD_Reference_ID = 131;
+	/**
+	 * Drafted = DR
+	 */
 	public static final String DOCSTATUS_Drafted = "DR";
-	/** Completed = CO */
+	/**
+	 * Completed = CO
+	 */
 	public static final String DOCSTATUS_Completed = "CO";
-	/** Approved = AP */
+	/**
+	 * Approved = AP
+	 */
 	public static final String DOCSTATUS_Approved = "AP";
-	/** NotApproved = NA */
+	/**
+	 * NotApproved = NA
+	 */
 	public static final String DOCSTATUS_NotApproved = "NA";
-	/** Voided = VO */
+	/**
+	 * Voided = VO
+	 */
 	public static final String DOCSTATUS_Voided = "VO";
-	/** Invalid = IN */
+	/**
+	 * Invalid = IN
+	 */
 	public static final String DOCSTATUS_Invalid = "IN";
-	/** Reversed = RE */
+	/**
+	 * Reversed = RE
+	 */
 	public static final String DOCSTATUS_Reversed = "RE";
-	/** Closed = CL */
+	/**
+	 * Closed = CL
+	 */
 	public static final String DOCSTATUS_Closed = "CL";
-	/** Unknown = ?? */
+	/**
+	 * Unknown = ??
+	 */
 	public static final String DOCSTATUS_Unknown = "??";
-	/** InProgress = IP */
+	/**
+	 * InProgress = IP
+	 */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** WaitingPayment = WP */
+	/**
+	 * WaitingPayment = WP
+	 */
 	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** WaitingConfirmation = WC */
+	/**
+	 * WaitingConfirmation = WC
+	 */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
+
+	/**
+	 * Set Belegstatus.
+	 *
+	 * @param DocStatus The current status of the document
+	 */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus(java.lang.String DocStatus)
 	{
 
-		set_Value (COLUMNNAME_DocStatus, DocStatus);
+		set_Value(COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
+	/**
+	 * Get Belegstatus.
+	 *
+	 * @return The current status of the document
+	 */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
+	/**
+	 * Set Nr..
+	 *
+	 * @param DocumentNo Document sequence number of the document
+	 */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo(java.lang.String DocumentNo)
 	{
-		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
+		set_ValueNoCheck(COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
+	/**
+	 * Get Nr..
+	 *
+	 * @return Document sequence number of the document
+	 */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Lieferempfänger.
-		@param DropShip_BPartner_ID 
-		Business Partner to ship to
-	  */
+	/**
+	 * Set Lieferempfänger.
+	 *
+	 * @param DropShip_BPartner_ID Business Partner to ship to
+	 */
 	@Override
-	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID)
+	public void setDropShip_BPartner_ID(int DropShip_BPartner_ID)
 	{
-		if (DropShip_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_DropShip_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_DropShip_BPartner_ID, Integer.valueOf(DropShip_BPartner_ID));
+		if (DropShip_BPartner_ID < 1)
+			set_Value(COLUMNNAME_DropShip_BPartner_ID, null);
+		else
+			set_Value(COLUMNNAME_DropShip_BPartner_ID, Integer.valueOf(DropShip_BPartner_ID));
 	}
 
-	/** Get Lieferempfänger.
-		@return Business Partner to ship to
-	  */
+	/**
+	 * Get Lieferempfänger.
+	 *
+	 * @return Business Partner to ship to
+	 */
 	@Override
-	public int getDropShip_BPartner_ID () 
+	public int getDropShip_BPartner_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Lieferempfänger-Memo.
-		@param DropShip_BPartner_Memo Lieferempfänger-Memo	  */
+	/**
+	 * Set Lieferempfänger-Memo.
+	 *
+	 * @param DropShip_BPartner_Memo Lieferempfänger-Memo
+	 */
 	@Override
-	public void setDropShip_BPartner_Memo (java.lang.String DropShip_BPartner_Memo)
+	public void setDropShip_BPartner_Memo(java.lang.String DropShip_BPartner_Memo)
 	{
-		throw new IllegalArgumentException ("DropShip_BPartner_Memo is virtual column");	}
+		throw new IllegalArgumentException("DropShip_BPartner_Memo is virtual column");
+	}
 
-	/** Get Lieferempfänger-Memo.
-		@return Lieferempfänger-Memo	  */
+	/**
+	 * Get Lieferempfänger-Memo.
+	 *
+	 * @return Lieferempfänger-Memo
+	 */
 	@Override
-	public java.lang.String getDropShip_BPartner_Memo () 
+	public java.lang.String getDropShip_BPartner_Memo()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DropShip_BPartner_Memo);
 	}
 
-	/** Set Lieferadresse.
-		@param DropShip_Location_ID 
-		Business Partner Location for shipping to
-	  */
+	/**
+	 * Set Lieferadresse.
+	 *
+	 * @param DropShip_Location_ID Business Partner Location for shipping to
+	 */
 	@Override
-	public void setDropShip_Location_ID (int DropShip_Location_ID)
+	public void setDropShip_Location_ID(int DropShip_Location_ID)
 	{
-		if (DropShip_Location_ID < 1) 
-			set_Value (COLUMNNAME_DropShip_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_DropShip_Location_ID, Integer.valueOf(DropShip_Location_ID));
+		if (DropShip_Location_ID < 1)
+			set_Value(COLUMNNAME_DropShip_Location_ID, null);
+		else
+			set_Value(COLUMNNAME_DropShip_Location_ID, Integer.valueOf(DropShip_Location_ID));
 	}
 
-	/** Get Lieferadresse.
-		@return Business Partner Location for shipping to
-	  */
+	/**
+	 * Get Lieferadresse.
+	 *
+	 * @return Business Partner Location for shipping to
+	 */
 	@Override
-	public int getDropShip_Location_ID () 
+	public int getDropShip_Location_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_Location_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Lieferkontakt.
-		@param DropShip_User_ID 
-		Business Partner Contact for drop shipment
-	  */
+	/**
+	 * Set Lieferkontakt.
+	 *
+	 * @param DropShip_User_ID Business Partner Contact for drop shipment
+	 */
 	@Override
-	public void setDropShip_User_ID (int DropShip_User_ID)
+	public void setDropShip_User_ID(int DropShip_User_ID)
 	{
-		if (DropShip_User_ID < 1) 
-			set_Value (COLUMNNAME_DropShip_User_ID, null);
-		else 
-			set_Value (COLUMNNAME_DropShip_User_ID, Integer.valueOf(DropShip_User_ID));
+		if (DropShip_User_ID < 1)
+			set_Value(COLUMNNAME_DropShip_User_ID, null);
+		else
+			set_Value(COLUMNNAME_DropShip_User_ID, Integer.valueOf(DropShip_User_ID));
 	}
 
-	/** Get Lieferkontakt.
-		@return Business Partner Contact for drop shipment
-	  */
+	/**
+	 * Get Lieferkontakt.
+	 *
+	 * @return Business Partner Contact for drop shipment
+	 */
 	@Override
-	public int getDropShip_User_ID () 
+	public int getDropShip_User_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_User_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set External ID.
-		@param ExternalId External ID	  */
+	/**
+	 * Set External ID.
+	 *
+	 * @param ExternalId External ID
+	 */
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
+	public void setExternalId(java.lang.String ExternalId)
 	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
+		set_Value(COLUMNNAME_ExternalId, ExternalId);
 	}
 
-	/** Get External ID.
-		@return External ID	  */
+	/**
+	 * Get External ID.
+	 *
+	 * @return External ID
+	 */
 	@Override
-	public java.lang.String getExternalId () 
+	public java.lang.String getExternalId()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
-	/** Set Frachtbetrag.
-		@param FreightAmt 
-		Freight Amount 
-	  */
+	/**
+	 * Set Frachtbetrag.
+	 *
+	 * @param FreightAmt Freight Amount
+	 */
 	@Override
-	public void setFreightAmt (java.math.BigDecimal FreightAmt)
+	public void setFreightAmt(java.math.BigDecimal FreightAmt)
 	{
-		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
+		set_Value(COLUMNNAME_FreightAmt, FreightAmt);
 	}
 
-	/** Get Frachtbetrag.
-		@return Freight Amount 
-	  */
+	/**
+	 * Get Frachtbetrag.
+	 *
+	 * @return Freight Amount
+	 */
 	@Override
-	public java.math.BigDecimal getFreightAmt () 
+	public java.math.BigDecimal getFreightAmt()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FreightAmt);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** 
+	/**
 	 * FreightCostRule AD_Reference_ID=153
 	 * Reference name: C_Order FreightCostRule
 	 */
-	public static final int FREIGHTCOSTRULE_AD_Reference_ID=153;
-	/** FreightIncluded = I */
+	public static final int FREIGHTCOSTRULE_AD_Reference_ID = 153;
+	/**
+	 * FreightIncluded = I
+	 */
 	public static final String FREIGHTCOSTRULE_FreightIncluded = "I";
-	/** FixPrice = F */
+	/**
+	 * FixPrice = F
+	 */
 	public static final String FREIGHTCOSTRULE_FixPrice = "F";
-	/** Calculated = C */
+	/**
+	 * Calculated = C
+	 */
 	public static final String FREIGHTCOSTRULE_Calculated = "C";
-	/** Line = L */
+	/**
+	 * Line = L
+	 */
 	public static final String FREIGHTCOSTRULE_Line = "L";
-	/** Versandkostenpauschale = P */
+	/**
+	 * Versandkostenpauschale = P
+	 */
 	public static final String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
-	/** Set Frachtkostenberechnung.
-		@param FreightCostRule 
-		Methode zur Frachtkostenberechnung
-	  */
+
+	/**
+	 * Set Frachtkostenberechnung.
+	 *
+	 * @param FreightCostRule Methode zur Frachtkostenberechnung
+	 */
 	@Override
-	public void setFreightCostRule (java.lang.String FreightCostRule)
+	public void setFreightCostRule(java.lang.String FreightCostRule)
 	{
 
-		set_Value (COLUMNNAME_FreightCostRule, FreightCostRule);
+		set_Value(COLUMNNAME_FreightCostRule, FreightCostRule);
 	}
 
-	/** Get Frachtkostenberechnung.
-		@return Methode zur Frachtkostenberechnung
-	  */
+	/**
+	 * Get Frachtkostenberechnung.
+	 *
+	 * @return Methode zur Frachtkostenberechnung
+	 */
 	@Override
-	public java.lang.String getFreightCostRule () 
+	public java.lang.String getFreightCostRule()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_FreightCostRule);
 	}
 
-	/** Set Summe Gesamt.
-		@param GrandTotal 
-		Total amount of document
-	  */
+	/**
+	 * Set Summe Gesamt.
+	 *
+	 * @param GrandTotal Total amount of document
+	 */
 	@Override
-	public void setGrandTotal (java.math.BigDecimal GrandTotal)
+	public void setGrandTotal(java.math.BigDecimal GrandTotal)
 	{
-		set_ValueNoCheck (COLUMNNAME_GrandTotal, GrandTotal);
+		set_ValueNoCheck(COLUMNNAME_GrandTotal, GrandTotal);
 	}
 
-	/** Get Summe Gesamt.
-		@return Total amount of document
-	  */
+	/**
+	 * Get Summe Gesamt.
+	 *
+	 * @return Total amount of document
+	 */
 	@Override
-	public java.math.BigDecimal getGrandTotal () 
+	public java.math.BigDecimal getGrandTotal()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GrandTotal);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** 
+	/**
 	 * Incoterm AD_Reference_ID=501599
 	 * Reference name: Incoterms
 	 */
-	public static final int INCOTERM_AD_Reference_ID=501599;
-	/** EXW_AbWerk = EXW */
+	public static final int INCOTERM_AD_Reference_ID = 501599;
+	/**
+	 * EXW_AbWerk = EXW
+	 */
 	public static final String INCOTERM_EXW_AbWerk = "EXW";
-	/** FCA_FreiSpediteur = FCA */
+	/**
+	 * FCA_FreiSpediteur = FCA
+	 */
 	public static final String INCOTERM_FCA_FreiSpediteur = "FCA";
-	/** FAS_FreiLaengsseitsSchiff = FAS */
+	/**
+	 * FAS_FreiLaengsseitsSchiff = FAS
+	 */
 	public static final String INCOTERM_FAS_FreiLaengsseitsSchiff = "FAS";
-	/** FOB_FreiAnBord = FOB */
+	/**
+	 * FOB_FreiAnBord = FOB
+	 */
 	public static final String INCOTERM_FOB_FreiAnBord = "FOB";
-	/** CFR_KostenUndFracht = CFR */
+	/**
+	 * CFR_KostenUndFracht = CFR
+	 */
 	public static final String INCOTERM_CFR_KostenUndFracht = "CFR";
-	/** CIF_KostenVersicherungUndFracht = CIF */
+	/**
+	 * CIF_KostenVersicherungUndFracht = CIF
+	 */
 	public static final String INCOTERM_CIF_KostenVersicherungUndFracht = "CIF";
-	/** CPT_FrachtPortoBezahltBis = CPT */
+	/**
+	 * CPT_FrachtPortoBezahltBis = CPT
+	 */
 	public static final String INCOTERM_CPT_FrachtPortoBezahltBis = "CPT";
-	/** CIP_FrachtPortoUndVersicherungBezahltBis = CIP */
+	/**
+	 * CIP_FrachtPortoUndVersicherungBezahltBis = CIP
+	 */
 	public static final String INCOTERM_CIP_FrachtPortoUndVersicherungBezahltBis = "CIP";
-	/** DAF_FreiGrenze = DAF */
+	/**
+	 * DAF_FreiGrenze = DAF
+	 */
 	public static final String INCOTERM_DAF_FreiGrenze = "DAF";
-	/** DES_FreiAbSchiff = DES */
+	/**
+	 * DES_FreiAbSchiff = DES
+	 */
 	public static final String INCOTERM_DES_FreiAbSchiff = "DES";
-	/** DEQ_FreiAbKai = DEQ */
+	/**
+	 * DEQ_FreiAbKai = DEQ
+	 */
 	public static final String INCOTERM_DEQ_FreiAbKai = "DEQ";
-	/** DDU_FreiUnverzollt = DDU */
+	/**
+	 * DDU_FreiUnverzollt = DDU
+	 */
 	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
-	/** DDP_Verzollt = DDP */
+	/**
+	 * DDP_Verzollt = DDP
+	 */
 	public static final String INCOTERM_DDP_Verzollt = "DDP";
-	/** Set Incoterm.
-		@param Incoterm 
-		Internationale Handelsklauseln (engl. International Commercial Terms)
-	  */
+
+	/**
+	 * Set Incoterm.
+	 *
+	 * @param Incoterm Internationale Handelsklauseln (engl. International Commercial Terms)
+	 */
 	@Override
-	public void setIncoterm (java.lang.String Incoterm)
+	public void setIncoterm(java.lang.String Incoterm)
 	{
 
-		set_Value (COLUMNNAME_Incoterm, Incoterm);
+		set_Value(COLUMNNAME_Incoterm, Incoterm);
 	}
 
-	/** Get Incoterm.
-		@return Internationale Handelsklauseln (engl. International Commercial Terms)
-	  */
+	/**
+	 * Get Incoterm.
+	 *
+	 * @return Internationale Handelsklauseln (engl. International Commercial Terms)
+	 */
 	@Override
-	public java.lang.String getIncoterm () 
+	public java.lang.String getIncoterm()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Incoterm);
 	}
 
-	/** Set IncotermLocation.
-		@param IncotermLocation 
-		Anzugebender Ort für Handelsklausel
-	  */
+	/**
+	 * Set IncotermLocation.
+	 *
+	 * @param IncotermLocation Anzugebender Ort für Handelsklausel
+	 */
 	@Override
-	public void setIncotermLocation (java.lang.String IncotermLocation)
+	public void setIncotermLocation(java.lang.String IncotermLocation)
 	{
-		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+		set_Value(COLUMNNAME_IncotermLocation, IncotermLocation);
 	}
 
-	/** Get IncotermLocation.
-		@return Anzugebender Ort für Handelsklausel
-	  */
+	/**
+	 * Get IncotermLocation.
+	 *
+	 * @return Anzugebender Ort für Handelsklausel
+	 */
 	@Override
-	public java.lang.String getIncotermLocation () 
+	public java.lang.String getIncotermLocation()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IncotermLocation);
 	}
 
-	/** 
+	/**
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
-	public static final int INVOICERULE_AD_Reference_ID=150;
-	/** AfterOrderDelivered = O */
+	public static final int INVOICERULE_AD_Reference_ID = 150;
+	/**
+	 * AfterOrderDelivered = O
+	 */
 	public static final String INVOICERULE_AfterOrderDelivered = "O";
-	/** AfterDelivery = D */
+	/**
+	 * AfterDelivery = D
+	 */
 	public static final String INVOICERULE_AfterDelivery = "D";
-	/** CustomerScheduleAfterDelivery = S */
+	/**
+	 * CustomerScheduleAfterDelivery = S
+	 */
 	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
-	/** Immediate = I */
+	/**
+	 * Immediate = I
+	 */
 	public static final String INVOICERULE_Immediate = "I";
-	/** Set Rechnungsstellung.
-		@param InvoiceRule 
-		"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
-	  */
+
+	/**
+	 * Set Rechnungsstellung.
+	 *
+	 * @param InvoiceRule "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 */
 	@Override
-	public void setInvoiceRule (java.lang.String InvoiceRule)
+	public void setInvoiceRule(java.lang.String InvoiceRule)
 	{
 
-		set_Value (COLUMNNAME_InvoiceRule, InvoiceRule);
+		set_Value(COLUMNNAME_InvoiceRule, InvoiceRule);
 	}
 
-	/** Get Rechnungsstellung.
-		@return "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
-	  */
+	/**
+	 * Get Rechnungsstellung.
+	 *
+	 * @return "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 */
 	@Override
-	public java.lang.String getInvoiceRule () 
+	public java.lang.String getInvoiceRule()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule);
 	}
 
-	/** Set Freigegeben.
-		@param IsApproved 
-		Indicates if this document requires approval
-	  */
+	/**
+	 * Set Freigegeben.
+	 *
+	 * @param IsApproved Indicates if this document requires approval
+	 */
 	@Override
-	public void setIsApproved (boolean IsApproved)
+	public void setIsApproved(boolean IsApproved)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
+		set_ValueNoCheck(COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
 	}
 
-	/** Get Freigegeben.
-		@return Indicates if this document requires approval
-	  */
+	/**
+	 * Get Freigegeben.
+	 *
+	 * @return Indicates if this document requires approval
+	 */
 	@Override
-	public boolean isApproved () 
+	public boolean isApproved()
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Kredit gebilligt.
-		@param IsCreditApproved 
-		Credit  has been approved
-	  */
+	/**
+	 * Set Kredit gebilligt.
+	 *
+	 * @param IsCreditApproved Credit  has been approved
+	 */
 	@Override
-	public void setIsCreditApproved (boolean IsCreditApproved)
+	public void setIsCreditApproved(boolean IsCreditApproved)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsCreditApproved, Boolean.valueOf(IsCreditApproved));
+		set_ValueNoCheck(COLUMNNAME_IsCreditApproved, Boolean.valueOf(IsCreditApproved));
 	}
 
-	/** Get Kredit gebilligt.
-		@return Credit  has been approved
-	  */
+	/**
+	 * Get Kredit gebilligt.
+	 *
+	 * @return Credit  has been approved
+	 */
 	@Override
-	public boolean isCreditApproved () 
+	public boolean isCreditApproved()
 	{
 		Object oo = get_Value(COLUMNNAME_IsCreditApproved);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Zugestellt.
-		@param IsDelivered Zugestellt	  */
+	/**
+	 * Set Zugestellt.
+	 *
+	 * @param IsDelivered Zugestellt
+	 */
 	@Override
-	public void setIsDelivered (boolean IsDelivered)
+	public void setIsDelivered(boolean IsDelivered)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsDelivered, Boolean.valueOf(IsDelivered));
+		set_ValueNoCheck(COLUMNNAME_IsDelivered, Boolean.valueOf(IsDelivered));
 	}
 
-	/** Get Zugestellt.
-		@return Zugestellt	  */
+	/**
+	 * Get Zugestellt.
+	 *
+	 * @return Zugestellt
+	 */
 	@Override
-	public boolean isDelivered () 
+	public boolean isDelivered()
 	{
 		Object oo = get_Value(COLUMNNAME_IsDelivered);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Rabatte drucken.
-		@param IsDiscountPrinted 
-		Print Discount on Invoice and Order
-	  */
+	/**
+	 * Set Rabatte drucken.
+	 *
+	 * @param IsDiscountPrinted Print Discount on Invoice and Order
+	 */
 	@Override
-	public void setIsDiscountPrinted (boolean IsDiscountPrinted)
+	public void setIsDiscountPrinted(boolean IsDiscountPrinted)
 	{
-		set_Value (COLUMNNAME_IsDiscountPrinted, Boolean.valueOf(IsDiscountPrinted));
+		set_Value(COLUMNNAME_IsDiscountPrinted, Boolean.valueOf(IsDiscountPrinted));
 	}
 
-	/** Get Rabatte drucken.
-		@return Print Discount on Invoice and Order
-	  */
+	/**
+	 * Get Rabatte drucken.
+	 *
+	 * @return Print Discount on Invoice and Order
+	 */
 	@Override
-	public boolean isDiscountPrinted () 
+	public boolean isDiscountPrinted()
 	{
 		Object oo = get_Value(COLUMNNAME_IsDiscountPrinted);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Streckengeschäft.
-		@param IsDropShip 
-		Drop Shipments are sent from the Vendor directly to the Customer
-	  */
+	/**
+	 * Set Streckengeschäft.
+	 *
+	 * @param IsDropShip Drop Shipments are sent from the Vendor directly to the Customer
+	 */
 	@Override
-	public void setIsDropShip (boolean IsDropShip)
+	public void setIsDropShip(boolean IsDropShip)
 	{
-		set_Value (COLUMNNAME_IsDropShip, Boolean.valueOf(IsDropShip));
+		set_Value(COLUMNNAME_IsDropShip, Boolean.valueOf(IsDropShip));
 	}
 
-	/** Get Streckengeschäft.
-		@return Drop Shipments are sent from the Vendor directly to the Customer
-	  */
+	/**
+	 * Get Streckengeschäft.
+	 *
+	 * @return Drop Shipments are sent from the Vendor directly to the Customer
+	 */
 	@Override
-	public boolean isDropShip () 
+	public boolean isDropShip()
 	{
 		Object oo = get_Value(COLUMNNAME_IsDropShip);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Berechnete Menge.
-		@param IsInvoiced 
-		Is this invoiced?
-	  */
+	/**
+	 * Set Berechnete Menge.
+	 *
+	 * @param IsInvoiced Is this invoiced?
+	 */
 	@Override
-	public void setIsInvoiced (boolean IsInvoiced)
+	public void setIsInvoiced(boolean IsInvoiced)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsInvoiced, Boolean.valueOf(IsInvoiced));
+		set_ValueNoCheck(COLUMNNAME_IsInvoiced, Boolean.valueOf(IsInvoiced));
 	}
 
-	/** Get Berechnete Menge.
-		@return Is this invoiced?
-	  */
+	/**
+	 * Get Berechnete Menge.
+	 *
+	 * @return Is this invoiced?
+	 */
 	@Override
-	public boolean isInvoiced () 
+	public boolean isInvoiced()
 	{
 		Object oo = get_Value(COLUMNNAME_IsInvoiced);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set andrucken.
-		@param IsPrinted 
-		Indicates if this document / line is printed
-	  */
+	/**
+	 * Set andrucken.
+	 *
+	 * @param IsPrinted Indicates if this document / line is printed
+	 */
 	@Override
-	public void setIsPrinted (boolean IsPrinted)
+	public void setIsPrinted(boolean IsPrinted)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsPrinted, Boolean.valueOf(IsPrinted));
+		set_ValueNoCheck(COLUMNNAME_IsPrinted, Boolean.valueOf(IsPrinted));
 	}
 
-	/** Get andrucken.
-		@return Indicates if this document / line is printed
-	  */
+	/**
+	 * Get andrucken.
+	 *
+	 * @return Indicates if this document / line is printed
+	 */
 	@Override
-	public boolean isPrinted () 
+	public boolean isPrinted()
 	{
 		Object oo = get_Value(COLUMNNAME_IsPrinted);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Auftrag nur mit Vertriebspartner.
-		@param IsSalesPartnerRequired 
-		Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
-	  */
+	/**
+	 * Set Auftrag nur mit Vertriebspartner.
+	 *
+	 * @param IsSalesPartnerRequired Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
+	 */
 	@Override
-	public void setIsSalesPartnerRequired (boolean IsSalesPartnerRequired)
+	public void setIsSalesPartnerRequired(boolean IsSalesPartnerRequired)
 	{
-		set_Value (COLUMNNAME_IsSalesPartnerRequired, Boolean.valueOf(IsSalesPartnerRequired));
+		set_Value(COLUMNNAME_IsSalesPartnerRequired, Boolean.valueOf(IsSalesPartnerRequired));
 	}
 
-	/** Get Auftrag nur mit Vertriebspartner.
-		@return Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
-	  */
+	/**
+	 * Get Auftrag nur mit Vertriebspartner.
+	 *
+	 * @return Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
+	 */
 	@Override
-	public boolean isSalesPartnerRequired () 
+	public boolean isSalesPartnerRequired()
 	{
 		Object oo = get_Value(COLUMNNAME_IsSalesPartnerRequired);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Selektiert.
-		@param IsSelected Selektiert	  */
+	/**
+	 * Set Selektiert.
+	 *
+	 * @param IsSelected Selektiert
+	 */
 	@Override
-	public void setIsSelected (boolean IsSelected)
+	public void setIsSelected(boolean IsSelected)
 	{
-		set_Value (COLUMNNAME_IsSelected, Boolean.valueOf(IsSelected));
+		set_Value(COLUMNNAME_IsSelected, Boolean.valueOf(IsSelected));
 	}
 
-	/** Get Selektiert.
-		@return Selektiert	  */
+	/**
+	 * Get Selektiert.
+	 *
+	 * @return Selektiert
+	 */
 	@Override
-	public boolean isSelected () 
+	public boolean isSelected()
 	{
 		Object oo = get_Value(COLUMNNAME_IsSelected);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Selbstbedienung.
-		@param IsSelfService 
-		This is a Self-Service entry or this entry can be changed via Self-Service
-	  */
+	/**
+	 * Set Selbstbedienung.
+	 *
+	 * @param IsSelfService This is a Self-Service entry or this entry can be changed via Self-Service
+	 */
 	@Override
-	public void setIsSelfService (boolean IsSelfService)
+	public void setIsSelfService(boolean IsSelfService)
 	{
-		set_Value (COLUMNNAME_IsSelfService, Boolean.valueOf(IsSelfService));
+		set_Value(COLUMNNAME_IsSelfService, Boolean.valueOf(IsSelfService));
 	}
 
-	/** Get Selbstbedienung.
-		@return This is a Self-Service entry or this entry can be changed via Self-Service
-	  */
+	/**
+	 * Get Selbstbedienung.
+	 *
+	 * @return This is a Self-Service entry or this entry can be changed via Self-Service
+	 */
 	@Override
-	public boolean isSelfService () 
+	public boolean isSelfService()
 	{
 		Object oo = get_Value(COLUMNNAME_IsSelfService);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Verkaufs-Transaktion.
-		@param IsSOTrx 
-		This is a Sales Transaction
-	  */
+	/**
+	 * Set Verkaufs-Transaktion.
+	 *
+	 * @param IsSOTrx This is a Sales Transaction
+	 */
 	@Override
-	public void setIsSOTrx (boolean IsSOTrx)
+	public void setIsSOTrx(boolean IsSOTrx)
 	{
-		set_Value (COLUMNNAME_IsSOTrx, Boolean.valueOf(IsSOTrx));
+		set_Value(COLUMNNAME_IsSOTrx, Boolean.valueOf(IsSOTrx));
 	}
 
-	/** Get Verkaufs-Transaktion.
-		@return This is a Sales Transaction
-	  */
+	/**
+	 * Get Verkaufs-Transaktion.
+	 *
+	 * @return This is a Sales Transaction
+	 */
 	@Override
-	public boolean isSOTrx () 
+	public boolean isSOTrx()
 	{
 		Object oo = get_Value(COLUMNNAME_IsSOTrx);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Preis inklusive Steuern.
-		@param IsTaxIncluded 
-		Tax is included in the price 
-	  */
+	/**
+	 * Set Preis inklusive Steuern.
+	 *
+	 * @param IsTaxIncluded Tax is included in the price
+	 */
 	@Override
-	public void setIsTaxIncluded (boolean IsTaxIncluded)
+	public void setIsTaxIncluded(boolean IsTaxIncluded)
 	{
-		set_Value (COLUMNNAME_IsTaxIncluded, Boolean.valueOf(IsTaxIncluded));
+		set_Value(COLUMNNAME_IsTaxIncluded, Boolean.valueOf(IsTaxIncluded));
 	}
 
-	/** Get Preis inklusive Steuern.
-		@return Tax is included in the price 
-	  */
+	/**
+	 * Get Preis inklusive Steuern.
+	 *
+	 * @return Tax is included in the price
+	 */
 	@Override
-	public boolean isTaxIncluded () 
+	public boolean isTaxIncluded()
 	{
 		Object oo = get_Value(COLUMNNAME_IsTaxIncluded);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Transferred.
-		@param IsTransferred 
-		Transferred to General Ledger (i.e. accounted)
-	  */
+	/**
+	 * Set Transferred.
+	 *
+	 * @param IsTransferred Transferred to General Ledger (i.e. accounted)
+	 */
 	@Override
-	public void setIsTransferred (boolean IsTransferred)
+	public void setIsTransferred(boolean IsTransferred)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsTransferred, Boolean.valueOf(IsTransferred));
+		set_ValueNoCheck(COLUMNNAME_IsTransferred, Boolean.valueOf(IsTransferred));
 	}
 
-	/** Get Transferred.
-		@return Transferred to General Ledger (i.e. accounted)
-	  */
+	/**
+	 * Get Transferred.
+	 *
+	 * @return Transferred to General Ledger (i.e. accounted)
+	 */
 	@Override
-	public boolean isTransferred () 
+	public boolean isTransferred()
 	{
 		Object oo = get_Value(COLUMNNAME_IsTransferred);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Benutze abw. Rechnungsadresse.
-		@param IsUseBillToAddress Benutze abw. Rechnungsadresse	  */
+	/**
+	 * Set Benutze abw. Rechnungsadresse.
+	 *
+	 * @param IsUseBillToAddress Benutze abw. Rechnungsadresse
+	 */
 	@Override
-	public void setIsUseBillToAddress (boolean IsUseBillToAddress)
+	public void setIsUseBillToAddress(boolean IsUseBillToAddress)
 	{
-		set_Value (COLUMNNAME_IsUseBillToAddress, Boolean.valueOf(IsUseBillToAddress));
+		set_Value(COLUMNNAME_IsUseBillToAddress, Boolean.valueOf(IsUseBillToAddress));
 	}
 
-	/** Get Benutze abw. Rechnungsadresse.
-		@return Benutze abw. Rechnungsadresse	  */
+	/**
+	 * Get Benutze abw. Rechnungsadresse.
+	 *
+	 * @return Benutze abw. Rechnungsadresse
+	 */
 	@Override
-	public boolean isUseBillToAddress () 
+	public boolean isUseBillToAddress()
 	{
 		Object oo = get_Value(COLUMNNAME_IsUseBillToAddress);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Benutze abw. Adresse.
-		@param IsUseBPartnerAddress Benutze abw. Adresse	  */
+	/**
+	 * Set Benutze abw. Adresse.
+	 *
+	 * @param IsUseBPartnerAddress Benutze abw. Adresse
+	 */
 	@Override
-	public void setIsUseBPartnerAddress (boolean IsUseBPartnerAddress)
+	public void setIsUseBPartnerAddress(boolean IsUseBPartnerAddress)
 	{
-		set_Value (COLUMNNAME_IsUseBPartnerAddress, Boolean.valueOf(IsUseBPartnerAddress));
+		set_Value(COLUMNNAME_IsUseBPartnerAddress, Boolean.valueOf(IsUseBPartnerAddress));
 	}
 
-	/** Get Benutze abw. Adresse.
-		@return Benutze abw. Adresse	  */
+	/**
+	 * Get Benutze abw. Adresse.
+	 *
+	 * @return Benutze abw. Adresse
+	 */
 	@Override
-	public boolean isUseBPartnerAddress () 
+	public boolean isUseBPartnerAddress()
 	{
 		Object oo = get_Value(COLUMNNAME_IsUseBPartnerAddress);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1864,28 +2262,31 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_Link_Order_ID, org.compiere.model.I_C_Order.class, Link_Order);
 	}
 
-	/** Set Zugehörige Bestellung.
-		@param Link_Order_ID 
-		Mit diesem Feld kann ein Auftrag die ihm zugehörige Bestellung referenzieren.
-	  */
+	/**
+	 * Set Zugehörige Bestellung.
+	 *
+	 * @param Link_Order_ID Mit diesem Feld kann ein Auftrag die ihm zugehörige Bestellung referenzieren.
+	 */
 	@Override
-	public void setLink_Order_ID (int Link_Order_ID)
+	public void setLink_Order_ID(int Link_Order_ID)
 	{
-		if (Link_Order_ID < 1) 
-			set_Value (COLUMNNAME_Link_Order_ID, null);
-		else 
-			set_Value (COLUMNNAME_Link_Order_ID, Integer.valueOf(Link_Order_ID));
+		if (Link_Order_ID < 1)
+			set_Value(COLUMNNAME_Link_Order_ID, null);
+		else
+			set_Value(COLUMNNAME_Link_Order_ID, Integer.valueOf(Link_Order_ID));
 	}
 
-	/** Get Zugehörige Bestellung.
-		@return Mit diesem Feld kann ein Auftrag die ihm zugehörige Bestellung referenzieren.
-	  */
+	/**
+	 * Get Zugehörige Bestellung.
+	 *
+	 * @return Mit diesem Feld kann ein Auftrag die ihm zugehörige Bestellung referenzieren.
+	 */
 	@Override
-	public int getLink_Order_ID () 
+	public int getLink_Order_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Link_Order_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -1901,103 +2302,115 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_M_FreightCategory_ID, org.compiere.model.I_M_FreightCategory.class, M_FreightCategory);
 	}
 
-	/** Set Fracht-Kategorie.
-		@param M_FreightCategory_ID 
-		Category of the Freight
-	  */
+	/**
+	 * Set Fracht-Kategorie.
+	 *
+	 * @param M_FreightCategory_ID Category of the Freight
+	 */
 	@Override
-	public void setM_FreightCategory_ID (int M_FreightCategory_ID)
+	public void setM_FreightCategory_ID(int M_FreightCategory_ID)
 	{
-		if (M_FreightCategory_ID < 1) 
-			set_Value (COLUMNNAME_M_FreightCategory_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_FreightCategory_ID, Integer.valueOf(M_FreightCategory_ID));
+		if (M_FreightCategory_ID < 1)
+			set_Value(COLUMNNAME_M_FreightCategory_ID, null);
+		else
+			set_Value(COLUMNNAME_M_FreightCategory_ID, Integer.valueOf(M_FreightCategory_ID));
 	}
 
-	/** Get Fracht-Kategorie.
-		@return Category of the Freight
-	  */
+	/**
+	 * Get Fracht-Kategorie.
+	 *
+	 * @return Category of the Freight
+	 */
 	@Override
-	public int getM_FreightCategory_ID () 
+	public int getM_FreightCategory_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_FreightCategory_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Preisliste.
-		@param M_PriceList_ID 
-		Unique identifier of a Price List
-	  */
+	/**
+	 * Set Preisliste.
+	 *
+	 * @param M_PriceList_ID Unique identifier of a Price List
+	 */
 	@Override
-	public void setM_PriceList_ID (int M_PriceList_ID)
+	public void setM_PriceList_ID(int M_PriceList_ID)
 	{
-		if (M_PriceList_ID < 1) 
-			set_Value (COLUMNNAME_M_PriceList_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
+		if (M_PriceList_ID < 1)
+			set_Value(COLUMNNAME_M_PriceList_ID, null);
+		else
+			set_Value(COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
 	}
 
-	/** Get Preisliste.
-		@return Unique identifier of a Price List
-	  */
+	/**
+	 * Get Preisliste.
+	 *
+	 * @return Unique identifier of a Price List
+	 */
 	@Override
-	public int getM_PriceList_ID () 
+	public int getM_PriceList_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Preissystem.
-		@param M_PricingSystem_ID 
-		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
+	/**
+	 * Set Preissystem.
+	 *
+	 * @param M_PricingSystem_ID Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 */
 	@Override
-	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
+	public void setM_PricingSystem_ID(int M_PricingSystem_ID)
 	{
-		if (M_PricingSystem_ID < 1) 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+		if (M_PricingSystem_ID < 1)
+			set_Value(COLUMNNAME_M_PricingSystem_ID, null);
+		else
+			set_Value(COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
 	}
 
-	/** Get Preissystem.
-		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
+	/**
+	 * Get Preissystem.
+	 *
+	 * @return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 */
 	@Override
-	public int getM_PricingSystem_ID () 
+	public int getM_PricingSystem_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
+	/**
+	 * Set Produkt.
+	 *
+	 * @param M_Product_ID Produkt, Leistung, Artikel
+	 */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID(int M_Product_ID)
 	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+		if (M_Product_ID < 1)
+			set_Value(COLUMNNAME_M_Product_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
+	/**
+	 * Get Produkt.
+	 *
+	 * @return Produkt, Leistung, Artikel
+	 */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -2013,429 +2426,549 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
 	}
 
-	/** Set Lieferweg.
-		@param M_Shipper_ID 
-		Method or manner of product delivery
-	  */
+	/**
+	 * Set Lieferweg.
+	 *
+	 * @param M_Shipper_ID Method or manner of product delivery
+	 */
 	@Override
-	public void setM_Shipper_ID (int M_Shipper_ID)
+	public void setM_Shipper_ID(int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1) 
-			set_Value (COLUMNNAME_M_Shipper_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+		if (M_Shipper_ID < 1)
+			set_Value(COLUMNNAME_M_Shipper_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
 	}
 
-	/** Get Lieferweg.
-		@return Method or manner of product delivery
-	  */
+	/**
+	 * Get Lieferweg.
+	 *
+	 * @return Method or manner of product delivery
+	 */
 	@Override
-	public int getM_Shipper_ID () 
+	public int getM_Shipper_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Tour.
-		@param M_Tour_ID Tour	  */
+	/**
+	 * Set Tour.
+	 *
+	 * @param M_Tour_ID Tour
+	 */
 	@Override
-	public void setM_Tour_ID (int M_Tour_ID)
+	public void setM_Tour_ID(int M_Tour_ID)
 	{
-		if (M_Tour_ID < 1) 
-			set_Value (COLUMNNAME_M_Tour_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Tour_ID, Integer.valueOf(M_Tour_ID));
+		if (M_Tour_ID < 1)
+			set_Value(COLUMNNAME_M_Tour_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Tour_ID, Integer.valueOf(M_Tour_ID));
 	}
 
-	/** Get Tour.
-		@return Tour	  */
+	/**
+	 * Get Tour.
+	 *
+	 * @return Tour
+	 */
 	@Override
-	public int getM_Tour_ID () 
+	public int getM_Tour_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Tour_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Storage Warehouse and Service Point
-	  */
+	/**
+	 * Set Lager.
+	 *
+	 * @param M_Warehouse_ID Storage Warehouse and Service Point
+	 */
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID(int M_Warehouse_ID)
 	{
-		if (M_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+		if (M_Warehouse_ID < 1)
+			set_Value(COLUMNNAME_M_Warehouse_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
 	}
 
-	/** Get Lager.
-		@return Storage Warehouse and Service Point
-	  */
+	/**
+	 * Get Lager.
+	 *
+	 * @return Storage Warehouse and Service Point
+	 */
 	@Override
-	public int getM_Warehouse_ID () 
+	public int getM_Warehouse_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Orderline_includedTab.
-		@param Orderline_includedTab Orderline_includedTab	  */
+	/**
+	 * Set Orderline_includedTab.
+	 *
+	 * @param Orderline_includedTab Orderline_includedTab
+	 */
 	@Override
-	public void setOrderline_includedTab (java.lang.String Orderline_includedTab)
+	public void setOrderline_includedTab(java.lang.String Orderline_includedTab)
 	{
-		set_ValueNoCheck (COLUMNNAME_Orderline_includedTab, Orderline_includedTab);
+		set_ValueNoCheck(COLUMNNAME_Orderline_includedTab, Orderline_includedTab);
 	}
 
-	/** Get Orderline_includedTab.
-		@return Orderline_includedTab	  */
+	/**
+	 * Get Orderline_includedTab.
+	 *
+	 * @return Orderline_includedTab
+	 */
 	@Override
-	public java.lang.String getOrderline_includedTab () 
+	public java.lang.String getOrderline_includedTab()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Orderline_includedTab);
 	}
 
-	/** Set OrderType.
-		@param OrderType OrderType	  */
+	/**
+	 * Set OrderType.
+	 *
+	 * @param OrderType OrderType
+	 */
 	@Override
-	public void setOrderType (java.lang.String OrderType)
+	public void setOrderType(java.lang.String OrderType)
 	{
-		set_Value (COLUMNNAME_OrderType, OrderType);
+		set_Value(COLUMNNAME_OrderType, OrderType);
 	}
 
-	/** Get OrderType.
-		@return OrderType	  */
+	/**
+	 * Get OrderType.
+	 *
+	 * @return OrderType
+	 */
 	@Override
-	public java.lang.String getOrderType () 
+	public java.lang.String getOrderType()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_OrderType);
 	}
 
-	/** Set Payment BPartner.
-		@param Pay_BPartner_ID 
-		Business Partner responsible for the payment
-	  */
+	/**
+	 * Set Payment BPartner.
+	 *
+	 * @param Pay_BPartner_ID Business Partner responsible for the payment
+	 */
 	@Override
-	public void setPay_BPartner_ID (int Pay_BPartner_ID)
+	public void setPay_BPartner_ID(int Pay_BPartner_ID)
 	{
-		if (Pay_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_Pay_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_Pay_BPartner_ID, Integer.valueOf(Pay_BPartner_ID));
+		if (Pay_BPartner_ID < 1)
+			set_Value(COLUMNNAME_Pay_BPartner_ID, null);
+		else
+			set_Value(COLUMNNAME_Pay_BPartner_ID, Integer.valueOf(Pay_BPartner_ID));
 	}
 
-	/** Get Payment BPartner.
-		@return Business Partner responsible for the payment
-	  */
+	/**
+	 * Get Payment BPartner.
+	 *
+	 * @return Business Partner responsible for the payment
+	 */
 	@Override
-	public int getPay_BPartner_ID () 
+	public int getPay_BPartner_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Pay_BPartner_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Payment Location.
-		@param Pay_Location_ID 
-		Location of the Business Partner responsible for the payment
-	  */
+	/**
+	 * Set Payment Location.
+	 *
+	 * @param Pay_Location_ID Location of the Business Partner responsible for the payment
+	 */
 	@Override
-	public void setPay_Location_ID (int Pay_Location_ID)
+	public void setPay_Location_ID(int Pay_Location_ID)
 	{
-		if (Pay_Location_ID < 1) 
-			set_Value (COLUMNNAME_Pay_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_Pay_Location_ID, Integer.valueOf(Pay_Location_ID));
+		if (Pay_Location_ID < 1)
+			set_Value(COLUMNNAME_Pay_Location_ID, null);
+		else
+			set_Value(COLUMNNAME_Pay_Location_ID, Integer.valueOf(Pay_Location_ID));
 	}
 
-	/** Get Payment Location.
-		@return Location of the Business Partner responsible for the payment
-	  */
+	/**
+	 * Get Payment Location.
+	 *
+	 * @return Location of the Business Partner responsible for the payment
+	 */
 	@Override
-	public int getPay_Location_ID () 
+	public int getPay_Location_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Pay_Location_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** 
+	/**
 	 * PaymentRule AD_Reference_ID=195
 	 * Reference name: _Payment Rule
 	 */
-	public static final int PAYMENTRULE_AD_Reference_ID=195;
-	/** Cash = B */
+	public static final int PAYMENTRULE_AD_Reference_ID = 195;
+	/**
+	 * Cash = B
+	 */
 	public static final String PAYMENTRULE_Cash = "B";
-	/** CreditCard = K */
+	/**
+	 * CreditCard = K
+	 */
 	public static final String PAYMENTRULE_CreditCard = "K";
-	/** DirectDeposit = T */
+	/**
+	 * DirectDeposit = T
+	 */
 	public static final String PAYMENTRULE_DirectDeposit = "T";
-	/** Check = S */
+	/**
+	 * Check = S
+	 */
 	public static final String PAYMENTRULE_Check = "S";
-	/** OnCredit = P */
+	/**
+	 * OnCredit = P
+	 */
 	public static final String PAYMENTRULE_OnCredit = "P";
-	/** DirectDebit = D */
+	/**
+	 * DirectDebit = D
+	 */
 	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Mixed = M */
+	/**
+	 * Mixed = M
+	 */
 	public static final String PAYMENTRULE_Mixed = "M";
-	/** PayPal = L */
+	/**
+	 * PayPal = L
+	 */
 	public static final String PAYMENTRULE_PayPal = "L";
-	/** Set Zahlungsweise.
-		@param PaymentRule 
-		How you pay the invoice
-	  */
+
+	/**
+	 * Set Zahlungsweise.
+	 *
+	 * @param PaymentRule How you pay the invoice
+	 */
 	@Override
-	public void setPaymentRule (java.lang.String PaymentRule)
+	public void setPaymentRule(java.lang.String PaymentRule)
 	{
 
-		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
+		set_Value(COLUMNNAME_PaymentRule, PaymentRule);
 	}
 
-	/** Get Zahlungsweise.
-		@return How you pay the invoice
-	  */
+	/**
+	 * Get Zahlungsweise.
+	 *
+	 * @return How you pay the invoice
+	 */
 	@Override
-	public java.lang.String getPaymentRule () 
+	public java.lang.String getPaymentRule()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentRule);
 	}
 
-	/** Set Referenz.
-		@param POReference 
-		Referenz-Nummer des Kunden
-	  */
+	/**
+	 * Set Referenz.
+	 *
+	 * @param POReference Referenz-Nummer des Kunden
+	 */
 	@Override
-	public void setPOReference (java.lang.String POReference)
+	public void setPOReference(java.lang.String POReference)
 	{
-		set_Value (COLUMNNAME_POReference, POReference);
+		set_Value(COLUMNNAME_POReference, POReference);
 	}
 
-	/** Get Referenz.
-		@return Referenz-Nummer des Kunden
-	  */
+	/**
+	 * Get Referenz.
+	 *
+	 * @return Referenz-Nummer des Kunden
+	 */
 	@Override
-	public java.lang.String getPOReference () 
+	public java.lang.String getPOReference()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
-	/** Set Verbucht.
-		@param Posted 
-		Posting status
-	  */
+	/**
+	 * Set Verbucht.
+	 *
+	 * @param Posted Posting status
+	 */
 	@Override
-	public void setPosted (boolean Posted)
+	public void setPosted(boolean Posted)
 	{
-		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
+		set_Value(COLUMNNAME_Posted, Boolean.valueOf(Posted));
 	}
 
-	/** Get Verbucht.
-		@return Posting status
-	  */
+	/**
+	 * Get Verbucht.
+	 *
+	 * @return Posting status
+	 */
 	@Override
-	public boolean isPosted () 
+	public boolean isPosted()
 	{
 		Object oo = get_Value(COLUMNNAME_Posted);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Bereitstellungsdatum.
-		@param PreparationDate Bereitstellungsdatum	  */
+	/**
+	 * Set Bereitstellungsdatum.
+	 *
+	 * @param PreparationDate Bereitstellungsdatum
+	 */
 	@Override
-	public void setPreparationDate (java.sql.Timestamp PreparationDate)
+	public void setPreparationDate(java.sql.Timestamp PreparationDate)
 	{
-		set_Value (COLUMNNAME_PreparationDate, PreparationDate);
+		set_Value(COLUMNNAME_PreparationDate, PreparationDate);
 	}
 
-	/** Get Bereitstellungsdatum.
-		@return Bereitstellungsdatum	  */
+	/**
+	 * Get Bereitstellungsdatum.
+	 *
+	 * @return Bereitstellungsdatum
+	 */
 	@Override
-	public java.sql.Timestamp getPreparationDate () 
+	public java.sql.Timestamp getPreparationDate()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PreparationDate);
 	}
 
-	/** 
+	/**
 	 * PriorityRule AD_Reference_ID=154
 	 * Reference name: _PriorityRule
 	 */
-	public static final int PRIORITYRULE_AD_Reference_ID=154;
-	/** High = 3 */
+	public static final int PRIORITYRULE_AD_Reference_ID = 154;
+	/**
+	 * High = 3
+	 */
 	public static final String PRIORITYRULE_High = "3";
-	/** Medium = 5 */
+	/**
+	 * Medium = 5
+	 */
 	public static final String PRIORITYRULE_Medium = "5";
-	/** Low = 7 */
+	/**
+	 * Low = 7
+	 */
 	public static final String PRIORITYRULE_Low = "7";
-	/** Urgent = 1 */
+	/**
+	 * Urgent = 1
+	 */
 	public static final String PRIORITYRULE_Urgent = "1";
-	/** Minor = 9 */
+	/**
+	 * Minor = 9
+	 */
 	public static final String PRIORITYRULE_Minor = "9";
-	/** Set Priorität.
-		@param PriorityRule 
-		Priority of a document
-	  */
+
+	/**
+	 * Set Priorität.
+	 *
+	 * @param PriorityRule Priority of a document
+	 */
 	@Override
-	public void setPriorityRule (java.lang.String PriorityRule)
+	public void setPriorityRule(java.lang.String PriorityRule)
 	{
 
-		set_Value (COLUMNNAME_PriorityRule, PriorityRule);
+		set_Value(COLUMNNAME_PriorityRule, PriorityRule);
 	}
 
-	/** Get Priorität.
-		@return Priority of a document
-	  */
+	/**
+	 * Get Priorität.
+	 *
+	 * @return Priority of a document
+	 */
 	@Override
-	public java.lang.String getPriorityRule () 
+	public java.lang.String getPriorityRule()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PriorityRule);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Set Verarbeitet.
+	 *
+	 * @param Processed Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed(boolean Processed)
 	{
-		set_ValueNoCheck (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_ValueNoCheck(COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Get Verarbeitet.
+	 *
+	 * @return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
+	/**
+	 * Set Verarbeiten.
+	 *
+	 * @param Processing Verarbeiten
+	 */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing(boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value(COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
+	/**
+	 * Get Verarbeiten.
+	 *
+	 * @return Verarbeiten
+	 */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing()
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Promotion Code.
-		@param PromotionCode 
-		User entered promotion code at sales time
-	  */
+	/**
+	 * Set Promotion Code.
+	 *
+	 * @param PromotionCode User entered promotion code at sales time
+	 */
 	@Override
-	public void setPromotionCode (java.lang.String PromotionCode)
+	public void setPromotionCode(java.lang.String PromotionCode)
 	{
-		set_Value (COLUMNNAME_PromotionCode, PromotionCode);
+		set_Value(COLUMNNAME_PromotionCode, PromotionCode);
 	}
 
-	/** Get Promotion Code.
-		@return User entered promotion code at sales time
-	  */
+	/**
+	 * Get Promotion Code.
+	 *
+	 * @return User entered promotion code at sales time
+	 */
 	@Override
-	public java.lang.String getPromotionCode () 
+	public java.lang.String getPromotionCode()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PromotionCode);
 	}
 
-	/** Set Menge-Schnelleingabe.
-		@param Qty_FastInput Menge-Schnelleingabe	  */
+	/**
+	 * Set Menge-Schnelleingabe.
+	 *
+	 * @param Qty_FastInput Menge-Schnelleingabe
+	 */
 	@Override
-	public void setQty_FastInput (java.math.BigDecimal Qty_FastInput)
+	public void setQty_FastInput(java.math.BigDecimal Qty_FastInput)
 	{
-		set_Value (COLUMNNAME_Qty_FastInput, Qty_FastInput);
+		set_Value(COLUMNNAME_Qty_FastInput, Qty_FastInput);
 	}
 
-	/** Get Menge-Schnelleingabe.
-		@return Menge-Schnelleingabe	  */
+	/**
+	 * Get Menge-Schnelleingabe.
+	 *
+	 * @return Menge-Schnelleingabe
+	 */
 	@Override
-	public java.math.BigDecimal getQty_FastInput () 
+	public java.math.BigDecimal getQty_FastInput()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_FastInput);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** 
+	/**
 	 * ReceivedVia AD_Reference_ID=540088
 	 * Reference name: ReceivedVia
 	 */
-	public static final int RECEIVEDVIA_AD_Reference_ID=540088;
-	/** Fax = F */
+	public static final int RECEIVEDVIA_AD_Reference_ID = 540088;
+	/**
+	 * Fax = F
+	 */
 	public static final String RECEIVEDVIA_Fax = "F";
-	/** Telefon = T */
+	/**
+	 * Telefon = T
+	 */
 	public static final String RECEIVEDVIA_Telefon = "T";
-	/** Webshop = W */
+	/**
+	 * Webshop = W
+	 */
 	public static final String RECEIVEDVIA_Webshop = "W";
-	/** Barverkauf = B */
+	/**
+	 * Barverkauf = B
+	 */
 	public static final String RECEIVEDVIA_Barverkauf = "B";
-	/** E-Mail = E */
+	/**
+	 * E-Mail = E
+	 */
 	public static final String RECEIVEDVIA_E_Mail = "E";
-	/** Seminar = S */
+	/**
+	 * Seminar = S
+	 */
 	public static final String RECEIVEDVIA_Seminar = "S";
-	/** Set Eingegangen via.
-		@param ReceivedVia Eingegangen via	  */
+
+	/**
+	 * Set Eingegangen via.
+	 *
+	 * @param ReceivedVia Eingegangen via
+	 */
 	@Override
-	public void setReceivedVia (java.lang.String ReceivedVia)
+	public void setReceivedVia(java.lang.String ReceivedVia)
 	{
 
-		set_Value (COLUMNNAME_ReceivedVia, ReceivedVia);
+		set_Value(COLUMNNAME_ReceivedVia, ReceivedVia);
 	}
 
-	/** Get Eingegangen via.
-		@return Eingegangen via	  */
+	/**
+	 * Get Eingegangen via.
+	 *
+	 * @return Eingegangen via
+	 */
 	@Override
-	public java.lang.String getReceivedVia () 
+	public java.lang.String getReceivedVia()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ReceivedVia);
 	}
 
-	/** Set Auftragsdatum  (Ref. Auftrag).
-		@param Ref_DateOrder Auftragsdatum  (Ref. Auftrag)	  */
+	/**
+	 * Set Auftragsdatum  (Ref. Auftrag).
+	 *
+	 * @param Ref_DateOrder Auftragsdatum  (Ref. Auftrag)
+	 */
 	@Override
-	public void setRef_DateOrder (java.sql.Timestamp Ref_DateOrder)
+	public void setRef_DateOrder(java.sql.Timestamp Ref_DateOrder)
 	{
-		throw new IllegalArgumentException ("Ref_DateOrder is virtual column");	}
+		throw new IllegalArgumentException("Ref_DateOrder is virtual column");
+	}
 
-	/** Get Auftragsdatum  (Ref. Auftrag).
-		@return Auftragsdatum  (Ref. Auftrag)	  */
+	/**
+	 * Get Auftragsdatum  (Ref. Auftrag).
+	 *
+	 * @return Auftragsdatum  (Ref. Auftrag)
+	 */
 	@Override
-	public java.sql.Timestamp getRef_DateOrder () 
+	public java.sql.Timestamp getRef_DateOrder()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_Ref_DateOrder);
 	}
@@ -2452,28 +2985,31 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_Ref_Order_ID, org.compiere.model.I_C_Order.class, Ref_Order);
 	}
 
-	/** Set Referenced Order.
-		@param Ref_Order_ID 
-		Reference to corresponding Sales/Purchase Order
-	  */
+	/**
+	 * Set Referenced Order.
+	 *
+	 * @param Ref_Order_ID Reference to corresponding Sales/Purchase Order
+	 */
 	@Override
-	public void setRef_Order_ID (int Ref_Order_ID)
+	public void setRef_Order_ID(int Ref_Order_ID)
 	{
-		if (Ref_Order_ID < 1) 
-			set_Value (COLUMNNAME_Ref_Order_ID, null);
-		else 
-			set_Value (COLUMNNAME_Ref_Order_ID, Integer.valueOf(Ref_Order_ID));
+		if (Ref_Order_ID < 1)
+			set_Value(COLUMNNAME_Ref_Order_ID, null);
+		else
+			set_Value(COLUMNNAME_Ref_Order_ID, Integer.valueOf(Ref_Order_ID));
 	}
 
-	/** Get Referenced Order.
-		@return Reference to corresponding Sales/Purchase Order
-	  */
+	/**
+	 * Get Referenced Order.
+	 *
+	 * @return Reference to corresponding Sales/Purchase Order
+	 */
 	@Override
-	public int getRef_Order_ID () 
+	public int getRef_Order_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Order_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -2489,114 +3025,135 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_Ref_Proposal_ID, org.compiere.model.I_C_Order.class, Ref_Proposal);
 	}
 
-	/** Set Referenz Angebot/Auftrag.
-		@param Ref_Proposal_ID 
-		Verknüpfung zwischen einem Angebot und dem zugehörigen Auftrag
-	  */
+	/**
+	 * Set Referenz Angebot/Auftrag.
+	 *
+	 * @param Ref_Proposal_ID Verknüpfung zwischen einem Angebot und dem zugehörigen Auftrag
+	 */
 	@Override
-	public void setRef_Proposal_ID (int Ref_Proposal_ID)
+	public void setRef_Proposal_ID(int Ref_Proposal_ID)
 	{
-		if (Ref_Proposal_ID < 1) 
-			set_Value (COLUMNNAME_Ref_Proposal_ID, null);
-		else 
-			set_Value (COLUMNNAME_Ref_Proposal_ID, Integer.valueOf(Ref_Proposal_ID));
+		if (Ref_Proposal_ID < 1)
+			set_Value(COLUMNNAME_Ref_Proposal_ID, null);
+		else
+			set_Value(COLUMNNAME_Ref_Proposal_ID, Integer.valueOf(Ref_Proposal_ID));
 	}
 
-	/** Get Referenz Angebot/Auftrag.
-		@return Verknüpfung zwischen einem Angebot und dem zugehörigen Auftrag
-	  */
+	/**
+	 * Get Referenz Angebot/Auftrag.
+	 *
+	 * @return Verknüpfung zwischen einem Angebot und dem zugehörigen Auftrag
+	 */
 	@Override
-	public int getRef_Proposal_ID () 
+	public int getRef_Proposal_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Proposal_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Vertriebspartnercode.
-		@param SalesPartnerCode Vertriebspartnercode	  */
+	/**
+	 * Set Vertriebspartnercode.
+	 *
+	 * @param SalesPartnerCode Vertriebspartnercode
+	 */
 	@Override
-	public void setSalesPartnerCode (java.lang.String SalesPartnerCode)
+	public void setSalesPartnerCode(java.lang.String SalesPartnerCode)
 	{
-		set_Value (COLUMNNAME_SalesPartnerCode, SalesPartnerCode);
+		set_Value(COLUMNNAME_SalesPartnerCode, SalesPartnerCode);
 	}
 
-	/** Get Vertriebspartnercode.
-		@return Vertriebspartnercode	  */
+	/**
+	 * Get Vertriebspartnercode.
+	 *
+	 * @return Vertriebspartnercode
+	 */
 	@Override
-	public java.lang.String getSalesPartnerCode () 
+	public java.lang.String getSalesPartnerCode()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SalesPartnerCode);
 	}
 
-	/** Set Kundenbetreuer.
-		@param SalesRep_ID Kundenbetreuer	  */
+	/**
+	 * Set Kundenbetreuer.
+	 *
+	 * @param SalesRep_ID Kundenbetreuer
+	 */
 	@Override
-	public void setSalesRep_ID (int SalesRep_ID)
+	public void setSalesRep_ID(int SalesRep_ID)
 	{
-		if (SalesRep_ID < 1) 
-			set_Value (COLUMNNAME_SalesRep_ID, null);
-		else 
-			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
+		if (SalesRep_ID < 1)
+			set_Value(COLUMNNAME_SalesRep_ID, null);
+		else
+			set_Value(COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Kundenbetreuer.
-		@return Kundenbetreuer	  */
+	/**
+	 * Get Kundenbetreuer.
+	 *
+	 * @return Kundenbetreuer
+	 */
 	@Override
-	public int getSalesRep_ID () 
+	public int getSalesRep_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set E-Mail senden.
-		@param SendEMail 
-		Enable sending Document EMail
-	  */
+	/**
+	 * Set E-Mail senden.
+	 *
+	 * @param SendEMail Enable sending Document EMail
+	 */
 	@Override
-	public void setSendEMail (boolean SendEMail)
+	public void setSendEMail(boolean SendEMail)
 	{
-		set_Value (COLUMNNAME_SendEMail, Boolean.valueOf(SendEMail));
+		set_Value(COLUMNNAME_SendEMail, Boolean.valueOf(SendEMail));
 	}
 
-	/** Get E-Mail senden.
-		@return Enable sending Document EMail
-	  */
+	/**
+	 * Get E-Mail senden.
+	 *
+	 * @return Enable sending Document EMail
+	 */
 	@Override
-	public boolean isSendEMail () 
+	public boolean isSendEMail()
 	{
 		Object oo = get_Value(COLUMNNAME_SendEMail);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Summe Zeilen.
-		@param TotalLines 
-		Total of all document lines
-	  */
+	/**
+	 * Set Summe Zeilen.
+	 *
+	 * @param TotalLines Total of all document lines
+	 */
 	@Override
-	public void setTotalLines (java.math.BigDecimal TotalLines)
+	public void setTotalLines(java.math.BigDecimal TotalLines)
 	{
-		set_ValueNoCheck (COLUMNNAME_TotalLines, TotalLines);
+		set_ValueNoCheck(COLUMNNAME_TotalLines, TotalLines);
 	}
 
-	/** Get Summe Zeilen.
-		@return Total of all document lines
-	  */
+	/**
+	 * Get Summe Zeilen.
+	 *
+	 * @return Total of all document lines
+	 */
 	@Override
-	public java.math.BigDecimal getTotalLines () 
+	public java.math.BigDecimal getTotalLines()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalLines);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -2612,28 +3169,31 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
 	}
 
-	/** Set Nutzer 1.
-		@param User1_ID 
-		User defined list element #1
-	  */
+	/**
+	 * Set Nutzer 1.
+	 *
+	 * @param User1_ID User defined list element #1
+	 */
 	@Override
-	public void setUser1_ID (int User1_ID)
+	public void setUser1_ID(int User1_ID)
 	{
-		if (User1_ID < 1) 
-			set_Value (COLUMNNAME_User1_ID, null);
-		else 
-			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
+		if (User1_ID < 1)
+			set_Value(COLUMNNAME_User1_ID, null);
+		else
+			set_Value(COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
 	}
 
-	/** Get Nutzer 1.
-		@return User defined list element #1
-	  */
+	/**
+	 * Get Nutzer 1.
+	 *
+	 * @return User defined list element #1
+	 */
 	@Override
-	public int getUser1_ID () 
+	public int getUser1_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -2649,72 +3209,81 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
-	/** Set Nutzer 2.
-		@param User2_ID 
-		User defined list element #2
-	  */
+	/**
+	 * Set Nutzer 2.
+	 *
+	 * @param User2_ID User defined list element #2
+	 */
 	@Override
-	public void setUser2_ID (int User2_ID)
+	public void setUser2_ID(int User2_ID)
 	{
-		if (User2_ID < 1) 
-			set_Value (COLUMNNAME_User2_ID, null);
-		else 
-			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
+		if (User2_ID < 1)
+			set_Value(COLUMNNAME_User2_ID, null);
+		else
+			set_Value(COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
 	}
 
-	/** Get Nutzer 2.
-		@return User defined list element #2
-	  */
+	/**
+	 * Get Nutzer 2.
+	 *
+	 * @return User defined list element #2
+	 */
 	@Override
-	public int getUser2_ID () 
+	public int getUser2_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Volumen.
-		@param Volume 
-		Volume of a product
-	  */
+	/**
+	 * Set Volumen.
+	 *
+	 * @param Volume Volume of a product
+	 */
 	@Override
-	public void setVolume (java.math.BigDecimal Volume)
+	public void setVolume(java.math.BigDecimal Volume)
 	{
-		set_Value (COLUMNNAME_Volume, Volume);
+		set_Value(COLUMNNAME_Volume, Volume);
 	}
 
-	/** Get Volumen.
-		@return Volume of a product
-	  */
+	/**
+	 * Get Volumen.
+	 *
+	 * @return Volume of a product
+	 */
 	@Override
-	public java.math.BigDecimal getVolume () 
+	public java.math.BigDecimal getVolume()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Volume);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Gewicht.
-		@param Weight 
-		Weight of a product
-	  */
+	/**
+	 * Set Gewicht.
+	 *
+	 * @param Weight Weight of a product
+	 */
 	@Override
-	public void setWeight (java.math.BigDecimal Weight)
+	public void setWeight(java.math.BigDecimal Weight)
 	{
-		set_Value (COLUMNNAME_Weight, Weight);
+		set_Value(COLUMNNAME_Weight, Weight);
 	}
 
-	/** Get Gewicht.
-		@return Weight of a product
-	  */
+	/**
+	 * Get Gewicht.
+	 *
+	 * @return Weight of a product
+	 */
 	@Override
-	public java.math.BigDecimal getWeight () 
+	public java.math.BigDecimal getWeight()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Weight);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+			return BigDecimal.ZERO;
 		return bd;
 	}
 }

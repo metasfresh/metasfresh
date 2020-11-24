@@ -114,12 +114,12 @@ public class M_ShipmentSchedule
 						.getDocumentLineDescriptor();
 
 		return ShipmentScheduleCreatedEvent.builder()
-						.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
-						.materialDescriptor(materialDescriptor)
-						.reservedQuantity(shipmentSchedule.getQtyReserved())
-						.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-						.documentLineDescriptor(documentLineDescriptor)
-						.build();
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
+				.materialDescriptor(materialDescriptor)
+				.reservedQuantity(shipmentSchedule.getQtyReserved())
+				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
+				.documentLineDescriptor(documentLineDescriptor)
+				.build();
 	}
 
 	private ShipmentScheduleUpdatedEvent createUpdatedEvent(
@@ -127,7 +127,7 @@ public class M_ShipmentSchedule
 	{
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(shipmentSchedule);
 
-		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule oldShipmentSchedule = toOldValues(shipmentSchedule);
 
 		final BigDecimal oldOrderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(oldShipmentSchedule);
 
@@ -146,6 +146,12 @@ public class M_ShipmentSchedule
 				.reservedQuantityDelta(reservedQuantityDelta)
 				.orderedQuantityDelta(orderedQuantityDelta)
 				.build();
+	}
+
+	@VisibleForTesting
+	I_M_ShipmentSchedule toOldValues(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
 	}
 
 	private ShipmentScheduleDeletedEvent createDeletedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

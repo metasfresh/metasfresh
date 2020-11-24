@@ -57,7 +57,6 @@ public class M_Transaction
 	/**
 	 * Note: it's important to enqueue the transaction after it was saved and before it is deleted, because we need its ID.
 	 *
-	 * @param purchaseCandidate
 	 * @task https://github.com/metasfresh/metasfresh/issues/710
 	 */
 	@ModelChange(timings = {

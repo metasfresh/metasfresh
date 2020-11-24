@@ -1,47 +1,29 @@
-package de.metas.banking.payment.paymentallocation.service.impl;
-
 /*
  * #%L
  * de.metas.banking.swingui
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.apps.search.FindHelper;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
+package de.metas.banking.payment.paymentallocation.service.impl;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestDAO;
@@ -58,6 +40,22 @@ import de.metas.currency.CurrencyCode;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.apps.search.FindHelper;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
 
 public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 {

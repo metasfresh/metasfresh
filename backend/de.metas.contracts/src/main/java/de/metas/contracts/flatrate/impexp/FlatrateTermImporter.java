@@ -3,17 +3,7 @@
  */
 package de.metas.contracts.flatrate.impexp;
 
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -30,6 +20,16 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /*
  * #%L
@@ -87,15 +87,17 @@ import lombok.NonNull;
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
 		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
-		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
-				PlainContextAware.newWithThreadInheritedTrx(),
-				importRecord.getC_BPartner(),
-				importRecord.getC_Flatrate_Conditions(),
-				importRecord.getStartDate(),
-				(I_AD_User)null, // userInCharge
-				productAndCategoryId,
-				false // completeIt
-		);
+		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+			.context(PlainContextAware.newWithThreadInheritedTrx())
+			.bPartner(importRecord.getC_BPartner())
+			.conditions(importRecord.getC_Flatrate_Conditions())
+			.startDate(importRecord.getStartDate())
+			.productAndCategoryId(productAndCategoryId)
+			.completeIt(false)
+			.build();
+
+		final I_C_Flatrate_Term contract = flatrateBL.createTerm(createFlatrateTermRequest);
+
 		if (contract == null)
 		{
 			throw new AdempiereException("contract not created");

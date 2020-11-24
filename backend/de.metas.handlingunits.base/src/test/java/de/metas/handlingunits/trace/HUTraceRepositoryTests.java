@@ -21,7 +21,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 

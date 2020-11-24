@@ -64,7 +64,7 @@ public class BPartnerLocationType
 		this.billToDefault = Optional.ofNullable(billToDefault);
 		if (this.billToDefault.orElse(false) && billTo == null)
 		{
-			this.billTo = Optional.of(true);
+			this.billTo = Optional.of(true); // billToDefault always implies billTo
 		}
 		else
 		{
@@ -74,7 +74,7 @@ public class BPartnerLocationType
 		this.shipToDefault = Optional.ofNullable(shipToDefault);
 		if (this.shipToDefault.orElse(false) && shipTo == null)
 		{
-			this.shipTo = Optional.of(true);
+			this.shipTo = Optional.of(true); // shipToDefault always implies shipTo
 		}
 		else
 		{

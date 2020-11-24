@@ -33,7 +33,8 @@ import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
-import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -408,9 +409,9 @@ public class UserSession
 	}
 
 	/** @return websocket notifications endpoint on which the frontend shall listen */
-	public String getWebsocketEndpoint()
+	public WebsocketTopicName getWebsocketEndpoint()
 	{
-		return WebSocketConfig.buildUserSessionTopicName(getLoggedUserId());
+		return WebsocketTopicNames.buildUserSessionTopicName(getLoggedUserId());
 	}
 
 	public void assertDeprecatedRestAPIAllowed()

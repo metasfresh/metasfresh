@@ -30,6 +30,7 @@ import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 
 import de.metas.util.ISingletonService;
@@ -37,7 +38,7 @@ import de.metas.util.ISingletonService;
 public interface ITaxBL extends ISingletonService
 {
 	/**
-	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} first.<br>
+	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, CountryId, OrgId, I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} (Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} first.<br>
 	 * If that doesn't work, try retrieving the German tax
 	 *
 	 * @param shipC_BPartner_Location_ID place where the service is provided
@@ -55,13 +56,6 @@ public interface ITaxBL extends ISingletonService
 	/**
 	 * Retrieve <code>taxId<code> from the given <code>taxCategoryId</code>
 	 *
-	 * @param ctx
-	 * @param countryFromId
-	 * @param orgId
-	 * @param bpLocTo
-	 * @param billDate
-	 * @param taxCategoryId
-	 * @param isSOTrx
 	 * @param throwEx if <code>true</code>, and no <code>C_Tax</code> record can be found, then throw an exception that contains the failed query. <br>
 	 * 			Otherwise, just log and return <code>-1</code>.
 	 * @return taxId
@@ -88,12 +82,6 @@ public interface ITaxBL extends ISingletonService
 
 	/**
 	 * Calculate base amount, excluding tax
-	 *
-	 * @param tax
-	 * @param amount
-	 * @param taxIncluded
-	 * @param scale
-	 * @return
 	 */
 	BigDecimal calculateBaseAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
 
@@ -111,18 +99,12 @@ public interface ITaxBL extends ISingletonService
 	 *  if IsSOTrx is false, bill and ship are reversed
 	 * </pre>
 	 *
-	 * @param ctx context
-	 * @param M_Product_ID product
-	 * @param C_Charge_ID product
 	 * @param billDate invoice date
 	 * @param shipDate ship date (ignored)
-	 * @param AD_Org_ID org
 	 * @param M_Warehouse_ID warehouse (ignored)
 	 * @param billC_BPartner_Location_ID invoice location
 	 * @param shipC_BPartner_Location_ID ship location (ignored)
-	 * @param IsSOTrx is a sales trx
 	 * @return C_Tax_ID
-	 * @throws TaxNotFoundException
 	 */
 	int get(Properties ctx, int M_Product_ID, int C_Charge_ID,
 			Timestamp billDate, Timestamp shipDate,

@@ -219,7 +219,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		for (final JsonRequestBPartnerUpsertItem requestItem : bpartnerUpsertRequest.getRequestItems())
 		{
-			try (final MDCCloseable mdc = MDC.putCloseable("bpartnerIdentifier", requestItem.getBpartnerIdentifier()))
+			try (final MDCCloseable ignored = MDC.putCloseable("bpartnerIdentifier", requestItem.getBpartnerIdentifier()))
 			{
 				jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
 

@@ -22,13 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -39,7 +32,16 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.handlingunits.storage.impl.SaveOnCommitHUStorageDAO;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.Env;
+
+import java.util.Properties;
 
 public class HUContextFactory implements IHUContextFactory
 {
@@ -54,9 +56,14 @@ public class HUContextFactory implements IHUContextFactory
 	}
 
 	@Override
-	public IMutableHUContext createMutableHUContextForProcessing(final Properties ctx)
+	public IMutableHUContext createMutableHUContextForProcessing(
+			@NonNull final Properties ctx,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final IContextAware contextProvider = PlainContextAware.newOutOfTrxAllowThreadInherited(ctx);
+		final Properties ctxEffective = Env.copyCtx(ctx);
+		Env.setClientId(ctxEffective, clientAndOrgId.getClientId());
+		Env.setOrgId(ctxEffective, clientAndOrgId.getOrgId());
+		final IContextAware contextProvider = PlainContextAware.newOutOfTrxAllowThreadInherited(ctxEffective);
 		return createMutableHUContextForProcessing(contextProvider);
 	}
 
@@ -87,13 +94,19 @@ public class HUContextFactory implements IHUContextFactory
 	}
 
 	@Override
-	public IMutableHUContext createMutableHUContext(final Properties ctx)
+	public IMutableHUContext createMutableHUContext(
+			@NonNull final Properties ctx,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return new MutableHUContext(ctx, ITrx.TRXNAME_None);
+		final Properties ctxEffective = Env.copyCtx(ctx);
+		Env.setClientId(ctxEffective, clientAndOrgId.getClientId());
+		Env.setOrgId(ctxEffective, clientAndOrgId.getOrgId());
+		return new MutableHUContext(ctxEffective, ITrx.TRXNAME_None);
 	}
 
+	// TODO: probably will have to add ClientAndOrgId here as well. I don't have time for this now
 	@Override
-	public IMutableHUContext createMutableHUContext(final Properties ctx, final String trxName)
+	public IMutableHUContext createMutableHUContext(final Properties ctx, @NonNull final String trxName)
 	{
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return new MutableHUContext(contextProvider);
@@ -112,7 +125,7 @@ public class HUContextFactory implements IHUContextFactory
 
 		//
 		// Check: if transaction name was not changed, do nothing, return the old context
-		final String contextTrxName = huContext.getTrxName();
+		final String contextTrxName = huContext.getTrxName();//  // TODO tbp: here the context has wrong org. WHYYYYY
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (trxManager.isSameTrxName(contextTrxName, trxNameNew))
 		{

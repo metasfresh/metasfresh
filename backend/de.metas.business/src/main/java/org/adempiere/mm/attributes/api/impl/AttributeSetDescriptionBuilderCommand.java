@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -93,15 +94,15 @@ public class AttributeSetDescriptionBuilderCommand
 		}
 		else
 		{
-			final String attributeKey = attribute.getValue();
+			final @NonNull AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
 
 			final AttributeDescriptionPatternEvalCtx ctx = AttributeDescriptionPatternEvalCtx.builder()
 					.attributesRepo(attributesRepo)
 					.attributesBL(attributesBL)
 					.uomsRepo(uomsRepo)
 					.attribute(attribute)
-					.attributeValue(attributeSet.getValue(attributeKey))
-					.attributeValueId(attributeSet.getAttributeValueIdOrNull(attributeKey))
+					.attributeValue(attributeSet.getValue(attributeCode))
+					.attributeValueId(attributeSet.getAttributeValueIdOrNull(attributeCode))
 					.adLanguage(adLanguage)
 					.verboseDescription(true)
 					.build();
@@ -121,16 +122,16 @@ public class AttributeSetDescriptionBuilderCommand
 
 	private ITranslatableString getAttributeDisplayValue(@NonNull final I_M_Attribute attribute)
 	{
-		final String attributeKey = attribute.getValue();
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
 		final String attributeValueType = attribute.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
-			final String valueStr = attributeSet.getValueAsString(attributeKey);
+			final String valueStr = attributeSet.getValueAsString(attributeCode);
 			return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeKey);
+			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
 			if (valueBD != null)
 			{
 				final int displayType = attributesBL.getNumberDisplayType(attribute);
@@ -143,14 +144,14 @@ public class AttributeSetDescriptionBuilderCommand
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeKey);
+			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeCode);
 			return valueDate != null
 					? ASIDescriptionBuilderCommand.formatDateValue(valueDate)
 					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
-			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeKey);
+			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeCode);
 			final AttributeListValue attributeValue = attributeValueId != null
 					? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId)
 					: null;
@@ -160,14 +161,14 @@ public class AttributeSetDescriptionBuilderCommand
 			}
 			else
 			{
-				final String valueStr = attributeSet.getValueAsString(attributeKey);
+				final String valueStr = attributeSet.getValueAsString(attributeCode);
 				return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
 			}
 		}
 		else
 		{
 			// Unknown attributeValueType
-			final String valueStr = attributeSet.getValueAsString(attributeKey);
+			final String valueStr = attributeSet.getValueAsString(attributeCode);
 			return ASIDescriptionBuilderCommand.formatStringValue(valueStr);
 		}
 	}

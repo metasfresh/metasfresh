@@ -161,7 +161,7 @@ This setting is used for extending the Metasfresh's application [redux](https://
 
 ### Displaying content
 
-The main component defined in `routes` is wrapped by a custom [Container](https://github.com/metasfresh/metasfresh-webui-frontend/blob/master/src/components/Container.js) component, which makes sure everything is rendered inside the application window, and all the basic UI elements exist. It also adds some basic control of routing by providing `redirectPush` function in the props. It's nothing more than a [react-router-redux's push](https://github.com/reactjs/react-router-redux#pushlocation-replacelocation-gonumber-goback-goforward) action wraped in a redux dispatch function. It can be used to navigate around the app by calling it with url as a parameter :
+The main component defined in `routes` is wrapped by a custom [Container](https://github.com/metasfresh/metasfresh/frontend/blob/master/src/components/Container.js) component, which makes sure everything is rendered inside the application window, and all the basic UI elements exist. It also adds some basic control of routing by providing `redirectPush` function in the props. It's nothing more than a [react-router-redux's push](https://github.com/reactjs/react-router-redux#pushlocation-replacelocation-gonumber-goback-goforward) action wraped in a redux dispatch function. It can be used to navigate around the app by calling it with url as a parameter :
 
 ```javascript
   handleClick = () => {

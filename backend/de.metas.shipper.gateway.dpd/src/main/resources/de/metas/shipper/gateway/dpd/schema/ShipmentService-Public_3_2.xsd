@@ -1,0 +1,1965 @@
+<?xml version='1.0' encoding='UTF-8'?><schema targetNamespace="http://dpd.com/common/service/types/ShipmentService/3.2" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://dpd.com/common/service/types/ShipmentService/3.2" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:element name="storeOrders" type="tns:storeOrders"/>
+	<xs:element name="storeOrdersResponse" type="tns:storeOrdersResponse"/>
+
+	<xs:complexType name="storeOrders">
+		<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="0" name="printOptions" type="tns:printOptions">
+					<xs:annotation>
+						<xs:documentation>The Options which should be used for parcel printing.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+            <xs:element maxOccurs="30" minOccurs="1" name="order" type="tns:shipmentServiceData">
+				<xs:annotation>
+					<xs:documentation>Contains the whole data for the shipments.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="storeOrdersResponse">
+		<xs:sequence>
+			<xs:element name="orderResult" type="tns:storeOrdersResponseType">
+				<xs:annotation>
+					<xs:documentation>Contains return object.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="storeOrdersResponseType">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="parcellabelsPDF" type="xs:base64Binary">
+				<xs:annotation>
+					<xs:documentation>Contains parcel label PDF data in bytes.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="shipmentResponses" type="tns:shipmentResponse">
+				<xs:annotation>
+					<xs:documentation>Contains response data for every shipment order.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="shipmentResponse">
+		<xs:annotation>
+			<xs:documentation>Bundles shipment response data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="identificationNumber" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Serves as unique alphanumeric key of the shipment used by customer.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="mpsId">
+				<xs:annotation>
+				   <xs:documentation>The shipment number for consignment data.
+If ordertype is pickup information, the shipment number is an internal database id,
+which is necessary for technical support requests at DPD.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+				   <xs:restriction base="xs:string">
+				      <maxLength value="25"/>
+				   </xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="parcelInformation" type="tns:parcelInformationType">
+				<xs:annotation>
+					<xs:documentation>Contains information about the single parcels.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="3" minOccurs="0" name="faults" type="tns:faultCodeType">
+				<xs:annotation>
+					<xs:documentation>Contains information about errors during shipment order processing.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="shipmentServiceData">
+		<xs:annotation>
+			<xs:documentation>Bundles shipment service data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="1" name="generalShipmentData" type="tns:generalShipmentData">
+				<xs:annotation>
+					<xs:documentation>Contains general data for a shipment.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="parcels" type="tns:parcel">
+				<xs:annotation>
+					<xs:documentation>Contains information for the parcels.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="1" name="productAndServiceData" type="tns:productAndServiceData">
+				<xs:annotation>
+					<xs:documentation>Contains special data for a shipment.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="generalShipmentData">
+		<xs:annotation>
+			<xs:documentation>Bundles general shipment data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="mpsId">
+				<xs:annotation>
+					<xs:documentation>The shipment number for consignment data. The shipment number is only accepted if the parcel label number is allocated by customer.
+It starts with one of "MPS", "EXP" or "B2C", the last eight ciphers are the date in format yyyyMMdd.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="25"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="cUser">
+				<xs:annotation>
+					<xs:documentation>
+						User ID of the person who made the entry.
+					</xs:documentation>
+				</xs:annotation>
+				<simpleType>
+					<restriction base="xs:string">
+						<maxLength value="10"/>
+					</restriction>
+				</simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsCustomerReferenceNumber1">
+				<xs:annotation>
+					<xs:documentation>Consignment customer reference number 1 (maximal length 35), also customer reference number for collection request orders (maximal length 50).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsCustomerReferenceNumber2">
+				<xs:annotation>
+					<xs:documentation>Consignment customer reference number 2.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsCustomerReferenceNumber3">
+				<xs:annotation>
+					<xs:documentation>Consignment customer reference number 3.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsCustomerReferenceNumber4">
+				<xs:annotation>
+					<xs:documentation>Consignment customer reference number 4.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+            <xs:element minOccurs="0" name="identificationNumber">
+				<xs:annotation>
+					<xs:documentation>Serves as unique alphanumeric key of the shipment used by customer. Can obtain up to 999 ciphers.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+            <xs:element minOccurs="1" name="sendingDepot">
+				<xs:annotation>
+					<xs:documentation>Sending depot for consignment, ordering depot for collection request, customer's depot for pickup information or creating/sending depot for dangerous goods. 4 alphanumeric places, including leading zeros, e.g. 0163.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="4"/>
+					</xs:restriction>
+				</xs:simpleType>
+            </xs:element>
+			<xs:element minOccurs="1" name="product">
+				<xs:annotation>
+					<xs:documentation>Selection of product, exactly one per shipment, mandatory for consignment data. Possible values are:
+CL = DPD CLASSIC
+E830 = DPD 8:30
+E10 = DPD 10:00
+E12 = DPD 12:00
+E18 = DPD 18:00
+IE2 = DPD EXPRESS
+PL = DPD PARCELLetter
+PL+ = DPD PARCELLetterPlus
+MAIL = DPD International Mail
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+			    	<xs:restriction base="xs:string">
+						<xs:enumeration value="CL"/>
+						<xs:enumeration value="E830"/>
+						<xs:enumeration value="E10"/>
+						<xs:enumeration value="E12"/>
+						<xs:enumeration value="E18"/>
+						<xs:enumeration value="IE2"/>
+						<xs:enumeration value="PL"/>
+						<xs:enumeration value="PL+"/>
+						<xs:enumeration value="MAIL"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsCompleteDelivery" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if the shipment should be sent as complete delivery. Mandatory for COD. Default value is false.
+				   </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsCompleteDeliveryLabel" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if the label for complete delivery is printed for pickup. Default value is false.
+				   </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsVolume">
+				<xs:annotation>
+					<xs:documentation>Volume per consignment in cm3 (without decimal places).
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:long">
+						<xs:maxInclusive value="999999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsWeight">
+				<xs:annotation>
+					<xs:documentation>Shipment weight in grams rounded in 10 gram units without decimal separator (e.g. 300 equals 3kg).
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:long">
+						<xs:maxInclusive value="99999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsExpectedSendingDate">
+				<xs:annotation>
+					<xs:documentation>Date when the shipment is expected to be transferred to the system. Format is YYYYMMDD.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="[2][0-9]{3}([0][0-9]|[1][0-2])(0[1-9]|[12][0-9]|3[01])"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="mpsExpectedSendingTime">
+				<xs:annotation>
+					<xs:documentation>Time when the shipment is expected to be transferred to the system. Format is HHMMSS.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="(([1][0-9]|[2][0-3]|[0][0-9])([0-5][0-9])([0-5][0-9]))|([0-9]([0-5][0-9])([0-5][0-9]))"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="sender" type="tns:address">
+				<xs:annotation>
+					<xs:documentation>Consignment sender's address, collection request customer's address or pickup information customer's address.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="recipient" type="tns:address">
+				<xs:annotation>
+					<xs:documentation>Address of the recipient. For parcel shop delivery address of the real recipient.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="address">
+		<xs:sequence>
+			<xs:element minOccurs="1" name="name1">
+				<xs:annotation>
+					<xs:documentation>Name of address owner. For dangerous goods the maximum length is 50, otherwise always 35.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="name2">
+				<xs:annotation>
+					<xs:documentation>Name 2 of address owner.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="street">
+				<xs:annotation>
+					<xs:documentation>Street of address owner. For dangerous goods the maximum length is 50, otherwise always 35.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="houseNo">
+				<xs:annotation>
+					<xs:documentation>House number of address owner. Maximum length is 8.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="8"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="state">
+				<xs:annotation>
+					<xs:documentation>State of address owner in ISO 3166-2 code (e.g. BY = Bayern).
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="country">
+				<xs:annotation>
+					<xs:documentation>Country of address owner in ISO 3166-1 alpha-2 format (e.g. 'DE').</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="zipCode">
+				<xs:annotation>
+					<xs:documentation>Zip code of address owner.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="9"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="city">
+				<xs:annotation>
+					<xs:documentation>City/town of address owner. For dangerous goods the maximum length is 50, otherwise always 35.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="gln">
+				<xs:annotation>
+					<xs:documentation>International location number of address owner.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:long">
+						<xs:maxInclusive value="9999999999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customerNumber">
+				<xs:annotation>
+					<xs:documentation>Customer number of address owner. Maximum length is 17 for consignment and pickup information, 11 for collection request. Mandatory for sender's address.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="17"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="contact">
+				<xs:annotation>
+					<xs:documentation>Contact person of address owner.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="phone">
+				<xs:annotation>
+					<xs:documentation>Phone number of address owner. Mandatory if phone is the chosen notification channel. No required data format.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="fax">
+				<xs:annotation>
+					<xs:documentation>Fax number of address owner. No required data format.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="email">
+				<xs:annotation>
+					<xs:documentation>Email address of address owner. For collection requests the maximum length is 40, otherwise always 50.
+					</xs:documentation>
+				</xs:annotation>
+					<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="comment">
+				<xs:annotation>
+					<xs:documentation>Comment on address owner.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="70"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="iaccount">
+				<xs:annotation>
+					<xs:documentation>Account allocation or cost center (for VTG) of invoice data for consignments.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="parcel">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="parcelLabelNumber">
+				<xs:annotation>
+					<xs:documentation>Parcel label number. Number range and validity are checked. Length can be 11 or 14.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="11"/>
+						<xs:maxLength value="14"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customerReferenceNumber1">
+				<xs:annotation>
+					<xs:documentation>Parcel customer reference number 1.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customerReferenceNumber2">
+				<xs:annotation>
+					<xs:documentation>Parcel customer reference number 2.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customerReferenceNumber3">
+				<xs:annotation>
+					<xs:documentation>Parcel customer reference number 3.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customerReferenceNumber4">
+				<xs:annotation>
+					<xs:documentation>Parcel customer reference number 4.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="swap" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if the parcel is a consignment swap parcel. Default value is false.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="volume">
+				<xs:annotation>
+					<xs:documentation>Volume of the single parcel (length/width/height in format LLLWWWHHH) in cm without separators.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="999999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="weight">
+				<xs:annotation>
+					<xs:documentation>Parcel weight in grams rounded in 10 gram units without decimal delimiter (e.g. 300 equals 3kg). Consignement allows 8-digit values, collection requests 7-digit and dangerous goods 6-digit.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="99999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="hazardousLimitedQuantities" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if the parcel is a limited quantities hazardous goods parcel. Default value is false.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="higherInsurance" type="tns:higherInsurance">
+				<xs:annotation>
+					<xs:documentation>Defines if the parcel has increased insurance value. Default value is false.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="content">
+				<xs:annotation>
+					<xs:documentation>Content of the parcel. Mandatory for increased insurance. For collection requests maximum length is 50, for consignment it is 35.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="addService">
+				<xs:annotation>
+					<xs:documentation>Additional service.
+Possible values are:
+1 = delivery information
+2 = documents return
+3 = written permission to deposit goods by sender
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+						<xs:enumeration value="3"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="messageNumber">
+				<xs:annotation>
+					<xs:documentation>Message number for consignment shipper information. Default value is 1.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="99999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="function">
+				<xs:annotation>
+					<xs:documentation>Blockable functions, possible values are:
+LOCKDZB = delivery to a third party with notification of delivery
+LOCKASG = written permission to deposit goods
+LOCKEVM = delivery with non-recurring authority
+LOCKSHOP = parcel shop
+LOCKTV = appointment
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="LOCKDZB"/>
+						<xs:enumeration value="LOCKASG"/>
+						<xs:enumeration value="LOCKEVM"/>
+						<xs:enumeration value="LOCKSHOP"/>
+						<xs:enumeration value="LOCKTV"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="parameter">
+				<xs:annotation>
+					<xs:documentation>Free text for blockable functions.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="300"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="cod" type="tns:cod">
+				<xs:annotation>
+					<xs:documentation>Contains COD data for COD consignments.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="international" type="tns:international">
+				<xs:annotation>
+					<xs:documentation>Contains data for consignments across customs frontiers.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="4" minOccurs="0" name="hazardous" type="tns:hazardous">
+				<xs:annotation>
+					<xs:documentation>Contains packing and substance data for dangerous goods.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="printInfo1OnParcelLabel" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Determines if content of parameter info1 will be added on the label of a collection request parcel. Default value is false.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="info1">
+				<xs:annotation>
+					<xs:documentation>Information text 1. Will be printed on the parcel label if the flag printInfo1OnParcellabel is set to true.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="29"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="info2">
+				<xs:annotation>
+					<xs:documentation>Information text 2. Will not be printed on the parcel label.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="returns" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if parcel is a return parcel. The return parcel must always be next in order to the corresponding outbound parcel. Default value is false.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="productAndServiceData">
+		<xs:sequence>
+			<xs:element minOccurs="1" name="orderType">
+				<xs:annotation>
+					<xs:documentation>Defines the shipment type.
+Possible values are:
+consignment
+collection request order
+pickup information
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="consignment"/>
+						<xs:enumeration value="collection request order"/>
+						<xs:enumeration value="pickup information"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="saturdayDelivery" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if saturday delivery is demanded. Only selectable for product "E12". Default value is false.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="exWorksDelivery" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if the recipient has to pay the consignment. Default value is false.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="guarantee" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Set to true if an international shipment shall use Guarantee, only for products NP and E18 in international parcels
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="tyres" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Set to true if this consignment contains bulk tyres, only for product NP.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="personalDelivery" type="tns:personalDelivery">
+				<xs:annotation>
+					<xs:documentation>Contains information for personal delivery.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="pickup" type="tns:pickup">
+				<xs:annotation>
+					<xs:documentation>Contains information for pickup consignments, pickup address for collection requests or details for pickup information.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="parcelShopDelivery" type="tns:parcelShopDelivery">
+				<xs:annotation>
+					<xs:documentation>Contains the necessary information, if a parcel shop delivery is intended.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="predict" type="tns:notification">
+				<xs:annotation>
+					<xs:documentation>Contains data for interactive notification for consignments. Only channel e-mail and SMS is allowed.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="personalDeliveryNotification" type="tns:notification">
+				<xs:annotation>
+					<xs:documentation>Contains data for personal delivery notification for consignments.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="5" minOccurs="0" name="proactiveNotification" type="tns:proactiveNotification">
+				<xs:annotation>
+					<xs:documentation>Contains information of proactive notification for consignments.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="delivery" type="tns:delivery">
+				<xs:annotation>
+					<xs:documentation>Contains special delivery data for consignments.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="invoiceAddress" type="tns:address">
+				<xs:annotation>
+					<xs:documentation>Contains data about invoice recipient if it differs for consignment.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="countrySpecificService" type="xs:string">
+                <annotation>
+                	<documentation>In some relations a specific service code can be set which overwrites the feature selection.</documentation>
+                </annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="international">
+		<xs:sequence>
+			<xs:element minOccurs="1" name="parcelType" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if the type of parcel is "documents" (allowed for air based destination only). Default value is false.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="1" name="customsAmount">
+				<xs:annotation>
+					<xs:documentation>Defines the customs amount in total without decimal separator (e.g. 14.00 = 1400). For documents it is 0.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:long">
+						<xs:maxInclusive value="999999999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="customsCurrency">
+				<xs:annotation>
+					<xs:documentation>Currency code in ISO 4217 alpha-3 format.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="3"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="customsTerms">
+				<xs:annotation>
+					<xs:documentation>Declares the customs terms. Possible values are:
+01 = DAP, cleared
+02 = DDP, delivered duty paid (incl. duties and excl. Taxes
+03 = DDP, delivered duty paid (incl duties and taxes)
+05 = ex works (EXW)
+06 = DAP</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="01"/>
+						<xs:enumeration value="02"/>
+						<xs:enumeration value="03"/>
+						<xs:enumeration value="05"/>
+						<xs:enumeration value="06"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="customsContent">
+				<xs:annotation>
+					<xs:documentation>Describes the content of the parcel.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customsTarif">
+				<xs:annotation>
+					<xs:documentation>Defines the customs tarif number.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="8"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customsPaper">
+				<xs:annotation>
+					<xs:documentation>Lists the accompanying documents. The values are to be combined without separator (e.g. "ABG"). Following values are defined:
+A = commercial invoice
+B = pro forma invoice
+C = export declaration
+D = EUR1
+E = EUR2
+F = ATR
+G = delivery note
+H = third party billing
+I = T1 document</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+<!--			<xs:element name="customsStatus" minOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Defines the customs status. Possible values are:
+C10 = consignment is transfered by DELISprint
+C11 = consignment is transfered by data transfer
+C18 = consginment is transfered by Maxwell Webservices
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="C10"/>
+						<xs:enumeration value="C11"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>-->
+			<xs:element minOccurs="0" name="customsEnclosure" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines if the accompanying documents are at the parcel or not. Default value is false.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="customsInvoice">
+				<xs:annotation>
+					<xs:documentation>Defines the invoice number.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customsInvoiceDate">
+				<xs:annotation>
+					<xs:documentation>Defines the invoice date (format YYYYMMDD).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="99999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customsAmountParcel">
+				<xs:annotation>
+					<xs:documentation>Parcel value with two decimal places without separator.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:long">
+						<xs:maxInclusive value="999999999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="customsOrigin">
+				<xs:annotation>
+					<xs:documentation>Origin country in ISO 3166-1 alpha-2 format (e.g. 'DE').</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="linehaul">
+				<xs:annotation>
+					<xs:documentation>Defines mode of line haul. Possible values are "AI" for air and "RO" for road.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="AI"/>
+						<xs:enumeration value="RO"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="shipMrn">
+				<xs:annotation>
+					<xs:documentation>Movement reference number of the electronical export declaration.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="collectiveCustomsClearance" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Flag for determining collective customs clearance. Default value is false.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="invoicePosition">
+				<xs:annotation>
+					<xs:documentation>Defines the invoice position.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="6"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="comment1">
+				<xs:annotation>
+					<xs:documentation>Comment.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="70"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="comment2">
+				<xs:annotation>
+					<xs:documentation>Second comment.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="70"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="commercialInvoiceConsigneeVatNumber">
+				<xs:annotation>
+					<xs:documentation>Defines the commercial invoice consignee VAT number.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="commercialInvoiceConsignee" type="tns:address">
+				<xs:annotation>
+					<xs:documentation>Contains address data of commercial invoice consignee.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="delivery">
+		<xs:annotation>
+			<xs:documentation>Bundles delivery data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="day">
+				<xs:annotation>
+					<xs:documentation>Allowed delivery days in the week (0 = Sunday, 1 = Monday etc.).
+Comma separated list of possible delivery days (e.g. "2,3,4,5").</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="dateFrom">
+				<xs:annotation>
+					<xs:documentation>Fixed delivery from date - format YYYYMMDD, e.g. 20080213.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="99999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="dateTo">
+				<xs:annotation>
+					<xs:documentation>Fixed delivery to date - format YYYYMMDD, e.g. 20080213.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="99999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="timeFrom">
+				<xs:annotation>
+					<xs:documentation>Time from which the consignee is available - format hhmm (local time receipient country), e.g. 1400 or 0830.
+				    </xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="2400"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="timeTo">
+				<xs:annotation>
+					<xs:documentation>Time until the consignee is available - format hhmm (local time receipient country), e.g. 1600 or 0930.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="2400"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="proactiveNotification">
+		<xs:sequence>
+            <xs:element minOccurs="1" name="channel">
+				<xs:annotation>
+					<xs:documentation>Defines type of proactive notification.
+Possible values are:
+1 = email
+2 = telephone
+3 = SMS
+6 = FAX
+7 = postcard</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+						<xs:enumeration value="3"/>
+						<xs:enumeration value="6"/>
+						<xs:enumeration value="7"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+            <xs:element minOccurs="1" name="value">
+				<xs:annotation>
+					<xs:documentation>Data for proactive notification, e.g. telephone number, email address, etc.
+The data format for the proactive message types SMS, phone and FAX is as follows:
++international country number#phone number
+Examples:
++49#1725673423
++49#01725673423
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+            <xs:element minOccurs="1" name="rule">
+				<xs:annotation>
+					<xs:documentation>Rule for which events a notification is sent. Each event has a certain value. By adding the different values it is possible to build combinations of events, e.g. notification for pick-up and delivery is 5.
+The different values are:
+1 = pick-up
+2 = non-delivery
+4 = delivery
+8 = inbound
+16 = out for delivery
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="31"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+            <xs:element minOccurs="1" name="language">
+				<xs:annotation>
+					<xs:documentation>Language of the proactive notification in ISO-3166-1 alpha-2 format (e.g. 'DE').
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="notification">
+		<xs:sequence>
+			<xs:element minOccurs="1" name="channel">
+				<xs:annotation>
+					<xs:documentation>Defines channel of notification.
+Possible values are:
+1 = email
+2 = telephone
+3 = SMS
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+						<xs:enumeration value="3"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="value">
+				<xs:annotation>
+					<xs:documentation>
+						Value for the chosen channel, i.e. the phone
+						number or the e-mail address. No required data
+						format for SMS and phone.
+					</xs:documentation>
+				</xs:annotation>
+				<simpleType>
+					<restriction base="xs:string">
+						<maxLength value="50"/>
+					</restriction>
+				</simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="language">
+				<xs:annotation>
+					<xs:documentation>Language of the notification in ISO 3166-1 alpha-2 format (e.g. 'DE').
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="cod">
+		<xs:annotation>
+			<xs:documentation>Bundles cash on delivery data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="1" name="amount">
+				<xs:annotation>
+					<xs:documentation>COD amount in the currency of the destination country. The amount is specified as integer value e.g. 300.00 becomes 30000.
+Please note the national ceilings for cod in the corresponding relations.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:long">
+						<xs:maxInclusive value="9999999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="currency">
+				<xs:annotation>
+					<xs:documentation>ISO 4217 alpha-3 currency code (destination country).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="3"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="inkasso">
+				<xs:annotation>
+					<xs:documentation>Defines collection type. Possible values are:
+0 = cash
+1 = crossed cheque</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:enumeration value="0"/>
+						<xs:enumeration value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="purpose">
+				<xs:annotation>
+					<xs:documentation>Purpose of use.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="14"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="bankCode">
+				<xs:annotation>
+					<xs:documentation>Bank code.
+If this value is filled, parameters for bankName, bankAccountNumber and bankAccountHolder must also be filled.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="25"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="bankName">
+				<xs:annotation>
+					<xs:documentation>Bank name.
+If this value is filled, parameters for bankCode, bankAccountNumber and bankAccountHolder must also be filled.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="27"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="bankAccountNumber">
+				<xs:annotation>
+					<xs:documentation>Bank account number.
+If this value is filled, parameters for bankCode, bankName and bankAccountHolder must also be filled.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="25"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="bankAccountHolder">
+				<xs:annotation>
+					<xs:documentation>Account holder.
+If this value is filled, parameters for bankCode, bankName and bankAccountNumber must also be filled.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="iban">
+				<xs:annotation>
+					<xs:documentation>International bank account number .
+If this value is filled, parameters for bankCode, bankName, bankAccountNumber and bankAccountHolder must also be filled.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="bic">
+				<xs:annotation>
+					<xs:documentation>Bank identifier code.
+If this value is filled, parameters for bankCode, bankName, bankAccountNumber and bankAccountHolder must also be filled.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="50"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="hazardous">
+		<xs:annotation>
+			<xs:documentation>Bundles hazardous materials data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="1" name="identificationUnNo">
+				<xs:annotation>
+					<xs:documentation>Defines UN number of hazardous substance. UN numbers range between 0004 and 9004.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="4"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="identificationClass">
+				<xs:annotation>
+					<xs:documentation>Defines class of hazardous substance. Possible values range from 1 to 9. Subclasses are specified as position after decimal point
+(e.g. class 1 is "explosives", class 1.6 is "extremely insensitive explosives").
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="6"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="classificationCode">
+				<xs:annotation>
+					<xs:documentation>Defines classification code of hazardous substance.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="5"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="packingGroup">
+				<xs:annotation>
+					<xs:documentation>Defines packing group of hazardous substance. Common values are "I", "II" or "III".</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="5"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+            <xs:element minOccurs="1" name="packingCode">
+				<xs:annotation>
+					<xs:documentation>Defines packing code. Possible values are:
+0A = thin sheet packing
+0A1 = thin sheet packing with non removable head
+0A2 = thin sheet packing with removable head
+1A = steel barrel
+1A1 = steel barrel with non removable head
+1A2 = steel barrel with removable head
+1B = aluminium barrel
+1B1 = aluminium barrel with non removable head
+1B2 = aluminium barrel with removable head
+1H = plastics barrel
+1H1 = plastics barrel with non removable head
+1H2 = plastics barrel with removable head
+3A = steel canister
+3A1 = steel canister with non removable head
+3A2 = steel canister with removable head
+3B = aluminium canister,
+3B1 = aluminium canister with non removable head
+3B2 = aluminium canister with removable head
+3H = plastics canister,
+3H1 = plastics canister with non removable head
+3H2 = plastics canister with removable head
+4A = steel crates
+4B = aluminium crate
+4D = plywood crate
+4G = cardboard crate
+4H = plastics crate
+4H1 = plastics crate plastics expanded
+4H2 = plastics crate plastics solid
+5H = plastics bags
+5M = paper bags
+6H = combination packings
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="0A"/>
+						<xs:enumeration value="0A1"/>
+						<xs:enumeration value="0A2"/>
+						<xs:enumeration value="1A"/>
+						<xs:enumeration value="1A1"/>
+						<xs:enumeration value="1A2"/>
+						<xs:enumeration value="1B"/>
+						<xs:enumeration value="1B1"/>
+						<xs:enumeration value="1B2"/>
+						<xs:enumeration value="1H"/>
+						<xs:enumeration value="1H1"/>
+						<xs:enumeration value="1H2"/>
+						<xs:enumeration value="3A"/>
+						<xs:enumeration value="3A1"/>
+						<xs:enumeration value="3A2"/>
+						<xs:enumeration value="3B"/>
+						<xs:enumeration value="3B1"/>
+						<xs:enumeration value="3B2"/>
+						<xs:enumeration value="3H"/>
+						<xs:enumeration value="3H1"/>
+						<xs:enumeration value="3H2"/>
+						<xs:enumeration value="4A"/>
+						<xs:enumeration value="4B"/>
+						<xs:enumeration value="4D"/>
+						<xs:enumeration value="4G"/>
+						<xs:enumeration value="4H"/>
+						<xs:enumeration value="4H1"/>
+						<xs:enumeration value="4H2"/>
+						<xs:enumeration value="5H"/>
+						<xs:enumeration value="5M"/>
+						<xs:enumeration value="6H"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+            <xs:element minOccurs="1" name="description">
+				<xs:annotation>
+					<xs:documentation>Description of hazardous substance (redundant).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="160"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="subsidiaryRisk">
+				<xs:annotation>
+					<xs:documentation>Subsidiary risk of hazardous substance (redundant).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="10"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="tunnelRestrictionCode">
+				<xs:annotation>
+					<xs:documentation>Tunnel restriction code of hazardous substance (redundant). Possible values are "A", "B", "C", "D" or "E".</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="A"/>
+						<xs:enumeration value="B"/>
+						<xs:enumeration value="C"/>
+						<xs:enumeration value="D"/>
+						<xs:enumeration value="E"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="hazardousWeight">
+				<xs:annotation>
+					<xs:documentation>Weight of hazardous substance with 4 places before decimal point and 2 decimal places (with separator).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:decimal">
+						<xs:fractionDigits value="2"/>
+						<xs:totalDigits value="6"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="netWeight">
+				<xs:annotation>
+					<xs:documentation>Net weight of hazardous substance with 4 places before decimal point and 2 decimal places (with separator).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:decimal">
+						<xs:fractionDigits value="2"/>
+						<xs:totalDigits value="6"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="factor">
+				<xs:annotation>
+					<xs:documentation>Factor of hazardous substance (redundant ). 999 means unlimited.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="notOtherwiseSpecified">
+				<xs:annotation>
+					<xs:documentation>A not otherwise specified text which is mandatory for some substances.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="150"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="personalDelivery">
+		<xs:annotation>
+			<xs:documentation>Bundles personal delivery data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="1" name="type">
+				<xs:annotation>
+					<xs:documentation>Defines type of personal delivery. Possible values are:
+1 = department delivery (without personal identification)
+2 = personal delivery with personal identification (ID-Check)
+3 = personal delivery without personal identification at drop point (e.g. parcel shop)
+4 = personal delivery with personal identification at drop point (e.g. parcel shop)
+5 = personal delivery with personal identification at drop point plus ID-Check (e.g. parcel shop)
+
+For parcel shop delivery the parcel shop id must be declared in productAndServiceData. It can be obtained from parcel shop finder.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:minInclusive value="1"/>
+						<xs:maxInclusive value="5"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="floor">
+				<xs:annotation>
+					<xs:documentation>Floor where the personal delivery shall take place. This field is only used for department delivery.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="building">
+				<xs:annotation>
+					<xs:documentation>Building where the personal delivery shall take place. This field is only used for department delivery (type 1).
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="department">
+				<xs:annotation>
+					<xs:documentation>Department where the personal delivery shall take place. This field is only used for department delivery (type 1).
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="30"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="name">
+				<xs:annotation>
+					<xs:documentation>Name of the person authorised to accept the consignment. This field is only used for delivery with ID-Check (types 2 and 4).
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="phone">
+				<xs:annotation>
+					<xs:documentation>Telephone number of the person authorised to accept the consignment. This field is only used for delivery with ID-Check (types 2 and 4). No required data format.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="personId">
+				<xs:annotation>
+					<xs:documentation>Personal identification number of the person authorised to accept the consignment. This field is only used for delivery with ID-Check (types 2 and 4).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="35"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="pickup">
+		<xs:annotation>
+			<xs:documentation>Bundles pickup data.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="tour">
+				<xs:annotation>
+					<xs:documentation>Tour number (between 000 and 999).</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="quantity">
+				<xs:annotation>
+					<xs:documentation>Quantity of pickup parcels. Mandatory for consignment.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="99999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="date">
+				<xs:annotation>
+					<xs:documentation>Pickup date in consignments and collection requests. The collection day for advice customers. The from date for pickup information. Format is YYYYMMDD.
+It can also be used as pickup date for collection requests, then format is YYMMDD. Mandatory for consignment.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="99999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="1" name="day">
+				<xs:annotation>
+					<xs:documentation>Pickup day of week for consignments and pickup information. Allowed values are 0..6 (0=Sunday, 1=Monday, etc.). Mandatory for consignment.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="6"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="fromTime1">
+				<xs:annotation>
+					<xs:documentation>From time 1 for consignments and pickup information. Format is hhmm. Mandatory for consignment.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="2400"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="toTime1">
+				<xs:annotation>
+					<xs:documentation>Until time 1 for consignments and pickup information. Format is hhmm. Mandatory for consignment.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="2400"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="fromTime2">
+				<xs:annotation>
+					<xs:documentation>From time 2 for consignments and pickup information. Format is hhmm.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="2400"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="toTime2">
+				<xs:annotation>
+					<xs:documentation>Until time 2 for consignments and pickup information. Format is hhmm.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:int">
+						<xs:maxInclusive value="2400"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element minOccurs="0" name="extraPickup" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>True if extra pickup is requested.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="collectionRequestAddress" type="tns:address">
+				<xs:annotation>
+					<xs:documentation>Contains pickup address information for consignments and collection requests. Mandatory for consignment.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+
+	<xs:complexType name="parcelInformationType">
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="parcelLabelNumber" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>The parcel label number of the corresponding parcel.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="dpdReference" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>The DPD reference for this parcel.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="faultCodeType">
+		<xs:sequence>
+			<xs:element name="faultCode" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>
+Possible error codes are:
+
+SHIPPING_1 - pickup address is unknown for customer
+SHIPPING_2 - parcel label print fails
+COMMON_1 - unexpected runtime error
+COMMON_2 - mandatory input field is empty
+COMMON_3 - length of data for field does not fit
+COMMON_4 - input data contains invalid special character
+COMMON_5 - a swap parcel is ordered, but there is more than one parcel
+COMMON_6 - some input data field values result in an invalid combination
+COMMON_7 - input data contains invalid value
+COMMON_8 - a field is to be stored in database, but there is not database field mapped for it
+DATABASE_6 - transfer state of order is to be changed but order is already committed
+DATABASE_7 - update fails on database level during order storing
+DATABASE_8 - delete fails on database level during rollback after some other error
+DATABASE_21 - order is to be inserted in databse, but has already a database id
+DATABASE_22 - order is to be committed after inserting, but there is no database id for update given
+DATABASE_24 - deletion is necessary because of some other error, but no database id for record is given
+MPSEXP_1 - parcel label number is already in use
+ROUTING_1 - no route could be found for depot and feature
+ROUTING_2 - invalid input data
+ROUTING_3 - the connection to the database failed
+ROUTING_4 - an internal failure occurs
+ROUTING_5 - no depot could be found
+ROUTING_6 - no pickup date was given
+ROUTING_7 - internal extension rule error
+ROUTING_8 - malformed zip code
+ROUTING_9 - missing country code
+ROUTING_10 - missing routing place
+ROUTING_11 - missing service code
+ROUTING_12 - routing place error
+ROUTING_13 - sending date error
+ROUTING_14 - service code error
+ROUTING_15 - invalid relation of service codes
+ROUTING_16 - unknown country code
+ROUTING_17 - unknown destination depot
+ROUTING_18 - unknown zip code
+ROUTING_19 - unknown routing place
+ROUTING_20 - unknown service code
+ROUTING_21 - invalid service code
+ROUTING_21 - parcel is labelled as return parcel but returns is not possible
+ROUTING_22 - missing allow
+ROUTING_23 - missing routing place or destination depot
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="message" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Message with detailed information for the fault (e.g. incorrect field).
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="higherInsurance">
+		<xs:sequence>
+				<xs:element maxOccurs="1" minOccurs="1" name="amount">
+				<xs:annotation>
+					<xs:documentation>Increased insurance value with 2 decimal point positions without separators.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:long">
+						<xs:maxInclusive value="9999999999"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="currency">
+				<xs:annotation>
+					<xs:documentation>Currency code for increased insurance in format ISO 4217 alpha 3.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:length value="3"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="parcelShopDelivery">
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="1" name="parcelShopId" type="xs:long">
+				<xs:annotation>
+					<xs:documentation>Parcel shop ID for parcel shop delivery.
+Can be obtained from parcel shop finder. Assumes that parameter type of
+personal delivery is filled with a value from 3 to 5,
+which means parcel shop delivery. Mandatory in this case.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="parcelShopNotification" type="tns:notification">
+				<xs:annotation>
+					<xs:documentation>Contains data for personal notification for parcel shop consignments.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="printOptions">
+       <annotation>
+       	<documentation>Options how to return the parcel labels</documentation>
+       </annotation>
+       <xs:sequence>
+			 <xs:element maxOccurs="1" minOccurs="1" name="printerLanguage">
+	               <annotation>
+	               	<documentation>The language in which the parcel labels should be returned. PDF as file output, ZPL for direct printing. In any case the output is base64 encoded.</documentation>
+	               </annotation>
+	               <xs:simpleType>
+			    	<xs:restriction base="xs:string">
+						<xs:enumeration value="PDF"/>
+						<xs:enumeration value="ZPL"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="paperFormat">
+				<xs:annotation>
+					<xs:documentation>Declares the paper format for parcel label print, either "A4" or "A6". For direct printing the format has to be set to "A6". "A7" only for return labels, other type are not allowed.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+			    	<xs:restriction base="xs:string">
+						<xs:enumeration value="A4"/>
+                  <xs:enumeration value="A6"/>
+                  <xs:enumeration value="A7">
+                     <xs:annotation>
+                        <xs:documentation>Only for return labels.</xs:documentation>
+                     </xs:annotation>
+                  </xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+
+			<xs:element maxOccurs="1" minOccurs="0" name="printer" type="tns:printer">
+				<annotation>
+					<documentation>Information about the printer. Enabled if direct printing is selected.</documentation>
+				</annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="startPosition" type="tns:startPosition">
+				<annotation>
+					<documentation>Start position for print on A4 paper.</documentation>
+				</annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="printer">
+        <annotation>
+        	<documentation>Information about the printer, if direct printing is selected.</documentation>
+        </annotation>
+        <xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="manufacturer" type="xs:string">
+				<annotation>
+					<documentation>The printer's manufacturer. At the moment only for informational purposes.</documentation>
+				</annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="model" type="xs:string">
+				<annotation>
+					<documentation>The printer's model. At the moment only for informational purposes.</documentation>
+				</annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="revision" type="xs:string">
+				<annotation>
+					<documentation>The printer's revision / version. At the moment only for informational purposes.</documentation>
+				</annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="offsetX" type="xs:decimal">
+				<annotation>
+					<documentation>The horizontal offset in mm for the direct printer file (Not used with normal PDF output).</documentation>
+				</annotation></xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="offsetY" type="xs:decimal">
+				<annotation>
+					<documentation>The vertical offset in mm for the direct printer file (Not used with normal PDF output).</documentation>
+				</annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="connectionType">
+                <annotation>
+                	<documentation>The connection type of the printer: serial or parallel connection.</documentation>
+                </annotation>
+                <xs:simpleType>
+			    	<xs:restriction base="xs:string">
+						<xs:enumeration value="SERIAL"/>
+						<xs:enumeration value="PARALLEL"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="1" name="barcodeCapable2D" type="xs:boolean">
+				<annotation>
+					<documentation>If the printer can print AZTEC barcodes, set this flag to true.</documentation>
+				</annotation></xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:simpleType name="startPosition">
+		<xs:annotation>
+			<xs:documentation>Start positions</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="UPPER_LEFT">
+				<xs:annotation>
+					<xs:documentation>Print first label in the upper left corner of the A4 paper.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="UPPER_RIGHT">
+				<xs:annotation>
+					<xs:documentation>Print first label in the upper right corner of the A4 paper.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="LOWER_LEFT">
+				<xs:annotation>
+					<xs:documentation>Print first label in the lower left corner of the A4 paper.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="LOWER_RIGHT">
+				<xs:annotation>
+					<xs:documentation>Print first label in the lower right corner of the A4 paper.</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+
+</schema>

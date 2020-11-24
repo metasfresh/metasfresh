@@ -10,33 +10,17 @@ package de.metas.tourplanning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.text.DateFormat;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
 
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IDeliveryDayGenerator;
@@ -50,6 +34,21 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
+import java.text.DateFormat;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class DeliveryDayGenerator implements IDeliveryDayGenerator
 {
@@ -151,29 +150,45 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 		}
 	}
 
+	@Override
+	public void generateForTourVersion(final String trxName, final I_M_TourVersion tourVersion)
+	{
+
+		final ITourVersionRange tourVersionRange = tourDAO.generateTourVersionRange(tourVersion, getDateFromToUse(), getDateToToUse());
+		if (tourVersionRange == null)
+		{
+			loggable.addLog("Skip {} because validFrom > validTo");
+			return;
+		}
+		generateForTourVersionRange(trxName, tourVersionRange);
+
+	}
+
 	private void generateForTour(final I_M_Tour tour, String trxName)
 	{
 		final List<ITourVersionRange> tourVersionRanges = tourDAO.retrieveTourVersionRanges(tour, getDateFromToUse(), getDateToToUse());
 
 		for (final ITourVersionRange tourVersionRange : tourVersionRanges)
 		{
-			//
-			// Deactivate/Delete all delivery days in our range
-			inactivateDeliveryDaysInRange(tourVersionRange, trxName);
+			generateForTourVersionRange(trxName, tourVersionRange);
+		}
+	}
 
-			//
-			// Iterate tour version lines and create delivery days
-			final I_M_TourVersion tourVersion = tourVersionRange.getM_TourVersion();
-			final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
-			if (tourVersionLines.isEmpty())
-			{
-				loggable.addLog("Skip {} because it has no lines", tourVersion);
-				continue;
-			}
-			for (final I_M_TourVersionLine tourVersionLine : tourVersionLines)
-			{
-				createDeliveryDaysForLine(tourVersionRange, tourVersionLine);
-			}
+	private void generateForTourVersionRange(String trxName, final ITourVersionRange tourVersionRange)
+	{
+		inactivateDeliveryDaysInRange(tourVersionRange, trxName);
+
+		final I_M_TourVersion tourVersion = tourVersionRange.getM_TourVersion();
+		final List<I_M_TourVersionLine> tourVersionLines = tourDAO.retrieveTourVersionLines(tourVersion);
+
+		if (tourVersionLines.isEmpty())
+		{
+			loggable.addLog("Skip {} because it has no lines", tourVersion);
+			return;
+		}
+		for (final I_M_TourVersionLine tourVersionLine : tourVersionLines)
+		{
+			createDeliveryDaysForLine(tourVersionRange, tourVersionLine);
 		}
 	}
 
@@ -185,9 +200,9 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 
 	/**
 	 * Create entries in Delivery Day
-	 * 
+	 *
 	 * @param tourVersionRange
-	 * @param tourVersionLine Tour version line
+	 * @param tourVersionLine  Tour version line
 	 */
 	private void createDeliveryDaysForLine(final ITourVersionRange tourVersionRange, final I_M_TourVersionLine tourVersionLine)
 	{
@@ -208,9 +223,9 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 
 	/**
 	 * create delivery day
-	 * 
+	 *
 	 * @param tourVersionLine
-	 * @param deliveryDatge
+	 * @param deliveryDate
 	 * @return created delivery day or null
 	 */
 	private I_M_DeliveryDay createDeliveryDay(final I_M_TourVersionLine tourVersionLine, final LocalDate deliveryDate)

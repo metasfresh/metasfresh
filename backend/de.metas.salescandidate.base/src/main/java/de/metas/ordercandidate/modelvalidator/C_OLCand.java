@@ -1,6 +1,6 @@
 package de.metas.ordercandidate.modelvalidator;
 
-import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*

@@ -194,7 +194,9 @@ public class ColumnBL implements IColumnBL
 				|| columnName.equalsIgnoreCase("Processing")
 				|| StringUtils.containsIgnoreCase(columnName, "ExternalID")
 				|| columnName.equalsIgnoreCase("ExternalHeaderId")
-				|| columnName.equalsIgnoreCase("ExternalLineId");
+				|| columnName.equalsIgnoreCase("ExternalLineId")
+				|| columnName.equalsIgnoreCase("IsReconciled")
+				;
 	}
 
 }

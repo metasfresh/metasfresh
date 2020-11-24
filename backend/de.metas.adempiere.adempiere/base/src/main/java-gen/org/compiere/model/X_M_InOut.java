@@ -15,7 +15,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1301986809L;
+	private static final long serialVersionUID = -1143586587L;
 
     /** Standard Constructor */
     public X_M_InOut (Properties ctx, int M_InOut_ID, String trxName)
@@ -446,6 +446,18 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public java.lang.String getCreateFrom () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreateFrom);
+	}
+
+	@Override
+	public void setExternalId (java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
 	/** Set Buchungsdatum.

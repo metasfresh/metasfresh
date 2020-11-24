@@ -28,7 +28,7 @@ import java.util.Arrays;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -53,7 +53,6 @@ public abstract class LockException extends AdempiereException
 
 	private String sql;
 	private Object[] sqlParams;
-	private ITableRecordReference record;
 
 	public LockException(final String message)
 	{
@@ -72,6 +71,7 @@ public abstract class LockException extends AdempiereException
 
 		message.append(super.buildMessage());
 
+		final TableRecordReference record = getRecord();
 		if (record != null)
 		{
 			message.append("\n Record: ").append(record.toString());
@@ -101,9 +101,9 @@ public abstract class LockException extends AdempiereException
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	public LockException setRecord(final ITableRecordReference record)
+	public LockException setRecord(final TableRecordReference record)
 	{
-		this.record = record;
+		super.setRecord(record);
 		resetMessageBuilt();
 		return this;
 	}

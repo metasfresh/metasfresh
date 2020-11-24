@@ -22,18 +22,36 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.model.IDocumentLocation;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
+import de.metas.inoutcandidate.api.IInOutProducer;
+import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
+import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -46,29 +64,13 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentLocation;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.IInOutProducer;
-import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
-import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
@@ -76,6 +78,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
 
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	@Override
 	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
@@ -552,6 +555,34 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public boolean isClosed(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		return receiptSchedule.isProcessed();
+	}
+
+
+	public void applyReceiptScheduleChanges(@NonNull final ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest)
+	{
+		final I_M_ReceiptSchedule receiptSchedule =  receiptScheduleDAO.getById(applyReceiptScheduleChangesRequest.getReceiptScheduleId());
+
+		if (applyReceiptScheduleChangesRequest.getQtyInStockingUOM() != null)
+		{
+			receiptSchedule.setQtyToMove_Override(applyReceiptScheduleChangesRequest.getQtyInStockingUOM());
+		}
+
+		if (applyReceiptScheduleChangesRequest.hasAttributes())
+		{
+			final AttributeSetInstanceId existingAttributeSetIdOrNone = AttributeSetInstanceId.ofRepoIdOrNone(receiptSchedule.getM_AttributeSetInstance_ID());
+
+			final AddAttributesRequest addAttributesRequest = AddAttributesRequest.builder()
+					.productId(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()))
+					.existingAttributeSetIdOrNone(existingAttributeSetIdOrNone)
+					.attributeInstanceBasicInfos(applyReceiptScheduleChangesRequest.getNonNullAttributeReqList())
+					.build();
+
+			final AttributeSetInstanceId newAttributeSetInstanceId = attributeSetInstanceBL.addAttributes(addAttributesRequest);
+
+			receiptSchedule.setM_AttributeSetInstance_ID(newAttributeSetInstanceId.getRepoId());
+		}
+
+		InterfaceWrapperHelper.saveRecord(receiptSchedule);
 	}
 
 }

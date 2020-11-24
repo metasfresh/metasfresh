@@ -32,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.util.TrxRunnableAdapter;
@@ -127,17 +126,17 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 					InterfaceWrapperHelper.setTrxName(invoice, localTrxName, ignoreIfNotHandled);
 
 					//@formatter:off
-					final I_C_AllocationHdr allocationHdr = allocationBL.newBuilder(PlainContextAware.newWithThreadInheritedTrx())
-							.setAD_Org_ID(invoice.getAD_Org_ID())
-							.setC_Currency_ID(invoice.getC_Currency_ID())
-							.setDateAcct(invoice.getDateAcct())
-							.setDateTrx(invoice.getDateInvoiced())
+					final I_C_AllocationHdr allocationHdr = allocationBL.newBuilder()
+							.orgId(invoice.getAD_Org_ID())
+							.currencyId(invoice.getC_Currency_ID())
+							.dateAcct(invoice.getDateAcct())
+							.dateTrx(invoice.getDateInvoiced())
 							.addLine()
-								.setAD_Org_ID(invoice.getAD_Org_ID())
-								.setC_BPartner_ID(invoice.getC_BPartner_ID())
-								.setC_Invoice_ID(invoice.getC_Invoice_ID())
-								.setDiscountAmt(discountAmount)
-								.setWriteOffAmt(BigDecimal.ZERO)
+								.orgId(invoice.getAD_Org_ID())
+								.bpartnerId(invoice.getC_BPartner_ID())
+								.invoiceId(invoice.getC_Invoice_ID())
+								.discountAmt(discountAmount)
+								.writeOffAmt(BigDecimal.ZERO)
 							.lineDone()
 							.create(true); // complete=true
 					//@formatter:on

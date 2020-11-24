@@ -3,10 +3,13 @@ package de.metas.payment.sepa.api.impl;
 import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.util.Date;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.util.MimeType;
 
+import de.metas.banking.api.BankRepository;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAProtocol;
@@ -15,7 +18,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerDirectDebitMarshaler_Pain_008_003_02;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
-import de.metas.util.FileUtils;
+import de.metas.util.FileUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -52,7 +55,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		marshaler.marshal(sepaExport, out);
 
 		return SEPACreditTransferXML.builder()
-				.filename(FileUtils.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
+				.filename(FileUtil.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
 				.contentType(MimeType.TYPE_XML)
 				.content(out.toByteArray())
 				.build();
@@ -62,7 +65,8 @@ public class SEPADocumentBL implements ISEPADocumentBL
 	{
 		if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.equals(protocol))
 		{
-			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02();
+			final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository);
 		}
 		else if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(protocol))
 		{

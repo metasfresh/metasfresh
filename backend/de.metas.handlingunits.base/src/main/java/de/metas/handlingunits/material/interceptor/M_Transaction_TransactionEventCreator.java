@@ -59,7 +59,12 @@ final class M_Transaction_TransactionEventCreator
 
 	public M_Transaction_TransactionEventCreator()
 	{
-		huDescriptionFactory = new M_Transaction_HuDescriptor();
+		this(new M_Transaction_HuDescriptor());
+	}
+
+	public M_Transaction_TransactionEventCreator(@NonNull final M_Transaction_HuDescriptor huDescriptionFactory)
+	{
+		this.huDescriptionFactory = huDescriptionFactory;
 		inOutLineEventCreator = new M_Transaction_InOutLineEventCreator(huDescriptionFactory);
 	}
 

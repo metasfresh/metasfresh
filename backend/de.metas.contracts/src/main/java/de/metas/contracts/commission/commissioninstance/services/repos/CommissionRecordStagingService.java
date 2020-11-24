@@ -1,6 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.Collection;
 import java.util.List;

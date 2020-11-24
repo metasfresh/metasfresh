@@ -2,7 +2,7 @@ package de.metas.contracts.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ public class C_Invoice
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void updateCustomerRetention(final I_C_Invoice invoice)
 	{
-		final CustomerRetentionRepository customerRetentionRepo = Adempiere.getBean(CustomerRetentionRepository.class);
+		final CustomerRetentionRepository customerRetentionRepo = SpringContextHolder.instance.getBean(CustomerRetentionRepository.class);
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 
 		customerRetentionRepo.updateCustomerRetentionOnInvoiceComplete(invoiceId);

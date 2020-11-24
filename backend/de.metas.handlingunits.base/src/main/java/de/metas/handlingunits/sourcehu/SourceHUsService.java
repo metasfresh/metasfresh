@@ -1,26 +1,7 @@
 package de.metas.handlingunits.sourcehu;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Predicate;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
@@ -32,11 +13,31 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.concurrent.Immutable;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -64,6 +65,9 @@ import lombok.Singular;
 public class SourceHUsService
 {
 	private static final Logger logger = LogManager.getLogger(SourceHUsService.class);
+
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public static SourceHUsService get()
 	{
@@ -208,6 +212,35 @@ public class SourceHUsService
 	public boolean isSourceHu(final HuId huId)
 	{
 		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
+	}
+
+	/**
+	 *  Creates a M_Source_HU record for the given HU, if it carries component products and the target warehouse has
+	 *  the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
+	 *
+	 * @param huId			target HU id
+	 * @param productId		target product Id
+	 * @param warehouseId   target warehouse ID
+	 */
+	public void addSourceHUMarkerIfCarringComponents(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
+
+		if (!warehouse.isReceiveAsSourceHU())
+		{
+			return;
+		}
+
+		final I_M_Product product = productDAO.getById(productId);
+
+		final boolean notAComponentProduct = product.isBOM();
+
+		if (notAComponentProduct)
+		{
+			return;
+		}
+
+		addSourceHuMarker(huId);
 	}
 
 	/**

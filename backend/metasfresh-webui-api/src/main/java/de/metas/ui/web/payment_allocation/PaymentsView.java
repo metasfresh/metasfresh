@@ -1,30 +1,8 @@
-package de.metas.ui.web.payment_allocation;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.i18n.TranslatableStrings;
-import de.metas.payment.PaymentId;
-import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.IViewRowOverrides;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.template.AbstractCustomView;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,9 +20,30 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.payment_allocation;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.payment.PaymentId;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.IViewRowOverrides;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.template.AbstractCustomView;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
 public class PaymentsView extends AbstractCustomView<PaymentRow> implements IViewRowOverrides
 {
-	public static PaymentsView cast(final IView view)
+	@Nullable
+	public static PaymentsView cast(@Nullable final IView view)
 	{
 		return (PaymentsView)view;
 	}

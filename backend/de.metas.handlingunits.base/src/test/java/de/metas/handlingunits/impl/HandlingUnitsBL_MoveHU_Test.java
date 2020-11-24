@@ -33,6 +33,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,7 +45,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
@@ -57,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.time.SystemTime;
+import org.junit.jupiter.api.Test;
 
 public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 {
@@ -105,7 +106,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		// Create the VHU
 		final I_M_HU vhu;
 		{
-			final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx);
+			final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)));
 
 			final List<I_M_HU> vhus = helper.createHUs(
 					huContext,

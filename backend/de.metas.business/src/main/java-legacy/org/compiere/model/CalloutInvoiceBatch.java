@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -34,6 +35,7 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 
@@ -89,11 +91,15 @@ public class CalloutInvoiceBatch extends CalloutEngine
 		{
 			return "";
 		}
+		final boolean isAllowOnlyBillToDefault_Contact = Services.get(ISysConfigBL.class)
+				.getBooleanValue(CalloutInvoice.SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact, false);
 
-		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
+		final boolean isSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
+
+		final StringBuilder sql = new StringBuilder().append("SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted,"
-				+ " stats."	+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
+				+ " stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
 				+ " l.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID "
 				+ "FROM C_BPartner p"
@@ -106,36 +112,44 @@ public class CalloutInvoiceBatch extends CalloutEngine
 				+ ")"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
-				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
-				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'";		// #1
+				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) ");
 
-		final boolean IsSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx").equals("Y");
+		if (isAllowOnlyBillToDefault_Contact && isSOTrx)
+		{
+			sql.append(" AND c." + I_AD_User.COLUMNNAME_IsBillToContact_Default + " = 'Y'");
+		}
+		
+		sql.append(
+				" WHERE p.C_BPartner_ID=? AND p.IsActive='Y'"
+						+ " ORDER BY c." + I_AD_User.COLUMNNAME_IsBillToContact_Default + " DESC NULLS FIRST"
+						+ ";	");		// #1
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, null);
+			pstmt = DB.prepareStatement(sql.toString(), null);
 			pstmt.setInt(1, C_BPartner_ID.intValue());
 			rs = pstmt.executeQuery();
 			//
 			if (rs.next())
 			{
 				//	PaymentRule
-				PaymentRule paymentRule_NOTUSED = PaymentRule.ofNullableCode(rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO"));
+				PaymentRule paymentRule_NOTUSED = PaymentRule.ofNullableCode(rs.getString(isSOTrx ? "PaymentRule" : "PaymentRulePO"));
 				if (paymentRule_NOTUSED != null)
 				{
 					if (Env.getContext(ctx, WindowNo, "DocBaseType").endsWith("C")) // credit memo
 					{
 						paymentRule_NOTUSED = PaymentRule.OnCredit;
 					}
-					else if (IsSOTrx && paymentRule_NOTUSED.isCheck())
+					else if (isSOTrx && paymentRule_NOTUSED.isCheck())
 					 {
 						paymentRule_NOTUSED = PaymentRule.OnCredit;
 					}
 				}
 				
 				//  Payment Term
-				final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
+				final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(rs.getInt(isSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
 				if (paymentTermId != null)
 				{
 					mTab.setValue("C_PaymentTerm_ID", paymentTermId.getRepoId());
@@ -182,7 +196,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 				}
 
 				//	CreditAvailable
-				if (IsSOTrx)
+				if (isSOTrx)
 				{
 
 					final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
@@ -204,7 +218,7 @@ public class CalloutInvoiceBatch extends CalloutEngine
 		}
 		catch (final SQLException e)
 		{
-			log.error(sql, e);
+			log.error(sql.toString(), e);
 			return e.getLocalizedMessage();
 		}
 		finally

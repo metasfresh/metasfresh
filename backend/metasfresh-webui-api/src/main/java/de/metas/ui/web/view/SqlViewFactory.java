@@ -1,50 +1,8 @@
-package de.metas.ui.web.view;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilter.Builder;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.document.filter.DocumentFilterParam;
-import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
-import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
-import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
-import de.metas.ui.web.view.descriptor.SqlViewBinding;
-import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
-import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.descriptor.ViewLayoutFactory;
-import de.metas.ui.web.view.json.JSONFilterViewRequest;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.ui.web.window.model.DocumentReference;
-import de.metas.ui.web.window.model.DocumentReferencesService;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -62,6 +20,50 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.view;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.document.references.ZoomInfoPermissionsFactory;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilter.Builder;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
+import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
+import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.document.references.service.DocumentReferencesService;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
+import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.ViewLayoutFactory;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+
 /**
  * View factory which is based on {@link DocumentEntityDescriptor} having SQL repository.<br>
  * Creates {@link DefaultView}s with are backed by a {@link SqlViewBinding}.
@@ -76,12 +78,14 @@ public class SqlViewFactory implements IViewFactory
 	private final DocumentReferencesService documentReferencesService;
 	private final ViewLayoutFactory viewLayouts;
 	private final CompositeDefaultViewProfileIdProvider defaultProfileIdProvider;
+	private final ViewHeaderPropertiesProviderMap headerPropertiesProvider;
 
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentReferencesService documentReferencesService,
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
+			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
 			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
 			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
@@ -107,6 +111,8 @@ public class SqlViewFactory implements IViewFactory
 				.viewCustomizers(viewCustomizers)
 				.geoLocationDocumentService(geoLocationDocumentService)
 				.build();
+
+		this.headerPropertiesProvider = ViewHeaderPropertiesProviderMap.of(headerPropertiesProvider);
 	}
 
 	private static CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
@@ -140,24 +146,29 @@ public class SqlViewFactory implements IViewFactory
 	}
 
 	@Override
-	public DefaultView createView(final CreateViewRequest request)
+	public DefaultView createView(final @NonNull CreateViewRequest request)
 	{
 		final WindowId windowId = request.getViewId().getWindowId();
 
 		final JSONViewDataType viewType = request.getViewType();
 		final ViewProfileId profileId = !ViewProfileId.isNull(request.getProfileId()) ? request.getProfileId() : defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
 		final SqlViewBinding sqlViewBinding = viewLayouts.getViewBinding(windowId, viewType.getRequiredFieldCharacteristic(), profileId);
-		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
+		final SqlViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
 		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
 				.setViewId(request.getViewId())
 				.setViewType(viewType)
 				.setProfileId(profileId)
+				.setHeaderPropertiesProvider(headerPropertiesProvider.getProvidersByTableName(sqlViewBinding.getTableName()))
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
+				.setDocumentReferenceId(request.getDocumentReferenceId())
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
-				.addStickyFilter(extractReferencedDocumentFilter(windowId, request.getSingleReferencingDocumentPathOrNull()))
+				.addStickyFilter(extractReferencedDocumentFilter(
+						windowId,
+						request.getSingleReferencingDocumentPathOrNull(),
+						request.getDocumentReferenceId()))
 				.applySecurityRestrictions(request.isApplySecurityRestrictions())
 				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor())
 				.refreshViewOnChangeEvents(sqlViewBinding.isRefreshViewOnChangeEvents());
@@ -180,7 +191,11 @@ public class SqlViewFactory implements IViewFactory
 		return viewBuilder.build();
 	}
 
-	private DocumentFilter extractReferencedDocumentFilter(final WindowId targetWindowId, final DocumentPath referencedDocumentPath)
+	@Nullable
+	private DocumentFilter extractReferencedDocumentFilter(
+			@NonNull final WindowId targetWindowId,
+			@Nullable final DocumentPath referencedDocumentPath,
+			@Nullable final DocumentReferenceId documentReferenceId)
 	{
 		if (referencedDocumentPath == null)
 		{
@@ -193,8 +208,11 @@ public class SqlViewFactory implements IViewFactory
 		}
 		else
 		{
-			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
-			return reference.getFilter();
+			return documentReferencesService.getDocumentReferenceFilter(
+					referencedDocumentPath,
+					targetWindowId,
+					documentReferenceId,
+					ZoomInfoPermissionsFactory.allowAll());
 		}
 	}
 
@@ -271,16 +289,16 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final DocumentFilterDescriptorsProvider filterDescriptors = view.getViewDataRepository().getViewFilterDescriptors();
 		final DocumentFilterList newFilters = filterViewRequest.getFiltersUnwrapped(filterDescriptors);
-//		final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
-//
-//		final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
-//
-//		if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
-//		{
-//			// TODO
-//			throw new AdempiereException("TODO");
-//		}
-//		else
+		// final DocumentFilterList newFiltersExcludingFacets = newFilters.retainOnlyNonFacetFilters();
+		//
+		// final DocumentFilterList currentFiltersExcludingFacets = view.getFilters().retainOnlyNonFacetFilters();
+		//
+		// if (DocumentFilterList.equals(currentFiltersExcludingFacets, newFiltersExcludingFacets))
+		// {
+		// // TODO
+		// throw new AdempiereException("TODO");
+		// }
+		// else
 		{
 			return createView(CreateViewRequest.filterViewBuilder(view)
 					.setFilters(newFilters)

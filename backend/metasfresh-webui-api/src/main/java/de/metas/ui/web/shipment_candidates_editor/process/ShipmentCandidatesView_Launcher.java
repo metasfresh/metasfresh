@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;

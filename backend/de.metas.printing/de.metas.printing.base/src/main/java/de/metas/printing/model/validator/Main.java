@@ -147,9 +147,9 @@ public class Main extends AbstractModuleInterceptor
 
 		engine.addModelValidator(AD_User_Login.instance);
 
-		engine.addModelValidator(new AD_Archive());
+		//engine.addModelValidator(new AD_Archive()); added by spring
 
-		engine.addModelValidator(new AD_Printer_Config());
+		//engine.addModelValidator(new AD_Printer_Config()); added by spring
 		engine.addModelValidator(new AD_Printer_Matching());
 		engine.addModelValidator(new AD_PrinterRouting());
 		engine.addModelValidator(new AD_PrinterHW());

@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
+import de.metas.organization.ClientAndOrgId;
+import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
@@ -67,9 +69,9 @@ public class HUSplitBuilder implements IHUSplitBuilder
 
 	private boolean splitOnNoPI;
 
-	public HUSplitBuilder(final Properties ctx)
+	public HUSplitBuilder(final Properties ctx, final @NonNull ClientAndOrgId clientAndOrgId)
 	{
-		this(Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(ctx));
+		this(Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(ctx, clientAndOrgId));
 	}
 
 	public HUSplitBuilder(final IHUContext huContextInitial)

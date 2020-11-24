@@ -24,7 +24,7 @@ package org.adempiere.ad.trx.api.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
-import org.adempiere.ad.trx.exceptions.TrxException;
+import org.adempiere.exceptions.AdempiereException;
 
 import lombok.NonNull;
 
@@ -47,7 +47,7 @@ import lombok.NonNull;
 	{
 		execute(listener);
 	}
-	
+
 	@Override
 	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
 	{
@@ -55,7 +55,7 @@ import lombok.NonNull;
 		return true;
 	}
 
-	private final void execute(final RegisterListenerRequest listener)
+	private void execute(final RegisterListenerRequest listener)
 	{
 		if (!listener.isActive())
 		{
@@ -73,7 +73,9 @@ import lombok.NonNull;
 		}
 		catch (Exception e)
 		{
-			throw new TrxException("Caught " + e.getLocalizedMessage() + " for listener=" + listener, e);
+			throw AdempiereException.wrapIfNeeded(e)
+					.setParameter("listener", listener)
+					.appendParametersToMessage();
 		}
 	}
 

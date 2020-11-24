@@ -1,23 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Attribute;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -28,6 +11,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceipt
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -44,6 +28,22 @@ import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.attribute.SecurPharmAttributesStatus;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Attribute;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -109,12 +109,12 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		//
 		// Make sure all mandatory attributes are filled
 		final HUEditorRowAttributes attributes = document.getAttributes();
-		for (final String mandatoryAttributeName : attributes.getMandatoryAttributeNames())
+		for (final AttributeCode mandatoryAttributeCode : attributes.getMandatoryAttributeNames())
 		{
-			final Object value = attributes.getValue(mandatoryAttributeName);
+			final Object value = attributes.getValue(mandatoryAttributeCode);
 			if (Check.isEmpty(value))
 			{
-				final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(mandatoryAttributeName);
+				final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(mandatoryAttributeCode);
 				final I_M_Attribute translatedAttribute = InterfaceWrapperHelper.translate(attribute, I_M_Attribute.class);
 				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_MissingMandatoryHUAttribute, translatedAttribute.getName());
 				return ProcessPreconditionsResolution.reject(msg);
@@ -143,7 +143,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 
 		//
 		// NOK if not scanned and vendor != manufacturer
-		final BPartnerId vendorId = document.getBPartnerId();
+		final BPartnerId vendorId = document.getBpartnerId();
 		final BPartnerId manufacturerId = productRepository
 				.getById(document.getProductId())
 				.getManufacturerId();
@@ -171,7 +171,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 
 		final CreateReceiptsParametersBuilder parametersBuilder = CreateReceiptsParameters.builder()
 				.commitEachReceiptIndividually(false)
-				.createReceiptWithDatePromised(false)
+				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.ctx(getCtx())
 				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.printReceiptLabels(true)

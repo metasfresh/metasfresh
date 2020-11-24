@@ -97,13 +97,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return create(ctx, cl, POJOLookupMap.get());
 	}
 
-	/**
-	 *
-	 * @param ctx
-	 * @param cl
-	 * @param trxName
-	 * @return
-	 */
 	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
 	{
 		final T object = create(ctx, cl);
@@ -234,9 +227,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	/**
 	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
 	 * assumed when running against a DB and should also be made sure when running unti tests in decoupled mode.
-	 *
-	 * @param ctx
-	 * @param cl
 	 */
 	private static <T> void createADTableInstanceIfNeccesary(final Properties ctx, final Class<T> cl)
 	{
@@ -646,18 +636,18 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			@NonNull final Object[] args,
 			@NonNull final String methodName)
 	{
-		final String propertyNameLowerCase = methodName.substring(3);
+		final String propertyName = methodName.substring(3);
 		final Class<?> paramType = method.getParameterTypes()[0];
 		final Object value = args[0];
 		if (isModelInterface(paramType))
 		{
-			setReferencedObject(propertyNameLowerCase, value);
+			setReferencedObject(propertyName, value);
 			// throw new AdempiereException("Object setter not supported: " + method);
 			// setValueFromPO(propertyName + "_ID", paramType, value);
 		}
 		else
 		{
-			setValue(propertyNameLowerCase, value);
+			setValue(propertyName, value);
 		}
 		return null;
 	}

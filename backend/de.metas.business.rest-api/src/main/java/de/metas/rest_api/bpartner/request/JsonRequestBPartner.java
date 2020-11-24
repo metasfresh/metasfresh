@@ -1,10 +1,11 @@
 package de.metas.rest_api.bpartner.request;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.JsonInvoiceRule;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
@@ -124,8 +125,16 @@ public class JsonRequestBPartner
 	private String globalId;
 	private boolean globalIdset;
 
+	@ApiModelProperty(position = 20, // shall be last
+			required = false, value = "Sync advise about this bPartner's individual properties.\n"
+					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 	private boolean syncAdviseSet;
+
+	@ApiModelProperty(position = 160, required = false, //
+			value = "Translates to `C_BPartner.VATaxId`")
+	private String vatId;
+	private boolean vatIdSet;
 
 	public void setExternalId(JsonExternalId externalId)
 	{
@@ -239,5 +248,11 @@ public class JsonRequestBPartner
 	{
 		this.syncAdvise = syncAdvise;
 		this.syncAdviseSet = true;
+	}
+
+	public void setVatId(String vatId)
+	{
+		this.vatId = vatId;
+		this.vatIdSet = true;
 	}
 }

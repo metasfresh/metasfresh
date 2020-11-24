@@ -8,21 +8,19 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BPartner;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.sync.protocol.SyncBPartner;
 import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.procurement.sync.protocol.SyncUser;
 import de.metas.util.Services;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
+
 /*
  * #%L
  * de.metas.procurement.base
@@ -44,21 +42,16 @@ import mockit.Verifications;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class WebuiPushTests
 {
 	private static final String BPARTNER_NAME = "myName";
-
 	private static final String LANGUAGE = "mylanguage";
 
-	@Rule
-	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
+	private IAgentSyncBL agentSync = Mockito.mock(IAgentSyncBL.class);
 
-	@Mocked
-	IAgentSyncBL agentSync;
-
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -149,39 +142,33 @@ public class WebuiPushTests
 	 */
 	private void performTestNoUsersDeletePartner(final I_C_BPartner bpartner)
 	{
-		expectOnlySyncBPartnersCalled();
-
 		new WebuiPush().pushBPartnerAndUsers(bpartner);
 
-		// @formatter:off
-		new Verifications()
-		{{
-				SyncBPartnersRequest syncBPartnersRequest;
-				agentSync.syncBPartners(syncBPartnersRequest = withCapture());
+		verifyOnlySyncBPartnersCalled();
 
-				assertNotNull(syncBPartnersRequest);
-				assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
+		final ArgumentCaptor<SyncBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(SyncBPartnersRequest.class);
+		Mockito.verify(agentSync).syncBPartners(syncBPartnersRequestCaptor.capture());
 
-				final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().get(0);
-				assertThat(syncBPartner.getName(), is(bpartner.getName()));
-				assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
-				assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(true));
+		final SyncBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
+		// agentSync.syncBPartners(syncBPartnersRequest = withCapture());
 
-				assertThat(syncBPartner.getUsers().isEmpty(), is(true));
-				assertThat(syncBPartner.getContracts().isEmpty(), is(true));
-		}};
-		// @formatter:on
+		assertNotNull(syncBPartnersRequest);
+		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
+
+		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().get(0);
+		assertThat(syncBPartner.getName(), is(bpartner.getName()));
+		assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
+		assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(true));
+
+		assertThat(syncBPartner.getUsers().isEmpty(), is(true));
+		assertThat(syncBPartner.getContracts().isEmpty(), is(true));
 	}
 
-	private void expectOnlySyncBPartnersCalled()
+	private void verifyOnlySyncBPartnersCalled()
 	{
-		// @formatter:off
-		new Expectations() {{
-			agentSync.syncInfoMessage((SyncInfoMessageRequest)any); times=0;
-			agentSync.syncProducts((SyncProductsRequest)any); times=0;
-			agentSync.syncBPartners((SyncBPartnersRequest)any); times=1;
-	    }};
-	    // @formatter:on
+		Mockito.verify(agentSync, Mockito.times(0)).syncInfoMessage(Mockito.any());
+		Mockito.verify(agentSync, Mockito.times(0)).syncProducts(Mockito.any());
+		Mockito.verify(agentSync, Mockito.times(1)).syncBPartners(Mockito.any());
 	}
 
 	/**
@@ -199,33 +186,29 @@ public class WebuiPushTests
 		user.setIsMFProcurementUser(true);
 		InterfaceWrapperHelper.save(user);
 
-		expectOnlySyncBPartnersCalled();
-
 		new WebuiPush().pushBPartnerAndUsers(bpartner);
 
-		// @formatter:off
-		new Verifications()
-		{{
-			SyncBPartnersRequest syncBPartnersRequest;
-			agentSync.syncBPartners(syncBPartnersRequest = withCapture());
+		verifyOnlySyncBPartnersCalled();
 
-			assertNotNull(syncBPartnersRequest);
-			assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
+		final ArgumentCaptor<SyncBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(SyncBPartnersRequest.class);
+		Mockito.verify(agentSync).syncBPartners(syncBPartnersRequestCaptor.capture());
 
-			final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().get(0);
-			assertThat(syncBPartner.getUsers().size(), is(1));
-			assertThat(syncBPartner.getContracts().isEmpty(), is(true));
-			assertThat(syncBPartner.getName(), is(bpartner.getName()));
-			assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
-			assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(false));
+		final SyncBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
 
-			final SyncUser syncUser = syncBPartner.getUsers().get(0);
-			assertThat(syncUser.isDeleted(), is(false));
-			assertThat(syncUser.getEmail(), is(user.getEMail()));
-			assertThat(syncUser.getPassword(), is(user.getProcurementPassword()));
-			assertThat(syncUser.getLanguage(), is(bpartner.getAD_Language()));
-		}};
-		// @formatter:on
+		assertNotNull(syncBPartnersRequest);
+		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));
+
+		final SyncBPartner syncBPartner = syncBPartnersRequest.getBpartners().get(0);
+		assertThat(syncBPartner.getUsers().size(), is(1));
+		assertThat(syncBPartner.getContracts().isEmpty(), is(true));
+		assertThat(syncBPartner.getName(), is(bpartner.getName()));
+		assertThat("syncBPartner.isSyncContracts", syncBPartner.isSyncContracts(), is(false));
+		assertThat("syncBPartner.isDeleted", syncBPartner.isDeleted(), is(false));
+
+		final SyncUser syncUser = syncBPartner.getUsers().get(0);
+		assertThat(syncUser.isDeleted(), is(false));
+		assertThat(syncUser.getEmail(), is(user.getEMail()));
+		assertThat(syncUser.getPassword(), is(user.getProcurementPassword()));
+		assertThat(syncUser.getLanguage(), is(bpartner.getAD_Language()));
 	}
-
 }

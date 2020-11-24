@@ -1,6 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.LocalDate;
@@ -39,7 +39,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -69,6 +68,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -94,7 +94,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 

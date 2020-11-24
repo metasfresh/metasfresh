@@ -16,6 +16,7 @@ import org.compiere.model.I_C_BPartner;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
@@ -122,14 +123,14 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	}
 
 	@Override
-	public final List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(@NonNull final I_C_BP_BankAccount bankAcct)
+	public final List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(@NonNull final BankAccountId bankAcctId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_ESR_PostFinanceUserNumber.class)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ESR_PostFinanceUserNumber.COLUMNNAME_C_BP_BankAccount_ID, bankAcct.getC_BP_BankAccount_ID())
+				.addEqualsFilter(I_ESR_PostFinanceUserNumber.COLUMNNAME_C_BP_BankAccount_ID, bankAcctId)
 				.create()
 				.list(I_ESR_PostFinanceUserNumber.class);
 	}

@@ -1,22 +1,5 @@
 package org.adempiere.service;
 
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Form;
-import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Role_PermRequest;
-import org.compiere.model.I_AD_Task;
-import org.compiere.model.I_AD_Window;
-import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_Invoice;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import ch.qos.logback.classic.Level;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -40,6 +23,22 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Form;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Role_PermRequest;
+import org.compiere.model.I_AD_Task;
+import org.compiere.model.I_AD_Window;
+import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_Invoice;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -146,7 +145,7 @@ public class RolePermRevokeAccess
 
 			final ADRefListItem docActionItem = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
 			Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
-			final int docActionRefListId = docActionItem.getRefListId();
+			final int docActionRefListId = docActionItem.getRefListId().getRepoId();
 
 			permissionsDAO.deleteDocumentActionAccess(RemoveDocActionAccessRequest.builder()
 					.roleId(role.getId())

@@ -4,7 +4,6 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.quantity.QuantityTU;
 import de.metas.uom.IUOMDAO;
 
 /*
@@ -63,9 +63,9 @@ class HUPackingAwareBLTest
 		final OrderLineHUPackingAware orderLineHUPackingAware = new OrderLineHUPackingAware(orderLineRecord);
 
 		// invoke the method under test
-		final BigDecimal result = huPackingAwareBL.calculateQtyTU(orderLineHUPackingAware);
+		final QuantityTU result = huPackingAwareBL.calculateQtyTU(orderLineHUPackingAware);
 
-		assertThat(result).isEqualByComparingTo(TEN);
+		assertThat(result).isEqualTo(QuantityTU.ofInt(10));
 	}
 
 }

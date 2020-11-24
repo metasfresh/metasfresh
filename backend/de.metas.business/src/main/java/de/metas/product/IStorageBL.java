@@ -60,7 +60,7 @@ public interface IStorageBL extends ISingletonService
 			BigDecimal diffQtyOrdered,
 			String trxName);
 
-	boolean add(Properties ctx,
+	void add(Properties ctx,
 			int M_Warehouse_ID,
 			int M_Locator_ID,
 			int M_Product_ID,

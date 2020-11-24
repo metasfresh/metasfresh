@@ -28,11 +28,10 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.junit.Test;
-
 import de.metas.handlingunits.expectations.HUAssignmentExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
+import org.junit.jupiter.api.Test;
 
 /**
  * Asserts that RS allocations and deallocations work as intended with HUs and weight attributes

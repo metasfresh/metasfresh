@@ -28,8 +28,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 
 import de.metas.handlingunits.HUXmlConverter;
@@ -310,7 +310,7 @@ public class SplitWeightTareAdjustPropagationTest extends AbstractWeightAttribut
 	 * S050: Split 1 x TU from source LU on the SAME source LU
 	 */
 	@Test
-	@Ignore
+	@Disabled
 	public void testSplitWeightTransfer_LU_On_Another_SameSource_LU()
 	{
 		// TODO (scenario not yet implemented)

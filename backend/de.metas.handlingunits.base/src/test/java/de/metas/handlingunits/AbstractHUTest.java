@@ -37,8 +37,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -138,8 +139,8 @@ public abstract class AbstractHUTest
 	// #653
 	protected I_M_Attribute attr_LotNumber;
 
-	@BeforeClass
-	public final static void staticInit()
+	@BeforeAll
+	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 		POJOWrapper.setDefaultStrictValues(false);
@@ -162,7 +163,7 @@ public abstract class AbstractHUTest
 		};
 	};
 
-	@Before
+	@BeforeEach
 	public final void init()
 	{
 		setupMasterData();

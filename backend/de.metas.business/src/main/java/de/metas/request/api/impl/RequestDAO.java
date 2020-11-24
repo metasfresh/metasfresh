@@ -67,6 +67,14 @@ public class RequestDAO implements IRequestDAO
 	}
 
 	@Override
+	public I_R_Request createEmptyRequest()
+	{
+		final I_R_Request request = newInstance(I_R_Request.class);
+		request.setSummary("");
+		return request;
+	}
+
+	@Override
 	public Stream<RequestId> streamRequestIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IQueryBL.class)

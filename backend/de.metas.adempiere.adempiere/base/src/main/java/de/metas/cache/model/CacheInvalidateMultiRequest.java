@@ -61,6 +61,11 @@ public class CacheInvalidateMultiRequest
 		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
 	}
 
+	public static final CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest... requests)
+	{
+		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
+	}
+
 	public static final CacheInvalidateMultiRequest ofMultiRequests(@NonNull final Collection<CacheInvalidateMultiRequest> multiRequests)
 	{
 		final Set<CacheInvalidateRequest> requests = multiRequests.stream()
@@ -138,6 +143,19 @@ public class CacheInvalidateMultiRequest
 		final ImmutableSet<CacheInvalidateRequest> requests = recordIds.stream()
 				.distinct()
 				.map(recordId -> CacheInvalidateRequest.rootRecord(tableName, recordId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return of(requests);
+	}
+
+	public static CacheInvalidateMultiRequest fromTableNameAndRepoIdAwares(
+			@NonNull final String tableName,
+			@NonNull final Collection<? extends RepoIdAware> recordIds)
+	{
+		final ImmutableSet<CacheInvalidateRequest> requests = recordIds.stream()
+				.distinct()
+				.filter(Objects::nonNull)
+				.map(recordId -> CacheInvalidateRequest.rootRecord(tableName, recordId.getRepoId()))
 				.collect(ImmutableSet.toImmutableSet());
 
 		return of(requests);

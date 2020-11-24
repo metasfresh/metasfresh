@@ -133,6 +133,11 @@ public class CostingDocumentRef
 	{
 		return Objects.equals(tableName, expectedTableName);
 	}
+	
+	public boolean isInventoryLine()
+	{
+		return isTableName(TABLE_NAME_M_InventoryLine);
+	}
 
 	public void assertTableName(final String expectedTableName)
 	{

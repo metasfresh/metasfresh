@@ -8,8 +8,9 @@ import {
   elementPathRequest,
   updateBreadcrumb,
 } from '../../actions/MenuActions';
-import { getSelectionInstant } from '../../reducers/windowHandler';
+import { getTableId, getSelection } from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
+
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 
@@ -26,10 +27,6 @@ class SubHeader extends Component {
     elementPath: '',
   };
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     document.getElementsByClassName('js-subheader-column')[0].focus();
 
@@ -353,7 +350,7 @@ class SubHeader extends Component {
       dataId,
       editmode,
       handleEditModeToggle,
-      query,
+      viewId,
       redirect,
       selected,
       siteName,
@@ -432,12 +429,14 @@ class SubHeader extends Component {
           </div>
         ) : null}
 
-        {windowId && query && query.viewId && (
+        {windowId && viewId && (
           <a
             className="subheader-item js-subheader-item"
-            href={`${config.API_URL}/documentView/${windowId}/${
-              query.viewId
-            }/export/excel?selectedIds=${selected.join(',')}`}
+            href={`${
+              config.API_URL
+            }/documentView/${windowId}/${viewId}/export/excel?selectedIds=${selected.join(
+              ','
+            )}`}
             download
             onClick={this.handleDownloadSelected}
             style={{
@@ -483,7 +482,6 @@ class SubHeader extends Component {
       dataId,
       selected,
       entity,
-      query,
       openModal,
       openModalRow,
       closeSubheader,
@@ -501,27 +499,22 @@ class SubHeader extends Component {
         openModalRow={openModalRow}
         closeSubheader={closeSubheader}
         notfound={notfound}
-        docId={dataId ? dataId : query && query.viewId}
-        rowId={selected}
+        docId={dataId ? dataId : viewId}
+        selected={selected}
         activeTab={activeTab}
-        activeTabSelected={activeTab && selected ? selected : []}
       />
     );
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  setRef = (ref) => (this.subHeader = ref);
+
   render() {
     return (
       <div
         className="subheader-container overlay-shadow subheader-open js-not-unselect"
         tabIndex={0}
         onKeyDown={this.handleKeyDown}
-        ref={(c) => {
-          this.subHeader = c;
-        }}
+        ref={this.setRef}
       >
         <div className="container-fluid-subheader container-fluid">
           <div className="subheader-row">
@@ -552,7 +545,7 @@ class SubHeader extends Component {
  * @prop {*} notfound
  * @prop {func} openModal
  * @prop {func} openModalRow
- * @prop {*} query
+ * @prop {*} viewId
  * @prop {*} redirect
  * @prop {*} selected
  * @prop {*} siteName
@@ -578,27 +571,25 @@ SubHeader.propTypes = {
   notfound: PropTypes.any,
   openModal: PropTypes.func,
   openModalRow: PropTypes.func,
-  query: PropTypes.any,
+  viewId: PropTypes.string,
   redirect: PropTypes.any,
   selected: PropTypes.any,
   siteName: PropTypes.any,
   standardActions: PropTypes.any,
-  viewId: PropTypes.string,
   windowId: PropTypes.string,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
-const mapStateToProps = (state, props) => ({
-  standardActions: state.windowHandler.master.standardActions,
-  selected: getSelectionInstant(
-    state,
-    props,
-    state.windowHandler.selectionsHash
-  ),
-});
+const mapStateToProps = (state, props) => {
+  const { windowId, documentId, viewId } = props;
+  const activeTab = state.windowHandler.master.layout.activeTab;
+  const tabId = activeTab ? activeTab : null;
+  const tableId = getTableId({ windowId, viewId, tabId, docId: documentId });
+  const selector = getSelection();
+
+  return {
+    standardActions: state.windowHandler.master.standardActions,
+    selected: selector(state, tableId),
+  };
+};
 
 export default connect(mapStateToProps)(onClickOutside(SubHeader));

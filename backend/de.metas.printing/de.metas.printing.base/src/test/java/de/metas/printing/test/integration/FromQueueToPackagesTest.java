@@ -22,15 +22,6 @@ package de.metas.printing.test.integration;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.collections4.IteratorUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.printing.api.impl.AbstractPrintingTest;
 import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterRouting;
@@ -41,6 +32,16 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.collections4.IteratorUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FromQueueToPackagesTest extends AbstractPrintingTest
 {
@@ -50,7 +51,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings
-		helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 
 		//
 		// Create printing queue
@@ -78,13 +79,13 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings:
-		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 		printerRouting01.setAD_Org_ID(1);
 		// printerRouting01.setAD_User_ID(1);
 		printerRouting01.setC_DocType_ID(1);
 		helper.getDB().save(printerRouting01);
 
-		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("printer01", "tray01", -1, 10, 15);
+		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("printer01", "tray01", 10, -1, 10, 15);
 		printerRouting02.setAD_Org_ID(1);
 		// printerRouting02.setAD_User_ID(1);
 		printerRouting02.setC_DocType_ID(2);
@@ -117,15 +118,15 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings:
-		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("test03-printer01", "tray01", -1, 1, 2);
+		final I_AD_PrinterRouting printerRouting01 = helper.createPrinterRouting("test03-printer01", "tray01", 10, -1, 1, 2);
 		printerRouting01.setC_DocType_ID(1);
 		helper.getDB().save(printerRouting01);
 
-		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("test03-printer02", "tray01", -1, 3, 4);
+		final I_AD_PrinterRouting printerRouting02 = helper.createPrinterRouting("test03-printer02", "tray01", 10, -1, 3, 4);
 		printerRouting02.setC_DocType_ID(2);
 		helper.getDB().save(printerRouting02);
 
-		final I_AD_PrinterRouting printerRouting03 = helper.createPrinterRouting("test03-printer01", "tray01", -1, 5, 6);
+		final I_AD_PrinterRouting printerRouting03 = helper.createPrinterRouting("test03-printer01", "tray01", 10, -1, 5, 6);
 		printerRouting03.setC_DocType_ID(3);
 		helper.getDB().save(printerRouting03);
 
@@ -154,7 +155,9 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 
 	private void executeGenericTest(final int printJobsCountExpected, final byte[] pdfDataExpected)
 	{
-		final int printJobsCountActual = helper.createAllPrintJobs();
+		helper.createAllPrintJobs();
+
+		final int printJobsCountActual = POJOLookupMap.get().getRecords(I_C_Print_Job.class).size();
 		Assert.assertEquals("Invalid Print Jobs count", printJobsCountExpected, printJobsCountActual);
 		assumePrintJobInstructions(X_C_Print_Job_Instructions.STATUS_Pending);
 
@@ -172,7 +175,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings
-		helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 
 		//
 		// Create printing queue
@@ -185,17 +188,18 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		pdfDataExpected.add(new PdfCollator()
 				.addPages(helper.getPdf("01"), 1, 20)
 				.toByteArray()
-				);
+		);
 		pdfDataExpected.add(new PdfCollator()
 				.addPages(helper.getPdf("02"), 1, 20)
 				.toByteArray()
-				);
+		);
 
-		final int printJobsCountActual = helper.createAllPrintJobs();
-		Assert.assertEquals("Invalid Print Jobs count", 2, printJobsCountActual);
+		// when
+		helper.createAllPrintJobs();
 
+		// then
 		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assert.assertEquals("Invalid Print Jobs count in database", 2, printJobs.size());
+		assertThat(printJobs).as("Invalid Print Jobs count").hasSize(2);
 
 		for (int i = 0; i < printJobs.size(); i++)
 		{
@@ -208,10 +212,10 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 	{
 		//
 		// Setup routings
-		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting routing1 = helper.createPrinterRouting("printer01", "tray01", 10, -1, -1, -1);
 		routing1.setAD_Org_ID(1);
 		helper.getDB().save(routing1);
-		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer02", "tray01", -1, -1, -1);
+		final I_AD_PrinterRouting routing2 = helper.createPrinterRouting("printer02", "tray01", 10, -1, -1, -1);
 		routing2.setAD_Org_ID(2);
 		helper.getDB().save(routing2);
 
@@ -220,13 +224,12 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		helper.addToPrintQueue("01", 1, -1); // AD_Org_ID=1, C_DocType_ID=N/A
 		helper.addToPrintQueue("02", 2, -1); // AD_Org_ID=2, C_DocType_ID=N/A
 
-		//
-		// Expect 2 print jobs to be created
-		final int printJobsCountActual = helper.createAllPrintJobs();
-		Assert.assertEquals("Invalid Print Jobs count", 2, printJobsCountActual);
+		// when
+		helper.createAllPrintJobs();
 
+		// then - Expect 2 print jobs to be created
 		final List<I_C_Print_Job> printJobs = helper.getDB().getRecords(I_C_Print_Job.class);
-		Assert.assertEquals("Invalid Print Jobs count in database", 2, printJobs.size());
+		assertThat(printJobs).as("Invalid Print Jobs count").hasSize(2);
 
 		// Validate PrintJob 1
 		final I_C_Print_Job printJob1 = printJobs.get(0);
@@ -253,7 +256,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		// Everything is fine.... now drop the matching for printer01
 		// ... this shall produce errors when trying to generate the package for first print job
 		{
-			final I_AD_Printer_Matching matching = helper.getDAO().retrievePrinterMatching(helper.getSessionHostKey(), routing1);
+			final I_AD_Printer_Matching matching = helper.getDAO().retrievePrinterMatching(helper.getSessionHostKey(), null, routing1);
 			helper.getDB().delete(matching);
 		}
 
@@ -263,7 +266,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 		helper.createNextPrintPackageAndTest(printJob2, new PdfCollator()
 				.addPages(helper.getPdf("02"), 1, 20)
 				.toByteArray()
-				);
+		);
 
 		//
 		// Validate PrintJob1 Instructions
@@ -287,7 +290,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 
 		//
 		// Recreate back the HW matching for printer01
-		helper.createPrinterConfigAndMatching(helper.getSessionHostKey(), "printer01-hw-again", "tray01-hw-again", "printer01", "tray01");
+		helper.createPrinterConfigAndMatching(helper.getSessionHostKey(), "printer01-hw-again", "tray01-hw-again", 10, "printer01", "tray01");
 
 		//
 		// Job1 instructions, prepare it again
@@ -305,7 +308,7 @@ public class FromQueueToPackagesTest extends AbstractPrintingTest
 			helper.createNextPrintPackageAndTest(printJob1, new PdfCollator()
 					.addPages(helper.getPdf("01"), 1, 20)
 					.toByteArray()
-					);
+			);
 		}
 
 		//

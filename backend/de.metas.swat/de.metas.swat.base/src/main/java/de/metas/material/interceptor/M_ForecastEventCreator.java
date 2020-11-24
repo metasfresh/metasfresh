@@ -19,7 +19,7 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /*

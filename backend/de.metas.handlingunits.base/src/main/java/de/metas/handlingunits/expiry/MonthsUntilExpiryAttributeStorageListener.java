@@ -5,6 +5,7 @@ import java.util.OptionalInt;
 
 import javax.annotation.PostConstruct;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.springframework.stereotype.Component;
@@ -70,8 +71,8 @@ public class MonthsUntilExpiryAttributeStorageListener implements IAttributeStor
 			return;
 		}
 
-		final String attributeKey = attributeValue.getM_Attribute().getValue();
-		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeKey);
+		final AttributeCode attributeCode = attributeValue.getAttributeCode();
+		final boolean relevantAttributeHasChanged = AttributeConstants.ATTR_BestBeforeDate.equals(attributeCode);
 		if (!relevantAttributeHasChanged)
 		{
 			return;

@@ -14,6 +14,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.business.BusinessTestHelper;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
@@ -71,7 +72,12 @@ public class InvoiceCandidateFixtureHelper
 		icUOMRecord.setC_UOM_ID(DELIVERY_UOM_ID.getRepoId());
 		saveRecord(icUOMRecord);
 
-		BusinessTestHelper.createUOMConversion(productRecord, stockUomRecord, icUOMRecord, new BigDecimal("2"), new BigDecimal("0.5"));
+		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.fromUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(icUOMRecord.getC_UOM_ID()))
+				.fromToMultiplier(new BigDecimal("2"))
+				.build());
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());

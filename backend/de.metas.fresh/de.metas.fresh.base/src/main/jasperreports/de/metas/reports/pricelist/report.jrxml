@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="de\metas\reports\DataAdapter.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -35,10 +35,10 @@ WHERE
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="issopricelist" class="java.lang.String"/>
 	<title>
-		<band height="269" splitType="Stretch">
+		<band height="290" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="0" y="31" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
+				<reportElement key="subreport-4" x="0" y="26" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -46,7 +46,7 @@ WHERE
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="116" width="595" height="153" uuid="57fee363-fabe-49b7-9652-20fecfd01700"/>
+				<reportElement key="subreport-8" x="0" y="240" width="595" height="50" uuid="57fee363-fabe-49b7-9652-20fecfd01700"/>
 				<subreportParameter name="M_PriceList_Version_ID">
 					<subreportParameterExpression><![CDATA[$P{M_PriceList_Version_ID}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -60,7 +60,7 @@ WHERE
 				<subreportExpression><![CDATA["de/metas/reports/pricelist/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="285" y="137" width="309" height="114" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0">
+				<reportElement key="subreport-6" x="0" y="136" width="270" height="96" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0">
 					<printWhenExpression><![CDATA[new Boolean ($P{C_BPartner_Location_ID} != null)]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="bp_loc_id">
@@ -70,10 +70,10 @@ WHERE
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_shorter_left_margin.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="100" width="225" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
+				<reportElement key="subreport-8" x="395" y="136" width="200" height="100" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -86,17 +86,7 @@ WHERE
 		</band>
 	</title>
 	<pageHeader>
-		<band height="116" splitType="Stretch">
-			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-5" x="0" y="15" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac"/>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
+		<band height="33" splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>

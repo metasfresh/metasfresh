@@ -1,6 +1,30 @@
 package de.metas.document.archive.async.spi.impl;
 
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
+import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.util.Check;
+import de.metas.util.FileUtil;
+import de.metas.util.IOStreamUtils;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
 
 /*
  * #%L
@@ -23,32 +47,6 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.storage.cc.api.ICCAbleDocument;
-import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
-import de.metas.util.Check;
-import de.metas.util.FileUtils;
-import de.metas.util.Services;
-import de.metas.util.IOStreamUtils;
 
 public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -116,7 +114,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 
 		final String filename = document.getFileName();
 		Check.assumeNotEmpty(filename, "filename shall not be empty for {}", document);
-		final String filenameFixed = FileUtils.stripIllegalCharacters(filename);
+		final String filenameFixed = FileUtil.stripIllegalCharacters(filename);
 		Check.assumeNotEmpty(filenameFixed, "filename shall be valid: {}", filename);
 
 		final File ccFile = new File(ccPathDir, filenameFixed);

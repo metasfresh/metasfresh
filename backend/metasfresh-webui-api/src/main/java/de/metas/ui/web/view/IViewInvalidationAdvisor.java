@@ -43,5 +43,8 @@ public interface IViewInvalidationAdvisor
 {
 	WindowId getWindowId();
 
-	Set<DocumentId> findAffectedRowIds(final TableRecordReferenceSet recordRefs, IView view);
+	Set<DocumentId> findAffectedRowIds(
+			final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend,
+			IView view);
 }

@@ -123,4 +123,154 @@ public final class FileUtil
 		}
 		return file;
 	}
+
+	/**
+	 * Gets file extension (without the dot) or null if the file does not have an extension.
+	 *
+	 * @return file extension or null
+	 */
+	public static String getFileExtension(final String filename)
+	{
+		if (filename == null)
+		{
+			return null;
+		}
+
+		final int idx = filename.lastIndexOf(".");
+		if (idx > 0)
+		{
+			return filename.substring(idx + 1);
+		}
+
+		return null;
+	}
+
+	public static String getFileBaseName(final String filename)
+	{
+		if (filename == null)
+		{
+			return null;
+		}
+
+		final int idx = filename.lastIndexOf(".");
+		if (idx > 0)
+		{
+			return filename.substring(0, idx);
+		}
+		else
+		{
+			return filename;
+		}
+	}
+
+	/**
+	 * Change file's extension.
+	 *
+	 * @param filename filename or URL
+	 * @param extension file extension to be used (with or without dot); in case the extension is null then it won't be appended so only the basename will be returned
+	 * @return filename with new file extension or same filename if the filename does not have an extension
+	 */
+	public static String changeFileExtension(final String filename, final String extension)
+	{
+		final StringBuilder sb = new StringBuilder();
+
+		//
+		// Append basename
+		final int extensionPos = filename.lastIndexOf(".");
+		if (extensionPos > 0)
+		{
+			sb.append(filename.substring(0, extensionPos));
+		}
+		else
+		{
+			sb.append(filename);
+		}
+
+		// If no extension, return only the basename
+		if (extension == null)
+		{
+			return sb.toString();
+		}
+
+		// If no extension, return only the basename
+		if (Check.isBlank(extension))
+		{
+			return sb.toString();
+		}
+
+		final String trimmedExtension = extension.trim();
+
+		// Append the dot between basename and extension only if the extension does not already contain a dot
+		if (!trimmedExtension.startsWith("."))
+		{
+			sb.append(".");
+		}
+
+		// Append the extension
+		sb.append(trimmedExtension);
+
+		return sb.toString();
+	}
+
+	/**
+	 * Create temporary directory with given suffix
+	 *
+	 * @return temporary directory
+	 */
+	public static File createTempDirectory(final String suffix)
+	{
+		final File tempFile;
+		try
+		{
+			tempFile = File.createTempFile(suffix, ".tmp");
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException("Cannot create temporary directory with suffix '" + suffix + "'", e);
+		}
+
+		final String tempDirName = changeFileExtension(tempFile.getAbsolutePath(), "");
+		final File tempDir = new File(tempDirName);
+		if (!tempDir.mkdirs())
+		{
+			throw new RuntimeException("Cannot create directories for " + tempDir);
+		}
+
+		return tempDir;
+	}
+
+	private static final String FILENAME_ILLEGAL_CHARACTERS = new String(new char[] { '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' });
+
+	public static final String stripIllegalCharacters(String filename)
+	{
+		if (filename == null)
+		{
+			return "";
+		}
+
+		if (filename.length() == 0)
+		{
+			return filename;
+		}
+
+		// Strip white spaces from filename
+		filename = filename.trim();
+		if (filename.length() == 0)
+		{
+			return filename;
+		}
+
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < filename.length(); i++)
+		{
+			final char ch = filename.charAt(i);
+			if (FILENAME_ILLEGAL_CHARACTERS.indexOf(ch) >= 0)
+			{
+				continue;
+			}
+			sb.append(ch);
+		}
+
+		return sb.toString();
+	}
 }

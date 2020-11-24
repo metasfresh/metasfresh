@@ -35,7 +35,7 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;

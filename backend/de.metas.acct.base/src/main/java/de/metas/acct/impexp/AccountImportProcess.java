@@ -289,6 +289,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	{
 		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getImportRecordsSelection());
 		retrieveImportedAdTrees().forEach(AccountImportTableSqlUpdater::dbUpdateParentElementValueId);
+		retrieveImportedElements().forEach(AccountImportTableSqlUpdater::dbUpdateElementValueParentAndSeqNo);
 	}
 
 	private Set<Integer> retrieveImportedAdTrees()
@@ -317,5 +318,31 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 		}
 
 		return treeId;
+	}
+	
+	private Set<Integer> retrieveImportedElements()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_I_ElementValue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_I_ElementValue.COLUMNNAME_Processed, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_I_ElementValue.COLUMNNAME_C_Element_ID)
+				.stream()
+				.map(map -> extractElementIdOrNull(map))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static final Integer extractElementIdOrNull(final Map<String, Object> map)
+	{
+		final int elementId = NumberUtils.asInt(map.get(I_C_Element.COLUMNNAME_C_Element_ID), -1);
+		if (elementId <= 0)
+		{
+			return null;
+		}
+
+		return elementId;
 	}
 }

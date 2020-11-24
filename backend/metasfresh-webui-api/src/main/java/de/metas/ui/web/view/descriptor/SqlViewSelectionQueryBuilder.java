@@ -658,7 +658,9 @@ public final class SqlViewSelectionQueryBuilder
 		return SqlAndParams.of(sql, newViewId.getViewId(), fromSelectionId);
 	}
 
-	public String buildSqlWhereClause(final String selectionId, final DocumentIdsSelection rowIds)
+	public SqlViewRowsWhereClause buildSqlWhereClause(
+			@NonNull final String selectionId,
+			@NonNull final DocumentIdsSelection rowIds)
 	{
 		final String sqlTableName = getTableName();
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = getSqlViewKeyColumnNamesMap();
@@ -667,7 +669,7 @@ public final class SqlViewSelectionQueryBuilder
 	}
 
 	@Builder(builderMethodName = "prepareSqlWhereClause", builderClassName = "SqlWhereClauseBuilder")
-	private static String buildSqlWhereClause(
+	private static SqlViewRowsWhereClause buildSqlWhereClause(
 			@NonNull final String sqlTableAlias,
 			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			@NonNull final String selectionId,
@@ -678,31 +680,36 @@ public final class SqlViewSelectionQueryBuilder
 		{
 			new AdempiereException("got empty rowIds")
 					.throwIfDeveloperModeOrLogWarningElse(logger);
-			return "1=0";
+			return SqlViewRowsWhereClause.noRecords();
 		}
 
-		final StringBuilder sqlWhereClause = new StringBuilder();
-		sqlWhereClause.append("exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " sel "
-				+ " where "
-				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId)
-				+ " and " + keyColumnNamesMap.getSqlJoinCondition(sqlTableAlias, "sel")
-				+ ")");
+		final SqlAndParams rowsPresentInViewSelection = SqlAndParams.of(
+				"exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " sel "
+						+ " where "
+						+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId)
+						+ " and " + keyColumnNamesMap.getSqlJoinCondition(sqlTableAlias, "sel")
+						+ ")");
 
+		final SqlAndParams rowsPresentInTable;
 		if (!rowIds.isAll())
 		{
-			sqlWhereClause.append(" AND (")
-					.append(keyColumnNamesMap.prepareSqlFilterByRowIds()
-							.sqlColumnPrefix(sqlTableAlias + ".")
-							.useKeyColumnName(true)
-							.rowIds(rowIds)
-							.rowIdsConverter(rowIdsConverter)
-							.embedSqlParams(true)
-							.build()
-							.getSql())
-					.append(")");
+			rowsPresentInTable = keyColumnNamesMap.prepareSqlFilterByRowIds()
+					.sqlColumnPrefix(sqlTableAlias + ".")
+					.useKeyColumnName(true)
+					.rowIds(rowIds)
+					.rowIdsConverter(rowIdsConverter)
+					.embedSqlParams(true)
+					.build();
+		}
+		else
+		{
+			rowsPresentInTable = null;
 		}
 
-		return sqlWhereClause.toString();
+		return SqlViewRowsWhereClause.builder()
+				.rowsPresentInViewSelection(rowsPresentInViewSelection)
+				.rowsPresentInTable(rowsPresentInTable)
+				.build();
 	}
 
 	public SqlAndParams buildSqlDeleteRowIdsFromSelection(@NonNull final String selectionId, @NonNull final DocumentIdsSelection rowIds)

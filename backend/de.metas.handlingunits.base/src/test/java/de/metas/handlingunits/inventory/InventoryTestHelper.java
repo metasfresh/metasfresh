@@ -1,8 +1,19 @@
 package de.metas.handlingunits.inventory;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -11,12 +22,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 
-import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static de.metas.handlingunits.HuPackingInstructionsVersionId.VIRTUAL;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -112,5 +120,24 @@ public class InventoryTestHelper
 		docType.setDocSubType(docBaseAndSubType.getDocSubType());
 		saveRecord(docType);
 		return DocTypeId.ofRepoId(docType.getC_DocType_ID());
+	}
+
+	public static void createStorageFor(final ProductId productId, final Quantity qtyCount, final HuId huId)
+	{
+		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setM_HU_ID(huId.getRepoId());
+		hu.setM_HU_PI_Version_ID(VIRTUAL.getRepoId());
+		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
+
+		final I_M_HU_Storage huStorage = newInstance(I_M_HU_Storage.class);
+		huStorage.setM_HU(hu);
+		huStorage.setM_Product_ID(productId.getRepoId());
+		huStorage.setC_UOM_ID(qtyCount.getUomId().getRepoId());
+		huStorage.setQty(qtyCount.toBigDecimal());
+		Services.get(IHandlingUnitsBL.class)
+				.getStorageFactory()
+				.getHUStorageDAO()
+				.save(huStorage);
 	}
 }

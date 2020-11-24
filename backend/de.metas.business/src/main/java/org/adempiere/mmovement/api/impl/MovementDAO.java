@@ -42,6 +42,8 @@ import lombok.NonNull;
 
 public class MovementDAO implements IMovementDAO
 {
+	final private IQueryBL queryBL = Services.get(IQueryBL.class);
+	
 	@Override
 	public I_M_MovementLine getLineById(@NonNull final MovementLineId movementLineId)
 	{
@@ -57,7 +59,6 @@ public class MovementDAO implements IMovementDAO
 	@Override
 	public <MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(@NonNull final I_M_Movement movement, @NonNull final Class<MovementLineType> movementLineClass)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<MovementLineType> queryBuilder = queryBL.createQueryBuilder(movementLineClass, movement);
 
 		queryBuilder.getCompositeFilter()
@@ -74,9 +75,17 @@ public class MovementDAO implements IMovementDAO
 	@Override
 	public IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(@NonNull final InventoryId inventoryId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_Movement.class)
 				.addEqualsFilter(I_M_Movement.COLUMN_M_Inventory_ID, inventoryId);
+	}
+	
+	@Override
+	public List<I_M_Movement> retrieveMovementsForDDOrder(final int ddOrderId)
+	{
+		return queryBL.createQueryBuilder(I_M_Movement.class)
+				.addEqualsFilter(I_M_Movement.COLUMN_DD_Order_ID, ddOrderId)
+				.create()
+				.list();
 	}
 
 	@Override

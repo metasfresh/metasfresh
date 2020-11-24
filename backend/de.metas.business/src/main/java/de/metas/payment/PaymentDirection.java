@@ -50,6 +50,12 @@ public enum PaymentDirection
 		return statementAmt.signum() >= 0 ? INBOUND : OUTBOUND;
 	}
 
+	public static PaymentDirection ofSOTrx(@NonNull final SOTrx soTrx)
+	{
+		final boolean creditMemo = false;
+		return ofSOTrxAndCreditMemo(soTrx, creditMemo);
+	}
+
 	public static PaymentDirection ofSOTrxAndCreditMemo(@NonNull final SOTrx soTrx, final boolean creditMemo)
 	{
 		if (soTrx.isPurchase())

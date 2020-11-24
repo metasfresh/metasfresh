@@ -74,6 +74,8 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 		final IForecastLineQuickInput fromForecastLineQuickInput = fromQuickInput.getQuickInputDocumentAs(IForecastLineQuickInput.class);
 		final IHUPackingAware quickInputPackingAware = createQuickInputPackingAware(forecast, fromForecastLineQuickInput);
 
+		forecastLine.setM_Warehouse_ID(forecast.getM_Warehouse_ID());
+
 		final IHUPackingAware orderLinePackingAware = ForecastLineHUPackingAware.of(forecastLine);
 
 		huPackingAwareBL.prepareCopyFrom(quickInputPackingAware)

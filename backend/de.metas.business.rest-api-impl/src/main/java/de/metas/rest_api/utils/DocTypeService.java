@@ -1,6 +1,6 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 import javax.annotation.Nullable;
 

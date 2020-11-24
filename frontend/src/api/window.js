@@ -1,4 +1,4 @@
-import { post, get } from 'axios';
+import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
@@ -17,6 +17,24 @@ export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
     ${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions
   `);
+}
+
+export function deleteRequest(
+  entity,
+  docType,
+  docId,
+  tabId,
+  ids,
+  subentity,
+  subentityId
+) {
+  return del(
+    `${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
+      docId ? `/${docId}` : ''
+    }${tabId ? `/${tabId}` : ''}${subentity ? `/${subentity}` : ''}${
+      subentityId ? `/${subentityId}` : ''
+    }${ids ? `?ids=${ids}` : ''}`
+  );
 }
 
 export function getZoomIntoWindow(
@@ -43,18 +61,11 @@ export function getZoomIntoWindow(
   );
 }
 
-export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
+export function discardNewRequest({ windowId, documentId, tabId, rowId } = {}) {
   return post(
-    config.API_URL +
-      '/window/' +
-      windowType +
-      '/' +
-      documentId +
-      '/' +
-      tabId +
-      '/' +
-      rowId +
-      '/discardChanges'
+    `${config.API_URL}/window/${windowId}/${documentId}${
+      tabId && rowId ? `/${tabId}/${rowId}` : ''
+    }/discardChanges`
   );
 }
 
@@ -69,7 +80,7 @@ export function discardNewDocument({ windowType, documentId } = {}) {
   );
 }
 
-export function getTab(tabId, windowType, docId, orderBy) {
+export function getTabRequest(tabId, windowType, docId, orderBy) {
   return getData({
     entity: 'window',
     docType: windowType,
@@ -77,14 +88,20 @@ export function getTab(tabId, windowType, docId, orderBy) {
     tabId: tabId,
     rowId: null, // all rows
     orderBy: orderBy,
-  }).then(
-    (res) =>
-      res.data &&
-      res.data.map((row) => ({
-        ...row,
-        fieldsByName: parseToDisplay(row.fieldsByName),
-      }))
-  );
+  })
+    .then(
+      (res) =>
+        res.data &&
+        res.data.result &&
+        res.data.result.map((row) => ({
+          ...row,
+          fieldsByName: parseToDisplay(row.fieldsByName),
+        }))
+    )
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('getTabRequest error: ', error);
+    });
 }
 
 /**

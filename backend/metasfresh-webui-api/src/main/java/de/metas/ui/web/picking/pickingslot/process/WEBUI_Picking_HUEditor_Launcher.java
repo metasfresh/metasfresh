@@ -2,7 +2,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;

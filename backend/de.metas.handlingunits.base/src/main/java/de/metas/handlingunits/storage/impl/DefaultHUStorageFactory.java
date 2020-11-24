@@ -74,6 +74,7 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	}
 
 	@Override
+	@NonNull
 	public List<IHUProductStorage> getHUProductStorages(@NonNull final List<I_M_HU> hus, final ProductId productId)
 	{
 		return hus.stream()

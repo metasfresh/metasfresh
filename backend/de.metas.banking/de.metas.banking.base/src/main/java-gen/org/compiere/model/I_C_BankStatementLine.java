@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for C_BankStatementLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_BankStatementLine 
@@ -14,16 +14,9 @@ public interface I_C_BankStatementLine
     /** AD_Table_ID=393 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
@@ -37,7 +30,7 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -47,7 +40,7 @@ public interface I_C_BankStatementLine
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,7 +52,30 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Bankauszug.
+	 * Set Bankgebühren.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setBankFeeAmt (java.math.BigDecimal BankFeeAmt);
+
+	/**
+	 * Get Bankgebühren.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getBankFeeAmt();
+
+    /** Column definition for BankFeeAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object> COLUMN_BankFeeAmt = new org.adempiere.model.ModelColumn<I_C_BankStatementLine, Object>(I_C_BankStatementLine.class, "BankFeeAmt", null);
+    /** Column name BankFeeAmt */
+    public static final String COLUMNNAME_BankFeeAmt = "BankFeeAmt";
+
+	/**
+	 * Set Bank Statement.
 	 * Bank Statement of account
 	 *
 	 * <br>Type: TableDir
@@ -69,7 +85,7 @@ public interface I_C_BankStatementLine
 	public void setC_BankStatement_ID (int C_BankStatement_ID);
 
 	/**
-	 * Get Bankauszug.
+	 * Get Bank Statement.
 	 * Bank Statement of account
 	 *
 	 * <br>Type: TableDir
@@ -82,8 +98,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_BankStatement_ID = "C_BankStatement_ID";
 
 	/**
-	 * Set Auszugs-Position.
-	 * Line on a statement from this Bank
+	 * Set Statement Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -92,8 +107,7 @@ public interface I_C_BankStatementLine
 	public void setC_BankStatementLine_ID (int C_BankStatementLine_ID);
 
 	/**
-	 * Get Auszugs-Position.
-	 * Line on a statement from this Bank
+	 * Get Statement Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -136,8 +150,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_BP_BankAccountTo_ID = "C_BP_BankAccountTo_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -146,8 +159,7 @@ public interface I_C_BankStatementLine
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -182,7 +194,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Währung.
+	 * Set Currency.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
@@ -192,7 +204,7 @@ public interface I_C_BankStatementLine
 	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
+	 * Get Currency.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
@@ -205,7 +217,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Rechnung.
+	 * Set Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
@@ -215,7 +227,7 @@ public interface I_C_BankStatementLine
 	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/**
-	 * Get Rechnung.
+	 * Get Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
@@ -234,7 +246,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Auftrag.
+	 * Set Sales order.
 	 * Order
 	 *
 	 * <br>Type: TableDir
@@ -244,7 +256,7 @@ public interface I_C_BankStatementLine
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Auftrag.
+	 * Get Sales order.
 	 * Order
 	 *
 	 * <br>Type: TableDir
@@ -263,7 +275,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set Zahlung.
+	 * Set Payment.
 	 * Payment identifier
 	 *
 	 * <br>Type: Search
@@ -273,7 +285,7 @@ public interface I_C_BankStatementLine
 	public void setC_Payment_ID (int C_Payment_ID);
 
 	/**
-	 * Get Zahlung.
+	 * Get Payment.
 	 * Payment identifier
 	 *
 	 * <br>Type: Search
@@ -309,7 +321,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
@@ -324,7 +336,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
@@ -337,8 +349,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Wechselkurs.
-	 * Wechselkurs für Währung
+	 * Set Currency Rate.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -347,8 +358,7 @@ public interface I_C_BankStatementLine
 	public void setCurrencyRate (java.math.BigDecimal CurrencyRate);
 
 	/**
-	 * Get Wechselkurs.
-	 * Wechselkurs für Währung
+	 * Get Currency Rate.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -362,7 +372,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
 
 	/**
-	 * Set Buchungsdatum.
+	 * Set Accounting Date.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
@@ -372,7 +382,7 @@ public interface I_C_BankStatementLine
 	public void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
-	 * Get Buchungsdatum.
+	 * Get Accounting Date.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
@@ -387,7 +397,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -396,7 +406,7 @@ public interface I_C_BankStatementLine
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -708,7 +718,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_ImportedBillPartnerIBAN = "ImportedBillPartnerIBAN";
 
 	/**
-	 * Set Importierter Rechnungspartner Name.
+	 * Set Imported Bill Partner Name.
 	 * Name of the Bill Partner as appears in the import file
 	 *
 	 * <br>Type: String
@@ -718,7 +728,7 @@ public interface I_C_BankStatementLine
 	public void setImportedBillPartnerName (java.lang.String ImportedBillPartnerName);
 
 	/**
-	 * Get Importierter Rechnungspartner Name.
+	 * Get Imported Bill Partner Name.
 	 * Name of the Bill Partner as appears in the import file
 	 *
 	 * <br>Type: String
@@ -758,7 +768,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_InterestAmt = "InterestAmt";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -768,7 +778,7 @@ public interface I_C_BankStatementLine
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -858,8 +868,8 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_IsMultiplePaymentOrInvoice = "IsMultiplePaymentOrInvoice";
 
 	/**
-	 * Set Abgeglichen.
-	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 * Set Reconciled.
+	 * Payment is reconciled with bank statement
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -868,8 +878,8 @@ public interface I_C_BankStatementLine
 	public void setIsReconciled (boolean IsReconciled);
 
 	/**
-	 * Get Abgeglichen.
-	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 * Get Reconciled.
+	 * Payment is reconciled with bank statement
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -908,8 +918,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_IsReversal = "IsReversal";
 
 	/**
-	 * Set Zeile Nr..
-	 * Unique line for this document
+	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -918,8 +927,7 @@ public interface I_C_BankStatementLine
 	public void setLine (int Line);
 
 	/**
-	 * Get Zeile Nr..
-	 * Unique line for this document
+	 * Get SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -979,8 +987,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_Memo = "Memo";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -989,8 +996,7 @@ public interface I_C_BankStatementLine
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1054,7 +1060,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_StatementLineDate = "StatementLineDate";
 
 	/**
-	 * Set Kontoauszug Betrag.
+	 * Set Statement amount.
 	 * Kontoauszug Betrag
 	 *
 	 * <br>Type: Amount
@@ -1064,7 +1070,7 @@ public interface I_C_BankStatementLine
 	public void setStmtAmt (java.math.BigDecimal StmtAmt);
 
 	/**
-	 * Get Kontoauszug Betrag.
+	 * Get Statement amount.
 	 * Kontoauszug Betrag
 	 *
 	 * <br>Type: Amount
@@ -1104,7 +1110,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_TrxAmt = "TrxAmt";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -1119,7 +1125,7 @@ public interface I_C_BankStatementLine
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table

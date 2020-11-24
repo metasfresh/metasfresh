@@ -37,11 +37,11 @@ import org.slf4j.MDC.MDCCloseable;
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
 import de.metas.event.Event;
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
+import de.metas.event.EventBusStats;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
@@ -57,19 +57,14 @@ import lombok.ToString;
 
 final class EventBus implements IEventBus
 {
-	private static final transient Logger logger = EventBusConstants.getLogger(EventBus.class);
+	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
 
 	/** Log all event bus exceptions */
-	private static final SubscriberExceptionHandler exceptionHandler = new SubscriberExceptionHandler()
-	{
-		@Override
-		public void handleException(final Throwable exception, final SubscriberExceptionContext context)
-		{
-			String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
-					+ "\n Event: " + context.getEvent()
-					+ "\n Bus: " + context.getEventBus();
-			logger.error(errmsg, exception);
-		}
+	private static final SubscriberExceptionHandler exceptionHandler = (exception, context) -> {
+		final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
+				+ "\n Event: " + context.getEvent()
+				+ "\n Bus: " + context.getEventBus();
+		logger.error(errmsg, exception);
 	};
 
 	private static final String PROP_Body = "body";
@@ -84,6 +79,9 @@ final class EventBus implements IEventBus
 	@Getter
 	private boolean destroyed = false;
 
+	@Getter
+	private final boolean async;
+
 	/**
 	 * The default type is local, unless the factory makes this event bus "remote" by registering some sort of forwarder-subscriber.
 	 */
@@ -92,6 +90,8 @@ final class EventBus implements IEventBus
 
 	private final ExecutorService executorOrNull;
 
+	private final EventBusStatsCollector stats;
+
 	/**
 	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
 	 */
@@ -99,17 +99,24 @@ final class EventBus implements IEventBus
 			@NonNull final String topicName,
 			@Nullable final ExecutorService executor)
 	{
+		Check.assumeNotEmpty(topicName, "name not empty");
+
 		this.executorOrNull = executor;
-		this.topicName = Check.assumeNotEmpty(topicName, "name not empty");
+		this.topicName = topicName;
 
 		if (executor == null)
 		{
 			this.eventBus = new com.google.common.eventbus.EventBus(exceptionHandler);
+			this.async = false;
+
 		}
 		else
 		{
 			this.eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
+			this.async = true;
 		}
+
+		this.stats = new EventBusStatsCollector();
 	}
 
 	@Override
@@ -231,7 +238,7 @@ final class EventBus implements IEventBus
 			{
 				eventToPost = event.withStatusWasLogged();
 
-			final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
+				final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 				eventLogService.saveEvent(eventToPost, this);
 			}
 			else
@@ -239,8 +246,10 @@ final class EventBus implements IEventBus
 				eventToPost = event;
 			}
 
-		logger.debug("{} - Posting event: {}", this, eventToPost);
+			logger.debug("{} - Posting event: {}", this, eventToPost);
 			eventBus.post(eventToPost);
+
+			stats.incrementEventsEnqueued();
 		}
 	}
 
@@ -267,7 +276,7 @@ final class EventBus implements IEventBus
 		{
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("TypedConsumerAsEventListener received event; eventBodyType={}", eventBodyType.getName());
+				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
 				final String json = event.getPropertyAsString(PROP_Body);
 				final T obj = jsonDeserializer.readValue(json);
@@ -287,10 +296,11 @@ final class EventBus implements IEventBus
 		@Subscribe
 		public void onEvent(@NonNull final Event event)
 		{
+			stats.incrementEventsDequeued();
+
 			try (final MDCCloseable mdc = EventMDC.putEvent(event))
 			{
-				logger.debug("GuavaEventListenerAdapter received event; referenced eventListener={}", eventListener);
-
+				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
 				invokeEventListener(this.eventListener, event);
 			}
 		}
@@ -314,8 +324,7 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event);
-		try
+		try (final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event))
 		{
 			eventListener.onEvent(this, event);
 		}
@@ -330,12 +339,14 @@ final class EventBus implements IEventBus
 			}
 			else
 			{
-				logger.warn("Got exception will invoking {} with {}", eventListener, event, ex);
+				logger.warn("Got exception while invoking eventListener={} with event={}", eventListener, event, ex);
+			}
 		}
-		}
-		finally
-		{
-			collector.close();
-		}
+	}
+
+	@Override
+	public EventBusStats getStats()
+	{
+		return stats.snapshot();
 	}
 }

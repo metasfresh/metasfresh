@@ -1,18 +1,5 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import java.util.Optional;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import de.metas.Profiles;
 import de.metas.invoice.InvoiceId;
 import de.metas.rest_api.invoice.impl.InvoiceService;
@@ -25,11 +12,24 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -168,6 +168,17 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			return ResponseEntity.notFound().build();
 		}
 
-		return invoiceService.reverseInvoice(invoiceId);
+		try
+		{
+			final Optional<JsonReverseInvoiceResponse> response = invoiceService.reverseInvoice(invoiceId);
+
+			return response.isPresent()
+					? ResponseEntity.ok(response.get())
+					: ResponseEntity.notFound().build();
+		}
+		catch (final Exception e)
+		{
+			return ResponseEntity.unprocessableEntity().body(e.getLocalizedMessage());
+		}
 	}
 }

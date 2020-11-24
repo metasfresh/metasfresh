@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.document.archive.api.ArchiveFileNameService;
+import de.metas.printing.HardwarePrinterRepository;
+import de.metas.printing.PrintOutputFacade;
+import de.metas.printing.printingdata.PrintingDataFactory;
+import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,10 +72,7 @@ public class OrderCheckupTestHelper
 {
 	private Properties ctx;
 
-	public OrderCheckupTestHelper()
-	{
-		super();
-	}
+	private PrintOutputFacade printOutputFacade;
 
 	public void init()
 	{
@@ -78,6 +80,10 @@ public class OrderCheckupTestHelper
 		ctx = Env.getCtx();
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
+
+		printOutputFacade = new PrintOutputFacade(
+				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
+				new PrintingDataToPDFFileStorer());
 	}
 
 	public Masterdata createMasterdata()
@@ -240,7 +246,7 @@ public class OrderCheckupTestHelper
 		InterfaceWrapperHelper.save(archive);
 
 		// Enqueue to printing
-		new AD_Archive().printArchive(archive);
+		new AD_Archive(printOutputFacade).printArchive(archive);
 
 		// Get the printing queue item and the recipient(s)
 		final I_C_Printing_Queue printingItem = Services.get(IQueryBL.class)

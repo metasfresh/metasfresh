@@ -26,6 +26,7 @@ package de.metas.printing.api.impl;
 import java.util.Iterator;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.IQuery;
 import org.compiere.model.Query;
@@ -43,12 +44,11 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 	private final IPrintingQueueQuery printingQueueQuery;
 	private final PrintingQueueProcessingInfo printingQueueProcessingInfo;
 
-	public DefaultPrintingQueueSource(final Properties ctx,
-			final IPrintingQueueQuery printingQueueQuery,
+	public DefaultPrintingQueueSource(
+			@NonNull final Properties ctx,
+			@NonNull final IPrintingQueueQuery printingQueueQuery,
 			final PrintingQueueProcessingInfo printingQueueProcessingInfo)
 	{
-		Check.assumeNotNull(ctx, "ctx is not null");
-		Check.assumeNotNull(printingQueueQuery, "query is not null");
 		this.ctx = ctx;
 		this.printingQueueQuery = printingQueueQuery.copy();
 		this.printingQueueProcessingInfo = printingQueueProcessingInfo;
@@ -64,7 +64,6 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 	 * Iterate {@link I_C_Printing_Queue}s which are not processed yet.
 	 *
 	 * IMPORTANT: items are returned in FIFO order (ordered by {@link I_C_Printing_Queue#COLUMNNAME_C_Printing_Queue_ID})
-	 *
 	 */
 	@Override
 	public Iterator<I_C_Printing_Queue> createItemsIterator()
@@ -75,17 +74,15 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 	/**
 	 * Similar to {@link #createItemsIterator()}, but retrieves an iterator about all items have the same
 	 * <ul>
-	 * <li><code>AD_CLient_ID</code>
+	 * <li><code>AD_Client_ID</code>
 	 * <li><code>AD_Org_ID</code>
 	 * <li><code>Copies</code>
 	 * </ul>
 	 * as the given item, but excluding the given item itself.
 	 */
 	@Override
-	public Iterator<I_C_Printing_Queue> createRelatedItemsIterator(final I_C_Printing_Queue item)
+	public Iterator<I_C_Printing_Queue> createRelatedItemsIterator(@NonNull final I_C_Printing_Queue item)
 	{
-		Check.assumeNotNull(item, "item is not null");
-
 		final IPrintingQueueQuery queryRelated = printingQueueQuery.copy();
 		queryRelated.setAD_Client_ID(item.getAD_Client_ID());
 		queryRelated.setAD_Org_ID(item.getAD_Org_ID());
@@ -103,15 +100,9 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 
 		// IMPORTANT: we need to query only one item at time (BufferSize=1) because else
 		// it could happen that we re-process again an item which was already processed but it was cached in the buffer.
-		query.setOption(Query.OPTION_IteratorBufferSize, 1);
+		query.setOption(IQuery.OPTION_IteratorBufferSize, 1);
 		final Iterator<I_C_Printing_Queue> it = query.iterate(I_C_Printing_Queue.class);
 		return it;
-	}
-
-	@Override
-	public int countItems()
-	{
-		return Services.get(IPrintingDAO.class).countItems(ctx, printingQueueQuery, ITrx.TRXNAME_None);
 	}
 
 	@Override

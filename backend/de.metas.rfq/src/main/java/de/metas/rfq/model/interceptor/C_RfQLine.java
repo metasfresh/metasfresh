@@ -1,7 +1,9 @@
 package de.metas.rfq.model.interceptor;
 
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
@@ -34,6 +36,12 @@ import de.metas.rfq.util.RfQWorkDatesUtil;
 @Interceptor(I_C_RfQLine.class)
 public class C_RfQLine
 {
+	@Init
+	void configureCopyWithDetailsSupport()
+	{
+		CopyRecordFactory.enableForTableName(I_C_RfQLine.Table_Name);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_C_RfQLine rfqLine)
 	{

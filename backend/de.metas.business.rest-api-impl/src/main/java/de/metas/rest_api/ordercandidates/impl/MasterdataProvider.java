@@ -3,12 +3,15 @@ package de.metas.rest_api.ordercandidates.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.SyncAdvise;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -35,13 +38,17 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.organization.OrgQuery;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery.PaymentTermQueryBuilder;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.common.SyncAdvise;
+
 import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.rest_api.exception.MissingPropertyException;
 import de.metas.rest_api.exception.MissingResourceException;
@@ -90,6 +97,8 @@ final class MasterdataProvider
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+
+	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
 	private final PermissionService permissionService;
 	private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
@@ -218,7 +227,7 @@ final class MasterdataProvider
 		orgRecord.setName(json.getName());
 	}
 
-	public JsonOrganization getJsonOrganizationById(final int orgId)
+	public JsonOrganization getJsonOrganizationById(final OrgId orgId)
 	{
 		final I_AD_Org orgRecord = orgDAO.getById(orgId);
 		if (orgRecord == null)
@@ -230,6 +239,11 @@ final class MasterdataProvider
 				.code(orgRecord.getValue())
 				.name(orgRecord.getName())
 				.build();
+	}
+
+	public ZoneId getOrgTimeZone(final OrgId orgId)
+	{
+		return orgDAO.getTimeZone(orgId);
 	}
 
 	public BPartnerInfo getCreateBPartnerInfoInTrx(
@@ -400,5 +414,45 @@ final class MasterdataProvider
 				.resourceIdentifier(jsonPaymentRule.getCode())
 				.parentResource(request)
 				.build();
+	}
+
+	public PaymentTermId getPaymentTermId(@NonNull final JsonOLCandCreateRequest request, @NonNull final OrgId orgId)
+	{
+
+		final String paymentTermCode = request.getPaymentTerm();
+
+		if (Check.isEmpty(paymentTermCode))
+		{
+			return null;
+		}
+
+		final IdentifierString paymentTerm = IdentifierString.of(paymentTermCode);
+
+		final PaymentTermQueryBuilder queryBuilder = PaymentTermQuery.builder();
+
+		queryBuilder.orgId(orgId);
+
+		switch (paymentTerm.getType())
+		{
+
+			case EXTERNAL_ID:
+				queryBuilder.externalId(paymentTerm.asExternalId());
+				break;
+
+			case VALUE:
+				queryBuilder.value(paymentTerm.asValue());
+				break;
+
+			default:
+				throw new InvalidIdentifierException(paymentTerm);
+		}
+
+		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.retrievePaymentTermId(queryBuilder.build());
+
+		return paymentTermId.orElseThrow(() -> MissingResourceException.builder()
+				.resourceName("PaymentTerm")
+				.resourceIdentifier(paymentTermCode)
+				.parentResource(request).build());
+
 	}
 }

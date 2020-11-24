@@ -82,7 +82,10 @@ public class DocumentWebsocketPublisher
 				collector = trx.getPropertyAndProcessAfterCommit(
 						JSONDocumentChangedWebSocketEventCollector.class.getName(),
 						() -> JSONDocumentChangedWebSocketEventCollector.newInstance(),
-						c -> sendAllAndClear(c, websocketSender));
+						c -> {
+							sendAllAndClear(c, websocketSender);
+							c.markAsClosed();
+						});
 				autoflush = false;
 			}
 			else
@@ -185,6 +188,7 @@ public class DocumentWebsocketPublisher
 			{
 				THREAD_LOCAL_COLLECTOR.set(null);
 				sendAllAndClear(collector, websocketSender);
+				collector.markAsClosed();
 			}
 		};
 	}

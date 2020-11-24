@@ -19,7 +19,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.apache.commons.collections4.map.LRUMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
@@ -234,7 +235,8 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 		_countItems++;
 	}
 
-	public final MapReduceAggregator<GroupType, ItemType> addAll(final Iterator<ItemType> items)
+	@VisibleForTesting
+	public MapReduceAggregator<GroupType, ItemType> addAll(final Iterator<ItemType> items)
 	{
 		Check.assumeNotNull(items, "items not null");
 		while (items.hasNext())

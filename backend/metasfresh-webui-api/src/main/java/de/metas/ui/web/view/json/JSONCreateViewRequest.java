@@ -1,6 +1,7 @@
 package de.metas.ui.web.view.json;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -13,11 +14,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 
 /*
@@ -83,8 +86,7 @@ public final class JSONCreateViewRequest
 			@JsonProperty("filters") final List<JSONDocumentFilter> filters,
 			@JsonProperty("filterOnlyIds") final List<Integer> filterOnlyIds,
 			@JsonProperty("queryFirstRow") final int queryFirstRow,
-			@JsonProperty("queryPageLength") final int queryPageLength
-	)
+			@JsonProperty("queryPageLength") final int queryPageLength)
 	{
 		this.windowId = windowId;
 		this.viewType = viewType;
@@ -132,10 +134,20 @@ public final class JSONCreateViewRequest
 		}
 	}
 
+	public Optional<DocumentReferenceId> getDocumentReferenceId()
+	{
+		return referencing != null && !Check.isBlank(referencing.getReferenceId())
+				? Optional.of(DocumentReferenceId.ofString(referencing.getReferenceId()))
+				: Optional.empty();
+	}
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Data
 	public static final class JSONReferencing
 	{
+		@JsonProperty("referenceId")
+		private final String referenceId;
+
 		@JsonProperty("documentType")
 		private final String documentType;
 
@@ -150,12 +162,15 @@ public final class JSONCreateViewRequest
 
 		@JsonCreator
 		private JSONReferencing(
+				@JsonProperty("referenceId") final String referenceId,
 				@JsonProperty("documentType") final String documentType,
 				@JsonProperty("documentIds") final Set<String> documentIds,
 				@JsonProperty("documentId") @Deprecated final String documentId, // but still used!
 				@JsonProperty("tabId") final String tabId,
 				@JsonProperty("rowIds") final Set<String> rowIds)
 		{
+			this.referenceId = referenceId;
+
 			Preconditions.checkNotNull(documentType, "documentType is missing");
 			this.documentType = documentType;
 

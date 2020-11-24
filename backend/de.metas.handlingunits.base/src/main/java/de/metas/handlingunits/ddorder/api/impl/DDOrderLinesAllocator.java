@@ -1,27 +1,5 @@
 package de.metas.handlingunits.ddorder.api.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +23,28 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.slf4j.Logger;
 
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContextFactory;
@@ -53,6 +53,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -82,12 +83,14 @@ public class DDOrderLinesAllocator
 	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	// Parameters
 	private final Date movementDate = SystemTime.asDayTimestamp();
 	private int locatorToIdOverride = -1;
 	private boolean failIfCannotAllocate = false; // default=false for backward compatibility
 	private boolean doDirectMovements = false;
+	private boolean skipCompletingDDOrder = false;
 
 	// State
 	private ImmutableList<DDOrderLineToAllocate> _ddOrderLinesToAllocate;
@@ -95,6 +98,8 @@ public class DDOrderLinesAllocator
 	private final Map<Integer, IDDOrderMovementBuilder> ddOrderId2ReceiptMovementBuilder = new HashMap<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedShipment = new HashSet<>();
 	private final Set<Integer> huIdsWithPackingMaterialsTransferedReceipt = new HashSet<>();
+	
+	private static final AdMessageKey MSG_DD_Order_NoLine_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.DDOrderLinesAllocator.DD_Order_NoLine_for_product");
 
 	private DDOrderLinesAllocator()
 	{
@@ -184,6 +189,12 @@ public class DDOrderLinesAllocator
 		return this;
 	}
 
+	public DDOrderLinesAllocator setSkipCompletingDDOrder(final boolean skipCompletingDDOrder)
+	{
+		this.skipCompletingDDOrder = skipCompletingDDOrder;
+		return this;
+	}
+
 	/**
 	 * Process allocations and create material movement documents
 	 */
@@ -192,7 +203,7 @@ public class DDOrderLinesAllocator
 		Services.get(ITrxManager.class).runInNewTrx(localTrx -> process());
 	}
 
-	private void process()
+	public void process()
 	{
 		// Clean previous state
 		ddOrderId2ShipmentMovementBuilder.clear();
@@ -245,7 +256,10 @@ public class DDOrderLinesAllocator
 
 		//
 		// Make sure DD Order is completed
-		ddOrderBL.completeDDOrderIfNeeded(ddOrderLine);
+		if (!skipCompletingDDOrder)
+		{
+			ddOrderBL.completeDDOrderIfNeeded(ddOrderLine);
+		}
 
 		//
 		// Make sure given HUs are no longer assigned to this DD Order Line
@@ -341,14 +355,13 @@ public class DDOrderLinesAllocator
 		final ImmutableList<DDOrderLineToAllocate> ddOrderLinesToAllocate = getDDOrderLinesForProduct(productId);
 
 		// No DD Order Lines were found for our Product
-		// Shall not happen, but ignore it for now.
+		// Shall not happen
 		if (ddOrderLinesToAllocate.isEmpty())
 		{
-			new HUException("No DD Order Lines where found for our product"
-					+ "\n @M_Product_ID@: " + Services.get(IProductBL.class).getProductValueAndName(huProductStorage.getProductId())
-					+ "\n HUProductStorage: " + huProductStorage)
-							.throwOrLogWarning(failIfCannotAllocate, logger);
-			return this;
+			throw new HUException(MSG_DD_Order_NoLine_for_product)
+					.appendParametersToMessage()
+					.setParameter("Product", productBL.getProductValueAndName(huProductStorage.getProductId()))
+					.setParameter("HUProductStorage", huProductStorage);
 		}
 
 		final I_M_HU hu = huProductStorage.getM_HU();

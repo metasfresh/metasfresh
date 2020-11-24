@@ -30,7 +30,7 @@ package de.metas.printing.model;
  * @author cg
  *
  */
-public interface I_AD_PrinterRouting extends org.adempiere.model.I_AD_PrinterRouting
+public interface I_AD_PrinterRouting extends de.metas.adempiere.model.I_AD_PrinterRouting
 {
 	public void setAD_Printer(I_AD_Printer printer);
 

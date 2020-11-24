@@ -77,7 +77,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /**

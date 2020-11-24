@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SpringBootAdmin" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="metasfresh-admin" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.admin.SpringBootAdminApplication" />
+    <option name="VM_PARAMETERS" value="-Xmx60M" />
+    <option name="WORKING_DIRECTORY" value="file://$ProjectFileDir$/metasfresh/misc/services/admin" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+  </configuration>
+</component>

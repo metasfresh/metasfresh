@@ -3,6 +3,8 @@ package de.metas.handlingunits.hutransaction.impl;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -20,6 +22,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -80,7 +83,8 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 				request.getDate());
 	}
 
-	public HUTransactionCandidate(final Object model,
+	public HUTransactionCandidate(
+			final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
 			final ProductId productId,
@@ -97,14 +101,16 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 				null); // huStatus, will be handled
 	}
 
-	public HUTransactionCandidate(final Object model,
+	@Builder
+	public HUTransactionCandidate(
+			final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity,
 			@NonNull final ZonedDateTime date,
-			final LocatorId locatorId,
-			final String huStatus)
+			@Nullable final LocatorId locatorId,
+			@Nullable final String huStatus)
 	{
 		id = UUID.randomUUID().toString();
 

@@ -49,19 +49,18 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 	/**
 	 * An collector object which is passed to all building methods.
 	 *
-	 * It's aim is to collect {@link IHUDocument}s, {@link IHUCapacityDefinition} etc.
+	 * It's aim is to collect {@link IHUDocument}s etc.
 	 *
 	 * @author tsa
 	 *
 	 */
 	protected class HUDocumentsCollector
 	{
-		private final List<IHUDocument> documents = new ArrayList<IHUDocument>();
+		private final List<IHUDocument> documents = new ArrayList<>();
 		private final List<Capacity> targetCapacities = new ArrayList<>();
 
 		public HUDocumentsCollector()
 		{
-			super();
 		}
 
 		public List<IHUDocument> getHUDocuments()
@@ -172,7 +171,7 @@ public abstract class AbstractHUDocumentFactory<T> implements IHUDocumentFactory
 		Check.assume(recordId > 0, "No Record_ID found in {}", pi);
 
 		final T model = InterfaceWrapperHelper.create(ctx, recordId, modelClass, ITrx.TRXNAME_None);
-		return new SingletonIterator<T>(model);
+		return new SingletonIterator<>(model);
 	}
 
 	@Override

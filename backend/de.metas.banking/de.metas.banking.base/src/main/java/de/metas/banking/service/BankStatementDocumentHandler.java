@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,24 +18,27 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.IFactAcctDAO;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
-import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -62,12 +64,14 @@ import de.metas.util.StringUtils;
 
 public class BankStatementDocumentHandler implements DocumentHandler
 {
-	private final IBankStatementPaymentBL bankStatmentPaymentBL = Services.get(IBankStatementPaymentBL.class);
-	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private static final AdMessageKey MSG_VOIDED = AdMessageKey.of("Voided");
+
+	private final BankStatementDocumentHandlerRequiredServicesFacade services;
+
+	public BankStatementDocumentHandler(@NonNull final BankStatementDocumentHandlerRequiredServicesFacade services)
+	{
+		this.services = services;
+	}
 
 	private static I_C_BankStatement extractBankStatement(final DocumentTableFields docFields)
 	{
@@ -104,7 +108,9 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		final StringBuilder documentInfo = new StringBuilder();
 
-		final String bankAccountName = bankStatement.getC_BP_BankAccount().getA_Name();
+		final BankAccountId bpBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
+		final BankAccount bankAccount = services.getBankAccountById(bpBankAccountId);
+		final String bankAccountName = bankAccount.getAccountName();
 		if (Check.isNotBlank(bankAccountName))
 		{
 			documentInfo.append(bankAccountName.trim());
@@ -168,7 +174,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-		final List<I_C_BankStatementLine> lines = bankStatementBL.getLinesByBankStatementId(bankStatementId);
+		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 		if (lines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
@@ -193,7 +199,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 			{
 				// Payment in C_BankStatementLine_Ref are mandatory
 				final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
-				for (final BankStatementLineReference refLine : bankStatementDAO.getLineReferences(bankStatementLineId))
+				for (final BankStatementLineReference refLine : services.getBankStatementLineReferences(bankStatementLineId))
 				{
 					if (refLine.getPaymentId() == null)
 					{
@@ -228,7 +234,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		//
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-		final List<I_C_BankStatementLine> lines = bankStatementBL.getLinesByBankStatementId(bankStatementId);
+		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
+		final HashSet<PaymentId> consideredPaymentIds = new HashSet<>();
 		for (final I_C_BankStatementLine line : lines)
 		{
 			//
@@ -238,7 +245,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
 				if (linkedBankStatementLineId != null)
 				{
-					final I_C_BankStatementLine lineFrom = bankStatementBL.getLineById(linkedBankStatementLineId);
+					final I_C_BankStatementLine lineFrom = services.getBankStatementLineById(linkedBankStatementLineId);
 					if (lineFrom.getLink_BankStatementLine_ID() > 0
 							&& lineFrom.getLink_BankStatementLine_ID() != line.getC_BankStatementLine_ID())
 					{
@@ -253,49 +260,85 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 					lineFrom.setC_BP_BankAccountTo_ID(bankStatement.getC_BP_BankAccount_ID());
 					lineFrom.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
-					bankStatementDAO.save(lineFrom);
+					services.save(lineFrom);
 				}
 			}
 
-			bankStatmentPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line);
+			services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, consideredPaymentIds);
+
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			if (paymentId != null)
+			{
+				consideredPaymentIds.add(paymentId);
+			}
 		}
 
 		//
 		// Reconcile payments
-		paymentBL.markReconciled(getAllPaymentIds(lines));
+		services.markReconciled(extractPaymentReconcileRequests(lines));
 
 		//
 		bankStatement.setProcessed(true);
+		services.markBankStatementLinesAsProcessed(bankStatementId);
+
 		bankStatement.setDocAction(IDocument.ACTION_Close);
 		return IDocument.STATUS_Completed;
 	}
 
-	private Set<PaymentId> getAllPaymentIds(final List<I_C_BankStatementLine> lines)
+	private List<PaymentReconcileRequest> extractPaymentReconcileRequests(final List<I_C_BankStatementLine> lines)
 	{
+		final ArrayList<PaymentReconcileRequest> requests = new ArrayList<>();
 		final ArrayList<BankStatementLineId> bankStatementLineIds = new ArrayList<>();
-		final HashSet<PaymentId> paymentIds = new HashSet<>();
 
+		//
+		// Extract payment reconcile requests from bank statement lines
 		for (final I_C_BankStatementLine line : lines)
 		{
 			final BankStatementLineId bankStatementLineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
 			bankStatementLineIds.add(bankStatementLineId);
 
-			//
-			// Collect payment from line
-			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-			if (paymentId != null)
+			final PaymentReconcileRequest request = extractPaymentReconcileRequestOrNull(line);
+			if (request != null)
 			{
-				paymentIds.add(paymentId);
+				requests.add(request);
 			}
 		}
 
 		//
-		// Collect payments from bank statement line references
-		paymentIds.addAll(bankStatementDAO
-				.getLineReferences(bankStatementLineIds)
-				.getPaymentIds());
+		// Extract payment reconcile requests from bank statement line references
+		final List<PaymentReconcileRequest> lineRefRequests = services
+				.getBankStatementLineReferences(bankStatementLineIds)
+				.stream()
+				.map(lineRef -> extractPaymentReconcileRequest(lineRef))
+				.collect(ImmutableList.toImmutableList());
 
-		return paymentIds;
+		requests.addAll(lineRefRequests);
+
+		return requests;
+	}
+
+	private static PaymentReconcileRequest extractPaymentReconcileRequestOrNull(final I_C_BankStatementLine line)
+	{
+		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		if (paymentId != null)
+		{
+			final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLine(
+					BankStatementId.ofRepoId(line.getC_BankStatement_ID()),
+					BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID()));
+
+			return PaymentReconcileRequest.of(paymentId, reconcileRef);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private static PaymentReconcileRequest extractPaymentReconcileRequest(@NonNull final BankStatementLineReference lineRef)
+	{
+		final PaymentId paymentId = lineRef.getPaymentId();
+		final PaymentReconcileReference reconcileRef = PaymentReconcileReference.bankStatementLineRef(lineRef.getId());
+		return PaymentReconcileRequest.of(paymentId, reconcileRef);
 	}
 
 	@Override
@@ -322,13 +365,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		else
 		{
 			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
-			factAcctDAO.deleteForDocumentModel(bankStatement);
+			services.deleteFactsForBankStatement(bankStatement);
 		}
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-		final List<I_C_BankStatementLine> lines = bankStatementBL.getLinesByBankStatementId(bankStatementId);
+		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 
-		bankStatementBL.unlinkPaymentsAndDeleteReferences(lines);
+		services.unlinkPaymentsAndDeleteReferences(lines);
 
 		//
 		// Set lines to 0
@@ -341,6 +384,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				//
 				line.setStmtAmt(BigDecimal.ZERO);
 				line.setTrxAmt(BigDecimal.ZERO);
+				line.setBankFeeAmt(BigDecimal.ZERO);
 				line.setChargeAmt(BigDecimal.ZERO);
 				line.setInterestAmt(BigDecimal.ZERO);
 
@@ -349,19 +393,19 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				final BankStatementLineId linkedBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(line.getLink_BankStatementLine_ID());
 				if (linkedBankStatementLineId != null)
 				{
-					final I_C_BankStatementLine lineFrom = bankStatementBL.getLineById(linkedBankStatementLineId);
+					final I_C_BankStatementLine lineFrom = services.getBankStatementLineById(linkedBankStatementLineId);
 					if (lineFrom.getLink_BankStatementLine_ID() == line.getC_BankStatementLine_ID())
 					{
 						lineFrom.setLink_BankStatementLine_ID(-1);
-						bankStatementDAO.save(lineFrom);
+						services.save(lineFrom);
 					}
 				}
 
-				bankStatementDAO.save(line);
+				services.save(line);
 			}
 		}
 
-		addDescription(bankStatement, msgBL.getMsg(Env.getCtx(), "Voided"));
+		addDescription(bankStatement, services.getMsg(MSG_VOIDED));
 		bankStatement.setStatementDifference(BigDecimal.ZERO);
 
 		bankStatement.setProcessed(true);
@@ -371,19 +415,23 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	private String buildVoidDescription(final I_C_BankStatementLine line)
 	{
 		final Properties ctx = Env.getCtx();
-		String description = msgBL.getMsg(ctx, "Voided") + " ("
-				+ msgBL.translate(ctx, "StmtAmt") + "=" + line.getStmtAmt();
+		String description = services.getMsg(ctx, MSG_VOIDED) + " ("
+				+ services.translate(ctx, "StmtAmt") + "=" + line.getStmtAmt();
 		if (line.getTrxAmt().signum() != 0)
 		{
-			description += ", " + msgBL.translate(ctx, "TrxAmt") + "=" + line.getTrxAmt();
+			description += ", " + services.translate(ctx, "TrxAmt") + "=" + line.getTrxAmt();
+		}
+		if (line.getBankFeeAmt().signum() != 0)
+		{
+			description += ", " + services.translate(ctx, "BankFeeAmt") + "=" + line.getBankFeeAmt();
 		}
 		if (line.getChargeAmt().signum() != 0)
 		{
-			description += ", " + msgBL.translate(ctx, "ChargeAmt") + "=" + line.getChargeAmt();
+			description += ", " + services.translate(ctx, "ChargeAmt") + "=" + line.getChargeAmt();
 		}
 		if (line.getInterestAmt().signum() != 0)
 		{
-			description += ", " + msgBL.translate(ctx, "InterestAmt") + "=" + line.getInterestAmt();
+			description += ", " + services.translate(ctx, "InterestAmt") + "=" + line.getInterestAmt();
 		}
 		description += ")";
 		return description;

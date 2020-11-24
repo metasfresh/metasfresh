@@ -34,6 +34,7 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -243,7 +244,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
+	public SqlViewRowsWhereClause getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -262,7 +263,9 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public void notifyRecordsChanged(final TableRecordReferenceSet recordRefs)
+	public void notifyRecordsChanged(
+			@NonNull final TableRecordReferenceSet recordRefs,
+			final boolean watchedByFrontend)
 	{
 		// TODO Auto-generated method stub
 

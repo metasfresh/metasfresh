@@ -1,25 +1,15 @@
 package de.metas.migration.cli.rollout_migrate;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.util.Properties;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import de.metas.migration.cli.rollout_migrate.Config;
-import de.metas.migration.cli.rollout_migrate.DBConnectionMaker;
-import de.metas.migration.cli.rollout_migrate.DBVersionGetter;
-import de.metas.migration.cli.rollout_migrate.DirectoryChecker;
-import de.metas.migration.cli.rollout_migrate.MigrationScriptApplier;
-import de.metas.migration.cli.rollout_migrate.PropertiesFileLoader;
-import de.metas.migration.cli.rollout_migrate.RolloutMigrate;
-import de.metas.migration.cli.rollout_migrate.RolloutVersionLoader;
-import de.metas.migration.cli.rollout_migrate.Settings;
-import de.metas.migration.cli.rollout_migrate.SettingsLoader;
-import de.metas.migration.cli.rollout_migrate.VersionChecker;
 import de.metas.migration.cli.rollout_migrate.Config.ConfigBuilder;
 import lombok.NonNull;
-import mockit.Expectations;
-import mockit.Injectable;
 
 /*
  * #%L
@@ -45,35 +35,10 @@ import mockit.Injectable;
 
 public class RolloutMigrateTests
 {
-
-	@Injectable
-	private DirectoryChecker directoryChecker;
-
-	@Injectable
-	private PropertiesFileLoader propertiesFileLoader;
-
-	@Injectable
-	private SettingsLoader settingsLoader;
-
-	@Injectable
-	private RolloutVersionLoader rolloutVersionLoader;
-
-	@Injectable
-	private DBConnectionMaker dbConnectionMaker;
-
-	@Injectable
-	private DBVersionGetter dbVersionGetter;
-
-	@Injectable
-	private VersionChecker versionChecker;
-
-	@Injectable
-	private MigrationScriptApplier migrationScriptApplier;
-
 	private ConfigBuilder configBuilder;
 
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
 		configBuilder = Config.builder()
 				.canRun(true)
@@ -107,13 +72,14 @@ public class RolloutMigrateTests
 	/**
 	 * Run with dbVersion > rolloutVersion; expect an exception.
 	 */
-	@Test(expected = VersionChecker.InconsistentVersionsException.class)
+	@Test
 	public void testRollout0InconsistenVersion()
 	{
 		final String dbVersion = "1.1.1-25+master";
 		final boolean expectApplyMigrationScripts = false;
 
-		performTestWithDefaultconfig(dbVersion, expectApplyMigrationScripts);
+		assertThatThrownBy(() -> performTestWithDefaultconfig(dbVersion, expectApplyMigrationScripts))
+				.isInstanceOf(VersionChecker.InconsistentVersionsException.class);
 	}
 
 	/**
@@ -161,23 +127,29 @@ public class RolloutMigrateTests
 			@NonNull final String dbVersion,
 			final boolean expectApplyMigrationScripts)
 	{
-
 		final Properties properties = new Properties();
 		final String dbName = "dbName";
 		properties.setProperty(Settings.PROP_DB_NAME, dbName);
 		final Settings settings = new Settings(properties);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			settingsLoader.loadSettings(config); result = settings;
-			rolloutVersionLoader.loadRolloutVersionString(config.getRolloutDirName()); result = "1.1.1-24+master";
-			dbVersionGetter.retrieveDBVersion(settings, dbName); result = dbVersion;
-			migrationScriptApplier.applyMigrationScripts(config, settings, dbName); times = (expectApplyMigrationScripts ? 1 : 0);
-		}};
-		// @formatter:on
+		final DirectoryChecker directoryChecker = new DirectoryChecker();
 
-		new RolloutMigrate(
+		final SettingsLoader settingsLoader = Mockito.mock(SettingsLoader.class);
+		Mockito.doReturn(settings).when(settingsLoader).loadSettings(config);
+
+		final RolloutVersionLoader rolloutVersionLoader = Mockito.mock(RolloutVersionLoader.class);
+		Mockito.doReturn("1.1.1-24+master").when(rolloutVersionLoader).loadRolloutVersionString(config.getRolloutDirName());
+
+		final DBVersionGetter dbVersionGetter = Mockito.mock(DBVersionGetter.class);
+		Mockito.doReturn(dbVersion).when(dbVersionGetter).retrieveDBVersion(settings, dbName);
+
+		final MigrationScriptApplier migrationScriptApplier = Mockito.mock(MigrationScriptApplier.class);
+
+		final PropertiesFileLoader propertiesFileLoader = Mockito.mock(PropertiesFileLoader.class);
+
+		final DBConnectionMaker dbConnectionMaker = Mockito.mock(DBConnectionMaker.class);
+
+		final RolloutMigrate rolloutMigrate = new RolloutMigrate(
 				directoryChecker,
 				propertiesFileLoader,
 				settingsLoader,
@@ -185,6 +157,17 @@ public class RolloutMigrateTests
 				dbConnectionMaker,
 				dbVersionGetter,
 				migrationScriptApplier)
-						.run0(config);
+		{
+			protected void updateDbVersion(de.metas.migration.IDatabase db, String versionStr, String additionalMetaDataSuffix)
+			{
+				// do nothing
+			}
+		};
+
+		rolloutMigrate.run0(config);
+
+		Mockito.verify(migrationScriptApplier, Mockito.times(expectApplyMigrationScripts ? 1 : 0))
+				.applyMigrationScripts(config, settings, dbName);
+
 	}
 }

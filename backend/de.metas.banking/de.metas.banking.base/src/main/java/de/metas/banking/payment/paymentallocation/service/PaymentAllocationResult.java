@@ -1,11 +1,13 @@
 package de.metas.banking.payment.paymentallocation.service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.money.Money;
 import de.metas.util.OptionalDeferredException;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,24 +51,27 @@ public class PaymentAllocationResult
 		return fullyAllocatedCheck.isNoError();
 	}
 
-	public BigDecimal getTotalPayAmt()
+	public BigDecimal getTotalDiscountAmtAsBigDecimal()
 	{
-		return candidates.stream()
-				.map(AllocationLineCandidate::getAmount)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		return getTotalDiscountAmt().map(Money::toBigDecimal).orElse(BigDecimal.ZERO);
 	}
 
-	public BigDecimal getTotalDiscountAmt()
+	public Optional<Money> getTotalDiscountAmt()
 	{
 		return candidates.stream()
-				.map(AllocationLineCandidate::getDiscountAmt)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+				.map(line -> line.getAmounts().getDiscountAmt())
+				.reduce(Money::add);
 	}
 
-	public BigDecimal getTotalWriteOffAmt()
+	public BigDecimal getTotalWriteOffAmtAsBigDecimal()
+	{
+		return getTotalWriteOffAmt().map(Money::toBigDecimal).orElse(BigDecimal.ZERO);
+	}
+
+	public Optional<Money> getTotalWriteOffAmt()
 	{
 		return candidates.stream()
-				.map(AllocationLineCandidate::getWriteOffAmt)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+				.map(line -> line.getAmounts().getWriteOffAmt())
+				.reduce(Money::add);
 	}
 }

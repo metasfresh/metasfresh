@@ -1,8 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
-import static org.eevolution.model.I_DD_Order.COLUMNNAME_IsApproved;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -17,7 +15,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1609246920L;
+	private static final long serialVersionUID = -936086873L;
 
     /** Standard Constructor */
     public X_DD_Order (Properties ctx, int DD_Order_ID, String trxName)
@@ -42,7 +40,9 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 			setIsInTransit (false); // N
 			setIsPrinted (false); // N
 			setIsSOTrx (false); // @IsSOTrx@
+			setM_Warehouse_From_ID (0); // 540008
 			setM_Warehouse_ID (0);
+			setM_Warehouse_To_ID (0); // 540005
 			setMRP_AllowCleanup (false); // N
 			setMRP_Generated (false); // N
 			setMRP_ToDelete (false); // N
@@ -627,7 +627,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		return ii.intValue();
 	}
 
-//	/** 
+//	/**
 //	 * DeliveryRule AD_Reference_ID=151
 //	 * Reference name: C_Order DeliveryRule
 //	 */
@@ -988,7 +988,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	}
 
 	/** Set In Dispute.
-		@param IsInDispute 
+		@param IsInDispute
 		Document is in dispute
 	  */
 	@Override
@@ -1183,6 +1183,50 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	public int getM_Warehouse_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+	/** Set Warehouse from.
+	 @param M_Warehouse_From_ID Warehouse from	  */
+	@Override
+	public void setM_Warehouse_From_ID (int M_Warehouse_From_ID)
+	{
+		if (M_Warehouse_From_ID < 1)
+			set_Value (COLUMNNAME_M_Warehouse_From_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Warehouse_From_ID, Integer.valueOf(M_Warehouse_From_ID));
+	}
+
+	/** Get Warehouse from.
+	 @return Warehouse from	  */
+	@Override
+	public int getM_Warehouse_From_ID ()
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_From_ID);
+		if (ii == null)
+			return 0;
+		return ii.intValue();
+	}
+
+
+	/** Set Warehouse to.
+		@param M_Warehouse_To_ID Warehouse to	  */
+	@Override
+	public void setM_Warehouse_To_ID (int M_Warehouse_To_ID)
+	{
+		if (M_Warehouse_To_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_To_ID, Integer.valueOf(M_Warehouse_To_ID));
+	}
+
+	/** Get Warehouse to.
+		@return Warehouse to	  */
+	@Override
+	public int getM_Warehouse_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_To_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1435,7 +1479,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 
 	/** Set Verarbeitet.
 		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1444,7 +1488,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public boolean isProcessed () 

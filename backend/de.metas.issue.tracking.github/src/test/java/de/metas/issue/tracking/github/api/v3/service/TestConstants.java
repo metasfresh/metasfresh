@@ -28,7 +28,7 @@ public interface TestConstants
 	String MOCK_DESCRIPTION = "description";
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";
-	String MOCK_EXTERNAL_ISSUE_NO = "externalIssueNo";
+	Integer MOCK_EXTERNAL_ISSUE_NO = 1;
 	String MOCK_DATE_ISO_8601 = "2020-03-16T14:37:53Z";
 	String MOCK_VALUE = "value";
 }

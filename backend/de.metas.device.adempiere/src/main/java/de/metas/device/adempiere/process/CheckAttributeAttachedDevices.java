@@ -8,6 +8,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.net.IHostIdentifier;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.model.I_M_Attribute;
@@ -16,10 +18,11 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.AttributesDevicesHub;
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
@@ -82,8 +85,8 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		final IHostIdentifier host = getHost();
 		addLog("Using host: " + host);
 
-		final int adClientId = Env.getAD_Client_ID(getCtx());
-		final int adOrgId = Env.getAD_Org_ID(getCtx());
+		final ClientId adClientId = Env.getClientId(getCtx());
+		final OrgId adOrgId = Env.getOrgId(getCtx());
 		addLog("Using AD_Client_ID: " + adClientId);
 		addLog("Using AD_Org_ID: " + adOrgId);
 
@@ -119,16 +122,13 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		}
 	}
 
-	private final Stream<String> streamAllAttributeCodes()
+	private final Stream<AttributeCode> streamAllAttributeCodes()
 	{
 		final IQueryBuilder<I_M_Attribute> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Attribute.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
-				//
-				.orderBy()
-				.addColumn(I_M_Attribute.COLUMN_M_Attribute_ID)
-				.endOrderBy();
+				.orderBy(I_M_Attribute.COLUMN_M_Attribute_ID);
 
 		if (p_M_Attribute_ID > 0)
 		{
@@ -138,7 +138,7 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		return queryBuilder
 				.create()
 				.stream(I_M_Attribute.class)
-				.map(attribute -> attribute.getValue());
+				.map(attribute -> AttributeCode.ofString(attribute.getValue()));
 	}
 
 	private void accessDeviceNTimes(final AttributeDeviceAccessor deviceAccessor, final int times)

@@ -2,6 +2,9 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.adempiere.form.terminal.TerminalException;
@@ -116,7 +119,9 @@ import de.metas.util.Services;
 	protected final String doIt() throws Exception
 	{
 		final I_M_ReceiptSchedule receiptSchedule = getM_ReceiptSchedule();
-		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(this)
+		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()));
+
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContextInitial)
 				.addM_ReceiptSchedule(receiptSchedule)
 				.setUpdateReceiptScheduleDefaultConfiguration(isUpdateReceiptScheduleDefaultConfiguration());
 

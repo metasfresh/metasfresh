@@ -13,19 +13,19 @@ package de.metas.handlingunits.attribute.propagation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collections;
 import java.util.Map;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
@@ -34,6 +34,7 @@ import org.compiere.util.Util;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagator;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import lombok.NonNull;
 
 public final class HUAttributePropagationContext
 		extends DefaultAttributeValueContext
@@ -124,6 +125,12 @@ public final class HUAttributePropagationContext
 	}
 
 	@Override
+	public AttributeCode getAttributeCode()
+	{
+		return AttributeCode.ofString(getAttribute().getValue());
+	}
+
+	@Override
 	public IHUAttributePropagationContext getParent()
 	{
 		return parent;
@@ -156,20 +163,18 @@ public final class HUAttributePropagationContext
 	@Override
 	public boolean isValueUpdatedBefore()
 	{
-		return isValueUpdatedBefore(attribute);
+		return isValueUpdatedBefore(getAttributeCode());
 	}
 
 	@Override
-	public boolean isValueUpdatedBefore(final I_M_Attribute attribute)
+	public boolean isValueUpdatedBefore(final AttributeCode attributeCode)
 	{
-		return getLastPropagatorOrNull(attribute) != null;
+		return getLastPropagatorOrNull(attributeCode) != null;
 	}
 
 	@Override
-	public IHUAttributePropagator getLastPropagatorOrNull(final I_M_Attribute attribute)
+	public IHUAttributePropagator getLastPropagatorOrNull(@NonNull final AttributeCode attributeCode)
 	{
-		final int attributeId = attribute.getM_Attribute_ID();
-
 		// Iterate up chain of parents, starting with the parent context. for each parent context, we check if the attribute was updated in that context
 		// NOTE: we are skipping current node because we want to check if that attribute was updated before
 		for (IHUAttributePropagationContext currentParentContext = parent; currentParentContext != null; currentParentContext = currentParentContext.getParent())
@@ -185,8 +190,8 @@ public final class HUAttributePropagationContext
 				continue;
 			}
 
-			final I_M_Attribute currentAttribute = currentParentContext.getAttribute();
-			if (currentAttribute.getM_Attribute_ID() != attributeId)
+			final AttributeCode currentAttributeCode = currentParentContext.getAttributeCode();
+			if (!AttributeCode.equals(currentAttributeCode, attributeCode))
 			{
 				continue;
 			}

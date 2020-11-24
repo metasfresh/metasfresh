@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -84,12 +86,12 @@ public class WebsocketSender implements InitializingBean
 		convertAndSend(event.getWebsocketEndpoint(), event);
 	}
 
-	public void convertAndSend(final String destination, final Object event)
+	public void convertAndSend(final WebsocketTopicName destination, final Object event)
 	{
 		getQueue().enqueueObject(destination, event);
 	}
 
-	public void sendMessage(final String destination, final Message<?> message)
+	public void sendMessage(final WebsocketTopicName destination, final Message<?> message)
 	{
 		getQueue().enqueueMessage(destination, message);
 	}
@@ -145,7 +147,7 @@ public class WebsocketSender implements InitializingBean
 	@lombok.Builder
 	private static final class WebsocketEvent
 	{
-		private final String destination;
+		private final WebsocketTopicName destination;
 		private final Object payload;
 		private final boolean converted;
 	}
@@ -171,7 +173,7 @@ public class WebsocketSender implements InitializingBean
 			this.autoflush = autoflush;
 		}
 
-		public void enqueueObject(final String destination, final Object payload)
+		public void enqueueObject(final WebsocketTopicName destination, final Object payload)
 		{
 			final boolean converted = false;
 			if (autoflush)
@@ -188,7 +190,7 @@ public class WebsocketSender implements InitializingBean
 			}
 		}
 
-		public void enqueueMessage(final String destination, final Message<?> message)
+		public void enqueueMessage(final WebsocketTopicName destination, final Message<?> message)
 		{
 			final boolean converted = true;
 			if (autoflush)
@@ -223,24 +225,27 @@ public class WebsocketSender implements InitializingBean
 
 		private void sendEvent(final WebsocketEvent event)
 		{
-			final String destination = event.getDestination();
+			final WebsocketTopicName destination = event.getDestination();
 			final Object payload = event.getPayload();
 			final boolean converted = event.isConverted();
 			sendEvent(destination, payload, converted);
 		}
 
-		private void sendEvent(final String destination, final Object payload, final boolean converted)
+		private void sendEvent(
+				@NonNull final WebsocketTopicName destination, 
+				@Nullable final Object payload, 
+				final boolean converted)
 		{
 			logger.debug("[name={}] Sending to destination={}: payload={}", name, destination, payload);
 
 			if (converted)
 			{
 				final Message<?> message = (Message<?>)payload;
-				websocketMessagingTemplate.send(destination, message);
+				websocketMessagingTemplate.send(destination.getAsString(), message);
 			}
 			else
 			{
-				websocketMessagingTemplate.convertAndSend(destination, payload);
+				websocketMessagingTemplate.convertAndSend(destination.getAsString(), payload);
 				eventsLog.logEvent(destination, payload);
 			}
 		}

@@ -13,8 +13,8 @@ import org.compiere.model.I_I_BankStatement;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
-import de.metas.banking.api.BankAccountId;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;

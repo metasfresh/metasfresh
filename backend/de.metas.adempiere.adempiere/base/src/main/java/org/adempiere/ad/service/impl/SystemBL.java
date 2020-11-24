@@ -17,15 +17,14 @@ import java.sql.SQLException;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -50,10 +49,8 @@ import lombok.NonNull;
 public class SystemBL implements ISystemBL
 {
 
-	
 	private static final Logger logger = LogManager.getLogger(SystemBL.class);
 
-	
 	@Override
 	@Cached(cacheName = I_AD_System.Table_Name)
 	public I_AD_System get(@CacheCtx final Properties ctx)
@@ -69,53 +66,53 @@ public class SystemBL implements ISystemBL
 			return null;
 		}
 
-		
-
 		//
 		// If running on server side, update the system info
 		// TODO i think we shall move this logic somewhere else where is obvious what we are doing and not hidden here.
-//		if (Ini.getRunMode() == RunMode.BACKEND)
-//		{
-//			if (setInfo(system))
-//			{
-//				InterfaceWrapperHelper.save(system);
-//			}
-//		}
+		// if (Ini.getRunMode() == RunMode.BACKEND)
+		// {
+		// if (setInfo(system))
+		// {
+		// InterfaceWrapperHelper.save(system);
+		// }
+		// }
 
 		return system;
 	}
-	
+
 	/**
-	 * 	Get Statistics Info
-	 * 	@param recalc recalculate
-	 *	@return statistics
+	 * Get Statistics Info
+	 * 
+	 * @param recalc recalculate
+	 * @return statistics
 	 */
 	@Override
-	public String getStatisticsInfo (boolean recalc)
+	public String getStatisticsInfo(boolean recalc)
 	{
-		String s = get(Env.getCtx()).getStatisticsInfo ();
+		String s = get(Env.getCtx()).getStatisticsInfo();
 		if (s == null || recalc)
 		{
 			String sql = "SELECT 'C'||(SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM AD_Client)"
-				+ "||'U'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM AD_User)"
-				+ "||'B'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM C_BPartner)"
-				+ "||'P'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM M_Product)"
-				+ "||'I'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM C_Invoice)"
-				+ "||'L'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM C_InvoiceLine)"
-				+ "||'M'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM M_Transaction)"
-				+ " FROM AD_System";
+					+ "||'U'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM AD_User)"
+					+ "||'B'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM C_BPartner)"
+					+ "||'P'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM M_Product)"
+					+ "||'I'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM C_Invoice)"
+					+ "||'L'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM C_InvoiceLine)"
+					+ "||'M'|| (SELECT " + DB.TO_CHAR("COUNT(*)", DisplayType.Number, Env.getAD_Language(Env.getCtx())) + " FROM M_Transaction)"
+					+ " FROM AD_System";
 			s = DB.getSQLValueString(null, sql);
 		}
 		return s;
-	}	//	getStatisticsInfo
-	
+	}	// getStatisticsInfo
+
 	/**
-	 * 	Get Profile Info
-	 * 	@param recalc recalculate
-	 *	@return profile
+	 * Get Profile Info
+	 * 
+	 * @param recalc recalculate
+	 * @return profile
 	 */
 	@Override
-	public String getProfileInfo (boolean recalc)
+	public String getProfileInfo(boolean recalc)
 	{
 		String s = get(Env.getCtx()).getProfileInfo();
 		if (s == null || recalc)
@@ -126,9 +123,9 @@ public class SystemBL implements ISystemBL
 			StringBuffer sb = new StringBuffer();
 			try
 			{
-				pstmt = DB.prepareStatement (sql, null);
-				rs = pstmt.executeQuery ();
-				while (rs.next ())
+				pstmt = DB.prepareStatement(sql, null);
+				rs = pstmt.executeQuery();
+				while (rs.next())
 				{
 					sb.append(rs.getString(1)).append('|');
 				}
@@ -140,16 +137,18 @@ public class SystemBL implements ISystemBL
 			finally
 			{
 				DB.close(rs, pstmt);
-				rs = null; pstmt = null;
+				rs = null;
+				pstmt = null;
 			}
 			s = sb.toString();
 		}
 		return s;
 	}
-	
+
 	/**************************************************************************
-	 * 	Set/Derive Info if more then a day old
-	 * 	@return true if set
+	 * Set/Derive Info if more then a day old
+	 * 
+	 * @return true if set
 	 */
 	@Override
 	public boolean setInfo(@NonNull final I_AD_System system)
@@ -174,52 +173,50 @@ public class SystemBL implements ISystemBL
 			logger.error("", e);
 		}
 		return true;
-	}	//	setInfo
-	
+	}	// setInfo
+
 	/**
-	 * 	Set Internal User Count
+	 * Set Internal User Count
 	 */
 	private void setInternalUsers()
 	{
 		final I_AD_System system = get(Env.getCtx());
-		
+
 		final String sql = "SELECT COUNT(DISTINCT (u.AD_User_ID)) AS iu "
-			+ "FROM AD_User u"
-			+ " INNER JOIN AD_User_Roles ur ON (u.AD_User_ID=ur.AD_User_ID) "
-			+ "WHERE u.AD_Client_ID<>11"			//	no Demo
-			+ " AND u.AD_User_ID NOT IN (0,100)";	//	no System/SuperUser
+				+ "FROM AD_User u"
+				+ " INNER JOIN AD_User_Roles ur ON (u.AD_User_ID=ur.AD_User_ID) "
+				+ "WHERE u.AD_Client_ID<>11"			// no Demo
+				+ " AND u.AD_User_ID NOT IN (0,100)";	// no System/SuperUser
 		int internalUsers = DB.getSQLValue(null, sql);
 		system.setSupportUnits(internalUsers);
-	}	//	setInternalUsers
-
-
+	}	// setInternalUsers
 
 	/*
 	 * Allow remember me feature
 	 * ZK_LOGIN_ALLOW_REMEMBER_ME and SWING_ALLOW_REMEMBER_ME parameter allow the next values
-	 *   U - Allow remember the username (default for zk)
-	 *   P - Allow remember the username and password (default for swing)
-	 *   N - None
-	 *   
-	 *	@return boolean representing if remember me feature is allowed
+	 * U - Allow remember the username (default for zk)
+	 * P - Allow remember the username and password (default for swing)
+	 * N - None
+	 * 
+	 * @return boolean representing if remember me feature is allowed
 	 */
 	public static final String SYSTEM_ALLOW_REMEMBER_USER = "U";
 	public static final String SYSTEM_ALLOW_REMEMBER_PASSWORD = "P";
 
 	@Override
-	public boolean isRememberUserAllowed(@NonNull final String sysConfigKey) {
+	public boolean isRememberUserAllowed(@NonNull final String sysConfigKey)
+	{
 		String ca = Services.get(ISysConfigBL.class).getValue(sysConfigKey, SYSTEM_ALLOW_REMEMBER_PASSWORD);
 		return (ca.equalsIgnoreCase(SYSTEM_ALLOW_REMEMBER_USER) || ca.equalsIgnoreCase(SYSTEM_ALLOW_REMEMBER_PASSWORD));
 	}
 
 	@Override
-	public boolean isRememberPasswordAllowed(@NonNull final String sysConfigKey) {
+	public boolean isRememberPasswordAllowed(@NonNull final String sysConfigKey)
+	{
 		String ca = Services.get(ISysConfigBL.class).getValue(sysConfigKey, SYSTEM_ALLOW_REMEMBER_PASSWORD);
 		return (ca.equalsIgnoreCase(SYSTEM_ALLOW_REMEMBER_PASSWORD));
 	}
-	
-	
-	
+
 	@Override
 	public boolean isValid()
 	{
@@ -240,6 +237,12 @@ public class SystemBL implements ISystemBL
 			return false;
 		}
 		return true;
-	}	//	isValid
+	}	// isValid
 
+	@Override
+	public boolean isAutoErrorReport()
+	{
+		final I_AD_System adSystem = get(Env.getCtx());
+		return adSystem != null && adSystem.isAutoErrorReport();
+	}
 }

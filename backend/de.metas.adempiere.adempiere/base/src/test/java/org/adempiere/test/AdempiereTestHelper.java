@@ -1,7 +1,9 @@
 package org.adempiere.test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -25,9 +27,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
+import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
 
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -41,9 +46,11 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.adempiere.util.reflect.TestingClassInstanceProvider;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -63,8 +70,10 @@ import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.IService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.Services.IServiceImplProvider;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
@@ -127,6 +136,14 @@ public class AdempiereTestHelper
 		// Configure services; note the this is not the place to register individual services, see init() for that.
 		Services.setAutodetectServices(true);
 		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
+		{
+			@Override
+			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
+			{
+				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
+			}
+		});
 
 		//
 		// Make sure cache is empty
@@ -156,7 +173,7 @@ public class AdempiereTestHelper
 		POJOLookupMap.resetAll();
 
 		// we also don't want any model interceptors to interfere, unless we explicitly test them up to do so
-		POJOLookupMap.get().clear();
+		Objects.requireNonNull(POJOLookupMap.get()).clear();
 
 		//
 		// POJOWrapper defaults
@@ -168,6 +185,8 @@ public class AdempiereTestHelper
 			// Make sure we don't have custom registered services
 			// Each test shall init it's services if it wants
 			Services.clear();
+
+			SpringContextHolder.instance.clearJUnitRegisteredBeans();
 
 			//
 			// Register our cache interceptor
@@ -272,6 +291,20 @@ public class AdempiereTestHelper
 		InterfaceWrapperHelper.save(clientInfo);
 	}
 
+	public static OrgId createOrgWithTimeZone()
+	{
+		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
+		saveRecord(orgRecord);
+
+		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
+		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		orgInfoRecord.setTimeZone("Europe/Berlin");
+		saveRecord(orgInfoRecord);
+
+		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+	}
+
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
 	 *
@@ -286,7 +319,7 @@ public class AdempiereTestHelper
 			{
 				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
 			}
-			catch (JsonProcessingException e)
+			catch (final JsonProcessingException e)
 			{
 				throw AdempiereException.wrapIfNeeded(e);
 			}

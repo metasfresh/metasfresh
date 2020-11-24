@@ -16,7 +16,7 @@
 
     <properties>
         <migration-sql-basedir></migration-sql-basedir>
-        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+        <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 
     <dependencies>
@@ -35,6 +35,19 @@
         <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.common.shipping</groupId>
+            <artifactId>de-metas-common-shipping</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <!-- needed for shipment schedules -->
+        <dependency>
+            <groupId>de.metas.swat</groupId>
+            <artifactId>de.metas.swat.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 
@@ -96,6 +109,12 @@
             <artifactId>de.metas.banking.base</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

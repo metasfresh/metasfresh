@@ -89,7 +89,7 @@ public interface IOLCandBL extends ISingletonService
 
 	PaymentRule getPaymentRule(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
 
-	PaymentTermId getPaymentTermId(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults);
+	PaymentTermId getPaymentTermId(BPartnerOrderParams params, OLCandOrderDefaults orderDefaults, I_C_OLCand olCandRecord);
 
 	/**
 	 * Return the pricing system to use for the given {@code olCand}.

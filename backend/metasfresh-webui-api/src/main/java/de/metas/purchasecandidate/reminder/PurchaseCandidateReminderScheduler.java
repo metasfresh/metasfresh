@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
@@ -26,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;

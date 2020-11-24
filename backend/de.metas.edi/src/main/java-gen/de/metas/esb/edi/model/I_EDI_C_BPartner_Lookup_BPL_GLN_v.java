@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_C_BPartner_Lookup_BPL_GLN_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v 
@@ -14,17 +14,9 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
     /** AD_Table_ID=540552 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -33,8 +25,7 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -69,8 +60,8 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
     public static final String COLUMNNAME_GLN = "GLN";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -79,8 +70,8 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false

@@ -1,13 +1,11 @@
 package de.metas.currency;
 
-import java.util.Arrays;
-
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -43,16 +41,13 @@ public final class CurrencyCode
 	@JsonCreator
 	public static CurrencyCode ofThreeLetterCode(@NonNull final String threeLetterCode)
 	{
-		final CurrencyCode cachedCurrencyCode = cache.get(threeLetterCode);
-		return cachedCurrencyCode != null ? cachedCurrencyCode : new CurrencyCode(threeLetterCode);
+		return interner.intern(new CurrencyCode(threeLetterCode));
 	}
 
-	public static final CurrencyCode EUR = new CurrencyCode("EUR");
-	public static final CurrencyCode USD = new CurrencyCode("USD");
-	public static final CurrencyCode CHF = new CurrencyCode("CHF");
-	private static final ImmutableMap<String, CurrencyCode> cache = Maps.uniqueIndex(
-			Arrays.asList(EUR, USD, CHF),
-			CurrencyCode::toThreeLetterCode);
+	private static final Interner<CurrencyCode> interner = Interners.newStrongInterner();
+	public static final CurrencyCode EUR = interner.intern(new CurrencyCode("EUR"));
+	public static final CurrencyCode USD = interner.intern(new CurrencyCode("USD"));
+	public static final CurrencyCode CHF = interner.intern(new CurrencyCode("CHF"));
 
 	private final String threeLetterCode;
 

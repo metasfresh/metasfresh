@@ -117,27 +117,27 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 					.endExpectation()
 				//
 				// LU-TU line
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit)
 					.huPIItem(piLU_Item)
 					//
 					// TU 1
-					.newIncludedHUExpectation()
+					.includedHU()
 						.capture(tu1)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
 						.huPI(piTU)
 						//
 						// TU-VHU line
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 							.huPIItem(piTU_Item)
 							//
 							// VHU 1
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.capture(vhu1)
 								.huStatus(X_M_HU.HUSTATUS_Picked)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(product).uom(productUOM).qty("10")
 										.endExpectation()
 									.endExpectation()
@@ -163,27 +163,27 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 					.endExpectation()
 				//
 				// LU-TU line
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit)
 					.huPIItem(piLU_Item)
 					//
 					// TU 2
-					.newIncludedHUExpectation()
+					.includedHU()
 						.capture(tu2)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
 						.huPI(piTU)
 						//
 						// TU-VHU line
-						.newHUItemExpectation()
+						.item()
 							.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 							.huPIItem(piTU_Item)
 							//
 							// VHU 2
-							.newIncludedVirtualHU()
+							.includedVirtualHU()
 								.capture(vhu2)
 								.huStatus(X_M_HU.HUSTATUS_Picked)
-								.newVirtualHUItemExpectation()
-									.newItemStorageExpectation()
+								.virtualPIItem()
+									.storage()
 										.product(product).uom(productUOM).qty("10")
 										.endExpectation()
 									.endExpectation()

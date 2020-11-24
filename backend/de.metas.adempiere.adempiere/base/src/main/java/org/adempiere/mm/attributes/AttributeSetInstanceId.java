@@ -9,6 +9,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -104,7 +106,7 @@ public class AttributeSetInstanceId implements RepoIdAware
 		return repoId > NONE.repoId;
 	}
 
-	public static boolean isRegular(final AttributeSetInstanceId asiId)
+	public static boolean isRegular(@Nullable final AttributeSetInstanceId asiId)
 	{
 		return asiId != null && asiId.isRegular();
 	}

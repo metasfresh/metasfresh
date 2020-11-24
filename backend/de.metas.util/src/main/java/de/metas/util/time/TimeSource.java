@@ -1,5 +1,7 @@
 package de.metas.util.time;
 
+import java.time.ZoneId;
+
 /*
  * #%L
  * de.metas.util
@@ -26,4 +28,9 @@ package de.metas.util.time;
 public interface TimeSource
 {
 	long millis();
+
+	default ZoneId zoneId()
+	{
+		return ZoneId.systemDefault();
+	}
 }

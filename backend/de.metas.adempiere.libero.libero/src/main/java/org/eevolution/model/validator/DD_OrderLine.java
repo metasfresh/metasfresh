@@ -26,8 +26,10 @@ package org.eevolution.model.validator;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
@@ -46,6 +48,12 @@ import de.metas.util.Services;
 public class DD_OrderLine
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
+
+	@Init
+	public void init()
+	{
+		CopyRecordFactory.enableForTableName(I_DD_OrderLine.Table_Name);
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
 	public void setIsDelivered(final I_DD_OrderLine ddOrderLine)

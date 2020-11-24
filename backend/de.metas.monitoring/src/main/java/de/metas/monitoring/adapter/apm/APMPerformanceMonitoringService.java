@@ -1,10 +1,12 @@
 package de.metas.monitoring.adapter.apm;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.springframework.stereotype.Service;
 
 import co.elastic.apm.api.ElasticApm;
+import co.elastic.apm.api.HeaderInjector;
 import co.elastic.apm.api.Scope;
 import co.elastic.apm.api.Span;
 import co.elastic.apm.api.Transaction;
@@ -37,18 +39,27 @@ import lombok.NonNull;
 @Service
 public class APMPerformanceMonitoringService implements PerformanceMonitoringService
 {
-
 	@Override
 	public <V> V monitorTransaction(
 			@NonNull final Callable<V> callable,
-			@NonNull final TransactionMetadata request)
+			@NonNull final TransactionMetadata metadata)
 	{
-		final Transaction transaction = ElasticApm.startTransaction();
+		final Transaction transaction;
+		final Map<String, String> distrHeaders = metadata.getDistributedTransactionHeaders();
+		if (distrHeaders.isEmpty())
+		{
+			transaction = ElasticApm.startTransaction();
+		}
+		else
+		{
+			transaction = ElasticApm.startTransactionWithRemoteParent(name -> distrHeaders.get(name));
+		}
+
 		try (final Scope scope = transaction.activate())
 		{
-			transaction.setName(request.getName());
-			transaction.setType(request.getType().getCode());
-			request.getLabels().forEach(transaction::addLabel);
+			transaction.setName(metadata.getName());
+			transaction.setType(metadata.getType().getCode());
+			metadata.getLabels().forEach(transaction::addLabel);
 
 			final V result = callable.call();
 			return result;
@@ -67,16 +78,20 @@ public class APMPerformanceMonitoringService implements PerformanceMonitoringSer
 	@Override
 	public <V> V monitorSpan(
 			@NonNull final Callable<V> callable,
-			@NonNull final SpanMetadata request)
+			@NonNull final SpanMetadata metadata)
 	{
 		final Transaction transaction = ElasticApm.currentTransaction();
-		final Span span = transaction.startSpan(request.getType(), request.getSubType(), request.getAction());
+		final Span span = transaction.startSpan(metadata.getType(), metadata.getSubType(), metadata.getAction());
+		if (metadata.getDistributedHeadersInjector() != null)
+		{
+			final HeaderInjector headerInjector = (name, value) -> metadata.getDistributedHeadersInjector().accept(name, value);
+			transaction.injectTraceHeaders(headerInjector);
+		}
+		span.setName(metadata.getName());
+		metadata.getLabels().forEach(span::addLabel);
 
 		try
 		{
-			span.setName(request.getName());
-			request.getLabels().forEach(span::addLabel);
-
 			return callable.call();
 		}
 		catch (final Exception e)

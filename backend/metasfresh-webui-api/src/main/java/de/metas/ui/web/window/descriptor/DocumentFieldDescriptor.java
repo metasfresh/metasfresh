@@ -26,6 +26,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
+import de.metas.ui.web.devices.providers.DeviceDescriptorsProvider;
+import de.metas.ui.web.devices.providers.DeviceDescriptorsProviders;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -141,6 +143,9 @@ public final class DocumentFieldDescriptor
 	// Default filtering options
 	private final DocumentFieldDefaultFilterDescriptor defaultFilterInfo;
 
+	@Getter
+	private final DeviceDescriptorsProvider deviceDescriptorsProvider;
+
 	private DocumentFieldDescriptor(final Builder builder)
 	{
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
@@ -186,6 +191,8 @@ public final class DocumentFieldDescriptor
 		//
 		// Default filtering
 		defaultFilterInfo = builder.defaultFilterInfo;
+
+		deviceDescriptorsProvider = builder.getDeviceDescriptorsProvider();
 	}
 
 	@Override
@@ -439,6 +446,8 @@ public final class DocumentFieldDescriptor
 		//
 		// Default filtering options
 		private DocumentFieldDefaultFilterDescriptor defaultFilterInfo = null;
+
+		private DeviceDescriptorsProvider deviceDescriptorsProvider = DeviceDescriptorsProviders.empty();
 
 		private Builder(final String fieldName)
 		{
@@ -1147,6 +1156,17 @@ public final class DocumentFieldDescriptor
 		{
 			// we assume isDefaultOrderBy() was checked before calling this method
 			return getDataBinding().get().isDefaultOrderByAscending();
+		}
+
+		public Builder deviceDescriptorsProvider(@NonNull final DeviceDescriptorsProvider deviceDescriptorsProvider)
+		{
+			this.deviceDescriptorsProvider = deviceDescriptorsProvider;
+			return this;
+		}
+
+		private DeviceDescriptorsProvider getDeviceDescriptorsProvider()
+		{
+			return deviceDescriptorsProvider;
 		}
 	}
 }

@@ -22,27 +22,41 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Objects;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule
 {
+
+	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
+
+	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Init
 	public void init()
@@ -52,7 +66,6 @@ public class M_ReceiptSchedule
 				I_M_ReceiptSchedule.Table_Name,
 				I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Dest_ID,
 				"Registered by " + this.getClass().getName());
-
 	}
 
 	@ModelChange(timings = {
@@ -159,5 +172,39 @@ public class M_ReceiptSchedule
 		final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = receiptScheduleBL.getHeaderAggregationKeyBuilder();
 		final String headerAggregationKey = headerAggregationKeyBuilder.buildKey(sched);
 		sched.setHeaderAggregationKey(headerAggregationKey);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_ReceiptSchedule.COLUMNNAME_IsActive,
+					I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Override_ID,
+					I_M_ReceiptSchedule.COLUMNNAME_DeliveryRule_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_PriorityRule_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_AD_User_Override_ID,
+					I_M_ReceiptSchedule.COLUMNNAME_BPartnerAddress_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_DeliveryViaRule_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_IsBPartnerAddress_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_ExportStatus })
+	public void updateCanBeExportedAfter(@NonNull final I_M_ReceiptSchedule sched)
+	{
+		// we see "not-yet-set" as equivalent to "pending"
+		final APIExportStatus exportStatus = APIExportStatus.ofNullableCode(sched.getExportStatus(), APIExportStatus.Pending);
+		if (!Objects.equals(exportStatus, APIExportStatus.Pending))
+		{
+			sched.setCanBeExportedFrom(Env.MAX_DATE);
+			logger.debug("exportStatus={}; -> set CanBeExportedFrom={}", sched.getExportStatus(), Env.MAX_DATE);
+			return;
+		}
+
+		final int canBeExportedAfterSeconds = sysConfigBL.getIntValue(
+				SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS,
+				sched.getAD_Client_ID(),
+				sched.getAD_Org_ID());
+		if (canBeExportedAfterSeconds >= 0)
+		{
+			final Instant instant = Instant.now().plusSeconds(canBeExportedAfterSeconds);
+			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
+			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
+		}
 	}
 }

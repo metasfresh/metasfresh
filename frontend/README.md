@@ -13,7 +13,7 @@
 
 
 - Create config. In that case run:
-> cp src/config.js.dist src/config.js
+> cp config.js.dist config.js
 
 ### Dev environment
 
@@ -52,7 +52,7 @@ Application comes with a set of tests, both unit as well as functional.
 
 #### Cypress e2e tests
 
-Actual cypress tests reside in the [metasfresh-webui-frontend](https://github.com/metasfresh/metasfresh-webui-frontend) repo.<br>
+Actual cypress tests reside in the [metasfresh](https://github.com/metasfresh/metasfresh) repo. (`e2e`-folder)<br>
 
 ### Contribution
 

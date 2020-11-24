@@ -5,28 +5,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Printer_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_Printer_Config, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1615086715L;
+	private static final long serialVersionUID = -643463172L;
 
     /** Standard Constructor */
     public X_AD_Printer_Config (Properties ctx, int AD_Printer_Config_ID, String trxName)
     {
       super (ctx, AD_Printer_Config_ID, trxName);
-      /** if (AD_Printer_Config_ID == 0)
-        {
-			setAD_Printer_Config_ID (0);
-			setAD_User_PrinterMatchingConfig_ID (0); // @#AD_User_ID/0@
-			setConfigHostKey (null); // @ConfigHostKey@
-			setIsSharedPrinterConfig (false); // N
-        } */
     }
 
     /** Load Constructor */
@@ -36,16 +26,13 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-	/** Set Printer Matching Config.
-		@param AD_Printer_Config_ID Printer Matching Config	  */
 	@Override
 	public void setAD_Printer_Config_ID (int AD_Printer_Config_ID)
 	{
@@ -55,15 +42,10 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 			set_ValueNoCheck (COLUMNNAME_AD_Printer_Config_ID, Integer.valueOf(AD_Printer_Config_ID));
 	}
 
-	/** Get Printer Matching Config.
-		@return Printer Matching Config	  */
 	@Override
-	public int getAD_Printer_Config_ID () 
+	public int getAD_Printer_Config_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Config_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Printer_Config_ID);
 	}
 
 	@Override
@@ -78,8 +60,6 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 		set_ValueFromPO(COLUMNNAME_AD_Printer_Config_Shared_ID, de.metas.printing.model.I_AD_Printer_Config.class, AD_Printer_Config_Shared);
 	}
 
-	/** Set Benutzte Konfiguration.
-		@param AD_Printer_Config_Shared_ID Benutzte Konfiguration	  */
 	@Override
 	public void setAD_Printer_Config_Shared_ID (int AD_Printer_Config_Shared_ID)
 	{
@@ -89,21 +69,12 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 			set_Value (COLUMNNAME_AD_Printer_Config_Shared_ID, Integer.valueOf(AD_Printer_Config_Shared_ID));
 	}
 
-	/** Get Benutzte Konfiguration.
-		@return Benutzte Konfiguration	  */
 	@Override
-	public int getAD_Printer_Config_Shared_ID () 
+	public int getAD_Printer_Config_Shared_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Config_Shared_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Printer_Config_Shared_ID);
 	}
 
-	/** Set Nutzer.
-		@param AD_User_PrinterMatchingConfig_ID 
-		Nutzer, für den die betreffende Zuordnung gilt. Druckanweisugen werden für den betreffenden Nutzer erstellt.
-	  */
 	@Override
 	public void setAD_User_PrinterMatchingConfig_ID (int AD_User_PrinterMatchingConfig_ID)
 	{
@@ -113,54 +84,33 @@ public class X_AD_Printer_Config extends org.compiere.model.PO implements I_AD_P
 			set_Value (COLUMNNAME_AD_User_PrinterMatchingConfig_ID, Integer.valueOf(AD_User_PrinterMatchingConfig_ID));
 	}
 
-	/** Get Nutzer.
-		@return Nutzer, für den die betreffende Zuordnung gilt. Druckanweisugen werden für den betreffenden Nutzer erstellt.
-	  */
 	@Override
-	public int getAD_User_PrinterMatchingConfig_ID () 
+	public int getAD_User_PrinterMatchingConfig_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_PrinterMatchingConfig_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_PrinterMatchingConfig_ID);
 	}
 
-	/** Set Host Key.
-		@param ConfigHostKey Host Key	  */
 	@Override
 	public void setConfigHostKey (java.lang.String ConfigHostKey)
 	{
 		set_Value (COLUMNNAME_ConfigHostKey, ConfigHostKey);
 	}
 
-	/** Get Host Key.
-		@return Host Key	  */
 	@Override
-	public java.lang.String getConfigHostKey () 
+	public java.lang.String getConfigHostKey() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ConfigHostKey);
 	}
 
-	/** Set Geteilt.
-		@param IsSharedPrinterConfig Geteilt	  */
 	@Override
 	public void setIsSharedPrinterConfig (boolean IsSharedPrinterConfig)
 	{
 		set_Value (COLUMNNAME_IsSharedPrinterConfig, Boolean.valueOf(IsSharedPrinterConfig));
 	}
 
-	/** Get Geteilt.
-		@return Geteilt	  */
 	@Override
-	public boolean isSharedPrinterConfig () 
+	public boolean isSharedPrinterConfig() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSharedPrinterConfig);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSharedPrinterConfig);
 	}
 }

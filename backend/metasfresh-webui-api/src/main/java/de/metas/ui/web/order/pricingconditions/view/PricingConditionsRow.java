@@ -1,6 +1,6 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;

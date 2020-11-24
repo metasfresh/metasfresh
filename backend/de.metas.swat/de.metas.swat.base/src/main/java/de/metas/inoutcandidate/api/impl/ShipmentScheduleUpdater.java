@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 /*
@@ -33,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
@@ -44,6 +46,7 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.LocatorId;
@@ -51,6 +54,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -74,7 +78,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
@@ -111,6 +115,7 @@ import lombok.NonNull;
 @Service
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
+
 	@VisibleForTesting
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
 	{
@@ -128,6 +133,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleUpdater.class.getName() + "#ProcessedByBackgroundProcess";
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
+
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -140,7 +146,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 	private final PickingBOMService pickingBOMService;
-
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -250,13 +255,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_Status}
 	 * <li>
-	 * {@link I_M_ShipmentSchedule#COLUMNNAME_PostageFreeAmt}
-	 * <li>
 	 * {@link I_M_ShipmentSchedule#COLUMNNAME_AllowConsolidateInOut}
 	 * <p>
 	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
-	 *
-	 * @param olsAndScheds
 	 */
 	@VisibleForTesting
 	void updateSchedules(final Properties ctx, final List<OlAndSched> olsAndScheds)
@@ -280,7 +281,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				updateWarehouseId(sched);
 
-				shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(sched);
+				shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(sched);
 
 				shipmentScheduleBL.updateHeaderAggregationKey(sched);
 
@@ -379,9 +380,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 			else
 			{
-
 				final boolean isDropShip = bpp.isDropShip();
-
 				if (isDropShip)
 				{
 					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID,
@@ -415,12 +414,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final ZonedDateTime preparationDate = tourAndDate.getRight();
 				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
 				sched.setM_Tour_ID(TourId.toRepoId(tourAndDate.getLeft()));
-
 			}
+
+			shipmentScheduleBL.updateCanBeExportedAfter(sched);
 
 			shipmentSchedulePA.save(sched);
 		}
 	}
+
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(
 			@NonNull final Properties ctx,

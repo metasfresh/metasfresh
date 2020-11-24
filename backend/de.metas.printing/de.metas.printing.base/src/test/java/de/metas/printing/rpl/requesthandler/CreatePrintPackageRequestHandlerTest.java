@@ -48,9 +48,9 @@ public class CreatePrintPackageRequestHandlerTest extends AbstractPrintingTest
 	{
 		this.createPrintPackageRequestHandler = new CreatePrintPackageRequestHandler();
 
-		this.printerRouting = helper.createPrinterRouting("printer01", "tray01", -1, -1, -1);
+		this.printerRouting = helper.createPrinterRouting("printer01", "tray01", 10,-1, -1, -1);
 
-		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW", 10, 20); // 03733
+		helper.createPrinterHWCalibration("printer01-HW", "iso-a4", "tray01-HW", 10, 10, 20); // 03733
 
 	}
 

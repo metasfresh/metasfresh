@@ -2,15 +2,8 @@ package de.metas.adempiere.addon.standard;
 
 import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
 import org.adempiere.inout.replenish.service.ReplenishForFutureQty;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.invoice.service.impl.InvoiceBL;
-import org.adempiere.invoice.service.impl.InvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.misc.service.impl.POService;
-import org.adempiere.processing.service.IProcessingService;
-import org.adempiere.processing.service.impl.ProcessingService;
-
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.adempiere.service.AppDictionaryBL;
 import de.metas.adempiere.service.IAppDictionaryBL;
@@ -24,6 +17,10 @@ import de.metas.adempiere.service.impl.SweepTableBL;
 import de.metas.adempiere.service.impl.TableColumnPathBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.impl.CalendarDAO;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.impl.InvoiceBL;
+import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -56,7 +53,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());
 		Services.registerService(IPOService.class, new POService());
 		Services.registerService(IPriceListDAO.class, new PriceListDAO());
-		Services.registerService(IProcessingService.class, ProcessingService.get());
 
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
 

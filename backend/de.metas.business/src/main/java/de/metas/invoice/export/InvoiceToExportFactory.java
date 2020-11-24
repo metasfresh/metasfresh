@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -36,7 +34,9 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
-import de.metas.invoice.InvoiceUtil;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.ExternalIdsUtil;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
@@ -57,7 +57,7 @@ import de.metas.util.Check;
 import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
 
@@ -135,7 +135,7 @@ public class InvoiceToExportFactory
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
 				.id(id)
-				.docSubType(docBaseAndSubType.getDocSubType())
+				.docSubType(docBaseAndSubType.getDocSubType()) // might be null
 				.alreadyPaidAmount(allocatedMoney)
 				.amount(grandTotal)
 				.biller(createBiller(invoiceRecord))
@@ -187,7 +187,7 @@ public class InvoiceToExportFactory
 					.builder()
 					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyCode.toThreeLetterCode()))
 					.productId(ProductId.ofId(lineRecord.getM_Product_ID()))
-					.externalIds(InvoiceUtil.splitExternalIds(lineRecord.getExternalIds()))
+					.externalIds(ExternalIdsUtil.splitExternalIds(lineRecord.getExternalIds()))
 					.build();
 			invoiceLines.add(invoiceLine);
 		}
@@ -224,7 +224,7 @@ public class InvoiceToExportFactory
 		final AttachmentEntryQuery query = AttachmentEntryQuery
 				.builder()
 				.referencedRecord(invoiceRecord)
-				.tagSetToAnyValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER)
+				.tagSetToAnyValue(InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER)
 				.build();
 		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(query);
 

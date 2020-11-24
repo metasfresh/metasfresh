@@ -24,5 +24,5 @@ package de.metas.ui.web.websocket;
 
 public interface WebsocketEndpointAware
 {
-	String getWebsocketEndpoint();
+	WebsocketTopicName getWebsocketEndpoint();
 }

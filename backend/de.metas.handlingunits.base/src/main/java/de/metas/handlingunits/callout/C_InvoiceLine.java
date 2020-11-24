@@ -31,8 +31,8 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.InvoiceLineHUPackingAware;
 import de.metas.handlingunits.model.I_C_InvoiceLine;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.util.Services;
-import de.metas.invoice.IInvoiceLineBL;
 
 @Callout(I_C_InvoiceLine.class)
 public class C_InvoiceLine

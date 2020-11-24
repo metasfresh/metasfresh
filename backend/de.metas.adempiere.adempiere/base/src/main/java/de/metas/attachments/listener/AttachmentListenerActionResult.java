@@ -24,6 +24,7 @@ package de.metas.attachments.listener;
 
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 @Value
 public class AttachmentListenerActionResult
@@ -33,4 +34,7 @@ public class AttachmentListenerActionResult
 
 	@NonNull
 	AttachmentListenerConstants.ListenerWorkStatus status;
+
+	@NonNull
+	TableRecordReference appliedToRecord;
 }

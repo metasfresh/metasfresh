@@ -2,15 +2,16 @@
 
 exports[`Table row (TableItem) output matches snapshot 1`] = `
 <tr
-  className="row-1 1000003 tr-odd"
+  className="row-1 table-row row-1000003 tr-odd"
   onClick={[Function]}
   onDoubleClick={[Function]}
 >
   <td
-    className="text-center cell-disabled Color pulse-off"
+    className="table-cell text-center cell-disabled td-sm Color pulse-off"
     data-cy="cell-InsufficientQtyAvailableForSalesColor_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -34,10 +35,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-disabled cell-mandatory Integer pulse-off"
+    className="table-cell text-right cell-disabled cell-mandatory td-sm Integer pulse-off"
     data-cy="cell-Line"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -54,10 +56,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left cell-mandatory Lookup pulse-off"
+    className="table-cell text-left cell-mandatory td-lg Lookup pulse-off"
     data-cy="cell-M_Product_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -74,10 +77,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left ProductAttributes pulse-off"
+    className="table-cell text-left td-lg ProductAttributes pulse-off"
     data-cy="cell-M_AttributeSetInstance_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -94,10 +98,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right Quantity pulse-off"
+    className="table-cell text-right td-sm Quantity pulse-off"
     data-cy="cell-QtyEnteredTU"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -114,10 +119,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-disabled Quantity pulse-off"
+    className="table-cell text-right cell-disabled td-sm Quantity pulse-off"
     data-cy="cell-Qty_AvailableToPromise"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -134,10 +140,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left List pulse-off"
+    className="table-cell text-left td-lg List pulse-off"
     data-cy="cell-M_HU_PI_Item_Product_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -154,10 +161,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-mandatory Quantity pulse-off"
+    className="table-cell text-right cell-mandatory td-sm Quantity pulse-off"
     data-cy="cell-QtyEntered"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -174,10 +182,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-disabled Quantity pulse-off"
+    className="table-cell text-right cell-disabled td-sm Quantity pulse-off"
     data-cy="cell-QtyAvailableForSales"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -194,10 +203,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left cell-disabled cell-mandatory List pulse-off"
+    className="table-cell text-left cell-disabled cell-mandatory td-sm List pulse-off"
     data-cy="cell-C_UOM_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -214,10 +224,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-mandatory CostPrice pulse-off"
+    className="table-cell text-right cell-mandatory td-sm CostPrice pulse-off"
     data-cy="cell-PriceEntered"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -234,10 +245,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left cell-disabled List pulse-off"
+    className="table-cell text-left cell-disabled td-sm List pulse-off"
     data-cy="cell-Price_UOM_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -254,10 +266,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left cell-mandatory List pulse-off"
+    className="table-cell text-left cell-mandatory td-lg List pulse-off"
     data-cy="cell-InvoicableQtyBasedOn"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -274,10 +287,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-disabled Quantity pulse-off"
+    className="table-cell text-right cell-disabled td-sm Quantity pulse-off"
     data-cy="cell-QtyEnteredInPriceUOM"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -294,10 +308,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right Number pulse-off"
+    className="table-cell text-right td-sm Number pulse-off"
     data-cy="cell-Discount"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -314,10 +329,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-disabled cell-mandatory CostPrice pulse-off"
+    className="table-cell text-right cell-disabled cell-mandatory td-sm CostPrice pulse-off"
     data-cy="cell-PriceActual"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -334,10 +350,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-disabled cell-mandatory Amount pulse-off"
+    className="table-cell text-right cell-disabled cell-mandatory td-sm Amount pulse-off"
     data-cy="cell-LineNetAmt"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -354,10 +371,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right Amount pulse-off"
+    className="table-cell text-right td-sm Amount pulse-off"
     data-cy="cell-ProfitPriceActual"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -374,10 +392,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right Amount pulse-off"
+    className="table-cell text-right td-sm Amount pulse-off"
     data-cy="cell-ProfitPercent"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -394,10 +413,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right cell-mandatory CostPrice pulse-off"
+    className="table-cell text-right cell-mandatory td-sm CostPrice pulse-off"
     data-cy="cell-PriceList"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -414,10 +434,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left cell-disabled cell-mandatory List pulse-off"
+    className="table-cell text-left cell-disabled cell-mandatory td-lg List pulse-off"
     data-cy="cell-C_Tax_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -434,10 +455,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left LongText pulse-off"
+    className="table-cell text-left td-lg LongText pulse-off"
     data-cy="cell-Description"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -454,10 +476,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left List pulse-off"
+    className="table-cell text-left td-lg List pulse-off"
     data-cy="cell-C_Flatrate_Conditions_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -474,10 +497,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-center cell-mandatory YesNo pulse-off"
+    className="table-cell text-center cell-mandatory td-sm YesNo pulse-off"
     data-cy="cell-IsGroupCompensationLine"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -496,10 +520,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left Lookup pulse-off"
+    className="table-cell text-left td-lg Lookup pulse-off"
     data-cy="cell-C_Order_CompensationGroup_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -516,10 +541,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left List pulse-off"
+    className="table-cell text-left td-lg List pulse-off"
     data-cy="cell-GroupCompensationType"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -536,10 +562,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left List pulse-off"
+    className="table-cell text-left td-lg List pulse-off"
     data-cy="cell-GroupCompensationAmtType"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -556,10 +583,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right Number pulse-off"
+    className="table-cell text-right td-sm Number pulse-off"
     data-cy="cell-GroupCompensationPercentage"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -576,10 +604,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-center cell-disabled Color pulse-off"
+    className="table-cell text-center cell-disabled td-sm Color pulse-off"
     data-cy="cell-NoPriceConditionsColor_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -603,10 +632,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-left List pulse-off"
+    className="table-cell text-left td-lg List pulse-off"
     data-cy="cell-C_PaymentTerm_Override_ID"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >
@@ -623,10 +653,11 @@ exports[`Table row (TableItem) output matches snapshot 1`] = `
     </div>
   </td>
   <td
-    className="text-right Amount pulse-off"
+    className="table-cell text-right td-sm Amount pulse-off"
     data-cy="cell-PaymentDiscount"
     onContextMenu={[Function]}
     onDoubleClick={[Function]}
+    onFocus={[Function]}
     onKeyDown={[Function]}
     tabIndex={3}
   >

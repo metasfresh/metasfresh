@@ -27,7 +27,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import groovy.lang.GroovyShell;
 import groovy.ui.ConsoleTextEditor;
 

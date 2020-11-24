@@ -12,6 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.material.event.attributes.AttributesChangedEvent;
+import de.metas.material.event.attributes.AttributesKeyWithASI;
+import de.metas.material.event.commons.AttributesKey;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -140,6 +144,26 @@ public class MaterialEventSerializerTests
 	private static EventDescriptor createEventDescriptor()
 	{
 		return EventDescriptor.ofClientAndOrg(1, 2);
+	}
+
+	@Test
+	public void attributesChangedEvent()
+	{
+		final String delim = AttributesKey.ATTRIBUTES_KEY_DELIMITER;
+		final String newKey = "3" + delim + "1" + delim + "2";
+		final String oldKey = "4" + delim + "2" + delim + "3";
+
+		final AttributesChangedEvent event = AttributesChangedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.date(NOW)
+				.oldStorageAttributes(AttributesKeyWithASI.of(AttributesKey.ofString(oldKey), AttributeSetInstanceId.ofRepoId(10)))
+				.newStorageAttributes(AttributesKeyWithASI.of(AttributesKey.ofString(newKey), AttributeSetInstanceId.ofRepoId(20)))
+				.huId(30)
+				.productId(40)
+				.warehouseId(WarehouseId.ofRepoId(50))
+				.qty(BigDecimal.TEN)
+				.build();
+		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test

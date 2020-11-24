@@ -13,6 +13,7 @@ import {
   getWindowBreadcrumb,
   pathRequest,
   queryPathsRequest,
+  setBreadcrumb,
 } from '../../actions/MenuActions';
 import { clearMasterData, closeModal } from '../../actions/WindowActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
@@ -228,7 +229,7 @@ class MenuOverlay extends Component {
 
               dispatch(closeModal());
               dispatch(clearMasterData());
-
+              dispatch(setBreadcrumb([]));
               dispatch(push('/'));
             }}
             tabIndex={0}

@@ -14,10 +14,10 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
@@ -32,9 +32,9 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -655,8 +655,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		_createdHUs.forEach(
 				hu -> {
 					final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-					final IWeightable weightable = Services.get(IWeightableFactory.class).createWeightableOrNull(attributeStorage);
-					final I_M_Attribute weightTareAttribute = weightable.getWeightTareAttribute();
+					final IWeightable weightable = Weightables.wrap(attributeStorage);
+					final AttributeCode weightTareAttribute = weightable.getWeightTareAttribute();
 					if (attributeStorage.hasAttribute(weightTareAttribute))
 					{
 						final BigDecimal tareOfHU = WeightTareAttributeValueCallout.calculateWeightTare(hu);

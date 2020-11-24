@@ -242,9 +242,7 @@ class TablePagination extends PureComponent {
         </div>
         <div
           className="pagination-link pointer"
-          onClick={() => {
-            this._handleSelectAll();
-          }}
+          onClick={this._handleSelectAll}
           title="Alt+A"
         >
           {selectedWholePage && isShowSelectAllItems

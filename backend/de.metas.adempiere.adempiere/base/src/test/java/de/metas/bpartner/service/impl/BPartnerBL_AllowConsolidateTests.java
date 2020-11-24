@@ -1,5 +1,10 @@
 package de.metas.bpartner.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.adempiere.service.ClientId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,44 +18,56 @@ package de.metas.bpartner.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import static org.junit.Assert.assertSame;
-
 import org.adempiere.service.ISysConfigBL;
-import org.junit.Before;
-import org.junit.Test;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
+import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import mockit.Expectations;
-import mockit.Mocked;
 
 public class BPartnerBL_AllowConsolidateTests
 {
-	@Mocked
-	I_C_BPartner partner;
+	private ISysConfigBL sysConfigBL;
 
-	@Mocked
-	ISysConfigBL sysConfigBL;
-
-	/**
-	 * Register our mocked service implementation
-	 */
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
-		Services.registerService(ISysConfigBL.class, sysConfigBL);
+		AdempiereTestHelper.get().init();
+
+		sysConfigBL = Services.get(ISysConfigBL.class);
+	}
+
+	private void verifyIsAllowConsolidateInOutEffective(
+			final boolean partnerAllowsConsolidateInOut,
+			final SOTrx soTrx,
+			final boolean sysConfigValue,
+			final boolean expectedResult)
+	{
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		partner.setAllowConsolidateInOut(partnerAllowsConsolidateInOut);
+
+		setAllowConsolidateInOutSysConfigValue(sysConfigValue);
+
+		final BPartnerBL testee = new BPartnerBL(new UserRepository());
+		assertThat(testee.isAllowConsolidateInOutEffective(partner, soTrx)).isEqualTo(expectedResult);
+	}
+
+	private void setAllowConsolidateInOutSysConfigValue(final boolean sysConfigReturnsTrue)
+	{
+		sysConfigBL.setValue(BPartnerBL.SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override, sysConfigReturnsTrue, ClientId.SYSTEM, OrgId.ANY);
 	}
 
 	@Test
@@ -91,42 +108,5 @@ public class BPartnerBL_AllowConsolidateTests
 				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.SALES, sysConfigValue, expectedResultInthisWholeBlock);
 			}
 		}
-	}
-
-	protected void verifyIsAllowConsolidateInOutEffective(
-			final boolean partnerAllowsConsolidateInOut,
-			final SOTrx soTrx,
-			final boolean sysConfigValue,
-			final boolean expectedResult)
-	{
-		partnerAllowsConsolidateInOut(partnerAllowsConsolidateInOut);
-		sysConfig_AllowConsolidateInOut_ReturnsTrue(sysConfigValue);
-
-		final BPartnerBL testee = new BPartnerBL(new UserRepository());
-		assertSame(expectedResult, testee.isAllowConsolidateInOutEffective(partner, soTrx));
-	}
-
-	private void partnerAllowsConsolidateInOut(final boolean partnerAllowsConsolidateInOut)
-	{
-		// @formatter:off
-		new Expectations()
-		{{
-				partner.isAllowConsolidateInOut();
-				minTimes = 0;
-				result = partnerAllowsConsolidateInOut;
-		}};
-		// @formatter:on
-	}
-
-	private void sysConfig_AllowConsolidateInOut_ReturnsTrue(final boolean sysConfigReturnsTrue)
-	{
-		// @formatter:off
-		new Expectations()
-		{{
-				sysConfigBL.getBooleanValue(BPartnerBL.SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override, false);
-				minTimes = 0;
-				result = sysConfigReturnsTrue;
-		}};
-		// @formatter:on
 	}
 }

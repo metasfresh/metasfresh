@@ -1,0 +1,15 @@
+-- 2020-06-16T13:12:29.578Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2020-06-16 15:12:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551942
+;
+
+-- 2020-06-16T13:12:29.592Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2020-06-16 15:12:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551939
+;
+
+-- 2020-06-16T13:12:29.595Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2020-06-16 15:12:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551937
+;
+

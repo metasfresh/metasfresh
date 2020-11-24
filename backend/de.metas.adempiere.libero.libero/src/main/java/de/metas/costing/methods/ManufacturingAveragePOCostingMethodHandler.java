@@ -20,6 +20,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegment;
@@ -27,6 +28,8 @@ import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -190,7 +193,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			requestEffective = request;
 		}
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCost);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCost);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 
 		// Accumulate to order costs
@@ -205,10 +209,12 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			@NonNull final CurrentCost currentCosts,
 			@NonNull final PPOrderCosts orderCosts)
 	{
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+		
 		final CostDetailCreateResult result;
 		if (request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 			currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 		}
 		else
@@ -216,7 +222,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final CostPrice price = currentCosts.getCostPrice();
 			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt(), utils.getQuantityUOMConverter());
 		}
@@ -245,5 +251,12 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
 	{
 		return Optional.empty();
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 	}
 }

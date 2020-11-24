@@ -136,27 +136,6 @@ public class WEBUI_PP_Order_Receipt
 		}
 	}
 
-	private final IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
-	{
-		final PPOrderLineRow row = getSingleSelectedRow();
-
-		final PPOrderLineType type = row.getType();
-		if (type == PPOrderLineType.MainProduct)
-		{
-			final PPOrderId ppOrderId = row.getOrderId();
-			return huPPOrderBL.receivingMainProduct(ppOrderId);
-		}
-		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
-		{
-			final PPOrderBOMLineId ppOrderBOMLineId = row.getOrderBOMLineId();
-			return huPPOrderBL.receivingByOrCoProduct(ppOrderBOMLineId);
-		}
-		else
-		{
-			throw new AdempiereException("Receiving is not allowed");
-		}
-	}
-
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -216,7 +195,7 @@ public class WEBUI_PP_Order_Receipt
 
 	/**
 	 * For the currently selected pip this method loads att
-	 * 
+	 *
 	 * @return
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, dependsOn = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
@@ -247,5 +226,26 @@ public class WEBUI_PP_Order_Receipt
 		ppOrderLinesView.invalidateAll();
 
 		getViewsRepo().notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
+	}
+
+	private final IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
+	{
+		final PPOrderLineRow row = getSingleSelectedRow();
+
+		final PPOrderLineType type = row.getType();
+		if (type == PPOrderLineType.MainProduct)
+		{
+			final PPOrderId ppOrderId = row.getOrderId();
+			return huPPOrderBL.receivingMainProduct(ppOrderId);
+		}
+		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
+		{
+			final PPOrderBOMLineId ppOrderBOMLineId = row.getOrderBOMLineId();
+			return huPPOrderBL.receivingByOrCoProduct(ppOrderBOMLineId);
+		}
+		else
+		{
+			throw new AdempiereException("Receiving is not allowed");
+		}
 	}
 }

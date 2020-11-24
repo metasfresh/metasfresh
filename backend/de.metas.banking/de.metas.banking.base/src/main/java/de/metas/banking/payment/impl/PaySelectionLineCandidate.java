@@ -31,7 +31,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_PaySelectionLine;
 
 import de.metas.util.Check;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /**
  * {@link I_C_PaySelectionLine} candidate used to create or update pay selection lines.

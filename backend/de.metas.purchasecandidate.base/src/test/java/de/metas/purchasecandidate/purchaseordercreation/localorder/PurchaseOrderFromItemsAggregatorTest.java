@@ -15,20 +15,13 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
-import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.impl.OrderLineBL;
@@ -44,7 +37,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
 
 /*
  * #%L
@@ -68,14 +60,28 @@ import mockit.Expectations;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseOrderFromItemsAggregatorTest
 {
 	private I_C_UOM EACH;
 	private Quantity TEN;
 
-	@Before
+	private static class MockedOrderLineBL extends OrderLineBL
+	{
+		private int updatePricesCallCount;
+
+		public void updatePrices(org.compiere.model.I_C_OrderLine orderLine)
+		{
+			// mock IOrderLineBL.updatePrices() because
+			// setting up the required masterdata and testing the pricing engine is out of scope.
+
+			updatePricesCallCount++;
+
+		}
+	}
+
+	private MockedOrderLineBL orderLineBL;
+
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -83,13 +89,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		this.EACH = createUOM("Ea");
 		this.TEN = Quantity.of(BigDecimal.TEN, EACH);
 
-		// mock IOrderLineBL.updatePrices() because setting up the required masterdata and testing the pricing engine is out of scope.
-		// @formatter:off
-		final OrderLineBL orderLineBL = new OrderLineBL();
-		new Expectations(OrderLineBL.class)
-		{{
-			orderLineBL.updatePrices((I_C_OrderLine)any); times = 1;
-		}};	// @formatter:on
+		orderLineBL = new MockedOrderLineBL();
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 	}
 
@@ -169,5 +169,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		// assertThat(purchaseOrder.getM_PricingSystem_ID()).isGreaterThan(0);
 		// assertThat(purchaseOrder.getM_PriceList_ID()).isGreaterThan(0);
 		// assertThat(purchaseOrder.getC_Currency_ID()).isGreaterThan(0);
+
+		assertThat(orderLineBL.updatePricesCallCount).isEqualTo(1);
 	}
 }

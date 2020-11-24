@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.adempiere.util.jmx.IJMXNameAware;
 
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 
 public class JMXSwingEventNotifierService implements JMXSwingEventNotifierServiceMBean, IJMXNameAware
 {
@@ -36,7 +36,7 @@ public class JMXSwingEventNotifierService implements JMXSwingEventNotifierServic
 	public JMXSwingEventNotifierService()
 	{
 		super();
-		this.jmxName = EventBusConstants.JMX_BASE_NAME + ":type=SwingNotifier";
+		this.jmxName = EventBusConfig.JMX_BASE_NAME + ":type=SwingNotifier";
 	}
 
 	@Override

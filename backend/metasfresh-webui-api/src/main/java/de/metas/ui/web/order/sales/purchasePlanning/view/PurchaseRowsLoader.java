@@ -28,7 +28,7 @@ import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Builder;
 import lombok.Getter;

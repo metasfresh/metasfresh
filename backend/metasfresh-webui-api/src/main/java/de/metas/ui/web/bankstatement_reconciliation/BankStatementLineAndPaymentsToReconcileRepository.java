@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatementLine;
@@ -27,6 +26,7 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -63,16 +63,18 @@ import lombok.NonNull;
 @Repository
 public class BankStatementLineAndPaymentsToReconcileRepository
 {
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IBankStatementBL bankStatementBL;
 	private final CurrencyRepository currencyRepository;
 	private LookupDataSource bpartnerLookup;
 
 	public BankStatementLineAndPaymentsToReconcileRepository(
+			@NonNull final IBankStatementBL bankStatementBL,
 			@NonNull final CurrencyRepository currencyRepository)
 	{
+		this.bankStatementBL = bankStatementBL;
 		this.currencyRepository = currencyRepository;
 
 		if (!Adempiere.isUnitTestMode()) // FIXME: workaround to be able to test it

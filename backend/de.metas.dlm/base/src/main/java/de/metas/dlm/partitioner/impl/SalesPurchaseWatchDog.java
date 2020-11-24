@@ -12,7 +12,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.dlm.partitioner.IIterateResultHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 
 /*

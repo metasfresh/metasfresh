@@ -1,7 +1,7 @@
 package de.metas.ui.web.websocket;
 
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -71,7 +72,7 @@ public final class WebSocketProducersRegistry
 	private ApplicationContext context;
 
 	private final ConcurrentHashMap<String, WebSocketProducerFactory> _producerFactoriesByTopicNamePrefix = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<String, WebSocketProducerInstance> _producersByTopicName = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<WebsocketTopicName, WebSocketProducerInstance> _producersByTopicName = new ConcurrentHashMap<>();
 
 	public WebSocketProducersRegistry()
 	{
@@ -114,9 +115,9 @@ public final class WebSocketProducersRegistry
 		logger.info("Registered producer factory: {}", producerFactory);
 	}
 
-	private WebSocketProducerFactory getWebSocketProducerFactoryOrNull(final String topicName)
+	private WebSocketProducerFactory getWebSocketProducerFactoryOrNull(final WebsocketTopicName topicName)
 	{
-		if (topicName == null || topicName.isEmpty())
+		if (topicName == null)
 		{
 			return null;
 		}
@@ -131,7 +132,12 @@ public final class WebSocketProducersRegistry
 
 	}
 
-	private WebSocketProducerInstance getCreateWebSocketProducerInstanceOrNull(final String topicName)
+	private WebSocketProducerInstance getWebSocketProducerOrNull(final WebsocketTopicName topicName)
+	{
+		return _producersByTopicName.get(topicName);
+	}
+
+	private WebSocketProducerInstance getOrCreateWebSocketProducerOrNull(final WebsocketTopicName topicName)
 	{
 		final WebSocketProducerInstance existingProducer = _producersByTopicName.get(topicName);
 		if (existingProducer != null)
@@ -151,64 +157,76 @@ public final class WebSocketProducersRegistry
 		});
 	}
 
-	private WebSocketProducerInstance getExistingWebSocketProducerInstanceOrNull(final String topicName)
-	{
-		return _producersByTopicName.get(topicName);
-	}
-
 	private void forEachExistingWebSocketProducerInstance(final Consumer<WebSocketProducerInstance> action)
 	{
 		final long parallelismThreshold = Long.MAX_VALUE;
 		_producersByTopicName.forEachValue(parallelismThreshold, action);
 	}
 
-	public void onTopicSubscribed(final String sessionId, final String topicName)
+	public void onTopicSubscribed(
+			@NonNull final WebsocketSubscriptionId subscriptionId,
+			@NonNull final WebsocketTopicName topicName)
 	{
-		final WebSocketProducerInstance producer = getCreateWebSocketProducerInstanceOrNull(topicName);
+		final WebSocketProducerInstance producer = getOrCreateWebSocketProducerOrNull(topicName);
 		if (producer == null)
 		{
 			return;
 		}
 
-		producer.subscribe(sessionId);
+		producer.subscribe(subscriptionId);
 	}
 
-	public void onTopicUnsubscribed(final String sessionId, final String topicName)
+	public void onTopicUnsubscribed(
+			@NonNull final WebsocketSubscriptionId subscriptionId,
+			@Nullable final WebsocketTopicName topicName)
 	{
-		if (topicName == null)
+		if (topicName != null)
 		{
-			onSessionDisconnect(sessionId);
-			return;
+			final WebSocketProducerInstance producer = getWebSocketProducerOrNull(topicName);
+			if (producer != null)
+			{
+				producer.unsubscribe(subscriptionId);
+			}
 		}
-
-		final WebSocketProducerInstance producer = getExistingWebSocketProducerInstanceOrNull(topicName);
-		if (producer == null)
+		else
 		{
-			return;
+			forEachExistingWebSocketProducerInstance(producer -> producer.unsubscribe(subscriptionId));
 		}
-
-		producer.unsubscribe(sessionId);
 	}
 
-	public void onSessionDisconnect(final String sessionId)
+	public void onSessionDisconnect(
+			@NonNull final WebsocketSessionId sessionId,
+			@Nullable final Collection<WebsocketTopicName> topicNames)
 	{
-		forEachExistingWebSocketProducerInstance(producer -> producer.unsubscribe(sessionId));
+		if (topicNames != null && !topicNames.isEmpty())
+		{
+			for (final WebsocketTopicName topicName : topicNames)
+			{
+				final WebSocketProducerInstance producer = getWebSocketProducerOrNull(topicName);
+				if (producer != null)
+				{
+					producer.unsubscribe(sessionId);
+				}
+			}
+		}
+		else
+		{
+			forEachExistingWebSocketProducerInstance(producer -> producer.unsubscribe(sessionId));
+		}
 	}
 
 	private static final class WebSocketProducerInstance
 	{
-		// private static final transient Logger logger = LogManager.getLogger(WebSocketProducerInstance.class);
-
-		private final String topicName;
+		private final WebsocketTopicName topicName;
 		private final WebSocketProducer producer;
 		private final ScheduledExecutorService scheduler;
 		private final WebsocketSender websocketSender;
 
-		private final Set<String> subscribedSessionIds = new HashSet<>();
+		private final HashSet<WebsocketSubscriptionId> activeSubscriptionIds = new HashSet<>();
 		private ScheduledFuture<?> scheduledFuture;
 
 		private WebSocketProducerInstance(
-				@NonNull final String topicName,
+				@NonNull final WebsocketTopicName topicName,
 				@NonNull final WebSocketProducer producer,
 				@NonNull final ScheduledExecutorService scheduler,
 				@NonNull final WebsocketSender websocketSender)
@@ -228,17 +246,20 @@ public final class WebSocketProducersRegistry
 					.toString();
 		}
 
-		public synchronized void subscribe(final String sessionId)
+		public synchronized void subscribe(@NonNull final WebsocketSubscriptionId subscriptionId)
 		{
-			Check.assumeNotEmpty(sessionId, "sessionId is not empty");
-			subscribedSessionIds.add(sessionId);
-			if (subscribedSessionIds.isEmpty())
+			activeSubscriptionIds.add(subscriptionId);
+			logger.trace("{}: session {} subscribed", this, subscriptionId);
+
+			startIfSubscriptions();
+		}
+
+		private void startIfSubscriptions()
+		{
+			if (activeSubscriptionIds.isEmpty())
 			{
-				// shall not happen
 				return;
 			}
-
-			logger.trace("{}: session {} subscribed", this, sessionId);
 
 			//
 			// Check if the producer was already scheduled
@@ -255,17 +276,32 @@ public final class WebSocketProducersRegistry
 			logger.trace("{}: start producing using initialDelayMillis={}, periodMillis={}", this, initialDelayMillis, periodMillis);
 		}
 
-		public synchronized void unsubscribe(final String sessionId)
+		public synchronized void unsubscribe(final WebsocketSubscriptionId subscriptionId)
 		{
-			subscribedSessionIds.remove(sessionId);
+			activeSubscriptionIds.remove(subscriptionId);
+			logger.trace("{}: subscription {} unsubscribed", this, subscriptionId);
+
+			stopIfNoSubscription();
+		}
+
+		public synchronized void unsubscribe(@NonNull final WebsocketSessionId sessionId)
+		{
+			final boolean removed = activeSubscriptionIds.removeIf(subscriptionId -> subscriptionId.isMatchingSessionId(sessionId));
 			logger.trace("{}: session {} unsubscribed", this, sessionId);
 
-			//
-			// Stop producer if there is nobody listening
-			if (!subscribedSessionIds.isEmpty())
+			if (removed)
+			{
+				stopIfNoSubscription();
+			}
+		}
+
+		private void stopIfNoSubscription()
+		{
+			if (!activeSubscriptionIds.isEmpty())
 			{
 				return;
 			}
+
 			if (scheduledFuture == null)
 			{
 				return;

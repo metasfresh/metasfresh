@@ -65,13 +65,13 @@ import lombok.NonNull;
 
 /**
  * EMail builder and sender.
- * 
+ *
  * To create a new email, please use {@link MailService}'s createMail methods.
- * 
+ *
  * To send the message, please use {@link #send()}.
- * 
+ *
  * NOTE: This is basically a reimplementation of the class <code>org.compiere.util.EMail</code> which was authored (according to the javadoc) by author Joerg Janke.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @SuppressWarnings("serial")
@@ -105,10 +105,10 @@ public final class EMail implements Serializable
 	private EMailAddress _replyTo;
 	@JsonIgnore
 	private InternetAddress _replyToAddress;
-	
+
 	@JsonIgnore
 	private InternetAddress _debugMailToAddress;
-	
+
 	/** Mail Subject */
 	@JsonProperty("subject")
 	private String _subject;
@@ -229,12 +229,12 @@ public final class EMail implements Serializable
 		_mailbox = mailbox;
 		setFrom(mailbox.getEmail());
 	}
-	
+
 	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress)
 	{
 		this._debugMailToAddress = debugMailToAddress;
 	}
-	
+
 	private InternetAddress getDebugMailToAddress()
 	{
 		return _debugMailToAddress;
@@ -244,7 +244,7 @@ public final class EMail implements Serializable
 	{
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("Sending email {} -> {} ({})", getFrom(), getTos(), getMailbox());
+			logger.debug("Sending email from={}, tos={} mailbox={}", getFrom(), getTos(), getMailbox());
 		}
 
 		//
@@ -424,8 +424,8 @@ public final class EMail implements Serializable
 	 * @throws MessagingException
 	 */
 	private void setRecipients(
-			final SMTPMessage message, 
-			final RecipientType type, 
+			final SMTPMessage message,
+			final RecipientType type,
 			final List<? extends Address> addresses) throws MessagingException
 	{
 		if (addresses == null || addresses.isEmpty())

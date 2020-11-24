@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -135,7 +136,9 @@ public abstract class AbstractHUIterator implements IHUIterator
 		if (_huContext == null)
 		{
 			final Properties ctxToUse = Env.coalesce(ctx);
-			final IMutableHUContext huContextNew = handlingUnitsBL.createMutableHUContext(ctxToUse);
+			// I'm not sure if currentHU is null to take the data from it, so i'm not sure if clientAndOrgId is created correctly
+			final  ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctxToUse));
+			final IMutableHUContext huContextNew = handlingUnitsBL.createMutableHUContext(ctxToUse, clientAndOrgId);
 
 			Check.assumeNotNull(_date, "date not null");
 			huContextNew.setDate(_date);
@@ -196,14 +199,10 @@ public abstract class AbstractHUIterator implements IHUIterator
 	 * Checks if given node was already visited. If node was not already visited, add it to internal visited queue
 	 *
 	 * @param handler node handler
-	 * @param node
 	 * @return true if node was already visited
 	 */
-	private final <T> boolean checkSeen(final AbstractNodeIterator<T> handler, final T node)
+	private final <T> boolean checkSeen(@NonNull final AbstractNodeIterator<T> handler, @NonNull final T node)
 	{
-		Check.assumeNotNull(handler, "handler not null");
-		Check.assumeNotNull(node, "node not null");
-
 		final ArrayKey key = handler.getKey(node);
 		final boolean added = seenObjects.add(key);
 
@@ -252,9 +251,8 @@ public abstract class AbstractHUIterator implements IHUIterator
 	 *
 	 * @param statusNew
 	 */
-	protected final void setStatus(final HUIteratorStatus statusNew)
+	protected final void setStatus(@NonNull final HUIteratorStatus statusNew)
 	{
-		Check.assumeNotNull(statusNew, "statusNew not null");
 		if (_status == statusNew)
 		{
 			return;

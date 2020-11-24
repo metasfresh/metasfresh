@@ -4,34 +4,15 @@ import { getQueryString } from '../utils';
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 // @TODO: Everything should be moved to api
 
-export function createInstance(entity, docType, docId, tabId, subentity) {
-  return axios.post(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      docType +
-      '/' +
-      docId +
-      (tabId ? '/' + tabId : '') +
-      (subentity ? '/' + subentity : '')
-  );
+export function createInstance(entity, windowId, docId, tabId, subentity) {
+  const url = `${config.API_URL}/${entity}/${windowId}/${docId}${
+    tabId ? `/${tabId}` : ''
+  }${subentity ? `/${subentity}` : ''}`;
+
+  return axios.post(url);
 }
 
-// TODO: I think this is not used anymore. Kuba
-// export function getDataByIds(entity, docType, viewId, docIds) {
-//   return axios.get(
-//     config.API_URL +
-//       '/' +
-//       entity +
-//       (docType ? '/' + docType : '') +
-//       (viewId ? '/' + viewId : '') +
-//       '/byIds' +
-//       '?ids=' +
-//       docIds
-//   );
-// }
-
+// TODO: This should be moved to the api
 export function completeRequest(
   entity,
   docType,
@@ -50,6 +31,7 @@ export function completeRequest(
   );
 }
 
+// TODO: This should be moved to the api
 export function autocompleteRequest({
   attribute,
   docId,
@@ -73,6 +55,7 @@ export function autocompleteRequest({
   `);
 }
 
+// TODO: This should be moved to the api
 export function autocompleteModalRequest({
   docId,
   docType,
@@ -91,6 +74,7 @@ export function autocompleteModalRequest({
   `);
 }
 
+// TODO: This should be moved to the api
 export function dropdownRequest({
   attribute,
   docId,
@@ -113,6 +97,7 @@ export function dropdownRequest({
   }${propertyName}/dropdown`);
 }
 
+// TODO: This should be moved to the api
 export function dropdownModalRequest({
   windowId,
   entity,
@@ -124,28 +109,6 @@ export function dropdownModalRequest({
     ${
       config.API_URL
     }/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
-}
-
-export function deleteRequest(
-  entity,
-  docType,
-  docId,
-  tabId,
-  ids,
-  subentity,
-  subentityId
-) {
-  return axios.delete(
-    config.API_URL +
-      '/' +
-      entity +
-      (docType ? '/' + docType : '') +
-      (docId ? '/' + docId : '') +
-      (tabId ? '/' + tabId : '') +
-      (subentity ? '/' + subentity : '') +
-      (subentityId ? '/' + subentityId : '') +
-      (ids ? '?ids=' + ids : '')
-  );
 }
 
 export function duplicateRequest(entity, docType, docId) {
@@ -207,21 +170,6 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
       '/' +
       rowId +
       '/actions'
-  );
-}
-
-export function referencesRequest(entity, type, docId, tabId, rowId) {
-  return axios.get(
-    config.API_URL +
-      '/' +
-      entity +
-      '/' +
-      type +
-      '/' +
-      docId +
-      (tabId ? '/' + tabId : '') +
-      (rowId ? '/' + rowId : '') +
-      '/references'
   );
 }
 

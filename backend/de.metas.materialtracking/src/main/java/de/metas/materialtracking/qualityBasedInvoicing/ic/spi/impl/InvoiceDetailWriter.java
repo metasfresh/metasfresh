@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.product.ProductId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 
@@ -104,12 +105,10 @@ public class InvoiceDetailWriter
 	}
 
 	/**
-	 * If set to <code>true</code>, then the following invocations of {@link #saveLines(Collection)} will be store their {@link org.adempiere.model.I_C_Invoice_Detail I_C_Invoice_Detail} records
-	 * with {@link org.adempiere.model.I_C_Invoice_Detail#COLUMN_IsDetailOverridesLine IsDetailOverridesLine} to <code>true</code>.
+	 * If set to <code>true</code>, then the following invocations of {@link #saveLines(Collection)} will be store their {@link org.compiere.model.I_C_Invoice_Detail I_C_Invoice_Detail} records
+	 * with {@link org.compiere.model.I_C_Invoice_Detail#COLUMN_IsDetailOverridesLine IsDetailOverridesLine} to <code>true</code>.
 	 * <p>
-	 * Note: will also set {@link org.adempiere.model.I_C_Invoice_Detail#COLUMN_IsPrintBefore IsPrintBefore} to <code>true</code>, but that shouldn't matter.
-	 *
-	 * @param printOverride
+	 * Note: will also set {@link org.compiere.model.I_C_Invoice_Detail#COLUMN_IsPrintBefore IsPrintBefore} to <code>true</code>, but that shouldn't matter.
 	 */
 	public void setPrintOverride(final boolean printOverride)
 	{
@@ -117,10 +116,6 @@ public class InvoiceDetailWriter
 		_printBefore = true;
 	}
 
-	/**
-	 *
-	 * @param lines
-	 */
 	public void saveLines(final Collection<IQualityInvoiceLine> lines)
 	{
 		if (lines == null || lines.isEmpty())
@@ -180,7 +175,7 @@ public class InvoiceDetailWriter
 		invoiceDetail.setIsPrinted(isPrintOverride() ? true : line.isDisplayed()); // the override-details line is always printed
 		invoiceDetail.setDescription(line.getDescription());
 		invoiceDetail.setIsPrintBefore(isPrintBefore());
-		invoiceDetail.setM_Product(line.getM_Product());
+		invoiceDetail.setM_Product_ID(ProductId.toRepoId(line.getProductId()));
 		invoiceDetail.setNote(line.getProductName());
 		// invoiceDetail.setM_AttributeSetInstance(M_AttributeSetInstance);
 		invoiceDetail.setQty(lineQty.toBigDecimal());

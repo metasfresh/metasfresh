@@ -1,11 +1,11 @@
 import axios from 'axios';
-import Moment from 'moment';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
 import { replace } from 'react-router-redux';
+import queryString from 'query-string';
 
 import * as types from '../constants/ActionTypes';
-import { LOCAL_LANG } from '../constants/Constants';
+import { setCurrentActiveLocale } from '../utils/locale';
 import { getUserSession } from '../api';
 
 // TODO: All requests should be moved to API
@@ -123,13 +123,6 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
-export function languageSuccess(lang) {
-  localStorage.setItem(LOCAL_LANG, lang);
-  Moment.locale(lang);
-
-  axios.defaults.headers.common['Accept-Language'] = lang;
-}
-
 export function logoutSuccess(auth) {
   auth.close();
   localStorage.removeItem('isLogged');
@@ -147,14 +140,14 @@ export function loginSuccess(auth) {
       getUserSession()
         .then(({ data }) => {
           dispatch(userSessionInit(data));
-          languageSuccess(data.language['key']);
+          setCurrentActiveLocale(data.language['key']);
           initNumeralLocales(data.language['key'], data.locale);
           MomentTZ.tz.setDefault(data.timeZone);
 
           auth.initSessionClient(data.websocketEndpoint, (msg) => {
             const me = JSON.parse(msg.body);
             dispatch(userSessionUpdate(me));
-            me.language && languageSuccess(me.language['key']);
+            me.language && setCurrentActiveLocale(me.language['key']);
             me.locale && initNumeralLocales(me.language['key'], me.locale);
 
             getNotifications().then((response) => {
@@ -290,22 +283,19 @@ export function clearNotifications() {
   };
 }
 
-export function updateUri(pathname, query, prop, value) {
+/**
+ * @method updateUri
+ * @summary Prepends viewId/page/sorting to the url
+ */
+export function updateUri(pathname, query, updatedQuery) {
   return (dispatch) => {
-    let url = pathname + '?';
+    const queryObject = {
+      ...query,
+      ...updatedQuery,
+    };
 
-    // add new prop or overwrite existing
-    query[prop] = value;
-
-    const queryKeys = Object.keys(query);
-
-    for (let i = 0; i < queryKeys.length; i++) {
-      url +=
-        queryKeys[i] +
-        '=' +
-        query[queryKeys[i]] +
-        (queryKeys.length - 1 !== i ? '&' : '');
-    }
+    const queryUrl = queryString.stringify(queryObject);
+    const url = `${pathname}?${queryUrl}`;
 
     dispatch(replace(url));
   };

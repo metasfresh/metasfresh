@@ -1,26 +1,29 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.order.products_proposal.model;
 
-import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
@@ -45,6 +48,7 @@ import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvi
 import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderProperties.ViewHeaderPropertiesBuilder;
+import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
 import de.metas.ui.web.view.ViewHeaderProperty;
 import de.metas.ui.web.window.datatypes.DocumentIdIntSequence;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -56,28 +60,22 @@ import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public final class ProductsProposalRowsLoader
 {
@@ -152,10 +150,13 @@ public final class ProductsProposalRowsLoader
 		if (order != null)
 		{
 			logger.debug("order!=null; -> add bpartnerName={} to headerProperties", order.getBpartnerName());
-			headerProperties.entry(ViewHeaderProperty.builder()
-					.caption(msgBL.translatable("C_BPartner_ID"))
-					.value(order.getBpartnerName())
-					.build());
+			headerProperties
+					.group(ViewHeaderPropertiesGroup.builder()
+							.entry(ViewHeaderProperty.builder()
+									.caption(msgBL.translatable("C_BPartner_ID"))
+									.value(order.getBpartnerName())
+									.build())
+							.build());
 		}
 
 		return ProductsProposalRowsData.builder()

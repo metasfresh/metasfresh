@@ -27,13 +27,14 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.propagation.IHUAttributePropagationContext;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -98,7 +99,8 @@ public class WeightGrossAttributeValueCallout extends AbstractWeightAttributeVal
 			return false;
 		}
 
-		if (!weightable.isWeightGrossAttribute(attribute))
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+		if (!weightable.isWeightGrossAttribute(attributeCode))
 		{
 			return false;
 		}
@@ -119,7 +121,7 @@ public class WeightGrossAttributeValueCallout extends AbstractWeightAttributeVal
 		}
 
 		final IHUAttributePropagationContext huAttributePropagationContext = (IHUAttributePropagationContext)attributeValueContext;
-		final I_M_Attribute attr_WeightNet = weightable.getWeightNetAttribute();
+		final AttributeCode attr_WeightNet = weightable.getWeightNetAttribute();
 		if (huAttributePropagationContext.isExternalInput()
 				&& huAttributePropagationContext.isValueUpdatedBefore(attr_WeightNet))
 		{

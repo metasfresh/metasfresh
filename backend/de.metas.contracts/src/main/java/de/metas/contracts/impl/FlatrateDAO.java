@@ -1,71 +1,6 @@
 package de.metas.contracts.impl;
 
-import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
-import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
-import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -94,6 +29,69 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.stream.StreamUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.Query;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
+import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
+import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 public class FlatrateDAO implements IFlatrateDAO
 {
@@ -951,5 +949,12 @@ public class FlatrateDAO implements IFlatrateDAO
 				.collect(ImmutableList.toImmutableList());
 
 		return currentFlatRateTermInvoices;
+	}
+
+	@Override
+	@NonNull
+	public I_C_Flatrate_Conditions getConditionsById(final int flatrateConditionsId)
+	{
+		return load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
 	}
 }

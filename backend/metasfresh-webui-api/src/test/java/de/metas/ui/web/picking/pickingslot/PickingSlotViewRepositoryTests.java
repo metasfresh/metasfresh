@@ -20,7 +20,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;

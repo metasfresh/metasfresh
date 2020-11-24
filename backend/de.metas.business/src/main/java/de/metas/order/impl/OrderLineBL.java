@@ -9,7 +9,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
@@ -103,7 +103,7 @@ public class OrderLineBL implements IOrderLineBL
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
-	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
+	private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
 
 	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
@@ -683,7 +683,6 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			final IProductDAO productsRepo = Services.get(IProductDAO.class);
 			final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 			final I_AD_Org lineOrg = orgsRepo.getById(line.getAD_Org_ID());
 			final I_M_Product lineProduct = productsRepo.getById(lineProductId, I_M_Product.class);
@@ -696,10 +695,9 @@ public class OrderLineBL implements IOrderLineBL
 				if (counterProductId == null)
 				{
 					final I_AD_Org productOrg = orgsRepo.getById(productOrgId);
-					final String msg = msgBL.getMsg(InterfaceWrapperHelper.getCtx(line),
+					throw new AdempiereException(
 							MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT,
-							new Object[] { lineProduct.getValue(), productOrg.getName(), lineOrg.getName() });
-					throw new AdempiereException(msg);
+							lineProduct.getValue(), productOrg.getName(), lineOrg.getName());
 				}
 				line.setM_Product_ID(counterProductId.getRepoId());
 			}

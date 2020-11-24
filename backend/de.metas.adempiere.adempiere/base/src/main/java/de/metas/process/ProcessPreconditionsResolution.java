@@ -286,7 +286,7 @@ public final class ProcessPreconditionsResolution
 		}
 	}
 
-	public ProcessPreconditionsResolution withCaptionMapper(final ProcessCaptionMapper captionMapper)
+	public ProcessPreconditionsResolution withCaptionMapper(@Nullable final ProcessCaptionMapper captionMapper)
 	{
 		return toBuilder().captionMapper(captionMapper).build();
 	}

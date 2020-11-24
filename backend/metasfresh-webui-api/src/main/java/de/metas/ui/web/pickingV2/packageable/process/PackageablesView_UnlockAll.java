@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.ShipmentScheduleLockType;
 import de.metas.inoutcandidate.lock.ShipmentScheduleUnLockRequest;

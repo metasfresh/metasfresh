@@ -1,8 +1,7 @@
 package de.metas.dlm.exception;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.exceptions.DBException;
@@ -13,12 +12,11 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.MTable;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.postgresql.util.PSQLException;
-
-import mockit.Expectations;
-import mockit.Mocked;
+import org.postgresql.util.ServerErrorMessage;
 
 /*
  * #%L
@@ -44,16 +42,17 @@ import mockit.Mocked;
 
 public class DLMExceptionWrapperTests
 {
-	@Before
+	@BeforeEach
 	public void setup()
 	{
 		AdempiereTestHelper.get().init();
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void testInvalidString()
 	{
-		DLMReferenceExceptionWrapper.extractInfos("");
+		assertThatThrownBy(() -> DLMReferenceExceptionWrapper.extractInfos(""))
+				.isInstanceOf(RuntimeException.class);
 	}
 
 	/**
@@ -74,17 +73,11 @@ public class DLMExceptionWrapperTests
 	{
 		final String[] infos = DLMReferenceExceptionWrapper.extractInfos(string);
 
-		assertThat(infos[0], is("c_payment"));
-		assertThat(infos[1], is("1243"));
-		assertThat(infos[2], is("c_bankstatementline_ref"));
-		assertThat(infos[3], is("c_payment_id"));
+		assertThat(infos[0]).isEqualTo("c_payment");
+		assertThat(infos[1]).isEqualTo("1243");
+		assertThat(infos[2]).isEqualTo("c_bankstatementline_ref");
+		assertThat(infos[3]).isEqualTo("c_payment_id");
 	}
-
-	/**
-	 * Used in {@link #testTableNameCases()}.
-	 */
-	@Mocked
-	PSQLException mockedPSQLException;
 
 	/**
 	 * Make sure that the lower-case infos coming from postgres result in a {@link TableRecordIdDescriptor} which contains the correct case for table and column names.
@@ -115,26 +108,26 @@ public class DLMExceptionWrapperTests
 		InterfaceWrapperHelper.save(column);
 
 		// set up the infos the exception shall provide to the wrapper
-		// @formatter:off
-		new Expectations()
-		{{
-				mockedPSQLException.getServerErrorMessage().getDetail();
-				result = "DLM_Referenced_Table_Name = ad_window;  DLM_Referenced_Record_ID=1243 ; DLM_Referencing_Table_Name = ad_tab; DLM_Referencig_Column_Name = ad_window_id;"; // automatically wrapped in a list of one item
+		final PSQLException mockedPSQLException = Mockito.mock(PSQLException.class);
+		Mockito.doReturn(DLMReferenceExceptionWrapper.PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level)
+				.when(mockedPSQLException).getSQLState();
 
-				mockedPSQLException.getSQLState();
-				result = DLMReferenceExceptionWrapper.PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level;
-		}}; // @formatter:on
+		final ServerErrorMessage mockedServerErrorMessage = Mockito.mock(ServerErrorMessage.class);
+		Mockito.doReturn("DLM_Referenced_Table_Name = ad_window;  DLM_Referenced_Record_ID=1243 ; DLM_Referencing_Table_Name = ad_tab; DLM_Referencig_Column_Name = ad_window_id;") // automatically wrapped in a list of one item
+				.when(mockedServerErrorMessage).getDetail();
+
+		Mockito.doReturn(mockedServerErrorMessage)
+				.when(mockedPSQLException).getServerErrorMessage();
 
 		final DBException dbException = DLMReferenceExceptionWrapper.INSTANCE.wrapIfNeededOrReturnNull(mockedPSQLException);
-		assertThat(dbException, instanceOf(DLMReferenceException.class));
+		assertThat(dbException).isInstanceOf(DLMReferenceException.class);
 
 		final DLMReferenceException dlmException = (DLMReferenceException)dbException;
 		final TableRecordIdDescriptor tableReferenceDescriptor = dlmException.getTableReferenceDescriptor();
 
 		// the descriptor needs to contain the "real" table and column names, not the lower-case versions that were returned by postgresl.
-		assertThat(tableReferenceDescriptor.getTargetTableName(), is(I_AD_Window.Table_Name));
-		assertThat(tableReferenceDescriptor.getOriginTableName(), is(I_AD_Tab.Table_Name));
-		assertThat(tableReferenceDescriptor.getRecordIdColumnName(), is(I_AD_Tab.COLUMNNAME_AD_Window_ID));
-
+		assertThat(tableReferenceDescriptor.getTargetTableName()).isEqualTo(I_AD_Window.Table_Name);
+		assertThat(tableReferenceDescriptor.getOriginTableName()).isEqualTo(I_AD_Tab.Table_Name);
+		assertThat(tableReferenceDescriptor.getRecordIdColumnName()).isEqualTo(I_AD_Tab.COLUMNNAME_AD_Window_ID);
 	}
 }

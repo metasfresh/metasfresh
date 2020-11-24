@@ -84,13 +84,12 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 		}
 	}
 
-	private void setupQueueProcessor(final int poolSize, final int maxPoolSize)
+	private void setupQueueProcessor(final int poolSize)
 	{
 		//
 		// Create and configure Queue Processor
 		processorDef = helper.createQueueProcessor("test",
 				poolSize, // poolSize
-				maxPoolSize, // maxPoolSize
 				1000 // keepAliveTimeMillis
 		);
 		workpackageProcessorDef = helper.assignPackageProcessor(processorDef, StaticMockedWorkpackageProcessor.class);
@@ -113,7 +112,7 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 		//
 		// Setup Queue processors
 		// NOTE: we are setting poolSize=maxPoolSize=1 to make sure there is only one slot and tasks are executed in order, one by one
-		setupQueueProcessor(1, 1); // poolSize=maxPoolSize=1
+		setupQueueProcessor(1); // poolSize=maxPoolSize=1
 
 		Assert.assertEquals("Invalid QueueSize", 0, workpackageProcessorStatistics.getQueueSize());
 		Assert.assertEquals("Invalid CountAll", 0, workpackageProcessorStatistics.getCountAll());
@@ -149,7 +148,7 @@ public class QueueProcessor_Statistics_Test extends QueueProcessorTestBase
 		// Workpackage 1: Process with Errors
 		{
 			final I_C_Queue_WorkPackage workpackage = workpackages.get(1);
-			workpackageProcessor.setException(workpackage, "test error");
+			workpackageProcessor.setRuntimeException(workpackage, "test error");
 			helper.markReadyForProcessingAndWait(workpackageQueue, workpackage);
 			Assert.assertEquals("Invalid QueueSize", 3, workpackageProcessorStatistics.getQueueSize());
 			Assert.assertEquals("Invalid CountAll", 2, workpackageProcessorStatistics.getCountAll());

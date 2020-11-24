@@ -2,7 +2,7 @@ package de.metas.printing.model;
 
 
 /** Generated Interface for C_Print_Job_Instructions_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_Print_Job_Instructions_v 
@@ -14,13 +14,6 @@ public interface I_C_Print_Job_Instructions_v
     /** AD_Table_ID=540744 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Archiv.
@@ -52,8 +45,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_AD_Archive_ID = "AD_Archive_ID";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -65,8 +58,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -75,8 +68,8 @@ public interface I_C_Print_Job_Instructions_v
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -117,7 +110,7 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_AD_Session_ID = "AD_Session_ID";
 
 	/**
-	 * Set Ansprechpartner.
+	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: TableDir
@@ -127,7 +120,7 @@ public interface I_C_Print_Job_Instructions_v
 	public void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Ansprechpartner.
+	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: TableDir
@@ -140,8 +133,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Auftrag.
-	 * Auftrag
+	 * Set Sales order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -150,8 +143,8 @@ public interface I_C_Print_Job_Instructions_v
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Auftrag.
-	 * Auftrag
+	 * Get Sales order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -167,6 +160,29 @@ public interface I_C_Print_Job_Instructions_v
     public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions_v, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions_v, org.compiere.model.I_C_Order>(I_C_Print_Job_Instructions_v.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
     /** Column name C_Order_ID */
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Order / MFG Warehouse report.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Order_MFGWarehouse_Report_ID (int C_Order_MFGWarehouse_Report_ID);
+
+	/**
+	 * Get Order / MFG Warehouse report.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Order_MFGWarehouse_Report_ID();
+
+    /** Column definition for C_Order_MFGWarehouse_Report_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions_v, Object> COLUMN_C_Order_MFGWarehouse_Report_ID = new org.adempiere.model.ModelColumn<I_C_Print_Job_Instructions_v, Object>(I_C_Print_Job_Instructions_v.class, "C_Order_MFGWarehouse_Report_ID", null);
+    /** Column name C_Order_MFGWarehouse_Report_ID */
+    public static final String COLUMNNAME_C_Order_MFGWarehouse_Report_ID = "C_Order_MFGWarehouse_Report_ID";
 
 	/**
 	 * Set Druck-Job Anweisung.
@@ -223,8 +239,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_C_Print_Package_ID = "C_Print_Package_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -238,8 +254,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -251,8 +267,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -261,8 +277,8 @@ public interface I_C_Print_Job_Instructions_v
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -303,8 +319,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -318,8 +334,8 @@ public interface I_C_Print_Job_Instructions_v
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

@@ -59,7 +59,15 @@ Map build(final MvnConf mvnConf)
 			//  * https://github.com/jenkinsci/build-with-parameters-plugin/pull/10
 			//  * https://jenkins.ci.cloudbees.com/job/plugins/job/build-with-parameters-plugin/15/org.jenkins-ci.plugins$build-with-parameters/
 			String releaseLinkWithText = "	<li>..and ${misc.createReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>";
+			if(env.BRANCH_NAME == 'release')
+			{
+				releaseLinkWithText = """	${releaseLinkWithText}
+<li>..aaand ${misc.createWeeklyReleaseLinkWithText(MF_RELEASE_VERSION, MF_VERSION, artifactURLs, null/*dockerImages*/)}</li>"""
+			} 
 			// echo "DONE calling misc.createReleaseLinkWithText"
+
+
+			String latestE2eDockerImageName = "nexus.metasfresh.com:6001/metasfresh/metasfresh-e2e:${env.BRANCH_NAME}_LATEST"
 
 		    currentBuild.description="""${currentBuild.description}<p/>
 <h2>Distribution</h2>						
@@ -71,7 +79,7 @@ Map build(final MvnConf mvnConf)
   <li>metasfresh-backend: version <b>${mavenProps['metasfresh.version']}</b></li>
 </ul>
 <p>
-<h3>Deployable maven artifacts</h3>
+<h3>Uploaded maven artifacts</h3>
 <ul>
 	<li><a href=\"${artifactURLs['metasfresh-dist']}\">dist-tar.gz</a></li>
 	<li><a href=\"${artifactURLs['metasfresh-dist-sql-only']}\">sql-only-tar.gz</a></li>
@@ -87,6 +95,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <ul>
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${artifactURLs['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the <b>tar.gz to a host of your choice</b>.</li>
 	${releaseLinkWithText}
+	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/run_e2e_tests/parambuild/?MF_DOCKER_IMAGE_FULL_NAME=${latestE2eDockerImageName}&MF_DOCKER_REGISTRY=&MF_DOCKER_IMAGE=&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a job that will perform an <b>e2e-test</b> using this branch's latest e2e-docker image.</li>
 </ul>
 <p>
 <h3>Additional notes</h3>

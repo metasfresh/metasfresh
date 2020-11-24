@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -54,6 +53,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Test;
 
 public class HandlingUnitsBL_Destroy_Test extends AbstractHUTest
 {

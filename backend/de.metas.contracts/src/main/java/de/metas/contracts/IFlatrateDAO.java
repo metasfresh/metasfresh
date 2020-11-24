@@ -22,24 +22,7 @@ package de.metas.contracts;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -59,6 +42,20 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -265,4 +262,6 @@ public interface IFlatrateDAO extends ISingletonService
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 
 	List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(I_C_Flatrate_Term contract);
+
+	I_C_Flatrate_Conditions getConditionsById(int flatrateConditionsId);
 }

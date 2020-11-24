@@ -1,13 +1,11 @@
 package de.metas.i18n;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableSet;
-
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L
@@ -32,20 +30,23 @@ import lombok.NonNull;
  */
 
 @EqualsAndHashCode
-/* package */final class ConstantTranslatableString implements ITranslatableString
+/* package */ final class ConstantTranslatableString implements ITranslatableString
 {
+	@NonNull
 	static ConstantTranslatableString of(@Nullable final String value)
 	{
 		final boolean anyLanguage = false;
 		return of(value, anyLanguage);
 	}
 
+	@NonNull
 	static ITranslatableString anyLanguage(final String value)
 	{
 		final boolean anyLanguage = true;
 		return of(value, anyLanguage);
 	}
 
+	@NonNull
 	static ConstantTranslatableString of(@Nullable final String value, final boolean anyLanguage)
 	{
 		if (value == null || value.isEmpty())

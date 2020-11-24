@@ -406,7 +406,7 @@ public class JavaProcessTests
 		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", result.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", ProcessCanceledException.MSG_Canceled.toAD_Message(), result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", false, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();
@@ -461,7 +461,7 @@ public class JavaProcessTests
 		final ProcessExecutionResult result = startProcess(process, pi, trx);
 
 		Assert.assertEquals("Invalid ProcessInfo.IsError", false, result.isError());
-		Assert.assertEquals("Invalid ProcessInfo.Summary", "@" + ProcessCanceledException.MSG_Canceled + "@", result.getSummary());
+		Assert.assertEquals("Invalid ProcessInfo.Summary", ProcessCanceledException.MSG_Canceled.toAD_Message(), result.getSummary());
 		Assert.assertEquals("prepare() executed", true, process.prepareExecuted);
 		Assert.assertEquals("doIt() executed", true, process.doItExecuted);
 		process.assertEverythingConsistentAfterRun();

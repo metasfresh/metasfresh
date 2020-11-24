@@ -1,6 +1,6 @@
 package de.metas.inout.api;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -24,7 +24,6 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*

@@ -30,6 +30,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
 import de.metas.phonecall.PhonecallSchema;
 import de.metas.phonecall.PhonecallSchemaId;
 import de.metas.phonecall.PhonecallSchemaVersion;
@@ -150,6 +151,7 @@ public class PhonecallSchemaRepository
 
 		return PhonecallSchemaVersionLine.builder()
 				.id(id)
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.versionId(versionId)
 				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
 				.contactId(UserId.ofRepoId(record.getC_BP_Contact_ID()))

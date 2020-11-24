@@ -22,27 +22,9 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-import org.junit.Test;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -61,6 +43,22 @@ import de.metas.util.Services;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+import org.junit.jupiter.api.Test;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This test is making sure current {@link IAttributeValueGenerator} implementations are not failing when {@link HUAttributeStorage#generateInitialAttributes()} is invoked.

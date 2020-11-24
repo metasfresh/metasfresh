@@ -1,22 +1,8 @@
 package de.metas.ui.web.document.filter;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -27,6 +13,17 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.IntFunction;
 
 /*
  * #%L
@@ -54,7 +51,6 @@ import lombok.ToString;
  * Also see {@link de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Immutable
 @EqualsAndHashCode
@@ -157,13 +153,15 @@ public final class DocumentFilter
 		return parametersByName.get(parameterName);
 	}
 
+	@Nullable
 	public String getParameterValueAsString(@NonNull final String parameterName)
 	{
 		final DocumentFilterParam param = getParameter(parameterName);
 		return param.getValueAsString();
 	}
 
-	public String getParameterValueAsString(@NonNull final String parameterName, final String defaultValue)
+	@Nullable
+	public String getParameterValueAsString(@NonNull final String parameterName, @Nullable final String defaultValue)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
 		if (param == null)

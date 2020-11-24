@@ -1,31 +1,14 @@
 package de.metas.handlingunits.attributes.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collections;
-
+import de.metas.handlingunits.AbstractHUTest;
+import de.metas.handlingunits.StaticHUAssert;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
+import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
+import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
+import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
+import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -37,18 +20,13 @@ import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.StaticHUAssert;
-import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
-import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
-import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
-import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
-import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
-import de.metas.util.Services;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class AttributeValueTest extends AbstractHUTest
 {
@@ -60,44 +38,54 @@ public class AttributeValueTest extends AbstractHUTest
 		attributesTestHelper = new AttributesTestHelper();
 	}
 
-	@Test(expected = InvalidAttributeValueException.class)
+	@Test
 	public void testInvalidAttributeType_OnSet()
 	{
-		final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", "UnknownType", true);
+		assertThatThrownBy(() -> {
+			final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", "UnknownType", true);
 
-		final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
-		av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), "value");
+			final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
+			av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), "value");
 
-		StaticHUAssert.assertMock("mock");
+			StaticHUAssert.assertMock("mock");
+		})
+				.isInstanceOf(InvalidAttributeValueException.class);
 	}
 
-	@Test(expected = InvalidAttributeValueException.class)
+	@Test
 	public void testInvalidAttributeType_OnGet()
 	{
-		final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", "UnknownType", true);
+		assertThatThrownBy(() -> {
+			final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", "UnknownType", true);
 
-		final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
-		av.getValue();
+			final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
+			av.getValue();
 
-		StaticHUAssert.assertMock("mock");
+			StaticHUAssert.assertMock("mock");
+		})
+				.isInstanceOf(InvalidAttributeValueException.class);
 	}
 
-	@Test(expected = InvalidAttributeValueException.class)
+	@Test
 	public void testMandatoryAttributeSettingToNull()
 	{
-		final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		attribute.setIsMandatory(true);
-		InterfaceWrapperHelper.save(attribute);
+		assertThatThrownBy(() -> {
+			final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+			attribute.setIsMandatory(true);
+			InterfaceWrapperHelper.save(attribute);
 
-		final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
+			final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
 
-		// set it to some not null value first, because else, validation is not checked if value did not changed
-		av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), "some value");
+			// set it to some not null value first, because else, validation is not checked if value did not changed
+			av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), "some value");
 
-		// Expect exception:
-		av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), null);
+			// Expect exception:
+			av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), null);
 
-		StaticHUAssert.assertMock("mock");
+			StaticHUAssert.assertMock("mock");
+		})
+				.isInstanceOf(InvalidAttributeValueException.class);
+
 	}
 
 	@Test
@@ -122,7 +110,7 @@ public class AttributeValueTest extends AbstractHUTest
 
 	/**
 	 * Tests {@link IAttributeValue#getAvailableValues()} in case of a high volume attribute.
-	 *
+	 * <p>
 	 * Expectations:
 	 * <ul>
 	 * <li>if there is no current value, empty list shall be returned.
@@ -130,7 +118,7 @@ public class AttributeValueTest extends AbstractHUTest
 	 * </ul>
 	 */
 	@Test
-	@Ignore // TODO remove when M_Attribute.AD_Val_Rule is removed, or un-ignore
+	@Disabled // TODO remove when M_Attribute.AD_Val_Rule is removed, or un-ignore
 	public void test_HighVolumeAttribute()
 	{
 		// Create a dummy value which we will set it to our attribute.

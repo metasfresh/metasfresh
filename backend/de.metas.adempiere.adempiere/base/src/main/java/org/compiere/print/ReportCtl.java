@@ -175,12 +175,10 @@ public final class ReportCtl
 	 * - Get Table Info & submit.<br>
 	 * A report can be created from:
 	 * <ol>
-	 * <li>attached MPrintFormat, if any (see {@link ProcessInfo#setTransientObject(Object)}, {@link ProcessInfo#setSerializableObject(java.io.Serializable)}
 	 * <li>process information (AD_Process.AD_PrintFormat_ID, AD_Process.AD_ReportView_ID)
 	 * </ol>
 	 *
 	 * @param pi Process Info
-	 * @param IsDirectPrint if true, prints directly - otherwise View
 	 * @return true if OK
 	 */
 	private static void startStandardReport(final ProcessInfo pi, final String printerName)

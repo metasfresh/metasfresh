@@ -1,5 +1,6 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
+import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 
 import java.util.HashMap;
@@ -125,7 +126,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 			final IHUPPOrderMaterialTrackingBL huPPOrderMaterialTrackingBL = Services.get(IHUPPOrderMaterialTrackingBL.class);
 
-			final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx());
+			final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx(), ClientAndOrgId.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID()));
 			final I_M_Material_Tracking previousMaterialTrackingRecord = huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu);
 
 			final MTLinkRequestBuilder requestBuilder = request

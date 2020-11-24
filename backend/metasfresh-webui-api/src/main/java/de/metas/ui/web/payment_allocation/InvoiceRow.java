@@ -1,16 +1,34 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.payment_allocation;
 
-import java.time.LocalDate;
-import java.util.Set;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-
 import com.google.common.base.MoreObjects;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.ClientAndOrgId;
@@ -23,32 +41,18 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.Set;
 
 public class InvoiceRow implements IViewRow
 {
@@ -72,25 +76,41 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final Amount openAmt;
 
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount")
+	public static final String FIELD_DiscountAmt = "discountAmt";
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "Discount", fieldName = FIELD_DiscountAmt)
 	@Getter
 	private final Amount discountAmt;
 
-	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
-	private final String currencyCode;
+	public static final String FIELD_ServiceFeeAmt = "serviceFeeAmt";
+	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "ServiceFeeAmt", fieldName = FIELD_ServiceFeeAmt)
+	@Getter
+	// @Nullable // if you uncomment this, the field will no longer be shown in the modal :^)
+	private final Amount serviceFeeAmt;
+
+	public static final String FIELD_BankFeeAmt = "bankFeeAmt";
+	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Amount, widgetSize = WidgetSize.Small, captionKey = "BankFeeAmt", fieldName = FIELD_BankFeeAmt)
+	@Getter
+	private final Amount bankFeeAmt;
+
+	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, captionKey = "C_Currency_ID")
+	private final String currencyCodeString;
+	@Getter
+	private final CurrencyCode currencyCode;
+
+	//
+	//
+	//
 
 	private final DocumentId rowId;
 	@Getter
 	private final InvoiceId invoiceId;
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
-	private final SOTrx soTrx;
-	@Getter
-	private final boolean creditMemo;
+	private final InvoiceDocBaseType docBaseType;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> values;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private InvoiceRow(
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -98,28 +118,50 @@ public class InvoiceRow implements IViewRow
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateInvoiced,
 			@NonNull final LookupValue bpartner,
-			@NonNull final SOTrx soTrx,
-			final boolean creditMemo,
+			@NonNull final InvoiceDocBaseType docBaseType,
 			@NonNull final Amount grandTotal,
 			@NonNull final Amount openAmt,
-			@NonNull final Amount discountAmt)
+			@NonNull final Amount discountAmt,
+			@Nullable final Amount bankFeeAmt,
+			@Nullable final Amount serviceFeeAmt)
 	{
-		rowId = convertInvoiceIdToDocumentId(invoiceId);
-		this.invoiceId = invoiceId;
-		this.clientAndOrgId = clientAndOrgId;
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
 		this.dateInvoiced = dateInvoiced;
 		this.bpartner = bpartner;
-		this.soTrx = soTrx;
-		this.creditMemo = creditMemo;
+		this.docBaseType = docBaseType;
+
 		this.grandTotal = grandTotal;
 		this.openAmt = openAmt;
 		this.discountAmt = discountAmt;
-		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt)
-				.toThreeLetterCode();
+		this.serviceFeeAmt = serviceFeeAmt;
+		this.bankFeeAmt = bankFeeAmt;
+		//noinspection ConstantConditions
+		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
+		this.currencyCodeString = currencyCode.toThreeLetterCode();
 
-		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(InvoiceRow.class);
+		rowId = convertInvoiceIdToDocumentId(invoiceId);
+		this.invoiceId = invoiceId;
+		this.clientAndOrgId = clientAndOrgId;
+
+		this.values = buildViewRowFieldNameAndJsonValuesHolder(docBaseType.getSoTrx());
+	}
+
+	private static ViewRowFieldNameAndJsonValuesHolder<InvoiceRow> buildViewRowFieldNameAndJsonValuesHolder(
+			@NonNull final SOTrx soTrx)
+	{
+		final ImmutableMap.Builder<String, ViewEditorRenderMode> viewEditorRenderModes = ImmutableMap.<String, ViewEditorRenderMode>builder()
+				.put(FIELD_DiscountAmt, ViewEditorRenderMode.ALWAYS)
+				.put(FIELD_BankFeeAmt, ViewEditorRenderMode.ALWAYS);
+
+		if (soTrx.isSales())
+		{
+			viewEditorRenderModes.put(FIELD_ServiceFeeAmt, ViewEditorRenderMode.ALWAYS);
+		}
+
+		return ViewRowFieldNameAndJsonValuesHolder.builder(InvoiceRow.class)
+				.viewEditorRenderModeByFieldName(viewEditorRenderModes.build())
+				.build();
 	}
 
 	static DocumentId convertInvoiceIdToDocumentId(@NonNull final InvoiceId invoiceId)
@@ -179,6 +221,12 @@ public class InvoiceRow implements IViewRow
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
 		return values.get(this);
+	}
+
+	@Override
+	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return values.getViewEditorRenderModeByFieldName();
 	}
 
 	public BPartnerId getBPartnerId()

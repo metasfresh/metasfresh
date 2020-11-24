@@ -1,6 +1,6 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.time.LocalDate;
 import java.util.List;

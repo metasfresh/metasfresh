@@ -81,17 +81,13 @@ import lombok.Value;
  *
  */
 @Value
-@Builder
 public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 {
 	int maxLocators;
-
 	@NonNull
 	BigDecimal minimumPrice;
-
 	@NonNull
 	LocalDate movementDate;
-
 	@NonNull
 	HuForInventoryLineFactory huForInventoryLineFactory;
 
@@ -119,10 +115,11 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 	final Comparator<TransactionContext> TRANSACTIONS_COMPARATOR = TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR
 			.thenComparing(TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR);
 
+	@Builder
 	private LeastRecentTransactionStrategy(
 			final int maxLocators,
-			final BigDecimal minimumPrice,
-			final LocalDate movementDate,
+			@NonNull final BigDecimal minimumPrice,
+			@NonNull final LocalDate movementDate,
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory)
 	{
 		this.maxLocators = maxLocators;

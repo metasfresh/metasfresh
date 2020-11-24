@@ -43,7 +43,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
-import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;

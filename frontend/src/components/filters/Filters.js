@@ -12,8 +12,7 @@ import {
   getFormatForDateField,
 } from '../widget/RawWidgetHelpers';
 import { parseDateWithCurrentTimezone } from '../../utils/documentListHelper';
-
-import TableCell from '../table/TableCell';
+import { fieldValueToString } from '../../utils/tableHelpers';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 
@@ -558,12 +557,12 @@ class Filters extends PureComponent {
           : parameter && parameter.widgetType;
 
       const captionValue = activeParameter
-        ? TableCell.fieldValueToString(
-            activeParameter.valueTo
+        ? fieldValueToString({
+            fieldValue: activeParameter.valueTo
               ? [activeParameter.value, activeParameter.valueTo]
               : activeParameter.value,
-            filterType
-          )
+            fieldType: filterType,
+          })
         : '';
 
       return {

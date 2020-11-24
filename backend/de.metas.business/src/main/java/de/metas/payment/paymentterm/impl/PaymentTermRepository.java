@@ -1,18 +1,24 @@
 package de.metas.payment.paymentterm.impl;
 
+import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
 
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -86,4 +92,42 @@ public class PaymentTermRepository implements IPaymentTermRepository
 
 		return null;
 	}
+
+	@Override
+	public Optional<PaymentTermId> retrievePaymentTermId(@NonNull final PaymentTermQuery query)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_C_PaymentTerm> queryBuilder = queryBL
+				.createQueryBuilder(I_C_PaymentTerm.class)
+				.addOnlyActiveRecordsFilter();
+
+		Check.assumeNotNull(query.getOrgId(), "Org Id is missing from PaymentTermQuery ", query);
+
+		queryBuilder.addInArrayFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY);
+
+		if (query.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_ExternalId, query.getExternalId().getValue());
+		}
+
+		if (!isEmpty(query.getValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, query.getValue());
+		}
+
+		try
+		{
+			final PaymentTermId firstId = queryBuilder
+					.create()
+					.firstIdOnly(PaymentTermId::ofRepoIdOrNull);
+			return Optional.ofNullable(firstId);
+		}
+		catch (final DBMoreThanOneRecordsFoundException e)
+		{
+			// augment and rethrow
+			throw e.appendParametersToMessage().setParameter("paymentTermQuery", query);
+		}
+	}
+
 }

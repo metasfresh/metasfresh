@@ -1,10 +1,8 @@
-package org.adempiere.ad.dao.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package org.adempiere.ad.dao.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.adempiere.ad.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -494,7 +494,7 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addEqualsFilter(final ModelColumn<T, ?> column, final Object value)
+	public ICompositeQueryFilter<T> addEqualsFilter(final ModelColumn<T, ?> column, @Nullable final Object value)
 	{
 		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(column.getColumnName(), value);
 		return addFilter(filter);
@@ -571,14 +571,14 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addCompareFilter(final String columnName, final CompareQueryFilter.Operator operator, final Object value)
+	public ICompositeQueryFilter<T> addCompareFilter(final String columnName, final Operator operator, final @Nullable Object value)
 	{
 		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(columnName, operator, value);
 		return addFilter(filter);
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addCompareFilter(final ModelColumn<T, ?> column, final CompareQueryFilter.Operator operator, final Object value)
+	public ICompositeQueryFilter<T> addCompareFilter(final ModelColumn<T, ?> column, final Operator operator, final @Nullable Object value)
 	{
 		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(column.getColumnName(), operator, value);
 		return addFilter(filter);

@@ -47,7 +47,7 @@ public class ShortTermLocationIndex
 	BPartnerId bpartnerId;
 	BPartnerComposite bpartnerComposite;
 
-	/** locations that were not (yet) retrieved via {@link #extract(IdentifierString)}. */
+	/** locations that were not (yet) retrieved via {@link #extractAndMarkUsed(IdentifierString)}. */
 	Map<BPartnerLocationId, BPartnerLocation> id2UnusedLocation;
 
 	public ShortTermLocationIndex(@NonNull final BPartnerComposite bpartnerComposite)
@@ -70,7 +70,7 @@ public class ShortTermLocationIndex
 		}
 	}
 
-	public BPartnerLocation extract(@NonNull final IdentifierString locationIdentifier)
+	public BPartnerLocation extractAndMarkUsed(@NonNull final IdentifierString locationIdentifier)
 	{
 		final BPartnerLocation result = extract0(locationIdentifier);
 		if (result != null)
@@ -150,7 +150,7 @@ public class ShortTermLocationIndex
 
 	public void resetBillToDefaultFlags()
 	{
-		for (final BPartnerLocation bpartnerLocation : bpartnerComposite.getLocations())
+		for (final BPartnerLocation bpartnerLocation : getUnusedLocations())
 		{
 			bpartnerLocation.getLocationType().setBillToDefault(false);
 		}
@@ -158,7 +158,7 @@ public class ShortTermLocationIndex
 
 	public void resetShipToDefaultFlags()
 	{
-		for (final BPartnerLocation bpartnerLocation : bpartnerComposite.getLocations())
+		for (final BPartnerLocation bpartnerLocation : getUnusedLocations())
 		{
 			bpartnerLocation.getLocationType().setShipToDefault(false);
 		}

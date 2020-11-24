@@ -1,31 +1,6 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_AD_SysConfig;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.model.I_PP_Cost_Collector;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUDocumentSelectTestHelper;
@@ -38,6 +13,28 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -61,15 +58,12 @@ import de.metas.util.collections.CollectionUtils;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class PPOrderMInOutLineRetrievalServiceTest
 {
 	private HUDocumentSelectTestHelper helper;
 
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -227,6 +221,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 	{
 		final I_M_InOut io = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		io.setDocStatus(docStatus);
+		io.setM_Warehouse_ID(helper.defaultWarehouse.getM_Warehouse_ID());
 
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		if (!docActionBL.issDocumentDraftedOrInProgress(io))

@@ -25,35 +25,14 @@ package de.metas.invoicecandidate.process;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.api.IParams;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.compiere.util.Ini;
-
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.form.IClientUI;
-import de.metas.currency.Amount;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -66,6 +45,20 @@ import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.api.IParams;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.compiere.util.DB;
+import org.compiere.util.Ini;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess implements IProcessPrecondition
 {
@@ -74,8 +67,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	// Services
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-
+	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
 	// Parameters
 	private IInvoicingParams invoicingParams;
 	private BigDecimal totalNetAmtToInvoiceChecksum;
@@ -233,16 +225,16 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-		//
-		// NOTE: we are not filtering by IsToClear, Processed etc
-		// because we want to allow the enqueuer do do that
-		// because enqueuer will also log an message about why it was excluded (=> transparant for user)
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsToClear, false)
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false) not filtering by processed, because the IC might be invalid (08343)
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsError, false)
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInDispute, false)
-		//
-		;
+				//
+				// NOTE: we are not filtering by IsToClear, Processed etc
+				// because we want to allow the enqueuer do do that
+				// because enqueuer will also log an message about why it was excluded (=> transparant for user)
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsToClear, false)
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false) not filtering by processed, because the IC might be invalid (08343)
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsError, false)
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInDispute, false)
+				//
+				;
 
 		//
 		// Consider only approved invoices (if we were asked to do so)
@@ -254,49 +246,18 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		return queryBuilder;
 	}
 
+	@Nullable
 	private ProcessCaptionMapper processCaptionMapper(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
 	{
-		final List<Amount> netAmountsToInvoiceList = computeNetAmountsToInvoiceForSelection(selectionFilter);
-		if (netAmountsToInvoiceList.isEmpty())
-		{
-			return null;
-		}
-
-		final ITranslatableString netAmountsToInvoiceString = joinAmountsToTranslatableString(netAmountsToInvoiceList);
-
-		return originalProcessCaption -> TranslatableStrings.builder()
-				.append(originalProcessCaption)
-				.append(" (").append(netAmountsToInvoiceString).append(")")
-				.build();
+		final IQuery<I_C_Invoice_Candidate> query = prepareNetAmountsToInvoiceForSelectionQuery(selectionFilter);
+		return processCaptionMapperHelper.getProcessCaptionMapperForNetAmountsFromQuery(query);
 	}
 
-	private List<Amount> computeNetAmountsToInvoiceForSelection(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
+	private IQuery<I_C_Invoice_Candidate> prepareNetAmountsToInvoiceForSelectionQuery(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
 	{
 		return createICQueryBuilder(selectionFilter)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
-				.create()
-				.sumMoney(I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
-				.stream()
-				.filter(amt -> amt != null && amt.signum() != 0)
-				.map(moneyService::toAmount)
-				.collect(ImmutableList.toImmutableList());
+				.create();
 	}
 
-	private static final ITranslatableString joinAmountsToTranslatableString(final List<Amount> amounts)
-	{
-		Check.assumeNotEmpty(amounts, "amounts is not empty");
-
-		final TranslatableStringBuilder builder = TranslatableStrings.builder();
-		for (final Amount amt : amounts)
-		{
-			if (!builder.isEmpty())
-			{
-				builder.append(" ");
-			}
-
-			builder.append(amt);
-		}
-
-		return builder.build();
-	}
 }

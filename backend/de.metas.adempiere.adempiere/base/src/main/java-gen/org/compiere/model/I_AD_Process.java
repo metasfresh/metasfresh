@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for AD_Process
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_AD_Process 
@@ -14,13 +14,6 @@ public interface I_AD_Process
     /** AD_Table_ID=284 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 4 - System
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Berechtigungsstufe.
@@ -48,7 +41,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_AccessLevel = "AccessLevel";
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
@@ -90,8 +83,8 @@ public interface I_AD_Process
     public static final String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -100,8 +93,8 @@ public interface I_AD_Process
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -298,7 +291,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_CopyFromProcess = "CopyFromProcess";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
@@ -313,7 +306,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
@@ -326,7 +319,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -335,7 +328,7 @@ public interface I_AD_Process
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -376,7 +369,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: TextLong
@@ -386,7 +379,7 @@ public interface I_AD_Process
 	public void setHelp (java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: TextLong
@@ -401,7 +394,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -411,7 +404,7 @@ public interface I_AD_Process
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -499,8 +492,8 @@ public interface I_AD_Process
     public static final String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
 
 	/**
-	 * Set Nach Ausführung Nutzer benachrichtigen.
-	 * Die Benachrichtigung enthält einen Link zum betreffenden Prozess-Revisonsdatensatz.
+	 * Set Notify user after execution.
+	 * Only for java processes. Ignored if the process is started via scheduler. The notification contains a link to the execution's process instance record.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -509,8 +502,8 @@ public interface I_AD_Process
 	public void setIsNotifyUserAfterExecution (boolean IsNotifyUserAfterExecution);
 
 	/**
-	 * Get Nach Ausführung Nutzer benachrichtigen.
-	 * Die Benachrichtigung enthält einen Link zum betreffenden Prozess-Revisonsdatensatz.
+	 * Get Notify user after execution.
+	 * Only for java processes. Ignored if the process is started via scheduler. The notification contains a link to the execution's process instance record.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -575,7 +568,7 @@ public interface I_AD_Process
 
 	/**
 	 * Set Server Process.
-	 * Run this Process on Server only
+	 * (DO NOT USE THIS, IT IS LEGACY) Run this Process on Server only.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -585,7 +578,7 @@ public interface I_AD_Process
 
 	/**
 	 * Get Server Process.
-	 * Run this Process on Server only
+	 * (DO NOT USE THIS, IT IS LEGACY) Run this Process on Server only.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -599,7 +592,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_IsServerProcess = "IsServerProcess";
 
 	/**
-	 * Set Excel-Spaltenüberschriften übersetzen.
+	 * Set Translate Excel Headers.
 	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
 	 *
 	 * <br>Type: YesNo
@@ -609,7 +602,7 @@ public interface I_AD_Process
 	public void setIsTranslateExcelHeaders (boolean IsTranslateExcelHeaders);
 
 	/**
-	 * Get Excel-Spaltenüberschriften übersetzen.
+	 * Get Translate Excel Headers.
 	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
 	 *
 	 * <br>Type: YesNo
@@ -889,7 +882,8 @@ public interface I_AD_Process
     public static final String COLUMNNAME_TechnicalNote = "TechnicalNote";
 
 	/**
-	 * Set Art.
+	 * Set Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -898,7 +892,8 @@ public interface I_AD_Process
 	public void setType (java.lang.String Type);
 
 	/**
-	 * Get Art.
+	 * Get Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -912,7 +907,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_Type = "Type";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -927,7 +922,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
@@ -940,7 +935,7 @@ public interface I_AD_Process
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
@@ -950,7 +945,7 @@ public interface I_AD_Process
 	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String

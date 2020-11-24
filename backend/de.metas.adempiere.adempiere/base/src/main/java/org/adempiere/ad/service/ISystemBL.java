@@ -60,4 +60,6 @@ public interface ISystemBL extends ISingletonService
 	boolean isRememberPasswordAllowed(String sysConfigKey);
 
 	boolean isValid();
+
+	boolean isAutoErrorReport();
 }

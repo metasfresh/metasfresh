@@ -61,6 +61,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractPaymentDAO implements IPaymentDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -82,6 +84,22 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.firstOnlyOrNull(I_C_Payment.class);
 
 		return Optional.ofNullable(i_c_payment);
+	}
+
+	@Override
+	@Nullable
+	public ExternalId getExternalId(@NonNull final PaymentId paymentId){
+		final List<String> externalIDs = queryBL
+				.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMN_C_Payment_ID, paymentId)
+				.create()
+				.listDistinct(I_C_Payment.COLUMNNAME_ExternalOrderId, String.class);
+		if (externalIDs.isEmpty())
+		{
+			return null;
+		}
+
+		return ExternalId.of(externalIDs.get(0));
 	}
 
 	@Override
@@ -212,6 +230,10 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 			queryBuilder
 					.addEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, query.getPayAmt().toBigDecimal())
 					.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Currency_ID, query.getPayAmt().getCurrencyId());
+		}
+		if (!query.getExcludePaymentIds().isEmpty())
+		{
+			queryBuilder.addNotInArrayFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, query.getExcludePaymentIds());
 		}
 
 		return queryBuilder

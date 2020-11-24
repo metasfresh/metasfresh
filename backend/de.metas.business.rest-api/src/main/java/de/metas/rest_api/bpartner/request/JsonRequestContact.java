@@ -128,7 +128,8 @@ public class JsonRequestContact
 	private boolean subjectMatterSet;
 
 	@ApiModelProperty(position = 20, // shall be last
-			required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
+			required = false, value = "Sync advise about this contact's individual properties.\n"
+			+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 	private boolean syncAdviseSet;
 

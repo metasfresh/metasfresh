@@ -20,7 +20,7 @@ import de.metas.printing.api.IPrintJobDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L

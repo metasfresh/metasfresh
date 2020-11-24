@@ -75,11 +75,8 @@ public class PrintingRestController
 	private PrinterHWRepo printerHwRepo;
 
 	/**
-	 *
-	 * @param sessionIdIGNORED
 	 * @param loginRequest the request's user and password are ignored.
 	 *            They are required for another (legacy) client.
-	 * @return
 	 */
 	@PostMapping("/login/{sessionId}")
 	public LoginResponse login(

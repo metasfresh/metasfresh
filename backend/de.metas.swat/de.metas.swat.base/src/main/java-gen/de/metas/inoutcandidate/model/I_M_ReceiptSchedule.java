@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.model;
 
 
 /** Generated Interface for M_ReceiptSchedule
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_ReceiptSchedule 
@@ -14,17 +14,10 @@ public interface I_M_ReceiptSchedule
     /** AD_Table_ID=540524 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -36,8 +29,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -46,8 +39,8 @@ public interface I_M_ReceiptSchedule
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,7 +52,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
+	 * Set Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
@@ -69,7 +62,7 @@ public interface I_M_ReceiptSchedule
 	public void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get DB-Tabelle.
+	 * Get Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
@@ -82,7 +75,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Ansprechpartner.
+	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Table
@@ -92,7 +85,7 @@ public interface I_M_ReceiptSchedule
 	public void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Ansprechpartner.
+	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: Table
@@ -126,7 +119,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_AD_User_Override_ID = "AD_User_Override_ID";
 
 	/**
-	 * Set Anschrift-Text.
+	 * Set Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -135,7 +128,7 @@ public interface I_M_ReceiptSchedule
 	public void setBPartnerAddress (java.lang.String BPartnerAddress);
 
 	/**
-	 * Get Anschrift-Text.
+	 * Get Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -172,8 +165,33 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
-	 * Set Catch Einheit.
-	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom);
+
+	/**
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCanBeExportedFrom();
+
+    /** Column definition for CanBeExportedFrom */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_CanBeExportedFrom = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "CanBeExportedFrom", null);
+    /** Column name CanBeExportedFrom */
+    public static final String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -182,8 +200,8 @@ public interface I_M_ReceiptSchedule
 	public void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
-	 * Get Catch Einheit.
-	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -195,8 +213,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -205,8 +222,7 @@ public interface I_M_ReceiptSchedule
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -218,8 +234,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -228,8 +243,7 @@ public interface I_M_ReceiptSchedule
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -287,8 +301,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Set Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -297,8 +311,8 @@ public interface I_M_ReceiptSchedule
 	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Get Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -310,8 +324,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Bestellung.
-	 * Bestellung
+	 * Set Sales order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -320,8 +334,8 @@ public interface I_M_ReceiptSchedule
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Bestellung.
-	 * Bestellung
+	 * Get Sales order.
+	 * Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -339,8 +353,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -349,8 +362,7 @@ public interface I_M_ReceiptSchedule
 	public void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -368,8 +380,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -383,8 +395,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -396,8 +408,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -406,8 +418,8 @@ public interface I_M_ReceiptSchedule
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -419,8 +431,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Auftragsdatum.
-	 * Datum des Auftrags
+	 * Set Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -429,8 +441,8 @@ public interface I_M_ReceiptSchedule
 	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
-	 * Get Auftragsdatum.
-	 * Datum des Auftrags
+	 * Get Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -540,6 +552,29 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_DeliveryViaRule_Override = "DeliveryViaRule_Override";
 
 	/**
+	 * Set Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setExportStatus (java.lang.String ExportStatus);
+
+	/**
+	 * Get Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExportStatus();
+
+    /** Column definition for ExportStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExportStatus = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, Object>(I_M_ReceiptSchedule.class, "ExportStatus", null);
+    /** Column name ExportStatus */
+    public static final String COLUMNNAME_ExportStatus = "ExportStatus";
+
+	/**
 	 * Set Kopf-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String
@@ -563,8 +598,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -573,8 +608,8 @@ public interface I_M_ReceiptSchedule
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -611,7 +646,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
 
 	/**
-	 * Set Verpackungsmaterial.
+	 * Set Packaging Material .
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -620,7 +655,7 @@ public interface I_M_ReceiptSchedule
 	public void setIsPackagingMaterial (boolean IsPackagingMaterial);
 
 	/**
-	 * Get Verpackungsmaterial.
+	 * Get Packaging Material .
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -634,7 +669,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
 
 	/**
-	 * Set Merkmale.
+	 * Set Ausprägung Merkmals-Satz.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
@@ -644,7 +679,7 @@ public interface I_M_ReceiptSchedule
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
+	 * Get Ausprägung Merkmals-Satz.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
@@ -690,7 +725,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
 
 	/**
-	 * Set Bewegungsdatum.
+	 * Set Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: DateTime
@@ -700,7 +735,7 @@ public interface I_M_ReceiptSchedule
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungsdatum.
+	 * Get Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: DateTime
@@ -715,8 +750,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -725,8 +760,8 @@ public interface I_M_ReceiptSchedule
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -738,7 +773,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Wareneingangsdisposition.
+	 * Set Material Receipt Candidates.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -747,7 +782,7 @@ public interface I_M_ReceiptSchedule
 	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
 
 	/**
-	 * Get Wareneingangsdisposition.
+	 * Get Material Receipt Candidates.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -761,7 +796,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
 
 	/**
-	 * Set Ziel-Lager.
+	 * Set Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -770,7 +805,7 @@ public interface I_M_ReceiptSchedule
 	public void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
-	 * Get Ziel-Lager.
+	 * Get Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -782,8 +817,33 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse Eff..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setM_Warehouse_Effective_ID (int M_Warehouse_Effective_ID);
+
+	/**
+	 * Get Warehouse Eff..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getM_Warehouse_Effective_ID();
+
+    /** Column name M_Warehouse_Effective_ID */
+    public static final String COLUMNNAME_M_Warehouse_Effective_ID = "M_Warehouse_Effective_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -792,8 +852,8 @@ public interface I_M_ReceiptSchedule
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -899,8 +959,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_PriorityRule_Override = "PriorityRule_Override";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -909,8 +968,7 @@ public interface I_M_ReceiptSchedule
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -947,7 +1005,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_QtyMoved = "QtyMoved";
 
 	/**
-	 * Set Bewegte Catch-Menge.
+	 * Set Moved catch quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -956,7 +1014,7 @@ public interface I_M_ReceiptSchedule
 	public void setQtyMovedInCatchUOM (java.math.BigDecimal QtyMovedInCatchUOM);
 
 	/**
-	 * Get Bewegte Catch-Menge.
+	 * Get Moved catch quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -993,7 +1051,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_QtyMovedWithIssues = "QtyMovedWithIssues";
 
 	/**
-	 * Set Bewegte minderwertige Catch-Menge.
+	 * Set Moved catch quantity with issues.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1002,7 +1060,7 @@ public interface I_M_ReceiptSchedule
 	public void setQtyMovedWithIssuesInCatchUOM (java.math.BigDecimal QtyMovedWithIssuesInCatchUOM);
 
 	/**
-	 * Get Bewegte minderwertige Catch-Menge.
+	 * Get Moved catch quantity with issues.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1016,8 +1074,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_QtyMovedWithIssuesInCatchUOM = "QtyMovedWithIssuesInCatchUOM";
 
 	/**
-	 * Set Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Set Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1026,8 +1084,8 @@ public interface I_M_ReceiptSchedule
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Get Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1183,7 +1241,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_QualityNote = "QualityNote";
 
 	/**
-	 * Set Datensatz-ID.
+	 * Set Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
@@ -1193,7 +1251,7 @@ public interface I_M_ReceiptSchedule
 	public void setRecord_ID (int Record_ID);
 
 	/**
-	 * Get Datensatz-ID.
+	 * Get Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
@@ -1233,8 +1291,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_Status = "Status";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1248,8 +1306,8 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

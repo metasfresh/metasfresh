@@ -31,7 +31,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_BankStatementLine.class)
-class C_BankStatementLine_MockedInterceptor extends C_BankStatementLine
+public class C_BankStatementLine_MockedInterceptor extends C_BankStatementLine
 {
 	public C_BankStatementLine_MockedInterceptor(@NonNull final IBankStatementBL bankStatementBL)
 	{

@@ -215,7 +215,7 @@ public final class JSONDocumentLayoutElementField
 		tooltipIconName = fieldDescriptor.getTooltipIconName();
 		emptyText = fieldDescriptor.getEmptyFieldText(jsonOpts.getAdLanguage());
 		clearValueText = fieldDescriptor.getListNullItemCaption(jsonOpts.getAdLanguage());
-		devices = fieldDescriptor.getDevices();
+		devices = JSONDeviceDescriptor.ofList(fieldDescriptor.getDevices(), jsonOpts.getAdLanguage());
 
 		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
 		if (newRecordEntityDescriptor != null)

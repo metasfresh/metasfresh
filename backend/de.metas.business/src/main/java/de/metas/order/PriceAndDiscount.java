@@ -18,7 +18,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.pricing.limit.PriceLimitRuleResult;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;

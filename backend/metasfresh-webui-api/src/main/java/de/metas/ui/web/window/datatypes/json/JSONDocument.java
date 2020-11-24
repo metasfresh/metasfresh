@@ -1,42 +1,8 @@
-package de.metas.ui.web.window.datatypes.json;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.exceptions.AdempiereException;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.ui.web.websocket.WebSocketConfig;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentChanges;
-import de.metas.ui.web.window.model.DocumentSaveStatus;
-import de.metas.ui.web.window.model.DocumentStandardAction;
-import de.metas.ui.web.window.model.DocumentValidStatus;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
-import lombok.NonNull;
-import lombok.ToString;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -54,6 +20,40 @@ import lombok.ToString;
  * #L%
  */
 
+package de.metas.ui.web.window.datatypes.json;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentChanges;
+import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.DocumentStandardAction;
+import de.metas.ui.web.window.model.DocumentValidStatus;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * JSON format:
  * <code>
@@ -61,13 +61,22 @@ import lombok.ToString;
  * </code>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString(callSuper = true)
 public final class JSONDocument extends JSONDocumentBase
 {
 	public static JSONDocument ofDocument(@NonNull final Document document, @NonNull final JSONDocumentOptions options)
 	{
+		return ofDocument(document, options, null);
+	}
+
+	public static JSONDocument ofDocument(@NonNull final Document document, @NonNull final JSONDocumentOptions options, final @Nullable Boolean hasComments)
+	{
+		if (hasComments != null && !document.isRootDocument())
+		{
+			throw new AdempiereException("`hasComments`=" + hasComments + " passed for non-RootDocument. `hasComments` is only supported for RootDocuments.");
+		}
+
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
 		// fieldsBy
@@ -129,6 +138,12 @@ public final class JSONDocument extends JSONDocumentBase
 			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
 		}
 
+		//
+		// Has Comments
+		{
+			jsonDocument.hasComments = hasComments;
+		}
+
 		return jsonDocument;
 	}
 
@@ -156,14 +171,21 @@ public final class JSONDocument extends JSONDocumentBase
 	}
 
 	/**
-	 * @param documents
-	 * @param includeFieldsList
 	 * @return list of {@link JSONDocument}s
 	 */
 	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final JSONDocumentOptions options)
 	{
+		return ofDocumentsList(documents, options, null);
+	}
+
+	/**
+	 * @param hasComments null unless this is a Root Document.
+	 * @return list of {@link JSONDocument}s
+	 */
+	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final JSONDocumentOptions options, final @Nullable Boolean hasComments)
+	{
 		return documents.stream()
-				.map(document -> ofDocument(document, options))
+				.map(document -> ofDocument(document, options, hasComments))
 				.collect(Collectors.toList());
 	}
 
@@ -173,7 +195,7 @@ public final class JSONDocument extends JSONDocumentBase
 
 		final List<JSONDocument> jsonChanges = documentChangesCollector.streamOrderedDocumentChanges()
 				.map(documentChanges -> ofEventOrNull(documentChanges, options))
-				.filter(jsonDocument -> jsonDocument != null)
+				.filter(Objects::nonNull)
 				.limit(MAX_SIZE + 1)
 				.collect(ImmutableList.toImmutableList());
 
@@ -190,6 +212,7 @@ public final class JSONDocument extends JSONDocumentBase
 		return jsonChanges;
 	}
 
+	@Nullable
 	private static JSONDocument ofEventOrNull(final DocumentChanges documentChangedEvents, final JSONDocumentOptions options)
 	{
 		if (documentChangedEvents.isEmpty())
@@ -287,7 +310,9 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentSaveStatus saveStatus;
 
-	/** {@link JSONIncludedTabInfo}s indexed by tabId */
+	/**
+	 * {@link JSONIncludedTabInfo}s indexed by tabId
+	 */
 	@JsonProperty("includedTabsInfo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
@@ -301,10 +326,17 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String websocketEndpoint;
 
-	/** Event's timestamp. Usually set when this event shall be sent via websocket */
+	/**
+	 * Event's timestamp. Usually set when this event shall be sent via websocket
+	 */
 	@JsonProperty("timestamp")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String timestamp;
+
+	@JsonProperty("hasComments")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable
+	private Boolean hasComments;
 
 	private JSONDocument(final DocumentPath documentPath)
 	{
@@ -320,11 +352,13 @@ public final class JSONDocument extends JSONDocumentBase
 		this.websocketEndpoint = null; // NOTE: this constructor is used when creating websocket events and there we don't need the websocket endpoint
 	}
 
+	@Nullable
 	private static String buildWebsocketEndpointOrNull(final WindowId windowId, final DocumentId documentId)
 	{
 		if (windowId != null && documentId != null)
 		{
-			return WebSocketConfig.buildDocumentTopicName(windowId, documentId);
+			return WebsocketTopicNames.buildDocumentTopicName(windowId, documentId)
+					.getAsString();
 		}
 		else
 		{

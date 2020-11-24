@@ -28,7 +28,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
-import de.metas.payment.esr.api.IBPBankAccountBL;
+import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
@@ -53,12 +53,12 @@ public class SEPA_Export_Line
 			return; // nothing to do
 		}
 
-		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
+		final IESRBPBankAccountBL esrBankAccountBL = Services.get(IESRBPBankAccountBL.class);
 		final IESRImportBL esrBL = Services.get(IESRImportBL.class);
 
 		final String otherAccountIdentification;
 
-		final String esrAccountNo = bpBankAccountBL.retrieveESRAccountNo(bpBankAccount);
+		final String esrAccountNo = esrBankAccountBL.retrieveESRAccountNo(bpBankAccount);
 		if (esrAccountNo.length() == 9)
 		{
 			// task 08341: the account should already contain a check digit, but we verify that it is actually the correct check digit.

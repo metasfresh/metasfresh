@@ -1,16 +1,28 @@
 package de.metas.rest_api.utils;
 
-import javax.servlet.http.HttpServletRequest;
-
+import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.JsonAttributeSetInstance;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.X_M_Attribute;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import de.metas.i18n.ILanguageDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 /*
  * #%L
@@ -37,7 +49,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RestApiUtils
 {
-	public static String getAdLanguage()
+	public String getAdLanguage()
 	{
 		final ILanguageDAO languagesRepo = Services.get(ILanguageDAO.class);
 
@@ -60,9 +72,10 @@ public class RestApiUtils
 		return languagesRepo.retrieveBaseLanguage();
 	}
 
-	public static final HttpServletRequest getHttpServletRequest()
+	@Nullable
+	public HttpServletRequest getHttpServletRequest()
 	{
-		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 		if (requestAttributes == null)
 		{
 			return null;
@@ -72,7 +85,49 @@ public class RestApiUtils
 			return null;
 		}
 
-		final HttpServletRequest servletRequest = ((ServletRequestAttributes)requestAttributes).getRequest();
-		return servletRequest;
+		return ((ServletRequestAttributes)requestAttributes).getRequest();
+	}
+
+	public JsonAttributeSetInstance extractJsonAttributeSetInstance(
+			@NonNull final ImmutableAttributeSet attributeSet,
+			@NonNull final OrgId orgId)
+	{
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+		final JsonAttributeSetInstance.JsonAttributeSetInstanceBuilder jsonAttributeSetInstance = JsonAttributeSetInstance.builder();
+		for (final AttributeId attributeId : attributeSet.getAttributeIds())
+		{
+			final AttributeCode attributeCode = attributeSet.getAttributeCode(attributeId);
+
+			final JsonAttributeInstance.JsonAttributeInstanceBuilder instanceBuilder = JsonAttributeInstance.builder()
+					.attributeName(attributeSet.getAttributeName(attributeId))
+					.attributeCode(attributeCode.getCode());
+			final String attributeValueType = attributeSet.getAttributeValueType(attributeId);
+			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+			{
+				final Date valueAsDate = attributeSet.getValueAsDate(attributeCode);
+				if (valueAsDate != null)
+				{
+					final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+					final LocalDate localDate = valueAsDate.toInstant().atZone(timeZone).toLocalDate();
+					instanceBuilder.valueDate(localDate);
+				}
+			}
+			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+			{
+				instanceBuilder.valueStr(attributeSet.getValueAsString(attributeCode));
+			}
+			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+			{
+				instanceBuilder.valueStr(attributeSet.getValueAsString(attributeCode));
+			}
+			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+			{
+				instanceBuilder.valueNumber(attributeSet.getValueAsBigDecimal(attributeCode));
+			}
+
+			jsonAttributeSetInstance.attributeInstance(instanceBuilder.build());
+		}
+		return jsonAttributeSetInstance.build();
 	}
 }

@@ -149,6 +149,13 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>de.metas.adempiere.libero</groupId>
+            <artifactId>de.metas.adempiere.libero.libero</artifactId>
+            <version>10.0.0</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
 
 
 		<!-- Elasticsearch -->

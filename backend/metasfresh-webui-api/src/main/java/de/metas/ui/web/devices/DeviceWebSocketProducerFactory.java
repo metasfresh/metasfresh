@@ -2,11 +2,12 @@ package de.metas.ui.web.devices;
 
 import org.springframework.stereotype.Component;
 
-import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
+import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
-import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebSocketProducer;
 import de.metas.ui.web.websocket.WebSocketProducerFactory;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
@@ -45,7 +46,7 @@ import lombok.ToString;
 @Component
 public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 {
-	private static final String TOPICNAME_Prefix = WebSocketConfig.TOPIC_Devices + "/";
+	private static final String TOPICNAME_Prefix = WebsocketTopicNames.TOPIC_Devices + "/";
 
 	public static final String buildDeviceTopicName(final String deviceId)
 	{
@@ -53,15 +54,13 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 		return TOPICNAME_Prefix + deviceId;
 	}
 
-	public static final String extractDeviceIdFromTopicName(final String topicName)
+	public static final String extractDeviceIdFromTopicName(@NonNull final WebsocketTopicName topicName)
 	{
-		if (topicName == null)
+		final String topicNameString = topicName.getAsString();
+
+		if (topicNameString.startsWith(TOPICNAME_Prefix))
 		{
-			return null;
-		}
-		else if (topicName.startsWith(TOPICNAME_Prefix))
-		{
-			return topicName.substring(TOPICNAME_Prefix.length());
+			return topicNameString.substring(TOPICNAME_Prefix.length());
 		}
 		else
 		{
@@ -76,7 +75,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 	}
 
 	@Override
-	public WebSocketProducer createProducer(final String topicName)
+	public WebSocketProducer createProducer(final WebsocketTopicName topicName)
 	{
 		final String deviceId = extractDeviceIdFromTopicName(topicName);
 		return new DeviceWebSocketProducer(deviceId);

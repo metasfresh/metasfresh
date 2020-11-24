@@ -14,5 +14,6 @@
 <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="metasfresh-dist-serverRoot"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="--debug"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-dist-serverRoot"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:metasfresh-dist}/metasfresh.properties&#13;&#10;-DTraceFile=true&#13;&#10;-Xmx1G&#13;&#10;-Drun-headless=false&#13;&#10;-DdevelopmentWorkspaceDir=${workspace_loc}&#13;&#10;-Dspring.profiles.active=logstash"/>
 </launchConfiguration>

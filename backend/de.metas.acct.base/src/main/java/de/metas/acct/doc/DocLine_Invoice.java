@@ -25,7 +25,6 @@ package de.metas.acct.doc;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Doc_Invoice;
@@ -36,9 +35,10 @@ import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;

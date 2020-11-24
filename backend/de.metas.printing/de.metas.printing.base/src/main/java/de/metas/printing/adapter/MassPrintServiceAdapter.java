@@ -92,7 +92,7 @@ public final class MassPrintServiceAdapter extends AbstractPrintService
 		//
 		// Ask our printing service to printing it right now
 		archive.setIsDirectEnqueue(true);
-		archive.setIsCreatePrintJob(true); // create the print job not only enqueue to printing queue
+		archive.setIsDirectProcessQueueItem(true); // create the print job or store PDF; not only enqueue to printing queue
 
 		// https://github.com/metasfresh/metasfresh/issues/1240
 		// store the printInfos number of copies for this archive record. It doesn't make sense to persist this value,

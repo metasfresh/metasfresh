@@ -1,60 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import de.metas.bpartner.BPartnerContactId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_InOut;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ShipmentScheduleHUPackingAware;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
@@ -87,13 +35,13 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
@@ -105,6 +53,56 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_InOut;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 {

@@ -1,6 +1,28 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import de.metas.inout.InOutLineId;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_M_InOutLine;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -24,29 +46,6 @@ import static java.math.BigDecimal.ZERO;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_M_InOutLine;
-import org.slf4j.Logger;
-
-import de.metas.inout.InOutLineId;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 {

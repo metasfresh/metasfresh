@@ -31,6 +31,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Archive;
 import org.slf4j.Logger;
@@ -107,44 +108,47 @@ public class DBArchiveStorage extends AbstractArchiveStorage
 	} // getBinaryData
 
 	@Override
-	public void setBinaryData(I_AD_Archive archive, byte[] inflatedData)
+	public void setBinaryData(@NonNull final I_AD_Archive archive, @NonNull final byte[] uncompressedData)
 	{
-		if (inflatedData == null || inflatedData.length == 0)
-			throw new IllegalArgumentException("InflatedData is NULL");
-		// m_inflated = new Integer(inflatedData.length);
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ZipOutputStream zip = new ZipOutputStream(out);
+		if (uncompressedData.length == 0)
+		{
+			throw new AdempiereException("uncompressedData may not be empty")
+					.appendParametersToMessage()
+					.setParameter("AD_Archive", archive);
+		}
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final ZipOutputStream zip = new ZipOutputStream(out);
 		zip.setMethod(ZipOutputStream.DEFLATED);
 		zip.setLevel(Deflater.BEST_COMPRESSION);
 		zip.setComment("adempiere");
 		//
-		byte[] deflatedData = null;
+		byte[] compressedData = null;
 		try
 		{
-			ZipEntry entry = new ZipEntry("AdempiereArchive");
+			final ZipEntry entry = new ZipEntry("AdempiereArchive");
 			entry.setTime(System.currentTimeMillis());
 			entry.setMethod(ZipEntry.DEFLATED);
 			zip.putNextEntry(entry);
-			zip.write(inflatedData, 0, inflatedData.length);
+			zip.write(uncompressedData, 0, uncompressedData.length);
 			zip.closeEntry();
 			logger.debug(entry.getCompressedSize() + " (" + entry.getSize() + ") "
 					+ (entry.getCompressedSize() * 100 / entry.getSize()) + "%");
 			//
 			// zip.finish();
 			zip.close();
-			deflatedData = out.toByteArray();
-			logger.debug("Length=" + inflatedData.length);
-			// m_deflated = new Integer(deflatedData.length);
+			compressedData = out.toByteArray();
+			logger.debug("Length=" + uncompressedData.length);
+			// m_deflated = new Integer(compressedData.length);
 		}
 		catch (Exception e)
 		{
 			// log.error("saveLOBData", e);
-			// deflatedData = null;
+			// compressedData = null;
 			// m_deflated = null;
-			throw new AdempiereException(e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
-		archive.setBinaryData(deflatedData);
+		archive.setBinaryData(compressedData);
 		archive.setIsFileSystem(false);
 	}
 }

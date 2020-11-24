@@ -5647,5 +5647,5204 @@
       ],
       "websocketEndpoint": "/document/143/1000000"
     }
-  ]
+  ],
+  "row_data2": {
+    "result": [
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000026",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000026,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 10,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005576",
+              "caption": "Karotten gestückelt Halbfabrikat_P002736"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "CO",
+              "caption": "Component"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": {
+              "key": "01",
+              "caption": "01",
+              "description": "Variant Group 1"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "44",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "11.1",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "1",
+              "caption": "Backflush",
+              "description": "Components issue in Backflush"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "0.123",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      },
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000027",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000027,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 20,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005572",
+              "caption": "Frisée Industrie_P002732"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "CO",
+              "caption": "Component"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": {
+              "key": "03",
+              "caption": "03",
+              "description": "Variant Group 3"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "36",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "85.2",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "1",
+              "caption": "Backflush",
+              "description": "Components issue in Backflush"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "0.167",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      },
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000028",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000028,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 30,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005573",
+              "caption": "Radiesli gerüstet Industrie_P002733"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "CO",
+              "caption": "Component"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": {
+              "key": "02",
+              "caption": "02",
+              "description": "Variant Group 2"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "20",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "11.1",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "1",
+              "caption": "Backflush",
+              "description": "Components issue in Backflush"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "0.056",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      },
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000029",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000029,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 40,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": "Rolle->mm",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005578",
+              "caption": "Folie für Salat (1000 lm)_P002738"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "PK",
+              "caption": "Packing"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "260",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "1000001",
+              "caption": "Millimeter"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "11.1",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "9",
+              "caption": "Issue only for what was received",
+              "description": "Issue only as much as is needed for received quantity."
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "288.86",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      }
+    ],
+    "missingIds": []
+  },
+  "updated_row_data2": {
+    "result": [
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000032",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000032,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 30,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005573",
+              "caption": "Radiesli gerüstet Industrie_P002733"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "CO",
+              "caption": "Component"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": {
+              "key": "02",
+              "caption": "02",
+              "description": "Variant Group 2"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "20",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "11.1",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "1",
+              "caption": "Backflush",
+              "description": "Components issue in Backflush"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "0.556",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      },
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000031",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000031,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 20,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005572",
+              "caption": "Frisée Industrie_P002732"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "CO",
+              "caption": "Component"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": {
+              "key": "03",
+              "caption": "03",
+              "description": "Variant Group 3"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "36",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "85.2",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "1",
+              "caption": "Backflush",
+              "description": "Components issue in Backflush"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "1.667",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      },
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000030",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000030,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 10,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005576",
+              "caption": "Karotten gestückelt Halbfabrikat_P002736"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "CO",
+              "caption": "Component"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": {
+              "key": "01",
+              "caption": "01",
+              "description": "Variant Group 1"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "44",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "540017",
+              "caption": "Kilogram"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "11.1",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "1",
+              "caption": "Backflush",
+              "description": "Components issue in Backflush"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "1.223",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      },
+      {
+        "windowId": "53009",
+        "id": "1000000",
+        "tabId": "AD_Tab-53039",
+        "tabid": "AD_Tab-53039",
+        "rowId": "1000033",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 1000033,
+            "widgetType": "Integer"
+          },
+          "Line": {
+            "field": "Line",
+            "value": 40,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Line"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Description": {
+            "field": "Description",
+            "value": "Rolle->mm",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Description"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Help": {
+            "field": "Help",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Help"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_ChangeNotice_ID": {
+            "field": "M_ChangeNotice_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_ChangeNotice_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidFrom": {
+            "field": "ValidFrom",
+            "value": "2015-07-14T00:00:00.000+02:00",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidFrom"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ValidTo": {
+            "field": "ValidTo",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ValidTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Product_ID": {
+            "field": "M_Product_ID",
+            "value": {
+              "key": "2005578",
+              "caption": "Folie für Salat (1000 lm)_P002738"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Product_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_AttributeSetInstance_ID": {
+            "field": "M_AttributeSetInstance_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "ProductAttributes",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_AttributeSetInstance_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "ComponentType": {
+            "field": "ComponentType",
+            "value": {
+              "key": "PK",
+              "caption": "Packing"
+            },
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ComponentType"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "VariantGroup": {
+            "field": "VariantGroup",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VariantGroup"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsQtyPercentage": {
+            "field": "IsQtyPercentage",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsQtyPercentage"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsCritical": {
+            "field": "IsCritical",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsCritical"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyBOM": {
+            "field": "QtyBOM",
+            "value": "260",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBOM"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyBatch": {
+            "field": "QtyBatch",
+            "value": "0",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": false,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyBatch"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "C_UOM_ID": {
+            "field": "C_UOM_ID",
+            "value": {
+              "key": "1000001",
+              "caption": "Millimeter"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_UOM_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Assay": {
+            "field": "Assay",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Assay"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Scrap": {
+            "field": "Scrap",
+            "value": "11.1",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Number",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Scrap"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IssueMethod": {
+            "field": "IssueMethod",
+            "value": {
+              "key": "9",
+              "caption": "Issue only for what was received",
+              "description": "Issue only as much as is needed for received quantity."
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IssueMethod"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "LeadTimeOffset": {
+            "field": "LeadTimeOffset",
+            "value": 0,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Integer",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "LeadTimeOffset"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BackflushGroup": {
+            "field": "BackflushGroup",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BackflushGroup"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Forecast": {
+            "field": "Forecast",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Forecast"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "DateDelivered": {
+            "field": "DateDelivered",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "ZonedDateTime",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "DateDelivered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_User_ID": {
+            "field": "AD_User_ID",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_User_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Warehouse_ID": {
+            "field": "M_Warehouse_ID",
+            "value": {
+              "key": "540008",
+              "caption": "Hauptlager_StdWarehouse"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Warehouse_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "M_Locator_ID": {
+            "field": "M_Locator_ID",
+            "value": {
+              "key": "540007",
+              "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+            },
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_Locator_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyEntered": {
+            "field": "QtyEntered",
+            "value": "0",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyEntered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyRequiered": {
+            "field": "QtyRequiered",
+            "value": "2888.6",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyRequiered"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "QtyDeliveredActual": {
+            "field": "QtyDeliveredActual",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyDeliveredActual"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyUsageVariance": {
+            "field": "QtyUsageVariance",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyUsageVariance"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReserved": {
+            "field": "QtyReserved",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReserved"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyReject": {
+            "field": "QtyReject",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyReject"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyScrap": {
+            "field": "QtyScrap",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyScrap"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QtyPost": {
+            "field": "QtyPost",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QtyPost"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "M_HU_LUTU_Configuration_ID": {
+            "field": "M_HU_LUTU_Configuration_ID",
+            "value": null,
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "M_HU_LUTU_Configuration_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredPercOfRaw": {
+            "field": "QM_QtyDeliveredPercOfRaw",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredPercOfRaw"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "QM_QtyDeliveredAvg": {
+            "field": "QM_QtyDeliveredAvg",
+            "value": "0",
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Quantity",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "QM_QtyDeliveredAvg"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "ShowSubBOMIngredients": {
+            "field": "ShowSubBOMIngredients",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "ShowSubBOMIngredients"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "CULabelQuanitity": {
+            "field": "CULabelQuanitity",
+            "value": null,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "CULabelQuanitity"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/53009/1000000"
+      }
+    ],
+    "missingIds": [
+      "1000029",
+      "1000028",
+      "1000027",
+      "1000026"
+    ]
+  }
 }

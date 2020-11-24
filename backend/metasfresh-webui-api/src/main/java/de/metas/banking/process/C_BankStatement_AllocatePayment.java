@@ -81,7 +81,7 @@ public class C_BankStatement_AllocatePayment extends BankStatementBasedProcess
 		}
 
 		final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(PaymentsViewFactory.WINDOW_ID)
-				.setFilterOnlyIds(PaymentId.toIntSet(paymentIds))
+				.setParameter(PaymentsViewFactory.PARAMETER_TYPE_SET_OF_PAYMENT_IDS, paymentIds)
 				.build())
 				.getViewId();
 

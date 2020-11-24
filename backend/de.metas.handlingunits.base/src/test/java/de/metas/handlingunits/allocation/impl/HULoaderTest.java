@@ -30,7 +30,6 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.MockedAllocationSourceDestination;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Test;
 
 /**
  *

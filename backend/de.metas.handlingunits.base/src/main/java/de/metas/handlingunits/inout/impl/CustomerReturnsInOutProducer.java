@@ -14,6 +14,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
@@ -111,20 +112,22 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void createLines()
 	{
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx());
+		final Map<ClientAndOrgId, IHUContext> clientOrg2huContext = new HashMap<>();
 
 		for (final HUToReturn huToReturnInfo : getHUsToReturn())
 		{
+			// we know for sure the huAssignments are for inoutlines
+			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
+
+			// make sure to have the right client and org IDs each time
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(inOutLine.getAD_Client_ID(), inOutLine.getAD_Org_ID());
+			final IHUContext huContext = clientOrg2huContext.computeIfAbsent(clientAndOrgId, key -> handlingUnitsBL.createMutableHUContext(getCtx(), key));
 
 			collector = new HUPackingMaterialsCollector(huContext);
 			collector.setisCollectTUNumberPerOrigin(true);
 			collector.setisCollectAggregatedHUs(true);
 
 			final I_M_HU hu = huToReturnInfo.getHu();
-
-			// we know for sure the huAssignments are for inoutlines
-			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
-
 
 			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.builder()
 					.inoutLine(inOutLine)

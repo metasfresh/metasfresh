@@ -1,7 +1,7 @@
-# <img src='/images/metasfresh_logo_green.jpg' height='60' alt='metasfresh Logo' aria-label='metasfresh.com' /></a>
+# <img src='/images/metasfresh-logo-slogan-969x248.png' height='60' alt='metasfresh Logo - We do Open Source ERP' aria-label='metasfresh.com' /></a>
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/30ecd0d9ba8a4561a60335644b592418)](https://www.codacy.com/gh/metasfresh/metasfresh?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=metasfresh/metasfresh&amp;utm_campaign=Badge_Grade)
-[![release](https://img.shields.io/badge/release-5.144-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.144)
+[![release](https://img.shields.io/badge/release-5.148-blue.svg)](https://github.com/metasfresh/metasfresh/releases/tag/5.148)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/metasfresh)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](https://github.com/metasfresh/metasfresh/blob/master/LICENSE.md)
 
@@ -10,12 +10,11 @@
 
 metasfresh is a responsive, Free and Open Source ERP System. Our aim is to create fast and easy-to-use enterprise software with an outstanding user experience.
 
-> **__Competitive ERP is Free__**
+> **__We do Open Source ERP__**
 
 Equipped with wide and detailed functionality, metasfresh fits for companies from industry and trade that are searching business software that provides high scalability and flexibility.
 
 It has a 3-tier architecture with Rest-API and a Web User Frontend developed in HTML5/ ReactJS/ Redux.
-
 
 ![metasfresh-sales-order](https://user-images.githubusercontent.com/13365687/36896187-f5ed2e48-1e11-11e8-9c41-a7878c148f81.gif)
 

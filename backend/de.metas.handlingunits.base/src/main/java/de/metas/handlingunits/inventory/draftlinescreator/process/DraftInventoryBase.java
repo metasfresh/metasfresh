@@ -1,26 +1,22 @@
 package de.metas.handlingunits.inventory.draftlinescreator.process;
 
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_DocType;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregator;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
-import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -46,11 +42,8 @@ import de.metas.util.Services;
 
 public abstract class DraftInventoryBase extends JavaProcess implements IProcessPrecondition
 {
-	private final InventoryRepository inventoryRepo = Adempiere.getBean(InventoryRepository.class);
-
-	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = Adempiere.getBean(InventoryLineAggregatorFactory.class);
-
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final InventoryRepository inventoryRepo = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = SpringContextHolder.instance.getBean(InventoryLineAggregatorFactory.class);
 
 	@Override
 	final public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -73,18 +66,17 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 	final protected String doIt()
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-		final I_M_Inventory inventoryRecord = Services.get(IInventoryDAO.class).getById(inventoryId);
-		final I_C_DocType docTypeRecord = Services.get(IDocTypeDAO.class).getById(inventoryRecord.getC_DocType_ID());
-		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
+		final Inventory inventory = inventoryRepo.getById(inventoryId);
+		final DocBaseAndSubType docBaseAndSubType = inventory.getDocBaseAndSubType();
 
-		final HUsForInventoryStrategy strategy = createStrategy(inventoryRecord);
+		final HUsForInventoryStrategy strategy = createStrategy(inventory);
 
-		final InventoryLineAggregator inventoryLineAggregator = inventoryLineAggregatorFactory.createFor(docBaseAndSubType);
+		final InventoryLineAggregator inventoryLineAggregator = inventoryLineAggregatorFactory.createForDocBaseAndSubType(docBaseAndSubType);
 
 		Check.errorUnless(
-				documentBL.issDocumentDraftedOrInProgress(inventoryRecord),
-				"the given inventory record needs to be in status 'DR' or 'IP', but is in status={}; inventoryRecord={}",
-				inventoryRecord.getDocStatus(), inventoryRecord);
+				inventory.getDocStatus().isDraftedOrInProgress(),
+				"the given inventory record needs to be in status 'DR' or 'IP', but is in status={}; inventory={}",
+				inventory.getDocStatus(), inventory);
 
 		final InventoryLinesCreationCtx draftLines = InventoryLinesCreationCtx.builder()
 				.inventory(inventoryRepo.getById(inventoryId))
@@ -99,5 +91,5 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 		return "@Created@/@Updated@ #" + draftLinesCreator.getCountInventoryLines();
 	}
 
-	protected abstract HUsForInventoryStrategy createStrategy(I_M_Inventory inventory);
+	protected abstract HUsForInventoryStrategy createStrategy(Inventory inventory);
 }

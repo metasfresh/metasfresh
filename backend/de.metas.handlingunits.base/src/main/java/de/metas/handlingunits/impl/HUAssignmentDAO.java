@@ -1,5 +1,32 @@
 package de.metas.handlingunits.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.IQuery;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
 import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
 
@@ -24,35 +51,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.IQuery;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 public class HUAssignmentDAO implements IHUAssignmentDAO
 {

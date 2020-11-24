@@ -52,7 +52,7 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 

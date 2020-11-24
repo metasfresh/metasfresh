@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.report;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -10,7 +11,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -100,8 +100,8 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	}
 
 	private HUReportProcessInstance(
-			final HUReportProcessInstance from, 
-			final CopyMode copyMode, 
+			final HUReportProcessInstance from,
+			final CopyMode copyMode,
 			final IDocumentChangesCollector changesCollector)
 	{
 		instanceId = from.instanceId;
@@ -223,7 +223,8 @@ final class HUReportProcessInstance implements IProcessInstanceController
 
 	public void setCopies(final int copies)
 	{
-		parameters.processValueChange(PARAM_Copies, copies, ReasonSupplier.NONE);
+		boolean ignoreReadonlyFlag = false;
+		parameters.processValueChange(PARAM_Copies, copies, ReasonSupplier.NONE, ignoreReadonlyFlag);
 	}
 
 	public int getCopies()

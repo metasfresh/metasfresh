@@ -43,7 +43,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -201,7 +201,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		term.setM_Product_ID(product.getM_Product_ID());
 		term.setStartDate(startDate);
-		term.setC_OrderLine_Term(orderLine);
+		term.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
+		term.setC_Order_Term_ID(orderLine.getC_Order_ID());
 		term.setIsAutoRenew(isAutoRenew);
 		term.setC_UOM_ID(uomId.getRepoId());
 		save(term);

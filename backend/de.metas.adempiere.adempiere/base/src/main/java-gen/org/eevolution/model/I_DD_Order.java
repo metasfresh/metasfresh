@@ -1085,6 +1085,27 @@ public interface I_DD_Order
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
+	 * Set Warehouse from.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_From_ID (int M_Warehouse_From_ID);
+
+	/**
+	 * Get Warehouse from.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_From_ID();
+
+    /** Column name M_Warehouse_From_ID */
+    public static final String COLUMNNAME_M_Warehouse_From_ID = "M_Warehouse_From_ID";
+
+	/**
 	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
@@ -1112,6 +1133,27 @@ public interface I_DD_Order
     public static final org.adempiere.model.ModelColumn<I_DD_Order, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_DD_Order, org.compiere.model.I_M_Warehouse>(I_DD_Order.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Warehouse to.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_To_ID (int M_Warehouse_To_ID);
+
+	/**
+	 * Get Warehouse to.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_To_ID();
+
+    /** Column name M_Warehouse_To_ID */
+    public static final String COLUMNNAME_M_Warehouse_To_ID = "M_Warehouse_To_ID";
 
 	/**
 	 * Set MRP Allow Cleanup.

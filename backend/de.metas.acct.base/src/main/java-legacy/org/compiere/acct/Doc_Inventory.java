@@ -75,7 +75,6 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 				.retrieveLinesForInventoryId(inventoryId)
 				.stream()
 				.map(line -> new DocLine_Inventory(line, this))
-				.filter(docLine -> !docLine.getQty().isZero())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -158,7 +157,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 			return chargeAcct;
 		}
 
-		return getAccount(Doc.ACCTTYPE_InvDifferences, as);
+		return getAccount(AccountType.InvDifferences, as);
 	}
 
 }   // Doc_Inventory

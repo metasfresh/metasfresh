@@ -27,7 +27,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

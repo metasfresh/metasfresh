@@ -24,6 +24,7 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder.SqlCreateSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -78,7 +79,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, final DocumentIdsSelection rowIds)
+	public SqlViewRowsWhereClause getSqlWhereClause(
+			@NonNull final ViewId viewId,
+			@NonNull final DocumentIdsSelection rowIds)
 	{
 		return newSqlViewSelectionQueryBuilder().buildSqlWhereClause(viewId.getViewId(), rowIds);
 	}

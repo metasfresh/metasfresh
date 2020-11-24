@@ -1,6 +1,29 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.board;
 
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +31,8 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
+import de.metas.ui.web.comments.CommentsService;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,28 +84,6 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @RestController
 @RequestMapping(BoardRestController.ENDPOINT)
@@ -151,7 +154,7 @@ public class BoardRestController
 		final JSONBoardBuilder jsonBoard = JSONBoard.builder()
 				.boardId(boardId)
 				.caption(boardDescriptor.getCaption().translate(adLanguage))
-				.websocketEndpoint(boardDescriptor.getWebsocketEndpoint());
+				.websocketEndpoint(boardDescriptor.getWebsocketEndpoint().getAsString());
 
 		boardDescriptor.getLanes()
 				.values().stream()
@@ -391,6 +394,6 @@ public class BoardRestController
 	{
 		final ViewResult viewResult = ViewResult.ofView(view);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewResult.of(viewResult, rowOverrides, jsonOpts);
+		return JSONViewResult.of(viewResult, rowOverrides, jsonOpts, ViewRowCommentsSummary.EMPTY);
 	}
 }

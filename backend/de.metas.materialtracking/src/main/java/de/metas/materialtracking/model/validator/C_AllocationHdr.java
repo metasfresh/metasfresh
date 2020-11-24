@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -34,6 +33,7 @@ import org.compiere.model.I_C_Invoice;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;

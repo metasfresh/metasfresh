@@ -1,14 +1,8 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
@@ -16,6 +10,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -71,5 +69,10 @@ public class CommissionInstance
 	public ImmutableList<SalesCommissionShare> getShares()
 	{
 		return ImmutableList.copyOf(shares);
+	}
+
+	public boolean hasSimulationContracts()
+	{
+		return shares != null && shares.stream().anyMatch( share -> share.getContract().isSimulation());
 	}
 }

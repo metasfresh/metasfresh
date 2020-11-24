@@ -1,31 +1,8 @@
-package de.metas.ui.web.view;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.IEditableView.RowEditingContext;
-import de.metas.ui.web.view.json.JSONViewRow;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentCollection;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,6 +19,30 @@ import de.metas.ui.web.window.model.DocumentCollection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.view;
+
+import de.metas.ui.web.comments.CommentsService;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.json.JSONViewRow;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.model.DocumentCollection;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * API for editing a view row.
@@ -67,6 +68,9 @@ public class ViewRowEditRestController
 
 	@Autowired
 	private DocumentCollection documentsCollection;
+
+	@Autowired
+	private CommentsService commentsService;
 
 	private JSONOptions newJSONOptions()
 	{
@@ -106,7 +110,10 @@ public class ViewRowEditRestController
 		final IViewRow row = view.getById(rowId);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewRow.ofRow(row, rowOverrides, jsonOpts);
+
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(row);
+
+		return JSONViewRow.ofRow(row, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	@GetMapping("/{fieldName}/typeahead")

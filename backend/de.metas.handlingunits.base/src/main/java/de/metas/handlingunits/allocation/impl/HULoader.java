@@ -159,15 +159,11 @@ public class HULoader
 	 * {@link AllocationUtils#nullResult()}.
 	 *
 	 * Note that transactions from result will be already processed.
-	 *
-	 * @param request
-	 * @return result
 	 */
-	public IAllocationResult load(final IAllocationRequest request)
+	public IAllocationResult load(@NonNull final IAllocationRequest request)
 	{
 		//
 		// Check if our request is valid
-		Check.assumeNotNull(request, "unloadRequest not null");
 		if (request.getQty().signum() == 0)
 		{
 			// Zero Qty Request => nothing to do

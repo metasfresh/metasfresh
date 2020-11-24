@@ -32,6 +32,8 @@ public interface ICostingService
 
 	AggregatedCostAmount createReversalCostDetails(CostDetailReverseRequest request);
 
+	MoveCostsResult moveCosts(MoveCostsRequest request);
+
 	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
 	/** @return seed cost or null */

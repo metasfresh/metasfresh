@@ -184,6 +184,29 @@ public interface I_C_PaymentTerm
 
     /** Column name FixMonthCutoff */
     public static final String COLUMNNAME_FixMonthCutoff = "FixMonthCutoff";
+        
+    /**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalId (java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalId();
+
+    /** Column definition for ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_C_PaymentTerm, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_C_PaymentTerm, Object>(I_C_PaymentTerm.class, "ExternalId", null);
+    /** Column name ExternalId */
+    public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/** Set Fix month cutoff.
 	  * Last day to include for next due date

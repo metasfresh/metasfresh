@@ -12,7 +12,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -30,6 +29,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.email.EMail;
 import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;

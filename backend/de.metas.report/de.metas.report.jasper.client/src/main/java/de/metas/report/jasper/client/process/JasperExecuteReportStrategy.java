@@ -6,7 +6,7 @@ import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 

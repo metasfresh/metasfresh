@@ -29,19 +29,15 @@
  *********************************************************************/
 package org.adempiere.process.rpl.exp;
 
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.adempiere.service.IAppDictionaryBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,6 +54,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ReplicationStrategy;
 import org.compiere.model.I_AD_ReplicationTable;
 import org.compiere.model.I_AD_Table;
@@ -82,29 +79,33 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
-import de.metas.adempiere.service.IAppDictionaryBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.TimeZone;
 
 /**
  * @author Trifon N. Trifonov
  * @author Antonio Cañaveral, e-Evolution
- *         <ul>
- *         <li>[ 2195016 ] Implementation delete records messages
- *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
- *         </ul>
+ * <ul>
+ * <li>[ 2195016 ] Implementation delete records messages
+ * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
+ * </ul>
  * @author victor.perez@e-evolution.com, e-Evolution
- *         <ul>
- *         <li>[ 2195090 ] Stabilization of replication
- *         <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962
- *         <li>BF [2947622] The replication ID (Primary Key) is not working
- *         <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
- *         </ul>
- *
+ * <ul>
+ * <li>[ 2195090 ] Stabilization of replication
+ * <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962
+ * <li>BF [2947622] The replication ID (Primary Key) is not working
+ * <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
+ * </ul>
  */
 public class ExportHelper
 {
@@ -179,13 +180,6 @@ public class ExportHelper
 	 * Method creates the XML DOM tree, but doesn't call any export processor.
 	 * <p>
 	 * Note that this method doesn't alter any of this classe's member variables.
-	 *
-	 * @param po
-	 * @param exportFormat
-	 * @param ReplicationMode
-	 * @param ReplicationType
-	 * @param ReplicationEvent
-	 * @return
 	 */
 	// t.schoeneberg@metas.de, 03132
 	// extracted the DOM creating code from 'exportRecord()'
@@ -263,17 +257,12 @@ public class ExportHelper
 
 	/**
 	 * Export a limited number of POs for the given format and where clause.
-	 *
-	 * @param exportFormat
-	 * @param where
-	 * @param ReplicationMode
-	 * @param ReplicationType
-	 * @param ReplicationEvent
-	 * @param limit limit the number of exported records. This makes sense when we want to export only a few sample records for the given format.
-	 * @return
-	 * @throws Exception
 	 */
-	public Document exportRecord(final MEXPFormat exportFormat, final String where, final Integer ReplicationMode, final String ReplicationType, final Integer ReplicationEvent,
+	public Document exportRecord(final MEXPFormat exportFormat,
+			final String where,
+			final Integer ReplicationMode,
+			final String ReplicationType,
+			final Integer ReplicationEvent,
 			final IReplicationAccessContext racCtx)
 			throws Exception
 	{
@@ -393,12 +382,11 @@ public class ExportHelper
 			// process single XML Attribute
 			final MColumn column = retrieveColumn(formatLine);
 			final Object value = masterPO.get_Value(column.getColumnName());
-			final Map<String, String> valueAttributes = new HashMap<>();
 
 			final String valueString;
 			try
 			{
-				valueString = encodeValue(value, valueAttributes, formatLine, column);
+				valueString = encodeValue(value, formatLine, column);
 			}
 			catch (final Exception e)
 			{
@@ -408,11 +396,6 @@ public class ExportHelper
 			}
 
 			final Element newElement = outDocument.createElement(formatLine.getValue());
-
-			for (final Map.Entry<String, String> attr : valueAttributes.entrySet())
-			{
-				newElement.setAttribute(attr.getKey(), attr.getValue());
-			}
 
 			if (valueString != null)
 			{
@@ -436,7 +419,7 @@ public class ExportHelper
 			final String valueString;
 			try
 			{
-				valueString = encodeValue(value, null, formatLine, column); // attributes=null
+				valueString = encodeValue(value, formatLine, column); // attributes=null
 			}
 			catch (final Exception e)
 			{
@@ -518,7 +501,7 @@ public class ExportHelper
 						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
 						.setParameter(I_EXP_FormatLine.COLUMNNAME_Type, formatLineType)
 						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_EmbeddedFormat_ID, embeddedFormat_ID) // not found
-				;
+						;
 			}
 			// get from cache
 			final MEXPFormat embeddedFormat = MEXPFormat.get(masterPO.getCtx(), embeddedFormat_ID, masterPO.get_TrxName());
@@ -731,15 +714,12 @@ public class ExportHelper
 	/**
 	 * Encode given value using column and formatLine settings
 	 *
-	 * @param value
-	 * @param valueAttributes miscellaneous attributes which will be exported by this method to describe the format used to encode (e.g. DateFormat used for Date columns)
-	 * @param formatLine
-	 * @param column
 	 * @return String encoded value
 	 */
-	private String encodeValue(final Object value, final Map<String, String> valueAttributes, final I_EXP_FormatLine formatLine, final MColumn column)
+	private static String encodeValue(final Object value,
+			@NonNull final I_EXP_FormatLine formatLine,
+			@NonNull final I_AD_Column column)
 	{
-
 		final int displayType = column.getAD_Reference_ID();
 
 		final String valueString;
@@ -763,27 +743,7 @@ public class ExportHelper
 		}
 		else if (DisplayType.isDate(displayType))
 		{
-			final Timestamp date = (Timestamp)value;
-			final SimpleDateFormat df;
-			if (valueAttributes == null)
-			{
-				// If output attributes is null, we need to encode the value using the standard format
-				df = DisplayType.getDateFormat(displayType);
-			}
-			else if (!Check.isEmpty(formatLine.getDateFormat(), true))
-			{
-				df = new SimpleDateFormat(formatLine.getDateFormat()); // "MM/dd/yyyy"
-				valueAttributes.put(RPL_Constants.XML_ATTR_DateFormat, df.toPattern());
-			}
-			else
-			{
-				// df = DisplayType.getDateFormat(displayType); // since we export to xsd:date, it makes no sense to by default use the current user's locale's (or whatever) dateFormat.
-				df = new SimpleDateFormat("yyyy-MM-dd");
-				valueAttributes.put(RPL_Constants.XML_ATTR_DateFormat, df.toPattern());
-			}
-			log.debug("DatePattern: {}", df.toPattern());
-
-			valueString = df.format(date);
+			valueString = encodeDate((Timestamp)value, formatLine, displayType);
 		}
 		else
 		{
@@ -791,8 +751,48 @@ public class ExportHelper
 			valueString = str.isEmpty() ? null : str;
 		}
 
-		log.debug("Encoded column '{}' from '{}' to '{}' (attributes: {})", new Object[] { column.getColumnName(), value, valueString, valueAttributes });
+		log.debug("Encoded column '{}' from '{}' to '{}'", new Object[] { column.getColumnName(), value, valueString });
 		return valueString;
+	}
+
+	@NonNull
+	@VisibleForTesting
+	static String encodeDate(
+			final Timestamp date,
+			@NonNull final I_EXP_FormatLine formatLine,
+			final int displayType)
+	{
+		final ZoneId timeZoneId = Services.get(IOrgDAO.class).getTimeZone(Env.getOrgId());
+		final SimpleDateFormat df = getXsdFormatForDateType(displayType);
+		df.setTimeZone(TimeZone.getTimeZone(timeZoneId));
+
+		final String result = df.format(date);
+		log.debug("date={}; DatePattern={}; ZoneId={}; -> result={}", date, df.toPattern(), timeZoneId, result);
+
+		return result;
+	}
+
+	private static SimpleDateFormat getXsdFormatForDateType(final int displayType)
+	{
+		final String format;
+		if (displayType == DisplayType.Date)
+		{
+			format = "yyyy-MM-ddXXX";
+		}
+		else if (displayType == DisplayType.Time)
+		{
+			format = "HH:mm:ssXXX";
+		}
+		else if (displayType == DisplayType.DateTime)
+		{
+			format = "yyyy-MM-dd'T'HH:mm:ssXXX";
+		}
+		else
+		{
+			throw new AdempiereException("Unexpected displayType=" + displayType + "; expected types are Date, Time and DateTime");
+		}
+
+		return new SimpleDateFormat(format);
 	}
 
 	private MColumn retrieveColumn(final I_EXP_FormatLine formatLine)

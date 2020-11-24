@@ -1,18 +1,15 @@
 package de.metas.ui.web.pickingV2.productsToPick.rows;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Locator;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -23,9 +20,18 @@ import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Locator;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -56,7 +62,7 @@ public class ProductsToPickRowsService
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
-	
+
 	private static final AdMessageKey MSG_TYPE_UNALLOCATED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error");
 	private static final AdMessageKey MSG_TYPE_NOT_SUPPORTED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.TypeRow_NotSupported");
 
@@ -124,13 +130,13 @@ public class ProductsToPickRowsService
 		{
 			final ITranslatableString message = Services.get(IMsgBL.class)
 					.getTranslatableMsgText(MSG_TYPE_UNALLOCATED);
-			throw new AdempiereException(message); 
+			throw new AdempiereException(message);
 		}
 		else
 		{
 			final ITranslatableString message = Services.get(IMsgBL.class)
 					.getTranslatableMsgText(MSG_TYPE_NOT_SUPPORTED);
-			throw new AdempiereException(message); 
+			throw new AdempiereException(message);
 		}
 	}
 
@@ -159,4 +165,64 @@ public class ProductsToPickRowsService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
+	public ImmutableList<WebuiPickHUResult> pick(final List<ProductsToPickRow> selectedRows)
+	{
+		return streamRowsEligibleForPicking(selectedRows)
+				.map(row -> {
+					final PickHUResult result = pickingCandidateService.pickHU(createPickRequest(row));
+					return WebuiPickHUResult.of(row.getId(), result.getPickingCandidate());
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public ImmutableList<WebuiPickHUResult> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final HuPackingInstructionsId huPackingInstructionsId)
+	{
+		final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = streamRowsEligibleForPacking(selectedRows)
+				.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
+
+		final Set<PickingCandidateId> pickingCandidateIds = rowIdsByPickingCandidateId.keySet();
+		final List<PickingCandidate> pickingCandidates = pickingCandidateService.setHuPackingInstructionId(pickingCandidateIds, huPackingInstructionsId);
+
+		return pickingCandidates.stream()
+				.map(cand -> WebuiPickHUResult.of(rowIdsByPickingCandidateId.get(cand.getId()), cand))
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	public boolean anyRowsEligibleForPacking(final List<ProductsToPickRow> selectedRows)
+	{
+		return streamRowsEligibleForPacking(selectedRows).findAny().isPresent();
+	}
+
+	private Stream<ProductsToPickRow> streamRowsEligibleForPacking(final List<ProductsToPickRow> selectedRows)
+	{
+		return selectedRows
+				.stream()
+				.filter(ProductsToPickRow::isEligibleForPacking);
+	}
+
+	public boolean anyRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
+	{
+		return streamRowsEligibleForPicking(selectedRows).findAny().isPresent();
+	}
+
+	@NonNull
+	private Stream<ProductsToPickRow> streamRowsEligibleForPicking(final List<ProductsToPickRow> selectedRows)
+	{
+		return selectedRows
+				.stream()
+				.filter(ProductsToPickRow::isEligibleForPicking);
+	}
+
+	private PickRequest createPickRequest(final ProductsToPickRow row)
+	{
+		final PickingConfigV2 pickingConfig = getPickingConfig();
+		return createPickRequest(row, pickingConfig.isPickingReviewRequired());
+	}
+
+	protected final PickingConfigV2 getPickingConfig()
+	{
+		return pickingConfigRepo.getPickingConfig();
+	}
 }

@@ -1,16 +1,9 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -29,6 +22,11 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
 
 /*
  * #%L

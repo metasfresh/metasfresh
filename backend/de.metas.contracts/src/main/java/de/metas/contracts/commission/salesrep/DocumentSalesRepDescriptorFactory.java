@@ -1,6 +1,6 @@
 package de.metas.contracts.commission.salesrep;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;

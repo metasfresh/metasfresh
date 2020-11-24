@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,16 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Client;
 
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -60,21 +49,13 @@ import lombok.NonNull;
  */
 public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 {
-	/**
-	 * Enable/Disable debug validations.
-	 *
-	 * WARNING: enabling this flag is introducing memory leaks!
-	 */
-	public static boolean DEBUG = false;
-
-	private final Map<Object, List<I_M_HU_Item>> huKey2huItems = new HashMap<>();
-	private final Map<Object, List<I_M_HU>> huItemKey2includedHUs = new HashMap<>();
+	private final Map<Object, ArrayList<I_M_HU_Item>> huKey2huItems = new HashMap<>();
+	private final Map<Object, ArrayList<I_M_HU>> huItemKey2includedHUs = new HashMap<>();
 
 	private final IHUAndItemsDAO db = HUAndItemsDAO.instance;
 
-	/* package */CachedHUAndItemsDAO()
+	/* package */ CachedHUAndItemsDAO()
 	{
-		debugInit();
 	}
 
 	private final Object mkHUKey(final I_M_HU hu)
@@ -97,120 +78,6 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	private final Object mkHUItemKey(final int huItemId)
 	{
 		return huItemId;
-	}
-
-	private final void debugInit()
-	{
-		if (!DEBUG)
-		{
-			return;
-		}
-
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new AbstractModelInterceptor()
-		{
-			@Override
-			protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
-			{
-				engine.addModelChange(I_M_HU.Table_Name, this);
-				// nothing on this level
-			}
-
-			@Override
-			public void onModelChange(final Object model, final ModelChangeType changeType) throws Exception
-			{
-				if (changeType.isNewOrChange() && changeType.isBefore())
-				{
-					final I_M_HU hu = InterfaceWrapperHelper.create(model, I_M_HU.class);
-					final I_M_HU huOld = InterfaceWrapperHelper.createOld(hu, I_M_HU.class);
-
-					debugValidateIncludedHUs(db.retrieveParentItem(huOld));
-					debugValidateIncludedHUs(db.retrieveParentItem(hu));
-				}
-				else if (changeType.isNewOrChange() && changeType.isAfter())
-				{
-					final I_M_HU hu = InterfaceWrapperHelper.create(model, I_M_HU.class);
-					debugValidateHUItems(hu);
-				}
-
-			}
-		});
-	}
-
-	private final void debugValidateHUItems(final I_M_HU hu)
-	{
-		if (!DEBUG)
-		{
-			return;
-		}
-
-		final Object huKey = mkHUKey(hu);
-		final List<I_M_HU_Item> huItems = huKey2huItems.get(huKey);
-		if (huItems == null)
-		{
-			// nothing to validate
-			return;
-		}
-
-		final List<Integer> huItemsIds = debugExtractIds(huItems);
-
-		final List<I_M_HU_Item> huItemsFresh = db.retrieveItems(hu);
-		final List<Integer> huItemsFreshIds = debugExtractIds(huItemsFresh);
-
-		if (!huItemsIds.equals(huItemsFreshIds))
-		{
-			throw new AdempiereException("Cached HU Items does not match those from database."
-					+ "\n HU: " + hu
-					+ "\n Cached items(" + huItems.size() + "): " + huItems
-					+ "\n Fresh items(" + huItemsFresh.size() + "): " + huItemsFresh //
-			);
-		}
-	}
-
-	private final void debugValidateIncludedHUs(@Nullable final I_M_HU_Item huItem)
-	{
-		if (!DEBUG)
-		{
-			return;
-		}
-
-		// NO need to validate if there is no HU Item
-		if (huItem == null || huItem.getM_HU_Item_ID() <= 0)
-		{
-			return;
-		}
-
-		final Object huItemKey = mkHUItemKey(huItem);
-		final List<I_M_HU> includedHUs = huItemKey2includedHUs.get(huItemKey);
-		if (includedHUs == null)
-		{
-			// nothing to validate
-			return;
-		}
-		final List<Integer> includedHUsIds = debugExtractIds(includedHUs);
-
-		final List<I_M_HU> includedHUsFresh = db.retrieveIncludedHUs(huItem);
-		final List<Integer> includedHUsIdsFresh = debugExtractIds(includedHUsFresh);
-
-		if (!includedHUsIds.equals(includedHUsIdsFresh))
-		{
-			throw new AdempiereException("Cached Included HUs does not match those from database."
-					+ "\n HU Item: " + huItem
-					+ "\n Cached items(" + includedHUs.size() + "): " + includedHUs
-					+ "\n Fresh items(" + includedHUsFresh.size() + "): " + includedHUsFresh //
-			);
-		}
-	}
-
-	private final List<Integer> debugExtractIds(final List<?> models)
-	{
-		final List<Integer> ids = new ArrayList<>();
-		for (final Object model : models)
-		{
-			final int id = InterfaceWrapperHelper.getId(model);
-			ids.add(id);
-		}
-		Collections.sort(ids);
-		return ids;
 	}
 
 	@Override
@@ -272,7 +139,6 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		return finalizeAndAddToCache(hu, huItem);
 	}
 
-
 	@Override
 	public I_M_HU_Item createChildHUItem(@NonNull final I_M_HU hu)
 	{
@@ -287,15 +153,13 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		//
 		// Add Item to HU Items list
 		final Object huKey = mkHUKey(hu);
-		final List<I_M_HU_Item> huItems = huKey2huItems.get(huKey);
+		final ArrayList<I_M_HU_Item> huItems = huKey2huItems.get(huKey);
 		if (huItems != null)
 		{
 			huItems.add(huItem);
 
 			// sort to make sure that the order we expect is still preserved
 			Collections.sort(huItems, IHandlingUnitsDAO.HU_ITEMS_COMPARATOR);
-
-			debugValidateHUItems(hu);
 		}
 
 		//
@@ -307,15 +171,13 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu)
+	public List<I_M_HU_Item> retrieveItems(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
 		final Object huKey = mkHUKey(hu);
-		List<I_M_HU_Item> huItems = huKey2huItems.get(huKey);
+		ArrayList<I_M_HU_Item> huItems = huKey2huItems.get(huKey);
 		if (huItems == null)
 		{
-			huItems = db.retrieveItems(hu);
+			huItems = new ArrayList<>(db.retrieveItems(hu));
 
 			for (final I_M_HU_Item huItem : huItems)
 			{
@@ -324,8 +186,6 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 
 			huKey2huItems.put(huKey, huItems);
 		}
-
-		debugValidateHUItems(hu);
 
 		return new ArrayList<>(huItems);
 	}
@@ -347,21 +207,17 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	{
 		final I_M_HU_Item parentHUItem = db.retrieveParentItem(hu);
 
-		debugValidateIncludedHUs(parentHUItem);
-
 		return parentHUItem;
 	}
 
 	@Override
-	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item huItem)
+	public ArrayList<I_M_HU> retrieveIncludedHUs(@NonNull final I_M_HU_Item huItem)
 	{
-		Check.assumeNotNull(huItem, "huItem not null");
-
 		final Object huItemKey = mkHUItemKey(huItem);
-		List<I_M_HU> includedHUs = huItemKey2includedHUs.get(huItemKey);
+		ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(huItemKey);
 		if (includedHUs == null)
 		{
-			includedHUs = db.retrieveIncludedHUs(huItem);
+			includedHUs = new ArrayList<>(db.retrieveIncludedHUs(huItem));
 
 			for (final I_M_HU includedHU : includedHUs)
 			{
@@ -371,7 +227,6 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 			huItemKey2includedHUs.put(huItemKey, includedHUs);
 		}
 
-		debugValidateIncludedHUs(huItem);
 		return new ArrayList<>(includedHUs);
 	}
 
@@ -382,7 +237,6 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 
 		final int huId = hu.getM_HU_ID();
 		final int parentHUItemIdOld = hu.getM_HU_Item_Parent_ID();
-		final I_M_HU_Item parentHUItemOld = DEBUG ? db.retrieveParentItem(hu) : null;
 
 		//
 		// Perform database change
@@ -393,7 +247,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		if (parentHUItemIdOld > 0)
 		{
 			final Object parentHUItemKeyOld = mkHUItemKey(parentHUItemIdOld);
-			final List<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemKeyOld);
+			final ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemKeyOld);
 			if (includedHUs != null)
 			{
 				boolean removed = false;
@@ -411,17 +265,9 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 				{
 					throw new HUException("Included HU not found in cached included HUs list of old parent"
 							+ "\n HU: " + Services.get(IHandlingUnitsBL.class).getDisplayName(hu)
-							+ "\n Old Parent Item: " + parentHUItemOld + " (ID=" + parentHUItemIdOld + ")"
 							+ "\n Included HUs (cached): " + includedHUs);
 				}
 			}
-
-			debugValidateIncludedHUs(parentHUItemOld);
-			// System.out.println("Removing HU from old parent: ID=" + huId);
-			// System.out.println("HU: " + hu);
-			// System.out.println("Old Parent: " + parentHUItemIdOld);
-			// System.out.println("Included HUs: " + includedHUs);
-			// System.out.println("------------------------------------------------------");
 		}
 
 		//
@@ -430,7 +276,7 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 		if (parentHUItemIdNew > 0)
 		{
 			final Object parentHUItemKeyNew = mkHUItemKey(parentHUItemIdNew);
-			final List<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemKeyNew);
+			final ArrayList<I_M_HU> includedHUs = huItemKey2includedHUs.get(parentHUItemKeyNew);
 			if (includedHUs != null)
 			{
 				boolean added = false;
@@ -449,14 +295,6 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 					includedHUs.add(hu);
 				}
 			}
-
-			final I_M_HU_Item parentHUItemNew = DEBUG ? db.retrieveParentItem(hu) : null;
-			debugValidateIncludedHUs(parentHUItemNew);
-			// System.out.println("Add HU to new parent: ID=" + huId);
-			// System.out.println("HU: " + hu);
-			// System.out.println("New Parent: " + parentHUItemNew);
-			// System.out.println("Included HUs: " + includedHUs);
-			// System.out.println("------------------------------------------------------");
 		}
 	}
 }

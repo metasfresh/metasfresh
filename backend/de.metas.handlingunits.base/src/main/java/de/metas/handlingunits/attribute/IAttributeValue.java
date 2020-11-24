@@ -26,6 +26,10 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -40,14 +44,22 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 
-import javax.annotation.Nullable;
-
 public interface IAttributeValue
 {
 	/**
 	 * @return attribute; never return null
 	 */
 	I_M_Attribute getM_Attribute();
+
+	default AttributeCode getAttributeCode()
+	{
+		return AttributeCode.ofString(getM_Attribute().getValue());
+	}
+
+	default AttributeId getAttributeId()
+	{
+		return AttributeId.ofRepoId(getM_Attribute().getM_Attribute_ID());
+	}
 
 	/**
 	 * Gets attribute's value type (see X_M_Attribute.ATTRIBUTEVALUETYPE_*)
@@ -168,7 +180,8 @@ public interface IAttributeValue
 	/**
 	 * @return the default empty value of an attribute (hard-coded)
 	 */
-	@Nullable Object getEmptyValue();
+	@Nullable
+	Object getEmptyValue();
 
 	void addAttributeValueListener(IAttributeValueListener listener);
 
@@ -220,7 +233,7 @@ public interface IAttributeValue
 	/**
 	 *
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>true if this attribute was defined by the standard template
 	 *         <li>false if this attribute is a customization on a particular element (e.g.HU, ASI etc)
 	 *         </ul>

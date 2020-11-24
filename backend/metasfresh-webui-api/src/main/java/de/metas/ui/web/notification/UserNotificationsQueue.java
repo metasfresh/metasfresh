@@ -14,8 +14,9 @@ import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.notification.json.JSONNotification;
 import de.metas.ui.web.notification.json.JSONNotificationEvent;
-import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -56,7 +57,7 @@ public class UserNotificationsQueue
 	private final INotificationRepository notificationsRepo;
 
 	private final WebsocketSender websocketSender;
-	private final String websocketEndpoint;
+	private final WebsocketTopicName websocketEndpoint;
 
 	@Builder
 	private UserNotificationsQueue(
@@ -70,7 +71,7 @@ public class UserNotificationsQueue
 		this.notificationsRepo = notificationsRepo;
 
 		this.websocketSender = websocketSender;
-		websocketEndpoint = WebSocketConfig.buildNotificationsTopicName(userId);
+		websocketEndpoint = WebsocketTopicNames.buildNotificationsTopicName(userId);
 
 		logger.trace("Created notifications queue: {}", this); // keep it last
 	}
@@ -88,7 +89,7 @@ public class UserNotificationsQueue
 		return userId;
 	}
 
-	public String getWebsocketEndpoint()
+	public WebsocketTopicName getWebsocketEndpoint()
 	{
 		return websocketEndpoint;
 	}

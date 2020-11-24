@@ -25,14 +25,14 @@ package org.adempiere.invoice.process;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceCreditContext;
-import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -71,8 +71,8 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 		final Properties ctx = getCtx();
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, getRecord_ID(), de.metas.adempiere.model.I_C_Invoice.class, get_TrxName());
 
-		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
-				.C_DocType_ID(C_DocType_ID)
+		final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
+				.docTypeId(DocTypeId.ofRepoIdOrNull(C_DocType_ID))
 				.completeAndAllocate(completeIt)
 				.referenceOriginalOrder(referenceOriginalOrder)
 				.referenceInvoice(referenceInvoice)
@@ -102,34 +102,34 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 	{
 		final ProcessInfoParameter[] para = getParametersAsArray();
 
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			final String name = para[i].getParameterName();
+			final String name = element.getParameterName();
 
-			if (para[i].getParameter() == null)
+			if (element.getParameter() == null)
 			{
 				// do nothing
 			}
 			else if (CreateCreditMemoFromInvoice.PARA_C_DocType_ID.equals(name))
 			{
-				final BigDecimal bdC_DocType_ID = para[i].getParameterAsBigDecimal();
+				final BigDecimal bdC_DocType_ID = element.getParameterAsBigDecimal();
 				C_DocType_ID = bdC_DocType_ID.intValue();
 			}
 			else if (CreateCreditMemoFromInvoice.PARA_CompleteIt.equals(name))
 			{
-				completeIt = para[i].getParameterAsBoolean();
+				completeIt = element.getParameterAsBoolean();
 			}
 			else if (CreateCreditMemoFromInvoice.PARA_IsReferenceOriginalOrder.equals(name))
 			{
-				referenceOriginalOrder = para[i].getParameterAsBoolean();
+				referenceOriginalOrder = element.getParameterAsBoolean();
 			}
 			else if (CreateCreditMemoFromInvoice.PARA_IsReferenceInvoice.equals(name))
 			{
-				referenceInvoice = para[i].getParameterAsBoolean();
+				referenceInvoice = element.getParameterAsBoolean();
 			}
 			else if (CreateCreditMemoFromInvoice.PARA_IsCreditedInvoiceReinvoicable.equals(name))
 			{
-				creditedInvoiceReinvoicable = para[i].getParameterAsBoolean();
+				creditedInvoiceReinvoicable = element.getParameterAsBoolean();
 			}
 			else
 			{

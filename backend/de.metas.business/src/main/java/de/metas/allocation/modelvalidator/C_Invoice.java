@@ -22,14 +22,12 @@ package de.metas.allocation.modelvalidator;
  * #L%
  */
 
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.compiere.model.ModelValidator;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.model.ModelValidator;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice

@@ -38,6 +38,7 @@ import java.util.TreeMap;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -497,7 +498,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		}
 
 		// retrieve the attribute
-		final AttributeId trackingAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID);
+		final AttributeId trackingAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(AttributeCode.ofString(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID));
 		if (trackingAttributeId == null)
 		{
 			return -1;

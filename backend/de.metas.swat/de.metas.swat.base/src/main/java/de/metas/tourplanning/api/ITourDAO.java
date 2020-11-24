@@ -3,15 +3,15 @@
  */
 package de.metas.tourplanning.api;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.ISingletonService;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author cg
@@ -38,4 +38,6 @@ public interface ITourDAO extends ISingletonService
 	 * @return tour version ranges
 	 */
 	List<ITourVersionRange> retrieveTourVersionRanges(I_M_Tour tour, LocalDate dateFrom, LocalDate dateTo);
+
+	ITourVersionRange generateTourVersionRange(I_M_TourVersion tourVersion, LocalDate validFrom, LocalDate validTo);
 }

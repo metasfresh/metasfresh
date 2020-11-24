@@ -40,7 +40,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -88,7 +87,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
 
-		manualHandler = InterfaceWrapperHelper.create(ctx, I_C_ILCandHandler.class, Trx.createTrxName());
+		manualHandler = InterfaceWrapperHelper.newInstance(I_C_ILCandHandler.class);
 		manualHandler.setTableName(ManualCandidateHandler.MANUAL);
 		manualHandler.setClassname(ManualCandidateHandler.class.getName());
 		InterfaceWrapperHelper.save(manualHandler);

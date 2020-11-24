@@ -33,8 +33,6 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -49,7 +47,12 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
+@Ignore
+@Disabled
 public class WeightAttributeValueCalloutTest extends AbstractHUTest
 {
 	// NOTE: If you change some of these, please always use even numbers

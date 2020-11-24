@@ -26,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
@@ -44,7 +45,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
 import de.metas.util.exceptions.ServicesException;
 import lombok.NonNull;
@@ -82,6 +82,7 @@ public class Services
 		 * @param serviceClazz
 		 * @return a service implementation class, or {@code null} if none can't be provided.
 		 */
+		@Nullable
 		<T extends IService> T provideServiceImpl(Class<T> serviceClazz);
 	}
 
@@ -128,15 +129,10 @@ public class Services
 			return findAndLoadService(serviceClass);
 		}
 	};
-	private static final RemovalListener<Class<? extends IService>, Object> servicesCache_RemovalListener = new RemovalListener<Class<? extends IService>, Object>()
-	{
-		@Override
-		public void onRemoval(RemovalNotification<Class<? extends IService>, Object> removal)
-		{
-			final Class<? extends IService> serviceInterfaceClass = removal.getKey();
-			final Object serviceImpl = removal.getValue();
-			unloadService(serviceInterfaceClass, serviceImpl);
-		}
+	private static final RemovalListener<Class<? extends IService>, Object> servicesCache_RemovalListener = removal -> {
+		final Class<? extends IService> serviceInterfaceClass = removal.getKey();
+		final Object serviceImpl = removal.getValue();
+		unloadService(serviceInterfaceClass, serviceImpl);
 	};
 
 	private static final LoadingCache<Class<? extends IService>, Object> newServicesCache()
@@ -260,7 +256,9 @@ public class Services
 			loadService(serviceInterfaceClass, serviceImpl);
 
 			if (logger.isDebugEnabled())
+			{
 				logger.debug("Loaded service for {}: {}", new Object[] { serviceInterfaceClass, serviceImpl.getClass() });
+			}
 
 			return serviceImpl;
 		}

@@ -45,7 +45,7 @@ public class C_BPartner
 	public void createC_CustomerRetention(@NonNull final I_C_BPartner bpartner)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-		bpartnerTimeSpanRepo.createNewCustomerRetention(bpartnerId);
+		bpartnerTimeSpanRepo.createEmptyCustomerRetention(bpartnerId);
 	}
 
 
@@ -53,7 +53,7 @@ public class C_BPartner
 	public void deleteC_CustomerRetention(@NonNull final I_C_BPartner bpartner)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
-		bpartnerTimeSpanRepo.deteleCustomerRetention(bpartnerId);
+		bpartnerTimeSpanRepo.deleteCustomerRetention(bpartnerId);
 	}
 
 }

@@ -22,39 +22,9 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  * #L%
  */
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_AD_User;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Test;
-
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -64,7 +34,7 @@ import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
@@ -91,6 +61,36 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_AD_User;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * HU Shipment Process:
@@ -172,10 +172,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 
 		//
-		// TODO HU Join does not work for some reason if it's true; see why...
-		CachedHUAndItemsDAO.DEBUG = false;
-
-		//
 		// Product/UOM
 		product = pTomato;
 		productUOM = uomKg;
@@ -214,6 +210,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Services
 		// this.huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		// this.huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
+		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);
 

@@ -2,6 +2,7 @@ package de.metas.handlingunits.materialtracking;
 
 import java.util.Optional;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -34,11 +35,11 @@ import de.metas.util.ISingletonService;
 public interface IHUMaterialTrackingBL extends ISingletonService
 {
 	/** Scheduled to Quality Inspection attribute name (i.e. M_Attribute.Value) */
-	String ATTRIBUTENAME_IsQualityInspection = "IsQualityInspection";
+	AttributeCode ATTRIBUTENAME_IsQualityInspection = AttributeCode.ofString("IsQualityInspection");
 	String ATTRIBUTEVALUE_IsQualityInspection_Yes = "Y";
 	String ATTRIBUTEVALUE_IsQualityInspection_No = "N";
 
-	String ATTRIBUTENAME_QualityInspectionCycle = "QualityInspectionCycle";
+	AttributeCode ATTRIBUTENAME_QualityInspectionCycle = AttributeCode.ofString("QualityInspectionCycle");
 
 	/**
 	 * Wraps given {@link IAttributeStorage} to {@link IQualityInspectionSchedulable} if supported.

@@ -1,5 +1,7 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
@@ -37,13 +39,17 @@ import lombok.Value;
 @Value
 public class HuForInventoryLine
 {
+	@NonNull
 	OrgId orgId;
 
 	@NonNull
 	HuId huId;
 
 	@NonNull
-	Quantity quantity;
+	Quantity quantityBooked;
+
+	@Nullable
+	Quantity quantityCount;
 
 	@NonNull
 	ProductId productId;
@@ -54,21 +60,30 @@ public class HuForInventoryLine
 	@NonNull
 	LocatorId locatorId;
 
+	boolean markAsCounted;
+
 	@Builder
 	private HuForInventoryLine(
 			@NonNull final OrgId orgId,
 			@NonNull final HuId huId,
-			@NonNull final Quantity quantity,
+			@NonNull final Quantity quantityBooked,
+			@Nullable final Quantity quantityCount,
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
-			@NonNull final LocatorId locatorId)
+			@NonNull final LocatorId locatorId,
+			boolean markAsCounted)
 	{
+		Quantity.getCommonUomIdOfAll(quantityBooked, quantityCount); // make sure we use the same UOM
+
 		this.orgId = orgId;
 		this.huId = huId;
-		this.quantity = quantity;
+		this.quantityBooked = quantityBooked;
+		this.quantityCount = quantityCount;
 
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 		this.locatorId = locatorId;
+
+		this.markAsCounted = markAsCounted;
 	}
 }

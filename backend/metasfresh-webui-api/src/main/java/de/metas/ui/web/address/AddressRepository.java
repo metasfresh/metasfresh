@@ -89,7 +89,12 @@ public class AddressRepository
 								.getDataBindingNotNull(AddressFieldBinding.class)
 								.readValue(fromLocation);
 
-						addressDoc.processValueChange(field.getFieldName(), value, () -> "update from " + fromLocation);
+						addressDoc.processValueChange(
+								field.getFieldName(),
+								value,
+								() -> "update from " + fromLocation,
+								true // ignoreReadonlyFlag
+						);
 
 					});
 		}

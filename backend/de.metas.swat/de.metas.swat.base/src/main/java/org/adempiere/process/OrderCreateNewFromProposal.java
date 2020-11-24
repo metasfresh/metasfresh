@@ -1,10 +1,20 @@
 package org.adempiere.process;
 
-import java.sql.Timestamp;
-
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
@@ -13,19 +23,14 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.Optional;
 
-public final class OrderCreateNewFromProposal extends JavaProcess 
+public final class OrderCreateNewFromProposal extends JavaProcess
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final Optional<AdWindowId> orderWindowId = RecordZoomWindowFinder.findAdWindowId(I_C_Order.Table_Name);
 
 	private MOrder sourceOrder;
 
@@ -37,20 +42,17 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 
 	private boolean newOrderClompleteIt = false;
 
-
-
 	@Override
 	protected String doIt() throws Exception
 	{
 
-
 		final I_C_Order newOrder = InterfaceWrapperHelper.create(getCtx(), I_C_Order.class, get_TrxName());
 		final PO to = InterfaceWrapperHelper.getPO(newOrder);
 		PO.copyValues(sourceOrder, to, true);
-		
+
 		orderBL.setDocTypeTargetIdAndUpdateDescription(newOrder, newOrderDocTypeId);
 		newOrder.setC_DocType_ID(newOrderDocTypeId);
-		
+
 		if (newOrderDateOrdered != null)
 		{
 			newOrder.setDateOrdered(newOrderDateOrdered);
@@ -59,17 +61,16 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		{
 			newOrder.setPOReference(poReference);
 		}
-		
+
 		newOrder.setRef_Proposal(sourceOrder);
-		
+
 		InterfaceWrapperHelper.save(newOrder);
-		
+
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name);
 		childCRS.setParentPO(to);
 		childCRS.setBase(true);
 		childCRS.copyRecord(sourceOrder, get_TrxName());
 
-		
 		newOrder.setDocStatus(DocStatus.Drafted.getCode());
 		newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 		InterfaceWrapperHelper.save(newOrder);
@@ -87,12 +88,15 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 
 		newOrder.setDocAction(docAction);
 
-		
 		InterfaceWrapperHelper.save(newOrder);
-		
-		
+
 		sourceOrder.setRef_Order_ID(newOrder.getC_Order_ID());
 		InterfaceWrapperHelper.save(sourceOrder, get_TrxName());
+
+		getResult().setRecordToOpen(
+				TableRecordReference.of(newOrder),
+				orderWindowId.get().getRepoId(), // adWindowId
+				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument);
 
 		return newOrder.getDocumentNo();
 	}
@@ -110,7 +114,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 
 		if (!(MDocType.DOCBASETYPE_SalesOrder.equals(sourceOrderDocType
 				.getDocBaseType()) //
-		&& MDocType.DOCSUBTYPE_Proposal.equals(sourceOrderDocType
+				&& MDocType.DOCSUBTYPE_Proposal.equals(sourceOrderDocType
 				.getDocSubType())//
 		))
 		{

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.NonNull;
@@ -51,7 +52,7 @@ public interface ViewRowIdsOrderedSelectionFactory
 			DocumentQueryOrderByList orderBys,
 			final SqlDocumentFilterConverterContext filterConverterCtx);
 
-	String getSqlWhereClause(ViewId viewId, DocumentIdsSelection rowIds);
+	SqlViewRowsWhereClause getSqlWhereClause(ViewId viewId, DocumentIdsSelection rowIds);
 
 	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 

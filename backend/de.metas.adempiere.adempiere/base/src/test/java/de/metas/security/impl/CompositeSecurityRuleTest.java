@@ -1,5 +1,7 @@
 package de.metas.security.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,24 +29,24 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
-import mockit.Mocked;
 
 public class CompositeSecurityRuleTest
 {
-	@Mocked
-	IUserRolePermissions role;
+	private IUserRolePermissions role;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		role = Mockito.mock(IUserRolePermissions.class);
 	}
 
 	/**
@@ -63,19 +65,25 @@ public class CompositeSecurityRuleTest
 			final Set<OrgId> expected = asOrgIdsSet();
 			final Set<OrgId> actual = asOrgIdsSet();
 			rule.filterOrgs(role, tableName, access, actual);
-			Assert.assertEquals("Org IDs shall not be modified", expected, actual);
+			assertThat(actual)
+					.as("Org IDs shall not be modified")
+					.isEqualTo(expected);
 		}
 		{
 			final Set<OrgId> expected = asOrgIdsSet(1);
 			final Set<OrgId> actual = asOrgIdsSet(1);
 			rule.filterOrgs(role, tableName, access, actual);
-			Assert.assertEquals("Org IDs shall not be modified", expected, actual);
+			assertThat(actual)
+					.as("Org IDs shall not be modified")
+					.isEqualTo(expected);
 		}
 		{
 			final Set<OrgId> expected = asOrgIdsSet(1, 2, 3);
 			final Set<OrgId> actual = asOrgIdsSet(1, 2, 3);
 			rule.filterOrgs(role, tableName, access, actual);
-			Assert.assertEquals("Org IDs shall not be modified", expected, actual);
+			assertThat(actual)
+					.as("Org IDs shall not be modified")
+					.isEqualTo(expected);
 		}
 	}
 

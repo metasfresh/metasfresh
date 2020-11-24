@@ -22,19 +22,6 @@ package de.metas.contracts;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -42,11 +29,19 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.process.PInstanceId;
-import de.metas.product.ProductAndCategoryId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -162,25 +157,20 @@ public interface IFlatrateBL extends ISingletonService
 	 * </ul>
 	 * Note that as of now, the log messages are non-localized EN strings.
 	 *
-	 * @param context
-	 * @param the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
-	 * @param conditions
-	 * @param startDate the start date for the new term
-	 * @param userInCharge may be <code>null</code>. If set, then this value is used for <code>C_FLatrate_Term.AD_User_InCharge_ID</code>. Otherwise, the method tries
+	 * @param createFlatrateTermRequest
+	 * @param createFlatrateTermRequest#context
+	 * @param createFlatrateTermRequest#bPartner the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
+	 * @param createFlatrateTermRequest#conditions
+	 * @param createFlatrateTermRequest#startDate the start date for the new term
+	 * @param createFlatrateTermRequest#userInCharge may be <code>null</code>. If set, then this value is used for <code>C_FLatrate_Term.AD_User_InCharge_ID</code>. Otherwise, the method tries
 	 *            <code>C_BPartner.SalesRep_ID</code>
-	 * @param product may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>.
-	 * @param completeIt if <code>true</code>, then attempt to complete the new term
+	 * @param createFlatrateTermRequest#product may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>.
+	 * @param createFlatrateTermRequest#completeIt if <code>true</code>, then attempt to complete the new term
 	 *
 	 * @return the newly created and completed term; never returns <code>null</code>
 	 * @throws AdempiereException in case of any error
 	 */
-	I_C_Flatrate_Term createTerm(IContextAware context,
-			I_C_BPartner bPartner,
-			I_C_Flatrate_Conditions conditions,
-			Timestamp startDate,
-			I_AD_User userInCharge,
-			ProductAndCategoryId productAndCategoryId,
-			boolean completeIt);
+	I_C_Flatrate_Term createTerm(CreateFlatrateTermRequest createFlatrateTermRequest);
 
 	/**
 	 * Complete given contract.

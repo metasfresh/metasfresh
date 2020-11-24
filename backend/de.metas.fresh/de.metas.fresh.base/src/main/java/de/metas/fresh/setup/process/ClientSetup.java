@@ -26,7 +26,8 @@ import org.compiere.util.TrxRunnable;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -94,7 +95,7 @@ class ClientSetup
 	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final transient IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient IBankingBPBankAccountDAO bankAccountDAO = Services.get(IBankingBPBankAccountDAO.class);
+	private final transient IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
 
 	private static final OrgId AD_Org_ID_Main = OrgId.ofRepoId(1000000);
@@ -138,8 +139,11 @@ class ClientSetup
 			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationById(adOrgInfo.getOrgBPartnerLocationId());
 			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
-			orgBankAccount = InterfaceWrapperHelper.create(bankAccountDAO.retrieveDefaultBankAccount(orgBPartner), I_C_BP_BankAccount.class);
+			
+			final BPartnerId orgBPartnerId = BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID());
+			orgBankAccount = bankAccountDAO.retrieveDefaultBankAccountInTrx(orgBPartnerId).orElse(null);
 			Check.assumeNotNull(orgBankAccount, "orgBankAccount not null"); // TODO create one if does not exists
+			
 			//
 			final AcctSchemaId primaryAcctSchemaId = AcctSchemaId.ofRepoId(adClientInfo.getC_AcctSchema1_ID());
 			acctSchema = Services.get(IAcctSchemaDAO.class).getRecordById(primaryAcctSchemaId);

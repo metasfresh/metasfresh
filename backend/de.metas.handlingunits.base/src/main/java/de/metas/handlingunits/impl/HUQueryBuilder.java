@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -884,9 +885,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttribute(final String attributeName, final Object value)
+	public IHUQueryBuilder addOnlyWithAttribute(final AttributeCode attributeCode, final Object value)
 	{
-		attributes.addOnlyWithAttribute(attributeName, value);
+		attributes.addOnlyWithAttribute(attributeCode, value);
 		return this;
 	}
 
@@ -905,23 +906,23 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributeInList(final String attributeName, final Object... values)
+	public IHUQueryBuilder addOnlyWithAttributeInList(final AttributeCode attributeCode, final Object... values)
 	{
-		attributes.addOnlyWithAttributeInList(attributeName, values);
+		attributes.addOnlyWithAttributeInList(attributeCode, values);
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributeNotNull(final String attributeName)
+	public IHUQueryBuilder addOnlyWithAttributeNotNull(final AttributeCode attributeCode)
 	{
-		attributes.addOnlyWithAttributeNotNull(attributeName);
+		attributes.addOnlyWithAttributeNotNull(attributeCode);
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributeMissingOrNull(final String attributeName)
+	public IHUQueryBuilder addOnlyWithAttributeMissingOrNull(final AttributeCode attributeCode)
 	{
-		attributes.addOnlyWithAttributeMissingOrNull(attributeName);
+		attributes.addOnlyWithAttributeMissingOrNull(attributeCode);
 		return this;
 	}
 

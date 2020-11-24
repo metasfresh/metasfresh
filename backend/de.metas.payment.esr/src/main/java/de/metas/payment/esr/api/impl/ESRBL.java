@@ -8,8 +8,6 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -46,9 +44,11 @@ import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.api.IBPBankAccountBL;
+import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
@@ -135,8 +135,8 @@ public class ESRBL implements IESRBL
 		final int orgID = invoiceRecord.getAD_Org_ID();
 		final I_AD_Org org = MOrg.get(Env.getCtx(), orgID);
 
-		final IESRBPBankAccountDAO bpBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
-		final List<I_C_BP_BankAccount> bankAccounts = bpBankAccountDAO.fetchOrgEsrAccounts(org);
+		final IESRBPBankAccountDAO esrBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
+		final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
 
 		Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
 		final I_C_BP_BankAccount bankAccount = bankAccounts.get(0);
@@ -178,7 +178,7 @@ public class ESRBL implements IESRBL
 
 		renderedCodeStr.append(">");
 
-		final IBPBankAccountBL bankAccountBL = Services.get(IBPBankAccountBL.class);
+		final IESRBPBankAccountBL bankAccountBL = Services.get(IESRBPBankAccountBL.class);
 
 		renderedCodeStr.append(invoiceReferenceString.asString());
 		renderedCodeStr.append("+ ");

@@ -1,14 +1,5 @@
 package de.metas.materialtracking.process;
 
-import java.util.Iterator;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.process.C_Flatrate_Term_Create;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
@@ -22,6 +13,14 @@ import de.metas.product.IProductDAO;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+
+import java.util.Iterator;
+import java.util.List;
 
 /*
  * #%L
@@ -102,6 +101,8 @@ public class C_Flatrate_Term_Create_For_MaterialTracking
 				? Services.get(IUserDAO.class).getById(salesRepId)
 				: null;
 		setUserInCharge(salesRep);
+
+		setIsCompleteDocument(true);
 	}
 
 	@Override
@@ -117,6 +118,5 @@ public class C_Flatrate_Term_Create_For_MaterialTracking
 				.create()
 				.iterate(I_C_BPartner.class);
 		return () -> it;
-
 	}
 }

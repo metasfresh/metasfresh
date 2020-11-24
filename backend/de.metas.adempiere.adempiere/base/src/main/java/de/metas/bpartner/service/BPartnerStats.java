@@ -10,7 +10,7 @@ import org.compiere.model.X_C_BPartner_Stats;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.util.Check;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

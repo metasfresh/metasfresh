@@ -46,6 +46,8 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -92,13 +94,28 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public boolean processIt(final Object documentObj, final String action)
 	{
+		final IDocument document = getDocument(documentObj);
 		final boolean throwExIfNotSuccess = false;
-		return processIt(documentObj, action, throwExIfNotSuccess);
+
+		return processIt(document, action, throwExIfNotSuccess);
 	}
 
-	private final boolean processIt(final Object documentObj, final String action, final boolean throwExIfNotSuccess)
+	private boolean processIt(
+			@NonNull final IDocument document,
+			@NonNull final String action,
+			final boolean throwExIfNotSuccess)
 	{
-		final IDocument document = getDocument(documentObj);
+		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+
+		return perfMonServicew.monitorSpan(
+				() -> processIt0(document, action, throwExIfNotSuccess),
+				DocactionAPMHelper.createMetadataFor(document, action));
+	}
+
+	private boolean processIt0(@NonNull final IDocument document,
+			@NonNull final String action,
+			final boolean throwExIfNotSuccess)
+	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
@@ -157,7 +174,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	public void processEx(final Object document, final String docAction, final String expectedDocStatus)
 	{
 		final IDocument doc = getDocument(document);
-
 		final boolean throwExIfNotSuccess = true;
 		processIt(doc, docAction, throwExIfNotSuccess);
 

@@ -44,7 +44,7 @@ import lombok.NonNull;
 
 final class ViewRowIdsOrderedSelectionsHolder
 {
-	private final IViewDataRepository viewDataRepository;
+	private final SqlViewDataRepository viewDataRepository;
 
 	private final ViewId viewId;
 	private final boolean applySecurityRestrictions;
@@ -57,7 +57,7 @@ final class ViewRowIdsOrderedSelectionsHolder
 
 	@Builder
 	private ViewRowIdsOrderedSelectionsHolder(
-			@NonNull final IViewDataRepository viewDataRepository,
+			@NonNull final SqlViewDataRepository viewDataRepository,
 			@NonNull final ViewId viewId,
 			final boolean applySecurityRestrictions,
 			@NonNull final DocumentFilterList stickyFilters,
@@ -191,14 +191,14 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return viewEvaluationCtxSupplier.get();
 	}
 
-	public void removeRowIdsNotMatchingFilters(final Set<DocumentId> rowIds)
+	public void updateChangedRows(@NonNull final Set<DocumentId> changedRowIds)
 	{
-		if (rowIds.isEmpty())
+		if (changedRowIds.isEmpty())
 		{
 			return;
 		}
 
-		computeCurrentSelectionsIfPresent(selections -> removeRowIdsNotMatchingFilters(selections, rowIds));
+		computeCurrentSelectionsIfPresent(selections -> removeRowIdsNotMatchingFilters(selections, changedRowIds));
 	}
 
 	private ViewRowIdsOrderedSelections removeRowIdsNotMatchingFilters(
@@ -251,5 +251,18 @@ final class ViewRowIdsOrderedSelectionsHolder
 				DocumentFilterList.EMPTY,
 				orderBys,
 				SqlDocumentFilterConverterContext.EMPTY);
+	}
+
+	public Set<DocumentId> retainExistingRowIds(@NonNull final Set<DocumentId> rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return viewDataRepository.retrieveRowIdsMatchingFilters(
+				viewId,
+				DocumentFilterList.EMPTY,
+				rowIds);
 	}
 }

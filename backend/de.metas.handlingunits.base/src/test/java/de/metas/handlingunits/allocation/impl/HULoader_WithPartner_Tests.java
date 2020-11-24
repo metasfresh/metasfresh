@@ -22,15 +22,14 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
-import static de.metas.business.BusinessTestHelper.createBPartner;
-
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.quantity.Quantity;
 
 /**
  * Test how HUs are created and which {@link I_M_HU_PI_Item_Product}s are used when we have a BPartner set in our referenced model.
@@ -56,8 +56,8 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	// private I_M_HU_PI huDefIFCO;
 	private I_M_HU_PI_Item huDefIFCO_itemMA;
 
-	private I_C_BPartner bpartner01;
-	private I_C_BPartner bpartner02;
+	private BPartnerId bpartner01;
+	private BPartnerId bpartner02;
 
 	// private MockedAllocationSourceDestination allocationSource;
 	private HUProducerDestination allocationDestination;
@@ -84,7 +84,11 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 		allocationDestination = HUProducerDestination.of(huDefIFCO);
 
 		loader = HULoader.of(allocationSource, allocationDestination);
+	}
 
+	private BPartnerId createBPartner(final String nameAndValue)
+	{
+		return BPartnerId.ofRepoId(BusinessTestHelper.createBPartner(nameAndValue).getC_BPartner_ID());
 	}
 
 	private final IAllocationRequest createAllocationRequest(final int qty, final Object referencedModel)
@@ -110,8 +114,8 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		//
 		// Setup HU PI Item Products
-		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("5"), uomEach);
-		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("20"), uomEach, bpartner01);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, Quantity.of("5", uomEach));
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, Quantity.of("20", uomEach), bpartner01);
 
 		//
 		// Create Referenced model (having BP set)
@@ -133,7 +137,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner01, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner01, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
 	}
 
 	/**
@@ -144,8 +148,8 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		//
 		// Setup HU PI Item Products
-		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("5"), uomEach);
-		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("20"), uomEach, bpartner01);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, Quantity.of("5", uomEach));
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, Quantity.of("20", uomEach), bpartner01);
 
 		//
 		// Create Referenced model (using BPartner02, for which we don't have a particular PI Item Product)
@@ -170,10 +174,10 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(0)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(1), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(1)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(2), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(2)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(3), bpartner02, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(3)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(0), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(1), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(2), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(3), bpartner02, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)));
 	}
 
 	@Test
@@ -181,12 +185,12 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 	{
 		//
 		// Setup HU PI Item Products
-		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("5"), uomEach);
-		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, new BigDecimal("20"), uomEach, bpartner01);
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, Quantity.of("5", uomEach));
+		helper.assignProduct(huDefIFCO_itemMA, pTomatoId, Quantity.of("20", uomEach), bpartner01);
 
 		//
 		// Create Referenced model (NO BPartner!)
-		final Object referencedModel = helper.createDummyReferenceModel(null);
+		final Object referencedModel = helper.createDummyReferenceModel((BPartnerId)null);
 
 		//
 		// Execute load to HUs and get those HUs
@@ -207,10 +211,10 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 
 		//
 		// Assert: M_HU.C_BPartner_ID is set
-		Assert.assertEquals("Invalid BPartner in " + hus.get(0), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(0)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(1), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(1)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(2), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(2)));
-		Assert.assertEquals("Invalid BPartner in " + hus.get(3), null, IHandlingUnitsBL.extractBPartnerOrNull(hus.get(3)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(0), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(0)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(1), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(1)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(2), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(2)));
+		Assert.assertEquals("Invalid BPartner in " + hus.get(3), null, IHandlingUnitsBL.extractBPartnerIdOrNull(hus.get(3)));
 	}
 
 }

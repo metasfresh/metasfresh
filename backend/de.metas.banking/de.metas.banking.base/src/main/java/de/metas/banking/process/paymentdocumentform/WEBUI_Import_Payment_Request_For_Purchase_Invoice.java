@@ -25,7 +25,6 @@ package de.metas.banking.process.paymentdocumentform;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -40,6 +39,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;

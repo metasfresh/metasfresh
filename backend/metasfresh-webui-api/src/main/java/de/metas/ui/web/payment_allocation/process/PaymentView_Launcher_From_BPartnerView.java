@@ -1,31 +1,8 @@
-package de.metas.ui.web.payment_allocation.process;
-
-import com.google.common.collect.ImmutableSet;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
-import de.metas.banking.payment.paymentallocation.PaymentToAllocateQuery;
-import de.metas.bpartner.BPartnerId;
-import de.metas.payment.PaymentId;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
-import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.payment_allocation.PaymentsViewFactory;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-
-import java.util.Optional;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,9 +20,25 @@ import java.util.Optional;
  * #L%
  */
 
+package de.metas.ui.web.payment_allocation.process;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.payment_allocation.PaymentsViewFactory;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import org.compiere.SpringContextHolder;
+
+import java.util.Optional;
+
 public class PaymentView_Launcher_From_BPartnerView extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final PaymentAllocationRepository paymentAllocationRepo = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 	private final IViewsRepository viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
 
 	@Override
@@ -62,15 +55,10 @@ public class PaymentView_Launcher_From_BPartnerView extends ViewBasedProcessTemp
 	@Override
 	protected String doIt()
 	{
-		final ImmutableSet<PaymentId> paymentIds = retrievePaymentIds();
-		if (paymentIds.isEmpty())
-		{
-			throw new AdempiereException("@NoOpenPayments@")
-					.markAsUserValidationError();
-		}
+		final BPartnerId bPartnerId = getSingleSelectedBPartnerId().orElse(null);
 
 		final ViewId viewId = viewsFactory.createView(CreateViewRequest.builder(PaymentsViewFactory.WINDOW_ID)
-				.setFilterOnlyIds(PaymentId.toIntSet(paymentIds))
+				.setParameter(PaymentsViewFactory.PARAMETER_TYPE_BPARTNER_ID, bPartnerId)
 				.build())
 				.getViewId();
 
@@ -80,14 +68,6 @@ public class PaymentView_Launcher_From_BPartnerView extends ViewBasedProcessTemp
 				.build());
 
 		return MSG_OK;
-	}
-
-	private ImmutableSet<PaymentId> retrievePaymentIds()
-	{
-		return paymentAllocationRepo.retrievePaymentIdsToAllocate(PaymentToAllocateQuery.builder()
-				.evaluationDate(SystemTime.asZonedDateTime())
-				.bpartnerId(getSingleSelectedBPartnerId().get())
-				.build());
 	}
 
 	private Optional<BPartnerId> getSingleSelectedBPartnerId()

@@ -441,4 +441,24 @@ public class QuantityTest
 			assertThat(qty.withoutSource()).isEqualTo(Quantity.of(123, uom1));
 		}
 	}
+
+	@Nested
+	public class multiply_with_percent
+	{
+		@Test
+		public void qty100_multiplyBy_30percent()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+			final Quantity qty = Quantity.of("100", uom);
+			assertThat(qty.multiply(Percent.of(30))).isEqualTo(Quantity.of("30", uom));
+		}
+
+		@Test
+		public void qty100_multiplyBy_100percent()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+			final Quantity qty = Quantity.of("100", uom);
+			assertThat(qty.multiply(Percent.of(100))).isSameAs(qty);
+		}
+	}
 }

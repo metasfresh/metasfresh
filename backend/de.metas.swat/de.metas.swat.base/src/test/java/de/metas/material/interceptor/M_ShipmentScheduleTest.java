@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -21,6 +21,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
@@ -29,7 +30,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
-import mockit.Expectations;
+import lombok.Setter;
 
 /*
  * #%L
@@ -56,7 +57,6 @@ import mockit.Expectations;
 public class M_ShipmentScheduleTest
 {
 	private ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
-	// private PostMaterialEventService postMaterialEventService;
 
 	private static final BPartnerId BPARTNER_ID1 = BPartnerId.ofRepoId(40);
 	private static final BPartnerId BPARTNER_ID2 = BPartnerId.ofRepoId(45);
@@ -71,10 +71,30 @@ public class M_ShipmentScheduleTest
 	private static final BigDecimal TEN = BigDecimal.TEN;
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 
-	private M_ShipmentSchedule shipmentScheduleInterceptor;
-
 	private I_M_ShipmentSchedule shipmentSchedule;
-	private I_M_ShipmentSchedule oldShipmentSchedule;
+
+	@Interceptor(I_M_ShipmentSchedule.class)
+	private static class M_ShipmentSchedule_Mocked extends M_ShipmentSchedule
+	{
+		@Setter
+		private I_M_ShipmentSchedule oldShipmentSchedule;
+
+		public M_ShipmentSchedule_Mocked(
+				@NonNull final PostMaterialEventService postMaterialEventService,
+				@NonNull final ShipmentScheduleReferencedLineFactory referencedLineFactory,
+				@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+		{
+			super(postMaterialEventService, referencedLineFactory, productDescriptorFactory);
+		}
+
+		@Override
+		I_M_ShipmentSchedule toOldValues(I_M_ShipmentSchedule shipmentSchedule)
+		{
+			return oldShipmentSchedule;
+		}
+	}
+
+	private M_ShipmentSchedule_Mocked shipmentScheduleInterceptor;
 
 	@BeforeEach
 	public void init()
@@ -83,12 +103,12 @@ public class M_ShipmentScheduleTest
 
 		shipmentScheduleReferencedLineFactory = Mockito.mock(ShipmentScheduleReferencedLineFactory.class);
 
-		shipmentScheduleInterceptor = new M_ShipmentSchedule(
+		shipmentScheduleInterceptor = new M_ShipmentSchedule_Mocked(
 				Mockito.mock(PostMaterialEventService.class),
 				shipmentScheduleReferencedLineFactory,
 				new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory());
 
-		oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		oldShipmentSchedule.setQtyOrdered_Calculated(TWENTY); // note that setQtyOrdered is just for display!, QtyOrdered_Calculated one or QtyOrdered_Override is where the qty is!
 		oldShipmentSchedule.setQtyReserved(FOUR);
 		oldShipmentSchedule.setM_Product_ID(PRODUCT_ID);
@@ -96,6 +116,7 @@ public class M_ShipmentScheduleTest
 		oldShipmentSchedule.setC_BPartner_ID(BPARTNER_ID1.getRepoId());
 		oldShipmentSchedule.setC_BPartner_Override_ID(BPARTNER_ID2.getRepoId());
 		save(oldShipmentSchedule);
+		shipmentScheduleInterceptor.setOldShipmentSchedule(oldShipmentSchedule);
 
 		shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		shipmentSchedule.setQtyOrdered_Calculated(TEN); // decrease by ten
@@ -157,13 +178,6 @@ public class M_ShipmentScheduleTest
 	@Test
 	public void createShipmentscheduleEvent_after_change()
 	{
-		// @formatter:off
-		new Expectations(InterfaceWrapperHelper.class) {{
-
-			InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
-			times = 1; result = oldShipmentSchedule;
-		}}; // @formatter:on
-
 		final AbstractShipmentScheduleEvent result = shipmentScheduleInterceptor
 				.createShipmentScheduleEvent(shipmentSchedule, ModelChangeType.AFTER_CHANGE);
 

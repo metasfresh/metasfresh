@@ -1,6 +1,6 @@
-import { RewriteURL } from '../utils/constants';
-import { humanReadableNow } from '../../support/utils/utils';
+import { humanReadableNow } from '../utils/utils';
 import { checkIfWindowCanExecuteActions } from './commands_utils';
+import { RewriteURL } from '../utils/constants';
 /*
  * Basic command for clicking a button element having a certain text
  * @param text string to search for in the button
@@ -52,17 +52,18 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
   checkIfWindowCanExecuteActions();
 
   if (retriesLeft >= 1) {
-    const referencesAliasName = `references-${date}`;
-    cy.server();
-    cy.route('GET', new RegExp(RewriteURL.REFERENCES)).as(referencesAliasName);
+    // const referencesAliasName = `references-${date}`;
+    // cy.server();
+    // -- removed this as calls to SSE (eventSource) are not recorded, they were introduced in me03/issues -> #4383
+    // cy.route('GET', new RegExp(RewriteURL.REFERENCES)).as(referencesAliasName);
 
     cy.get('body').type('{alt}6'); // open referenced docs
-    cy.wait(`@${referencesAliasName}`, timeout);
+    // cy.wait(`@${referencesAliasName}`, timeout);  -- this has been also removed due to the reason mentioned above
     cy.get('.order-list-panel .order-list-loader', timeout).should('not.exist');
 
     return cy.get('body').then(body => {
-      if (body.find(`.reference_${referenceId}`).length > 0) {
-        return cy.get(`.reference_${referenceId}`).click();
+      if (body.find(`[data-cy="reference-${referenceId}"]`).length > 0) {
+        return cy.get(`[data-cy="reference-${referenceId}"]`).click();
       } else {
         cy.wait(1000);
         cy.get('body').type('{alt}5'); // close referenced docs by switching to something else
@@ -71,7 +72,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
     });
   }
   cy.get('body').type('{alt}6'); // open referenced docs
-  return cy.get(`.reference_${referenceId}`).click(); // one more time just because we need to throw the error
+  return cy.get(`[data-cy="reference-${referenceId}"]`).click(); // one more time just because we need to throw the error
 });
 
 /**
@@ -203,19 +204,50 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
  * Select a single item using the Barcode lookup
  *
  */
-Cypress.Commands.add('selectItemUsingBarcodeFilter', huValue1 => {
-  cy.get('.filters-not-frequent > .btn')
-    .eq(0)
-    .click({ force: true });
-  cy.wait(500);
-  cy.get('li:contains("Barcode")')
-    .eq(0)
-    .click({ force: true });
-  cy.get('label:contains("Barcode")')
+Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = false, force = false) => {
+  cy.log(`Select HU using BarcodeFilter by ${JSON.stringify(columnAndValue)}`);
+
+  const barcodeFilterIdentifier = 'barcode';
+  let barcodeFilterPath = `.filter-option-${barcodeFilterIdentifier}`; // todo @petrica: this should use a data-cy attribute. each filter is sent by backed with a unique identifier. after that is done, it can be inlined.
+  let filtersPath = '.filters-not-frequent';
+
+  const timeout = { timeout: 10000 };
+
+  if (modal) {
+    filtersPath = '.modal-content-wrapper ' + filtersPath;
+  }
+
+  if (!force) {
+    cy.waitForSaveIndicator();
+  }
+
+  cy.get(filtersPath, timeout)
+    .click()
+    .within(() => {
+      cy.get(barcodeFilterPath).click();
+    });
+
+  const quickActionsAlias = 'quickActions_' + humanReadableNow();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+
+  cy.get('label:contains("Barcode")') // todo @petrica: this label should use a data-cy attribute
     .siblings()
     .find('input[type=text]')
-    .wait(500)
-    .type(`${huValue1}{enter}`)
+    .type(columnAndValue.value)
+    .type('{enter}');
+
+  if (!force) {
+    cy.waitForSaveIndicator();
+  }
+
+  // Workaround:
+  // if not doing this wait, we may get `element detached` errors
+  // ref: https://github.com/cypress-io/cypress/issues/7306
+  // in the future cypress may retry on element detached, but that's not the case as of 2020-05-22
+  cy.wait(`@${quickActionsAlias}`);
+
+  return cy.selectRowByColumnAndValue(columnAndValue, modal, force);
 });
 
 /**

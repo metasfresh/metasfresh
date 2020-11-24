@@ -1,6 +1,11 @@
 package de.metas.fresh.api.invoicecandidate.impl;
 
-import org.junit.Test;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
@@ -17,24 +22,22 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import mockit.Expectations;
-import mockit.Mocked;
-
 public class FreshInvoiceCandBLTest
 {
-
-	@Mocked
-	I_C_Invoice_Candidate candidate;
+	@BeforeEach
+	public void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+	}
 
 	/**
 	 * If isSOTrx=Y, then the method shall return and *not* call the candidte's setC_DocTypeInvoice() or setC_DocTypeInvoice_ID() method.
@@ -42,14 +45,12 @@ public class FreshInvoiceCandBLTest
 	@Test
 	public void test_updateC_DocTypeInvoice_does_nothing_if_IsSOTrx_true()
 	{
-		// @formatter:off
-		new Expectations()
-		{{
-			candidate.isSOTrx(); result = true; times = 1;
-			candidate.setC_DocTypeInvoice_ID(anyInt); times = 0;
-		}};
-		// @formatter:on
+		final I_C_Invoice_Candidate candidate = newInstance(I_C_Invoice_Candidate.class);
+		candidate.setIsSOTrx(true);
+
 		new FreshInvoiceCandBL().updateC_DocTypeInvoice(candidate);
+
+		assertThat(candidate.getC_DocTypeInvoice_ID()).isLessThanOrEqualTo(0);
 	}
 
 }

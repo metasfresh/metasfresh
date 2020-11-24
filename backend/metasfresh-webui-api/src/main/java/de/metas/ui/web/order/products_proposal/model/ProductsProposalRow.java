@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.currency.Amount;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderLineId;
@@ -291,10 +292,15 @@ public class ProductsProposalRow implements IViewRow
 			return this;
 		}
 
+		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), order.getCurrency().getCurrencyCode());
+		
 		return toBuilder()
 				.qty(existingOrderLine.isPackingMaterialWithInfiniteCapacity()
 						? existingOrderLine.getQtyEnteredCU()
 						: BigDecimal.valueOf(existingOrderLine.getQtyEnteredTU()))
+				.price(ProductProposalPrice.builder()
+						.priceListPrice(existingPrice)
+						.build())
 				.existingOrderLineId(existingOrderLine.getOrderLineId())
 				.description(existingOrderLine.getDescription())
 				.build();

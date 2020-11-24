@@ -1,12 +1,16 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
+import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.shipping.ShipperId;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
-import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
+import java.util.List;
 
 /**
  * Interface responsible creating {@link I_M_InOut} shipments from {@link IShipmentScheduleWithHU}s.
@@ -34,14 +38,11 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	 */
 	IInOutProducerFromShipmentScheduleWithHU setCreatePackingLines(boolean createPackingLines);
 
-	/**
-	 * If the flag IsShipmentDateToday is true, the shipment will be created for today, no matter what delivery dates are set in the shipment schedules.
-	 * Otherwise, the date on the shipment will be the minimum date of the shipment schedules, not older than today.
-	 *
-	 * @param forceDateToday
-	 * @return
-	 */
-	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday);
+	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(CalculateShippingDateRule calculateShippingDateType);
+
+	IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo);
+
+	IInOutProducerFromShipmentScheduleWithHU setShipperId(ShipperId shipperId);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 }

@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -52,7 +55,8 @@ public final class SqlAndParams
 
 	public static SqlAndParams of(final CharSequence sql, final List<Object> sqlParams)
 	{
-		return new SqlAndParams(sql, sqlParams != null && !sqlParams.isEmpty() ? sqlParams.toArray() : null);
+		final Object[] sqlParamsArray = sqlParams != null && !sqlParams.isEmpty() ? sqlParams.toArray() : null;
+		return new SqlAndParams(sql, sqlParamsArray);
 	}
 
 	public static final SqlAndParams of(final CharSequence sql, final Object... sqlParamsArray)
@@ -62,17 +66,49 @@ public final class SqlAndParams
 
 	public static SqlAndParams and(@NonNull final Collection<SqlAndParams> sqlAndParamsCollection)
 	{
-		Check.assumeNotEmpty(sqlAndParamsCollection, "sqlAndParamsCollection is not empty");
+		return andNullables(sqlAndParamsCollection)
+				.orElseThrow(() -> new AdempiereException("No non null SQLs found in " + sqlAndParamsCollection));
+	}
 
-		if (sqlAndParamsCollection.size() == 1)
+	public static Optional<SqlAndParams> andNullables(final SqlAndParams... sqlAndParamsCollection)
+	{
+		if (sqlAndParamsCollection == null || sqlAndParamsCollection.length == 0)
 		{
-			return sqlAndParamsCollection.iterator().next();
+			return Optional.empty();
 		}
-		else
+
+		return andNullables(Arrays.asList(sqlAndParamsCollection));
+	}
+
+	public static Optional<SqlAndParams> andNullables(final Collection<SqlAndParams> sqlAndParamsCollection)
+	{
+		if (sqlAndParamsCollection == null || sqlAndParamsCollection.isEmpty())
 		{
-			final Builder builder = builder();
-			for (final SqlAndParams sqlAndParams : sqlAndParamsCollection)
+			return Optional.empty();
+		}
+
+		int countNotNulls = 0;
+		SqlAndParams firstNotNull = null;
+		Builder builder = null;
+		for (final SqlAndParams sqlAndParams : sqlAndParamsCollection)
+		{
+			if (sqlAndParams == null || sqlAndParams.isEmpty())
 			{
+				continue;
+			}
+
+			if (countNotNulls == 0)
+			{
+				firstNotNull = sqlAndParams;
+			}
+			else
+			{
+				if (builder == null)
+				{
+					builder = builder();
+					builder.append("(").append(firstNotNull).append(")");
+				}
+
 				if (!builder.isEmpty())
 				{
 					builder.append(" AND ");
@@ -80,7 +116,20 @@ public final class SqlAndParams
 				builder.append("(").append(sqlAndParams).append(")");
 			}
 
-			return builder.build();
+			countNotNulls++;
+		}
+
+		if (builder != null)
+		{
+			return Optional.of(builder.build());
+		}
+		else if (firstNotNull != null)
+		{
+			return Optional.of(firstNotNull);
+		}
+		else
+		{
+			return Optional.empty();
 		}
 	}
 
@@ -101,6 +150,16 @@ public final class SqlAndParams
 	public Object[] getSqlParamsArray()
 	{
 		return sqlParams == null ? null : sqlParams.toArray();
+	}
+
+	public boolean hasParams()
+	{
+		return sqlParams != null && !sqlParams.isEmpty();
+	}
+
+	public boolean isEmpty()
+	{
+		return Check.isBlank(sql) && !hasParams();
 	}
 
 	//

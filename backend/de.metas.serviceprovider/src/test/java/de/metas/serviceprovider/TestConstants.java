@@ -47,9 +47,9 @@ public interface TestConstants
 	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";
-	String MOCK_EXTERNAL_ISSUE_NO = "1";
+	Integer MOCK_EXTERNAL_ISSUE_NO = 1;
 	String MOCK_PARENT_EXTERNAL_ID = "parentExternalId";
-	String MOCK_PARENT_ISSUE_NO = "1234";
+	Integer MOCK_PARENT_ISSUE_NO = 1234;
 
 	String MOCK_NAME = "name";
 	String MOCK_SEARCH_KEY = "searchKey";
@@ -62,7 +62,7 @@ public interface TestConstants
 	Instant MOCK_INSTANT = Instant.parse(MOCK_DATE_AND_TIME_ISO_8601);
 	String MOCK_AUTH_TOKEN = "authToken";
 	String MOCK_VALUE = "value";
-	String MOCK_BUG_6_LABEL = "bud:6";
+	String MOCK_BUD_6_LABEL = "bud:6";
 	String MOCK_EST_4_25_LABEL = "est:4.25";
 	long MOCK_BOOKED_SECONDS = 1800;
 	String MOCK_HOURS_AND_MINUTES = "0:30";

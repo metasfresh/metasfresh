@@ -2,11 +2,8 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
-import {
-  attachmentsRequest,
-  deleteRequest,
-  openFile,
-} from '../../actions/GenericActions';
+import { deleteRequest } from '../../api';
+import { attachmentsRequest, openFile } from '../../actions/GenericActions';
 import Loader from '../app/Loader';
 import AttachUrl from './AttachUrl';
 

@@ -7,7 +7,6 @@
 
     "plantName" : "MFG Resource",
     "priceListName" : "PriceList",
-    "priceListVersionName" : "PriceListVersion",
 
     "componentProductName" : "BOM1-ComponentProduct",
 

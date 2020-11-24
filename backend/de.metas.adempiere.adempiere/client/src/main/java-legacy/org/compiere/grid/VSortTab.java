@@ -26,7 +26,6 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -162,11 +161,17 @@ public class VSortTab extends CPanel implements APanelTab
 			Arrays.sort(elements);
 			int index = Arrays.binarySearch(elements, obj);
 			if (index < 0)
+			{
 				index = -1 * index - 1;
+			}
 			if (index > elements.length)
+			{
 				super.addElement(obj);
+			}
 			else
+			{
 				super.add(index, obj);
+			}
 		}
 		@Override
 		public void add(int index, ListItem obj) {
@@ -197,12 +202,6 @@ public class VSortTab extends CPanel implements APanelTab
 	private final JScrollPane noPane = new JScrollPane(noList);
 	private final JScrollPane yesPane = new JScrollPane(yesList);
 
-	/**
-	 * 	Dyanamic Init
-	 *  @param AD_Table_ID Table No
-	 *  @param AD_ColumnSortOrder_ID Sort Column
-	 *  @param AD_ColumnSortYesNo_ID YesNo Column
-	 */
 	private void dynInit()
 	{
 		final int AD_ColumnSortOrder_ID = gridTabVO.getAD_ColumnSortOrder_ID();
@@ -305,11 +304,15 @@ public class VSortTab extends CPanel implements APanelTab
 					log.debug("Identifier={}.{}", m_TableName, columnName);
 					boolean isTranslated = trl && DisplayType.toBoolean(rs.getString(8));
 					if (identifierSql.length() > 0)
+					{
 						identifierSql.append(",");
+					}
 					identifierSql.append(isTranslated ? "tt." : "t.").append(columnName).append("::varchar");
 					identifiersCount++;
 					if (isTranslated)
+					{
 						m_IdentifierTranslated = true;
+					}
 				}
 				else
 				{
@@ -357,11 +360,17 @@ public class VSortTab extends CPanel implements APanelTab
 		//
 		// Identifier
 		if (identifiersCount == 0)
+		{
 			m_IdentifierSql = "NULL";
+		}
 		else if (identifiersCount == 1)
+		{
 			m_IdentifierSql = identifierSql.toString();
+		}
 		else
+		{
 			m_IdentifierSql = identifierSql.insert(0, "COALESCE(").append(")").toString();
+		}
 
 		//
 		noLabel.setText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Available"));
@@ -379,10 +388,14 @@ public class VSortTab extends CPanel implements APanelTab
 		yesLabel.setText("Yes");
 
 		for (MouseMotionListener mml : noList.getMouseMotionListeners())
+		{
 			noList.removeMouseMotionListener(mml);
+		}
 
 		for (MouseMotionListener mml : yesList.getMouseMotionListeners())
+		{
 			yesList.removeMouseMotionListener(mml);
+		}
 
 		MouseListener mouseListener = new MouseAdapter()
 		{
@@ -396,7 +409,9 @@ public class VSortTab extends CPanel implements APanelTab
 					Point p = me.getPoint();
 					int index = list.locationToIndex(p);
 					if (index > -1 && list.getCellBounds(index, index).contains(p))
+					{
 						migrateValueAcrossLists(me);
+					}
 				}
 			}
 		};
@@ -406,14 +421,7 @@ public class VSortTab extends CPanel implements APanelTab
 		yesList.setCellRenderer(listRenderer);
 		noList.setCellRenderer(listRenderer);
 
-		ActionListener actionListener = new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent ae)
-			{
-				migrateValueAcrossLists(ae);
-			}
-		};
+		ActionListener actionListener = ae -> migrateValueAcrossLists(ae);
 
 		bAdd.setIcon(Images.getImageIcon2("Detail24"));
 		bAdd.setMargin(new Insets(2, 2, 2, 2));
@@ -429,14 +437,7 @@ public class VSortTab extends CPanel implements APanelTab
 		noList.addMouseListener(crossListMouseListener);
 		noList.addMouseMotionListener(crossListMouseListener);
 
-		actionListener = new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent ae)
-			{
-				migrateValueWithinYesList(ae);
-			}
-		};
+		actionListener = ae -> migrateValueWithinYesList(ae);
 
 		bUp.setIcon(Images.getImageIcon2("Previous24"));
 		bUp.setMargin(new Insets(2, 2, 2, 2));
@@ -456,7 +457,9 @@ public class VSortTab extends CPanel implements APanelTab
 				Point p = me.getPoint();
 				int index = list.locationToIndex(p);
 				if (index > -1 && list.getCellBounds(index, index).contains(p))
+				{
 					migrateValueWithinYesList(me);
+				}
 			}
 		};
 		yesList.addMouseMotionListener(yesListMouseMotionListener);
@@ -514,14 +517,25 @@ public class VSortTab extends CPanel implements APanelTab
 			.append("\n ,t.").append(m_ColumnSortName)				//	3
 			.append("\n , t.AD_Client_ID, t.AD_Org_ID");		// 4, 5
 		if (m_ColumnYesNoName != null)
+		 {
 			sql.append("\n ,t.").append(m_ColumnYesNoName);			//	6
+		}
 		// metas: begin
 		boolean hasColumnName = false;
 		if (Services.get(IDeveloperModeBL.class).isEnabled())
 		{
 			if ("AD_Field".equals(m_TableName))
-		{
-			sql.append("\n , (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID=t.AD_Column_ID) AS ColumnName");
+			{
+				sql.append("\n , (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID=t.AD_Column_ID) AS ColumnName");
+				hasColumnName = true;
+			}
+			else if ("AD_UI_Element".equals(m_TableName))
+			{
+				sql.append("\n , (SELECT c.ColumnName "
+						+ " FROM AD_Field f "
+						+ " INNER JOIN AD_Column c on c.AD_Column_ID=f.AD_Column_ID"
+						+ " WHERE f.AD_Field_ID=t.AD_Field_ID"
+						+ ") AS ColumnName");
 				hasColumnName = true;
 			}
 			else if ("AD_Process_Para".equals(m_TableName))
@@ -534,7 +548,9 @@ public class VSortTab extends CPanel implements APanelTab
 		//	Tables
 		sql.append("\n FROM ").append(m_TableName).append( " t");
 		if (m_IdentifierTranslated)
+		{
 			sql.append(", ").append(m_TableName).append("_Trl tt");
+		}
 		//	Where
 		//FR [ 2826406 ]
 		if(m_LinkColumnName != null)
@@ -554,7 +570,9 @@ public class VSortTab extends CPanel implements APanelTab
 		//	Order
 		sql.append("\n ORDER BY ");
 		if (m_ColumnYesNoName != null)
+		 {
 			sql.append("6 DESC,");		//	t.IsDisplayed DESC
+		}
 		sql.append("3,2");				//	t.SeqNo, tt.Name
 
 		//FR [ 2826406 ]
@@ -658,11 +676,12 @@ public class VSortTab extends CPanel implements APanelTab
 	{
 		Object source = event.getSource();
 		final List<ListItem> selObjects = (source == bAdd || source == noList) ? noList.getSelectedValuesList() : yesList.getSelectedValuesList();
-		for (int i = 0; i < selObjects.size(); i++)
+		for (ListItem selObject : selObjects)
 		{
-			ListItem selObject = selObjects.get(i);
 			if (selObject == null || !selObject.isUpdateable())
+			{
 				continue;
+			}
 
 			DefaultListModel<ListItem> lmFrom = (source == bAdd || source == noList) ?
 					noModel : yesModel;
@@ -686,10 +705,14 @@ public class VSortTab extends CPanel implements APanelTab
 	{
 		final List<ListItem> selObjects = yesList.getSelectedValuesList();
 		if (selObjects == null)
+		{
 			return;
+		}
 		int length = selObjects.size();
 		if (length == 0)
+		{
 			return;
+		}
 //		Object selObject = selObjects[0];
 //		if (selObject == null)
 //		return;
@@ -705,10 +728,14 @@ public class VSortTab extends CPanel implements APanelTab
 				ListItem selObject = selObjects.get(i);
 				int index = indices[i];
 				if (index == 0)
+				{
 					break;
+				}
 				ListItem newObject = yesModel.getElementAt(index - 1);
 				if (!selObject.isUpdateable() || !newObject.isUpdateable())
+				{
 					break;
+				}
 				yesModel.setElementAt(newObject, index);
 				yesModel.setElementAt(selObject, index - 1);
 				indices[i] = index - 1;
@@ -722,10 +749,14 @@ public class VSortTab extends CPanel implements APanelTab
 				ListItem selObject = selObjects.get(i);
 				int index = indices[i];
 				if (index  >= yesModel.size () - 1)
+				{
 					break;
+				}
 				ListItem newObject = yesModel.getElementAt(index + 1);
 				if (!selObject.isUpdateable() || !newObject.isUpdateable())
+				{
 					break;
+				}
 				yesModel.setElementAt(newObject, index);
 				yesModel.setElementAt(selObject, index + 1);
 				yesList.setSelectedIndex(index + 1);
@@ -739,7 +770,9 @@ public class VSortTab extends CPanel implements APanelTab
 			// see org.compiere.grid.VSortTab.DragListener#mouseReleased(MouseEvent)
 		}
 		else
+		{
 			log.error("Unknown source: " + source);
+		}
 		//
 		if (change) {
 			yesList.setSelectedIndices(indices);
@@ -764,7 +797,9 @@ public class VSortTab extends CPanel implements APanelTab
 	public void saveData()
 	{
 		if (!m_aPanel.aSave.isEnabled())
+		{
 			return;
+		}
 		log.debug("");
 
 		final AtomicBoolean ok = new AtomicBoolean(true);
@@ -780,15 +815,21 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			ListItem pp = noModel.getElementAt(i);
 			if (!pp.isUpdateable())
+			{
 				continue;
+			}
 			if(pp.getSortNo() == 0 && (m_ColumnYesNoName == null || !pp.isYes()))
+			 {
 				continue; // no changes
+			}
 
 			if (!updateAndSaveListItem(pp, false, 0))
 			{
 								ok.set(false);
 				if (info.length() > 0)
+				{
 					info.append(", ");
+				}
 				info.append(pp.getName());
 				log.error("NoModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
 			}
@@ -799,16 +840,22 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			ListItem pp = yesModel.getElementAt(i);
 			if (!pp.isUpdateable())
+			{
 				continue;
+			}
 			index += 10;
 			if(pp.getSortNo() == index && (m_ColumnYesNoName == null || pp.isYes()))
+			 {
 				continue; // no changes
+			}
 			//
 			if (!updateAndSaveListItem(pp, true, index))
 			{
 								ok.set(false);
 				if (info.length() > 0)
+				{
 					info.append(", ");
+				}
 				info.append(pp.getName());
 				log.error("YesModel - Not updated: " + m_KeyColumnName + "=" + pp.getKey());
 			}
@@ -947,7 +994,9 @@ public class VSortTab extends CPanel implements APanelTab
 		public String toString() {
 			String s = super.toString();
 			if (s == null || s.trim().length() == 0)
+			{
 				s = "<" + getKey() + ">";
+			}
 			return s;
 		}
 	}
@@ -1001,9 +1050,13 @@ public class VSortTab extends CPanel implements APanelTab
 				selObject = list.getModel().getElementAt(index);
 			}
 			if (list == noList)
+			{
 				yesList.clearSelection();
+			}
 			else
+			{
 				noList.clearSelection();
+			}
 			moved = false;
 		}	//	mousePressed
 
@@ -1019,7 +1072,9 @@ public class VSortTab extends CPanel implements APanelTab
 			}
 			moved = true;
 			if (getCursor() != customCursor)
+			{
 				setCursor(customCursor);
+			}
 		}	//	mouseDragged
 
 		/* (non-Javadoc)

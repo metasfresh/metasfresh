@@ -16,8 +16,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -71,6 +73,11 @@ public interface IView
 	}
 
 	Set<DocumentPath> getReferencingDocumentPaths();
+	
+	default DocumentReferenceId getDocumentReferenceId()
+	{
+		return null;
+	}
 
 	/**
 	 * @param documentId can be used by multi-table implementations to return the correct table name for a given row.
@@ -186,7 +193,7 @@ public interface IView
 		return TableRecordReference.of(tableName, recordId);
 	}
 
-	String getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
+	SqlViewRowsWhereClause getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
 	default boolean hasAttributesSupport()
 	{
@@ -204,7 +211,7 @@ public interface IView
 	/**
 	 * Notify the view that given record(s) has changed.
 	 */
-	void notifyRecordsChanged(TableRecordReferenceSet recordRefs);
+	void notifyRecordsChanged(TableRecordReferenceSet recordRefs, boolean watchedByFrontend);
 
 	/** @return actions which were registered particularly for this view instance */
 	default ViewActionDescriptorsList getActions()

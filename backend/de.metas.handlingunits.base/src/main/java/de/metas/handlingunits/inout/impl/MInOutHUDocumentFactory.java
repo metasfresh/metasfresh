@@ -1,7 +1,5 @@
 package de.metas.handlingunits.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -30,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
@@ -43,10 +40,13 @@ import de.metas.inout.IInOutDAO;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut>
 {
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	
 	public MInOutHUDocumentFactory()
 	{
 		super(I_M_InOut.class);
@@ -104,7 +104,7 @@ public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut
 			final Capacity targetCapacity = Capacity.createCapacity(
 					ioLine.getMovementQty(), // qty
 					ProductId.ofRepoId(ioLine.getM_Product_ID()),
-					loadOutOfTrx(ioLine.getC_UOM_ID(), I_C_UOM.class),
+					uomDAO.getById(ioLine.getC_UOM_ID()),
 					false // allowNegativeCapacity
 					);
 			documentsCollector.getTargetCapacities().add(targetCapacity);

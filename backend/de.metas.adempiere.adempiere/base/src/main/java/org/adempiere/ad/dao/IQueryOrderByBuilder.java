@@ -49,11 +49,6 @@ public interface IQueryOrderByBuilder<T>
 	IQueryOrderByBuilder<T> addColumn(ModelColumn<T, ?> column);
 
 	/**
-	 *
-	 * @param columnName
-	 * @param asc
-	 * @return
-	 *
 	 * @deprecated please use {@link #addColumnAscending(String)} or {@link #addColumnDescending(String)}.
 	 */
 	@Deprecated

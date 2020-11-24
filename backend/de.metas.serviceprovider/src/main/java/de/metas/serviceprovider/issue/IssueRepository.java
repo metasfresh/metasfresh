@@ -23,38 +23,48 @@
 package de.metas.serviceprovider.issue;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetail;
-import de.metas.serviceprovider.external.issuedetails.ExternalIssueDetailsRepository;
+import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
+import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Node;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class IssueRepository
 {
 	private final IQueryBL queryBL;
+	private final IModelCacheInvalidationService modelCacheInvalidationService;
 
-	private final ExternalIssueDetailsRepository externalIssueDetailsRepository;
-
-	public IssueRepository(final IQueryBL queryBL, final ExternalIssueDetailsRepository externalIssueDetailsRepository)
+	public IssueRepository(final IQueryBL queryBL, final IModelCacheInvalidationService modelCacheInvalidationService)
 	{
 		this.queryBL = queryBL;
-		this.externalIssueDetailsRepository = externalIssueDetailsRepository;
+		this.modelCacheInvalidationService = modelCacheInvalidationService;
 	}
 
-	public void saveWithoutDetails(@NonNull final IssueEntity issueEntity)
+	public void save(@NonNull final IssueEntity issueEntity)
 	{
 		final I_S_Issue record = buildRecord(issueEntity);
 
@@ -65,25 +75,15 @@ public class IssueRepository
 		issueEntity.setIssueId(issueId);
 	}
 
-
-	public void saveWithDetails(@NonNull final IssueEntity issueEntity)
-	{
-		saveWithoutDetails(issueEntity);
-
-		externalIssueDetailsRepository.persistIssueDetails(issueEntity.getIssueId(), issueEntity.getExternalIssueDetails());
-	}
-
-
 	/**
 	 *  Retrieves the record identified by the given issue ID.
 	 *
 	 * @param issueId		Issue ID
-	 * @param loadDetails   specifies whether external issue details should be loaded or not
 	 * @return	issue entity
 	 * @throws AdempiereException in case no record was found for the given ID.
 	 */
 	@NonNull
-	public IssueEntity getById(@NonNull final IssueId issueId, final boolean loadDetails)
+	public IssueEntity getById(@NonNull final IssueId issueId)
 	{
 		final I_S_Issue record = getRecordOrNull(issueId);
 
@@ -94,28 +94,103 @@ public class IssueRepository
 					.setParameter("S_Issue_Id", issueId);
 		}
 
-		return buildIssueEntity(record, loadDetails);
+		return buildIssueEntity(record);
 	}
 
 	@NonNull
-	public Optional<IssueEntity> getByIdOptional(@NonNull final IssueId issueId, final boolean loadDetails)
+	public Optional<IssueEntity> getByIdOptional(@NonNull final IssueId issueId)
 	{
 		final I_S_Issue record = getRecordOrNull(issueId);
 
 		return record != null
-				? Optional.of(buildIssueEntity(record, loadDetails))
+				? Optional.of(buildIssueEntity(record))
 				: Optional.empty();
 	}
 
 	@NonNull
-	public Optional<IssueEntity> getByExternalURLOptional(@NonNull final String externalURL, final boolean loadDetails)
+	public Optional<IssueEntity> getByExternalURLOptional(@NonNull final String externalURL)
 	{
 		return queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_IssueURL, externalURL)
 				.create()
 				.firstOnlyOptional(I_S_Issue.class)
-				.map(record -> buildIssueEntity(record, loadDetails));
+				.map(this::buildIssueEntity);
+	}
+
+	@NonNull
+	public ImmutableList<IssueEntity> getDirectlyLinkedSubIssues(@NonNull final IssueId parentIssueId)
+	{
+		return queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Parent_Issue_ID, parentIssueId)
+				.create()
+				.list()
+				.stream()
+				.map(this::buildIssueEntity)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void invalidateCacheForIds(@NonNull final ImmutableList<IssueId> issueIds)
+	{
+		if (issueIds.isEmpty())
+		{
+			return;//nothing to invalidate
+		}
+
+		final List<Integer> recordIds = issueIds.stream().map(IssueId::getRepoId).collect(Collectors.toList());
+
+		final CacheInvalidateMultiRequest multiRequest =
+				CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_S_Issue.Table_Name, recordIds);
+
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+	}
+
+	/**
+	 * Creates an IssueHierarchy containing only the nodes from
+	 * the given issue to root.
+	 *
+	 * e.g
+	 * Given the following issue hierarchy:
+	 * ----1----
+	 * ---/-\---
+	 * --2---3--
+	 * --|---|--
+	 * --4---5--
+	 * /-|-\----
+	 * 6-7-8----
+	 *
+	 * when {@code buildUpStreamIssueHierarchy(8)}
+	 * it will return IssueHierarchy(root=1) with nodes: [1,2,4,8]
+	 *
+	 * @param issueId Id to build up stream for.
+	 * @return {@code IssueHierarchy} with all nodes from the given Id to root.
+	 */
+	@NonNull
+	public IssueHierarchy buildUpStreamIssueHierarchy(@NonNull final IssueId issueId)
+	{
+		final HashSet<IssueId> seenIds = new HashSet<>();
+
+		Node<IssueEntity> currentNode = Node.of(getById(issueId), new ArrayList<>());
+		seenIds.add(issueId);
+
+		Optional<IssueId> parentIssueId = Optional.ofNullable(currentNode.getValue().getParentIssueId());
+
+		while (parentIssueId.isPresent() && !seenIds.contains(parentIssueId.get()))
+		{
+			seenIds.add(parentIssueId.get()); //infinite loop protection
+
+			final IssueEntity parentIssueEntity = getById(parentIssueId.get());
+
+			final Node<IssueEntity> parentNode = Node.of(parentIssueEntity, Collections.singletonList(currentNode));
+
+			currentNode.setParent(parentNode);
+
+			currentNode = parentNode;
+			parentIssueId = Optional.ofNullable(currentNode.getValue().getParentIssueId());
+		}
+
+		return IssueHierarchy.of(currentNode);
 	}
 
 	@Nullable
@@ -130,22 +205,20 @@ public class IssueRepository
 	}
 
 	@NonNull
-	private IssueEntity buildIssueEntity(@NonNull final I_S_Issue record, final boolean loadDetails)
+	private IssueEntity buildIssueEntity(@NonNull final I_S_Issue record)
 	{
-		final Optional<IssueType> issueType = IssueType.getTypeByValue(record.getIssueType());
+		final IssueType issueType = IssueType
+				.getTypeByValue(record.getIssueType())
+				.orElseThrow( () ->new AdempiereException("Unknown IssueType!").appendParametersToMessage()
+						.setParameter("I_S_Issue", record));
 
-		if (!issueType.isPresent())
-		{
-			throw new AdempiereException("Unknown IssueType!").appendParametersToMessage()
-					.setParameter("I_S_Issue", record);
-		}
-
-		final ImmutableList<ExternalIssueDetail> externalIssueDetails = loadDetails
-				? externalIssueDetailsRepository.getByIssueId(IssueId.ofRepoId(record.getS_Issue_ID()))
-				: ImmutableList.of();
+		final Status status = Status.ofCodeOptional(record.getStatus())
+				.orElseThrow( () ->new AdempiereException("Unknown Status!").appendParametersToMessage()
+						.setParameter("I_S_Issue", record));
 
 		return IssueEntity.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoIdOrNull(record.getS_ExternalProjectReference_ID()))
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
 				.parentIssueId(IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID()))
@@ -155,16 +228,21 @@ public class IssueRepository
 				.name(record.getName())
 				.searchKey(record.getValue())
 				.description(record.getDescription())
-				.type(issueType.get())
-				.processed(record.isProcessed())
+				.type(issueType)
+				.status(status)
+				.deliveryPlatform(record.getDeliveryPlatform())
+				.plannedUATDate(TimeUtil.asLocalDate(record.getPlannedUATDate()))
 				.isEffortIssue(record.isEffortIssue())
 				.estimatedEffort(record.getEstimatedEffort())
 				.budgetedEffort(record.getBudgetedEffort())
-				.issueEffort(record.getIssueEffort())
-				.aggregatedEffort(record.getAggregatedEffort())
+				.roughEstimation(record.getRoughEstimation())
+				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
+				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
+				.latestActivityOnIssue(record.getLatestActivity() != null ? record.getLatestActivity().toInstant() : null)
+				.latestActivityOnSubIssues(record.getLatestActivityOnSubIssues() != null ? record.getLatestActivityOnSubIssues().toInstant() : null)
 				.externalIssueNo(record.getExternalIssueNo())
 				.externalIssueURL(record.getIssueURL())
-				.externalIssueDetails(externalIssueDetails)
+				.processed(record.isProcessed())
 				.build();
 	}
 
@@ -176,7 +254,10 @@ public class IssueRepository
 		record.setAD_Org_ID(issueEntity.getOrgId().getRepoId());
 		record.setAD_User_ID(NumberUtils.asInt(issueEntity.getAssigneeId(), -1));
 		record.setC_Project_ID(NumberUtils.asInt(issueEntity.getProjectId(), -1));
+		record.setS_ExternalProjectReference_ID(NumberUtils.asInt(issueEntity.getExternalProjectReferenceId(), -1));
 		record.setS_Parent_Issue_ID(NumberUtils.asInt(issueEntity.getParentIssueId(), -1));
+
+		record.setProcessed(issueEntity.isProcessed());
 
 		record.setName(issueEntity.getName());
 		record.setValue(issueEntity.getSearchKey());
@@ -184,14 +265,26 @@ public class IssueRepository
 
 		record.setIssueType(issueEntity.getType().getValue());
 		record.setIsEffortIssue(issueEntity.isEffortIssue());
-		record.setProcessed(issueEntity.isProcessed());
 
 		record.setS_Milestone_ID(NumberUtils.asInt(issueEntity.getMilestoneId(), -1));
+		record.setRoughEstimation(issueEntity.getRoughEstimation());
 		record.setEstimatedEffort(issueEntity.getEstimatedEffort());
 		record.setBudgetedEffort(issueEntity.getBudgetedEffort());
 		record.setEffort_UOM_ID(issueEntity.getEffortUomId().getRepoId());
-		record.setIssueEffort(issueEntity.getIssueEffort());
-		record.setAggregatedEffort(issueEntity.getAggregatedEffort());
+		record.setIssueEffort(issueEntity.getIssueEffort().getHmm());
+		record.setAggregatedEffort(issueEntity.getAggregatedEffort().getHmm());
+
+		record.setLatestActivityOnSubIssues(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnSubIssues()));
+		record.setLatestActivity(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnIssue()));
+
+		if (issueEntity.getStatus() != null)
+		{
+			record.setStatus(issueEntity.getStatus().getCode());
+		}
+
+		record.setPlannedUATDate(TimeUtil.asTimestamp(issueEntity.getPlannedUATDate()));
+
+		record.setDeliveryPlatform(issueEntity.getDeliveryPlatform());
 
 		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
 		record.setIssueURL(issueEntity.getExternalIssueURL());

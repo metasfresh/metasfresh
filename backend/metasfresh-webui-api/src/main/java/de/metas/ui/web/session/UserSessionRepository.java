@@ -17,8 +17,9 @@ import com.google.common.base.Strings;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
-import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -114,7 +115,7 @@ public class UserSessionRepository
 		final JSONUserSessionChangesEvent changesEvent = changesCollector.build();
 		if (!changesEvent.isEmpty())
 		{
-			final String websocketEndpoint = WebSocketConfig.buildUserSessionTopicName(userSession.getLoggedUserId());
+			final WebsocketTopicName websocketEndpoint = WebsocketTopicNames.buildUserSessionTopicName(userSession.getLoggedUserId());
 			websocketSender.convertAndSend(websocketEndpoint, changesEvent);
 
 		}

@@ -1,27 +1,8 @@
-package de.metas.rest_api.common;
-
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import de.pentabyte.springfox.ApiEnum;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.business.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,6 +19,22 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.common;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.CoalesceUtil;
+import de.pentabyte.springfox.ApiEnum;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 
 @Value
 public class SyncAdvise
@@ -119,8 +116,8 @@ public class SyncAdvise
 			@JsonProperty("ifNotExists") @Nullable final IfNotExists ifNotExists,
 			@JsonProperty("ifExists") @Nullable final IfExists ifExists)
 	{
-		this.ifNotExists = coalesce(ifNotExists, IfNotExists.FAIL);
-		this.ifExists = coalesce(ifExists, IfExists.DONT_UPDATE);
+		this.ifNotExists = CoalesceUtil.coalesce(ifNotExists, IfNotExists.FAIL);
+		this.ifExists = CoalesceUtil.coalesce(ifExists, IfExists.DONT_UPDATE);
 	}
 
 	@JsonIgnore

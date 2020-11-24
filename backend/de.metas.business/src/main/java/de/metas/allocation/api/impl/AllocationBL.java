@@ -1,51 +1,21 @@
 package de.metas.allocation.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.allocation.api.DefaultAllocationBuilder;
+import de.metas.allocation.api.C_AllocationHdr_Builder;
+import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationBuilder;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.allocation.api.IAllocationLineBuilder;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -54,28 +24,9 @@ import de.metas.util.Services;
 public class AllocationBL implements IAllocationBL
 {
 	@Override
-	public DefaultAllocationBuilder newBuilder(final IContextAware ctxProvider)
+	public C_AllocationHdr_Builder newBuilder()
 	{
-		return newBuilder(ctxProvider, DefaultAllocationBuilder.class);
-	}
-
-	@Override
-	public <T extends DefaultAllocationBuilder> T newBuilder(final IContextAware ctxProvider, Class<T> implClazz)
-	{
-		try
-		{
-			final Constructor<T> c = implClazz.getConstructor(IContextAware.class);
-			final T builder = c.newInstance(ctxProvider);
-			return builder;
-		}
-		catch (InvocationTargetException e)
-		{
-			throw new AdempiereException("Unable to create new IAllocationBuilder with class " + implClazz + ": " + ExceptionUtils.getRootCauseMessage(e), e.getTargetException());
-		}
-		catch (Exception e)
-		{
-			throw new AdempiereException("Unable to create new IAllocationBuilder with class " + implClazz, e);
-		}
+		return new C_AllocationHdr_Builder();
 	}
 
 	@Override
@@ -95,7 +46,6 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-		final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
@@ -110,9 +60,8 @@ public class AllocationBL implements IAllocationBL
 
 		Timestamp dateAcct = invoice.getDateAcct();
 		Timestamp dateTrx = invoice.getDateInvoiced();
-		IAllocationBuilder allocBuilder = allocationBL
-				.newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
-				.setC_Currency_ID(invoice.getC_Currency_ID());
+		C_AllocationHdr_Builder allocBuilder = newBuilder()
+				.currencyId(invoice.getC_Currency_ID());
 
 		BigDecimal sumAmt = BigDecimal.ZERO;
 
@@ -127,23 +76,23 @@ public class AllocationBL implements IAllocationBL
 			dateTrx = TimeUtil.max(dateTrx, payment.getDateTrx());
 
 			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{} and {} have the same C_BPartner_ID", invoice, payment);
-			final IAllocationLineBuilder lineBuilder = allocBuilder.addLine()
-					.setAD_Org_ID(invoice.getAD_Org_ID())
-					.setC_BPartner_ID(invoice.getC_BPartner_ID())
-					.setC_Invoice_ID(invoice.getC_Invoice_ID())
-					.setC_Payment_ID(payment.getC_Payment_ID());
+			final C_AllocationLine_Builder lineBuilder = allocBuilder.addLine()
+					.orgId(invoice.getAD_Org_ID())
+					.bpartnerId(invoice.getC_BPartner_ID())
+					.invoiceId(invoice.getC_Invoice_ID())
+					.paymentId(payment.getC_Payment_ID());
 
 			if (sumAmt.compareTo(invoiceOpenAmt) < 0)
 			{
 				allocBuilder = lineBuilder
-						.setAmount(currentAmt)
+						.amount(currentAmt)
 						.lineDone();
 			}
 			else
 			{
 				// make sure the allocated amt is not bigger than the open amt of the invoice
 				allocBuilder = lineBuilder
-						.setAmount(invoiceOpenAmt.subtract(sumAmt.subtract(currentAmt)))
+						.amount(invoiceOpenAmt.subtract(sumAmt.subtract(currentAmt)))
 						.lineDone();
 				break;
 			}
@@ -151,8 +100,8 @@ public class AllocationBL implements IAllocationBL
 
 		// Set allocation dates and create it
 		return allocBuilder
-				.setDateAcct(dateAcct)
-				.setDateTrx(dateTrx)
+				.dateAcct(dateAcct)
+				.dateTrx(dateTrx)
 				.createAndComplete();
 	}
 
@@ -222,10 +171,10 @@ public class AllocationBL implements IAllocationBL
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), payment.getDateAcct());
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), payment.getDateTrx());
 
-		IAllocationBuilder allocBuilder = newBuilder(InterfaceWrapperHelper.getContextAware(invoice))
-				.setC_Currency_ID(invoice.getC_Currency_ID())
-				.setDateAcct(dateAcct)
-				.setDateTrx(dateTrx);
+		C_AllocationHdr_Builder allocBuilder = newBuilder()
+				.currencyId(invoice.getC_Currency_ID())
+				.dateAcct(dateAcct)
+				.dateTrx(dateTrx);
 
 		BigDecimal sumAmt = BigDecimal.ZERO;
 
@@ -237,23 +186,23 @@ public class AllocationBL implements IAllocationBL
 
 			Check.assume(invoice.getC_BPartner_ID() == payment.getC_BPartner_ID(), "{} and {} have the same C_BPartner_ID", invoice, payment);
 
-			final IAllocationLineBuilder lineBuilder = allocBuilder.addLine()
-					.setAD_Org_ID(invoice.getAD_Org_ID())
-					.setC_BPartner_ID(invoice.getC_BPartner_ID())
-					.setC_Invoice_ID(invoice.getC_Invoice_ID())
-					.setC_Payment_ID(payment.getC_Payment_ID());
+			final C_AllocationLine_Builder lineBuilder = allocBuilder.addLine()
+					.orgId(invoice.getAD_Org_ID())
+					.bpartnerId(invoice.getC_BPartner_ID())
+					.invoiceId(invoice.getC_Invoice_ID())
+					.paymentId(payment.getC_Payment_ID());
 
 			if (sumAmt.compareTo(invoiceOpenAmt) < 0)
 			{
 				allocBuilder = lineBuilder
-						.setAmount(currentAmt)
+						.amount(currentAmt)
 						.lineDone();
 			}
 			else
 			{
 				// make sure the allocated amt is not bigger than the open amt of the invoice
 				allocBuilder = lineBuilder
-						.setAmount(invoiceOpenAmt.subtract(sumAmt.subtract(currentAmt)))
+						.amount(invoiceOpenAmt.subtract(sumAmt.subtract(currentAmt)))
 						.lineDone();
 			}
 		}

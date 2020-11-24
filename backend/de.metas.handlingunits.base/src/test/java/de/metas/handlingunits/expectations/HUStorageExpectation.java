@@ -58,7 +58,7 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 	private Integer _tuIndex;
 	private IMutable<I_M_HU_Storage> _huStorageToSetRef;
 
-	public HUStorageExpectation(final ParentExpectationType parentExpectation)
+	private HUStorageExpectation(final ParentExpectationType parentExpectation)
 	{
 		super(parentExpectation);
 	}
@@ -164,6 +164,11 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 	{
 		this._qty = qty;
 		return this;
+	}
+
+	public HUStorageExpectation<ParentExpectationType> qty(final String qty)
+	{
+		return qty(new BigDecimal(qty));
 	}
 
 	public HUStorageExpectation<ParentExpectationType> qty(final int qty)

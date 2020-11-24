@@ -154,10 +154,10 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 		//
 		// Project DR
 		{
-			int acctType = ACCTTYPE_ProjectWIP;
+			AccountType acctType = AccountType.ProjectWIP;
 			if (MProject.PROJECTCATEGORY_AssetProject.equals(ProjectCategory))
 			{
-				acctType = ACCTTYPE_ProjectAsset;
+				acctType = AccountType.ProjectAsset;
 			}
 			dr = fact.createLine(m_line,
 					getAccount(acctType, as),

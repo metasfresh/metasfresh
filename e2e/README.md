@@ -67,7 +67,9 @@ Currently supported:
 
 Note that you might need to first install cypress; [this documentation](https://docs.cypress.io/guides/getting-started/installing-cypress.html#npm-install) tells you how:
 
-> npm install cypress --save-dev
+```
+npm install cypress --save-dev
+```
 
 Also note that in addition you might also need to do a full `npm install` afterwards.
 
@@ -75,28 +77,33 @@ Also, you'll need to configure the login credentials/API endpoints. One file is 
 
 - `cypress/config.js` - stores API endpoints and login credentials
 
-There is a file `cypress/config.js_template` which you can copy to `cypress/config.js` and edit according to your needs.
+There are 2 files: 
+- `cypress/config.js_template_local`
+- `cypress/config.js_template_remote`
+
+which you can copy to `cypress/config.js` and edit according to your needs.
+
 
 ## Running
 
-To run the tests, navigate to this repository's root folder type this in the terminal:
+To start cypress and run the tests, navigate to the e2e folder and type this in the terminal:
 
-> npm run cypress:open
-
-If the webui you test against is not running on http://localhost:3000 you can start cypress with the `CYPRESS_baseUrl` vairable (see examples).
-
-When it runs, you can select particular test suites, or the whole suite to run. 
+```
+npm run cypress:open
+```
 
 ## Examples:
 
-For my local minikube (with webui-api running in my IDE)
+#### Local machine
+For my local machine, where webui-api is running in my IDE
 
-...edit the `cypress/config.js` like this:
+...edit `cypress/config.js` like this (see: `cypress/config.js_template_local`)
 
 ```javascript
 module.exports = {
+  FRONTEND_URL: 'http://localhost:3000',
   API_URL: 'http://localhost:8080/rest/api',
-  WS_URL:  'http://localhost:8080/stomp',
+  WS_URL: 'http://localhost:8080/stomp',
   PLUGIN_API_URL: 'http://localhost:9192/',
   username: 'metasfresh',
   password: '<your-pw>',
@@ -105,17 +112,22 @@ module.exports = {
 
 ...and start cypress like this:
 
-> CYPRESS_baseUrl=http://localhost:30080 npm run cypress:open
+```
+npm run cypress:open
+```
 
-For a dev-instance (dev133 in this example)
+#### Dev instance
 
-...edit the `cypress/config.js` like this:
+For a dev instance (`dev333` in this example)
+
+...edit `cypress/config.js` like this (see `cypress/config.js_template_remote`):
 
 ```javascript
 module.exports = {
-  API_URL: 'https://dev133.metasfresh.com/rest/api/',
-  WS_URL:  'https://dev133.metasfresh.com/stomp',
-  PLUGIN_API_URL: 'http://localhost:9192/',
+  FRONTEND_URL: 'https://dev333.metasfresh.com',
+  API_URL: 'https://dev333.metasfresh.com/rest/api',
+  WS_URL: 'https://dev333.metasfresh.com/stomp',
+  PLUGIN_API_URL: 'http://dev333.metasfresh.com:9192/',
   username: 'dev',
   password: '<your-pw>',
 };
@@ -123,7 +135,9 @@ module.exports = {
 
 ...and start cypress like this:
 
-> CYPRESS_baseUrl=https://dev133.metasfresh.com:443 npm run cypress:open
+```
+npm run cypress:open
+```
 
 ## Setting up Visual Studio Code
 

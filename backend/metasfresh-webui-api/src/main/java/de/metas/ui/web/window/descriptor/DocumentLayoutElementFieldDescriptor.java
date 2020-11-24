@@ -2,21 +2,18 @@ package de.metas.ui.web.window.descriptor;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.devices.JSONDeviceDescriptor;
+import de.metas.ui.web.devices.DeviceDescriptorsList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONLookupSource;
 import de.metas.util.Check;
@@ -108,7 +105,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	private final ITranslatableString emptyFieldText;
 
 	@Getter
-	private final List<JSONDeviceDescriptor> devices;
+	private final DeviceDescriptorsList devices;
 
 	@Getter
 	private final boolean supportZoomInto;
@@ -201,7 +198,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private ITranslatableString listNullItemCaption = HARDCODED_FIELD_EMPTY_TEXT;
 		private ITranslatableString emptyFieldText = HARDCODED_FIELD_EMPTY_TEXT;
 		private boolean publicField = true;
-		private List<JSONDeviceDescriptor> _devices;
+		private DeviceDescriptorsList _devices = DeviceDescriptorsList.EMPTY;
 
 		private LookupSource lookupSource;
 		private Optional<String> lookupTableName = null;
@@ -365,30 +362,15 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return documentFieldBuilder != null && documentFieldBuilder.isSpecialFieldToExcludeFromLayout();
 		}
 
-		public Builder addDevices(final List<JSONDeviceDescriptor> devices)
+		public Builder setDevices(@NonNull final DeviceDescriptorsList devices)
 		{
-			if (devices == null || devices.isEmpty())
-			{
-				return this;
-			}
-
-			if (_devices == null)
-			{
-				_devices = new ArrayList<>();
-			}
-			_devices.addAll(devices);
-
+			this._devices = devices;
 			return this;
-
 		}
 
-		private List<JSONDeviceDescriptor> getDevices()
+		private DeviceDescriptorsList getDevices()
 		{
-			if (_devices == null)
-			{
-				return ImmutableList.of();
-			}
-			return ImmutableList.copyOf(_devices);
+			return _devices;
 		}
 
 		public Builder setSupportZoomInto(boolean supportZoomInto)

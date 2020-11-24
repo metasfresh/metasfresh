@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import de.metas.banking.api.BankAccountId;
+import de.metas.banking.BankAccountId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;

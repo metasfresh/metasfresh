@@ -32,8 +32,6 @@ import org.compiere.util.Env;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 public class C_Order extends OrderFastInput
@@ -90,16 +88,4 @@ public class C_Order extends OrderFastInput
 	{
 		evalProductQtyInput(calloutField);
 	}
-
-	public String onMProductChange(final ICalloutField calloutField)
-	{
-		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-		Check.assumeNotNull(order, "Order cannot be null");
-		
-		final ProductId quickInputProductId = ProductId.ofRepoIdOrNull(order.getM_Product_ID());
-
-		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProductId, order::setM_HU_PI_Item_Product);
-		return NO_ERROR;
-	}
-	
 }

@@ -2,6 +2,33 @@ package de.metas.bpartner.service;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_QuickInput;
+
+import com.google.common.base.Predicates;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.i18n.Language;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -25,33 +52,6 @@ import java.util.Optional;
  * #L%
  */
 
-import java.util.Properties;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
-
-import com.google.common.base.Predicates;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.i18n.Language;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.payment.PaymentRule;
-import de.metas.user.User;
-import de.metas.user.UserId;
-import de.metas.util.ISingletonService;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
-
 public interface IBPartnerBL extends ISingletonService
 {
 	I_C_BPartner getById(BPartnerId bpartnerId);
@@ -64,7 +64,6 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * make full address
-	 *
 	 */
 	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, String trxName);
 
@@ -86,16 +85,16 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Compute and set {@link I_C_BPartner_Location#COLUMNNAME_Address} field.
-	 *
-	 * @param bpLocation
 	 */
 	void setAddress(I_C_BPartner_Location bpLocation);
+
+	void updateAllAddresses(I_C_BPartner bpartner);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
 	/**
 	 * Creates a draft contact linked to given partner.
-	 *
+	 * <p>
 	 * It's up to the caller to set the other fields and then save it or not.
 	 *
 	 * @param bpartner
@@ -197,11 +196,15 @@ public interface IBPartnerBL extends ISingletonService
 		@Nullable
 		ContactType contactType;
 
-		/** If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user. */
+		/**
+		 * If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user.
+		 */
 		@Nullable
 		BPartnerLocationId bPartnerLocationId;
 
-		/** If specified, then only matching contacts are considered */
+		/**
+		 * If specified, then only matching contacts are considered
+		 */
 		@Default
 		@NonNull
 		Predicate<User> filter = Predicates.alwaysTrue();
@@ -225,6 +228,8 @@ public interface IBPartnerBL extends ISingletonService
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
+
+	Optional<PaymentTermId> getPaymentTermIdForBPartner(BPartnerId bpartnerId, SOTrx soTrx);
 
 	/**
 	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.

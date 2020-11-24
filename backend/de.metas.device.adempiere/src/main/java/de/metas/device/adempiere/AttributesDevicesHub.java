@@ -1,28 +1,23 @@
 package de.metas.device.adempiere;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.Nullable;
 
-import org.adempiere.util.net.IHostIdentifier;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
-import de.metas.device.adempiere.IDeviceConfigPool.IDeviceConfigPoolListener;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -65,7 +60,7 @@ public class AttributesDevicesHub
 
 	private final IDeviceConfigPool deviceConfigPool;
 
-	private final transient ConcurrentHashMap<String, AttributeDeviceAccessorsList> attributeCode2deviceAccessors = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<AttributeCode, AttributeDeviceAccessorsList> attributeCode2deviceAccessors = new ConcurrentHashMap<>();
 
 	private final IDeviceConfigPoolListener deviceConfigPoolListener = new IDeviceConfigPoolListener()
 	{
@@ -77,15 +72,8 @@ public class AttributesDevicesHub
 		}
 	};
 
-	public AttributesDevicesHub(final IHostIdentifier clientHost, final int adClientId, final int adOrgId)
+	public AttributesDevicesHub(@NonNull final IDeviceConfigPool deviceConfigPool)
 	{
-		this(Services.get(IDeviceConfigPoolFactory.class).getDeviceConfigPool(clientHost, adClientId, adOrgId));
-	}
-
-	@VisibleForTesting
-	public AttributesDevicesHub(final IDeviceConfigPool deviceConfigPool)
-	{
-		Check.assumeNotNull(deviceConfigPool, "Parameter deviceConfigPool is not null");
 		this.deviceConfigPool = deviceConfigPool;
 		this.deviceConfigPool.addListener(deviceConfigPoolListener);
 	}
@@ -109,13 +97,13 @@ public class AttributesDevicesHub
 				.orElse(null);
 	}
 
-	public AttributeDeviceAccessorsList getAttributeDeviceAccessors(final String attributeCode)
+	public AttributeDeviceAccessorsList getAttributeDeviceAccessors(final AttributeCode attributeCode)
 	{
 		return attributeCode2deviceAccessors.computeIfAbsent(attributeCode, this::createAttributeDeviceAccessor);
 	}
 
 	@SuppressWarnings("rawtypes")
-	private final AttributeDeviceAccessorsList createAttributeDeviceAccessor(final String attributeCode)
+	private final AttributeDeviceAccessorsList createAttributeDeviceAccessor(final AttributeCode attributeCode)
 	{
 		final List<DeviceConfig> deviceConfigsForThisAttribute = deviceConfigPool.getDeviceConfigsForAttributeCode(attributeCode);
 		logger.info("Devices configs for attributte {}: {}", attributeCode, deviceConfigsForThisAttribute);
@@ -158,9 +146,16 @@ public class AttributesDevicesHub
 			for (final IDeviceRequest<ISingleValueResponse> request : allRequestsFor)
 			{
 				final String deviceName = deviceConfig.getDeviceName();
-				final String displayName = createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName);
-				final Set<Integer> assignedWarehouseIds = deviceConfig.getAssignedWarehouseIds();
-				final AttributeDeviceAccessor deviceAccessor = new AttributeDeviceAccessor(displayName, device, deviceName, attributeCode, assignedWarehouseIds, request);
+
+				final AttributeDeviceAccessor deviceAccessor = AttributeDeviceAccessor.builder()
+						.displayName(TranslatableStrings.anyLanguage(createDeviceDisplayName(deviceDisplayNameCommonPrefix, deviceName)))
+						.device(device)
+						.deviceName(deviceName)
+						.attributeCode(attributeCode)
+						.assignedWarehouseIds(deviceConfig.getAssignedWarehouseIds())
+						.request(request)
+						.build();
+
 				deviceAccessors.add(deviceAccessor);
 			}
 		}
@@ -197,7 +192,9 @@ public class AttributesDevicesHub
 	}
 
 	@VisibleForTesting
-	/* package */static final String createDeviceDisplayName(final String deviceDisplayNameCommonPrefix, final String deviceName)
+	/* package */static final String createDeviceDisplayName(
+			@Nullable final String deviceDisplayNameCommonPrefix,
+			@NonNull final String deviceName)
 	{
 		Check.assumeNotEmpty(deviceName, "deviceName is not empty");
 
@@ -205,187 +202,13 @@ public class AttributesDevicesHub
 		{
 			return String.valueOf(deviceName.charAt(0));
 		}
-
-		return deviceDisplayNameCommonPrefix + deviceName.charAt(deviceDisplayNameCommonPrefix.length());
-	}
-
-	/**
-	 * Facade used to access a given preconfigured device using a preconfigured {@link IDeviceRequest}.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 *
-	 */
-	@SuppressWarnings("rawtypes")
-	public static final class AttributeDeviceAccessor
-	{
-		private final String displayName;
-		private final IDevice device;
-		private final Set<Integer> assignedWarehouseIds;
-		private final IDeviceRequest<ISingleValueResponse> request;
-
-		private final String publicId;
-
-		private AttributeDeviceAccessor( //
-				final String displayName, //
-				@NonNull final IDevice device, //
-				@NonNull final String deviceName, //
-				@NonNull final String attributeCode, //
-				final Set<Integer> assignedWarehouseIds, //
-				@NonNull final IDeviceRequest<ISingleValueResponse> request //
-		)
+		else if (deviceDisplayNameCommonPrefix.equals(deviceName))
 		{
-			Check.assumeNotEmpty(deviceName, "deviceName is not empty");
-			Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
-
-			this.displayName = displayName;
-			this.device = device;
-			this.assignedWarehouseIds = assignedWarehouseIds;
-			this.request = request;
-
-			publicId = deviceName + "-" + attributeCode + "-" + request.getClass().getSimpleName();
+			return deviceDisplayNameCommonPrefix;
 		}
-
-		@Override
-		public String toString()
+		else
 		{
-			return MoreObjects.toStringHelper(this)
-					.add("displayName", displayName)
-					.add("request", request)
-					.add("device", device)
-					.add("assignedWarehouseId", assignedWarehouseIds)
-					.add("publicId", publicId)
-					.toString();
-		}
-
-		public String getPublicId()
-		{
-			return publicId;
-		}
-
-		public String getDisplayName()
-		{
-			return displayName;
-		}
-
-		public boolean isAvailableForWarehouse(final int warehouseId)
-		{
-			if (assignedWarehouseIds.isEmpty())
-			{
-				return true;
-			}
-
-			return assignedWarehouseIds.contains(warehouseId);
-		}
-
-		public synchronized Object acquireValue()
-		{
-			logger.debug("This: {}, Device: {}; Request: {}", this, device, request);
-
-			final ISingleValueResponse response = device.accessDevice(request);
-			logger.debug("Device {}; Response: {}", device, response);
-
-			return response.getSingleValue();
-		}
-	}
-
-	/**
-	 * List of {@link AttributeDeviceAccessor}s.
-	 *
-	 * It also contains other informations like {@link AttributeDeviceAccessorsList#getWarningMessage()}.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 */
-	@Immutable
-	public static final class AttributeDeviceAccessorsList
-	{
-		private static AttributeDeviceAccessorsList of(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
-		{
-			final String warningMessageNorm = Check.isEmpty(warningMessage, true) ? null : warningMessage;
-			if (attributeDeviceAccessors.isEmpty() && warningMessage == null)
-			{
-				return EMPTY;
-			}
-
-			return new AttributeDeviceAccessorsList(attributeDeviceAccessors, warningMessageNorm);
-		}
-
-		private static final AttributeDeviceAccessorsList EMPTY = new AttributeDeviceAccessorsList();
-
-		private final ImmutableList<AttributeDeviceAccessor> attributeDeviceAccessors;
-		private final ImmutableMap<String, AttributeDeviceAccessor> attributeDeviceAccessorsById;
-		private final String warningMessage;
-
-		private AttributeDeviceAccessorsList(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
-		{
-			super();
-			this.attributeDeviceAccessors = ImmutableList.copyOf(attributeDeviceAccessors);
-			attributeDeviceAccessorsById = Maps.uniqueIndex(attributeDeviceAccessors, AttributeDeviceAccessor::getPublicId);
-			this.warningMessage = warningMessage;
-		}
-
-		/** empty/null constructor */
-		private AttributeDeviceAccessorsList()
-		{
-			super();
-			attributeDeviceAccessors = ImmutableList.of();
-			attributeDeviceAccessorsById = ImmutableMap.of();
-			warningMessage = null;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.omitNullValues()
-					.add("warningMessage", warningMessage)
-					.addValue(attributeDeviceAccessors.isEmpty() ? null : attributeDeviceAccessors)
-					.toString();
-		}
-
-		public List<AttributeDeviceAccessor> getAttributeDeviceAccessors()
-		{
-			return attributeDeviceAccessors;
-		}
-
-		public Stream<AttributeDeviceAccessor> stream()
-		{
-			return attributeDeviceAccessors.stream();
-		}
-
-		public Stream<AttributeDeviceAccessor> stream(final int warehouseId)
-		{
-			return stream()
-					.filter(attributeDeviceAccessor -> attributeDeviceAccessor.isAvailableForWarehouse(warehouseId));
-		}
-
-		public AttributeDeviceAccessor getByIdOrNull(final String id)
-		{
-			return attributeDeviceAccessorsById.get(id);
-		}
-
-		/**
-		 * @return warning message(s) fired while the devices were created or configured
-		 */
-		public String getWarningMessage()
-		{
-			return warningMessage;
-		}
-
-		/**
-		 * Convenient (fluent) method to consume {@link #getWarningMessage()} if any.
-		 *
-		 * @param warningMessageConsumer
-		 */
-		public AttributeDeviceAccessorsList consumeWarningMessageIfAny(final Consumer<String> warningMessageConsumer)
-		{
-			if (Check.isEmpty(warningMessage, true))
-			{
-				return this;
-			}
-
-			warningMessageConsumer.accept(warningMessage);
-
-			return this;
+			return deviceDisplayNameCommonPrefix + deviceName.charAt(deviceDisplayNameCommonPrefix.length());
 		}
 	}
 }

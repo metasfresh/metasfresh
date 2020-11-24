@@ -524,12 +524,12 @@ class BpartnerRestControllerTest
 		bpartnerRecord.setBPartner_Parent_ID(123); // in one test this shall be updated to null
 		saveRecord(bpartnerRecord);
 
-		final RecordCounts inititalCounts = new RecordCounts();
+		final RecordCounts initialCounts = new RecordCounts();
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
-		inititalCounts.assertCountsUnchanged();
+		initialCounts.assertCountsUnchanged();
 
 		assertThat(result.getBody().getResponseItems()).hasSize(1);
 		final JsonResponseBPartnerCompositeUpsertItem jsonResponseCompositeUpsertItem = result.getBody().getResponseItems().get(0);

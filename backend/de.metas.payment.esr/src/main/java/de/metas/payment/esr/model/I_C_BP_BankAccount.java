@@ -26,30 +26,27 @@ public interface I_C_BP_BankAccount extends org.compiere.model.I_C_BP_BankAccoun
 {
 	// @formatter:off
 	String COLUMNNAME_ESR_RenderedAccountNo = "ESR_RenderedAccountNo";
-	String getESR_RenderedAccountNo();
-	void setESR_RenderedAccountNo(String esrRenderedAccountNo);
+	@Override String getESR_RenderedAccountNo();
+	@Override void setESR_RenderedAccountNo(String esrRenderedAccountNo);
 	// @formatter:on
 
 
 	// @formatter:off
 //  not used; TODO consider dropping the column
 //	String COLUMNNAME_ESR_RenderedReceiver = "ESR_RenderedReceiver";
-//	String getESR_RenderedReceiver();
-//	void setESR_RenderedReceiver(String esrRenderedReceiver);
+//	@Override String getESR_RenderedReceiver();
+//	@Override void setESR_RenderedReceiver(String esrRenderedReceiver);
 	// @formatter:on
-
-	@Override
-	de.metas.payment.esr.model.I_C_Bank getC_Bank();
 
 	// @formatter:off
 	String COLUMNNAME_IsEsrAccount = "IsEsrAccount";
-	boolean isEsrAccount();
-	void setIsEsrAccount(boolean isEsrAccount);
+	@Override boolean isEsrAccount();
+	@Override void setIsEsrAccount(boolean isEsrAccount);
 	// @formatter:on
 
 	// 04288: column isDefaultESR
 	// @formatter:off
 	String COLUMNNAME_IsDefaultESR = "IsDefaultESR";
-	boolean isDefaultESR();
+	@Override boolean isDefaultESR();
 	// @formatter:on
 }

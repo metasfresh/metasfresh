@@ -10,21 +10,20 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class LpadQueryFilterModifierTest
 {
@@ -39,7 +38,21 @@ public class LpadQueryFilterModifierTest
 		testConvertValue("0000123456", "123456", modifier);
 		testConvertValue("0000123456", "    123456    ", modifier);
 		testConvertValue("1234567890", "1234567890", modifier);
-		testConvertValue("12345678901234", "12345678901234", modifier);
+		testConvertValue("1234567890", "12345678901234567890", modifier);
+	}
+
+	@Test
+	public void test_convertValuePadIsSpace()
+	{
+		final LpadQueryFilterModifier modifier = new LpadQueryFilterModifier(10, " ");
+		testConvertValue(null, null, modifier);
+		testConvertValue("          ", "", modifier);
+		testConvertValue("          ", "         ", modifier);
+		testConvertValue("         1", "1", modifier);
+		testConvertValue("    123456", "123456", modifier);
+		testConvertValue("    123456", "    123456    ", modifier);
+		testConvertValue("1234567890", "1234567890", modifier);
+		testConvertValue("1234567890", "12345678901234567890", modifier);
 	}
 
 	private void testConvertValue(final String resultExpected, final String value, final LpadQueryFilterModifier modifier)

@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -20,7 +21,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -39,12 +39,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,12 +57,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class TranslatableStrings
 {
-	public static TranslatableStringBuilder builder()
+	public TranslatableStringBuilder builder()
 	{
 		return TranslatableStringBuilder.newInstance();
 	}
 
-	public static ITranslatableString join(final String joiningString, final Object... trls)
+	public ITranslatableString join(final String joiningString, final Object... trls)
 	{
 		Check.assumeNotEmpty(trls, "trls is not empty");
 
@@ -75,7 +75,7 @@ public class TranslatableStrings
 		return joinList(joiningString, trlsList);
 	}
 
-	private static Stream<Object> explodeCollections(final Object obj)
+	private Stream<Object> explodeCollections(final Object obj)
 	{
 		if (obj == null)
 		{
@@ -97,7 +97,8 @@ public class TranslatableStrings
 	/**
 	 * @return translatable string or null if the <code>trlObj</code> is null or empty string
 	 */
-	private static ITranslatableString toTranslatableStringOrNull(final Object trlObj)
+	@Nullable
+	private ITranslatableString toTranslatableStringOrNull(final Object trlObj)
 	{
 		if (trlObj == null)
 		{
@@ -121,7 +122,7 @@ public class TranslatableStrings
 		}
 	}
 
-	public static ITranslatableString joinList(final String joiningString, @NonNull final List<ITranslatableString> trls)
+	public ITranslatableString joinList(final String joiningString, @NonNull final List<ITranslatableString> trls)
 	{
 		if (trls.isEmpty())
 		{
@@ -137,9 +138,10 @@ public class TranslatableStrings
 		}
 	}
 
-	public static Collector<ITranslatableString, ?, ITranslatableString> joining(final String joiningString)
+	public Collector<ITranslatableString, ?, ITranslatableString> joining(final String joiningString)
 	{
 		final Supplier<List<ITranslatableString>> supplier = ArrayList::new;
+		@SuppressWarnings("Convert2MethodRef")
 		final BiConsumer<List<ITranslatableString>, ITranslatableString> accumulator = (accum, e) -> accum.add(e);
 		final BinaryOperator<List<ITranslatableString>> combiner = (accum1, accum2) -> {
 			accum1.addAll(accum2);
@@ -149,17 +151,18 @@ public class TranslatableStrings
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static ITranslatableString constant(final String value)
+	public ITranslatableString constant(final String value)
 	{
 		return ConstantTranslatableString.of(value);
 	}
 
-	public static ITranslatableString anyLanguage(final String value)
+	public ITranslatableString anyLanguage(@Nullable final String value)
 	{
 		return ConstantTranslatableString.anyLanguage(value);
 	}
 
-	public static ITranslatableString singleLanguage(@Nullable final String adLanguage, @Nullable final String value)
+	@NonNull
+	public ITranslatableString singleLanguage(@Nullable final String adLanguage, @Nullable final String value)
 	{
 		if (Check.isEmpty(adLanguage, true))
 		{
@@ -170,12 +173,13 @@ public class TranslatableStrings
 		return ofMap(ImmutableMap.of(adLanguage, valueNorm), valueNorm);
 	}
 
-	public static ITranslatableString empty()
+	@NonNull
+	public ITranslatableString empty()
 	{
 		return ConstantTranslatableString.EMPTY;
 	}
 
-	public static boolean isEmpty(final ITranslatableString trl)
+	public boolean isEmpty(final ITranslatableString trl)
 	{
 		if (trl == null)
 		{
@@ -195,7 +199,7 @@ public class TranslatableStrings
 		}
 	}
 
-	public static boolean isBlank(@Nullable final ITranslatableString trl)
+	public boolean isBlank(@Nullable final ITranslatableString trl)
 	{
 		if (trl == null)
 		{
@@ -205,9 +209,11 @@ public class TranslatableStrings
 		{
 			return true;
 		}
-		else if (trl instanceof ConstantTranslatableString)
+		else if (trl instanceof ConstantTranslatableString
+				|| trl instanceof ImmutableTranslatableString
+		)
 		{
-			return Check.isEmpty(trl.getDefaultValue(), true);
+			return Check.isBlank(trl.getDefaultValue());
 		}
 		else
 		{
@@ -215,52 +221,53 @@ public class TranslatableStrings
 		}
 	}
 
-	public static ITranslatableString nullToEmpty(final ITranslatableString trl)
+	@NonNull
+	public ITranslatableString nullToEmpty(@Nullable final ITranslatableString trl)
 	{
 		return trl != null ? trl : empty();
 	}
 
-	public static ITranslatableString amount(@NonNull final Amount amount)
+	public ITranslatableString amount(@NonNull final Amount amount)
 	{
 		return builder().append(amount).build();
 	}
 
-	public static NumberTranslatableString number(final BigDecimal valueBD, final int displayType)
+	public NumberTranslatableString number(final BigDecimal valueBD, final int displayType)
 	{
 		return NumberTranslatableString.of(valueBD, displayType);
 	}
 
-	public static NumberTranslatableString number(final int valueInt)
+	public NumberTranslatableString number(final int valueInt)
 	{
 		return NumberTranslatableString.of(valueInt);
 	}
 
-	public static DateTimeTranslatableString date(@NonNull final java.util.Date date)
+	public DateTimeTranslatableString date(@NonNull final java.util.Date date)
 	{
 		return DateTimeTranslatableString.ofDate(date);
 	}
 
-	public static DateTimeTranslatableString date(@NonNull final LocalDate date)
+	public DateTimeTranslatableString date(@NonNull final LocalDate date)
 	{
 		return DateTimeTranslatableString.ofDate(date);
 	}
 
-	public static DateTimeTranslatableString date(@NonNull final Object obj, final int displayType)
+	public DateTimeTranslatableString date(@NonNull final Object obj, final int displayType)
 	{
 		return DateTimeTranslatableString.ofObject(obj, displayType);
 	}
 
-	public static DateTimeTranslatableString dateAndTime(@NonNull final ZonedDateTime date)
+	public DateTimeTranslatableString dateAndTime(@NonNull final ZonedDateTime date)
 	{
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
 
-	public static DateTimeTranslatableString dateAndTime(@NonNull final java.util.Date date)
+	public DateTimeTranslatableString dateAndTime(@NonNull final java.util.Date date)
 	{
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
 
-	public static ITranslatableString ofMap(final Map<String, String> trlMap)
+	public ITranslatableString ofMap(final Map<String, String> trlMap)
 	{
 		if (trlMap == null || trlMap.isEmpty())
 		{
@@ -272,7 +279,7 @@ public class TranslatableStrings
 		}
 	}
 
-	public static ITranslatableString ofMap(final Map<String, String> trlMap, final String defaultValue)
+	public ITranslatableString ofMap(final Map<String, String> trlMap, final String defaultValue)
 	{
 		if (trlMap == null || trlMap.isEmpty())
 		{
@@ -284,12 +291,12 @@ public class TranslatableStrings
 		}
 	}
 
-	public static ForwardingTranslatableString forwardingTo(@NonNull final Supplier<ITranslatableString> delegateSupplier)
+	public ForwardingTranslatableString forwardingTo(@NonNull final Supplier<ITranslatableString> delegateSupplier)
 	{
 		return new ForwardingTranslatableString(delegateSupplier);
 	}
 
-	public static ITranslatableString copyOf(@NonNull final ITranslatableString trl)
+	public ITranslatableString copyOf(@NonNull final ITranslatableString trl)
 	{
 		return copyOfNullable(trl);
 	}
@@ -297,7 +304,7 @@ public class TranslatableStrings
 	/**
 	 * @return {@link ImmutableTranslatableString} or {@link #empty()} if <code>trl</code> was null
 	 */
-	public static ITranslatableString copyOfNullable(@Nullable final ITranslatableString trl)
+	public ITranslatableString copyOfNullable(@Nullable final ITranslatableString trl)
 	{
 		if (trl == null)
 		{
@@ -329,8 +336,54 @@ public class TranslatableStrings
 		return ofMap(trlMap, trl.getDefaultValue());
 	}
 
-	public static ITranslatableString ofTimeZone(@NonNull final ZoneId timeZone, @NonNull final TextStyle textStyle)
+	public ITranslatableString ofTimeZone(@NonNull final ZoneId timeZone, @NonNull final TextStyle textStyle)
 	{
 		return TimeZoneTranslatableString.ofZoneId(timeZone, textStyle);
+	}
+	
+	public static ITranslatableString parse(@Nullable final String text)
+	{
+		if (text == null || text.isEmpty())
+		{
+			return TranslatableStrings.empty();
+		}
+
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+
+		String inStr = text;
+		int idx = inStr.indexOf('@');
+		while (idx != -1)
+		{
+			builder.append(inStr.substring(0, idx)); // up to @
+			inStr = inStr.substring(idx + 1, inStr.length()); // from first @
+
+			final int j = inStr.indexOf('@'); // next @
+			if (j < 0) // no second tag
+			{
+				inStr = "@" + inStr;
+				break;
+			}
+
+			final String token = inStr.substring(0, j);
+			if (token.isEmpty())
+			{
+				builder.append("@");
+			}
+			else
+			{
+				builder.appendADElement(token); // replace context
+			}
+
+			inStr = inStr.substring(j + 1, inStr.length());	// from second @
+			idx = inStr.indexOf('@');
+		}
+
+		// add remainder
+		if (inStr != null && inStr.length() > 0)
+		{
+			builder.append(inStr);
+		}
+
+		return builder.build();
 	}
 }

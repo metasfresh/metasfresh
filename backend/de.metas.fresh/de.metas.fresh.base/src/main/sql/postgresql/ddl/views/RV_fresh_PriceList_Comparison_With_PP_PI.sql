@@ -20,8 +20,16 @@ SELECT pp.AD_Org_ID,
        pp.IsSeasonFixedPrice,
        hupip.Name                                                                                 AS ItemProductName,
        pm.Name                                                                                    AS PackingMaterialName,
-       ROUND(COALESCE(ppa.PriceStd, pp.PriceStd), coalesce(pl.priceprecision, 2))                 AS PriceStd,
-       ROUND(pp2.PriceStd, coalesce(pl2.priceprecision, 2))                                       AS AltPriceStd,
+	   COALESCE(ppa.PriceStd, pp.PriceStd)                                              AS PriceStd,
+       CASE
+           WHEN pl.priceprecision = 0
+               THEN '#,##0'
+           ELSE Substring('#,##0.000' FROM 0 FOR 7 + pl.priceprecision :: integer) END  AS PricePattern1,
+       pp2.PriceStd                                                                     AS AltPriceStd,
+       CASE
+           WHEN pl.priceprecision = 0
+               THEN '#,##0'
+           ELSE Substring('#,##0.000' FROM 0 FOR 7 + pl2.priceprecision :: integer) END AS PricePattern2,
        CASE WHEN pp2.PriceStd IS NULL THEN 0 ELSE 1 END                                           AS hasaltprice,
        uom.UOMSymbol,
        COALESCE(ppa.Attributes, '')                                                               as attributes,
@@ -50,7 +58,7 @@ FROM M_ProductPrice pp
     /** Get all BPartner and Product combinations.
      * IMPORTANT: Never use the query without BPartner Filter active
      */
-         INNER JOIN C_BPartner bp ON TRUE
+         LEFT JOIN C_BPartner bp ON TRUE
          INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
          INNER JOIN C_UOM uom ON pp.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 
@@ -130,5 +138,5 @@ WHERE pp.isActive = 'Y'
 
   AND (case when plv2.M_PriceList_Version_ID = plv.M_PriceList_Version_ID THEN ppa.signature = pp2.signature ELSE true end)
 
-GROUP BY pp.M_ProductPrice_ID, pp.AD_Client_ID, pp.Created, pp.CreatedBy, pp.Updated, pp.UpdatedBy, pp.IsActive, pc.Name, pc.value, p.M_Product_ID, p.Value, p.Name, pp.IsSeasonFixedPrice, hupip.Name, pm.Name, ROUND(COALESCE(ppa.PriceStd, pp.PriceStd), coalesce(pl.priceprecision, 2)), ROUND(pp2.PriceStd, coalesce(pl2.priceprecision, 2)), CASE WHEN pp2.PriceStd IS NULL THEN 0 ELSE 1 END, uom.UOMSymbol, COALESCE(ppa.Attributes, ''), pp.seqNo, bp.C_BPartner_ID, plv.M_Pricelist_Version_ID, plv2.M_Pricelist_Version_ID, pp.AD_Org_ID, ppa.m_attributesetinstance_ID, pp.M_HU_PI_Item_Product_ID, uom.X12DE355, hupip.Qty, it.m_hu_pi_version_id, c.iso_code, c2.iso_code
+GROUP BY pp.M_ProductPrice_ID, pp.AD_Client_ID, pp.Created, pp.CreatedBy, pp.Updated, pp.UpdatedBy, pp.IsActive, pc.Name, pc.value, p.M_Product_ID, p.Value, p.Name, pp.IsSeasonFixedPrice, hupip.Name, pm.Name, COALESCE(ppa.PriceStd, pp.PriceStd) , pl.priceprecision, pp2.PriceStd, pl2.priceprecision, CASE WHEN pp2.PriceStd IS NULL THEN 0 ELSE 1 END, uom.UOMSymbol, COALESCE(ppa.Attributes, ''), pp.seqNo, bp.C_BPartner_ID, plv.M_Pricelist_Version_ID, plv2.M_Pricelist_Version_ID, pp.AD_Org_ID, ppa.m_attributesetinstance_ID, pp.M_HU_PI_Item_Product_ID, uom.X12DE355, hupip.Qty, it.m_hu_pi_version_id, c.iso_code, c2.iso_code
 ;

@@ -4,12 +4,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.slf4j.Logger;
 
-import java.util.Objects;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
@@ -80,32 +81,23 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.build();
 	}
 
-	private static UOMConversionRate toUOMConversionOrNull(@NonNull final I_C_UOM_Conversion record)
+	@VisibleForTesting
+	static UOMConversionRate toUOMConversionOrNull(@NonNull final I_C_UOM_Conversion record)
 	{
 		final BigDecimal fromToMultiplier = record.getMultiplyRate();
-		BigDecimal toFromMultiplier = record.getDivideRate();
-		if (toFromMultiplier.signum() == 0 && fromToMultiplier.signum() != 0)
-		{
-			// In case divide rate is not available, calculate divide rate as 1/multiplyRate (precision=12)
-			toFromMultiplier = BigDecimal.ONE.divide(fromToMultiplier, 12, BigDecimal.ROUND_HALF_UP);
-		}
-
 		if (fromToMultiplier.signum() == 0)
 		{
 			logger.warn("Invalid conversion {}: multiplyRate is zero", record);
 			return null;
 		}
-		if (toFromMultiplier.signum() == 0)
-		{
-			logger.warn("Invalid conversion {}: divideRate is zero", record);
-			return null;
-		}
+
+		// NOTE: Don't use C_UOM_Conversion.DivideRate because that's always calculated as 1/MultiplyRate, rounded HALF_UP at 12 decimals.
+		// This approach can introduce calculation errors in some cases, so better let the API calculate it when needed, using the correct precision.
 
 		return UOMConversionRate.builder()
 				.fromUomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(record.getC_UOM_To_ID()))
 				.fromToMultiplier(fromToMultiplier)
-				.toFromMultiplier(toFromMultiplier)
 				.catchUOMForProduct(record.isCatchUOMForProduct())
 				.build();
 	}
@@ -113,13 +105,16 @@ public class UOMConversionDAO implements IUOMConversionDAO
 	@Override
 	public void createUOMConversion(@NonNull final CreateUOMConversionRequest request)
 	{
+		final BigDecimal fromToMultiplier = request.getFromToMultiplier();
+		final BigDecimal toFromMultiplier = UOMConversionRate.computeInvertedMultiplier(fromToMultiplier);
+
 		final I_C_UOM_Conversion record = newInstance(I_C_UOM_Conversion.class);
 
 		record.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 		record.setC_UOM_ID(request.getFromUomId().getRepoId());
 		record.setC_UOM_To_ID(request.getToUomId().getRepoId());
-		record.setMultiplyRate(request.getFromToMultiplier());
-		record.setDivideRate(request.getToFromMultiplier());
+		record.setMultiplyRate(fromToMultiplier);
+		record.setDivideRate(toFromMultiplier);
 		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());
 
 		saveRecord(record);

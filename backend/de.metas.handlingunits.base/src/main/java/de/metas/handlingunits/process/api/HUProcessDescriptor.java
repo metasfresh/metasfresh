@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.AdProcessId;
 import de.metas.util.Check;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

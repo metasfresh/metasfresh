@@ -11,7 +11,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -41,7 +41,7 @@ import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -140,6 +140,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
+						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_WeightGross),
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build(),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_BestBeforeDate),
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator));
@@ -149,7 +150,8 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	protected void customizeHUEditorViewRepository(final SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder)
 	{
 		huEditorViewRepositoryBuilder
-				.showBestBeforeDate(true);
+				.showBestBeforeDate(true)
+				.showWeightGross(true);
 	}
 
 	@Override
@@ -159,6 +161,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU.class))
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU.class))
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_Weight.class))
 				//
 				.clearOrderBys()
 				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_IsReserved).ascending(false).nullsLast(true).build())

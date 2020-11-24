@@ -31,7 +31,6 @@ import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IMutableHUContext;
@@ -42,6 +41,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractProductStorageTest extends AbstractHUTest
 {

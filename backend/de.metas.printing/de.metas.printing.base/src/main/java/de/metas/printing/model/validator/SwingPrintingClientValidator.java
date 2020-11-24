@@ -87,7 +87,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 
 			//
 			// Create/Start the printing client thread *if* we do not use another client's config
-			final I_AD_Printer_Config printerConfig = Services.get(IPrintingDAO.class).retrievePrinterConfig(new PlainContextAware(ctx), hostKey, -1);
+			final I_AD_Printer_Config printerConfig = Services.get(IPrintingDAO.class).retrievePrinterConfig(hostKey, null/*userToPrintId*/);
 			if (printerConfig == null // no print config yet, so it can't be set to "use shared" 
 					|| printerConfig.getAD_Printer_Config_Shared_ID() <= 0)
 			{

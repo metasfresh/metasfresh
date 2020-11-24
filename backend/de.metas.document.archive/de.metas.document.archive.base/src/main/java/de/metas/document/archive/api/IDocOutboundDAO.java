@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
@@ -40,16 +41,12 @@ public interface IDocOutboundDAO extends ISingletonService
 {
 	/**
 	 * Retrieve all <b>active</b> {@link I_C_Doc_Outbound_Config}s for <b>all</b> clients.
-	 *
-	 * @return
 	 */
 	List<I_C_Doc_Outbound_Config> retrieveAllConfigs();
 
 	/**
 	 * Retrieve {@link I_C_Doc_Outbound_Config} for given tableId. First current AD_Client_ID will be checked if not found, it will be checked on System level.
 	 *
-	 * @param ctx
-	 * @param tableId
 	 * @return config or null
 	 */
 	I_C_Doc_Outbound_Config retrieveConfig(Properties ctx, int tableId);
@@ -57,7 +54,6 @@ public interface IDocOutboundDAO extends ISingletonService
 	/**
 	 * Retrieve {@link I_C_Doc_Outbound_Config} for given <code>model</code>.
 	 *
-	 * @param model
 	 * @return config or null
 	 * @see #retrieveConfig(Properties, int)
 	 */
@@ -68,43 +64,24 @@ public interface IDocOutboundDAO extends ISingletonService
 	 *
 	 * @return {@link I_C_Doc_Outbound_Log} record or null if not found
 	 */
-	I_C_Doc_Outbound_Log retrieveLog(I_AD_Archive archive);
+	I_C_Doc_Outbound_Log retrieveLog(ArchiveId archiveId);
 
 	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
 
 	/**
 	 * Find among the given <code>log</code>'s {@link I_C_Doc_Outbound_Log_Line}s the latest one with action <code>PDF</code> (i.e highest ID)
 	 *
-	 * @param log
 	 * @return log line
 	 */
 	I_C_Doc_Outbound_Log_Line retrieveCurrentPDFArchiveLogLineOrNull(I_C_Doc_Outbound_Log log);
 
 	/**
 	 * Decorate query builder with PDF archive log line filters
-	 *
-	 * @param contextProvider
-	 * @param queryBuilder
 	 */
 	void addPDFArchiveLogLineFilters(IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder);
 
 	/**
 	 * Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
-	 *
-	 * @param contextProvider
-	 * @param bpartnerId
-	 * @param AD_Table_ID
-	 * @return
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
-
-	/**
-	 * retrieve selected docoutbounds
-	 *
-	 * @param ctx
-	 * @param pinstanceId
-	 * @param trxName
-	 * @return
-	 */
-	List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(Properties ctx, PInstanceId pinstanceId, String trxName);
 }

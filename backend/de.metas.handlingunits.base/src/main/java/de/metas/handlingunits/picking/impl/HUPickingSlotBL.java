@@ -1,50 +1,6 @@
 package de.metas.handlingunits.picking.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.Adempiere;
-import org.compiere.util.TrxRunnable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
@@ -70,13 +26,58 @@ import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
+import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.impl.PickingSlotBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
+import org.compiere.util.TrxRunnable;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 public class HUPickingSlotBL
 		extends PickingSlotBL
@@ -607,12 +608,28 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<Integer> retrieveAvailableHUIdsToPick(@NonNull final PickingHUsQuery query)
+	public ImmutableList<HuId> retrieveAvailableHUIdsToPick(@NonNull final PickingHUsQuery query)
 	{
 		return retrieveAvailableHUsToPick(query)
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public ImmutableList<HuId> retrieveAvailableHUIdsToPickForShipmentSchedule(@NonNull final RetrieveAvailableHUIdsToPickRequest request)
+	{
+		final I_M_ShipmentSchedule schedule = loadOutOfTrx(request.getScheduleId(), I_M_ShipmentSchedule.class);
+
+		final PickingHUsQuery query = PickingHUsQuery
+				.builder()
+				.onlyTopLevelHUs(request.isOnlyTopLevel())
+				.shipmentSchedule(schedule)
+				.onlyIfAttributesMatchWithShipmentSchedules(request.isConsiderAttributes())
+				.build();
+
+		return retrieveAvailableHUIdsToPick(query);
 	}
 
 }

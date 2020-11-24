@@ -1,14 +1,13 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L

@@ -146,7 +146,7 @@ final class HUTrxAttributesCollector implements IAttributeStorageListener
 	{
 		final MutableHUTransactionAttribute huTrxAttribute = MutableHUTransactionAttribute.builder()
 				.operation(operation)
-				.attributeId(AttributeId.ofRepoId(attributeValue.getM_Attribute().getM_Attribute_ID()))
+				.attributeId(attributeValue.getAttributeId())
 				.valueString(attributeValue.getValueAsString())
 				.valueNumber(attributeValue.getValueAsBigDecimal())
 				.valueDate(attributeValue.getValueAsDate())

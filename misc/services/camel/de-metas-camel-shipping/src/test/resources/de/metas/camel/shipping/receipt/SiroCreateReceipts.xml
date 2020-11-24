@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<FMPXMLRESULT xmlns="http://www.filemaker.com/fmpxmlresult">
+    <ERRORCODE>0</ERRORCODE>
+    <PRODUCT BUILD="04-29-2019"
+             NAME="FileMaker"
+             VERSION="ProAdvanced 18.0.1"/>
+    <DATABASE DATEFORMAT="D.m.yyyy"
+              LAYOUT=""
+              NAME="test_wareneingang.fmp12"
+              RECORDS="9"
+              TIMEFORMAT="k:mm:ss "/>
+    <METADATA>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_wareneingang_nummer"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_wareneingang_datum"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_wareneingang_zeitstempel"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_wareneingang_ist_eine_retoure"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_wareneingang_mhd_charge"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_wareneingang_mhd_ablauf_datum"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_artikel_nummer"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_artikel_bezeichnung"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_artikel_menge"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_artikel_gewicht_1_stueck"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_artikel_geschmacksrichtung"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK="YES"
+               MAXREPEAT="1"
+               NAME="_artikel_verpackungsgroesse"
+               TYPE="TEXT"/>
+        <FIELD EMPTYOK=" YES "
+               MAXREPEAT=" 1 "
+               NAME="_anlieferung_position_id"
+               TYPE=" TEXT "/>
+    </METADATA>
+    <RESULTSET FOUND="1">
+        <ROW MODID="16"
+             RECORDID="2">
+            <COL>
+                <DATA>123</DATA>
+            </COL>
+            <COL>
+                <DATA>27.05.2020</DATA>
+            </COL>
+            <COL>
+                <DATA>27.05.2020 15.20.03</DATA>
+            </COL>
+            <COL>
+                <DATA>ja</DATA>
+            </COL>
+            <COL>
+                <DATA>test-lot-number</DATA>
+            </COL>
+            <COL>
+                <DATA>27.05.2024</DATA>
+            </COL>
+            <COL>
+                <DATA>productSearchKey</DATA>
+            </COL>
+            <COL>
+                <DATA>product name</DATA>
+            </COL>
+            <COL>
+                <DATA>10</DATA>
+            </COL>
+            <COL>
+                <DATA>0.45 kg</DATA>
+            </COL>
+            <COL>
+                <DATA>article_flavor</DATA>
+            </COL>
+            <COL>
+                <DATA>12</DATA>
+            </COL>
+            <COL>
+                <DATA>1</DATA>
+            </COL>
+        </ROW>
+    </RESULTSET>
+</FMPXMLRESULT>

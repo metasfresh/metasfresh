@@ -2,10 +2,12 @@ package de.metas.rest_api.ordercandidates.impl;
 
 import static de.metas.util.Check.isEmpty;
 
+import java.time.ZoneId;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.rest_api.common.MetasfreshId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -26,8 +28,8 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.MissingPropertyException;
 import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
@@ -125,6 +127,8 @@ public class JsonConverters
 
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
+		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
+
 		final UomId uomId;
 		if (!isEmpty(request.getUomCode(), true))
 		{
@@ -180,6 +184,8 @@ public class JsonConverters
 				.paymentRule(paymentRule)
 
 				.salesRepId(salesRepId)
+
+				.paymentTermId(paymentTermId)
 		//
 		;
 	}
@@ -259,13 +265,16 @@ public class JsonConverters
 			@NonNull final OLCand olCand,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
+		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
+
 		return JsonOLCand.builder()
 				.id(olCand.getId())
 				.poReference(olCand.getPOReference())
 				.externalLineId(olCand.getExternalLineId())
 				.externalHeaderId(olCand.getExternalHeaderId())
 				//
-				.org(masterdataProvider.getJsonOrganizationById(olCand.getAD_Org_ID()))
+				.org(masterdataProvider.getJsonOrganizationById(orgId))
 				//
 				.bpartner(toJson(olCand.getBPartnerInfo(), masterdataProvider))
 				.billBPartner(toJson(olCand.getBillBPartnerInfo(), masterdataProvider))
@@ -273,7 +282,7 @@ public class JsonConverters
 				.handOverBPartner(toJson(olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
 				.dateOrdered(olCand.getDateDoc())
-				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised()))
+				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
 				//
 				.productId(olCand.getM_Product_ID())

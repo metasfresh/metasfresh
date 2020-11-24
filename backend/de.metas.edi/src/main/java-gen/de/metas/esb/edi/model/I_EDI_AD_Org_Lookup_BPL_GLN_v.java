@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_AD_Org_Lookup_BPL_GLN_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_AD_Org_Lookup_BPL_GLN_v 
@@ -14,17 +14,10 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
     /** AD_Table_ID=540546 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -33,8 +26,8 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -69,8 +62,8 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
     public static final String COLUMNNAME_GLN = "GLN";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -79,8 +72,8 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

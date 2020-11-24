@@ -26,8 +26,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceType;
-import de.metas.serviceprovider.issue.IssueEffortService;
 import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.IssueService;
+import de.metas.serviceprovider.issue.interceptor.AddIssueProgressRequest;
 import de.metas.serviceprovider.model.I_S_TimeBooking;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -55,13 +56,13 @@ public class S_TimeBooking
 
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final IMsgBL msgBL;
-	private final IssueEffortService issueEffortService;
+	private final IssueService issueService;
 
-	public S_TimeBooking(final ExternalReferenceRepository externalReferenceRepository, final IMsgBL msgBL, final IssueEffortService issueEffortService)
+	public S_TimeBooking(final ExternalReferenceRepository externalReferenceRepository, final IMsgBL msgBL, final IssueService issueService)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.msgBL = msgBL;
-		this.issueEffortService = issueEffortService;
+		this.issueService = issueService;
 	}
 
 	@Init
@@ -74,41 +75,49 @@ public class S_TimeBooking
 	public void beforeDelete(@NonNull final I_S_TimeBooking record)
 	{
 		externalReferenceRepository.deleteByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID);
-
-		final IssueId issueId = IssueId.ofRepoId(record.getS_Issue_ID());
-		final Effort effort = Effort.of(record.getBookedSeconds().longValue());
-
-		updateIssueEfforts(effort.negate(), issueId);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = I_S_TimeBooking.COLUMNNAME_HoursAndMinutes)
-	public void onHoursAndMinutesUpdate(@NonNull final I_S_TimeBooking record)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void recomputeIssueProgressAfterDelete(@NonNull final I_S_TimeBooking record)
 	{
-		record.setBookedSeconds(BigDecimal.valueOf(HmmUtils.hmmToSeconds(record.getHoursAndMinutes())));
-
-		final I_S_TimeBooking oldRecord = InterfaceWrapperHelper.createOld(record, I_S_TimeBooking.class);
-
-		final long deltaBookedSeconds = record.getBookedSeconds().subtract(oldRecord.getBookedSeconds()).longValue();
-
-		final Effort effort = Effort.of(deltaBookedSeconds);
 		final IssueId issueId = IssueId.ofRepoId(record.getS_Issue_ID());
+		final Effort removedEffort = Effort.ofSeconds(record.getBookedSeconds().longValue());
 
-		updateIssueEfforts(effort, issueId);
+		final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
+				.builder()
+				.issueId(issueId)
+				.bookedEffort(removedEffort.negate())
+				.build();
+
+		issueService.addIssueProgress(addIssueProgressRequest);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = {I_S_TimeBooking.COLUMNNAME_S_Issue_ID})
-	public void onIssueChange(@NonNull final I_S_TimeBooking record)
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = {I_S_TimeBooking.COLUMNNAME_S_Issue_ID})
+	public void recomputeIssueProgress(@NonNull final I_S_TimeBooking record)
 	{
 		final I_S_TimeBooking oldRecord = InterfaceWrapperHelper.createOld(record, I_S_TimeBooking.class);
 
 		if (record.getS_Issue_ID() != oldRecord.getS_Issue_ID())
 		{
-			final IssueId oldIssueId = IssueId.ofRepoId(oldRecord.getS_Issue_ID());
-			final Effort effort = Effort.of(record.getBookedSeconds().longValue());
+			final Effort bookedEffort = Effort.ofSeconds(record.getBookedSeconds().longValue());
 
-			updateIssueEfforts(effort.negate(), oldIssueId);
+			//1. add the progress for the new issue
+			final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
+					.builder()
+					.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
+					.bookedEffort(bookedEffort)
+					.build();
 
-			updateIssueEfforts(effort, IssueId.ofRepoId(record.getS_Issue_ID()));
+			issueService.addIssueProgress(addIssueProgressRequest);
+
+			//2. recompute the progress for the old one
+			final AddIssueProgressRequest recomputeProgressReq = AddIssueProgressRequest
+					.builder()
+					.issueId(IssueId.ofRepoId(oldRecord.getS_Issue_ID()))
+					.bookedEffort(bookedEffort.negate())
+					.build();
+
+			issueService.addIssueProgress(recomputeProgressReq);
 		}
 	}
 
@@ -130,6 +139,25 @@ public class S_TimeBooking
 		}
 	}
 
+	@ModelChange(timings = {ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE},
+			     ifColumnsChanged = {I_S_TimeBooking.COLUMNNAME_BookedDate,I_S_TimeBooking.COLUMNNAME_HoursAndMinutes})
+	public void addIssueProgress(@NonNull final I_S_TimeBooking record)
+	{
+		record.setBookedSeconds(BigDecimal.valueOf(HmmUtils.hmmToSeconds(record.getHoursAndMinutes())));
+
+		final I_S_TimeBooking oldRecord = InterfaceWrapperHelper.createOld(record, I_S_TimeBooking.class);
+
+		final long deltaBookedSeconds = record.getBookedSeconds().subtract(oldRecord.getBookedSeconds()).longValue();
+
+		final AddIssueProgressRequest addIssueProgressRequest = AddIssueProgressRequest
+				.builder()
+				.issueId(IssueId.ofRepoId(record.getS_Issue_ID()))
+				.bookedEffort(Effort.ofSeconds(deltaBookedSeconds))
+				.build();
+
+		issueService.addIssueProgress(addIssueProgressRequest);
+	}
+
 	@CalloutMethod(columnNames = { I_S_TimeBooking.COLUMNNAME_HoursAndMinutes })
 	public void validateHmmInput(@NonNull final I_S_TimeBooking record)
 	{
@@ -146,12 +174,5 @@ public class S_TimeBooking
 			throw new AdempiereException(msgBL.getTranslatableMsgText(AdMessageKey.of(INCORRECT_FORMAT_MSG_KEY)))
 					.markAsUserValidationError();
 		}
-	}
-
-	private void updateIssueEfforts(@NonNull final Effort effortToAdd, final IssueId issueId)
-	{
-		issueEffortService.addIssueEffort(issueId, effortToAdd);
-
-		issueEffortService.addAggregatedEffort(issueId, effortToAdd);
 	}
 }

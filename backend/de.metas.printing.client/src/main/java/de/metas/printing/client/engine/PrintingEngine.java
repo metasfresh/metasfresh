@@ -81,10 +81,6 @@ public class PrintingEngine
 
 	/**
 	 * Attempts to print the given package and input stream and closes the stream.
-	 *
-	 * @param printPackage
-	 * @param in
-	 * @return
 	 */
 	public PrintJobInstructionsConfirm print(final PrintPackage printPackage, final InputStream in)
 	{

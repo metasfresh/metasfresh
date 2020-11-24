@@ -41,6 +41,7 @@ SELECT
 	cs.C_CommissionSettingsLine_ID,
 	cs.PointsSum_ToSettle,
 	cs.PointsSum_Settled,
+    cs.isSimulation,
 	CASE 
 		WHEN (ci.PointsBase_Forecasted+ci.PointsBase_Invoiceable+ci.PointsBase_Invoiced)!=0
 		THEN ROUND((cs.PointsSum_ToSettle+cs.PointsSum_Settled)/(ci.PointsBase_Forecasted+ci.PointsBase_Invoiceable+ci.PointsBase_Invoiced)*100, 0)

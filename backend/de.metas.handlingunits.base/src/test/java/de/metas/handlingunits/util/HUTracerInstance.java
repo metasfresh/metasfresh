@@ -71,24 +71,30 @@ public class HUTracerInstance
 	private final IHUContext huContext;
 
 	private final String linePrefixIncrement = "  ";
+	private boolean dumpAttributes = true;
+	private boolean dumpItemStorage = true;
 
 	public HUTracerInstance()
 	{
-		super();
 		huContext = null;
 	}
 
-	public HUTracerInstance(final IHUContext huContext)
+	public HUTracerInstance dumpAttributes(final boolean dumpAttributes)
 	{
-		super();
-		this.huContext = huContext;
+		this.dumpAttributes = dumpAttributes;
+		return this;
+	}
+
+	public HUTracerInstance dumpItemStorage(boolean dumpItemStorage)
+	{
+		this.dumpItemStorage = dumpItemStorage;
+		return this;
 	}
 
 	private IHUStorageDAO getHUStorageDAO()
 	{
 		final IHUStorageFactory storageFactory = getHUStorageFactory();
-		final IHUStorageDAO storageDAO = storageFactory.getHUStorageDAO();
-		return storageDAO;
+		return storageFactory.getHUStorageDAO();
 	}
 
 	private IHUStorageFactory getHUStorageFactory()
@@ -190,17 +196,21 @@ public class HUTracerInstance
 		}
 		out.append("\n");
 
+		final String linePrefix2 = linePrefix + linePrefixIncrement;
+
 		//
 		// HU Attributes
-		final String linePrefix2 = linePrefix + linePrefixIncrement;
-		final IHUAttributesDAO huAttributesDAO = getHUAttributesDAO();
-		final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
-		if (attrs != null && !attrs.isEmpty())
+		if (dumpAttributes)
 		{
-			out.append(linePrefix2).append("Attributes: \n");
-			for (final I_M_HU_Attribute attr : attrs)
+			final IHUAttributesDAO huAttributesDAO = getHUAttributesDAO();
+			final List<I_M_HU_Attribute> attrs = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
+			if (attrs != null && !attrs.isEmpty())
 			{
-				out.println(linePrefix2 + linePrefixIncrement + toString(attr));
+				out.append(linePrefix2).append("Attributes: \n");
+				for (final I_M_HU_Attribute attr : attrs)
+				{
+					out.println(linePrefix2 + linePrefixIncrement + toString(attr));
+				}
 			}
 		}
 
@@ -263,7 +273,7 @@ public class HUTracerInstance
 		final BigDecimal qty = storage.getQty();
 		final I_C_UOM uom = IHUStorageBL.extractUOM(storage);
 		final String uomStr = uom.getUOMSymbol();
-		out.append(linePrefix).append("Product: " + productStr + ", Qty: " + qty + " " + uomStr).append("\n");
+		out.append(linePrefix).append("" + productStr + " x " + qty + " " + uomStr).append("\n");
 	}
 
 	public void dump(final PrintStream out, final String linePrefix, final I_M_HU_Item item)
@@ -276,7 +286,7 @@ public class HUTracerInstance
 		out.append(linePrefix).append("Item: " + toStringName(item))
 				.append(" (" + includedHUs.size() + " included HUs)");
 
-		if (storage.getHUCapacity() != 0)
+		if (storage.getHUCapacity() > 0)
 		{
 			out.append(", HU_Qty=" + storage.getHUCount() + "/" + storage.getHUCapacity());
 		}
@@ -284,10 +294,13 @@ public class HUTracerInstance
 
 		//
 		// Product level storages
-		final List<IProductStorage> productStorages = storage.getProductStorages(SystemTime.asZonedDateTimeAtStartOfDay());
-		for (final IProductStorage productStorage : productStorages)
+		if (dumpItemStorage)
 		{
-			dump(out, linePrefix + linePrefixIncrement, productStorage);
+			final List<IProductStorage> productStorages = storage.getProductStorages(SystemTime.asZonedDateTimeAtStartOfDay());
+			for (final IProductStorage productStorage : productStorages)
+			{
+				dump(out, linePrefix + linePrefixIncrement, productStorage);
+			}
 		}
 
 		//
@@ -298,9 +311,9 @@ public class HUTracerInstance
 	public void dump(final PrintStream out, final String linePrefix, final IProductStorage productStorage)
 	{
 		out.println(linePrefix
-				+ "Product=" + Services.get(IProductBL.class).getProductValueAndName(productStorage.getProductId())
-				+ ", Qty=" + productStorage.getQty()
-				+ ", UOM=" + productStorage.getC_UOM().getUOMSymbol());
+				+ "S: "
+				+ Services.get(IProductBL.class).getProductValueAndName(productStorage.getProductId())
+				+ " x " + productStorage.getQty());
 	}
 
 	public void dumpTransactions()
@@ -430,7 +443,7 @@ public class HUTracerInstance
 
 	public String toStringName(final I_M_HU hui)
 	{
-		final StringBuilder name = new StringBuilder("HU_").append(Services.get(IHandlingUnitsBL.class).getPI(hui).getName());
+		final StringBuilder name = new StringBuilder("HU: ").append(Services.get(IHandlingUnitsBL.class).getPI(hui).getName());
 
 		final String instanceName = POJOWrapper.getInstanceName(hui);
 		if (!Check.isEmpty(instanceName))
@@ -442,7 +455,7 @@ public class HUTracerInstance
 
 		if (hui.getM_Locator_ID() > 0)
 		{
-			
+
 			name.append("-WH=").append(IHandlingUnitsBL.extractWarehouse(hui).getName()).append(";");
 		}
 

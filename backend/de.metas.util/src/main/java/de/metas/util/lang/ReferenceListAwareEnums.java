@@ -11,11 +11,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -87,6 +89,15 @@ public class ReferenceListAwareEnums
 		{
 			return Enum.valueOf(enumType, code);
 		}
+	}
+
+	public static <T extends ReferenceListAwareEnum> ImmutableList<T> ofCommaSeparatedList(
+			@NonNull final String commaSeparatedStr,
+			@NonNull final Class<T> clazz)
+	{
+		return CollectionUtils.ofCommaSeparatedList(
+				commaSeparatedStr,
+				code -> ofCode(code, clazz));
 	}
 
 	public static <T extends ReferenceListAwareEnum> Set<T> values(final Class<T> clazz)

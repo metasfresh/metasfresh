@@ -32,6 +32,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -271,7 +272,9 @@ final class BankStatementLineMultiPaymentLinkCommand
 		// Mark payment as reconciled
 		if (doReconcilePayments)
 		{
-			paymentBL.markReconciledAndSave(payment);
+			paymentBL.markReconciledAndSave(
+					payment,
+					PaymentReconcileReference.bankStatementLineRef(lineRef.getId()));
 		}
 
 		//

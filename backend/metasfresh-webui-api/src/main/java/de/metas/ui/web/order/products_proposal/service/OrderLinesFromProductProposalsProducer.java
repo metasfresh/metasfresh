@@ -24,8 +24,11 @@ import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.order.products_proposal.model.ProductProposalPrice;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
@@ -61,6 +64,7 @@ public final class OrderLinesFromProductProposalsProducer
 	private static final Logger logger = LogManager.getLogger(OrderLinesFromProductProposalsProducer.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
@@ -128,11 +132,11 @@ public final class OrderLinesFromProductProposalsProducer
 
 	private void updateOrderLine(
 			final I_C_Order order,
-			final I_C_OrderLine newOrderLine,
+			final I_C_OrderLine newOrderLineRecord,
 			final ProductsProposalRow fromRow)
 	{
 		final IHUPackingAware rowPackingAware = createHUPackingAware(order, fromRow);
-		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(newOrderLine);
+		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(newOrderLineRecord);
 
 		huPackingAwareBL.prepareCopyFrom(rowPackingAware)
 				.overridePartner(false)
@@ -141,10 +145,17 @@ public final class OrderLinesFromProductProposalsProducer
 
 		final ProductProposalPrice price = fromRow.getPrice();
 		// IMPORTANT: manual price is always true because we want to make sure the price the sales guy saw in proposals list is the price which gets into order line
-		newOrderLine.setIsManualPrice(true);
-		newOrderLine.setPriceEntered(price.getUserEnteredPriceValue());
+		newOrderLineRecord.setIsManualPrice(true);
+		newOrderLineRecord.setPriceEntered(price.getUserEnteredPriceValue());
+		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
+				.orderLine(newOrderLineRecord)
+				.resultUOM(ResultUOM.PRICE_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updateLineNetAmt(true)
+				.updateProfitPriceActual(true)
+				.build());
 
-		newOrderLine.setDescription(fromRow.getDescription());
+		newOrderLineRecord.setDescription(fromRow.getDescription());
 	}
 
 	private IHUPackingAware createHUPackingAware(

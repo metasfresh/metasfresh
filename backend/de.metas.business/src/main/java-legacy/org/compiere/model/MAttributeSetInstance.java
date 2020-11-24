@@ -222,34 +222,6 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 		return false;
 	}	// isExcludeSerNo
 
-	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
-	{
-		if (super.afterSave(newRecord, success))
-		{
-			if (newRecord && success)
-			{
-				// use id as description when description is empty
-				String desc = this.getDescription();
-				if (desc == null || desc.trim().length() == 0)
-				{
-					this.set_ValueNoCheck("Description", Integer.toString(getM_AttributeSetInstance_ID()));
-					String sql = "UPDATE M_AttributeSetInstance SET Description = ? WHERE M_AttributeSetInstance_ID = ?";
-					int no = DB.executeUpdateEx(sql,
-							new Object[] { Integer.toString(getM_AttributeSetInstance_ID()), getM_AttributeSetInstance_ID() },
-							get_TrxName());
-					if (no <= 0)
-					{
-						throw new AdempiereException("Failed to update description.");
-					}
-				}
-			}
-			return true;
-		}
-
-		return false;
-	}
-
 	/**
 	 * Create & save a new ASI for given product. Automatically creates Lot#, Serial#.
 	 * 

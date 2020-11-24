@@ -22,18 +22,6 @@
 
 package de.metas.handlingunits.hutransaction;
 
-import java.util.Date;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -50,6 +38,18 @@ import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Transaction;
+
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 

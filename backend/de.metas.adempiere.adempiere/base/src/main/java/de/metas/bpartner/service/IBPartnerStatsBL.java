@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.util.ISingletonService;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

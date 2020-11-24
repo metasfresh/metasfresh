@@ -25,6 +25,7 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.ViewRowsOrderBy;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -307,7 +308,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
+	public SqlViewRowsWhereClause getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
 		return huEditorRepo.buildSqlWhereClause(getDefaultSelection(), rowIds);
 	}

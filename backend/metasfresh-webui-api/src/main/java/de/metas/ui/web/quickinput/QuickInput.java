@@ -1,7 +1,6 @@
 package de.metas.ui.web.quickinput;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -15,10 +14,10 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -26,6 +25,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -247,16 +247,14 @@ public final class QuickInput
 		trxManager.assertThreadInheritedTrxExists();
 
 		final IQuickInputProcessor processor = descriptor.createProcessor();
-		final Set<DocumentId> documentLineIds = processor.process(this);
-		
+		final DocumentIdsSelection documentLineIds = DocumentIdsSelection.of(processor.process(this));
+
 		final Document rootDocument = getRootDocument();
-		
-		final List<Document> includedDocumentsJustCreated = documentLineIds.stream()
-				.map(documentLineId -> rootDocument.getIncludedDocument(targetDetailId, documentLineId))
-				.collect(ImmutableList.toImmutableList());
+
+		final OrderedDocumentsList includedDocumentsJustCreated = rootDocument.getIncludedDocuments(targetDetailId, documentLineIds);
 
 		this.completed = true;
-		return includedDocumentsJustCreated;
+		return includedDocumentsJustCreated.toList();
 	}
 
 	public boolean isCompleted()

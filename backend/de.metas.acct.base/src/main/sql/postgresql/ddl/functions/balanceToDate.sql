@@ -98,7 +98,7 @@ from (
                       SELECT (CASE
                           -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
                                   WHEN fo.AccountType IN ('E', 'R') AND
-                                       fo.DateAcct >= date_trunc('year', to_date('01.03.2019', 'dd.mm.yyyy'))
+                                       fo.DateAcct >= date_trunc('year', p_DateAcct)
                                       THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
                                   WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                           -- For any other account => we consider from the beginning to Date amount
@@ -126,7 +126,7 @@ from (
                       SELECT (CASE
                           -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
                                   WHEN fo.AccountType IN ('E', 'R') AND
-                                       fo.DateAcct >= date_trunc('year', to_date('01.03.2019', 'dd.mm.yyyy'))
+                                       fo.DateAcct >= date_trunc('year', p_DateAcct)
                                       THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
                                   WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                           -- For any other account => we consider from the beginning to Date amount
@@ -155,7 +155,7 @@ from (
                       SELECT (CASE
                           -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
                                   WHEN fo.AccountType IN ('E', 'R') AND
-                                       fo.DateAcct >= date_trunc('year', to_date('01.03.2019', 'dd.mm.yyyy'))
+                                       fo.DateAcct >= date_trunc('year', p_DateAcct)
                                       THEN ROW (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD, fo.AmtAcctDr_YTD, fo.AmtAcctCr_YTD)::de_metas_acct.BalanceAmt
                                   WHEN fo.AccountType IN ('E', 'R') THEN ROW (0, 0, 0)::de_metas_acct.BalanceAmt
                           -- For any other account => we consider from the beginning to Date amount

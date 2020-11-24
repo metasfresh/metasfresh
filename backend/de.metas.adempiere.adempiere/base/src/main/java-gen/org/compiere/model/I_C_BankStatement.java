@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for C_BankStatement
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_BankStatement 
@@ -14,16 +14,9 @@ public interface I_C_BankStatement
     /** AD_Table_ID=392 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
@@ -37,7 +30,7 @@ public interface I_C_BankStatement
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -47,7 +40,7 @@ public interface I_C_BankStatement
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -84,7 +77,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_BeginningBalance = "BeginningBalance";
 
 	/**
-	 * Set Bankauszug.
+	 * Set Bank Statement.
 	 * Bank Statement of account
 	 *
 	 * <br>Type: ID
@@ -94,7 +87,7 @@ public interface I_C_BankStatement
 	public void setC_BankStatement_ID (int C_BankStatement_ID);
 
 	/**
-	 * Get Bankauszug.
+	 * Get Bank Statement.
 	 * Bank Statement of account
 	 *
 	 * <br>Type: ID
@@ -109,8 +102,8 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_C_BankStatement_ID = "C_BankStatement_ID";
 
 	/**
-	 * Set Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -119,8 +112,8 @@ public interface I_C_BankStatement
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
-	 * Get Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -128,18 +121,12 @@ public interface I_C_BankStatement
 	 */
 	public int getC_BP_BankAccount_ID();
 
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
-
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
-
-    /** Column definition for C_BP_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_C_BankStatement, org.compiere.model.I_C_BP_BankAccount>(I_C_BankStatement.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
     /** Column name C_BP_BankAccount_ID */
     public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Set Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -148,8 +135,8 @@ public interface I_C_BankStatement
 	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Get Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -161,7 +148,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
@@ -176,7 +163,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
@@ -214,7 +201,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_CreateFrom = "CreateFrom";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -223,7 +210,7 @@ public interface I_C_BankStatement
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -237,7 +224,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Belegverarbeitung.
+	 * Set Process Batch.
 	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
@@ -247,7 +234,7 @@ public interface I_C_BankStatement
 	public void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Belegverarbeitung.
+	 * Get Process Batch.
 	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
@@ -262,8 +249,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -272,8 +258,7 @@ public interface I_C_BankStatement
 	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -287,7 +272,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -297,7 +282,7 @@ public interface I_C_BankStatement
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -387,7 +372,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_EndingBalance = "EndingBalance";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -397,7 +382,7 @@ public interface I_C_BankStatement
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -412,7 +397,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Freigegeben.
+	 * Set Approved.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
@@ -422,7 +407,7 @@ public interface I_C_BankStatement
 	public void setIsApproved (boolean IsApproved);
 
 	/**
-	 * Get Freigegeben.
+	 * Get Approved.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
@@ -462,8 +447,8 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_IsManual = "IsManual";
 
 	/**
-	 * Set Abgeglichen.
-	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 * Set Reconciled.
+	 * Payment is reconciled with bank statement
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -472,8 +457,8 @@ public interface I_C_BankStatement
 	public void setIsReconciled (boolean IsReconciled);
 
 	/**
-	 * Get Abgeglichen.
-	 * Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 * Get Reconciled.
+	 * Payment is reconciled with bank statement
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -533,8 +518,8 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Buchungsstatus.
-	 * Buchungsstatus
+	 * Set Posting status.
+	 * Posting status
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -543,8 +528,8 @@ public interface I_C_BankStatement
 	public void setPosted (boolean Posted);
 
 	/**
-	 * Get Buchungsstatus.
-	 * Buchungsstatus
+	 * Get Posting status.
+	 * Posting status
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -558,8 +543,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_Posted = "Posted";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -568,8 +552,7 @@ public interface I_C_BankStatement
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -583,7 +566,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Verarbeiten.
+	 * Set Process Now.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -592,7 +575,7 @@ public interface I_C_BankStatement
 	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Verarbeiten.
+	 * Get Process Now.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -656,7 +639,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_StatementDifference = "StatementDifference";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -671,7 +654,7 @@ public interface I_C_BankStatement
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table

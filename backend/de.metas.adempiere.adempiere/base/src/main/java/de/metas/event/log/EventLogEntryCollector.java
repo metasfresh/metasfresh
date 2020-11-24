@@ -3,15 +3,20 @@ package de.metas.event.log;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.event.Event;
 import de.metas.event.log.EventLogUserService.EventLogEntryRequest;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -40,35 +45,32 @@ import lombok.NonNull;
 public class EventLogEntryCollector implements IAutoCloseable
 {
 	private static final Logger logger = LogManager.getLogger(EventLogEntryCollector.class);
-	private final static ThreadLocal<EventLogEntryCollector> threadLocalCollector = new ThreadLocal<>();
+	private static final ThreadLocal<EventLogEntryCollector> threadLocalCollector = new ThreadLocal<>();
 
 	@Getter
 	private final Event event;
 
+	@Getter(AccessLevel.PACKAGE)
+	@VisibleForTesting
+	private final EventLogEntryCollector previousEntryCollector;
+
 	private final List<EventLogEntry> eventLogEntries = new ArrayList<>();
 
-	private EventLogEntryCollector(@NonNull final Event event)
+	private EventLogEntryCollector(
+			@NonNull final Event event,
+			@Nullable final EventLogEntryCollector previousEntryCollector)
 	{
 		this.event = event;
+		this.previousEntryCollector = previousEntryCollector;
 	}
 
 	public static EventLogEntryCollector createThreadLocalForEvent(@NonNull final Event event)
 	{
-		assertNoCurrentLogCollector();
+		final EventLogEntryCollector previousEntryCollector = threadLocalCollector.get();
+		final EventLogEntryCollector entryCollector = new EventLogEntryCollector(event, previousEntryCollector);
+		threadLocalCollector.set(entryCollector);
 
-		final EventLogEntryCollector newInstance = new EventLogEntryCollector(event);
-		threadLocalCollector.set(newInstance);
-
-		return newInstance;
-	}
-
-	private static void assertNoCurrentLogCollector()
-	{
-		final EventLogEntryCollector eventLogCollector = threadLocalCollector.get();
-
-		Check.errorIf(eventLogCollector != null,
-				"An EventLogCollector was already created and not yet closed; eventLogCollector={}",
-				eventLogCollector);
+		return entryCollector;
 	}
 
 	public static EventLogEntryCollector getThreadLocal()
@@ -81,7 +83,8 @@ public class EventLogEntryCollector implements IAutoCloseable
 
 	public void addEventLog(@NonNull final EventLogEntryRequest eventLogRequest)
 	{
-		final EventLogEntry eventLogEntry = EventLogEntry.builder().uuid(event.getUuid())
+		final EventLogEntry eventLogEntry = EventLogEntry.builder()
+				.uuid(event.getUuid())
 				.clientId(eventLogRequest.getClientId())
 				.orgId(eventLogRequest.getOrgId())
 				.processed(eventLogRequest.isProcessed())
@@ -97,7 +100,16 @@ public class EventLogEntryCollector implements IAutoCloseable
 	@Override
 	public void close()
 	{
-		threadLocalCollector.remove();
+		// Restore previous entry collector
+		// or clear the current one
+		if (previousEntryCollector != null)
+		{
+			threadLocalCollector.set(previousEntryCollector);
+		}
+		else
+		{
+			threadLocalCollector.remove();
+		}
 
 		// Avoid throwing exception because EventLogService is not available in unit tests
 		if (Adempiere.isUnitTestMode())

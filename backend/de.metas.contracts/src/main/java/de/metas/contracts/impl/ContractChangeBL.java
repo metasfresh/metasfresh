@@ -31,9 +31,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.invoice.service.IInvoiceCreditContext;
-import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
@@ -64,6 +61,8 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -288,7 +287,7 @@ public class ContractChangeBL implements IContractChangeBL
 	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
 		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
-		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class)
+		final DocTypeId targetDocTypeId = Services.get(IDocTypeDAO.class)
 				.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docbasetype)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
@@ -296,8 +295,8 @@ public class ContractChangeBL implements IContractChangeBL
 				.adOrgId(openInvoice.getAD_Org_ID())
 				.build());
 
-		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
-				.C_DocType_ID(targetDocTypeID.getRepoId())
+		final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
+				.docTypeId(targetDocTypeId)
 				.completeAndAllocate(true)
 				.referenceOriginalOrder(true)
 				.referenceInvoice(true)

@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.NullTrxPlaceholder;
-import org.adempiere.ad.trx.exceptions.TrxException;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -187,7 +187,7 @@ public class ModelCacheService implements IModelCacheService
 		// Check if we got the right transaction
 		if (trx == null && !trxManager.isNull(trxName) && !Util.same(trxName, ITrx.TRXNAME_ThreadInherited))
 		{
-			final TrxException ex = new TrxException("No transaction was found for " + trxName + ". Skip cache."
+			final AdempiereException ex = new AdempiereException("No transaction was found for " + trxName + ". Skip cache."
 					+ "\ntableName=" + tableName
 					+ "\nrecordId=" + recordId
 					+ "\ntrxName=" + trxName

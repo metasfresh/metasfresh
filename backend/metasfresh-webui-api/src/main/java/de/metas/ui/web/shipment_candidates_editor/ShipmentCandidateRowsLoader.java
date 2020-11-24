@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
-import java.util.Objects;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -20,7 +21,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -143,6 +144,12 @@ final class ShipmentCandidateRowsLoader
 		return OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID());
 	}
 
+	/**
+	 * Please keep the calculation of
+	 * - QtyEnteredTU,
+	 * - QtyEntered <-> qtyToDeliverUserEntered
+	 * in sync with the customer report `Docs_Sales_Order_BOM_Details`.
+	 */
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
@@ -209,7 +216,8 @@ final class ShipmentCandidateRowsLoader
 		return productsLookup.findById(productId);
 	}
 
-	private static PackingInfo extractPackingInfo(@NonNull final I_M_ShipmentSchedule record)
+	@VisibleForTesting
+	static PackingInfo extractPackingInfo(@NonNull final I_M_ShipmentSchedule record)
 	{
 		final BigDecimal qtyCUsPerTU = record.getQtyItemCapacity();
 		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)

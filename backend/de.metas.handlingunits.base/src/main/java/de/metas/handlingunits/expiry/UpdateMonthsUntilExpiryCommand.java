@@ -5,6 +5,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.OptionalInt;
 
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.util.Env;
 
@@ -44,6 +47,7 @@ final class UpdateMonthsUntilExpiryCommand
 	// services
 	private final HUWithExpiryDatesRepository huWithExpiryDatesRepository;
 	private final IHandlingUnitsBL handlingUnitsBL;
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final LocalDate today;
 
@@ -94,7 +98,8 @@ final class UpdateMonthsUntilExpiryCommand
 
 	private boolean updateTopLevelHU(@NonNull final HuId topLevelHUId)
 	{
-		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx());
+		final ClientAndOrgId clientAndOrgId = handlingUnitsDAO.getClientAndOrgId(topLevelHUId);
+		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx(), clientAndOrgId);
 		final IAttributeStorage huAttributes = getHUAttributes(topLevelHUId, huContext);
 		return updateRecursive(huAttributes);
 	}

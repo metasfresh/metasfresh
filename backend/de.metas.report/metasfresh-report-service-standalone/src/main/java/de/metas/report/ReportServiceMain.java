@@ -70,6 +70,7 @@ public class ReportServiceMain
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
 			Ini.setRunMode(RunMode.BACKEND);
+			Adempiere.instance.startup(RunMode.BACKEND);
 
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 

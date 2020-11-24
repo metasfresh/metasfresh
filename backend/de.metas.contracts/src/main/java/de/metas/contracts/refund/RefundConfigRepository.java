@@ -29,7 +29,7 @@ import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
-import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;

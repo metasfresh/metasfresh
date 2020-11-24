@@ -1,0 +1,209 @@
+{
+  "props1": {
+    "router": {
+      "location": {
+        "pathname": "/window/143",
+        "search": "?page=1&viewId=143-F",
+        "hash": "",
+        "action": "REPLACE",
+        "key": "3m3zd2",
+        "query": {
+          "page": "1",
+          "viewId": "143-F"
+        }
+      },
+      "params": {
+        "windowType": "143"
+      },
+      "routes": [
+        {
+          "path": "/",
+          "childRoutes": [
+            {
+              "childRoutes": [
+                {
+                  "path": "/window/:windowType"
+                },
+                {
+                  "path": "/window/:windowType/:docId"
+                },
+                {
+                  "path": "/sitemap"
+                },
+                {
+                  "path": "/board/:boardId"
+                },
+                {
+                  "path": "/inbox"
+                },
+                {
+                  "path": "logout"
+                }
+              ],
+              "indexRoute": {}
+            },
+            {
+              "path": "/login"
+            },
+            {
+              "path": "/forgottenPassword"
+            },
+            {
+              "path": "/resetPassword"
+            },
+            {
+              "path": "/paypal_confirm"
+            },
+            {
+              "path": "/calendar"
+            },
+            {
+              "path": "*"
+            }
+          ]
+        },
+        {
+          "childRoutes": [
+            {
+              "path": "/window/:windowType"
+            },
+            {
+              "path": "/window/:windowType/:docId"
+            },
+            {
+              "path": "/sitemap"
+            },
+            {
+              "path": "/board/:boardId"
+            },
+            {
+              "path": "/inbox"
+            },
+            {
+              "path": "logout"
+            }
+          ],
+          "indexRoute": {}
+        },
+        {
+          "path": "/window/:windowType"
+        }
+      ]
+    },
+    "reduxData": {},
+    "layout": {},
+    "location": {
+      "pathname": "/window/143",
+      "search": "?page=1&viewId=143-F",
+      "hash": "",
+      "action": "REPLACE",
+      "key": "3m3zd2",
+      "query": {
+        "page": "1",
+        "viewId": "143-F"
+      }
+    },
+    "routes": [
+      {
+        "path": "/",
+        "childRoutes": [
+          {
+            "childRoutes": [
+              {
+                "path": "/window/:windowType"
+              },
+              {
+                "path": "/window/:windowType/:docId"
+              },
+              {
+                "path": "/sitemap"
+              },
+              {
+                "path": "/board/:boardId"
+              },
+              {
+                "path": "/inbox"
+              },
+              {
+                "path": "logout"
+              }
+            ],
+            "indexRoute": {}
+          },
+          {
+            "path": "/login"
+          },
+          {
+            "path": "/forgottenPassword"
+          },
+          {
+            "path": "/resetPassword"
+          },
+          {
+            "path": "/paypal_confirm"
+          },
+          {
+            "path": "/calendar"
+          },
+          {
+            "path": "*"
+          }
+        ]
+      },
+      {
+        "childRoutes": [
+          {
+            "path": "/window/:windowType"
+          },
+          {
+            "path": "/window/:windowType/:docId"
+          },
+          {
+            "path": "/sitemap"
+          },
+          {
+            "path": "/board/:boardId"
+          },
+          {
+            "path": "/inbox"
+          },
+          {
+            "path": "logout"
+          }
+        ],
+        "indexRoute": {}
+      },
+      {
+        "path": "/window/:windowType"
+      }
+    ],
+    "childSelected": [],
+    "filters": {
+      "clearAll": false
+    },
+    "disablePaginationShortcuts": false,
+    "inBackground": false,
+    "inModal": false,
+    "includedView": {
+      "viewId": "",
+      "windowType": null,
+      "viewProfileId": null
+    },
+    "fetchQuickActionsOnInit": true,
+    "page": 1,
+    "params": {
+      "windowType": "143"
+    },
+    "parentSelected": [],
+    "processStatus": "saved",
+    "refRowIds": [],
+    "selected": [],
+    "selections": {},
+    "table": {
+      "activeSort": false
+    },
+    "type": "grid",
+    "viewId": "143-F",
+    "windowType": "143"
+  }
+}

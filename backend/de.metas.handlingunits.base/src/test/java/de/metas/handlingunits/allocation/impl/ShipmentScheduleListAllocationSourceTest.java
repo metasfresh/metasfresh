@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -51,6 +50,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Test;
 
 public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 {

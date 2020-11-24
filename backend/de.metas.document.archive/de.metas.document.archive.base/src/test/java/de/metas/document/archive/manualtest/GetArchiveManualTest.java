@@ -22,10 +22,9 @@ package de.metas.document.archive.manualtest;
  * #L%
  */
 
-
-import java.io.File;
-import java.util.Properties;
-
+import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
+import de.metas.document.archive.spi.impl.RestHttpArchiveEndpoint;
+import de.metas.util.FileUtil;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,9 +34,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
 
-import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
-import de.metas.document.archive.spi.impl.RestHttpArchiveEndpoint;
-import de.metas.util.FileUtils;
+import java.io.File;
+import java.util.Properties;
 
 /**
  * Manual test: connect to REST HTTP endpoint and fetch given archive
@@ -69,7 +67,7 @@ public class GetArchiveManualTest
 
 		ctx = Env.getCtx();
 
-		final File storageFolder = FileUtils.createTempDirectory("archive_");
+		final File storageFolder = FileUtil.createTempDirectory("archive_");
 
 		client = InterfaceWrapperHelper.create(ctx, I_AD_Client.class, ITrx.TRXNAME_None);
 		client.setWindowsArchivePath(storageFolder.getAbsolutePath());

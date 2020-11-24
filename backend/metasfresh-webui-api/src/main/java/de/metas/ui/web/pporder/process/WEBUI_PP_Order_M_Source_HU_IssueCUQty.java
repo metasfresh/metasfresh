@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -180,7 +181,6 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	private BigDecimal computeQtyToIssue(final PPOrderLineRow row)
 	{
 		final I_PP_Order_BOMLine bomLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(row.getOrderBOMLineId());
-		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx());
 		final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 
 		final I_M_HU hu = activeSourceHus
@@ -189,6 +189,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.map(I_M_Source_HU::getM_HU)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("@NoSelection@"));
+		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx(), ClientAndOrgId.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID()));
 
 		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 

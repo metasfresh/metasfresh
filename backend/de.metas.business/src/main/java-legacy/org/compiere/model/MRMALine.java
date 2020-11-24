@@ -28,11 +28,11 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.CurrencyPrecision;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
 import de.metas.uom.IUOMDAO;

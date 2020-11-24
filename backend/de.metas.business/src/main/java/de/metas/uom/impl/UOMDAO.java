@@ -1,17 +1,8 @@
-package de.metas.uom.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.temporal.TemporalUnit;
-import java.util.Collection;
-import java.util.List;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,25 +20,35 @@ import java.util.List;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
+package de.metas.uom.impl;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ITranslatableString;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UOMType;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
+
+import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class UOMDAO implements IUOMDAO
 {
@@ -75,6 +76,13 @@ public class UOMDAO implements IUOMDAO
 	public I_C_UOM getById(@NonNull final UomId uomId)
 	{
 		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
+	}
+
+	@Override
+	public ITranslatableString getName(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return InterfaceWrapperHelper.getModelTranslationMap(uom).getColumnTrl(I_C_UOM.COLUMNNAME_Name, uom.getUOMSymbol());
 	}
 
 	@Override
@@ -179,5 +187,12 @@ public class UOMDAO implements IUOMDAO
 	{
 		final String x12de355 = getX12DE355ById(uomId);
 		return X12DE355_COLI.equals(x12de355) || X12DE355_TU.equals(x12de355);
+	}
+
+	@Override
+	public UOMType getUOMTypeById(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uom = getById(uomId);
+		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
 	}
 }

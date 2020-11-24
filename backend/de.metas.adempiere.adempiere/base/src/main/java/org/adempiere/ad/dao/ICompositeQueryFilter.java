@@ -1,10 +1,8 @@
-package org.adempiere.ad.dao;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,11 +20,9 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+package org.adempiere.ad.dao;
 
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -36,7 +32,11 @@ import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
-import de.metas.util.lang.RepoIdAware;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 {
@@ -55,7 +55,6 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	ICompositeQueryFilter<T> setDefaultAccept(boolean defaultAccept);
 
 	/**
-	 *
 	 * @return default behavior in case this composite is empty
 	 */
 	boolean isDefaultAccept();
@@ -71,14 +70,12 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	int getFiltersCount();
 
 	/**
-	 *
 	 * @return true if the JOIN method is AND
 	 * @see #setJoinAnd()
 	 */
 	boolean isJoinAnd();
 
 	/**
-	 *
 	 * @return true if the JOIN method is OR
 	 * @see #setJoinOr()
 	 */
@@ -219,14 +216,11 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Add a {@link CompareQueryFilter}
 	 *
-	 * @param columnName
-	 * @param operator
-	 * @param value
 	 * @return this
 	 */
-	ICompositeQueryFilter<T> addCompareFilter(String columnName, CompareQueryFilter.Operator operator, Object value);
+	ICompositeQueryFilter<T> addCompareFilter(String columnName, CompareQueryFilter.Operator operator, @Nullable Object value);
 
-	ICompositeQueryFilter<T> addCompareFilter(ModelColumn<T, ?> column, CompareQueryFilter.Operator operator, Object value);
+	ICompositeQueryFilter<T> addCompareFilter(ModelColumn<T, ?> column, CompareQueryFilter.Operator operator, @Nullable Object value);
 
 	ICompositeQueryFilter<T> addCompareFilter(String columnName, Operator operator, Object value, IQueryFilterModifier modifier);
 
@@ -235,21 +229,14 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Add a {@link EqualsQueryFilter}
 	 *
-	 * @param columnName
-	 * @param value
 	 * @return this
 	 */
-	ICompositeQueryFilter<T> addEqualsFilter(String columnName, Object value);
+	ICompositeQueryFilter<T> addEqualsFilter(String columnName, @Nullable Object value);
 
-	ICompositeQueryFilter<T> addEqualsFilter(ModelColumn<T, ?> column, Object value);
+	ICompositeQueryFilter<T> addEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
 
 	/**
 	 * Add a {@link EqualsQueryFilter}
-	 *
-	 * @param columnName
-	 * @param value
-	 * @param modifier
-	 * @return this
 	 */
 	ICompositeQueryFilter<T> addEqualsFilter(String columnName, Object value, IQueryFilterModifier modifier);
 
@@ -259,15 +246,14 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * Adds a filter for substrings. That filter creates SQL such as <code>columnName LIKE '%substring%'</code>.<br>
 	 * The string to filter by may contain {@code _} and {@code %}. Starting and trailing '%' are supplemented if missing.
 	 *
-	 * @param columnName
-	 * @param substring
+	 * Note: if you don't want the starting and trailing '%' to be supplemented, check out {@link #addCompareFilter(String, Operator, Object)}
+	 *
 	 * @param ignoreCase if <code>true</code> the filter will use <code>ILIKE</code> instead of <code>LIKE</code>
-	 * @return
 	 */
 	ICompositeQueryFilter<T> addStringLikeFilter(String columnName, String substring, boolean ignoreCase);
 
 	/**
-	 * See {@link #addSubstringFilter(String, String)}.
+	 * See {@link #addStringLikeFilter(String, String, boolean)}
 	 */
 	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
@@ -335,19 +321,16 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	List<IQueryFilter<T>> getFilters();
 
 	/**
-	 *
 	 * @return a readonly list of current nonSQL filters (i.e. which are NOT implementing {@link ISqlQueryFilter} interface).
 	 */
 	List<IQueryFilter<T>> getNonSqlFilters();
 
 	/**
-	 *
 	 * @return a readonly list of current SQL filters (i.e. which are implementing {@link ISqlQueryFilter} interface).
 	 */
 	List<ISqlQueryFilter> getSqlFilters();
 
 	/**
-	 *
 	 * @return true if all inner filters are {@link ISqlQueryFilter}s. In this case {@link #getNonSqlFilters()} shall return an empty list.
 	 */
 	boolean isPureSql();
@@ -374,7 +357,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Gets an query filter which behaves like {@link #getNonSqlFilters()} list.
-	 *
+	 * <p>
 	 * If there are no nonSQL filters, this method will return null.
 	 *
 	 * @return query filter or null
@@ -390,7 +373,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 
 	/**
 	 * Converts this filter to an {@link ISqlQueryFilter} if {@link #isPureSql()}.
-	 *
+	 * <p>
 	 * If this is not a pure SQL filter, an exception will be thrown.
 	 *
 	 * @return

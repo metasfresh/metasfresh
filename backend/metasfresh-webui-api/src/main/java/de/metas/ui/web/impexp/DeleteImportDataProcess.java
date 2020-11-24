@@ -1,5 +1,7 @@
 package de.metas.ui.web.impexp;
 
+import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.impexp.processing.IImportProcess;
@@ -10,6 +12,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
@@ -71,10 +75,13 @@ public class DeleteImportDataProcess extends ViewBasedProcessTemplate implements
 
 		final int deletedCount = importProcess.deleteImportRecords(ImportDataDeleteRequest.builder()
 				.mode(deleteMode)
-				.viewSqlWhereClause(getViewSqlWhereClause(DocumentIdsSelection.ALL))
-				.selectionSqlWhereClause(ImportDataDeleteMode.ONLY_SELECTED.equals(deleteMode)
-						? getSelectionSqlWhereClause()
-						: null)
+				.viewSqlWhereClause(getViewSqlWhereClause(DocumentIdsSelection.ALL)
+						.map(SqlViewRowsWhereClause::toSqlString)
+						.orElse(null))
+				.selectionSqlWhereClause(
+						ImportDataDeleteMode.ONLY_SELECTED.equals(deleteMode)
+								? getSelectionSqlWhereClause().map(SqlViewRowsWhereClause::toSqlString).orElse(null)
+								: null)
 				.build());
 
 		return "@Deleted@ " + deletedCount;
@@ -86,7 +93,7 @@ public class DeleteImportDataProcess extends ViewBasedProcessTemplate implements
 		invalidateView();
 	}
 
-	private String getSelectionSqlWhereClause()
+	private Optional<SqlViewRowsWhereClause> getSelectionSqlWhereClause()
 	{
 		final DocumentIdsSelection rowIds = getSelectedRowIds();
 		if (rowIds.isEmpty())
@@ -97,9 +104,11 @@ public class DeleteImportDataProcess extends ViewBasedProcessTemplate implements
 		return getViewSqlWhereClause(rowIds);
 	}
 
-	private String getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
+	private Optional<SqlViewRowsWhereClause> getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
 	{
+		final IView view = getView();
 		final String importTableName = getTableName();
-		return getView().getSqlWhereClause(rowIds, SqlOptions.usingTableName(importTableName));
+		final SqlViewRowsWhereClause viewRowsWhereClause = view.getSqlWhereClause(rowIds, SqlOptions.usingTableName(importTableName));
+		return Optional.ofNullable(viewRowsWhereClause);
 	}
 }

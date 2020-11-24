@@ -574,4 +574,29 @@ public interface I_M_Warehouse
     public static final org.adempiere.model.ModelColumn<I_M_Warehouse, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Warehouse, Object>(I_M_Warehouse.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Receive as Source HU.
+	 * Automatically marks all received HUs carrying BOM components as 'Source HUs'.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReceiveAsSourceHU (boolean IsReceiveAsSourceHU);
+
+	/**
+	 * Get Receive as Source HU.
+	 * Automatically marks all received HUs carrying BOM components as 'Source HUs'.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReceiveAsSourceHU();
+
+	/** Column definition for IsReceiveAsSourceHU */
+	public static final org.adempiere.model.ModelColumn<I_M_Warehouse, Object> COLUMN_IsReceiveAsSourceHU = new org.adempiere.model.ModelColumn<I_M_Warehouse, Object>(I_M_Warehouse.class, "IsReceiveAsSourceHU", null);
+	/** Column name IsReceiveAsSourceHU */
+	public static final String COLUMNNAME_IsReceiveAsSourceHU = "IsReceiveAsSourceHU";
 }

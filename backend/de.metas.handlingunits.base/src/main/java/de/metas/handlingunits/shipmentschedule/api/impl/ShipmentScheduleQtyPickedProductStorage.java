@@ -34,7 +34,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,7 +74,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		// NOTE: we cannot rely on QtyToDeliver because that one is about what it needs to be delivered *and* we are able to deliver it.
 		// But in our case we need to have how much is Picked but not delivered because we want to let the API/user to "un-pick" that quantity if they want.
 
-		final CapacityInterface capacityTotal = getTotalCapacity();
+		final Capacity capacityTotal = getTotalCapacity();
 		final BigDecimal qtyTarget = capacityTotal.toBigDecimal();
 		BigDecimal qtyToPick = qtyTarget;
 

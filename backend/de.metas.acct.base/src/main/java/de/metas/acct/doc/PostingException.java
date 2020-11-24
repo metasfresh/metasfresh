@@ -1,6 +1,7 @@
 package de.metas.acct.doc;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
@@ -9,11 +10,13 @@ import org.compiere.model.I_Fact_Acct;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.AcctSchema;
+import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Exception thrown by accounting engine on any document posting error.
@@ -48,6 +51,7 @@ public final class PostingException extends AdempiereException
 	{
 		super(cause);
 
+		setIssueCategory(IssueCategory.ACCOUNTING);
 		setDocument(document);
 		setDetailMessage(cause == null ? null : extractMessageTrl(cause));
 	}
@@ -55,6 +59,7 @@ public final class PostingException extends AdempiereException
 	public PostingException(final String message)
 	{
 		super(TranslatableStrings.empty());
+		setIssueCategory(IssueCategory.ACCOUNTING);
 		setDetailMessage(message);
 	}
 
@@ -126,6 +131,12 @@ public final class PostingException extends AdempiereException
 	public PostingException setDocument(final Doc<?> document)
 	{
 		this._document = document;
+
+		if (document != null)
+		{
+			setRecord(TableRecordReference.of(document.get_TableName(), document.get_ID()));
+		}
+
 		return this;
 	}
 
@@ -211,7 +222,7 @@ public final class PostingException extends AdempiereException
 	public PostingException addDetailMessage(final String detailMessageToAppend)
 	{
 		// If there is nothing to append, do nothing
-		if (Check.isEmpty(detailMessageToAppend, true))
+		if (Check.isBlank(detailMessageToAppend))
 		{
 			return this;
 		}
@@ -285,9 +296,8 @@ public final class PostingException extends AdempiereException
 		return _docLine;
 	}
 
-	public PostingException setLogLevel(final Level logLevel)
+	public PostingException setLogLevel(@NonNull final Level logLevel)
 	{
-		Check.assumeNotNull(logLevel, "logLevel not null");
 		this._logLevel = logLevel;
 		return this;
 	}

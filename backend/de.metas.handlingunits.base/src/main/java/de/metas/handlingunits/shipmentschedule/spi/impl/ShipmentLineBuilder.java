@@ -1,60 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
-import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -87,13 +34,16 @@ import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityTU;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -103,6 +53,33 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -118,6 +95,7 @@ import lombok.NonNull;
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	/**
 	 * Shipment on which the new shipment line will be created
@@ -141,12 +119,16 @@ import lombok.NonNull;
 	private Quantity catchQty = null;
 
 	/* Used to collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs. */
-	private HashMap<HUPIItemProductId, BigDecimal> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
+	private HashMap<HUPIItemProductId, QuantityTU> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
 
-	/** Candidates which were added to this builder */
+	/**
+	 * Candidates which were added to this builder
+	 */
 	private final List<ShipmentScheduleWithHU> candidates = new ArrayList<>();
 
-	/** Loading Units(LUs)/Transport Units(TUs) to assign to the shipment line that will be created */
+	/**
+	 * Loading Units(LUs)/Transport Units(TUs) to assign to the shipment line that will be created
+	 */
 	private final Set<HUTopLevel> husToAssign = new TreeSet<>();
 	private Set<HuId> alreadyAssignedTUIds = null; // to be configured by called
 
@@ -160,12 +142,11 @@ import lombok.NonNull;
 	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
 	private final TreeSet<IAttributeValue> //
-	attributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
+			attributeValues = new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
 	private final ShipmentLineNoInfo shipmentLineNoInfo;
 
 	/**
-	 *
 	 * @param shipment shipment on which the new shipment line will be created
 	 */
 	public ShipmentLineBuilder(
@@ -177,7 +158,6 @@ import lombok.NonNull;
 	}
 
 	/**
-	 *
 	 * @return true if there are no candidates appended so far
 	 */
 	public boolean isEmpty()
@@ -327,10 +307,10 @@ import lombok.NonNull;
 			final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
 			final boolean qtTuOverrideIsSet = !isNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override);
-			final BigDecimal qtyTUtoUse;
+			final QuantityTU qtyTUtoUse;
 			if (qtTuOverrideIsSet)
 			{
-				qtyTUtoUse = shipmentSchedule.getQtyTU_Override();
+				qtyTUtoUse = QuantityTU.ofBigDecimal(shipmentSchedule.getQtyTU_Override());
 			}
 			else
 			{
@@ -348,17 +328,17 @@ import lombok.NonNull;
 						.create()
 						.list(I_M_InOutLine.class);
 
-				BigDecimal qtyTU = shipmentSchedule.getQtyTU_Calculated();
+				QuantityTU qtyTU = QuantityTU.ofBigDecimal(shipmentSchedule.getQtyTU_Calculated());
 				for (final I_M_InOutLine shipmentLine : shipmentLinesOfShipmentSchedule)
 				{
-					qtyTU = qtyTU.subtract(shipmentLine.getQtyEnteredTU());
+					qtyTU = qtyTU.subtract(QuantityTU.ofBigDecimal(shipmentLine.getQtyEnteredTU()));
 				}
 				qtyTUtoUse = qtyTU;
 			}
 			piipId2TuQtyFromShipmentSchedule.merge(
 					HUPIItemProductId.ofRepoId(piip.getM_HU_PI_Item_Product_ID()),
 					qtyTUtoUse,
-					BigDecimal::add);
+					QuantityTU::add);
 		}
 
 		// Add current candidate to the list of candidates that will compose the generated shipment line
@@ -367,7 +347,7 @@ import lombok.NonNull;
 
 	/**
 	 * Gets LU or TU (if LU was not found) from candidate and append it to {@link #husToAssign} set.
-	 *
+	 * <p>
 	 * When we will generate the shipment line, we will link those HUs to the generated shipment line (see {@link #createShipmentLine()}).
 	 */
 	private void appendHUsFromCandidate(@NonNull final ShipmentScheduleWithHU candidate)
@@ -455,6 +435,11 @@ import lombok.NonNull;
 		//
 		// Order Line Link (retrieved from current Shipment)
 		shipmentLine.setC_OrderLine_ID(OrderAndLineId.toOrderLineRepoId(orderLineId));
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId.getOrderLineId());
+		if (orderLine != null)
+		{
+			shipmentLine.setC_Project_ID(orderLine.getC_Project_ID());
+		}
 
 		optimisticallySetLineNo(shipmentLine);
 
@@ -494,25 +479,25 @@ import lombok.NonNull;
 
 			if (getQtyTypeToUse().isOnlyUseToDeliver())
 			{
-				final int qtyTUs = computeQtyTUs(piipForShipmentLine);
-				shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUs));
+				final QuantityTU qtyTUs = computeQtyTUs(piipForShipmentLine);
+				shipmentLine.setQtyTU_Override(qtyTUs.toBigDecimal());
 			}
 			else if (isManualPackingMaterial())
 			{
 				// there are no real HUs, so we need to calculate what the tu-qty would be
 				final HUPIItemProductId piipForShipmentLineId = HUPIItemProductId.ofRepoId(piipForShipmentLine.getM_HU_PI_Item_Product_ID());
-				final BigDecimal qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLineId);
+				final QuantityTU qtyTU = piipId2TuQtyFromShipmentSchedule.get(piipForShipmentLineId);
 
 				if (qtyTU != null && !getQtyTypeToUse().isUseBoth())
 				{
-					shipmentLine.setQtyTU_Override(qtyTU);
+					shipmentLine.setQtyTU_Override(qtyTU.toBigDecimal());
 				}
 				else
 				{
 					// there are no real HUs, *and* we don't have any infos from the shipment schedule;
 					// therefore, we make an educated guess, based on the packing instruction
-					final int qtyTUsCalculated = computeQtyTUs(piipForShipmentLine);
-					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUsCalculated));
+					final QuantityTU qtyTUsCalculated = computeQtyTUs(piipForShipmentLine);
+					shipmentLine.setQtyTU_Override(qtyTUsCalculated.toBigDecimal());
 				}
 			}
 		}
@@ -560,17 +545,12 @@ import lombok.NonNull;
 		}
 	}
 
-	@Nullable
-	private int computeQtyTUs(final I_M_HU_PI_Item_Product piipForShipmentLine)
+	private QuantityTU computeQtyTUs(final I_M_HU_PI_Item_Product piipForShipmentLine)
 	{
 		final I_C_UOM productUOM = productBL.getStockUOM(productId);
 		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
-		final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
-		if (qtyTUFromCapacity == null)
-		{
-			throw new AdempiereException("Invalid capacity: " + capacity);
-		}
-		return qtyTUFromCapacity;
+		return capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM, uomConversionBL)
+				.orElseThrow(() -> new AdempiereException("Invalid capacity: " + capacity));
 	}
 
 	/**
@@ -658,9 +638,9 @@ import lombok.NonNull;
 
 	/**
 	 * Sets a online {@link Set} which contains the list of TU Ids which were already assigned.
-	 *
+	 * <p>
 	 * This set will be updated by this builder when TUs are assigned.
-	 *
+	 * <p>
 	 * When this shipment line will try to assign an TU which is on this list, it will set the {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>false</code>.
 	 *
 	 * @param alreadyAssignedTUIds

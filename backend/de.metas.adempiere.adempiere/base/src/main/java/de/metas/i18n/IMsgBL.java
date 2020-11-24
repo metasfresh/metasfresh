@@ -171,8 +171,6 @@ public interface IMsgBL extends ISingletonService
 		return getTranslatableMsgText(booleanValue ? MSG_Yes : MSG_No);
 	}
 
-	ITranslatableString parseTranslatableString(String text);
-
 	/**
 	 * Gets AD_Language/message map
 	 * 

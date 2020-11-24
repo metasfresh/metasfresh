@@ -27,11 +27,13 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 
 import de.metas.calendar.ICalendarDAO;
 import de.metas.calendar.IPeriodBL;
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -142,7 +144,8 @@ public class PMMContractBuilder
 
 	private final AtomicReference<I_C_Flatrate_Term> _flatrateTermRef = new AtomicReference<>(null);
 
-	private PMMContractBuilder(final I_C_Flatrate_Term term)
+	@VisibleForTesting
+	public PMMContractBuilder(final I_C_Flatrate_Term term)
 	{
 		_flatrateTermRef.set(term);
 	}
@@ -227,8 +230,18 @@ public class PMMContractBuilder
 
 		try
 		{
+			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.context(context)
+					.bPartner(bpartner)
+					.conditions(flatrateConditions)
+					.startDate(startDate)
+					.userInCharge(userInCharge)
+					.productAndCategoryId(productAndCategoryId)
+					.completeIt(completeItOnCreate)
+					.build();
+
 			contract = InterfaceWrapperHelper.create(
-					flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, productAndCategoryId, completeItOnCreate),
+					flatrateBL.createTerm(createFlatrateTermRequest),
 					I_C_Flatrate_Term.class);
 			Check.assumeNotNull(contract, "contract not null"); // shall not happen
 		}

@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -35,8 +32,6 @@ import org.slf4j.MDC;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
-// import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
-
 /**
  * Transaction Management. - Create new Transaction by Trx.get(name); - ..transactions.. - commit(); ---- start(); ---- commit(); - close();
  *
@@ -50,98 +45,45 @@ import de.metas.util.Services;
  *         <li>BF [ 2849122 ] PO.AfterSave is not rollback on error - add releaseSavepoint method
  *         https://sourceforge.net/tracker/index.php?func=detail&aid=2849122&group_id=176962&atid=879332#
  */
-public class Trx extends AbstractTrx implements VetoableChangeListener
+public class Trx extends AbstractTrx
 {
-	private static final String MDC_TRX_NAME = "TrxName";
-
-	/**
-	 * Get Transaction
-	 *
-	 * @param trxName trx name
-	 * @param createNew if false, null is returned if not found
-	 * @return Transaction or null
-	 */
-	public static synchronized Trx get(String trxName, boolean createNew)
+	@Deprecated
+	public static Trx get(String trxName, boolean createNew)
 	{
 		final ITrx trx = Services.get(ITrxManager.class).get(trxName, createNew);
 		return (Trx)trx;
-	}	// get
+	}
 
-	/**
-	 * Create unique Transaction Name <b>and instantly create the new trx</b>.
-	 *
-	 * @param prefix optional prefix
-	 * @return unique name
-	 */
+	@Deprecated
 	public static String createTrxName(final String prefix)
 	{
 		return Services.get(ITrxManager.class).createTrxName(prefix);
 	}
 
-	/**
-	 * Create unique Transaction Name
-	 *
-	 * @param prefix optional prefix
-	 *
-	 * @return unique name
-	 */
-	public static String createTrxName(String prefix, final boolean createNew)
-	{
-		return Services.get(ITrxManager.class).createTrxName(prefix, createNew);
-	}	// createTrxName
+	private static final String MDC_TRX_NAME = "TrxName";
+	private static final Logger logger = LogManager.getLogger(Trx.class);
+	private Connection m_connection = null;
 
-	/**
-	 * Create unique Transaction Name
-	 *
-	 * @return unique name
-	 */
-	public static String createTrxName()
-	{
-		final String prefix = null;
-		return Services.get(ITrxManager.class).createTrxName(prefix);
-	}	// createTrxName
-
-	/**************************************************************************
-	 * Transaction Constructor
-	 *
-	 * @param trxName unique name
-	 */
 	public Trx(final ITrxManager trxManager, final String trxName, final boolean autocommit)
 	{
-		this(trxManager, trxName, null, autocommit);
+		this(trxManager, trxName, (Connection)null, autocommit);
 
 		// String threadName = Thread.currentThread().getName(); // for debugging
-	}	// Trx
+	}
 
-	/**
-	 * Transaction Constructor
-	 *
-	 * @param trxName unique name
-	 * @param con optional connection ( ignore for remote transaction )
-	 */
 	private Trx(final ITrxManager trxManager, final String trxName, final Connection con, final boolean autocommit)
 	{
 		super(trxManager, trxName, autocommit);
 
 		MDC.put(MDC_TRX_NAME, trxName == null ? ITrx.TRXNAME_NoneNotNull : trxName); // TODO: maybe log if there already was a trxName??
 		setConnection(con);
-	}	// Trx
+	}
 
-	/** Logger */
-	private static final Logger log = LogManager.getLogger(Trx.class);
-
-	private Connection m_connection = null;
-
-	/**
-	 * Get Connection
-	 *
-	 * @return connection
-	 */
 	public Connection getConnection()
 	{
-		log.trace("Active={}, Connection={}", new Object[] { isActive(), m_connection });
+		logger.trace("Active={}, Connection={}", isActive(), m_connection);
 
-		// metas: tsa: begin: Handle the case when the connection was already closed
+		// Handle the case when the connection was already closed
 		// Example: one case when we can get this is when we start a process with a transaction
 		// and that process is commiting the transaction somewhere
 		if (m_connection != null)
@@ -153,16 +95,16 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			}
 			catch (SQLException e)
 			{
-				log.error("Error checking if the connection is closed. Assume closed - " + e.getLocalizedMessage(), e);
+				logger.warn("Error checking if the connection is closed. Assume closed.", e);
 				isClosed = true;
 			}
 			if (isClosed)
 			{
-				log.info("Connection is closed. Trying to create another connection.");
+				logger.info("Connection is closed. Trying to create another connection.");
 				m_connection = null;
 			}
 		}
-		// metas: tsa: end:
+
 		if (m_connection == null) 	// get new Connection
 		{
 			setConnection(DB.createConnection(isAutoCommit(), Connection.TRANSACTION_READ_COMMITTED));
@@ -197,7 +139,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 
 		m_connection = conn;
-		log.trace("Connection={}", conn);
+		logger.trace("Connection={}", conn);
 
 		//
 		// Configure the connection
@@ -218,7 +160,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		}
 		catch (Exception e)
 		{
-			log.error("connection", e);
+			logger.warn("Failed setting the connection. Ignored.", e);
 		}
 	}	// setConnection
 
@@ -235,7 +177,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	}
 
 	@Override
-	protected boolean rollbackNative(boolean throwException) throws SQLException
+	protected boolean rollbackNative(final boolean throwException) throws SQLException
 	{
 		final String trxName = getTrxName();
 
@@ -246,7 +188,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 		if (connection == null || connection.getAutoCommit())
 		{
-			log.debug("rollbackNative: doing nothing because we have a null or autocommit connection; this={}, connection={}", this, m_connection);
+			logger.debug("rollbackNative: doing nothing because we have a null or autocommit connection; this={}, connection={}", this, m_connection);
 			// => consider this a success because if there was no open transaction then there is nothing to rollback
 			return true;
 		}
@@ -255,27 +197,29 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		try
 		{
 			connection.rollback();
-			log.debug("rollbackNative: OK - {}", trxName);
+			logger.debug("rollbackNative: OK - {}", trxName);
 			return true;
 		}
 		catch (final SQLException e)
 		{
-			log.error("rollbackNative: FAILED - {} (throwException={})", trxName, throwException, e);
 			if (throwException)
 			{
 				throw e;
 			}
-			return false;
+			else
+			{
+				logger.warn("rollbackNative: FAILED but don't throw exception for trxName={}", trxName, e);
+				return false;
+			}
 		}
 	}
 
 	@Override
 	protected boolean rollbackNative(ITrxSavepoint savepoint) throws SQLException
-	// metas: end: 02367
 	{
 		if (m_connection == null || m_connection.getAutoCommit())
 		{
-			log.debug("rollbackNative: doing nothing because we have a null or autocomit connection; this={}, connection={}", this, m_connection);
+			logger.debug("rollbackNative: doing nothing because we have a null or autocomit connection; this={}, connection={}", this, m_connection);
 			return false;
 		}
 
@@ -288,7 +232,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			if (m_connection != null)
 			{
 				m_connection.rollback(jdbcSavepoint);
-				log.debug("**** {}", trxName);
+				logger.debug("rollbackNative: done for trxName={}", trxName);
 				return true;
 			}
 		}
@@ -303,11 +247,11 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	}	// rollback
 
 	@Override
-	protected boolean commitNative(boolean throwException) throws SQLException
+	protected boolean commitNative(final boolean throwException) throws SQLException
 	{
 		if (m_connection == null || m_connection.getAutoCommit())
 		{
-			log.debug("commitNative: doing nothing because we have an autocomit connection; this={}, connection={}", this, m_connection);
+			logger.debug("commitNative: doing nothing because we have an autocomit connection; this={}, connection={}", this, m_connection);
 			return true;
 		}
 
@@ -325,19 +269,22 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			try
 			{
 				connection.commit();
-				log.debug("commitNative: OK - {}", trxName);
+				logger.debug("commitNative: OK - {}", trxName);
 				// m_active = false;
 				return true;
 			}
 			catch (SQLException e)
 			{
-				log.error("commitNative: FAILED - {} (throwException={})", trxName, throwException, e);
 				if (throwException)
 				{
 					// m_active = false;
 					throw e;
 				}
-				return false;
+				else
+				{
+					logger.warn("commitNative: FAILED but don't throw exception for trxName={}", trxName, e);
+					return false;
+				}
 			}
 		}
 		//
@@ -351,11 +298,10 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 	@Override
 	protected synchronized boolean closeNative()
-	// metas: end: 02367
 	{
 		if (m_connection == null)
 		{
-			log.debug("closeNative - m_connection is already null; just return true");
+			logger.debug("closeNative - m_connection is already null; just return true");
 			MDC.remove(MDC_TRX_NAME); // TODO: log if there was no TrxName
 			return true; // nothing to do
 		}
@@ -370,11 +316,11 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 			// Note: c3p0 makes sure that uncommitted changes are rolled by (=>default) or committed
 			// See https://www.mchange.com/projects/c3p0/index.html#autoCommitOnClose
 			m_connection.close();
-			log.debug("closeNative - closed m_connection={}", m_connection);
+			logger.debug("closeNative - closed m_connection={}", m_connection);
 		}
 		catch (SQLException e)
 		{
-			log.error(getTrxName(), e);
+			logger.warn("closeNative - failed closing connection={}, trxName={} but IGNORED.", m_connection, getTrxName());
 		}
 		m_connection = null;
 		MDC.remove(MDC_TRX_NAME); // TODO: log if there was no TrxName
@@ -391,7 +337,7 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 		if (m_connection.getAutoCommit())
 		{
-			log.debug("createTrxSavepointNative: returning null because we have an autocomit connection; this={}, connection={}", this, m_connection);
+			logger.debug("createTrxSavepointNative: returning null because we have an autocomit connection; this={}, connection={}", this, m_connection);
 			return null;
 		}
 
@@ -423,29 +369,16 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 
 		if (m_connection == null)
 		{
-			log.warn("Cannot release savepoint " + savepoint + " because there is no active connection. Ignoring it.");
+			logger.warn("Cannot release savepoint {} because there is no active connection. Ignoring it.", savepoint);
 			return false;
 		}
 		if (m_connection.isClosed())
 		{
-			log.warn("Cannot release savepoint " + savepoint + " because the connection is closed. Ignoring it.");
+			logger.warn("Cannot release savepoint {} because the connection is closed. Ignoring it.", savepoint);
 			return false;
 		}
 
 		m_connection.releaseSavepoint(jdbcSavepoint);
 		return true;
 	}
-
-	/**
-	 * Vetoable Change. Called from CCache to close connections
-	 *
-	 * @param evt event
-	 * @throws PropertyVetoException
-	 */
-	@Override
-	public void vetoableChange(PropertyChangeEvent evt)
-			throws PropertyVetoException
-	{
-		log.debug(evt.toString());
-	}	// vetoableChange
 }	// Trx

@@ -1,27 +1,32 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-
-import org.compiere.model.I_C_UOM;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
-import de.metas.picking.api.PickingConfigRepository;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Optional;
+
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 
 /*
  * #%L
@@ -58,11 +63,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 
-	@Autowired
-	private PickingConfigRepository pickingConfigRepo;
-
-	@Autowired
-	private PickingCandidateService pickingCandidateService;
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
@@ -71,23 +72,19 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedRowIds().isSingleDocumentId())
+		final Optional<ProcessPreconditionsResolution> preconditionsResolution = checkValidSelection();
+
+		if (preconditionsResolution.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return preconditionsResolution.get();
 		}
 
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isPickedHURow())
+		if (isForceDelivery())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Use WEBUI_Picking_ForcePickToExistingHU in case of force delivery!");
 		}
 
-		if (pickingSlotRow.isProcessed())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
-		}
-
-		if (!checkSourceHuPrecondition())
+		if (noSourceHUAvailable())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
 		}
@@ -95,7 +92,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private Quantity getQtyToPack()
+	protected Quantity getQtyToPack()
 	{
 		final I_C_UOM uom = getCurrentShipmentScheuduleUOM();
 		return Quantity.of(qtyCU, uom);
@@ -106,15 +103,9 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
-		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+		validatePickingToHU();
 
-		pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
-				.qtyToPack(getQtyToPack())
-				.packToHuId(pickingSlotRow.getHuId())
-				.pickingSlotId(pickingSlotRow.getPickingSlotId())
-				.shipmentScheduleId(getCurrentShipmentScheduleId())
-				.allowOverDelivery(allowOverDelivery)
-				.build());
+		pickHUsAndPackTo(getSourceHUIds(), getQtyToPack(), pickingSlotRow.getHuId());
 
 		invalidateView();
 		invalidateParentView();
@@ -135,4 +126,57 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		}
 
 	}
+
+	protected void validatePickingToHU()
+	{
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		final I_M_HU hu = handlingUnitsBL.getById(pickingSlotRow.getHuId());
+
+		if (!handlingUnitsBL.isVirtual(hu))
+		{
+			return;
+		}
+
+		final ImmutableSet<ProductId> productIds = handlingUnitsBL.getStorageFactory().streamHUProductStorages(ImmutableList.of(hu))
+				.map(IProductStorage::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final I_M_ShipmentSchedule selectedShipmentSchedule = getCurrentShipmentSchedule();
+
+		if (productIds.size() != 1 || !productIds.contains(ProductId.ofRepoId(selectedShipmentSchedule.getM_Product_ID())))
+		{
+			throw new AdempiereException("VHUs cannot have multiple product storages!")
+					.appendParametersToMessage()
+					.setParameter("HuId", hu.getM_HU_ID());
+		}
+	}
+
+	@NonNull
+	protected Optional<ProcessPreconditionsResolution> checkValidSelection()
+	{
+		if (getParentViewRowIdsSelection() == null)
+		{
+			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNoSelection());
+		}
+
+		if (getSelectedRowIds().isMoreThanOneDocumentId()
+				|| getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId() )
+		{
+			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNotSingleSelection());
+		}
+
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isPickedHURow())
+		{
+			return Optional.of(ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU)));
+		}
+
+		if (pickingSlotRow.isProcessed())
+		{
+			return Optional.of(ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS)));
+		}
+
+		return Optional.empty();
+	}
+
 }

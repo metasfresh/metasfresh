@@ -7,8 +7,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -93,7 +95,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		}
 		displayNameBuilder.append("(").append(piName).append(")");
 
-		if(X_M_HU.HUSTATUS_Shipped.equals(getM_HU().getHUStatus()))
+		if (X_M_HU.HUSTATUS_Shipped.equals(getM_HU().getHUStatus()))
 		{
 			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
@@ -213,12 +215,15 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 			new HUException("Aggregate HU's parent item has no M_HU_PI_Item; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}
-		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
-		if (included_HU_PI == null)
+
+		HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoIdOrNull(parentPIItem.getIncluded_HU_PI_ID());
+		if (includedPIId == null)
 		{
 			new HUException("Aggregate HU's parent item has M_HU_PI_Item without an Included_HU_PI; parent-item=" + hu.getM_HU_Item_Parent()).throwIfDeveloperModeOrLogWarningElse(logger);
 			return "?";
 		}
+
+		final I_M_HU_PI included_HU_PI = Services.get(IHandlingUnitsDAO.class).getPackingInstructionById(includedPIId);
 
 		return included_HU_PI.getName();
 	}

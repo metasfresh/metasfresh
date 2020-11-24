@@ -3,9 +3,11 @@ package de.metas.security.permissions.record_access;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
 
+import de.metas.event.log.EventLogsRepository;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -65,7 +67,7 @@ public class RecordAccessServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new EventLogService());
+		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
 		final PlainEventBusFactory eventBusFactory = new PlainEventBusFactory();
 
 		createAD_Role_Record_Access_Config("MyTable");

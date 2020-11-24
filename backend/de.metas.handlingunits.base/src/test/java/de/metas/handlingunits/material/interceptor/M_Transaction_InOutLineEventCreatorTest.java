@@ -25,8 +25,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -41,7 +41,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import mockit.Expectations;
 
 /*
  * #%L
@@ -82,12 +81,10 @@ public class M_Transaction_InOutLineEventCreatorTest
 	private I_M_Product product;
 	private Timestamp movementDate;
 	private I_M_InOutLine inoutLine;
-	private InOutAndLineId inoutLineId;
 
 	private TransactionDescriptorFactory transactionDescriptorFactory;
-	private M_Transaction_TransactionEventCreator mtransactionEventCreator;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -109,10 +106,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		inoutLine.setM_InOut_ID(inout.getM_InOut_ID());
 		save(inoutLine);
 
-		inoutLineId = InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID());
-
 		transactionDescriptorFactory = new TransactionDescriptorFactory();
-		mtransactionEventCreator = new M_Transaction_TransactionEventCreator();
 	}
 
 	@Test
@@ -120,7 +114,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
-		setupSingleHuDescriptor(SEVEN);
+		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = mtransactionEventCreator
@@ -146,7 +141,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
-		setupSingleHuDescriptor(SEVEN);
+		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = mtransactionEventCreator
@@ -176,7 +172,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
-		setupSingleHuDescriptor(SEVEN);
+		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
 
 		//
 		// invoke the method under test
@@ -194,8 +191,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 
 	}
 
-	private void setupSingleHuDescriptor(
-			@NonNull final BigDecimal huQty)
+	private M_Transaction_HuDescriptor createM_Transaction_HuDescriptor(@NonNull final String huQty)
 	{
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				product.getM_Product_ID(),
@@ -204,18 +200,24 @@ public class M_Transaction_InOutLineEventCreatorTest
 		final HUDescriptor huDescriptor = HUDescriptor.builder()
 				.huId(10)
 				.productDescriptor(productDescriptor)
-				.quantity(huQty)
-				.quantityDelta(huQty)
+				.quantity(new BigDecimal(huQty))
+				.quantityDelta(new BigDecimal(huQty))
 				.build();
 
-		// @formatter:off
-		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
-		new Expectations(M_Transaction_HuDescriptor.class)
-		{{
-			// partial mocking - we only want to mock this one method
-			huDescriptorCreator.createHuDescriptorsForInOutLine(inoutLineId, false);
-			result = ImmutableList.of(huDescriptor);
-		}}; // @formatter:on
+		return new M_Transaction_HuDescriptor()
+		{
+			public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(@NonNull InOutAndLineId inOutLineId, boolean deleted)
+			{
+				return ImmutableList.of(huDescriptor);
+			}
+		};
+//		// @formatter:off
+//		new Expectations(M_Transaction_HuDescriptor.class)
+//		{{
+//			// partial mocking - we only want to mock this one method
+//			huDescriptorCreator.createHuDescriptorsForInOutLine(inoutLineId, false);
+//			result = ImmutableList.of(huDescriptor);
+//		}}; // @formatter:on
 	}
 
 	@Test
@@ -244,7 +246,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
-		setupSingleHuDescriptor(SEVEN);
+		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = mtransactionEventCreator
@@ -271,7 +274,8 @@ public class M_Transaction_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createReceiptTransaction();
 
-		setupSingleHuDescriptor(SEVEN);
+		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final M_Transaction_TransactionEventCreator mtransactionEventCreator = new M_Transaction_TransactionEventCreator(huDescriptionFactory);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = mtransactionEventCreator

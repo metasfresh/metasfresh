@@ -14,7 +14,7 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1917811340L;
+	private static final long serialVersionUID = -1446922636L;
 
     /** Standard Constructor */
     public X_S_ExternalProjectReference (Properties ctx, int S_ExternalProjectReference_ID, String trxName)
@@ -71,16 +71,16 @@ public class X_S_ExternalProjectReference extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
-	/** Set ExternalProjectOwner.
-		@param ExternalProjectOwner ExternalProjectOwner	  */
+	/** Set External project owner.
+		@param ExternalProjectOwner External project owner	  */
 	@Override
 	public void setExternalProjectOwner (java.lang.String ExternalProjectOwner)
 	{
 		set_Value (COLUMNNAME_ExternalProjectOwner, ExternalProjectOwner);
 	}
 
-	/** Get ExternalProjectOwner.
-		@return ExternalProjectOwner	  */
+	/** Get External project owner.
+		@return External project owner	  */
 	@Override
 	public java.lang.String getExternalProjectOwner () 
 	{

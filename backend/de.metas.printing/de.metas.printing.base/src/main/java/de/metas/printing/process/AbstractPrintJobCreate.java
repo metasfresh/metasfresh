@@ -22,15 +22,9 @@ package de.metas.printing.process;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.printing.api.IPrintJobBL;
+import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintJobBL.ContextForAsyncProcessing;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
@@ -40,6 +34,12 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.process.JavaProcess;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Process all {@link I_C_Printing_Queue} items from selection (see {@link #createSelection()}) and creates corresponding {@link I_C_Print_Job}s.
@@ -49,15 +49,14 @@ import de.metas.util.Services;
  */
 public abstract class AbstractPrintJobCreate extends JavaProcess
 {
-
 	private static final Logger logger = LogManager.getLogger(AbstractPrintJobCreate.class);
 
 	private final static String MSG_INVOICE_GENERATE_NO_PRINTING_QUEUE_0P = "CreatePrintJobs_No_Printing_Queue_Selected";
 
-	private final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+	private final PrintOutputFacade printOutputFacade = SpringContextHolder.instance.getBean(PrintOutputFacade.class);
 
 	/**
-	 * Create {@link I_C_Printing_Queue} selection by using {@link #getAD_PInstance_ID()} as current instance
+	 * Create {@link I_C_Printing_Queue} selection by using {@link #getPinstanceId()} as current instance
 	 *
 	 * @return number of records selected
 	 */
@@ -80,11 +79,11 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 						.adPInstanceId(getPinstanceId())
 						.build();
 
-				printJobBL.createPrintJobs(source, printJobContext);
+				printOutputFacade.print(source,printJobContext);
 			}
 			catch (final RuntimeException ex)
 			{
-				Loggables.withLogger(logger, Level.WARN).addLog("Failed creating print job for IPrintingQueueSource={}; exteption={}", source, ex);
+				Loggables.withLogger(logger, Level.WARN).addLog("Failed creating print job for IPrintingQueueSource={}; exception={}", source, ex);
 				throw ex;
 			}
 		}

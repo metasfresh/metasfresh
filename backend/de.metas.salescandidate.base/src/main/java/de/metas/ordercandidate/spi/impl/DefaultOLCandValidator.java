@@ -1,6 +1,6 @@
 package de.metas.ordercandidate.spi.impl;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
@@ -88,7 +89,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	/**
 	 * Dynamic attribute name used to pass on the pricing result obtained by this class to potential listeners like {@link OLCandPricingASIListener}.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
+	 * task http://dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	private static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT = new ModelDynAttributeAccessor<>(DefaultOLCandValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
 
@@ -100,11 +101,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		this.olCandBL = olCandBL;
 	}
 
-	/** @return {@code 10}; this validator shall be executed first */
+	/** @return {@code 20}; this validator shall be executed after OLCandProductFromPIIPvalidator */
 	@Override
 	public int getSeqNo()
 	{
-		return 10;
+		return 20;
 	}
 
 	@Override
@@ -113,7 +114,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		if (firstGreaterThanZero(olCand.getM_Product_Override_ID(), olCand.getM_Product_ID()) <= 0)
 		{
 			final String msg = "@FillMandatory@ @M_Product_ID@";
-			throw new AdempiereException(msgBL.parseTranslatableString(msg));
+			throw new AdempiereException(TranslatableStrings.parse(msg));
 		}
 
 		handleUOMForTUIfRequired(olCand); // get QtyItemCapacity from de.metas.handlingunit if required
@@ -183,7 +184,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 		if (!isValid)
 		{
-			throw new AdempiereException(msgBL.parseTranslatableString(msg.toString()));
+			throw new AdempiereException(TranslatableStrings.parse(msg.toString()));
 		}
 	}
 
@@ -198,21 +199,21 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			if (olCand.getC_Currency_ID() <= 0)
 			{
 				final String msg = "@NotFound@ @C_Currency@";
-				throw new AdempiereException(msgBL.parseTranslatableString(msg));
+				throw new AdempiereException(TranslatableStrings.parse(msg));
 			}
 
 			final IPricingResult pricingResult = getPricingResult(olCand);
 			if (pricingResult == null || pricingResult.getPricingSystemId() == null || pricingResult.getPricingSystemId().isNone())
 			{
 				final String msg = "@NotFound@ @M_PricingSystem_ID@";
-				throw new AdempiereException(msgBL.parseTranslatableString(msg));
+				throw new AdempiereException(TranslatableStrings.parse(msg));
 			}
 			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
 
 			if (pricingResult == null || pricingResult.getTaxCategoryId() == null)
 			{
 				final String msg = "@NotFound@ @C_TaxCategory_ID@";
-				throw new AdempiereException(msgBL.parseTranslatableString(msg));
+				throw new AdempiereException(TranslatableStrings.parse(msg));
 			}
 			else
 			{

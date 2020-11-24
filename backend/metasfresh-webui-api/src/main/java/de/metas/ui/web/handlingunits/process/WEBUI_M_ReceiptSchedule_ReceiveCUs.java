@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Stream;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -231,8 +232,10 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 			return null;
 		}
 
-		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx());
-		final IAllocationRequest allocationRequest = AllocationUtils.createAllocationRequestBuilder()
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(rs.getAD_Client_ID(), rs.getAD_Org_ID());
+		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), clientAndOrgId);
+
+		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContextInitial)
 				.setDateAsToday()
 				.setProduct(loadOutOfTrx(rs.getM_Product_ID(), I_M_Product.class))
@@ -240,8 +243,6 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 				.setFromReferencedModel(rs)
 				.setForceQtyAllocation(true)
 				.create();
-
-		return allocationRequest;
 	}
 
 }

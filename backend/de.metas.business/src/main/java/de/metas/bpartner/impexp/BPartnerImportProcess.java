@@ -31,7 +31,6 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bank.BankRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
@@ -43,6 +42,7 @@ import org.compiere.model.MContactInterest;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_BPartner;
 
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPPrintFormat;
 import de.metas.bpartner.service.BPPrintFormatQuery;

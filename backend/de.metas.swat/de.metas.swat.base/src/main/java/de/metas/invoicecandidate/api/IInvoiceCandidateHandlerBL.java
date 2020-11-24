@@ -43,7 +43,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	/**
 	 * Calls {@link #mkInstance(I_C_ILCandHandler)} with the given handlerRecord and sets the record's SourceTable and Is_AD_User_InCharge_UI_Setting fields.
 	 *
-	 * @param ilCandGenerator
 	 * @param failIfClassNotFound if <code>true</code> and the handler's ClassName value can't be instantiated as a java-class, then throw an AdempiereException.
 	 * @see IInvoiceCandidateHandler
 	 */
@@ -55,9 +54,9 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	IInvoiceCandidateHandler mkInstance(I_C_ILCandHandler creatorRecord);
 
 	/**
-	 * Invokes all available {@link I_C_ILCandGenerator} records to create missing invoice candidates.
+	 * Invokes all available {@link I_C_ILCandHandler} records to create missing invoice candidates.
 	 *
-	 * Each created invoice candidate has a reference to the {@link I_C_ILCandGenerator} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
+	 * Each created invoice candidate has a reference to the {@link I_C_ILCandHandler} from whose {@link IInvoiceCandidateHandler} implementation it has been created.
 	 *
 	 * Note: this method does not return the created candidates because there might be too many of them.
 	 */

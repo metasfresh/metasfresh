@@ -11,7 +11,6 @@ import java.util.StringJoiner;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
@@ -25,11 +24,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.PaySelectionId;
-import de.metas.banking.api.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -39,6 +38,7 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;

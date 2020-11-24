@@ -25,7 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -34,6 +37,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
 
 public class SystemTimeTest
 {
@@ -79,6 +83,24 @@ public class SystemTimeTest
 		assertThat(dayTS.getMinute()).isEqualTo(0);
 		assertThat(dayTS.getSecond()).isEqualTo(0);
 		assertThat(dayTS.getNano()).isEqualTo(0);
+	}
+	
+	@Test
+	public void test_2359()
+	{
+		SystemTime.setTimeSource(
+				FixedTimeSource.ofZonedDateTime(LocalDate.of(2020, Month.JULY, 1)
+						.atTime(LocalTime.of(18, 12))
+						.atZone(ZoneId.of("UTC+2"))));
+		
+		final ZonedDateTime todayEndOfDay = SystemTime.asLocalDate().atTime(LocalTime.MAX).atZone(SystemTime.zoneId());
+		
+		assertThat(todayEndOfDay.getYear()).isEqualTo(2020);
+		assertThat(todayEndOfDay.getMonth()).isEqualTo(Month.JULY);
+		assertThat(todayEndOfDay.getDayOfMonth()).isEqualTo(1);
+		assertThat(todayEndOfDay.getHour()).isEqualTo(23);
+		assertThat(todayEndOfDay.getMinute()).isEqualTo(59);
+		assertThat(todayEndOfDay.getSecond()).isEqualTo(59);
 	}
 
 }

@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.organization.ClientAndOrgId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 
@@ -38,6 +39,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.product.ProductId;
+import org.compiere.util.Env;
 
 /**
  * Test case:
@@ -93,16 +95,16 @@ import de.metas.product.ProductId;
 				.huPI(piTU)
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// TU 1 VHU 1
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu1)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(pTomato).uom(productUOM).qty("30")
 								.endExpectation()
 							.endExpectation()
@@ -117,16 +119,16 @@ import de.metas.product.ProductId;
 				.huPI(piTU)
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// VHU 2
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu2)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(pSalad).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
@@ -141,16 +143,16 @@ import de.metas.product.ProductId;
 				.huPI(piTU)
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// VHU 3
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu3)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(pSalad).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
@@ -165,16 +167,16 @@ import de.metas.product.ProductId;
 				.huPI(piTU)
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// VHU 4
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu4)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(pSalad).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
@@ -189,16 +191,16 @@ import de.metas.product.ProductId;
 				.huPI(piTU)
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// VHU 5
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu5)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(pSalad).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
@@ -213,16 +215,16 @@ import de.metas.product.ProductId;
 				.huPI(piTU)
 				.bPartner(bpartner)
 				.bPartnerLocation(bpartnerLocation)
-				.newHUItemExpectation()
+				.item()
 					.itemType(X_M_HU_PI_Item.ITEMTYPE_Material)
 					.huPIItem(piTU_Item)
 					//
 					// VHU 6
-					.newIncludedVirtualHU()
+					.includedVirtualHU()
 						.capture(vhu6)
 						.huStatus(X_M_HU.HUSTATUS_Picked)
-						.newVirtualHUItemExpectation()
-							.newItemStorageExpectation()
+						.virtualPIItem()
+							.storage()
 								.product(pSalad).uom(productUOM).qty("10")
 								.endExpectation()
 							.endExpectation()
@@ -280,7 +282,7 @@ import de.metas.product.ProductId;
 	 */
 	protected final List<I_M_HU> splitOnLU(final I_M_HU tuHU, final ProductId productId, final BigDecimal qty)
 	{
-		final List<I_M_HU> splitLUs = new HUSplitBuilder(helper.ctx)
+		final List<I_M_HU> splitLUs = new HUSplitBuilder(helper.ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(helper.ctx)))
 				.setHUToSplit(tuHU)
 				.setCUQty(qty)
 				// LU

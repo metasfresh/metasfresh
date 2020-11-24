@@ -95,10 +95,12 @@ public class HU2PackingItemTestCommons
 		{
 			throw new AdempiereException("QtyToLoad shall be multiple of " + COUNT_Tomatoes_Per_IFCO + " else method assertValidShipmentScheduleLUTUAssignments will fail");
 		}
-		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
-		final List<I_M_HU> luHUs = helper.createLUs(huContext, luHuDef, tuHuDef, new BigDecimal(qtyToLoad));
 
-		return luHUs;
+		return helper.newLUs()
+				.loadingUnitPIItem(luHuDef)
+				.tuPIItemProduct(tuHuDef)
+				.totalQtyCU(new BigDecimal(qtyToLoad))
+				.build();
 	}
 
 	/**

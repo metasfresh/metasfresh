@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 

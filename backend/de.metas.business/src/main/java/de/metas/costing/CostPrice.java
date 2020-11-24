@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -75,6 +77,12 @@ public class CostPrice
 	public CostAmount toCostAmount()
 	{
 		return getOwnCostPrice().add(getComponentsCostPrice());
+	}
+
+	@VisibleForTesting
+	public BigDecimal toBigDecimal()
+	{
+		return toCostAmount().getValue();
 	}
 
 	public CostPrice addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)

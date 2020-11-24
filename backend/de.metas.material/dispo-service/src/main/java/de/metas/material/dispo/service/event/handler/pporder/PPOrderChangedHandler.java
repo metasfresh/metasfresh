@@ -197,9 +197,11 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			}
 
 			final ChangedPPOrderLineDescriptor changeDescriptor = ppOrderLineChangesByPPOrderLineId.get(productionDetailToUpdate.getPpOrderLineId());
-
-			final Candidate updatedCandidate = processPPOrderLineChange(candidateToUpdate, ppOrderDocStatus, changeDescriptor);
-			updatedCandidates.add(updatedCandidate);
+			if (changeDescriptor != null) // might be null if the line got deleted
+			{
+				final Candidate updatedCandidate = processPPOrderLineChange(candidateToUpdate, ppOrderDocStatus, changeDescriptor);
+				updatedCandidates.add(updatedCandidate);
+			}
 		}
 
 		return updatedCandidates;

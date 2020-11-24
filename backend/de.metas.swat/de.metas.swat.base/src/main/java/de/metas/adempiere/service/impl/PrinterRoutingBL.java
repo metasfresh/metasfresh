@@ -25,14 +25,20 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
+import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.document.DocTypeId;
+import de.metas.organization.OrgId;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -116,16 +122,18 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 	{
 		final IPrinterRoutingDAO dao = Services.get(IPrinterRoutingDAO.class);
 
-		final List<I_AD_PrinterRouting> rs = dao.fetchPrinterRoutings(ctx,
-				AD_Client_ID,
-				AD_Org_ID,
-				AD_Role_ID,
-				AD_User_ID,
-				C_DocType_ID,
-				AD_Process_ID,
-				AD_Table_ID,
-				printerType,
-				I_AD_PrinterRouting.class);
+		final List<I_AD_PrinterRouting> rs = dao.fetchPrinterRoutings(PrinterRoutingsQuery
+				.builder()
+				.clientId(ClientId.ofRepoIdOrSystem(AD_Client_ID))
+				.orgId(OrgId.ofRepoIdOrAny(AD_Org_ID))
+				.roleId(RoleId.ofRepoIdOrNull(AD_Role_ID))
+				.userId(UserId.ofRepoIdOrNullIfSystem(AD_User_ID))
+				.tableId(AdTableId.ofRepoIdOrNull(AD_Table_ID))
+				.processId(AdProcessId.ofRepoIdOrNull(AD_Process_ID))
+				.docTypeId(DocTypeId.ofRepoIdOrNull(C_DocType_ID))
+				.printerType(printerType)
+				.build());
+
 		for (final I_AD_PrinterRouting route : rs)
 		{
 			final IPrintingService printingService = getPrintingService(route);
@@ -144,37 +152,26 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 	// set it protected to make it testable
 	private IPrintingService getPrintingService(final I_AD_PrinterRouting route)
 	{
-		if (LogManager.isLevelFine())
-		{
-			log.debug("Checking route: " + route);
-		}
+		log.debug("Checking route: {}", route);
 
 		final I_AD_Printer printer = route.getAD_Printer();
-		if (LogManager.isLevelFine())
-		{
-			log.debug("Printer: " + printer.getPrinterName());
-		}
+		log.debug("Printer: {}", printer.getPrinterName());
 
 		final PrintService systemPrintService = getSystemPrintService(printer.getPrinterName());
 		if (systemPrintService == null)
 		{
-			log.info("Printer not found in system: " + printer.getPrinterName());
+			log.info("Printer not found in system: {}", printer.getPrinterName());
 			return null;
 		}
-		if (LogManager.isLevelFine())
-		{
-			log.debug("System Print Service: " + systemPrintService);
-		}
+
+		log.debug("System Print Service: {}", systemPrintService);
 
 		final String printerName = systemPrintService.getName();
 		Boolean isDirectPrint = null;
 		if (isDirectPrint == null && route.getIsDirectPrint() != null)
 		{
 			isDirectPrint = X_AD_PrinterRouting.ISDIRECTPRINT_Yes.equals(route.getIsDirectPrint());
-			if (LogManager.isLevelFine())
-			{
-				log.debug("IsDirectPrint: " + isDirectPrint + " (From: " + route + ")");
-			}
+			log.debug("IsDirectPrint: {} (From: {})", isDirectPrint, route);
 		}
 		if (isDirectPrint == null)
 		{
@@ -182,16 +179,13 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 		}
 
 		final PrintingServiceImpl printingService = new PrintingServiceImpl(printerName, printer.getPrinterType(), isDirectPrint);
+		log.debug("Printing Service: {}", printingService);
 
-		if (LogManager.isLevelFine())
-		{
-			log.debug("Printing Service: " + printingService);
-		}
 		return printingService;
 	}
 
 	@Cached
-	/* package */PrintService getSystemPrintService(final String printerName)
+		/* package */PrintService getSystemPrintService(final String printerName)
 	{
 		final PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
 		if (services == null || services.length == 0)
@@ -243,7 +237,7 @@ public class PrinterRoutingBL implements IPrinterRoutingBL
 			throw new AdempiereException("No default printer found for type " + printerType); // TODO: trl
 		}
 
-		final I_AD_Printer printer = Services.get(IPrinterRoutingDAO.class).findPrinterByName(ctx, printerName);
+		final I_AD_Printer printer = Services.get(IPrinterRoutingDAO.class).findPrinterByName(printerName);
 		final boolean isDirectPrint = isDirectPrint(printer);
 		return new PrintingServiceImpl(printerName, printerType, isDirectPrint);
 	}

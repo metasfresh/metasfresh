@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -53,6 +52,7 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -226,7 +226,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		// NotInvoicedReceipt DR
 		// From Receipt
 		final FactLine dr_NotInvoicedReceipts = fact.createLine()
-				.setAccount(getAccount(Doc.ACCTTYPE_NotInvoicedReceipts, as))
+				.setAccount(getAccount(AccountType.NotInvoicedReceipts, as))
 				.setCurrencyId(costs.getCurrencyId())
 				.setAmtSource(costs.getValue(), null)
 				.setQty(getQty())

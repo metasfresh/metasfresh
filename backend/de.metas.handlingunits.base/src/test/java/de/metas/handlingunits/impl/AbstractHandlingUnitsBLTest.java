@@ -22,16 +22,6 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Transaction;
-import org.compiere.model.X_M_InOut;
-
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -45,6 +35,14 @@ import de.metas.inout.IInOutDAO;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Transaction;
+import org.compiere.model.X_M_InOut;
+
+import java.math.BigDecimal;
 
 public abstract class AbstractHandlingUnitsBLTest extends AbstractHUTest
 {

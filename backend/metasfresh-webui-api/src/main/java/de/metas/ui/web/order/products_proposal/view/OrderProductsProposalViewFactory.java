@@ -69,6 +69,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final CampaignPriceService campaignPriceService;
 
+
 	public OrderProductsProposalViewFactory(
 			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
@@ -161,7 +162,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.bpGroupId(bpGroupId)
 				.pricingSystemId(order.getPricingSystemId())
 				.countryId(order.getCountryId())
-				.currencyId(order.getCurrencyId())
+				.currencyId(order.getCurrency().getId())
 				.date(TimeUtil.asLocalDate(order.getDatePromised()))
 				.build();
 	}

@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.StringElement;
 import org.apache.ecs.xhtml.a;
@@ -18,6 +17,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;

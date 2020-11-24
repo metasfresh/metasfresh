@@ -60,6 +60,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 
 	DeliveryRule getDeliveryRule(I_M_ShipmentSchedule sched);
 
+	/** Consider using {@link IShipmentScheduleBL#getQtyToDeliver(I_M_ShipmentSchedule)} instead. */
 	BigDecimal getQtyToDeliverBD(I_M_ShipmentSchedule sched);
 
 	I_C_BPartner getBPartner(I_M_ShipmentSchedule sched);
@@ -98,9 +99,6 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override.
 	 * If none of them is set, try to fallback to the given {@code sched}'s order's preparation date. If the order has no proparation date, falls back to the order's promised date.
 	 * If the given {@code sched} doesn't have an order, return the current time.,
-	 *
-	 * @param sched
-	 * @return
 	 */
 	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule sched);
 }

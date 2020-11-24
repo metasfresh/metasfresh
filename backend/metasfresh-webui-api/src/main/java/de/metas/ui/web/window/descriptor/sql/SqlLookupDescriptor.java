@@ -1,14 +1,50 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.impl.AccessSqlStringExpression;
+import de.metas.security.permissions.Access;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
+import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.ui.web.window.model.sql.DocActionValidationRule;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -29,50 +65,13 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.DisplayType;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.i18n.TranslatableParameterizedString;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.impl.AccessSqlStringExpression;
-import de.metas.security.permissions.Access;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
-import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
-import de.metas.ui.web.window.model.lookup.GenericSqlLookupDataSourceFetcher;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import de.metas.ui.web.window.model.sql.DocActionValidationRule;
-import de.metas.util.Check;
-import lombok.ToString;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.concurrent.Immutable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 @Immutable
 public final class SqlLookupDescriptor implements ISqlLookupDescriptor
@@ -156,6 +155,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	private final ImmutableSet<String> dependsOnFieldNames;
 	private final ImmutableSet<String> dependsOnTableNames;
 	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
+	@NonNull
+	private final TooltipType tooltipType;
 
 	private SqlLookupDescriptor(final Builder builder)
 	{
@@ -173,6 +174,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		lookupSourceType = builder.getLookupSourceType();
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
 		dependsOnTableNames = ImmutableSet.copyOf(builder.getDependsOnTableNames());
+		tooltipType = builder.getTooltipType();
+
 		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
 	}
 
@@ -292,6 +295,12 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		return dependsOnTableNames;
 	}
 
+	@Override
+	public TooltipType getTooltipType()
+	{
+		return tooltipType;
+	}
+
 	public INamePairPredicate getPostQueryPredicate()
 	{
 		return postQueryPredicate;
@@ -343,6 +352,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private int entityTypeIndex = -1;
 
 		private AdWindowId zoomIntoAdWindowId = null;
+		@NonNull
+		private TooltipType tooltipType = TooltipType.DEFAULT;
 
 		private Builder()
 		{
@@ -472,6 +483,11 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				{
 					entityTypeIndex = MLookupFactory.COLUMNINDEX_EntityType;
 				}
+			}
+
+			if (lookupInfo.getTooltipType() != null)
+			{
+				tooltipType = lookupInfo.getTooltipType();
 			}
 		}
 
@@ -790,6 +806,16 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		public Set<String> getDependsOnTableNames()
 		{
 			return validationRuleEffective.getDependsOnTableNames();
+		}
+
+		public TooltipType getTooltipType()
+		{
+			return tooltipType;
+		}
+
+		public void setTooltipType(@NonNull final TooltipType tooltipType)
+		{
+			this.tooltipType = tooltipType;
 		}
 	}
 }

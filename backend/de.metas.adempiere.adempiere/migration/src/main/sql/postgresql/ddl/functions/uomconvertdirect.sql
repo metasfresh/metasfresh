@@ -29,9 +29,12 @@ begin
 	select MultiplyRate
 	into v_MultiplyRate
 	from C_UOM_Conversion c
-	where c.M_Product_ID=p_M_Product_ID
-	and c.C_UOM_ID = p_C_UOM_From_ID and c.C_UOM_To_ID = p_C_UOM_To_ID
-	and c.IsActive='Y';
+    -- there might be product-independent conversion rates; we allow them, but prefer ones with a product
+	where (c.M_Product_ID IS NULL OR c.M_Product_ID=p_M_Product_ID)
+	    and c.C_UOM_ID = p_C_UOM_From_ID and c.C_UOM_To_ID = p_C_UOM_To_ID
+	    and c.IsActive='Y'
+	order by c.M_Product_ID NULLS LAST
+	;
 	
 	--
 	-- Direct (reversed): p_C_UOM_To_ID -> p_C_UOM_From_ID
@@ -40,9 +43,12 @@ begin
 		select DivideRate
 		into v_MultiplyRate
 		from C_UOM_Conversion c
-		where c.M_Product_ID=p_M_Product_ID
-		and c.C_UOM_ID = p_C_UOM_To_ID and c.C_UOM_To_ID = p_C_UOM_From_ID
-		and c.IsActive='Y';
+        -- there might be product-independent conversion rates; we allow them, but prefer ones with a product
+		where (c.M_Product_ID IS NULL OR c.M_Product_ID=p_M_Product_ID)
+		    and c.C_UOM_ID = p_C_UOM_To_ID and c.C_UOM_To_ID = p_C_UOM_From_ID
+		    and c.IsActive='Y'
+        order by c.M_Product_ID NULLS LAST
+		;
 	end if;
 	
 	if (v_MultiplyRate is null)

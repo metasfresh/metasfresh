@@ -115,7 +115,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 		}
 
 		final boolean isForumDatenaustauschInvoice = tags.hasTagSetToString(
-				InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
+				InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER,
 				ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
 		final boolean isForumDatenaustauschDunning = tags.hasTagSetToString(
 				DunningExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,

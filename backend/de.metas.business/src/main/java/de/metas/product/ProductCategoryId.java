@@ -52,7 +52,7 @@ public class ProductCategoryId implements RepoIdAware
 
 	private ProductCategoryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Product_Category_ID");
 	}
 
 	@Override

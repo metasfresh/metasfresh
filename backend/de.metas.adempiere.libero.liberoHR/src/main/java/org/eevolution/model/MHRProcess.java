@@ -237,11 +237,15 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 		//
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
+		{
 			setDocAction(DOCACTION_Complete);
+		}
 		return IDocument.STATUS_InProgress;
 	}	// prepareIt
 
@@ -258,12 +262,16 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		{
 			String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
+			{
 				return status;
+			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		// User Validation
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -483,7 +491,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	{
 		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.ORDER, 0);
 		if (re == null)
+		{
 			return null;
+		}
 		return re.getPDF(file);
 	}	// createPDF
 
@@ -675,10 +685,6 @@ public class MHRProcess extends X_HR_Process implements IDocument
 				.setOnlyActiveRecords(true)
 				.setOrderBy(MHRAttribute.COLUMNNAME_ValidFrom + " DESC")
 				.first();
-		if (att == null)
-		{
-			throw new AdempiereException(); // TODO ?? is necessary
-		}
 
 		if (MHRConcept.TYPE_RuleEngine.equals(concept.getType()))
 		{
@@ -720,7 +726,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		}
 		else
 		{
-			throw new AdempiereException(); // TODO ?? is necessary
+			throw new AdempiereException("Type not supported: " + concept.getType());
 		}
 
 	}
@@ -964,11 +970,17 @@ public class MHRProcess extends X_HR_Process implements IDocument
 			MHRMovement m = new MHRMovement(Env.getCtx(), 0, get_TrxName());
 			m.setColumnType(c.getColumnType());
 			if (c.getColumnType().equals(MHRConcept.COLUMNTYPE_Amount))
+			{
 				m.setAmount(BigDecimal.valueOf(value));
+			}
 			else if (c.getColumnType().equals(MHRConcept.COLUMNTYPE_Quantity))
+			{
 				m.setQty(BigDecimal.valueOf(value));
+			}
 			else
+			{
 				return;
+			}
 			m.setHR_Process_ID(getHR_Process_ID());
 			m.setHR_Concept_ID(c.getHR_Concept_ID());
 			m.setC_BPartner_ID(m_C_BPartner_ID);
@@ -1075,7 +1087,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	{
 		MHRConcept concept = MHRConcept.forValue(getCtx(), pConcept);
 		if (concept == null)
+		{
 			return 0;
+		}
 
 		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
@@ -1101,15 +1115,21 @@ public class MHRProcess extends X_HR_Process implements IDocument
 				.setOrderBy(MHRAttribute.COLUMNNAME_ValidFrom + " DESC")
 				.first();
 		if (attribute == null)
+		{
 			return 0.0;
+		}
 
 		// if column type is Quantity return quantity
 		if (concept.getColumnType().equals(MHRConcept.COLUMNTYPE_Quantity))
+		{
 			return attribute.getQty().doubleValue();
+		}
 
 		// if column type is Amount return amount
 		if (concept.getColumnType().equals(MHRConcept.COLUMNTYPE_Amount))
+		{
 			return attribute.getAmount().doubleValue();
+		}
 
 		// something else
 		return 0.0; // TODO throw exception ??
@@ -1125,7 +1145,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	{
 		MHRConcept concept = MHRConcept.forValue(getCtx(), conceptValue);
 		if (concept == null)
+		{
 			return null;
+		}
 
 		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
@@ -1148,7 +1170,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 				.setOrderBy(MHRAttribute.COLUMNNAME_ValidFrom + " DESC")
 				.first();
 		if (attribute == null)
+		{
 			return null;
+		}
 
 		return attribute.getServiceDate();
 	} // getAttributeDate
@@ -1217,7 +1241,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		if (cal.get(Calendar.YEAR) == calEnd.get(Calendar.YEAR))
 		{
 			if (negative)
+			{
 				return (calEnd.get(Calendar.MONTH) - cal.get(Calendar.MONTH)) * -1;
+			}
 			return calEnd.get(Calendar.MONTH) - cal.get(Calendar.MONTH);
 		}
 
@@ -1229,7 +1255,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 			counter++;
 		}
 		if (negative)
+		{
 			return counter * -1;
+		}
 		return counter;
 	} // getMonths
 
@@ -1271,7 +1299,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 		MHRConcept concept = MHRConcept.forValue(getCtx(), conceptValue);
 		if (concept == null)
+		{
 			return 0.0;
+		}
 		//
 		// Detect field name
 		final String fieldName;
@@ -1349,7 +1379,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 		MHRConcept concept = MHRConcept.forValue(getCtx(), conceptValue);
 		if (concept == null)
+		{
 			return 0.0;
+		}
 		//
 		// Detect field name
 		final String fieldName;
@@ -1453,7 +1485,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	{
 		MHRConcept concept = MHRConcept.forValue(getCtx(), pConcept);
 		if (concept == null)
+		{
 			return 0;
+		}
 
 		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
@@ -1480,9 +1514,13 @@ public class MHRProcess extends X_HR_Process implements IDocument
 				.first();
 
 		if (attribute != null)
+		{
 			return (Integer)attribute.get_Value("C_Invoice_ID");
+		}
 		else
+		{
 			return 0;
+		}
 
 	} // getAttributeInvoice
 
@@ -1496,7 +1534,9 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	{
 		MHRConcept concept = MHRConcept.forValue(getCtx(), pConcept);
 		if (concept == null)
+		{
 			return 0;
+		}
 
 		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
@@ -1523,9 +1563,13 @@ public class MHRProcess extends X_HR_Process implements IDocument
 				.first();
 
 		if (attribute != null)
+		{
 			return (Integer)attribute.get_Value("C_DocType_ID");
+		}
 		else
+		{
 			return 0;
+		}
 
 	} // getAttributeDocType
 

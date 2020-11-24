@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import com.google.common.base.Joiner;
@@ -41,6 +46,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -313,7 +319,7 @@ public class MLookupFactory
 	 * @param info
 	 * @return SELECT Key, Value, DisplayName, IsActive FROM TableName WHERE KeyColumn=?
 	 */
-	private static final String createQueryDirect(final MLookupInfo info, final boolean useBaseLanguage)
+	private static String createQueryDirect(final MLookupInfo info, final boolean useBaseLanguage)
 	{
 		final String keyColumnFQ = info.getKeyColumnFQ();
 		final String whereClauseSqlPart = info.getWhereClauseSqlPart();
@@ -456,7 +462,7 @@ public class MLookupFactory
 		return sql;
 	}    // getLookup_ListEmbed
 
-	private static final ArrayKey createCacheKey(final ITableRefInfo tableRef)
+	private static ArrayKey createCacheKey(final ITableRefInfo tableRef)
 	{
 		return new ArrayKey(tableRef);
 	}
@@ -526,7 +532,8 @@ public class MLookupFactory
 		return lookupInfo == null ? null : lookupInfo.cloneIt(windowNo);
 	}
 
-	private static final MLookupInfo buildLookupInfo(final int windowNo, final ITableRefInfo tableRefInfo)
+	@Nullable
+	private static MLookupInfo buildLookupInfo(final int windowNo, @NonNull final ITableRefInfo tableRefInfo)
 	{
 
 		final ILookupDisplayInfo lookupDisplayInfo = Services.get(ILookupDAO.class).retrieveLookupDisplayInfo(tableRefInfo);
@@ -768,6 +775,7 @@ public class MLookupFactory
 		lookupInfo.setAutoComplete(tableRefInfo.isAutoComplete());
 		lookupInfo.setTranslated(isTranslated);
 		lookupInfo.setShowInactiveValues(tableRefInfo.isShowInactiveValues());
+		lookupInfo.setTooltipType(tableRefInfo.getTooltipType());
 
 		return lookupInfo;
 	}

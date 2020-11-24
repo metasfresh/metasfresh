@@ -29,11 +29,11 @@ import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 /** SPI to extend for different formats and protocols. */
 public interface InvoiceExportClientFactory
 {
-	public static final String ATTATCHMENT_TAGNAME_EXPORT_PROVIDER = "InvoiceExportProviderId";
+	String ATTACHMENT_TAGNAME_EXPORT_PROVIDER = "InvoiceExportProviderId";
 
-	public static final String ATTATCHMENT_TAGNAME_EXTERNAL_REFERENCE = "ExternalReference";
+	String ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE = "ExternalReference";
 
-	public static final String ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE = "BelongsToExternalReference";
+	String ATTACHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE = "BelongsToExternalReference";
 
 	String getInvoiceExportProviderId();
 

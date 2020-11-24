@@ -75,7 +75,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;

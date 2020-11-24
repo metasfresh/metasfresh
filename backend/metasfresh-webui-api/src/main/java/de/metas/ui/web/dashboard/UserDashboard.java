@@ -15,7 +15,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.util.Check;
 
 /*
@@ -43,7 +44,7 @@ import de.metas.util.Check;
 @Immutable
 public final class UserDashboard
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -55,22 +56,20 @@ public final class UserDashboard
 	private final Map<Integer, UserDashboardItem> _targetIndicatorItemsById;
 	private final Map<Integer, UserDashboardItem> _kpiItemsById;
 
-	private final String websocketEndpoint;
+	private final WebsocketTopicName websocketEndpoint;
 
 	private UserDashboard(final Builder builder)
 	{
-		super();
 		id = builder.id;
 		adClientId = builder.adClientId;
 		_targetIndicatorItemsById = Maps.uniqueIndex(builder.targetIndicatorItems, UserDashboardItem::getId);
 		_kpiItemsById = Maps.uniqueIndex(builder.kpiItems, UserDashboardItem::getId);
 
-		websocketEndpoint = WebSocketConfig.TOPIC_Dashboard + "/" + id;
+		websocketEndpoint = WebsocketTopicName.ofString(WebsocketTopicNames.TOPIC_Dashboard + "/" + id);
 	}
 
 	private UserDashboard()
 	{
-		super();
 		id = -1;
 		adClientId = -1;
 		_targetIndicatorItemsById = ImmutableMap.of();
@@ -140,8 +139,8 @@ public final class UserDashboard
 	{
 		getItemById(dashboardWidgetType, itemId); // will fail if itemId does not exist
 	}
-	
-	public String getWebsocketEndpoint()
+
+	public WebsocketTopicName getWebsocketEndpoint()
 	{
 		return websocketEndpoint;
 	}

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Stream;
@@ -11,7 +12,6 @@ import java.util.stream.Stream;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -25,6 +25,8 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowsOrderBy;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
@@ -234,19 +236,26 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
+	public SqlViewRowsWhereClause getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
 		final DocumentIdsSelection rowIdsEffective = getRows().streamByIdsExcludingIncludedRows(HUEditorRowFilter.onlyRowIds(rowIds))
 				.map(HUEditorRow::getId)
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 
 		final Set<Integer> huIds = huEditorRepo.getRowIdsConverter().convertToRecordIds(rowIdsEffective);
-		// NOTE: accept it even if is empty. In case it's empty, we will return something like M_HU_ID in (-1)
-		// same this is happening for the others HUEditorViewBuffer implementation
+
+		// NOTE: accept it even if is empty.
+		// Same this is happening for the others HUEditorViewBuffer implementation.
 		// see https://github.com/metasfresh/metasfresh-webui-api/issues/764
+		if (huIds.isEmpty())
+		{
+			return SqlViewRowsWhereClause.noRecords();
+		}
 
 		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
-		return sqlKeyColumnNameFK + " IN " + DB.buildSqlList(huIds);
+		return SqlViewRowsWhereClause.builder()
+				.rowsPresentInTable(SqlAndParams.of(sqlKeyColumnNameFK + " IN " + DB.buildSqlList(huIds)))
+				.build();
 	}
 
 	//

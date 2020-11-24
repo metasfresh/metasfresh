@@ -1,36 +1,8 @@
-package de.metas.ui.web.picking.pickingslot;
-
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.ui.web.picking.PickingConstants;
-import de.metas.ui.web.picking.packageable.PackageableRow;
-import de.metas.ui.web.picking.packageable.PackageableView;
-import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewsIndexStorage;
-import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewCloseAction;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.event.ViewChangesCollector;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -47,6 +19,33 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.picking.pickingslot;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.picking.packageable.PackageableRow;
+import de.metas.ui.web.picking.packageable.PackageableView;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewCloseAction;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * {@link PickingSlotView}s index storage.
@@ -124,7 +123,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 		return view;
 	}
 
-	@Override
+	@Nullable@Override
 	public PickingSlotView getByIdOrNull(final ViewId pickingSlotViewId)
 	{
 		final boolean create = true;
@@ -173,12 +172,21 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	@Override
-	public void invalidateView(ViewId pickingSlotViewId)
+	public void invalidateView(final ViewId pickingSlotViewId)
 	{
 		final PickingSlotView pickingSlotView = getOrCreatePickingSlotView(pickingSlotViewId, false/* create */);
 		if (pickingSlotView == null)
 		{
 			return;
+		}
+
+		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
+
+		if (packageableView != null)
+		{
+			//we have to invalidate all the related pickingSlotViews in order to make sure the
+			//changes available in UI when selecting different `packageableRows`
+			packageableView.invalidatePickingSlotViews();
 		}
 
 		pickingSlotView.invalidateAll();

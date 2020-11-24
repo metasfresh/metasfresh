@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -83,7 +84,7 @@ final class HUQueryBuilder_Attributes
 		return new HUQueryBuilder_Attributes(this);
 	}
 
-	private static final HashMap<AttributeId, HUAttributeQueryFilterVO> deepCopy(final HashMap<AttributeId, HUAttributeQueryFilterVO> map)
+	private static HashMap<AttributeId, HUAttributeQueryFilterVO> deepCopy(final HashMap<AttributeId, HUAttributeQueryFilterVO> map)
 	{
 		final HashMap<AttributeId, HUAttributeQueryFilterVO> copy = new HashMap<>(map.size());
 
@@ -200,9 +201,9 @@ final class HUQueryBuilder_Attributes
 		attributeFilterVO.addValue(value);
 	}
 
-	public void addOnlyWithAttribute(final String attributeName, final Object value)
+	public void addOnlyWithAttribute(final AttributeCode attributeCode, final Object value)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName, I_M_Attribute.class);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
 		addOnlyWithAttribute(attribute, value);
 	}
 
@@ -219,23 +220,23 @@ final class HUQueryBuilder_Attributes
 		attributeFilterVO.addValues(values);
 	}
 
-	public void addOnlyWithAttributeInList(final String attributeName, final Object... values)
+	public void addOnlyWithAttributeInList(final AttributeCode attributeCode, final Object... values)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode);
 		final List<Object> valuesAsList = Arrays.asList(values);
 		addOnlyWithAttributeInList(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown, valuesAsList);
 	}
 
-	public void addOnlyWithAttributeNotNull(final String attributeName)
+	public void addOnlyWithAttributeNotNull(final AttributeCode attributeCode)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode);
 		getOrCreateAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
 				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.NotNull);
 	}
 
-	public void addOnlyWithAttributeMissingOrNull(final String attributeName)
+	public void addOnlyWithAttributeMissingOrNull(final AttributeCode attributeCode)
 	{
-		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeName);
+		final I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(attributeCode);
 		getOrCreateAttributeFilterVO(attribute, HUAttributeQueryFilterVO.ATTRIBUTEVALUETYPE_Unknown)
 				.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull);
 	}
@@ -249,12 +250,12 @@ final class HUQueryBuilder_Attributes
 		}
 	}
 
-	private final HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(final I_M_Attribute attribute, final String attributeValueType)
+	private HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(final I_M_Attribute attribute, final String attributeValueType)
 	{
 		return getOrCreateAttributeFilterVO(onlyAttributes, attribute, attributeValueType);
 	}
 
-	private final HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(
+	private HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(
 			@NonNull final Map<AttributeId, HUAttributeQueryFilterVO> targetMap,
 			@NonNull final I_M_Attribute attribute,
 			final String attributeValueType)

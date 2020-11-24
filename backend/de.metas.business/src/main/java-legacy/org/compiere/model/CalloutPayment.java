@@ -25,13 +25,13 @@ import java.sql.Timestamp;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 

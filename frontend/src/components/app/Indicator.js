@@ -1,56 +1,20 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import classnames from 'classnames';
-import { connect } from 'react-redux';
+import React from 'react';
 
 /**
  * @file Indicator is a component that shows the save status to user in form of a save progress
  * line beneath the Header.
  * @module Indicator
- * @extends Component
  */
-class Indicator extends Component {
-  constructor(props) {
-    super(props);
-  }
-
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo We should be using indicator from the state instead of another variable
-   */
-  render() {
-    const { indicator, isDocumentNotSaved } = this.props;
-    return (
-      <div>
-        <div
-          className={classnames('indicator-bar', {
-            'indicator-error': isDocumentNotSaved,
-            [`indicator-${indicator}`]: !isDocumentNotSaved,
-          })}
-        />
-      </div>
-    );
-  }
-}
-
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @todo Write the documentation
- * @param {object} state
- */
-function mapStateToProps(state) {
-  const { windowHandler } = state;
-
-  const { indicator } = windowHandler || {
-    indicator: '',
-  };
-
-  return {
-    indicator,
-  };
-}
+const Indicator = ({ indicator, isDocumentNotSaved }) => (
+  <div>
+    <div
+      className={`indicator-bar ${
+        isDocumentNotSaved ? 'indicator-error' : ''
+      } ${!isDocumentNotSaved ? `indicator-${indicator}` : ''}`}
+    />
+  </div>
+);
 
 /**
  * @typedef {object} Props Component props
@@ -62,4 +26,4 @@ Indicator.propTypes = {
   isDocumentNotSaved: PropTypes.bool,
 };
 
-export default connect(mapStateToProps)(Indicator);
+export default Indicator;

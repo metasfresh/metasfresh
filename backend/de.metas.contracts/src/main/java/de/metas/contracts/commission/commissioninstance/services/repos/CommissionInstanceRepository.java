@@ -1,28 +1,8 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
@@ -36,8 +16,8 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare.SalesCommissionShareBuilder;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
@@ -56,6 +36,23 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -374,6 +371,7 @@ public class CommissionInstanceRepository
 			shareRecordToUse = newInstance(I_C_Commission_Share.class);
 			shareRecordToUse.setC_Commission_Instance_ID(commissionInstanceId.getRepoId());
 			shareRecordToUse.setLevelHierarchy(share.getLevel().toInt());
+			shareRecordToUse.setIsSimulation(share.getContract().isSimulation());
 		}
 		shareRecordToUse.setAD_Org_ID(orgId.getRepoId());
 

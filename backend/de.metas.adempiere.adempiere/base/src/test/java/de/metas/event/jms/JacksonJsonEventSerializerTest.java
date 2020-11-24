@@ -16,7 +16,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import de.metas.event.Event;
-import de.metas.event.EventBusConstants;
+import de.metas.event.EventBusConfig;
 import de.metas.event.remote.JacksonJsonEventSerializer;
 
 /*
@@ -96,7 +96,7 @@ public class JacksonJsonEventSerializerTest
 		System.out.println("json event restored=" + jsonEventRestored);
 
 		Assert.assertEquals(event, eventRestored);
-		Assert.assertEquals("Invalid SenderId", EventBusConstants.getSenderId(), eventRestored.getSenderId());
+		Assert.assertEquals("Invalid SenderId", EventBusConfig.getSenderId(), eventRestored.getSenderId());
 	}
 
 }

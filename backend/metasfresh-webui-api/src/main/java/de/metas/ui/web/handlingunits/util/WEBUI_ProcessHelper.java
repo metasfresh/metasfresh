@@ -34,6 +34,8 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
@@ -55,7 +57,7 @@ public class WEBUI_ProcessHelper
 	 *
 	 * @param ctx
 	 * @param productId
-	 * @param bPartner           optional, may be {@code null}
+	 * @param bPartner optional, may be {@code null}
 	 * @param includeVirtualItem if {@code true}, then the resulting list also contains the "virtual" PiiP.
 	 * @return
 	 */
@@ -103,10 +105,14 @@ public class WEBUI_ProcessHelper
 	 */
 	public String buildHUPIItemString(@NonNull final I_M_HU_PI_Item huPIItem)
 	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final I_M_HU_PI includedPI = handlingUnitsDAO.getIncludedPI(huPIItem);
+
 		final String result = StringUtils.formatMessage("{} ({} x {})",
 				huPIItem.getM_HU_PI_Version().getName(),
 				huPIItem.getQty().setScale(0, RoundingMode.HALF_UP), // it's always integer quantities
-				huPIItem.getIncluded_HU_PI().getName());
+				includedPI.getName());
 
 		return result;
 	}

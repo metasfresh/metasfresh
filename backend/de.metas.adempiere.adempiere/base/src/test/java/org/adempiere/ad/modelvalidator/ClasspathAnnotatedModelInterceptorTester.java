@@ -1,8 +1,10 @@
 package org.adempiere.ad.modelvalidator;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -15,10 +17,10 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.google.common.base.Supplier;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Checks all {@link Interceptor} or {@link Validator} annotated classes if they are correctly defined.
@@ -28,21 +30,30 @@ import de.metas.util.Check;
  */
 public class ClasspathAnnotatedModelInterceptorTester
 {
+	private boolean failOnFirstError;
+
 	private final Set<Class<?>> testedClasses = new HashSet<>();
-
-	/** Classnames to skip while checking (aka. known issues) */
-	private final Set<String> classnamesToSkip = new HashSet<>();
-
-	private final Map<Class<?>, Supplier<?>> instanceProviders = new HashMap<>();
-
 	private int exceptionsCount = 0;
 
 	public ClasspathAnnotatedModelInterceptorTester()
 	{
 	}
 
-	public void test()
+	public void testAll() throws Exception
 	{
+		final List<Class<?>> classes = getAllClasses();
+		for (final Class<?> clazz : classes)
+		{
+			testClass(clazz);
+		}
+
+		assertNoExceptions();
+	}
+
+	public List<Class<?>> getAllClasses()
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
 				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
@@ -57,81 +68,63 @@ public class ClasspathAnnotatedModelInterceptorTester
 				.addAll(classes_withValidator)
 				.addAll(classes_withInterceptor)
 				.build();
-		System.out.println("=> " + classes.size() + " classes to test");
 
-		if(classes.isEmpty())
+		stopwatch.stop();
+		System.out.println("=> " + classes.size() + " classes to test. Took " + stopwatch + " to find them.");
+
+		if (classes.isEmpty())
 		{
 			throw new AdempiereException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
 					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
 		}
 
-		for (final Class<?> clazz : classes)
-		{
-			testClass(clazz);
-		}
-
-		assertNoExceptions();
+		return sortByName(classes);
 	}
 
-	public final ClasspathAnnotatedModelInterceptorTester skipIfClassnameStartsWith(final String classnamePrefix)
+	private static List<Class<?>> sortByName(final Set<Class<?>> classes)
 	{
-		classnamesToSkip.add(classnamePrefix);
-		return this;
+		final ArrayList<Class<?>> result = new ArrayList<>(classes);
+		Collections.sort(result, Comparator.comparing(Class::getName));
+		return result;
 	}
 
-	public final <T> ClasspathAnnotatedModelInterceptorTester useInstanceProvider(final Class<T> clazz, final Supplier<T> instanceProvider)
+	public final void testClass(final Class<?> interceptorClass) throws Exception
 	{
-		Check.assumeNotNull(clazz, "clazz not null");
-		Check.assumeNotNull(instanceProvider, "instanceProvider not null");
-		instanceProviders.put(clazz, instanceProvider);
-		return this;
-	}
-
-	private final void testClass(final Class<?> clazz)
-	{
-		if (skipClass(clazz))
-		{
-			System.out.println("Skipped: " + clazz);
-			return;
-		}
-
 		// Skip if already tested
-		if (!testedClasses.add(clazz))
+		if (!testedClasses.add(interceptorClass))
 		{
 			return;
 		}
 
 		try
 		{
-			new AnnotatedModelInterceptorDescriptorBuilder(clazz)
+			new AnnotatedModelInterceptorDescriptorBuilder(interceptorClass)
 					.build();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
-			logException(ex);
+			handleException(ex);
 		}
 	}
 
-	private final boolean skipClass(final Class<?> clazz)
+	public ClasspathAnnotatedModelInterceptorTester failOnFirstError(final boolean failOnFirstError)
 	{
-		final String classname = clazz.getName();
-
-		for (final String classnameToSkip : classnamesToSkip)
-		{
-			if (classname.startsWith(classnameToSkip))
-			{
-				return true;
-			}
-		}
-
-		return false;
+		this.failOnFirstError = failOnFirstError;
+		return this;
 	}
 
-	private final void logException(final Exception e)
+	private final void handleException(@NonNull final Exception ex) throws Exception
 	{
-		e.printStackTrace();
+		exceptionsCount++;
 
-		this.exceptionsCount++;
+		if (failOnFirstError)
+		{
+			throw ex;
+		}
+		else
+		{
+			ex.printStackTrace();
+		}
 	}
 
 	public void assertNoExceptions()

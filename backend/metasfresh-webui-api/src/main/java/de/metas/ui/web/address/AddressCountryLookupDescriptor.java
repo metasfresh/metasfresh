@@ -27,7 +27,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L

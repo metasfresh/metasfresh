@@ -1,6 +1,26 @@
 package de.metas.handlingunits.picking;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_PickingSlot;
+import de.metas.handlingunits.model.I_M_PickingSlot_HU;
+import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
+import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.picking.api.IPickingSlotBL;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.util.ISingletonService;
+import lombok.Builder.Default;
+import lombok.NonNull;
+
 import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -23,27 +43,6 @@ import java.util.Collection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_PickingSlot;
-import de.metas.handlingunits.model.I_M_PickingSlot_HU;
-import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
-import de.metas.handlingunits.model.I_M_Source_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.picking.api.IPickingSlotBL;
-import de.metas.picking.api.PickingSlotId;
-import de.metas.util.ISingletonService;
-import lombok.Builder.Default;
-import lombok.NonNull;
 
 /**
  * Note: Please use this interface in this module instead of {@link IPickingSlotBL}.
@@ -173,7 +172,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery query);
 
-	List<Integer> retrieveAvailableHUIdsToPick(PickingHUsQuery query);
+	ImmutableList<HuId> retrieveAvailableHUIdsToPick(PickingHUsQuery query);
+
+	ImmutableList<HuId> retrieveAvailableHUIdsToPickForShipmentSchedule(RetrieveAvailableHUIdsToPickRequest retrieveAvailableHUIdsToPickRequest);
 
 	/**
 	 * Search for available fine picking source HUs.<br>

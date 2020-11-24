@@ -22,6 +22,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.async
@@ -57,6 +59,7 @@ final class WorkpackageLoggable implements ILoggable
 	private final UserId userId;
 
 	private final int bufferSize;
+	@Nullable
 	private List<WorkpackageLogEntry> buffer;
 
 	@Builder
@@ -111,31 +114,6 @@ final class WorkpackageLoggable implements ILoggable
 				.adClientId(adClientId)
 				.userId(userId)
 				.build();
-	}
-
-	private static Throwable extractThrowable(final Object[] msgParameters)
-	{
-		if (msgParameters == null || msgParameters.length == 0)
-		{
-			return null;
-		}
-
-		final Object lastEntry = msgParameters[msgParameters.length - 1];
-		return lastEntry instanceof Throwable
-				? (Throwable)lastEntry
-				: null;
-	}
-
-	private static Object[] removeLastElement(final Object[] msgParameters)
-	{
-		if (msgParameters == null || msgParameters.length == 0)
-		{
-			return msgParameters;
-		}
-		final int newLen = msgParameters.length - 1;
-		final Object[] msgParametersNew = new Object[newLen];
-		System.arraycopy(msgParameters, 0, msgParametersNew, 0, newLen);
-		return msgParametersNew;
 	}
 
 	@Override

@@ -35,6 +35,8 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.Assertions;
+import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,6 +55,8 @@ import de.metas.util.Services;
 
 public class PrinterBLTest extends AbstractPrintingTest
 {
+	public static final int CTX_USER_ID = 23;
+
 	private PrinterBL printerBL;
 
 	@Before
@@ -60,18 +64,21 @@ public class PrinterBLTest extends AbstractPrintingTest
 	{
 		AdempiereTestHelper.get().init();
 		printerBL = new PrinterBL();
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, CTX_USER_ID);
 	}
 
 	@Test
 	public void test_createPrinterMatchingIfNoneExists()
 	{
-	final I_AD_Printer_Config config = newInstance(I_AD_Printer_Config.class);
+		final I_AD_Printer_Config config = newInstance(I_AD_Printer_Config.class);
+		config.setAD_User_PrinterMatchingConfig_ID(CTX_USER_ID);
 		save(config);
 
 		final I_AD_Printer printer = newInstance(I_AD_Printer.class);
 		save(printer);
 
 		final I_AD_PrinterHW printerHW = newInstance(I_AD_PrinterHW.class);
+		printerHW.setHostKey("hostKey");
 		save(printerHW);
 
 		final I_AD_Printer_Matching matching = printerBL.createPrinterMatchingIfNoneExists(config, printer, printerHW);
@@ -90,25 +97,31 @@ public class PrinterBLTest extends AbstractPrintingTest
 	@Test
 	public void test_dontCreateAnotherPrintMatchingIfOneExists()
 	{
+		// given
 		final I_AD_Printer_Config config = newInstance(I_AD_Printer_Config.class);
+		config.setAD_User_PrinterMatchingConfig_ID(CTX_USER_ID);
 		save(config);
 
 		final I_AD_Printer printer = newInstance(I_AD_Printer.class);
 		save(printer);
 
 		final I_AD_PrinterHW firstPrinterHW = newInstance(I_AD_PrinterHW.class);
+		firstPrinterHW.setHostKey("hostKey");
 		save(firstPrinterHW);
+		Assert.assertEquals(firstPrinterHW.getUpdatedBy(), CTX_USER_ID); // guard
 
+		// when
 		final I_AD_Printer_Matching matching = printerBL.createPrinterMatchingIfNoneExists(config, printer, firstPrinterHW);
 
+		// then
 		final int printerID = matching.getAD_Printer_ID();
 		final int hwPrinterID = matching.getAD_PrinterHW_ID();
-
 		Assert.assertNotNull("Match not created", matching);
 		Assert.assertTrue(printerID == printer.getAD_Printer_ID());
 		Assert.assertTrue(hwPrinterID == firstPrinterHW.getAD_PrinterHW_ID());
 
 		final I_AD_PrinterHW secondPrinterHW = newInstance(I_AD_PrinterHW.class);
+		secondPrinterHW.setHostKey("otherHostKey");
 		save(secondPrinterHW);
 
 		final I_AD_Printer_Matching secondMatching = printerBL.createPrinterMatchingIfNoneExists(config, printer, secondPrinterHW);

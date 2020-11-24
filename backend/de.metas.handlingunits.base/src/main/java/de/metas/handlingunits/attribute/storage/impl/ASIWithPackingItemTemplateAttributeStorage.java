@@ -46,6 +46,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.uom.UOMType;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -211,7 +212,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public String getQtyUOMTypeOrNull()
+	public UOMType getQtyUOMTypeOrNull()
 	{
 		// ASI attribute storages does not support Qty Storage
 		return null;

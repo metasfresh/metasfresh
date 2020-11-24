@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute.propagation;
 
+import org.adempiere.mm.attributes.AttributeCode;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,20 +15,20 @@ package de.metas.handlingunits.attribute.propagation;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import lombok.NonNull;
 
 public interface IHUAttributePropagationContext extends IAttributeValueContext
 {
@@ -52,8 +54,10 @@ public interface IHUAttributePropagationContext extends IAttributeValueContext
 	 */
 	I_M_Attribute getAttribute();
 
+	AttributeCode getAttributeCode();
+
 	/**
-	 * @return true if <code>attribute</code>'s value shall be changed on this storage too and {@code false} if it shall only be propagated. 
+	 * @return true if <code>attribute</code>'s value shall be changed on this storage too and {@code false} if it shall only be propagated.
 	 */
 	boolean isUpdateStorageValue();
 
@@ -88,17 +92,29 @@ public interface IHUAttributePropagationContext extends IAttributeValueContext
 	 * <ul>
 	 * If all three conditions are met, then the method returns <code>true</code>.
 	 *
-	 * @param attribute the attribute to check against. May or may not be the same as <code>this</code> context's own attribute.
+	 * @param attributeCode the attribute to check against. May or may not be the same as <code>this</code> context's own attribute.
 	 *
 	 * @return true if the given {@link I_M_Attribute} was already updated for this {@link IAttributeStorage}
 	 */
-	boolean isValueUpdatedBefore(I_M_Attribute attribute);
+	boolean isValueUpdatedBefore(AttributeCode attributeCode);
+
+	default boolean isValueUpdatedBefore(final I_M_Attribute attribute)
+	{
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+		return isValueUpdatedBefore(attributeCode);
+	}
 
 	/**
 	 * @param attribute
 	 * @return last propagator used for propagating given attribute
 	 */
-	IHUAttributePropagator getLastPropagatorOrNull(I_M_Attribute attribute);
+	IHUAttributePropagator getLastPropagatorOrNull(@NonNull AttributeCode attributeCode);
+
+	default IHUAttributePropagator getLastPropagatorOrNull(final I_M_Attribute attribute)
+	{
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+		return getLastPropagatorOrNull(attributeCode);
+	}
 
 	/**
 	 * Create a clone of a context with it's <code>parent=this</code>, given propagator, and with <code>updateStorageValue=true</code>
@@ -112,4 +128,5 @@ public interface IHUAttributePropagationContext extends IAttributeValueContext
 	 * @return true if this context (for changing an attribute value) was created from outside of this attribute storages hierarchy (i.e. User Input, Attribute Transfer etc)
 	 */
 	boolean isExternalInput();
+
 }

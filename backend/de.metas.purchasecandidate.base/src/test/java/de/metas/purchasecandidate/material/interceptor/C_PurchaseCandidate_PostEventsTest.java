@@ -7,8 +7,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
@@ -16,8 +17,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -43,16 +42,16 @@ import mockit.Mocked;
 
 public class C_PurchaseCandidate_PostEventsTest
 {
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-	@Mocked
 	private ModelProductDescriptorExtractor productDescriptorFactory;
 	private C_PurchaseCandidate_PostEvents mi;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+		productDescriptorFactory = Mockito.mock(ModelProductDescriptorExtractor.class);
 
 		mi = new C_PurchaseCandidate_PostEvents(postMaterialEventService, productDescriptorFactory);
 	}
@@ -77,11 +76,7 @@ public class C_PurchaseCandidate_PostEventsTest
 
 		final ProductDescriptor p = ProductDescriptor.completeForProductIdAndEmptyAttribute(20);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord); result = p;
-		}}; // @formatter:on
+		Mockito.doReturn(p).when(productDescriptorFactory).createProductDescriptor(purchaseCandidateRecord);
 
 		// invoke the method under test
 		final PurchaseCandidateUpdatedEvent result = mi.createUpdatedEvent(purchaseCandidateRecord);
@@ -89,7 +84,6 @@ public class C_PurchaseCandidate_PostEventsTest
 		assertThat(result).isNotNull();
 		assertThat(result.getPurchaseMaterialDescriptor().getWarehouseId().getRepoId()).isEqualTo(20);
 		assertThat(result.getVendorId()).isEqualTo(30);
-
 	}
 
 }

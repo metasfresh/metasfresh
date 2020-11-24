@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8'?><xsd:schema jaxb:version="2.0" targetNamespace="http://dpd.com/common/service/types/LoginService/2.0" version="1.0" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:tns="http://dpd.com/common/service/types/LoginService/2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+   <xsd:annotation>
+      <xsd:appinfo>
+         <jaxb:schemaBindings>
+            <jaxb:package name="com.dpd.common.ws.loginservice.v2_0.types"/>
+         </jaxb:schemaBindings>
+      </xsd:appinfo>
+   </xsd:annotation>
+
+	<!-- Input parameter of 'getAuth'-->
+	<xsd:element name="getAuth" type="tns:getAuth">
+	   <xsd:annotation>
+	      <xsd:documentation>Input parameter of getAuth.</xsd:documentation>
+	   </xsd:annotation>
+	</xsd:element>
+
+	<!-- Output parameter of 'getAuth' -->
+	<xsd:element name="getAuthResponse" type="tns:getAuthResponse">
+		<xsd:annotation>
+	   	<xsd:documentation>Output parameter of getAuth.</xsd:documentation>
+	  	</xsd:annotation>
+	</xsd:element>
+
+	<!-- Exception thrown of 'getAuth' -->
+	<xsd:element name="LoginException" type="tns:LoginException">
+   	<xsd:annotation>
+      	<xsd:documentation>Thrown if authentication fails.</xsd:documentation>
+     	</xsd:annotation>
+	</xsd:element>
+
+	<!-- Login object -->
+   <xsd:complexType name="Login">
+      <xsd:annotation>
+         <xsd:documentation>Is created when a user logs in and contains its login information.</xsd:documentation>
+      </xsd:annotation>
+      <xsd:sequence>
+
+            <xsd:element maxOccurs="1" minOccurs="1" name="delisId" type="xsd:string">
+            <xsd:annotation>
+               <xsd:documentation>The user's DELIS-Id.</xsd:documentation>
+            </xsd:annotation>
+         </xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="1" name="customerUid" type="xsd:string">
+            <xsd:annotation>
+               <xsd:documentation>The user's customer uid. This is needed for subaccounts, usually this is equal to DELIS-Id</xsd:documentation>
+            </xsd:annotation>
+         </xsd:element>
+
+            <xsd:element maxOccurs="1" minOccurs="1" name="authToken" type="xsd:string">
+            <xsd:annotation>
+               <xsd:documentation>The Authtoken, needed for other web service calls.</xsd:documentation>
+            </xsd:annotation>
+         </xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="1" name="depot" type="xsd:string">
+            <xsd:annotation>
+               <xsd:documentation>The depot, to which the user is assigned.</xsd:documentation>
+            </xsd:annotation>
+         </xsd:element>
+      </xsd:sequence>
+   </xsd:complexType>
+
+
+	<xsd:complexType name="LoginException">
+
+        <xsd:sequence>
+         <xsd:element minOccurs="0" name="additionalData" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>Additional data for an error.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="additionalInfo" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>Additional info for an error in user language.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="errorClass" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>The class which creates the error.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="errorCode" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>The error code.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="fullMessage" type="xsd:string">
+         	<xsd:annotation>
+         	   <xsd:documentation>The complete message text for the error with additional info in user language.
+         		</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="language" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>Language for messages.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="message" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>The complete message text for the error in user language.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="shortMessage" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>The short info text for the error in user language.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="systemFullMessage" type="xsd:string">
+         	<xsd:annotation>
+         	   <xsd:documentation>The complete message text for the error with
+additional info in system language.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="systemMessage" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>The complete message text for the error in system language.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+         <xsd:element minOccurs="0" name="systemShortMessage" type="xsd:string">
+         	<xsd:annotation>
+         		<xsd:documentation>The short info text for the error in system language.</xsd:documentation>
+         	</xsd:annotation></xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+
+	<!-- Type 'getAuth' for authentication -->
+	<xsd:complexType name="getAuth">
+       <xsd:sequence>
+       	<xsd:element maxOccurs="1" minOccurs="1" name="delisId" type="xsd:string">
+       		<xsd:annotation>
+					<xsd:documentation>The DELIS-Id of the user.</xsd:documentation>
+				</xsd:annotation>
+       	</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="password" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>The password of the user.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="1" name="messageLanguage">
+               <xsd:annotation>
+                  <xsd:documentation>The language (Java format) for messages.
+"de_DE" for german messages.
+"en_US" for english messages.
+                  </xsd:documentation>
+               </xsd:annotation>
+               <xsd:simpleType>
+                  <xsd:restriction base="xsd:string">
+                     <xsd:minLength value="5"/>
+                     <xsd:maxLength value="5"/>
+                  </xsd:restriction>
+               </xsd:simpleType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+	<!-- Type for authentification response -->
+	<xsd:complexType name="getAuthResponse">
+		<xsd:sequence>
+			<xsd:element name="return" type="tns:Login"/>
+		</xsd:sequence>
+   </xsd:complexType>
+
+</xsd:schema>

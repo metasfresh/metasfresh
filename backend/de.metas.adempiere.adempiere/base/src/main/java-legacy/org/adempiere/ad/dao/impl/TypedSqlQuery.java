@@ -73,7 +73,7 @@ import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -728,7 +728,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, sql);
+			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
 		{

@@ -33,6 +33,8 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.order.OrderLineId;
@@ -457,5 +459,12 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 	{
 		return currentCostsRepo.getOrCreate(costSegmentAndElement)
 				.getCostPrice();
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 	}
 }

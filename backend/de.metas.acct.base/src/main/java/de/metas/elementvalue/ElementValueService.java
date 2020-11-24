@@ -1,20 +1,8 @@
-package de.metas.elementvalue;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import org.compiere.model.I_C_ElementValue;
-import org.springframework.stereotype.Service;
-
-import lombok.NonNull;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +19,19 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.elementvalue;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import de.metas.acct.api.impl.ElementValueId;
+import org.compiere.model.I_C_ElementValue;
+import org.springframework.stereotype.Service;
+
+import lombok.NonNull;
 
 /** I think the methods of this service could/should rather be a methods of {@link ElementValue}.
  * The flow would be:

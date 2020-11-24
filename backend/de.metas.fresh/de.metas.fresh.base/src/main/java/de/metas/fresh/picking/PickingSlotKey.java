@@ -59,7 +59,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingSlot;
 import de.metas.product.ProductId;
-import de.metas.quantity.CapacityInterface;
+import de.metas.quantity.Capacity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -364,7 +364,7 @@ public class PickingSlotKey extends TerminalKey
 	 *         <li>or <code>null</code> if the capacity information is not available
 	 *         </ul>
 	 */
-	public CapacityInterface getHUTotalCapacity(final ProductId productId, final I_C_UOM uom)
+	public Capacity getHUTotalCapacity(final ProductId productId, final I_C_UOM uom)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = getM_HU_PI_Item_Product();
 		if (piItemProduct == null)

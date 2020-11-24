@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 
@@ -35,10 +36,10 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.api.IQualityNoteDAO;
@@ -134,7 +135,7 @@ import lombok.NonNull;
 
 	public Object getAttributeStorageAggregationKey()
 	{
-		final Map<String, Object> key = new TreeMap<>();
+		final Map<AttributeCode, Object> key = new TreeMap<>();
 
 		final IAttributeStorage attributeStorage = getAttributeStorage();
 		for (final IAttributeValue attributeValue : attributeStorage.getAttributeValues())
@@ -145,7 +146,7 @@ import lombok.NonNull;
 				continue;
 			}
 
-			final String name = attributeValue.getM_Attribute().getValue();
+			final AttributeCode name = attributeValue.getAttributeCode();
 			final Object value = attributeValue.getValue();
 			key.put(name, value);
 		}
@@ -208,8 +209,7 @@ import lombok.NonNull;
 
 	public Optional<Quantity> getWeight()
 	{
-		final IWeightableFactory weightableFactory = Services.get(IWeightableFactory.class); // note that weightableFactory is not a singleton-service, so we only get our instance in this method.
-		final IWeightable weightable = weightableFactory.createWeightableOrNull(getAttributeStorage());
+		final IWeightable weightable = Weightables.wrap(getAttributeStorage());
 		if (weightable == null)
 		{
 			return Optional.empty();

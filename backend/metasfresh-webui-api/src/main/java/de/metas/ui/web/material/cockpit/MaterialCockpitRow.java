@@ -50,7 +50,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.ListUtils;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;

@@ -4,13 +4,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -18,14 +17,15 @@ import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Services;
 import lombok.NonNull;
-import mockit.Expectations;
 
 /*
  * #%L
@@ -51,7 +51,7 @@ import mockit.Expectations;
 
 public class TableRecordIdDAO_Test
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -64,11 +64,11 @@ public class TableRecordIdDAO_Test
 
 		final I_AD_Field referencedField = newInstance(I_AD_Field.class);
 		save(referencedField);
-		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
+		final AdTableId adfieldTableID = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_AD_Field.Table_Name));
 
 		final Mocked_I_AD_ChangeLog referencingChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
 
-		referencingChangeLog.setAD_Table_ID(adfieldTableID);
+		referencingChangeLog.setAD_Table_ID(adfieldTableID.getRepoId());
 		referencingChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
 		save(referencingChangeLog);
 
@@ -85,7 +85,7 @@ public class TableRecordIdDAO_Test
 		final String tableName = "AD_ChangeLog";
 
 		final TableRecordIdDAO instanceUnderTest = setupTableRecordDaoWithDistinctIDs(ImmutableSet.of(adfieldTableID));
-		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.retrieveTableRecordIdReferences(tableName);
+		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.getTableRecordIdReferences(tableName);
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
@@ -101,10 +101,10 @@ public class TableRecordIdDAO_Test
 
 		final I_AD_Field referencedField = newInstance(I_AD_Field.class);
 		save(referencedField);
-		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
+		final AdTableId adfieldTableID = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_AD_Field.Table_Name));
 
 		final Mocked_I_AD_ChangeLog referencingChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
-		referencingChangeLog.setAD_Field_AD_Table_ID(adfieldTableID);
+		referencingChangeLog.setAD_Field_AD_Table_ID(adfieldTableID.getRepoId());
 		referencingChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
 		save(referencingChangeLog);
 
@@ -120,7 +120,7 @@ public class TableRecordIdDAO_Test
 		final String tableName = "AD_ChangeLog";
 
 		final TableRecordIdDAO instanceUnderTest = setupTableRecordDaoWithDistinctIDs(ImmutableSet.of(adfieldTableID));
-		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.retrieveTableRecordIdReferences(tableName);
+		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.getTableRecordIdReferences(tableName);
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
@@ -137,13 +137,13 @@ public class TableRecordIdDAO_Test
 
 		final I_AD_Field referencedField = newInstance(I_AD_Field.class);
 		save(referencedField);
-		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
+		final AdTableId adfieldTableID = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_AD_Field.Table_Name));
 
 		final Mocked_I_AD_ChangeLog originChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
 
-		originChangeLog.setAD_Table_ID(adfieldTableID);
+		originChangeLog.setAD_Table_ID(adfieldTableID.getRepoId());
 		originChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
-		originChangeLog.setAD_Field_AD_Table_ID(adfieldTableID);
+		originChangeLog.setAD_Field_AD_Table_ID(adfieldTableID.getRepoId());
 		originChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
 		save(originChangeLog);
 
@@ -163,7 +163,7 @@ public class TableRecordIdDAO_Test
 		final String tableName = "AD_ChangeLog";
 
 		final TableRecordIdDAO instanceUnderTest = setupTableRecordDaoWithDistinctIDs(ImmutableSet.of(adfieldTableID));
-		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.retrieveTableRecordIdReferences(tableName);
+		final List<TableRecordIdDescriptor> tableRecordReferences = instanceUnderTest.getTableRecordIdReferences(tableName);
 
 		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
 		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Prefix_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
@@ -182,13 +182,13 @@ public class TableRecordIdDAO_Test
 
 		final I_AD_Field referencedField = newInstance(I_AD_Field.class);
 		save(referencedField);
-		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
+		final AdTableId adfieldTableID = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_AD_Field.Table_Name));
 
 		final Mocked_I_AD_ChangeLog referencingChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
 
-		referencingChangeLog.setAD_Table_ID(adfieldTableID);
+		referencingChangeLog.setAD_Table_ID(adfieldTableID.getRepoId());
 		referencingChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
-		referencingChangeLog.setAD_Field_AD_Table_ID(adfieldTableID);
+		referencingChangeLog.setAD_Field_AD_Table_ID(adfieldTableID.getRepoId());
 		referencingChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
 		save(referencingChangeLog);
 
@@ -260,23 +260,23 @@ public class TableRecordIdDAO_Test
 
 	interface Mocked_I_AD_ChangeLog extends I_AD_ChangeLog
 	{
-		public void setAD_Field_AD_Table_ID(int AD_Table_ID);
+		void setAD_Field_AD_Table_ID(int AD_Table_ID);
 
-		public int getAD_Field_AD_Table_ID();
+		int getAD_Field_AD_Table_ID();
 
-		public org.compiere.model.I_AD_Table getAD_Field_AD_Table();
+		org.compiere.model.I_AD_Table getAD_Field_AD_Table();
 
-		public void setAD_Field_AD_Table(org.compiere.model.I_AD_Table AD_Table);
+		void setAD_Field_AD_Table(org.compiere.model.I_AD_Table AD_Table);
 
-		public static final String COLUMNNAME_AD_Field_AD_Table_ID = "AD_Field_AD_Table_ID";
+		String COLUMNNAME_AD_Field_AD_Table_ID = "AD_Field_AD_Table_ID";
 
 		//
-		public void setAD_Field_Record_ID(int AD_Field_Record_ID);
+		void setAD_Field_Record_ID(int AD_Field_Record_ID);
 
-		public int getAD_Field_Record_ID();
+		int getAD_Field_Record_ID();
 
 		/** Column name Record_ID */
-		public static final String COLUMNNAME_AD_Field_Record_ID = "AD_Field_Record_ID";
+		String COLUMNNAME_AD_Field_Record_ID = "AD_Field_Record_ID";
 
 	}
 
@@ -292,19 +292,19 @@ public class TableRecordIdDAO_Test
 
 		final I_AD_Element referencedElement = InterfaceWrapperHelper.newInstance(I_AD_Element.class);
 		InterfaceWrapperHelper.save(referencedElement);
-		final int adElementTableID = adTableDAO.retrieveTableId(I_AD_Element.Table_Name);
+		final AdTableId adElementTableID = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_AD_Element.Table_Name));
 
 		final I_AD_Field referencedField = InterfaceWrapperHelper.newInstance(I_AD_Field.class);
 		InterfaceWrapperHelper.save(referencedField);
-		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
+		final AdTableId adfieldTableID = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_AD_Field.Table_Name));
 
 		final I_AD_ChangeLog referencingChangeLog = InterfaceWrapperHelper.newInstance(I_AD_ChangeLog.class);
-		referencingChangeLog.setAD_Table_ID(adElementTableID);
+		referencingChangeLog.setAD_Table_ID(adElementTableID.getRepoId());
 		referencingChangeLog.setRecord_ID(referencedElement.getAD_Element_ID());
 		InterfaceWrapperHelper.save(referencingChangeLog);
 
 		final I_AD_ChangeLog referencingChangeLog2 = InterfaceWrapperHelper.newInstance(I_AD_ChangeLog.class);
-		referencingChangeLog2.setAD_Table_ID(adfieldTableID);
+		referencingChangeLog2.setAD_Table_ID(adfieldTableID.getRepoId());
 		referencingChangeLog2.setRecord_ID(referencedField.getAD_Field_ID());
 		InterfaceWrapperHelper.save(referencingChangeLog2);
 
@@ -327,30 +327,30 @@ public class TableRecordIdDAO_Test
 		final List<TableRecordIdDescriptor> tableRecordIdReferences = instanceUnderTest.retrieveAllTableRecordIdReferences();
 
 		// assert that there are two records, one about AD_Fleid, one about AD_Element
-		assertThat(tableRecordIdReferences.size(), is(2));
-		assertThat(tableRecordIdReferences.stream().anyMatch(d -> I_AD_Element.Table_Name.equals(d.getTargetTableName())), is(true));
-		assertThat(tableRecordIdReferences.stream().anyMatch(d -> I_AD_Field.Table_Name.equals(d.getTargetTableName())), is(true));
+		assertThat(tableRecordIdReferences).hasSize(2);
+		assertThat(tableRecordIdReferences.stream().anyMatch(d -> I_AD_Element.Table_Name.equals(d.getTargetTableName()))).isTrue();
+		assertThat(tableRecordIdReferences.stream().anyMatch(d -> I_AD_Field.Table_Name.equals(d.getTargetTableName()))).isTrue();
 
 		final TableRecordIdDescriptor adElementReferenceDescriptor = tableRecordIdReferences.stream().filter(d -> I_AD_Element.Table_Name.equals(d.getTargetTableName())).findFirst().get();
-		assertThat(adElementReferenceDescriptor.getOriginTableName(), is(I_AD_ChangeLog.Table_Name));
-		assertThat(adElementReferenceDescriptor.getRecordIdColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
+		assertThat(adElementReferenceDescriptor.getOriginTableName()).isEqualTo(I_AD_ChangeLog.Table_Name);
+		assertThat(adElementReferenceDescriptor.getRecordIdColumnName()).isEqualTo(I_AD_ChangeLog.COLUMNNAME_Record_ID);
 
 		final TableRecordIdDescriptor adFieldReferenceDescriptor = tableRecordIdReferences.stream().filter(d -> I_AD_Field.Table_Name.equals(d.getTargetTableName())).findFirst().get();
-		assertThat(adFieldReferenceDescriptor.getOriginTableName(), is(I_AD_ChangeLog.Table_Name));
-		assertThat(adFieldReferenceDescriptor.getRecordIdColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
+		assertThat(adFieldReferenceDescriptor.getOriginTableName()).isEqualTo(I_AD_ChangeLog.Table_Name);
+		assertThat(adFieldReferenceDescriptor.getRecordIdColumnName()).isEqualTo(I_AD_ChangeLog.COLUMNNAME_Record_ID);
 	}
 
 	private static TableRecordIdDAO setupTableRecordDaoWithDistinctIDs(
-			@NonNull final Set<Integer> retrieveDistinctIdsResult)
+			@NonNull final Set<AdTableId> retrieveDistinctIdsResult)
 	{
-		final TableRecordIdDAO tableRecordIdDAO = new TableRecordIdDAO();
+		final TableRecordIdDAO tableRecordIdDAO = Mockito.spy(new TableRecordIdDAO());
 
-		// @formatter:off
-		new Expectations(TableRecordIdDAO.class)
-		{{
-			tableRecordIdDAO.retrieveDistinctIds((String)any, (String)any);
-			result = retrieveDistinctIdsResult;
-		}};	// @formatter:on
+		Mockito.doReturn(retrieveDistinctIdsResult)
+				.when(tableRecordIdDAO).retrieveDistinctIds(
+						Matchers.anyString(), // tableName
+						Matchers.anyString() // idColumnName
+				);
+
 		return tableRecordIdDAO;
 	}
 }

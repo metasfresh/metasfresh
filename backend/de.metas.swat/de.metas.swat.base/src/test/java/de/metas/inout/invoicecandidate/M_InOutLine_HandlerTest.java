@@ -15,6 +15,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -22,29 +23,20 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.jgoodies.common.base.Objects;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -72,9 +64,6 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class M_InOutLine_HandlerTest
 {
 	private static final BigDecimal TWO = new BigDecimal(2);
@@ -91,7 +80,7 @@ public class M_InOutLine_HandlerTest
 	private PaymentTermId paymentTermB;
 	private M_InOutLine_Handler inOutLineHandlerUnderTest;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -138,6 +127,7 @@ public class M_InOutLine_HandlerTest
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 	}
 
 	private PaymentTermId createPaymentTerm(final String name)

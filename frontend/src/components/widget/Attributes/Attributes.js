@@ -4,8 +4,16 @@ import classnames from 'classnames';
 
 import { getAttributesInstance, getLayout, patchRequest } from '../../../api';
 import { completeRequest } from '../../../actions/GenericActions';
-import { parseToDisplay } from '../../../utils/documentListHelper';
+import {
+  parseToDisplay,
+  formatDateWithZeros,
+} from '../../../utils/documentListHelper';
 import AttributesDropdown from './AttributesDropdown';
+import {
+  DROPUP_START,
+  DROPDOWN_OFFSET_BIG,
+  DROPDOWN_OFFSET_SMALL,
+} from '../../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -118,8 +126,17 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleToggle = (option) => {
-    const { handleBackdropLock } = this.props;
-    const { loading } = this.state;
+    const { handleBackdropLock, updateHeight, rowIndex, isModal } = this.props;
+    const { loading, dropdown } = this.state;
+
+    !dropdown &&
+      !isModal &&
+      rowIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_BIG);
+    dropdown &&
+      !isModal &&
+      rowIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_SMALL);
 
     if (!loading) {
       this.setState(
@@ -161,7 +178,14 @@ export default class Attributes extends Component {
    * @param {*} value
    * @todo Write the documentation
    */
-  handleChange = (field, value) => {
+  handleChange = async (field, value) => {
+    const { dropdown, data } = this.state;
+    // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
+    value =
+      dropdown && data[field].widgetType === 'Date'
+        ? await formatDateWithZeros(value)
+        : value;
+
     this.setState((prevState) => ({
       data: Object.assign({}, prevState.data, {
         [field]: Object.assign({}, prevState.data[field], { value }),
@@ -268,7 +292,9 @@ export default class Attributes extends Component {
       attributeType,
       tabIndex,
       readonly,
+      rowIndex,
     } = this.props;
+
     const { dropdown, data, layout } = this.state;
     const { value } = widgetData;
     const label = value.caption;
@@ -306,6 +332,7 @@ export default class Attributes extends Component {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             attrId={attrId}
+            rowIndex={rowIndex}
           />
         )}
       </div>
@@ -348,4 +375,7 @@ Attributes.propTypes = {
   viewId: PropTypes.any,
   fieldName: PropTypes.any,
   entity: PropTypes.any,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
+  widgetType: PropTypes.string,
 };

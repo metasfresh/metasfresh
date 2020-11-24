@@ -114,9 +114,13 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	// addDescription
 
 	/**
@@ -127,28 +131,42 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	public void setBPartner(I_C_BPartner bp)
 	{
 		if (bp == null)
+		{
 			return;
+		}
 
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 		// Defaults Payment Term
 		int ii = 0;
 		if (isSOTrx())
+		{
 			ii = bp.getC_PaymentTerm_ID();
+		}
 		else
+		{
 			ii = bp.getPO_PaymentTerm_ID();
+		}
 
 		// Default Price List
 		if (isSOTrx())
+		{
 			ii = bp.getM_PriceList_ID();
+		}
 		else
+		{
 			ii = bp.getPO_PriceList_ID();
+		}
 		// Default Delivery/Via Rule
 		String ss = bp.getDeliveryRule();
 		if (ss != null)
+		{
 			setDeliveryRule(ss);
+		}
 		ss = bp.getDeliveryViaRule();
 		if (ss != null)
+		{
 			setDeliveryViaRule(ss);
+		}
 		// Default Invoice/Payment Rule
 		ss = bp.getInvoiceRule();
 
@@ -156,7 +174,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		{
 			ii = Env.getAD_User_ID(getCtx());
 			if (ii != 0)
+			{
 				setSalesRep_ID(ii);
+			}
 		}
 
 		// Set Locations
@@ -227,7 +247,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.DISTRIBUTION_ORDER, getDD_Order_ID());
 		if (re == null)
+		{
 			return null;
+		}
 		return re.getPDF(file);
 	}	// createPDF
 
@@ -242,7 +264,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		StringBuffer whereClauseFinal = new StringBuffer(MDDOrderLine.COLUMNNAME_DD_Order_ID).append("=?");
 		if (!Check.isEmpty(whereClause, true))
+		{
 			whereClauseFinal.append("AND (").append(whereClause).append(")");
+		}
 		//
 		List<MDDOrderLine> list = new Query(getCtx(), MDDOrderLine.Table_Name, whereClauseFinal.toString(), get_TrxName())
 				.setParameters(new Object[] { getDD_Order_ID() })
@@ -277,9 +301,13 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		//
 		String orderClause = "";
 		if (orderBy != null && orderBy.length() > 0)
+		{
 			orderClause += orderBy;
+		}
 		else
+		{
 			orderClause += I_DD_OrderLine.COLUMNNAME_Line;
+		}
 
 		m_lines = getLines(null, orderClause);
 		return m_lines;
@@ -335,14 +363,18 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		// New Record Doc Type - make sure DocType set to 0
 		if (newRecord && getC_DocType_ID() == 0)
+		{
 			setC_DocType_ID(0);
+		}
 
 		// Default Warehouse
 		if (getM_Warehouse_ID() <= 0)
 		{
 			final int warehouseId = Env.getContextAsInt(getCtx(), Env.CTXNAME_M_Warehouse_ID);
 			if (warehouseId > 0)
+			{
 				setM_Warehouse_ID(warehouseId);
+			}
 			else
 			{
 				throw new FillMandatoryException(COLUMNNAME_M_Warehouse_ID);
@@ -352,11 +384,11 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		if (!newRecord && is_ValueChanged(COLUMNNAME_M_Warehouse_ID))
 		{
 			final MDDOrderLine[] lines = getLines(true, null);
-			for (int i = 0; i < lines.length; i++)
+			for (MDDOrderLine line : lines)
 			{
-				if (!lines[i].canChangeWarehouse())
+				if (!line.canChangeWarehouse())
 				{
-					throw new AdempiereException("Cannot change warehouse because of " + lines[i]); // TODO TRL
+					throw new AdempiereException("Cannot change warehouse because of " + line); // TODO TRL
 				}
 			}
 		}
@@ -376,7 +408,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		{
 			final int loggedUserId = Env.getAD_User_ID(getCtx());
 			if (loggedUserId > 0)
+			{
 				setSalesRep_ID(loggedUserId);
+			}
 		}
 
 		return true;
@@ -386,7 +420,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success || newRecord)
+		{
 			return success;
+		}
 
 		// Propagate Description changes
 		if (is_ValueChanged("Description") || is_ValueChanged("POReference"))
@@ -471,7 +507,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
@@ -523,7 +561,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
@@ -571,27 +611,21 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				{
 					// Update Storage
 					final IStorageBL storageBL = Services.get(IStorageBL.class);
-					if (!storageBL.add(getCtx(),
+					storageBL.add(getCtx(),
 							fromWarehouseId.getRepoId(),
 							fromLocatorId,
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), line.getM_AttributeSetInstance_ID(),
-							BigDecimal.ZERO, reserved_ordered, BigDecimal.ZERO, get_TrxName()))
-					{
-						throw new AdempiereException();
-					}
+							BigDecimal.ZERO, reserved_ordered, BigDecimal.ZERO, get_TrxName());
 
-					if (!storageBL.add(getCtx(),
+					storageBL.add(getCtx(),
 							toWarehouseId.getRepoId(),
 							toLocatorId,
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), line.getM_AttributeSetInstance_ID(),
-							BigDecimal.ZERO, BigDecimal.ZERO, reserved_ordered, get_TrxName()))
-					{
-						throw new AdempiereException();
-					}
-
-				}	// stockec
+							BigDecimal.ZERO, BigDecimal.ZERO, reserved_ordered, get_TrxName());
+				}
+				
 				// update line
 				line.setQtyReserved(line.getQtyReserved().add(reserved_ordered));
 				line.saveEx(get_TrxName());
@@ -634,7 +668,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		{
 			String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
+			{
 				return status;
+			}
 		}
 
 		//
@@ -667,7 +703,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		if (valid != null)
 		{
 			if (info.length() > 0)
+			{
 				info.append(" - ");
+			}
 			info.append(valid);
 			m_processMsg = info.toString();
 			return IDocument.STATUS_Invalid;
@@ -713,7 +751,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
@@ -726,7 +766,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// Close Not delivered Qty - SO/PO
 		final MDDOrderLine[] lines = getLines(true, "M_Product_ID");
@@ -749,7 +791,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
@@ -762,12 +806,16 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return voidIt();
 	}	// reverseCorrectionIt
@@ -778,12 +826,16 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return false;
 	}	// reverseAccrualIt
@@ -794,11 +846,15 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setDocAction(DOCACTION_Complete);
 		setProcessed(false);
@@ -812,10 +868,14 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		sb.append(getDocumentNo());
 
 		if (m_lines != null)
+		{
 			sb.append(" (#").append(m_lines.length).append(")");
+		}
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
+		{
 			sb.append(" - ").append(getDescription());
+		}
 		return sb.toString();
 	}	// getSummary
 

@@ -15,7 +15,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1893549512L;
+	private static final long serialVersionUID = 1918761460L;
 
     /** Standard Constructor */
     public X_S_Issue (Properties ctx, int S_Issue_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 			setName (null);
 			setProcessed (false); // N
 			setS_Issue_ID (0);
+			setStatus (null); // New
 			setValue (null);
         } */
     }
@@ -141,6 +142,25 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return ii.intValue();
 	}
 
+	/** Set Delivery platform.
+		@param DeliveryPlatform 
+		Specifies the instances where the issue was deployed.
+	  */
+	@Override
+	public void setDeliveryPlatform (java.lang.String DeliveryPlatform)
+	{
+		set_Value (COLUMNNAME_DeliveryPlatform, DeliveryPlatform);
+	}
+
+	/** Get Delivery platform.
+		@return Specifies the instances where the issue was deployed.
+	  */
+	@Override
+	public java.lang.String getDeliveryPlatform () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DeliveryPlatform);
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -179,12 +199,27 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return ii.intValue();
 	}
 
+	/** Set Effort delivery platform.
+		@param EffortDeliveryPlatform Effort delivery platform	  */
+	@Override
+	public void setEffortDeliveryPlatform (java.lang.String EffortDeliveryPlatform)
+	{
+		throw new IllegalArgumentException ("EffortDeliveryPlatform is virtual column");	}
+
+	/** Get Effort delivery platform.
+		@return Effort delivery platform	  */
+	@Override
+	public java.lang.String getEffortDeliveryPlatform () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EffortDeliveryPlatform);
+	}
+
 	/** Set Geschätzter Aufwand.
 		@param EstimatedEffort Geschätzter Aufwand	  */
 	@Override
 	public void setEstimatedEffort (java.math.BigDecimal EstimatedEffort)
 	{
-		set_Value (COLUMNNAME_EstimatedEffort, EstimatedEffort);
+		set_ValueNoCheck (COLUMNNAME_EstimatedEffort, EstimatedEffort);
 	}
 
 	/** Get Geschätzter Aufwand.
@@ -198,28 +233,12 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return bd;
 	}
 
-	/** Set External ID.
-		@param ExternalId External ID	  */
-	@Override
-	public void setExternalId (java.lang.String ExternalId)
-	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
-	}
-
-	/** Get External ID.
-		@return External ID	  */
-	@Override
-	public java.lang.String getExternalId () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
-	}
-
 	/** Set External issue no.
 		@param ExternalIssueNo 
 		External issue number ( e.g. github issue number )
 	  */
 	@Override
-	public void setExternalIssueNo (java.lang.String ExternalIssueNo)
+	public void setExternalIssueNo (java.math.BigDecimal ExternalIssueNo)
 	{
 		set_Value (COLUMNNAME_ExternalIssueNo, ExternalIssueNo);
 	}
@@ -228,9 +247,218 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		@return External issue number ( e.g. github issue number )
 	  */
 	@Override
-	public java.lang.String getExternalIssueNo () 
+	public java.math.BigDecimal getExternalIssueNo () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalIssueNo);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ExternalIssueNo);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set hasInternalEffortIssue.
+		@param hasInternalEffortIssue hasInternalEffortIssue	  */
+	@Override
+	public void sethasInternalEffortIssue (boolean hasInternalEffortIssue)
+	{
+		throw new IllegalArgumentException ("hasInternalEffortIssue is virtual column");	}
+
+	/** Get hasInternalEffortIssue.
+		@return hasInternalEffortIssue	  */
+	@Override
+	public boolean ishasInternalEffortIssue () 
+	{
+		Object oo = get_Value(COLUMNNAME_hasInternalEffortIssue);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Internal assignee.
+		@param Internal_Assignee_ID Internal assignee	  */
+	@Override
+	public void setInternal_Assignee_ID (int Internal_Assignee_ID)
+	{
+		throw new IllegalArgumentException ("Internal_Assignee_ID is virtual column");	}
+
+	/** Get Internal assignee.
+		@return Internal assignee	  */
+	@Override
+	public int getInternal_Assignee_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Internal_Assignee_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Internal budget.
+		@param Internal_Budgeted Internal budget	  */
+	@Override
+	public void setInternal_Budgeted (java.math.BigDecimal Internal_Budgeted)
+	{
+		throw new IllegalArgumentException ("Internal_Budgeted is virtual column");	}
+
+	/** Get Internal budget.
+		@return Internal budget	  */
+	@Override
+	public java.math.BigDecimal getInternal_Budgeted () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Internal_Budgeted);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Internal due date.
+		@param Internal_DueDate Internal due date	  */
+	@Override
+	public void setInternal_DueDate (java.sql.Timestamp Internal_DueDate)
+	{
+		throw new IllegalArgumentException ("Internal_DueDate is virtual column");	}
+
+	/** Get Internal due date.
+		@return Internal due date	  */
+	@Override
+	public java.sql.Timestamp getInternal_DueDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Internal_DueDate);
+	}
+
+	@Override
+	public de.metas.serviceprovider.model.I_S_Issue getInternal_Effort_S_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_Internal_Effort_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class);
+	}
+
+	@Override
+	public void setInternal_Effort_S_Issue(de.metas.serviceprovider.model.I_S_Issue Internal_Effort_S_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_Internal_Effort_S_Issue_ID, de.metas.serviceprovider.model.I_S_Issue.class, Internal_Effort_S_Issue);
+	}
+
+	/** Set Internal effort issue.
+		@param Internal_Effort_S_Issue_ID Internal effort issue	  */
+	@Override
+	public void setInternal_Effort_S_Issue_ID (int Internal_Effort_S_Issue_ID)
+	{
+		throw new IllegalArgumentException ("Internal_Effort_S_Issue_ID is virtual column");	}
+
+	/** Get Internal effort issue.
+		@return Internal effort issue	  */
+	@Override
+	public int getInternal_Effort_S_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Internal_Effort_S_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Internal estimated effort.
+		@param Internal_EstimatedEffort Internal estimated effort	  */
+	@Override
+	public void setInternal_EstimatedEffort (java.math.BigDecimal Internal_EstimatedEffort)
+	{
+		throw new IllegalArgumentException ("Internal_EstimatedEffort is virtual column");	}
+
+	/** Get Internal estimated effort.
+		@return Internal estimated effort	  */
+	@Override
+	public java.math.BigDecimal getInternal_EstimatedEffort () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Internal_EstimatedEffort);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Internal planned UAT date.
+		@param Internal_PlannedUATDate Internal planned UAT date	  */
+	@Override
+	public void setInternal_PlannedUATDate (java.sql.Timestamp Internal_PlannedUATDate)
+	{
+		throw new IllegalArgumentException ("Internal_PlannedUATDate is virtual column");	}
+
+	/** Get Internal planned UAT date.
+		@return Internal planned UAT date	  */
+	@Override
+	public java.sql.Timestamp getInternal_PlannedUATDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_Internal_PlannedUATDate);
+	}
+
+	/** Set Internal rough estimation.
+		@param Internal_RoughEstimation Internal rough estimation	  */
+	@Override
+	public void setInternal_RoughEstimation (java.math.BigDecimal Internal_RoughEstimation)
+	{
+		throw new IllegalArgumentException ("Internal_RoughEstimation is virtual column");	}
+
+	/** Get Internal rough estimation.
+		@return Internal rough estimation	  */
+	@Override
+	public java.math.BigDecimal getInternal_RoughEstimation () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Internal_RoughEstimation);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	@Override
+	public de.metas.serviceprovider.model.I_S_Milestone getInternal_S_Milestone()
+	{
+		return get_ValueAsPO(COLUMNNAME_Internal_S_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class);
+	}
+
+	@Override
+	public void setInternal_S_Milestone(de.metas.serviceprovider.model.I_S_Milestone Internal_S_Milestone)
+	{
+		set_ValueFromPO(COLUMNNAME_Internal_S_Milestone_ID, de.metas.serviceprovider.model.I_S_Milestone.class, Internal_S_Milestone);
+	}
+
+	/** Set Internal milestone.
+		@param Internal_S_Milestone_ID Internal milestone	  */
+	@Override
+	public void setInternal_S_Milestone_ID (int Internal_S_Milestone_ID)
+	{
+		throw new IllegalArgumentException ("Internal_S_Milestone_ID is virtual column");	}
+
+	/** Get Internal milestone.
+		@return Internal milestone	  */
+	@Override
+	public int getInternal_S_Milestone_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Internal_S_Milestone_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Internal-Approved.
+		@param InternalApproved Internal-Approved	  */
+	@Override
+	public void setInternalApproved (boolean InternalApproved)
+	{
+		throw new IllegalArgumentException ("InternalApproved is virtual column");	}
+
+	/** Get Internal-Approved.
+		@return Internal-Approved	  */
+	@Override
+	public boolean isInternalApproved () 
+	{
+		Object oo = get_Value(COLUMNNAME_InternalApproved);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Invoiceable effort.
@@ -250,6 +478,22 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Invoiced date.
+		@param InvoicedDate Invoiced date	  */
+	@Override
+	public void setInvoicedDate (java.sql.Timestamp InvoicedDate)
+	{
+		set_Value (COLUMNNAME_InvoicedDate, InvoicedDate);
+	}
+
+	/** Get Invoiced date.
+		@return Invoiced date	  */
+	@Override
+	public java.sql.Timestamp getInvoicedDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_InvoicedDate);
 	}
 
 	/** Set Freigegeben.
@@ -370,7 +614,8 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	@Override
 	public void setLatestActivity (java.sql.Timestamp LatestActivity)
 	{
-		throw new IllegalArgumentException ("LatestActivity is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_LatestActivity, LatestActivity);
+	}
 
 	/** Get Latest activity.
 		@return Latest activity	  */
@@ -378,6 +623,22 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public java.sql.Timestamp getLatestActivity () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_LatestActivity);
+	}
+
+	/** Set Latest activity on sub issues.
+		@param LatestActivityOnSubIssues Latest activity on sub issues	  */
+	@Override
+	public void setLatestActivityOnSubIssues (java.sql.Timestamp LatestActivityOnSubIssues)
+	{
+		set_Value (COLUMNNAME_LatestActivityOnSubIssues, LatestActivityOnSubIssues);
+	}
+
+	/** Get Latest activity on sub issues.
+		@return Latest activity on sub issues	  */
+	@Override
+	public java.sql.Timestamp getLatestActivityOnSubIssues () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LatestActivityOnSubIssues);
 	}
 
 	/** Set Fälligkeitsdatum.
@@ -472,6 +733,40 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		return bd;
 	}
 
+	@Override
+	public de.metas.serviceprovider.model.I_S_ExternalProjectReference getS_ExternalProjectReference()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_ExternalProjectReference_ID, de.metas.serviceprovider.model.I_S_ExternalProjectReference.class);
+	}
+
+	@Override
+	public void setS_ExternalProjectReference(de.metas.serviceprovider.model.I_S_ExternalProjectReference S_ExternalProjectReference)
+	{
+		set_ValueFromPO(COLUMNNAME_S_ExternalProjectReference_ID, de.metas.serviceprovider.model.I_S_ExternalProjectReference.class, S_ExternalProjectReference);
+	}
+
+	/** Set External project reference ID.
+		@param S_ExternalProjectReference_ID External project reference ID	  */
+	@Override
+	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID)
+	{
+		if (S_ExternalProjectReference_ID < 1) 
+			set_Value (COLUMNNAME_S_ExternalProjectReference_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_ExternalProjectReference_ID, Integer.valueOf(S_ExternalProjectReference_ID));
+	}
+
+	/** Get External project reference ID.
+		@return External project reference ID	  */
+	@Override
+	public int getS_ExternalProjectReference_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_ExternalProjectReference_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Issue.
 		@param S_Issue_ID Issue	  */
 	@Override
@@ -560,6 +855,40 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * Status AD_Reference_ID=541142
+	 * Reference name: S_Issue_Status
+	 */
+	public static final int STATUS_AD_Reference_ID=541142;
+	/** In progress = InProgress */
+	public static final String STATUS_InProgress = "InProgress";
+	/** Closed = Closed */
+	public static final String STATUS_Closed = "Closed";
+	/** Pending = Pending */
+	public static final String STATUS_Pending = "Pending";
+	/** Delivered = Delivered */
+	public static final String STATUS_Delivered = "Delivered";
+	/** New = New */
+	public static final String STATUS_New = "New";
+	/** Invoiced = Invoiced */
+	public static final String STATUS_Invoiced = "Invoiced";
+	/** Set Status.
+		@param Status Status	  */
+	@Override
+	public void setStatus (java.lang.String Status)
+	{
+
+		set_Value (COLUMNNAME_Status, Status);
+	}
+
+	/** Get Status.
+		@return Status	  */
+	@Override
+	public java.lang.String getStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Status);
 	}
 
 	/** Set Suchschlüssel.

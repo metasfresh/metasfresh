@@ -1,8 +1,8 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-
 import ch.qos.logback.core.util.AggregationType;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -32,6 +32,7 @@ public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 	void setM_HU_ID(int M_HU_ID);
 	int getM_HU_ID();
+	I_M_HU getM_HU();
 	// @formatter:on
 
 	// @formatter:off

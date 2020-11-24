@@ -3,33 +3,7 @@
  */
 package de.metas.tourplanning.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.calendar.ICalendarBL;
@@ -49,6 +23,31 @@ import de.metas.util.time.generator.Frequency;
 import de.metas.util.time.generator.FrequencyType;
 import de.metas.util.time.generator.IDateShifter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
  * @author cg
@@ -141,6 +140,7 @@ public class TourDAO implements ITourDAO
 		// NOTE: we assume they are already ordered by ValidFrom
 		// NOTE2: we are not restricting the dateFrom because we want to also get the tour version which is currently active at the beginning of our interval
 		final List<I_M_TourVersion> tourVersions = retrieveTourVersions(tour, null, TimeUtil.asTimestamp(dateTo));
+
 		if (tourVersions.isEmpty())
 		{
 			return Collections.emptyList();
@@ -286,6 +286,48 @@ public class TourDAO implements ITourDAO
 				.list();
 
 		return tourVersionLines;
+	}
+
+	@Nullable
+	@Override
+	public TourVersionRange generateTourVersionRange(final I_M_TourVersion tourVersion, final LocalDate validFrom, final LocalDate validTo)
+	{
+		final LocalDate actualValidFrom = calculateTourVersionRangeActualValidFrom(tourVersion, validFrom);
+		final LocalDate actualValidTo = calculateTourVersionRangeActualValidTo(tourVersion, validTo);
+
+		if (actualValidFrom.compareTo(actualValidTo) > 0)
+		{
+			return null;
+		}
+
+		return createTourVersionRange(tourVersion, actualValidFrom, actualValidTo);
+	}
+
+	private LocalDate calculateTourVersionRangeActualValidFrom(final I_M_TourVersion tourVersion, final LocalDate validFrom)
+	{
+		return tourVersion.getValidFrom().toLocalDateTime().toLocalDate()
+				.compareTo(validFrom) > 0 ? tourVersion.getValidFrom().toLocalDateTime().toLocalDate() : validFrom;
+	}
+
+	private LocalDate calculateTourVersionRangeActualValidTo(final I_M_TourVersion tourVersion, final LocalDate validTo)
+	{
+		LocalDate actualValidTo = validTo;
+
+		final List<I_M_TourVersion> tourVersionsList = retrieveTourVersions(tourVersion.getM_Tour());
+		tourVersionsList.remove(tourVersion);
+
+		for (I_M_TourVersion m_tourVersion : tourVersionsList)
+		{
+			if (m_tourVersion.getValidFrom().compareTo(tourVersion.getValidFrom()) > 0)
+			{
+				if (m_tourVersion.getValidFrom().toLocalDateTime().toLocalDate().compareTo(actualValidTo) <= 0)
+				{
+					actualValidTo = m_tourVersion.getValidFrom().toLocalDateTime().toLocalDate();
+				}
+			}
+		}
+
+		return actualValidTo;
 	}
 
 	private static TourVersionRange createTourVersionRange(final I_M_TourVersion tourVersion, final LocalDate validFrom, final LocalDate validTo)

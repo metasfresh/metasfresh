@@ -51,8 +51,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.processing.model.MADProcessablePO;
-import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere.RunMode;
@@ -73,6 +71,11 @@ import com.google.common.collect.Multimaps;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.IImportProcess;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.security.IUserLoginListener;
@@ -690,12 +693,29 @@ public class ModelValidationEngine implements IModelValidationEngine
 		this.removeModelChange(tableName, modelValidator);
 	}
 
-	public void fireModelChange(final PO po, final ModelChangeType changeType)
+	public void fireModelChange(@NonNull final PO po, final ModelChangeType changeType)
+	{
+		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+		final String tableName = po.get_TableName();
+		final String changeTypeStr = changeType.toString();
+
+		performanceMonitoringService.monitorSpan(
+				() -> fireModelChange0(po, changeType),
+				SpanMetadata
+						.builder()
+						.name(changeTypeStr + " " + tableName)
+						.type(Type.MODEL_INTERCEPTOR.getCode())
+						.subType(SubType.MODEL_CHANGE.getCode())
+						.action(changeTypeStr)
+						.label("tableName", tableName)
+						.label("recordId", Integer.toString(po.get_ID()))
+						.build());
+	}
+
+	public void fireModelChange0(@Nullable final PO po, @NonNull final ModelChangeType changeType)
 	{
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType.toString()))
 		{
-			final Stopwatch stopwatch = Stopwatch.createStarted();
-
 			if (po == null || m_modelChangeListeners.isEmpty())
 			{
 				return;
@@ -761,7 +781,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			final String trxName = po.get_TrxName();
 			executeInTrx(trxName, changeType, () -> fireModelChange0(po, changeType, interceptorsSystem, interceptorsClient, scriptValidators));
 
-			logger.trace("Executed in {}: ALL {} {} interceptors for {}", stopwatch, countInterceptors, changeType, po);
+			logger.debug("Executed: ALL {} interceptors for {}", changeType, po);
 		}
 	}	// fireModelChange
 
@@ -923,68 +943,40 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void invokeModelChangeMethod(
 			@NonNull final PO po,
 			@NonNull final ModelChangeType changeType,
 			@NonNull final ModelValidator validator)
 	{
-		if (!appliesFor(validator, po.getAD_Client_ID()))
+		try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", validator.toString()))
 		{
-			logger.trace("Skip {} ({}) for {}", validator, changeType, po);
-			return;
-		}
-
-		if (changeType == ModelChangeType.SUBSEQUENT)
-		{
-			handleTypeSubsequent(po, validator);
-		}
-		else
-		{
-			final Stopwatch stopwatch = Stopwatch.createStarted();
-			try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", validator.toString()))
+			if (!appliesFor(validator, po.getAD_Client_ID()))
 			{
-
-				// the default cause
-				final String error = validator.modelChange(po, changeType.toInt());
-				if (!Check.isEmpty(error))
-				{
-					throw new AdempiereException(error);
-				}
-
-				logger.trace("Executed in {}: {} ({}) for {}", stopwatch, validator, changeType, po);
+				logger.debug("Skip {} ({}) for {}", validator, changeType, po);
+				return;
 			}
-			catch (final Exception ex)
-			{
-				logger.trace("Failed executing in {}: {} ({}) for {}", stopwatch, validator, changeType, po, ex);
-				throw AdempiereException.wrapIfNeeded(ex);
-			}
-		}
-	}
 
-	private void handleTypeSubsequent(
-			@NonNull final PO po,
-			@NonNull final ModelValidator validator)
-	{
-		try
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+				try
 		{
-			if (m_modelChangeSubsequent.containsKey(validator))
-			{
-				// create a queue record
-				final MADProcessablePO processablePO = MADProcessablePO.createOrRetrieveFor(po, validator);
 
-				if (m_modelChangeSubsequent.get(validator))
-				{
-					// process 'po' right now. If a problem occurs, record it in 'processablePO'
-					Services.get(IProcessingService.class).process(processablePO, null);
-				}
+			// the default cause
+			final String error = validator.modelChange(po, changeType.toInt());
+			if (!Check.isEmpty(error))
+			{
+				throw new AdempiereException(error);
 			}
+
+					logger.debug("Executed in {}: {} ({}) for {}", stopwatch, validator, changeType, po);
 		}
 		catch (final Exception ex)
 		{
+					logger.debug("Failed executing in {}: {} ({}) for {}", stopwatch, validator, changeType, po, ex);
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
+
+				}
 
 	/**************************************************************************
 	 * Add Document Validation Listener
@@ -1068,80 +1060,99 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return fireDocValidate(model, docTiming);
 	}
 
-	public String fireDocValidate(final Object model, final DocTimingType docTiming)
+	public String fireDocValidate(@NonNull final Object model, @NonNull final DocTimingType docTiming)
 	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
 		{
+			final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
-			if (model == null)
-			{
-				return null; // avoid InterfaceWrapperHelper from throwing an exception under any circumstances
-			}
+			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+			final int recordId = InterfaceWrapperHelper.getId(model);
+			final String docTimingStr = docTiming.toString();
 
-			final PO po = InterfaceWrapperHelper.getPO(model);
-			if (po == null || m_docValidateListeners.isEmpty())
-			{
-				return null;
-			}
-			//
-			// Make sure model if valid before firing the listeners
-			assertModelValidBeforeFiringEvent(po, docTiming); // isDocumentValidateEvent=true
+			return perfMonService.monitorSpan(
+					() -> fireDocValidate0(model, docTiming),
+					SpanMetadata
+							.builder()
+							.name(docTimingStr + " " + tableName)
+							.type(Type.MODEL_INTERCEPTOR.getCode())
+							.subType(SubType.DOC_VALIDATE.getCode())
+							.action(docTimingStr)
+							.label("tableName", tableName)
+							.label("recordId", Integer.toString(recordId))
+							.build());
+		}
+	}
 
-			int countInterceptors = 0;
+	private String fireDocValidate0(final Object model, final DocTimingType docTiming)
+	{
+		if (model == null)
+		{
+			return null; // avoid InterfaceWrapperHelper from throwing an exception under any circumstances
+		}
 
-			//
-			// Retrieve system level model interceptors
-			final String propertyNameSystem = getPropertyName(po.get_TableName());
-			final List<ModelValidator> interceptorsSystem = m_docValidateListeners.get(propertyNameSystem);
-			final int countSystemInterceptors = interceptorsSystem != null ? interceptorsSystem.size() : 0;
-			countInterceptors += countSystemInterceptors;
-
-			//
-			// Retrieve client level model interceptors
-			final String propertyNameClient = getPropertyName(po.get_TableName(), po.getAD_Client_ID());
-			final List<ModelValidator> interceptorsClient = m_docValidateListeners.get(propertyNameClient);
-			final int countClientInterceptors = interceptorsClient != null ? interceptorsClient.size() : 0;
-			countInterceptors += countClientInterceptors;
-
-			//
-			// Retrieve script interceptors
-			//
-			// now process the script model validator for this event
-			// metas: tsa: 02380: First check if changeType is available in tableEventValidators
-			// FIXME: refactor it and have it as a regular model validator; then remove it from here
-			final List<I_AD_Table_ScriptValidator> scriptValidators;
-			if (ModelValidator.documentEventValidators.containsKey(docTiming))
-			{
-				scriptValidators = Services.get(IADTableScriptValidatorDAO.class).retrieveTableScriptValidators(
-						po.getCtx(),
-						po.get_Table_ID(),
-						ModelValidator.documentEventValidators.get(docTiming));
-				final int countScriptingInterceptors = scriptValidators != null ? scriptValidators.size() : 0;
-				countInterceptors += countScriptingInterceptors;
-			}
-			else
-			{
-				scriptValidators = null;
-			}
-
-			//
-			// In case there are no interceptors, do nothing
-			if (countInterceptors <= 0)
-			{
-				return null;
-			}
-
-			//
-			// Execute interceptors
-			final String trxName = po.get_TrxName();
-			executeInTrx(trxName, docTiming, () -> fireDocValidate0(po, docTiming, interceptorsSystem, interceptorsClient, scriptValidators));
-
-			logger.trace("Executed in {}: ALL {} {} interceptors for {}", stopwatch, countInterceptors, docTiming, po);
-
+		final PO po = InterfaceWrapperHelper.getPO(model);
+		if (po == null || m_docValidateListeners.isEmpty())
+		{
 			return null;
 		}
-	}	// fireDocValidate
+		//
+		// Make sure model if valid before firing the listeners
+		assertModelValidBeforeFiringEvent(po, docTiming); // isDocumentValidateEvent=true
+
+		int countInterceptors = 0;
+
+		//
+		// Retrieve system level model interceptors
+		final String propertyNameSystem = getPropertyName(po.get_TableName());
+		final List<ModelValidator> interceptorsSystem = m_docValidateListeners.get(propertyNameSystem);
+		final int countSystemInterceptors = interceptorsSystem != null ? interceptorsSystem.size() : 0;
+		countInterceptors += countSystemInterceptors;
+
+		//
+		// Retrieve client level model interceptors
+		final String propertyNameClient = getPropertyName(po.get_TableName(), po.getAD_Client_ID());
+		final List<ModelValidator> interceptorsClient = m_docValidateListeners.get(propertyNameClient);
+		final int countClientInterceptors = interceptorsClient != null ? interceptorsClient.size() : 0;
+		countInterceptors += countClientInterceptors;
+
+		//
+		// Retrieve script interceptors
+		//
+		// now process the script model validator for this event
+		// metas: tsa: 02380: First check if changeType is available in tableEventValidators
+		// FIXME: refactor it and have it as a regular model validator; then remove it from here
+		final List<I_AD_Table_ScriptValidator> scriptValidators;
+		if (ModelValidator.documentEventValidators.containsKey(docTiming))
+		{
+			scriptValidators = Services.get(IADTableScriptValidatorDAO.class).retrieveTableScriptValidators(
+					po.getCtx(),
+					po.get_Table_ID(),
+					ModelValidator.documentEventValidators.get(docTiming));
+			final int countScriptingInterceptors = scriptValidators != null ? scriptValidators.size() : 0;
+			countInterceptors += countScriptingInterceptors;
+		}
+		else
+		{
+			scriptValidators = null;
+		}
+
+		//
+		// In case there are no interceptors, do nothing
+		if (countInterceptors <= 0)
+		{
+			return null;
+		}
+
+		//
+		// Execute interceptors
+		final String trxName = po.get_TrxName();
+		executeInTrx(trxName, docTiming, () -> fireDocValidate0(po, docTiming, interceptorsSystem, interceptorsClient, scriptValidators));
+
+		logger.trace("Executed ALL {} {} interceptors for {}", countInterceptors, docTiming, po);
+
+		return null;
+	}
 
 	private void fireDocValidate0(final PO po,
 			final DocTimingType docTiming,

@@ -23,7 +23,7 @@ package de.metas.materialtracking.spi;
  */
 
 
-import org.adempiere.model.I_C_Invoice_Detail;
+import org.compiere.model.I_C_Invoice_Detail;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;

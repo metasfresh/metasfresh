@@ -39,7 +39,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -99,7 +101,10 @@ public final class HUEditorRow implements IViewRow
 	private final HUEditorRowType type;
 	private final boolean topLevel;
 	private final boolean processed;
+	@Getter
 	private final BPartnerId bpartnerId;
+	@Getter
+	private final LocatorId locatorId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
@@ -131,6 +136,14 @@ public final class HUEditorRow implements IViewRow
 	})
 	private final JSONLookupValue product;
 
+	public static final String FIELDNAME_SerialNo = "SerialNo";
+	@ViewColumn(fieldName = FIELDNAME_SerialNo, widgetType = DocumentFieldWidgetType.Text, sorting = false,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
+	private final String serialNo;
+
 	public static final String FIELDNAME_IsOwnPalette = I_M_HU.COLUMNNAME_HUPlanningReceiptOwnerPM;
 	@ViewColumn(fieldName = FIELDNAME_IsOwnPalette, widgetType = DocumentFieldWidgetType.YesNo, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25)
@@ -160,10 +173,11 @@ public final class HUEditorRow implements IViewRow
 	public static final String FIELDNAME_QtyCU = "QtyCU";
 	@ViewColumn(fieldName = FIELDNAME_QtyCU, //
 			widgetType = DocumentFieldWidgetType.Quantity,//
-			widgetSize = WidgetSize.Small, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-	})
+			widgetSize = WidgetSize.Small, sorting = false,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+			})
 	private final BigDecimal qtyCU;
 
 	public static final String FIELDNAME_UOM = I_M_Product.COLUMNNAME_C_UOM_ID;
@@ -195,6 +209,10 @@ public final class HUEditorRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 80, displayed = Displayed.FALSE)
 	})
 	private final LocalDate bestBeforeDate;
+
+	public static final String FIELDNAME_WeightGross = "WeightGross";
+	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = false)
+	private final BigDecimal weightGross;
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
@@ -229,8 +247,13 @@ public final class HUEditorRow implements IViewRow
 		isOwnPalette = builder.isOwnPalette;
 		uom = builder.uom;
 		qtyCU = builder.qtyCU;
+		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
-		locator = builder.getLocator();
+
+		this.locatorId = builder.locatorId;
+		this.locator = locatorId != null
+				? JSONLookupValue.of(locatorId, builder.locatorCaption)
+				: null;
 
 		includedRows = builder.buildIncludedRows();
 		includedOrderLineReservations = builder.prepareIncludedOrderLineReservations(this);
@@ -248,6 +271,21 @@ public final class HUEditorRow implements IViewRow
 		{
 			attributesSupplier = Optional.empty();
 		}
+
+		if (attributesSupplier.isPresent() && attributesSupplier.get().get().hasAttribute(AttributeConstants.ATTR_SerialNo))
+		{
+			serialNo = attributesSupplier.get().get().getValueAsString(AttributeConstants.ATTR_SerialNo);
+		}
+		else
+		{
+			serialNo = null;
+		}
+	}
+
+	@Override
+	public boolean hasAttributes()
+	{
+		return attributesSupplier.isPresent();
 	}
 
 	@Override
@@ -291,11 +329,6 @@ public final class HUEditorRow implements IViewRow
 		return processed;
 	}
 
-	public BPartnerId getBPartnerId()
-	{
-		return bpartnerId;
-	}
-
 	@Override
 	public ImmutableSet<String> getFieldNames()
 	{
@@ -306,12 +339,6 @@ public final class HUEditorRow implements IViewRow
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
 		return values.get(this);
-	}
-
-	@Override
-	public boolean hasAttributes()
-	{
-		return attributesSupplier.isPresent();
 	}
 
 	@Override
@@ -559,8 +586,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 * @param stringFilter
-	 * @param adLanguage   AD_Language (used to get the right row's string representation)
 	 * @return true if the row is matching the string filter
 	 */
 	public boolean matchesStringFilter(final String stringFilter)
@@ -604,8 +629,10 @@ public final class HUEditorRow implements IViewRow
 		private Boolean isOwnPalette;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
+		private BigDecimal weightGross;
 		private LocalDate bestBeforeDate;
-		private JSONLookupValue locator;
+		private LocatorId locatorId;
+		private String locatorCaption;
 		private BPartnerId bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
@@ -681,7 +708,7 @@ public final class HUEditorRow implements IViewRow
 			}
 			else
 			{
-				return processed.booleanValue();
+				return processed;
 			}
 		}
 
@@ -739,6 +766,17 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
+		public Builder setWeightGross(final BigDecimal weightGross)
+		{
+			this.weightGross = weightGross;
+			return this;
+		}
+
+		private BigDecimal getWeightGross()
+		{
+			return weightGross;
+		}
+
 		public Builder setBestBeforeDate(final LocalDate bestBeforeDate)
 		{
 			this.bestBeforeDate = bestBeforeDate;
@@ -750,15 +788,11 @@ public final class HUEditorRow implements IViewRow
 			return bestBeforeDate;
 		}
 
-		public Builder setLocator(final JSONLookupValue locator)
+		public Builder setLocator(final LocatorId locatorId, final String locatorCaption)
 		{
-			this.locator = locator;
+			this.locatorId = locatorId;
+			this.locatorCaption = locatorCaption;
 			return this;
-		}
-
-		private JSONLookupValue getLocator()
-		{
-			return locator;
 		}
 
 		public Builder setBPartnerId(final BPartnerId bpartnerId)

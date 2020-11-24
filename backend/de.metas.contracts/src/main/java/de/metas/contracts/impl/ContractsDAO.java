@@ -31,6 +31,8 @@ import java.util.List;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -188,7 +190,10 @@ public class ContractsDAO implements IContractsDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId.getRepoId())
-				.orderByDescending(I_C_Flatrate_Term.COLUMNNAME_MasterEndDate)
+				.orderBy()
+					.addColumn(I_C_Flatrate_Term.COLUMNNAME_MasterEndDate, Direction.Descending, Nulls.Last)
+					.addColumn(I_C_Flatrate_Term.COLUMNNAME_EndDate, Direction.Descending, Nulls.Last)
+				.endOrderBy()
 				.create()
 				.first();
 	}

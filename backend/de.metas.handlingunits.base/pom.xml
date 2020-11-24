@@ -107,6 +107,12 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj</artifactId>
+            <version>2.7.0</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

@@ -1,5 +1,33 @@
 package org.eevolution.api.impl;
 
+import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.model.I_M_MovementLine;
+import org.eevolution.api.DDOrderLineId;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_DD_OrderLine_Alternative;
+import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
+import org.eevolution.model.I_PP_MRP;
+import org.eevolution.model.I_PP_MRP_Alloc;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.X_PP_MRP;
+import org.eevolution.mrp.api.IMRPDAO;
+import org.slf4j.Logger;
+
+import java.util.List;
+
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -24,42 +52,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-import java.util.List;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_MovementLine;
-import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_DD_OrderLine_Alternative;
-import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
-import org.eevolution.model.I_PP_MRP;
-import org.eevolution.model.I_PP_MRP_Alloc;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPDAO;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class DDOrderDAO implements IDDOrderDAO
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
+
+	private final  IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public List<I_DD_OrderLine> retrieveLines(final I_DD_Order ddOrder)
 	{
 		Check.assumeNotNull(ddOrder, "ddOrder not null");
 
-		final IQueryBuilder<I_DD_OrderLine> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_DD_OrderLine> queryBuilder = queryBL
 				.createQueryBuilder(I_DD_OrderLine.class, ddOrder)
 				.addEqualsFilter(I_DD_OrderLine.COLUMN_DD_Order_ID, ddOrder.getDD_Order_ID())
 				.addOnlyActiveRecordsFilter();
@@ -91,7 +95,7 @@ public class DDOrderDAO implements IDDOrderDAO
 	{
 		Check.assumeNotNull(ddOrderLine, "ddOrderLine not null");
 
-		final IQueryBuilder<I_DD_OrderLine_Alternative> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_DD_OrderLine_Alternative> queryBuilder = queryBL
 				.createQueryBuilder(I_DD_OrderLine_Alternative.class, ddOrderLine)
 				.addEqualsFilter(I_DD_OrderLine_Alternative.COLUMN_DD_OrderLine_ID, ddOrderLine.getDD_OrderLine_ID())
 		// .addOnlyActiveRecordsFilter() // we are retrieving ALL
@@ -110,7 +114,7 @@ public class DDOrderDAO implements IDDOrderDAO
 	{
 		Check.assumeNotNull(ddOrderLine, "ddOrderLine not null");
 
-		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<T> queryBuilder = queryBL
 				.createQueryBuilder(movementLineClass, ddOrderLine)
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID, ddOrderLine.getDD_OrderLine_ID())
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_Alternative_ID, null) // exclude alternatives
@@ -210,7 +214,7 @@ public class DDOrderDAO implements IDDOrderDAO
 			final LiberoException ex = new LiberoException("No MRP supply record found for " + ppOrder);
 			logger.warn(ex.getLocalizedMessage() + " [SKIPPED]", ex);
 			// NOTE: we are returing a query builder which actually does nothing
-			return Services.get(IQueryBL.class)
+			return queryBL
 					.createQueryBuilder(I_DD_OrderLine.class, ppOrder)
 					.filter(ConstantQueryFilter.<I_DD_OrderLine> of(false));
 		}
@@ -241,5 +245,21 @@ public class DDOrderDAO implements IDDOrderDAO
 	public void save(@NonNull final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative)
 	{
 		saveRecord(ddOrderLineOrAlternative);
+	}
+
+
+	@NonNull
+	public I_DD_OrderLine getLineById(@NonNull final DDOrderLineId ddOrderLineID)
+	{
+		final I_DD_OrderLine record = InterfaceWrapperHelper.load(ddOrderLineID, I_DD_OrderLine.class);
+
+		if (record == null)
+		{
+			throw new AdempiereException("@NotFound@")
+					.appendParametersToMessage()
+					.setParameter("DD_OrderLine_ID", ddOrderLineID);
+		}
+
+		return record;
 	}
 }

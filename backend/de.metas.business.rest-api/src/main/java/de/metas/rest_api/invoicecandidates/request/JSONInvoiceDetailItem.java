@@ -29,6 +29,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.LocalDate;
+
 @Value
 public class JSONInvoiceDetailItem
 {
@@ -38,15 +40,19 @@ public class JSONInvoiceDetailItem
 
 	String description;
 
+	LocalDate date;
+
 	@JsonCreator
 	@Builder
 	public JSONInvoiceDetailItem(
 			@JsonProperty("seqNo") @Nullable final Integer seqNo,
 			@JsonProperty("label") @Nullable final String label,
-			@JsonProperty("description") @Nullable final String description)
+			@JsonProperty("description") @Nullable final String description,
+			@JsonProperty("date") @Nullable final LocalDate date)
 	{
 		this.seqNo = seqNo;
 		this.label = label;
 		this.description = description;
+		this.date = date;
 	}
 }

@@ -28,7 +28,7 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 

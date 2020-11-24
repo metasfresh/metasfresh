@@ -44,7 +44,7 @@ import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;

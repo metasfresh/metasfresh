@@ -821,6 +821,30 @@ public interface I_M_InOut
     public static final String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalId (java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalId();
+
+	/** Column definition for ExternalId */
+	public static final org.adempiere.model.ModelColumn<I_M_InOut, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_M_InOut, Object>(I_M_InOut.class, "ExternalId", null);
+	/** Column name ExternalId */
+	public static final String COLUMNNAME_ExternalId = "ExternalId";
+
+
+	/**
 	 * Set Frachtbetrag.
 	 * Freight Amount
 	 *

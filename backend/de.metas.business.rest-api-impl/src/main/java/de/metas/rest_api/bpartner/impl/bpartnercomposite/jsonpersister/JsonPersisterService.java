@@ -1,14 +1,17 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -351,7 +354,7 @@ public class JsonPersisterService
 		for (final JsonRequestLocationUpsertItem requestItem : requestItems)
 		{
 			final IdentifierString locationIdentifier = IdentifierString.of(requestItem.getLocationIdentifier());
-			final BPartnerLocation bpartnerLocation = shortTermIndex.extract(locationIdentifier);
+			final BPartnerLocation bpartnerLocation = shortTermIndex.extractAndMarkUsed(locationIdentifier);
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getLocationIdentifier())
@@ -554,7 +557,7 @@ public class JsonPersisterService
 			return BooleanWithReason.falseBecause("JsonRequestComposite does not include a JsonRequestBPartner");
 		}
 
-		// note that if the BPartner wouldn't exists, we weren't here
+		// note that if the BPartner wouldn't exist, we weren't here
 		final SyncAdvise effCompositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		if (bpartnerCompositeIsNew && effCompositeSyncAdvise.isFailIfNotExists())
@@ -668,8 +671,8 @@ public class JsonPersisterService
 			}
 			else
 			{
-			bpartner.setCustomer(jsonBPartner.getCustomer());
-		}
+				bpartner.setCustomer(jsonBPartner.getCustomer());
+			}
 		}
 		if (jsonBPartner.isVendorSet())
 		{
@@ -679,8 +682,8 @@ public class JsonPersisterService
 			}
 			else
 			{
-			bpartner.setVendor(jsonBPartner.getVendor());
-		}
+				bpartner.setVendor(jsonBPartner.getVendor());
+			}
 		}
 
 		// group - attempt to fall back to default group
@@ -711,7 +714,7 @@ public class JsonPersisterService
 				bpartner.setGroupId(bpGroupId);
 			}
 		}
-		else if(isUpdateRemove)
+		else if (isUpdateRemove)
 		{
 			logger.debug("Setting \"groupId\" to null; -> will attempt to insert default groupId");
 			bpartner.setGroupId(null);
@@ -810,6 +813,16 @@ public class JsonPersisterService
 			bpartner.setUrl3(null);
 		}
 
+		// VAT ID
+		if (jsonBPartner.isVatIdSet())
+		{
+			bpartner.setVatId(StringUtils.trim(jsonBPartner.getVatId()));
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setVatId(null);
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 
@@ -819,8 +832,6 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final ShortTermContactIndex shortTermIndex = new ShortTermContactIndex(bpartnerComposite);
-
-		resetDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
 
 		final JsonRequestContactUpsert contacts = jsonBPartnerComposite.getContactsNotNull();
 
@@ -839,6 +850,15 @@ public class JsonPersisterService
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getContacts().removeAll(shortTermIndex.getUnusedContacts());
 		}
+		else
+		{
+			// if we have contacts with e.g. isBillToDefault, then make sure that none of the previously existing locations also have such a default flag
+			final boolean mustTakeCareOfUnusedContactDefaultFlags = contactsSyncAdvise.getIfNotExists().isCreate() || contactsSyncAdvise.getIfExists().isUpdateMerge();
+			if (mustTakeCareOfUnusedContactDefaultFlags)
+			{
+				resetUnusedContactDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
+			}
+		}
 
 		return result.build();
 	}
@@ -846,7 +866,7 @@ public class JsonPersisterService
 	/**
 	 * If the json contacts have default flags set, then this method unsets all corresponding default flags of the shortTermIndex's {@link BPartnerContact}s.
 	 */
-	private void resetDefaultFlagsIfNeeded(
+	private void resetUnusedContactDefaultFlagsIfNeeded(
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final ShortTermContactIndex shortTermIndex)
 	{
@@ -919,11 +939,13 @@ public class JsonPersisterService
 		final JsonResponseUpsertItemBuilder result = JsonResponseUpsertItem.builder()
 				.identifier(jsonContact.getContactIdentifier());
 
+		final SyncOutcome syncOutcome;
 		final BPartnerContact contact;
+
 		if (existingContact != null)
 		{
 			contact = existingContact;
-			result.syncOutcome(SyncOutcome.UPDATED);
+			syncOutcome = parentSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
 		}
 		else
 		{
@@ -940,10 +962,16 @@ public class JsonPersisterService
 						.setParameter("parentSyncAdvise", parentSyncAdvise);
 			}
 			contact = shortTermIndex.newContact(contactIdentifier);
-			result.syncOutcome(SyncOutcome.CREATED);
+			syncOutcome = SyncOutcome.CREATED;
 		}
 
-		syncJsonToContact(contactIdentifier, jsonContact.getContact(), contact, parentSyncAdvise);
+		contact.addHandle(contactIdentifier.getRawIdentifierString());
+
+		result.syncOutcome(syncOutcome);
+		if (!Objects.equals(SyncOutcome.NOTHING_DONE, syncOutcome))
+		{
+			syncJsonToContact(contactIdentifier, jsonContact.getContact(), contact, parentSyncAdvise);
+		}
 		return result;
 	}
 
@@ -956,8 +984,6 @@ public class JsonPersisterService
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
-		contact.addHandle(contactIdentifier.getRawIdentifierString());
-
 		// active
 		if (jsonBPartnerContact.isActiveSet())
 		{
@@ -967,8 +993,8 @@ public class JsonPersisterService
 			}
 			else
 			{
-			contact.setActive(jsonBPartnerContact.getActive());
-		}
+				contact.setActive(jsonBPartnerContact.getActive());
+			}
 		}
 
 		// email
@@ -1084,8 +1110,8 @@ public class JsonPersisterService
 			}
 			else
 			{
-			contact.setNewsletter(jsonBPartnerContact.getNewsletter());
-		}
+				contact.setNewsletter(jsonBPartnerContact.getNewsletter());
+			}
 		}
 
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
@@ -1185,8 +1211,7 @@ public class JsonPersisterService
 			}
 		}
 
-		BPartnerContactType ct = contactType.build();
-		return ct;
+		return contactType.build();
 	}
 
 	private ImmutableMap<String, JsonResponseUpsertItemBuilder> syncJsonToLocations(
@@ -1195,8 +1220,6 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final ShortTermLocationIndex shortTermIndex = new ShortTermLocationIndex(bpartnerComposite);
-
-		resetDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
 
 		final JsonRequestLocationUpsert locations = jsonBPartnerComposite.getLocationsNotNull();
 
@@ -1214,6 +1237,15 @@ public class JsonPersisterService
 		{
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getLocations().removeAll(shortTermIndex.getUnusedLocations());
+		}
+		else
+		{
+			// if we have location with isBillToDefault or isShipToDefault, then make sure that none of the previously existing locations also have such a default flag
+			final boolean mustTakeCareOfUnusedLocationDefaultFlags = locationsSyncAdvise.getIfNotExists().isCreate() || locationsSyncAdvise.getIfExists().isUpdateMerge();
+			if (mustTakeCareOfUnusedLocationDefaultFlags)
+			{
+				resetUnusedLocationDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
+			}
 		}
 		return result.build();
 	}
@@ -1282,18 +1314,16 @@ public class JsonPersisterService
 			resultBuilder.syncOutcome(SyncOutcome.CREATED);
 		}
 
-		syncJsonToBankAccount(jsonBankAccount, bankAccount, parentSyncAdvise);
+		syncJsonToBankAccount(jsonBankAccount, bankAccount);
 
 		return resultBuilder;
 	}
 
 	private void syncJsonToBankAccount(
 			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
-			@NonNull final BPartnerBankAccount bankAccount,
-			@NonNull final SyncAdvise parentSyncAdvise)
+			@NonNull final BPartnerBankAccount bankAccount)
 	{
-		final SyncAdvise syncAdvise = coalesce(jsonBankAccount.getSyncAdvise(), parentSyncAdvise);
-		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
+		// ignoring syncAdvise.isUpdateRemove because both active and currencyId can't be NULLed
 
 		// active
 		if (jsonBankAccount.getActive() != null)
@@ -1307,13 +1337,9 @@ public class JsonPersisterService
 		{
 			bankAccount.setCurrencyId(currencyId);
 		}
-		else if (isUpdateRemove)
-		{
-			bankAccount.setCurrencyId(null);
-		}
-
 	}
 
+	@Nullable
 	private CurrencyId extractCurrencyIdOrNull(final JsonRequestBankAccountUpsertItem jsonBankAccount)
 	{
 		if (isBlank(jsonBankAccount.getCurrencyCode()))
@@ -1327,8 +1353,9 @@ public class JsonPersisterService
 
 	/**
 	 * If the json locations have default flags set, then this method unsets all corresponding default flags of the shortTermIndex's {@link BPartnerLocation}s.
+	 * Goal: make sure that a former default-flagged location is not left untouched, to avoid multiple locations with the same default flag set to true.
 	 */
-	private void resetDefaultFlagsIfNeeded(
+	private void resetUnusedLocationDefaultFlagsIfNeeded(
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
@@ -1368,16 +1395,17 @@ public class JsonPersisterService
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
 		final IdentifierString locationIdentifier = IdentifierString.of(locationUpsertItem.getLocationIdentifier());
-		final BPartnerLocation existingLocation = shortTermIndex.extract(locationIdentifier);
+		final BPartnerLocation existingLocation = shortTermIndex.extractAndMarkUsed(locationIdentifier);
 
 		final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
 				.identifier(locationUpsertItem.getLocationIdentifier());
 
+		final SyncOutcome syncOutcome;
 		final BPartnerLocation location;
 		if (existingLocation != null)
 		{
 			location = existingLocation;
-			resultBuilder.syncOutcome(SyncOutcome.UPDATED);
+			syncOutcome = parentSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
 		}
 		else
 		{
@@ -1402,11 +1430,16 @@ public class JsonPersisterService
 						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			location = shortTermIndex.newLocation(locationIdentifier);
-			resultBuilder.syncOutcome(SyncOutcome.CREATED);
+			syncOutcome = SyncOutcome.CREATED;
 		}
-		location.addHandle(locationUpsertItem.getLocationIdentifier());
-		syncJsonToLocation(locationUpsertItem.getLocation(), location, parentSyncAdvise);
 
+		location.addHandle(locationUpsertItem.getLocationIdentifier());
+
+		resultBuilder.syncOutcome(syncOutcome);
+		if (!Objects.equals(SyncOutcome.NOTHING_DONE, syncOutcome))
+		{
+			syncJsonToLocation(locationUpsertItem.getLocation(), location, parentSyncAdvise);
+		}
 		return resultBuilder;
 	}
 
@@ -1426,8 +1459,8 @@ public class JsonPersisterService
 			}
 			else
 			{
-			location.setActive(jsonBPartnerLocation.getActive());
-		}
+				location.setActive(jsonBPartnerLocation.getActive());
+			}
 		}
 
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
@@ -1534,7 +1567,7 @@ public class JsonPersisterService
 		// gln
 		if (jsonBPartnerLocation.isGlnSet())
 		{
-		final GLN gln = GLN.ofNullableString(jsonBPartnerLocation.getGln());
+			final GLN gln = GLN.ofNullableString(jsonBPartnerLocation.getGln());
 			location.setGln(gln);
 		}
 		else if (isUpdateRemove)
@@ -1585,7 +1618,7 @@ public class JsonPersisterService
 			if (jsonBPartnerLocation.getBillTo() == null)
 			{
 				logger.debug("Ignoring boolean property \"billTo\" : null ");
-}
+			}
 			else
 			{
 				locationType.billTo(jsonBPartnerLocation.getBillTo());

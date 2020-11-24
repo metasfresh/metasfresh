@@ -47,6 +47,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.AdditionalMatchers;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
@@ -69,21 +72,11 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import mockit.Expectations;
-import mockit.Mocked;
 
 public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 {
 	private final C_OrderLine_Handler orderLineHandler = new C_OrderLine_Handler();
 	private final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = new HeaderAggregationKeyBuilder();
-
-	// task 07442
-	@Mocked
-	protected IProductAcctDAO productAcctDAO;
-
-	// task 07442
-	@Mocked
-	protected ITaxBL taxBL;
 
 	@Before
 	public void init()
@@ -171,41 +164,28 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
 	{
+		IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		ITaxBL taxBL = Mockito.mock(ITaxBL.class);
+
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		// @formatter:off
-		new Expectations()
-		{{
-				productAcctDAO.retrieveActivityForAcct(
-						clientId,
-						orgId,
-						productId);
-				minTimes = 0;
-				result = activityId;
+		Mockito.doReturn(null).when(productAcctDAO).retrieveActivityForAcct(
+				AdditionalMatchers.not(ArgumentMatchers.eq(clientId)),
+				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
+				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
 
-				productAcctDAO.retrieveActivityForAcct(
-						withNotEqual(clientId),
-						withNotEqual(orgId),
-						withNotEqual(productId));
-				minTimes = 0;
-				result = null;
-
-				final Properties ctx = Env.getCtx();
-				taxBL.getTax(
-						ctx
-						, order1
-						, (TaxCategoryId)null
-						, oL1.getM_Product_ID()
-						, order1.getDatePromised()
-						, OrgId.ofRepoId(order1.getAD_Org_ID())
-						, WarehouseId.ofRepoId(order1.getM_Warehouse_ID())
-						, order1.getC_BPartner_Location_ID()
-						, order1.isSOTrx());
-				minTimes = 0;
-				result = 3;
-		}};
-		// @formatter:on
+		final Properties ctx = Env.getCtx();
+		Mockito.doReturn(3).when(taxBL).getTax(
+				ctx,
+				order1,
+				(TaxCategoryId)null,
+				oL1.getM_Product_ID(),
+				order1.getDatePromised(),
+				OrgId.ofRepoId(order1.getAD_Org_ID()),
+				WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
+				order1.getC_BPartner_Location_ID(),
+				order1.isSOTrx());
 	}
 
 	@Test

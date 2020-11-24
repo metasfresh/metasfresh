@@ -90,8 +90,7 @@ public class Helper
 	}
 
 	public I_C_Queue_Processor createQueueProcessor(
-			final String name, final int poolSize, final int maxPoolSize, final int keepAliveTimeMillis
-	)
+			final String name, final int poolSize, final int keepAliveTimeMillis)
 	{
 		final I_C_Queue_Processor queueProcessorDef = InterfaceWrapperHelper.create(ctx, I_C_Queue_Processor.class, ITrx.TRXNAME_None);
 		queueProcessorDef.setName(name);
@@ -210,8 +209,6 @@ public class Helper
 	 * Method waits until the given {@code list} has reached the given {@code targetSize} or if the given {@code timeoutMillis} has passed. If the timeout has pased without the size beeing reached,
 	 * the method throws an Exception.
 	 * 
-	 * @param list
-	 * @param targetSize
 	 * @param timeoutMillis how many millis to wait for result. If ZERO, we will wait forever
 	 * @throws InterruptedException
 	 * @throws TimeoutException if the timeout exceeded

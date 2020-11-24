@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: "metasfresh-search-mf15-dev"
@@ -11,6 +11,11 @@ metadata:
 # can be created with kubectl create namespace demo"
 #  namespace: "demo"
 spec:
+  selector:
+    matchLabels:
+      de.metas.deployment.type: metasfresh-search
+      de.metas.deployment.user: "mf15"
+      de.metas.deployment.stage: "dev"
   replicas: 1
   strategy:
     type: Recreate

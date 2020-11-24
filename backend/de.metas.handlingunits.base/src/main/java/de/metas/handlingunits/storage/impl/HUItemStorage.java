@@ -49,7 +49,6 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
-import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -207,14 +206,14 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public CapacityInterface getCapacity(
+	public Capacity getCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			@NonNull final ZonedDateTime date)
 	{
 		//
 		// In case there is a custom capacity set, we use that right away
-		final CapacityInterface customCapacity = getCustomCapacityOrNull(productId, uom);
+		final Capacity customCapacity = getCustomCapacityOrNull(productId, uom);
 		if (customCapacity != null)
 		{
 			return customCapacity;
@@ -222,25 +221,24 @@ public class HUItemStorage implements IHUItemStorage
 
 		//
 		// Get directly
-		final CapacityInterface capacity = capacityBL.getCapacity(item, productId, uom, date);
+		final Capacity capacity = capacityBL.getCapacity(item, productId, uom, date);
 		return capacity;
 	}
 
-	private final CapacityInterface getCustomCapacityOrNull(final ProductId productId, final I_C_UOM uom)
+	private final Capacity getCustomCapacityOrNull(final ProductId productId, final I_C_UOM uom)
 	{
 		if (productId == null)
 		{
 			return null;
 		}
 
-		final CapacityInterface customCapacity = productId2customCapacity.get(productId);
+		final Capacity customCapacity = productId2customCapacity.get(productId);
 		if (customCapacity == null)
 		{
 			return null;
 		}
 
-		final CapacityInterface customCapacityConv = customCapacity.convertToUOM(uom);
-		return customCapacityConv;
+		return customCapacity.convertToUOM(uom, uomConversionBL);
 	}
 
 	private final boolean hasCustomCapacityDefined(final ProductId productId)
@@ -250,7 +248,7 @@ public class HUItemStorage implements IHUItemStorage
 			return false;
 		}
 
-		final CapacityInterface customCapacity = productId2customCapacity.get(productId);
+		final Capacity customCapacity = productId2customCapacity.get(productId);
 		return customCapacity != null;
 	}
 
@@ -264,12 +262,12 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public CapacityInterface getAvailableCapacity(
+	public Capacity getAvailableCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			@NonNull final ZonedDateTime date)
 	{
-		final CapacityInterface capacity = getCapacity(productId, uom, date);
+		final Capacity capacity = getCapacity(productId, uom, date);
 		if (handlingUnitsBL.isAggregateHU(getM_HU_Item().getM_HU()))
 		{
 			// if this is an aggregate HU's item, then ignore the qty that was already added and ignore the item's full capacity
@@ -279,7 +277,7 @@ public class HUItemStorage implements IHUItemStorage
 		}
 		final BigDecimal qty = getQty(productId, uom);
 
-		final CapacityInterface capacityAvailable = capacity.subtractQuantity(Quantity.of(qty, uom));
+		final Capacity capacityAvailable = capacity.subtractQuantity(Quantity.of(qty, uom), uomConversionBL);
 		return capacityAvailable;
 	}
 
@@ -308,7 +306,7 @@ public class HUItemStorage implements IHUItemStorage
 
 		final ProductId productId = request.getProductId();
 		final I_C_UOM uom = request.getC_UOM();
-		final CapacityInterface availableCapacityDefinition = getAvailableCapacity(productId, uom, request.getDate());
+		final Capacity availableCapacityDefinition = getAvailableCapacity(productId, uom, request.getDate());
 
 		//
 		// Infinite capacity check

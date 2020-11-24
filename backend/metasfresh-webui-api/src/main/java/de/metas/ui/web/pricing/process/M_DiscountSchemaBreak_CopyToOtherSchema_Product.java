@@ -2,7 +2,6 @@ package de.metas.ui.web.pricing.process;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -19,6 +18,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
@@ -80,8 +80,8 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 	private boolean rowsHaveSingleProductId()
 	{
 		// getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)); doesn't work from checkPreconditionsApplicable
-		final String viewSqlWhereClause = getViewSqlWhereClause(getSelectedRowIds());
-		final IQueryFilter<I_M_DiscountSchemaBreak> selectionQueryFilter = TypedSqlQueryFilter.of(viewSqlWhereClause);
+		final SqlViewRowsWhereClause viewSqlWhereClause = getViewSqlWhereClause(getSelectedRowIds());
+		final IQueryFilter<I_M_DiscountSchemaBreak> selectionQueryFilter = viewSqlWhereClause.toQueryFilter();
 
 		return pricingConditionsRepo.isSingleProductId(selectionQueryFilter);
 	}
@@ -111,7 +111,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 		}
 	}
 
-	private String getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
+	private SqlViewRowsWhereClause getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
 	{
 		final String breaksTableName = I_M_DiscountSchemaBreak.Table_Name;
 		return getView().getSqlWhereClause(rowIds, SqlOptions.usingTableName(breaksTableName));

@@ -1,19 +1,6 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPIItemProductBL;
@@ -24,14 +11,10 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.picking.api.PickingConfigRepository;
-import de.metas.picking.api.PickingSlotId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -47,6 +30,19 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
 
 /*
  * #%L
@@ -82,35 +78,32 @@ public class WEBUI_Picking_PickQtyToNewHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	@Autowired
-	private PickingCandidateService pickingCandidateService;
-
-	@Autowired
-	private PickingConfigRepository pickingConfigRepo;
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
-	private I_M_HU_PI_Item_Product huPIItemProduct;
+	protected I_M_HU_PI_Item_Product huPIItemProduct;
 
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
-	private BigDecimal qtyCU;
+	protected BigDecimal qtyCU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedRowIds().isSingleDocumentId())
+		final Optional<ProcessPreconditionsResolution> preconditionsResolution = checkValidSelection();
+
+		if (preconditionsResolution.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return preconditionsResolution.get();
 		}
 
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isPickingSlotRow())
+		if (isForceDelivery())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT));
+			return ProcessPreconditionsResolution.rejectWithInternalReason(" Use 'WEBUI_Picking_ForcePickToNewHU' in case of force shipping! ");
 		}
 
-		if (!checkSourceHuPrecondition())
+		if (noSourceHUAvailable())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
 		}
@@ -118,7 +111,29 @@ public class WEBUI_Picking_PickQtyToNewHU
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private Quantity getQtyToPack()
+	protected Optional<ProcessPreconditionsResolution> checkValidSelection()
+	{
+		if (getParentViewRowIdsSelection() == null)
+		{
+			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNoSelection());
+		}
+
+		if (getSelectedRowIds().isMoreThanOneDocumentId()
+	        ||  getParentViewRowIdsSelection().getRowIds().isMoreThanOneDocumentId() )
+		{
+			return Optional.of(ProcessPreconditionsResolution.rejectBecauseNotSingleSelection());
+		}
+
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isPickingSlotRow())
+		{
+			return Optional.of(ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT)));
+		}
+
+		return Optional.empty();
+	}
+
+	protected Quantity getQtyToPack()
 	{
 		final I_C_UOM uom = getCurrentShipmentScheuduleUOM();
 		return Quantity.of(qtyCU, uom);
@@ -134,7 +149,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 
 		final HuId packToHuId = createNewHuId();
-		pickFromSourceHUsAndPackTo(qtyToPack, packToHuId);
+		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
+
+		pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);
 
 		printPickingLabel(packToHuId);
 
@@ -144,7 +161,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		return MSG_OK;
 	}
 
-	private void printPickingLabel(@NonNull final HuId huId)
+	protected void printPickingLabel(@NonNull final HuId huId)
 	{
 		final HUReportService huReportService = HUReportService.get();
 		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -155,27 +172,15 @@ public class WEBUI_Picking_PickQtyToNewHU
 		huReportService.printPickingLabel(huToReport, onlyIfAutoPrintIsEnabled);
 	}
 
-	private void pickFromSourceHUsAndPackTo(@NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
+	@NonNull
+	protected HuId createNewHuId()
 	{
-		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipmentSchedule.getM_Warehouse_ID());
+		final LocatorId defaultLocatorId = warehouseBL.getDefaultLocatorId(warehouseId);
 
-		pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
-				.qtyToPack(qtyToPack)
-				.packToHuId(packToHuId)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(getCurrentShipmentScheduleId())
-				.allowOverDelivery(allowOverDelivery)
-				.build());
-	}
-
-	private HuId createNewHuId()
-	{
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		final LocatorId pickingSlotLocatorId = getPickingSlotLocatorId(pickingSlotRow);
-		final I_M_HU hu = createTU(huPIItemProduct, pickingSlotLocatorId);
+		final I_M_HU hu = createTU(huPIItemProduct, defaultLocatorId);
 		return HuId.ofRepoId(hu.getM_HU_ID());
 	}
 

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.letter.LetterConstants;
-import de.metas.letter.service.SearialLetterService;
+import de.metas.letter.service.SerialLetterService;
 
 /*
  * #%L
@@ -45,14 +45,13 @@ public class C_Async_Batch
 		if (asyncBatch.isProcessed()
 				&& LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync.equals(asyncBatch.getC_Async_Batch_Type().getInternalName()))
 		{
-			runPrintingProcess(asyncBatch);
+			runPrintingProcess(asyncBatch); 
 		}
 	}
 
 	private void runPrintingProcess(final I_C_Async_Batch asyncBatch)
 	{
-		final SearialLetterService serialLetterService = Adempiere.getBean(SearialLetterService.class);
+		final SerialLetterService serialLetterService = Adempiere.getBean(SerialLetterService.class);
 		serialLetterService.printAutomaticallyLetters(asyncBatch);
-		}
-
+	}
 }

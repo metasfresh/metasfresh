@@ -244,6 +244,27 @@ public class X_C_PaymentTerm extends PO implements I_C_PaymentTerm, I_Persistent
 		return (String)get_Value(COLUMNNAME_DocumentNote);
 	}
 
+	/**
+	 * Set External ID.
+	 * @param ExternalId External ID
+	 */
+	@Override
+	public void setExternalId(java.lang.String ExternalId)
+	{
+		set_Value(COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	/**
+	 * Get External ID.
+	 * @return External ID
+	 */
+	@Override
+	public java.lang.String getExternalId()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+	}
+
+
 	/** Set Fix month cutoff.
 		@param FixMonthCutoff 
 		Last day to include for next due date

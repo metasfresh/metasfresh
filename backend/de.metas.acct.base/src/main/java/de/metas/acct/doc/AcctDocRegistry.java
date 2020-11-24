@@ -3,6 +3,7 @@ package de.metas.acct.doc;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
 import org.compiere.acct.PostingExecutionException;
@@ -88,6 +89,10 @@ public class AcctDocRegistry
 
 				// no accountable document found
 				return null;
+			}
+			catch (final AdempiereException ex)
+			{
+				throw ex;
 			}
 			catch (final Exception ex)
 			{

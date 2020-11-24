@@ -51,16 +51,16 @@ import lombok.Setter;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-public class WorkpackageLoggableTest
+class WorkpackageLoggableTest
 {
 	@BeforeEach
-	public void beforeEach()
+	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 	}
 
 	@Test
-	public void addLog_and_flush()
+	void addLog_and_flush()
 	{
 		final MockedWorkpackageLogsRepository logsRepository = new MockedWorkpackageLogsRepository();
 		final WorkpackageLoggable loggable = WorkpackageLoggable.builder()
@@ -94,7 +94,7 @@ public class WorkpackageLoggableTest
 	}
 
 	@Test
-	public void saveLogsFailure()
+	void saveLogsFailure()
 	{
 		final MockedWorkpackageLogsRepository logsRepository = new MockedWorkpackageLogsRepository();
 		logsRepository.setSaveLogsExceptionSupplier(() -> new AdempiereException("saveLogs programatic failure"));
@@ -113,7 +113,7 @@ public class WorkpackageLoggableTest
 	}
 
 	@Test
-	public void addLog_with_Throwable()
+	void addLog_with_Throwable()
 	{
 		final MockedWorkpackageLogsRepository logsRepository = new MockedWorkpackageLogsRepository();
 		final WorkpackageLoggable loggable = WorkpackageLoggable.builder()

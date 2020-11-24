@@ -1,54 +1,8 @@
-package de.metas.ui.web.pickingV2.productsToPick.rows;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.PickingCandidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
-import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.handlingunits.picking.PickingCandidatePickStatus;
-import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.shipping.ShipperId;
-import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
-import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
-import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
-import de.metas.ui.web.window.descriptor.WidgetSize;
-import de.metas.util.lang.CoalesceUtil;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -66,9 +20,54 @@ import lombok.ToString;
  * #L%
  */
 
+package de.metas.ui.web.pickingV2.productsToPick.rows;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.picking.PickingCandidatePickStatus;
+import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
+import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.common.util.CoalesceUtil;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+
 @ToString(exclude = "values")
 public class ProductsToPickRow implements IViewRow
 {
+	public static final String SYSCONFIG_PREFIX = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow.field";
+
 	public static ProductsToPickRow cast(final IViewRow row)
 	{
 		return (ProductsToPickRow)row;
@@ -93,26 +92,30 @@ public class ProductsToPickRow implements IViewRow
 	@ViewColumn(fieldName = FIELD_ProductPackageSizeUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "Package_UOM_ID", widgetSize = WidgetSize.Small)
 	private final String productPackageSizeUOM;
 
+	public static final String FIELD_ProductStockUOM = "productStockUOM";
+	@ViewColumn(fieldName = FIELD_ProductStockUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_UOM_ID", widgetSize = WidgetSize.Small)
+	private final String productStockUOM;
+
 	public static final String FIELD_Locator = "locator";
 	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
 	private final LookupValue locator;
 
 	public static final String FIELD_LotNumber = "lotNumber";
 	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	private final String lotNumber;
 
 	public static final String FIELD_ExpiringDate = "expiringDate";
 	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.LocalDate, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	@Getter
 	private final LocalDate expiringDate;
 
 	public static final String FIELD_RepackNumber = "repackNumber";
 	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	private final String repackNumber;
 
@@ -192,6 +195,7 @@ public class ProductsToPickRow implements IViewRow
 		productName = productInfo.getName();
 		productPackageSize = productInfo.getPackageSize();
 		productPackageSizeUOM = productInfo.getPackageSizeUOM();
+		productStockUOM = productInfo.getStockUOM();
 
 		this.huReservedForThisRow = huReservedForThisRow;
 

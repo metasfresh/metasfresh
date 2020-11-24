@@ -34,7 +34,7 @@
 			<artifactId>de.metas.printing.esb.base</artifactId>
 			<version>10.0.0</version>
 		</dependency>
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>

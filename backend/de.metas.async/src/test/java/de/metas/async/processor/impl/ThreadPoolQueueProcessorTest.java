@@ -1,7 +1,5 @@
 package de.metas.async.processor.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * de.metas.async
@@ -24,18 +22,21 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.api.IWorkPackageQueue;
@@ -47,6 +48,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorExecutionResult;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.util.Services;
+import org.junit.Test;
 
 public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 {
@@ -56,11 +58,13 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 	@Override
 	protected void beforeTestCustomized()
 	{
-		// CLogMgt.setLevel(Level.FINE);
+		// LogManager.setLevel(Level.DEBUG);
+	}
 
+	private void setupQueueProcessor(final int poolSize)
+	{
 		processorDef = helper.createQueueProcessor("test",
-				5, // poolSize
-				10, // maxPoolSize
+				poolSize,
 				1000 // keepAliveTimeMillis
 		);
 		helper.assignPackageProcessor(processorDef, StaticMockedWorkpackageProcessor.class);
@@ -74,14 +78,21 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 	{
 		logger.info(StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor().getStatisticsInfo());
 
-		processorsExecutor.shutdown();
-		processorsExecutor = null;
+		if (processorsExecutor != null)
+		{
+			processorsExecutor.shutdown();
+			processorsExecutor = null;
+		}
 		processorDef = null;
 	}
 
+	/**
+	 * Enqueue 100 WPs, the 5th shall throw an exception.
+	 */
 	@Test
 	public void test_Simple_100workpackages() throws Exception
 	{
+		setupQueueProcessor(5);
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, 100, false);
@@ -89,7 +100,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
 		workpackageProcessor
 				.setDefaultResult(Result.SUCCESS)
-				.setException(workpackages.get(5), "test error")
+				.setRuntimeException(workpackages.get(5), "test error")
 		// .setResult(workpackages.get(7), Result.SKIPPED)
 		;
 		workpackages.get(7).setPriority(X_C_Queue_WorkPackage.PRIORITY_Urgent);
@@ -98,28 +109,33 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 
 		final List<I_C_Queue_WorkPackage> processedWorkpackages = workpackageProcessor.getProcessedWorkpackages();
 
-		helper.waitUntilSize(processedWorkpackages, workpackages.size(), 0 * 1000); // wait max 5sec
+		helper.waitUntilSize(processedWorkpackages, workpackages.size(), 0 * 1000); // wait max 5secs for all WPs to be processed
 
-		Assert.assertEquals("Processed workpackages list shall have same size as initial workpackages list",
-				workpackages.size(), processedWorkpackages.size());
+		assertThat(processedWorkpackages)
+				.as("Processed workpackages list shall have same size as initial workpackages list")
+				.hasSize(processedWorkpackages.size());
 
 		// because we process in parallel it's impossible to make sure first package will be prio1
 		// Assert.assertEquals("Priority 1 packages shall be processed first", workpackages.get(7), processedWorkpackages.get(0));
 
 		for (final I_C_Queue_WorkPackage wp : processedWorkpackages)
 		{
-			final String errorExpected = workpackageProcessor.getException(wp);
-			if (errorExpected != null)
+			final RuntimeException rteExpected = workpackageProcessor.getRuntimeExceptionFor(wp);
+			if (rteExpected != null)
 			{
 				// Exception
-				assertThat(wp.getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(errorExpected);
-				Assert.assertEquals("Workpackage - Invalid Processed: " + wp, false, wp.isProcessed());
-				Assert.assertEquals("Workpackage - Invalid IsError: " + wp, true, wp.isError());
+				assertThat(wp.getErrorMsg())
+						.as("Workpackage - Invalid ErrorMsg: %s", wp).startsWith(rteExpected.getMessage());
+				assertThat(wp.isProcessed())
+						.as("Workpackage - Invalid Processed: " + wp).isFalse();
+				assertThat(wp.isError()).as("Workpackage - Invalid IsError: " + wp).isTrue();
 			}
 			else
 			{
-				Assert.assertEquals("Workpackage - Invalid Processed: " + wp, true, wp.isProcessed());
-				Assert.assertEquals("Workpackage - Invalid IsError: " + wp, false, wp.isError());
+				assertThat(wp.isProcessed())
+						.as("Workpackage - Invalid Processed: " + wp).isTrue();
+				assertThat(wp.isError()).
+						as("Workpackage - Invalid IsError: " + wp).isFalse();
 			}
 		}
 
@@ -127,8 +143,56 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 	}
 
 	@Test
+	public void test_workpackages_OOME() throws Exception
+	{
+		LogManager.setLevel(Level.DEBUG);
+		LogManager.setLoggerLevel("org.adempiere.ad.trx.api.impl.AbstractTrx", Level.INFO);
+		LogManager.setLoggerLevel("de.metas.util.Services", Level.INFO);
+		LogManager.setLoggerLevel("de.metas.async.spi.impl.SysconfigBackedSizeBasedWorkpackagePrioConfig", Level.INFO);
+		setupQueueProcessor(1);
+
+		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
+
+		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, 5, false);
+		assertThat(workpackages).hasSize(5); // guard
+
+		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
+		workpackageProcessor
+				.setDefaultResult(Result.SUCCESS)
+				.setOutOfMemoryError(workpackages.get(3), "test OOME");
+		helper.markReadyForProcessing(workpackages);
+
+		final List<I_C_Queue_WorkPackage> processedWPs = workpackageProcessor.getProcessedWorkpackages();
+
+		helper.waitUntilSize(processedWPs, workpackages.size(), 0);
+
+		assertThat(processedWPs)
+				.as("Processed workpackages list shall have same size as initial workpackages list")
+				.hasSize(processedWPs.size());
+
+		assertThat(processedWPs.get(0).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(0)).isTrue();
+		assertThat(processedWPs.get(0).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(0)).isFalse();
+
+		assertThat(processedWPs.get(1).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(1)).isTrue();
+		assertThat(processedWPs.get(1).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(1)).isFalse();
+
+		assertThat(processedWPs.get(2).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(2)).isTrue();
+		assertThat(processedWPs.get(2).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(2)).isFalse();
+
+		assertThat(processedWPs.get(3).getErrorMsg()).as("Workpackage - Invalid ErrorMsg: %s", processedWPs.get(3)).startsWith("OutOfMemoryError: test OOME");
+		assertThat(processedWPs.get(3).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(3)).isFalse();
+		assertThat(processedWPs.get(3).isError()).as("Workpackage - Invalid IsError: " + processedWPs.get(3)).isTrue();
+
+		assertThat(processedWPs.get(4).isProcessed()).as("Workpackage - Invalid Processed: %s", processedWPs.get(0)).isTrue();
+		assertThat(processedWPs.get(4).isError()).as("Workpackage - Invalid IsError: %s", processedWPs.get(0)).isFalse();
+
+		helper.assertNothingLocked();
+	}
+
+	@Test
 	public void test_Callback() throws Exception
 	{
+		setupQueueProcessor(5);
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		final int count = 1;
@@ -150,8 +214,8 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 
 			final I_C_Queue_WorkPackage processedWorkpackage0 = processedWorkpackages.get(0);
 			InterfaceWrapperHelper.refresh(workpackage0);
-			Assert.assertEquals("Processed package shall be the same as the one enqueued", workpackage0, processedWorkpackage0);
-			Assert.assertEquals("Callback shall be called for our workpackage", processedWorkpackage0, result.getC_Queue_WorkPackage());
+			assertThat(processedWorkpackage0).as("Processed package shall be the same as the one enqueued").isEqualTo(workpackage0);
+			assertThat(result.getC_Queue_WorkPackage()).as("Callback shall be called for our workpackage").isEqualTo(processedWorkpackage0);
 		}
 
 		//
@@ -167,26 +231,25 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 			final IWorkpackageProcessorExecutionResult result = futureResult.get(1, TimeUnit.MINUTES);
 
 			InterfaceWrapperHelper.refresh(workpackage0);
-			Assert.assertEquals("Callback shall be called for our workpackage", workpackage0, result.getC_Queue_WorkPackage());
-			Assert.assertEquals("Workpackage shall be processed again", true, workpackage0.isProcessed());
+			assertThat(result.getC_Queue_WorkPackage()).as("Callback shall be called for our workpackage").isEqualTo(workpackage0);
+			assertThat(workpackage0.isProcessed()).as("Workpackage shall be processed again").isTrue();
 		}
 	}
 
 	/**
 	 * Aim of this test is to make sure that everything works ok even if we issue {@link ITrx#commit(boolean)} multiple times.
-	 *
-	 * @throws Exception
 	 */
 	@Test
 	public void test_markReadyForProcessingAfterTrxCommit_MultipleCommits() throws Exception
 	{
+		setupQueueProcessor(5);
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, false);
 		final I_C_Queue_WorkPackage workpackage0 = workpackages.get(0);
 
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
-		workpackageProcessor.setException(workpackage0, "Fail test");
+		workpackageProcessor.setRuntimeException(workpackage0, "Fail test");
 
 		final String trxName = Services.get(ITrxManager.class).createTrxName("TestTrx", true);
 		final ITrx trx = Services.get(ITrxManager.class).get(trxName, false);
@@ -202,7 +265,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 
 		// Get result
 		final IWorkpackageProcessorExecutionResult result = futureResult.get(1, TimeUnit.MINUTES);
-		Assert.assertNotNull("Result shall be available after second commit", result);
+		assertThat(result).as("Result shall be available after second commit").isNotNull();
 
 		//
 		// Make sure second commit will fail and execute it
@@ -216,16 +279,16 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		trx.commit(true);
 
 		// Get result
-		Assert.assertTrue("Future result shall be marked as done", futureResult.isDone());
+		assertThat(futureResult.isDone()).as("Future result shall be marked as done").isTrue();
 		final IWorkpackageProcessorExecutionResult result2 = futureResult.get(1, TimeUnit.MINUTES);
-		Assert.assertNotNull("Result shall be available after second commit", result2);
+		assertThat(result2).as("Result shall be available after second commit").isNotNull();
 	}
 
 	@Test
 	public void test_Callback_AfterCommit_Commit() throws Exception
 	{
-		//
 		// Setup
+		setupQueueProcessor(5);
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
@@ -243,9 +306,9 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		//
 		// Mark ready for processing after transaction is committed
 		final Future<IWorkpackageProcessorExecutionResult> futureResult = workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage0, trx.getTrxName());
-		Assert.assertFalse("Workpackage " + workpackage0 + " shall not be marked ready for processing because transaction is not commited yet", workpackage0.isReadyForProcessing());
-		Assert.assertFalse("Workpackage " + workpackage0 + " shall NOT be processed", workpackage0.isProcessed());
-		Assert.assertEquals("Result " + futureResult + " shall not be available yet", false, futureResult.isDone());
+		assertThat(workpackage0.isReadyForProcessing()).as("Workpackage " + workpackage0 + " shall not be marked ready for processing because transaction is not commited yet").isFalse();
+		assertThat(workpackage0.isProcessed()).as("Workpackage " + workpackage0 + " shall NOT be processed").isFalse();
+		assertThat(futureResult.isDone()).as("Result " + futureResult + " shall not be available yet").isFalse();
 
 		//
 		// Commit the transaction
@@ -261,22 +324,22 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		//
 		// Validate the result
 		{
-			Assert.assertEquals("Result " + futureResult + " shall be available", true, futureResult.isDone());
-			Assert.assertEquals("Result " + futureResult + " shall not be canceled", false, futureResult.isCancelled());
+			assertThat(futureResult.isDone()).as("Result " + futureResult + " shall be available").isTrue();
+			assertThat(futureResult.isCancelled()).as("Result " + futureResult + " shall not be canceled").isFalse();
 
 			final IWorkpackageProcessorExecutionResult result = futureResult.get();
-			Assert.assertNotNull("Inner result of " + futureResult + " shall be available", result);
+			assertThat(result).as("Inner result of " + futureResult + " shall be available").isNotNull();
 
 			InterfaceWrapperHelper.refresh(workpackage0);
-			Assert.assertTrue("Workpackage " + workpackage0 + " shall be processed", workpackage0.isProcessed());
+			assertThat(workpackage0.isProcessed()).as("Workpackage " + workpackage0 + " shall be processed").isTrue();
 		}
 	}
 
-	@Test(expected = CancellationException.class)
+	@Test
 	public void test_Callback_AfterCommit_Rollback() throws Exception
 	{
-		//
 		// Setup
+		setupQueueProcessor(5);
 		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
 
 		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
@@ -294,9 +357,10 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		//
 		// Mark ready for processing after transaction is commited
 		final Future<IWorkpackageProcessorExecutionResult> futureResult = workpackageQueue.markReadyForProcessingAfterTrxCommit(workpackage0, trx.getTrxName());
-		Assert.assertFalse("Workpackage " + workpackage0 + " shall not be marked ready for processing because transaction is not commited yet", workpackage0.isReadyForProcessing());
-		Assert.assertFalse("Workpackage " + workpackage0 + " shall NOT be processed", workpackage0.isProcessed());
-		Assert.assertEquals("Result " + futureResult + " shall not be available yet", false, futureResult.isDone());
+		assertThat(workpackage0.isReadyForProcessing()).as("Workpackage " + workpackage0 + " shall not be marked ready for processing because transaction is not commited yet").isFalse();
+
+		assertThat(workpackage0.isProcessed()).as("Workpackage " + workpackage0 + " shall NOT be processed").isFalse();
+		assertThat(futureResult.isDone()).as("Result " + futureResult + " shall not be available yet").isFalse();
 
 		//
 		// Rollback the transaction
@@ -305,15 +369,15 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		//
 		// Validate the result
 		{
-			Assert.assertEquals("Result " + futureResult + " shall be available", true, futureResult.isDone());
+			assertThat(futureResult.isDone()).as("Result " + futureResult + " shall be available").isTrue();
 			// Assert.assertEquals("Result " + futureResult + " shall be canceled", true, futureResult.isCancelled());
 
 			InterfaceWrapperHelper.refresh(workpackage0);
-			Assert.assertFalse("Workpackage " + workpackage0 + " shall not be marked ready for processing because transaction is not commited yet", workpackage0.isReadyForProcessing());
-			Assert.assertFalse("Workpackage " + workpackage0 + " shall NOT be processed", workpackage0.isProcessed());
+			assertThat(workpackage0.isReadyForProcessing()).as("Workpackage " + workpackage0 + " shall not be marked ready for processing because transaction is not commited yet").isFalse();
+			assertThat(workpackage0.isProcessed()).as("Workpackage " + workpackage0 + " shall NOT be processed").isFalse();
 
 			// Expect following to throw CancellationException
-			futureResult.get();
+			assertThatThrownBy(() -> futureResult.get()).isInstanceOf(CancellationException.class);
 		}
 	}
 }

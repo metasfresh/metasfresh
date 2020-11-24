@@ -1,27 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -44,6 +22,28 @@ import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
@@ -63,6 +63,7 @@ import de.metas.location.ILocationBL;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -332,17 +333,35 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public void setAddress(final I_C_BPartner_Location bpLocation)
+	public void updateAllAddresses(@NonNull final I_C_BPartner bpartner)
 	{
-		final String address = Services.get(ILocationBL.class).mkAddress(
+		final List<I_C_BPartner_Location> bpLocations = bpartnersRepo.retrieveBPartnerLocations(bpartner);
+		for (final I_C_BPartner_Location bpLocation : bpLocations)
+		{
+			updateAddressNoSave(bpLocation, bpartner);
+			bpartnersRepo.save(bpLocation);
+		}
+	}
+
+	@Override
+	public void setAddress(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpLocation.getC_BPartner_ID());
+		updateAddressNoSave(bpLocation, bpartner);
+	}
+
+	private void updateAddressNoSave(final I_C_BPartner_Location bpLocation, final I_C_BPartner bpartner)
+	{
+		final ILocationBL locationBL = Services.get(ILocationBL.class);
+		
+		final String address = locationBL.mkAddress(
 				bpLocation.getC_Location(),
-				bpartnersRepo.getById(bpLocation.getC_BPartner_ID()),
+				bpartner,
 				"",  // bPartnerBlock
 				"" // userBlock
 		);
 
 		bpLocation.setAddress(address);
-
 	}
 
 	@Override
@@ -438,6 +457,8 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		Check.assumeNotNull(template, "Parameter template is not null");
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
+		Check.assume(template.getC_Location_ID() > 0, "{} > 0", template); // just to make sure&explicit
+
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
 		//
@@ -658,6 +679,16 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner bpartner = getById(bpartnerId);
 		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = ShipmentAllocationBestBeforePolicy.ofNullableCode(bpartner.getShipmentAllocation_BestBefore_Policy());
 		return bestBeforePolicy != null ? bestBeforePolicy : ShipmentAllocationBestBeforePolicy.Expiring_First;
+	}
+
+	@Override
+	public Optional<PaymentTermId> getPaymentTermIdForBPartner(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+
+		return soTrx.isSales()
+				? PaymentTermId.optionalOfRepoId(bpartner.getC_PaymentTerm_ID())
+				: PaymentTermId.optionalOfRepoId(bpartner.getPO_PaymentTerm_ID());
 	}
 
 	@Override

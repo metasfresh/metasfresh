@@ -59,4 +59,6 @@ public interface IMovementDAO extends ISingletonService
 	void save(final I_M_Movement movement);
 
 	void save(final I_M_MovementLine movementLine);
+
+	List<I_M_Movement> retrieveMovementsForDDOrder(int ddOrderId);
 }

@@ -2,8 +2,11 @@ package de.metas.ui.web.payment_allocation.process;
 
 import org.compiere.SpringContextHolder;
 
+import de.metas.banking.payment.paymentallocation.IPaymentAllocationBL;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.MoneyService;
 import de.metas.ui.web.payment_allocation.process.PaymentsViewAllocateCommand.PaymentsViewAllocateCommandBuilder;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -31,6 +34,8 @@ import lombok.NonNull;
 abstract class PaymentsView_Allocate_Template extends PaymentsViewBasedProcess
 {
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
+	private final IPaymentAllocationBL paymentAllocationBL = Services.get(IPaymentAllocationBL.class);
 
 	@Override
 	protected final String doIt()
@@ -56,8 +61,11 @@ abstract class PaymentsView_Allocate_Template extends PaymentsViewBasedProcess
 	{
 		final PaymentsViewAllocateCommandBuilder builder = PaymentsViewAllocateCommand.builder()
 				.moneyService(moneyService)
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				//
 				.paymentRow(getSingleSelectedPaymentRowOrNull())
-				.invoiceRows(getSelectedInvoiceRows());
+				.invoiceRows(getSelectedInvoiceRows())
+				.allowPurchaseSalesInvoiceCompensation(paymentAllocationBL.isPurchaseSalesInvoiceCompensationAllowed());
 
 		customizePaymentsViewAllocateCommandBuilder(builder);
 

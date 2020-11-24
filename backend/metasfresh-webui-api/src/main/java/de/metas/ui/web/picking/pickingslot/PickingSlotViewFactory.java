@@ -1,20 +1,10 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util.ArrayKey;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -24,6 +14,8 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToExistingHU;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ForcePickToNewHU;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
@@ -43,7 +35,20 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Util.ArrayKey;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import static de.metas.ui.web.picking.PickingConstants.SYS_CONFIG_SHOW_ALL_PICKING_CANDIDATES_ON_PICKING_SLOTS;
 
 /*
  * #%L
@@ -81,6 +86,8 @@ public class PickingSlotViewFactory implements IViewFactory
 
 	private CCache<ArrayKey, ViewLayout> viewLayoutCache = CCache.newCache("PickingSlotViewLayout", 1, CCache.EXPIREMINUTES_Never);
 	private CCache<Integer, DocumentFilterDescriptorsProvider> filterDescriptorsProviderCache = CCache.newCache("PickingSlotView.FilterDescriptorsProvider", 1, CCache.EXPIREMINUTES_Never);
+
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId_NOTUSED)
@@ -139,8 +146,17 @@ public class PickingSlotViewFactory implements IViewFactory
 		final DocumentId pickingRowId = request.getParentRowId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 		final ShipmentScheduleId currentShipmentScheduleId = extractCurrentShipmentScheduleId(request);
+		final boolean includeAllShipmentSchedules = sysConfigBL.getBooleanValue(SYS_CONFIG_SHOW_ALL_PICKING_CANDIDATES_ON_PICKING_SLOTS, false);
 
-		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(filters, currentShipmentScheduleId, allShipmentScheduleIds);
+		final CreatePickingSlotRepoQueryReq createQueryReq = CreatePickingSlotRepoQueryReq.builder()
+				.allShipmentScheduleIds(allShipmentScheduleIds)
+				.currentShipmentScheduleId(currentShipmentScheduleId)
+				.filters(filters)
+				.includeAllShipmentSchedules(includeAllShipmentSchedules)
+				.build();
+
+		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(createQueryReq);
+
 		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRows(query);
 
 		return PickingSlotView.builder()
@@ -154,30 +170,30 @@ public class PickingSlotViewFactory implements IViewFactory
 				.build();
 	}
 
-	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(
-			final DocumentFilterList filters,
-			final ShipmentScheduleId currentShipmentScheduleId,
-			final Set<ShipmentScheduleId> allShipmentScheduleIds)
+	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(@NonNull final CreatePickingSlotRepoQueryReq pickingSlotRepoQueryReq)
 	{
 		//
 		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
 		final PickingSlotRepoQueryBuilder queryBuilder = PickingSlotRepoQuery.builder()
 				.onlyNotClosedOrNotRackSystem(true)
-				.currentShipmentScheduleId(currentShipmentScheduleId);
-		if (allShipmentScheduleIds == null || allShipmentScheduleIds.isEmpty())
-		{
-			queryBuilder.shipmentScheduleId(currentShipmentScheduleId);
-		}
-		else
-		{
-			Check.errorUnless(allShipmentScheduleIds.contains(currentShipmentScheduleId),
-					"The given allShipmentScheduleIds has to include the given request's shipmentScheduleId; shipmentScheduleId={}; allShipmentScheduleIds={}; filters={}",
-					currentShipmentScheduleId, allShipmentScheduleIds, filters);
+				.currentShipmentScheduleId(pickingSlotRepoQueryReq.getCurrentShipmentScheduleId());
 
-			queryBuilder.shipmentScheduleIds(allShipmentScheduleIds);
+		final Set<ShipmentScheduleId> shipmentScheduleIds = pickingSlotRepoQueryReq.isIncludeAllShipmentSchedules()
+				? ImmutableSet.of()
+				: Check.isEmpty(pickingSlotRepoQueryReq.getAllShipmentScheduleIds())
+					? ImmutableSet.of(pickingSlotRepoQueryReq.getCurrentShipmentScheduleId())
+				    : pickingSlotRepoQueryReq.getAllShipmentScheduleIds();
+
+		if (!Check.isEmpty(shipmentScheduleIds))
+		{
+			Check.errorUnless(shipmentScheduleIds.contains(pickingSlotRepoQueryReq.getCurrentShipmentScheduleId()),
+					"The given allShipmentScheduleIds has to include the given request's shipmentScheduleId; request={}",
+					pickingSlotRepoQueryReq);
 		}
 
-		final String barcode = PickingSlotViewFilters.getPickingSlotBarcode(filters);
+		queryBuilder.shipmentScheduleIds(shipmentScheduleIds);
+
+		final String barcode = PickingSlotViewFilters.getPickingSlotBarcode(pickingSlotRepoQueryReq.getFilters());
 		if (!Check.isEmpty(barcode, true))
 		{
 			queryBuilder.pickingSlotBarcode(barcode);
@@ -202,6 +218,8 @@ public class PickingSlotViewFactory implements IViewFactory
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToNewHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_PickQtyToExistingHU.class),
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ReturnQtyToSourceHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToNewHU.class),
+				createProcessDescriptorForPickingSlotView(WEBUI_Picking_ForcePickToExistingHU.class),
 
 				// note that WEBUI_Picking_M_Source_HU_Create is called from the HU-editor
 				createProcessDescriptorForPickingSlotView(WEBUI_Picking_M_Source_HU_Delete.class),
@@ -228,5 +246,19 @@ public class PickingSlotViewFactory implements IViewFactory
 				.processId(processId)
 				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
+	}
+
+	@Value
+	@Builder
+	private static class CreatePickingSlotRepoQueryReq
+	{
+		DocumentFilterList filters;
+
+		@NonNull
+		ShipmentScheduleId currentShipmentScheduleId;
+
+		Set<ShipmentScheduleId> allShipmentScheduleIds;
+
+		boolean includeAllShipmentSchedules;
 	}
 }

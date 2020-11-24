@@ -32,7 +32,7 @@ import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;

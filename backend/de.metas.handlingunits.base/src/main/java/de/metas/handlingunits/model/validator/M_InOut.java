@@ -22,21 +22,6 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPackageBL;
@@ -58,6 +43,20 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Interceptor(I_M_InOut.class)
 @Component

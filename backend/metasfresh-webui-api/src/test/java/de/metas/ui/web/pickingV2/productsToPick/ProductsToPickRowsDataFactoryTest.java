@@ -1,54 +1,8 @@
-package de.metas.ui.web.pickingV2.productsToPick;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.Collection;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
-import de.metas.handlingunits.picking.PickingCandidatePickStatus;
-import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.ui.web.pickingV2.packageable.PackageableRow;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowType;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
-import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import lombok.Builder;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -65,6 +19,55 @@ import lombok.Builder;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.pickingV2.productsToPick;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Collection;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
+import de.metas.handlingunits.picking.PickingCandidatePickStatus;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.inoutcandidate.api.Packageable;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowType;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
+import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import lombok.Builder;
 
 public class ProductsToPickRowsDataFactoryTest
 {
@@ -87,7 +90,13 @@ public class ProductsToPickRowsDataFactoryTest
 
 		customerAndLocationId = BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(2), 3);
 		productId = testHelper.createProduct("product");
+		{
+			final I_M_Product product = load(productId, I_M_Product.class);
+			product.setC_UOM_ID(testHelper.uomKg.getC_UOM_ID());
+			save((product));
+		}
 		uomKg = testHelper.uomKg;
+
 		final WarehouseId warehouseId = testHelper.createWarehouse();
 		locatorId = testHelper.createLocator(warehouseId);
 	}

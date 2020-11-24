@@ -22,27 +22,19 @@ package de.metas.adempiere.service;
  * #L%
  */
 
-
 import java.util.List;
-import java.util.Properties;
 
 import de.metas.adempiere.model.I_AD_Printer;
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.util.ISingletonService;
+import de.metas.adempiere.model.I_AD_PrinterRouting;
+
+import javax.annotation.Nullable;
 
 public interface IPrinterRoutingDAO extends ISingletonService
 {
-	<T> List<T> fetchPrinterRoutings(
-			@CacheCtx Properties ctx,
-			int AD_Client_ID,
-			int AD_Org_ID,
-			int AD_Role_ID,
-			int AD_User_ID,
-			int C_DocType_ID,
-			int AD_Process_ID,
-			int AD_Table_ID,
-			String printerType,
-			Class<T> clazz);
+	List<I_AD_PrinterRouting> fetchPrinterRoutings(PrinterRoutingsQuery query);
 
-	I_AD_Printer findPrinterByName(Properties ctx, String printerName);
+	@Nullable
+	I_AD_Printer findPrinterByName(@Nullable String printerName);
+
 }

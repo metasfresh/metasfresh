@@ -32,6 +32,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
@@ -64,7 +66,8 @@ public final class HUStorageRecord implements IStorageRecord
 	private final Quantity qtyOnHand;
 	private String _summary;
 
-	/* package */HUStorageRecord(
+	@VisibleForTesting
+	public HUStorageRecord(
 			@NonNull final HUStorageRecord_HUPart huPart,
 			@NonNull final I_M_HU_Storage huStorage)
 	{

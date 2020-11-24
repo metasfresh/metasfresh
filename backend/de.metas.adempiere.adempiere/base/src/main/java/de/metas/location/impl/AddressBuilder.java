@@ -1,5 +1,39 @@
 package de.metas.location.impl;
 
+import de.metas.greeting.Greeting;
+import de.metas.greeting.GreetingId;
+import de.metas.greeting.GreetingRepository;
+import de.metas.i18n.Language;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.location.CountryCustomInfo;
+import de.metas.location.CountryId;
+import de.metas.location.CountrySequences;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Greeting;
+import org.compiere.model.I_C_Location;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
@@ -23,44 +57,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Greeting;
-import org.compiere.model.I_C_Location;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-
-import de.metas.greeting.Greeting;
-import de.metas.greeting.GreetingId;
-import de.metas.greeting.GreetingRepository;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.location.CountryCustomInfo;
-import de.metas.location.CountryId;
-import de.metas.location.CountrySequences;
-import de.metas.location.ICountryDAO;
-import de.metas.location.ILocationBL;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.Builder;
-import lombok.NonNull;
 
 public class AddressBuilder
 {
@@ -120,8 +116,7 @@ public class AddressBuilder
 	 * Build address string
 	 *
 	 * @param location
-	 * @param isLocalAddress
-	 *            true if this is a local address (i.e. location's country is same as our tenant)
+	 * @param isLocalAddress true if this is a local address (i.e. location's country is same as our tenant)
 	 * @param bPartnerBlock
 	 * @param userBlock
 	 * @return
@@ -292,8 +287,8 @@ public class AddressBuilder
 			}
 			else if (token.equals("CO"))
 			{
-				final ITranslatableString countryNameTrls = countriesRepo.getCountryNameById(countryId);
-				final String countryName = countryNameTrls.translate(Env.getAD_Language());
+				String language = adLanguage == null ? Language.getBaseAD_Language() : adLanguage;
+				final String countryName = countriesRepo.getCountryNameById(countryId).translate(language);
 				if (!Check.isEmpty(countryName, true))
 				{
 					outStr.append(countryName);
@@ -477,7 +472,6 @@ public class AddressBuilder
 		String bpName = "";
 		String bpName2 = "";
 
-		
 		if (bPartner.isCompany()
 				|| user == null
 				|| user.getAD_User_ID() == 0
@@ -649,18 +643,18 @@ public class AddressBuilder
 	 * build User block
 	 *
 	 * @param ctx
-	 * @param isLocal true if local country
+	 * @param isLocal       true if local country
 	 * @param user
 	 * @param bPartnerBlock
 	 * @param trxName
 	 * @return
 	 */
-	private String buildUserBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner,  final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final String trxName)
+	private String buildUserBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner, final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final boolean isPartnerCompany = bPartner.isCompany();
 		final Language language = Language.asLanguage(bPartner.getAD_Language());
-		
+
 		String userGreeting = "";
 		if (user != null)
 		{
@@ -671,8 +665,7 @@ public class AddressBuilder
 				final Greeting greeting = greetingRepository.getByIdAndLang(greetingId, language);
 				userGreeting = greeting.getGreeting();
 			}
-			
-			
+
 			final String userName = user.getLastname();
 			final String userVorname = user.getFirstname();
 			final String userTitle = user.getTitle();

@@ -1,12 +1,37 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.adempiere.ad.dao.impl;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import lombok.EqualsAndHashCode;
+
+import javax.annotation.Nullable;
 
 /**
  * Date TRUNC modifier
@@ -113,18 +138,18 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 	}
 
 	@Override
-	public String getColumnSql(final String columnSql)
+	public @NonNull String getColumnSql(final @NonNull String columnName)
 	{
 		if (truncSql == null)
 		{
-			return columnSql;
+			return columnName;
 		}
 
 		// TODO: optimization: instead of using TRUNC we shall use BETWEEN and precalculated values because:
 		// * using BETWEEN is INDEX friendly
 		// * using functions is not INDEX friendly at all and if we have an index on this date column, the index won't be used
 
-		final String columnSqlNew = "TRUNC(" + columnSql + ", " + DB.TO_STRING(truncSql) + ")";
+		final String columnSqlNew = "TRUNC(" + columnName + ", " + DB.TO_STRING(truncSql) + ")";
 		return columnSqlNew;
 	}
 
@@ -155,9 +180,10 @@ public final class DateTruncQueryFilterModifier implements IQueryFilterModifier
 	/**
 	 * @deprecated Please use {@link #convertValue(java.util.Date)}
 	 */
+	@Nullable
 	@Override
 	@Deprecated
-	public Object convertValue(final String columnName, final Object value, final Object model)
+	public Object convertValue(@Nullable final String columnName, @Nullable final Object value, final @Nullable Object model)
 	{
 		return convertValue(TimeUtil.asTimestamp(value));
 	}

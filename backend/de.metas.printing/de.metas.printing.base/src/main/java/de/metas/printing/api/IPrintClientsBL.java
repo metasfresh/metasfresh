@@ -31,10 +31,10 @@ import de.metas.util.ISingletonService;
 public interface IPrintClientsBL extends ISingletonService
 {
 	/**
-	 * 04072 Creates entries for the applet status table
-	 * 
-	 * @param hostkey
+	 * 04072 Creates entries for the printing clients' status table
 	 */
 	I_AD_Print_Clients createPrintClientsEntry(Properties ctx, String hostkey);
+
+	String getHostKeyOrNull(Properties ctx);
 
 }

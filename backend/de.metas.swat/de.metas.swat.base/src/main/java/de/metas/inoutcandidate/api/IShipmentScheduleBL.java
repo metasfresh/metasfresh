@@ -22,26 +22,11 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOut;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -50,13 +35,26 @@ import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
 	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
 	/**
-	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
+	 * Please use this method to avoid unneeded work packages.
 	 *
 	 * @return {@code true} if the caller can (and should) skip scheduling a workpackage processor.
 	 */
@@ -78,15 +76,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 *
 	 * @param sched
 	 */
-	void updateBPArtnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
-
-	/**
-	 * Currently this method returns true iff the given {@code sched} has just been changes by {@link #updateSchedules(Properties, List, boolean, Timestamp, CachedObjects, String)}.
-	 *
-	 * @param sched
-	 * @return
-	 */
-	boolean isChangedByUpdateProcess(I_M_ShipmentSchedule sched);
+	void updateBPartnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc (i.e. the stock UOM)
@@ -116,7 +106,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
 	 *
-	 * @param shipmentSchedule
 	 * @return the previous <code>QtyOrdered</code> value of the schedule
 	 *         <li>NOTE: This returned value is never used. Maybe we shall change this method to return void.
 	 * @task 08255
@@ -145,9 +134,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * Creates a storage query for the given {@code shipmentSchedule}.
 	 *
-	 * @param sched
 	 * @param considerAttributes {@code true} if the query shall be strict with respect to the given {@code shipmentSchedule}'s ASI.
-	 * @return query
 	 */
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes);
 
@@ -161,11 +148,15 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
+	Map<ShipmentScheduleId,I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
+
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
 
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
+
+	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule schedule);
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 
@@ -179,10 +170,14 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
 
+	void applyShipmentScheduleChanges(ApplyShipmentScheduleChangesRequest request);
+
 	/**
 	 * Close linked shipment schedules if they were partially invoiced
 	 * Note: This behavior is determined by the value of the sys config {@code M_ShipmentSchedule_Close_PartiallyInvoice}.
 	 * The scheds will be closed only if the sys config is set to 'Y'
 	 */
 	void closePartiallyShipped_ShipmentSchedules(I_M_InOut inoutRecord);
+
+	void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched);
 }

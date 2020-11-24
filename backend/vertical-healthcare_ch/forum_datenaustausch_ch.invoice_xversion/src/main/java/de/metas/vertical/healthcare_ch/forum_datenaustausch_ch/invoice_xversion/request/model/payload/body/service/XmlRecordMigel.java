@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.payload.body.XmlService.ServiceModWithSelector.ServiceMod;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 /*
  * #%L
  * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
@@ -40,6 +42,18 @@ public class XmlRecordMigel implements XmlService
 
 	@NonNull
 	String tariffType;
+
+	@Override
+	public String getName()
+	{
+		return recordService.getName();
+	}
+
+	@Override
+	public XMLGregorianCalendar getDateBegin()
+	{
+		return recordService.getDateBegin();
+	}
 
 	@Override
 	public Integer getRecordId()

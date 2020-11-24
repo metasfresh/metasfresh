@@ -1,6 +1,6 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -62,12 +62,13 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.utils.ApiAPMHelper;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.security.PermissionServiceFactories;
 import de.metas.security.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
@@ -186,16 +187,11 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
-				.name("CreateOrUpdateMasterDataBulk")
-				.type(Type.REST_API_PROCESSING.getCode())
-				.build();
-
 		perfMonService.monitorSpan(
 				() -> bulkRequest.getRequests()
 						.stream()
 						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
-				spanMetadata);
+						ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
 	}
 
 	private void createOrUpdateMasterdata(

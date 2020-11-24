@@ -4,10 +4,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -19,7 +21,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
 
-import java.util.Objects;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
@@ -87,26 +88,26 @@ public final class AttributesKeys
 	private static AttributesKeyPart createAttributesKeyPart(final IAttributeSet attributeSet, final I_M_Attribute attribute)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		final String attributeKey = attribute.getValue();
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
 		final String attributeValueType = attribute.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
-			final String valueStr = attributeSet.getValueAsString(attributeKey);
+			final String valueStr = attributeSet.getValueAsString(attributeCode);
 			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeKey);
+			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
 			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeKey);
+			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeCode);
 			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
-			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeKey);
+			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeCode);
 			return attributeValueId != null
 					? AttributesKeyPart.ofAttributeValueId(attributeValueId)
 					: null;

@@ -40,6 +40,8 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -63,7 +65,8 @@ public class HUStorageEngine implements IStorageEngine
 	private static final transient String SYSCONFIG_QueriesPerChunk = "de.metas.storage.spi.hu.impl.HUStorageEngine.QueriesPerChunk";
 	private static final transient int DEFAULT_QueriesPerChunk = 500;
 
-	private HUStorageEngine()
+	@VisibleForTesting
+	public HUStorageEngine()
 	{
 	}
 

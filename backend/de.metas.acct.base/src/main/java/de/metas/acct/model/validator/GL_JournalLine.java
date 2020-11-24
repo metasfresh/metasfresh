@@ -30,6 +30,7 @@ public class GL_JournalLine
 	@Init
 	public void init()
 	{
+		CopyRecordFactory.enableForTableName(I_GL_JournalLine.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_GL_JournalLine.Table_Name, GLJournalLineCopyRecordSupport.class);
 	}
 

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,9 +82,9 @@ public class PrintingQueueBLTests
 		final PrintingQueueBL printingQueueBL = new PrintingQueueBL();
 		printingQueueBL.setPrintoutForOtherUsers(item, ImmutableSet.of(printRecipient.getAD_User_ID()));
 
-		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
+		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0), printRecipient.getAD_User_ID());
+		assertEquals(result.get(0).getRepoId(), printRecipient.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 
@@ -102,9 +103,9 @@ public class PrintingQueueBLTests
 
 			printingQueueBL.setPrintoutForOtherUsers(item, ImmutableSet.of(printRecipient1.getAD_User_ID()));
 
-			final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
+			final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 			assertEquals(result.size(), 1);
-			assertEquals(result.get(0), printRecipient1.getAD_User_ID());
+			assertEquals(result.get(0).getRepoId(), printRecipient1.getAD_User_ID());
 			assertTrue(item.isPrintoutForOtherUser());
 		}
 
@@ -114,9 +115,9 @@ public class PrintingQueueBLTests
 		printingQueueBL.setPrintoutForOtherUsers(item, ImmutableSet.of(printRecipient2.getAD_User_ID()));
 
 		// still expecting one recipient, but printRecipient2
-		final List<Integer> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
+		final List<UserId> result = printingDAO.retrievePrintingQueueRecipientIDs(item);
 		assertEquals(result.size(), 1);
-		assertEquals(result.get(0), printRecipient2.getAD_User_ID());
+		assertEquals(result.get(0).getRepoId(), printRecipient2.getAD_User_ID());
 		assertTrue(item.isPrintoutForOtherUser());
 	}
 }

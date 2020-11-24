@@ -1,22 +1,9 @@
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerLocationInfo;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
@@ -27,8 +14,9 @@ import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
-import de.metas.inout.InOutId;
+import de.metas.inout.IInOutDAO;
 import de.metas.lock.api.LockOwner;
+import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -38,6 +26,24 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Warehouse;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -64,6 +70,11 @@ import lombok.NonNull;
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
 	private static final LockOwner transportationLockOwner = LockOwner.newOwner(HUShipperTransportationBL.class.getName());
+
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
+	private final ShipperTransportationRepository shipperTransportationRepository = SpringContextHolder.instance.getBean(ShipperTransportationRepository.class);
 
 	@Override
 	public List<I_M_Package> addHUsToShipperTransportation(final ShipperTransportationId shipperTransportationId, final Collection<I_M_HU> hus)
@@ -149,7 +160,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 	@NonNull
 	@Override
-	public ImmutableList<I_M_Package> addInOutWithoutHUToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final ImmutableList<de.metas.inout.model.I_M_InOut> inOuts)
+	public ImmutableList<I_M_Package> addInOutWithoutHUToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final ImmutableList<CreatePackagesForInOutRequest> requests)
 	{
 		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 
@@ -171,25 +182,32 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		// - assign M_Packages them to Shipper Transportation document
 		// - assign ShipperTransportation to the InOut
 		final ImmutableList.Builder<I_M_Package> result = ImmutableList.builder();
-		for (final de.metas.inout.model.I_M_InOut inOut : inOuts)
+		for (final CreatePackagesForInOutRequest request : requests)
 		{
 			// Skip the InOuts which already have a Shipper Transportation
-			if (inOut.getM_ShipperTransportation_ID() != 0)
+			if (request.getShipperTransportationId() != null)
 			{
 				continue;
 			}
 
 			//
-			// Create M_Package
-			final I_M_Package mpackage = inOutPackageDAO.createM_Package(InOutId.ofRepoId(inOut.getM_InOut_ID()), shipperId);
-			result.add(mpackage);
+			// Create M_Packages
+			final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
+					.inOutId(request.getShipmentId())
+					.shipperId(shipperId)
+					.processed(request.isProcessed())
+					.trackingCodes(request.getTrackingNumbers())
+					.build();
+
+			final List<I_M_Package> mPackages = inOutPackageDAO.createM_Packages(createPackagesRequest);
+			result.addAll(mPackages);
 
 			//
 			// Add M_Package to Shipper Transportation document
-			shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
+			mPackages.forEach(mpackage -> shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage));
 
 			// Add ShipperTransportation to InOut
-			inOut.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
+			request.setShipperTransportationId(shipperTransportationId);
 		}
 
 		return result.build();
@@ -313,18 +331,61 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 		//
 		// Make sure all of the HUs in this structure have the exact same shipper transportation
-		int generalShippertTransportationId = -1;
+		int generalShipperTransportationId = -1;
 		for (final I_M_ShippingPackage shippingPackage : shippingPackages)
 		{
 			final int shipperTransportationId = shippingPackage.getM_ShipperTransportation_ID();
-			if (generalShippertTransportationId < 0)
+			if (generalShipperTransportationId < 0)
 			{
-				generalShippertTransportationId = shipperTransportationId;
+				generalShipperTransportationId = shipperTransportationId;
 			}
-			Check.assume(generalShippertTransportationId == shipperTransportationId, "shipper transportations shall all match for any given HU");
+			Check.assumeEquals(generalShipperTransportationId, shipperTransportationId, "shipper transportations shall all match for any given HU");
 		}
 
 		final I_M_ShippingPackage firstPackage = shippingPackages.iterator().next();
 		return firstPackage.getM_ShipperTransportation();
+	}
+
+	@NonNull
+	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		return load(shipperTransportationId, I_M_ShipperTransportation.class);
+	}
+
+	@NonNull
+	public ShipperTransportationId addTrackingCodesForInOutWithoutHU(@NonNull final AddTrackingCodesForInOutWithoutHUReq req)
+	{
+		final I_M_InOut shipment = inOutDAO.getById(req.getInOutId());
+
+		final BPartnerLocationInfo shipFromBPLocation = getShipFromBPartnerAndLocation(shipment);
+
+		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
+				.builder()
+				.shipperId(req.getShipperId())
+				.shipperBPartnerAndLocationId(shipFromBPLocation.getId())
+				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
+				.shipDate(req.getShipDate())
+				.build();
+
+		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
+
+		final CreatePackagesForInOutRequest createPackagesForInOutRequest = CreatePackagesForInOutRequest.builder()
+				.shipment(InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class))
+				.trackingNumbers(req.getTrackingCodes())
+				.processed(true)// mark the M_Package records as processed
+				.build();
+
+		addInOutWithoutHUToShipperTransportation(shipperTransportationId, ImmutableList.of(createPackagesForInOutRequest));
+
+		return shipperTransportationId;
+	}
+
+	private BPartnerLocationInfo getShipFromBPartnerAndLocation(final I_M_InOut shipment)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		final BPartnerLocationId warehouseBPLocationId = BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
+		final BPartnerLocationInfo warehouseBPLocationInfo = bPartnerLocationInfoRepository.getByBPartnerLocationId(warehouseBPLocationId);
+		return warehouseBPLocationInfo;
 	}
 }

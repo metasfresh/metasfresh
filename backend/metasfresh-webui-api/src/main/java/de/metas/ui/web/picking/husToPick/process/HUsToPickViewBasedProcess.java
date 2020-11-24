@@ -17,7 +17,7 @@ import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;

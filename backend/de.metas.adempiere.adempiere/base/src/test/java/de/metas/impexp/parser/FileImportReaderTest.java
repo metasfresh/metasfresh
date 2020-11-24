@@ -1,27 +1,8 @@
-package de.metas.impexp.parser;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.client
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,6 +19,26 @@ import static org.junit.Assert.assertTrue;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.impexp.parser;
+
+import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assertions;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class FileImportReaderTest
 {
@@ -114,33 +115,83 @@ public class FileImportReaderTest
 		final Charset charset = StandardCharsets.UTF_8;
 		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
-		assertNotNull("lines null", lines);
-		assertFalse(lines.isEmpty());
-		assertEquals(15, lines.size());
+		Assertions.assertThat(lines)
+				.isNotEmpty()
+				.isNotNull()
+				.hasSize(15)
+				.containsExactlyElementsOf(Arrays.asList(
+						"Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF",
+						"",
+						"tttttttt;;;;;4444;2222;",
+						"11.01.1111;11.01.1111;aaaaaaaaaaaaaa;\"aaaaaaaaa\n"
+								+ "aaaaaaaaaa\n"
+								+ "aaaaaaaaaaaaaaa\n"
+								+ "aaaaaaaaaaaaaaaaaaaa\";;1111;;",
+						"",
+						"",
+						"",
+						"",
+						"",
+						"",
+						"",
+						"22.02.2222;22.02.2222;bbbbbbbbbbbbb;\"bbbbbbbbbbbbbb\n"
+								+ "bbbbbbbbbbbbbb\n"
+								+ "bbbbbbb\n"
+								+ "bbbbbbbbb\n"
+								+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+								+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+								+ "bbbbbbbbbbbbbbb\n"
+								+ "bbbbbbbbbbbb\";;;2222;",
+						"",
+						"",
+						"33.03.3333;33.03.3333;ccccccccccccc;\"ccccccccccc\n"
+								+ "ccccccccccc\";;3333;;"
+				));
+	}
 
-		Arrays.asList(1, 4, 5, 6, 7, 8, 9, 10, 12, 13).forEach(i -> assertEquals(0, lines.get(i).length()));
+	@Test
+	public void multilineFile_EvenNumberOfQuotesOnSameLinesIgnored() throws IOException
+	{
+		final URL url = getClass().getResource(packagePath + "/evenNumberOfQuotes.csv");
+		System.out.println(url);
+		assertNotNull("url null", url);
+		final File file = FileUtils.toFile(url);
+		assertNotNull("file null", file);
 
-		assertEquals("Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF", lines.get(0));
+		//
+		final Charset charset = StandardCharsets.UTF_8;
+		final List<String> lines = FileImportReader.readMultiLines(file, charset);
 
-		assertEquals("tttttttt;;;;;4444;2222;", lines.get(2));
-
-		assertEquals("11.01.1111;11.01.1111;aaaaaaaaaaaaaa;\"aaaaaaaaa\n"
-				+ "aaaaaaaaaa\n"
-				+ "aaaaaaaaaaaaaaa\n"
-				+ "aaaaaaaaaaaaaaaaaaaa\";;1111;;", lines.get(3));
-
-		assertEquals("22.02.2222;22.02.2222;bbbbbbbbbbbbb;\"bbbbbbbbbbbbbb\n"
-				+ "bbbbbbbbbbbbbb\n"
-				+ "bbbbbbb\n"
-				+ "bbbbbbbbb\n"
-				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-				+ "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
-				+ "bbbbbbbbbbbbbbb\n"
-				+ "bbbbbbbbbbbb\";;;2222;", lines.get(11));
-
-		assertEquals("33.03.3333;33.03.3333;ccccccccccccc;\"ccccccccccc\n"
-				+ "ccccccccccc\";;3333;;", lines.get(14));
-
+		Assertions.assertThat(lines)
+				.isNotNull()
+				.isNotEmpty()
+				.hasSize(8)
+				.containsExactlyElementsOf(Arrays.asList(
+						"Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF",
+						"Umsatztotal;;;;;0000000.00;0000000.00;",
+						"Schlusssaldo per 30.03.2020;;;;;;;000000.00",
+						"30.03.2020;30.03.2020;aaaaaaaaaaaaaaaa / aaaaaaaaaa;aaaaaaaaaaaaaaaa AAAA v. 30.03.2020;;;111111.11;111111.11",
+						"30.03.2020;30.03.2020;bbbbbbbbb / 2222222222;\"bbbbbb bbbbb\n"
+								+ "bbbbbbbbbbbbbb 26\n"
+								+ "2222 bbbbbbb\n"
+								+ "bbbbbbb\n"
+								+ "bbbb:\n"
+								+ "bbbbbbbbb 13. bbbbbbbbbb\";;2222.22;;222222.22",
+						"30.03.2020;30.03.2020;ccccccccc cccccccc / 3333333333;\"cccccccc ccccc-33, 0.00% 30.03.2020-30.03.2025 (33333333.3333)\";;;333333.33;333333.33",
+						"30.03.2020;30.03.2020;dddddddddd / 4444444444;\"ddddd d.d.\n"
+								+ "ddddd dd dddddd 4\n"
+								+ "4444 ddddddd-ddd-ddddd\n"
+								+ "ddddddddddd\n"
+								+ "'- - dddd - -\n"
+								+ "F444444 + F444444\";;;4444.44;'-44444.44",
+						"30.03.2020;30.03.2020;eeeeeeeeee / 5555555555;\"eeeeee eeeee-eeeeeee ee\n"
+								+ "eeeeeeeeeee 55 eeeeeeee 555\n"
+								+ "5555 eeeeeee\n"
+								+ "eeeeeeeeeee\n"
+								+ "'- - eeee - -\n"
+								+ "29.02.2020 55555.55 555555\";;;55555.55;'-55555.55"
+						)
+				);
 	}
 
 	@Test

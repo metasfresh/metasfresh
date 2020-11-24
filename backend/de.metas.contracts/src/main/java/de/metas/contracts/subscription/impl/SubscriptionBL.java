@@ -131,12 +131,13 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, ol);
 
 		newTerm.setC_OrderLine_Term_ID(ol.getC_OrderLine_ID());
+		newTerm.setC_Order_Term_ID(ol.getC_Order_ID());
+		
 		newTerm.setC_Flatrate_Conditions_ID(cond.getC_Flatrate_Conditions_ID());
 
 		// important: we need to use qtyEntered here, because qtyOrdered (which
 		// is used for pricing) contains the number of goods to be delivered
 		// over the whole subscription term
-		newTerm.setC_OrderLine_Term_ID(ol.getC_OrderLine_ID());
 		newTerm.setPlannedQtyPerUnit(ol.getQtyEntered());
 		newTerm.setC_UOM_ID(ol.getPrice_UOM_ID());
 

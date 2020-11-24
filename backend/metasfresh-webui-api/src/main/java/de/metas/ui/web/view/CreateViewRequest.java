@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
@@ -20,6 +22,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.references.DocumentReferenceId;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -62,7 +65,6 @@ import lombok.Value;
  * Request to create a new {@link IView}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 public final class CreateViewRequest
@@ -99,6 +101,7 @@ public final class CreateViewRequest
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
+				.setDocumentReferenceId(view.getDocumentReferenceId())
 				.setStickyFilters(view.getStickyFilters())
 				// .setFiltersFromJSON(jsonFilters)
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
@@ -125,6 +128,7 @@ public final class CreateViewRequest
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(referencingDocumentPaths)
+				.setDocumentReferenceId(view.getDocumentReferenceId())
 				.setStickyFilters(stickyFilters)
 				.setFilters(view.getFilters())
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
@@ -141,6 +145,7 @@ public final class CreateViewRequest
 	DocumentId parentRowId;
 
 	ImmutableSet<DocumentPath> referencingDocumentPaths;
+	DocumentReferenceId documentReferenceId;
 
 	/**
 	 * Sticky filters can't be changed by the user.<br>
@@ -186,6 +191,7 @@ public final class CreateViewRequest
 		parentRowId = builder.getParentRowId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+		documentReferenceId = builder.getDocumentReferenceId();
 		filterOnlyIds = builder.getFilterOnlyIds();
 		filters = builder.getFilters();
 		stickyFilters = builder.getStickyFilters();
@@ -199,28 +205,6 @@ public final class CreateViewRequest
 		applySecurityRestrictions = builder.isApplySecurityRestrictions();
 	}
 
-	private CreateViewRequest(@NonNull final CreateViewRequest from, @NonNull final WrappedDocumentFilterList filters)
-	{
-		viewId = from.viewId;
-		viewType = from.viewType;
-		profileId = from.profileId;
-
-		parentViewId = from.parentViewId;
-		parentRowId = from.parentRowId;
-
-		referencingDocumentPaths = from.referencingDocumentPaths;
-		filterOnlyIds = from.filterOnlyIds;
-		this.filters = filters;
-		stickyFilters = from.stickyFilters;
-		useAutoFilters = from.useAutoFilters;
-
-		actions = from.actions;
-		additionalRelatedProcessDescriptors = from.additionalRelatedProcessDescriptors;
-
-		parameters = from.parameters;
-
-		applySecurityRestrictions = from.applySecurityRestrictions;
-	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
 	{
@@ -264,10 +248,19 @@ public final class CreateViewRequest
 		}
 	}
 
+	@Nullable
 	public <T> T getParameterAs(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
 		@SuppressWarnings("unchecked")
 		final T value = (T)getParameters().get(parameterName);
+		return value;
+	}
+
+	@Nullable
+	public <T> Set<T> getParameterAsSet(@NonNull final String parameterName, @NonNull final Class<T> type)
+	{
+		@SuppressWarnings("unchecked")
+		final Set<T> value = (Set<T>)getParameters().get(parameterName);
 		return value;
 	}
 
@@ -286,6 +279,7 @@ public final class CreateViewRequest
 		private DocumentId parentRowId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
+		private DocumentReferenceId documentReferenceId;
 
 		/**
 		 * @deprecated see {@link CreateViewRequest#filterOnlyIds}
@@ -377,6 +371,17 @@ public final class CreateViewRequest
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
 
+		public Builder setDocumentReferenceId(DocumentReferenceId documentReferenceId)
+		{
+			this.documentReferenceId = documentReferenceId;
+			return this;
+		}
+
+		private DocumentReferenceId getDocumentReferenceId()
+		{
+			return documentReferenceId;
+		}
+
 		public Builder setStickyFilters(final DocumentFilterList stickyFilters)
 		{
 			this.stickyFilters = stickyFilters != null ? new ArrayList<>(stickyFilters.toList()) : null;
@@ -415,6 +420,7 @@ public final class CreateViewRequest
 			return filters != null ? filters : WrappedDocumentFilterList.EMPTY;
 		}
 
+		@Deprecated
 		public Builder setFilterOnlyIds(final Collection<Integer> filterOnlyIds)
 		{
 			if (this.filterOnlyIds == null)
@@ -425,6 +431,7 @@ public final class CreateViewRequest
 			return this;
 		}
 
+		@Deprecated
 		public Builder addFilterOnlyId(final int filterOnlyId)
 		{
 			if (filterOnlyIds == null)
@@ -435,6 +442,7 @@ public final class CreateViewRequest
 			return this;
 		}
 
+		@Deprecated
 		private ImmutableSet<Integer> getFilterOnlyIds()
 		{
 			return filterOnlyIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(filterOnlyIds);
@@ -486,7 +494,7 @@ public final class CreateViewRequest
 			return this;
 		}
 
-		public Builder setParameter(final String name, final Object value)
+		public Builder setParameter(@NonNull final String name, @Nullable final Object value)
 		{
 			if (value == null)
 			{
@@ -573,7 +581,9 @@ public final class CreateViewRequest
 			this.filters = filters;
 		}
 
-		/** empty constructor */
+		/**
+		 * empty constructor
+		 */
 		private WrappedDocumentFilterList()
 		{
 			filters = DocumentFilterList.EMPTY;

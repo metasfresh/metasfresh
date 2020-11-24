@@ -38,7 +38,7 @@ import lombok.Value;
 @Value
 public class CommissionPoints
 {
-	public static final CommissionPoints ZERO = of(BigDecimal.ZERO);
+	public static final CommissionPoints ZERO = new CommissionPoints(BigDecimal.ZERO);
 
 	@NonNull
 	BigDecimal points;
@@ -51,6 +51,11 @@ public class CommissionPoints
 	@JsonCreator
 	public static CommissionPoints of(@NonNull final BigDecimal points)
 	{
+		if (points.signum() == 0)
+		{
+			return ZERO;
+		}
+
 		return new CommissionPoints(points);
 	}
 
@@ -118,7 +123,7 @@ public class CommissionPoints
 
 	public CommissionPoints negateIf(final boolean condition)
 	{
-		if(condition)
+		if (condition)
 		{
 			return CommissionPoints.of(points.negate());
 		}

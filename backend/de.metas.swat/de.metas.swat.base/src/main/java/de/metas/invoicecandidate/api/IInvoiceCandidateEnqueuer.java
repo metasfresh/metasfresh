@@ -49,7 +49,6 @@ public interface IInvoiceCandidateEnqueuer
 	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
 	 *
-	 * @param pinstanceId
 	 * @return enqueueing result
 	 */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
@@ -58,9 +57,6 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Context/transaction name to be used when enqueueing.
-	 *
-	 * @param ctx
-	 * @param trxName
 	 */
 	IInvoiceCandidateEnqueuer setContext(final Properties ctx);
 
@@ -73,8 +69,6 @@ public interface IInvoiceCandidateEnqueuer
 	 * Set to <code>true</code> if you want the enqueuer to make sure that the invoice candidates that will be enqueued shall not be changed.
 	 *
 	 * By default, if you are not setting a particular value the {@link #SYSCONFIG_FailOnChanges} (default {@link #DEFAULT_FailOnChanges}) will be used.
-	 *
-	 * @param checkNoChanges
 	 */
 	IInvoiceCandidateEnqueuer setFailOnChanges(boolean failOnChanges);
 

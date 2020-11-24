@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Optional;
+
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -40,7 +42,7 @@ public interface IIncludedDocumentsCollection
 
 	OrderedDocumentsList getDocumentsByIds(DocumentIdsSelection documentIds);
 
-	Document getDocumentById(DocumentId documentId);
+	Optional<Document> getDocumentById(DocumentId documentId);
 
 	void updateStatusFromParent();
 

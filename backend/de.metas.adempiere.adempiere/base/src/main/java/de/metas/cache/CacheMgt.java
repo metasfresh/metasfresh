@@ -16,6 +16,7 @@
  *****************************************************************************/
 package de.metas.cache;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -120,14 +121,14 @@ public final class CacheMgt
 
 	public void register(@NonNull final CacheInterface instance)
 	{
-		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(instance))
+		try (final IAutoCloseable ignored = CacheMDC.putCache(instance))
 		{
 			final Boolean registerWeak = null; // auto
 			register(instance, registerWeak);
 		}
 	}
 
-	private void register(@NonNull final CacheInterface cache, final Boolean registerWeak)
+	private void register(@NonNull final CacheInterface cache, @Nullable final Boolean registerWeak)
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 		{
@@ -184,14 +185,14 @@ public final class CacheMgt
 
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("Full CacheReset")
-				.type(Type.CACHE_OPERATION.getCode())
-				.subType(SubType.REMOVE_FROM_CACHE.getCode())
+				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
 				.build();
 		return getPerfMonService().monitorSpan(
 				() -> reset0(),
 				spanMetadata);
 	}
 
+	@Nullable
 	private PerformanceMonitoringService getPerfMonService()
 	{
 		// this is called already very early in the startup phase, so we need to avoid an exception if there is no spring context yet
@@ -207,7 +208,7 @@ public final class CacheMgt
 		{
 			total = cachesByLabel.values()
 					.stream()
-					.mapToLong(cachesGroup -> cachesGroup.invalidateAllNoFail())
+					.mapToLong(CachesGroup::invalidateAllNoFail)
 					.sum();
 
 			fireGlobalCacheResetListeners(CacheInvalidateMultiRequest.all());
@@ -231,7 +232,7 @@ public final class CacheMgt
 		{
 			cacheResetListenersByTableName.values()
 					.stream()
-					.flatMap(listeners -> listeners.stream())
+					.flatMap(Collection::stream)
 					.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
 		}
 		else
@@ -305,13 +306,10 @@ public final class CacheMgt
 	 * Reset cache for TableName/Record_ID when given transaction is committed.
 	 *
 	 * If no transaction was given or given transaction was not found, the cache is reset right away.
-	 *
-	 * @param trxName
-	 * @param tableName
-	 * @param recordId
 	 */
 	public void resetLocalNowAndBroadcastOnTrxCommit(final String trxName, final CacheInvalidateMultiRequest request)
 	{
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
 		if (!trxManager.isActive(trx))
@@ -348,17 +346,13 @@ public final class CacheMgt
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
 	 *
-	 * @param tableName
-	 * @param recordId
-	 * @param broadcast true if we shall also broadcast this remotely.
 	 * @return how many cache entries were invalidated (estimated!)
 	 */
 	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
 		final SpanMetadata spanMetadata = SpanMetadata.builder()
 				.name("CacheReset")
-				.type(Type.CACHE_OPERATION.getCode())
-				.subType(SubType.REMOVE_FROM_CACHE.getCode())
+				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
 				.label("resetMode", mode.toString())
 				.build();
 		return getPerfMonService().monitorSpan(
@@ -412,7 +406,7 @@ public final class CacheMgt
 		if (request.isAllRecords())
 		{
 			final CacheLabel label = CacheLabel.ofTableName(request.getTableNameEffective());
-			try (final MDCCloseable labelMDC = CacheMDC.putCacheLabel(label))
+			try (final MDCCloseable ignored = CacheMDC.putCacheLabel(label))
 			{
 				final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
 				if (cachesGroup == null)
@@ -445,7 +439,7 @@ public final class CacheMgt
 	private long invalidateForRecord(@NonNull final TableRecordReference recordRef)
 	{
 		final CacheLabel label = CacheLabel.ofTableName(recordRef.getTableName());
-		try (final MDCCloseable labelMDC = CacheMDC.putCacheLabel(label))
+		try (final MDCCloseable ignored = CacheMDC.putCacheLabel(label))
 		{
 			final CachesGroup cachesGroup = getCachesGroupIfPresent(label);
 			if (cachesGroup == null)
@@ -470,33 +464,20 @@ public final class CacheMgt
 
 	/**
 	 * String Representation
-	 *
-	 * @return info
 	 */
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("CacheMgt[");
-		sb.append("Instances=")
-				.append(cachesByLabel.size())
-				.append("]");
-		return sb.toString();
-	}	// toString
+		return "CacheMgt[Instances="	+ cachesByLabel.size() + "]";
+	}
 
 	/**
 	 * Extended String Representation
-	 *
-	 * @return info
 	 */
 	public String toStringX()
 	{
-		final StringBuilder sb = new StringBuilder("CacheMgt[");
-		sb.append("Instances=")
-				.append(cachesByLabel.size())
-				.append(", Elements=").append(computeTotalSize())
-				.append("]");
-		return sb.toString();
-	}	// toString
+		return "CacheMgt[Instances=" + cachesByLabel.size() + ", Elements=" + computeTotalSize() + "]";
+	}
 
 	public void addCacheResetListener(@NonNull final ICacheResetListener cacheResetListener)
 	{
@@ -634,7 +615,7 @@ public final class CacheMgt
 
 		public void addCache(@NonNull final CacheInterface cache)
 		{
-			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			try (final IAutoCloseable ignored = CacheMDC.putCache(cache))
 			{
 				caches.put(cache.getCacheId(), cache);
 			}
@@ -642,13 +623,13 @@ public final class CacheMgt
 
 		public void removeCache(@NonNull final CacheInterface cache)
 		{
-			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
+			try (final IAutoCloseable ignored = CacheMDC.putCache(cache))
 			{
 				caches.remove(cache.getCacheId());
 			}
 		}
 
-		private final Stream<CacheInterface> streamCaches()
+		private Stream<CacheInterface> streamCaches()
 		{
 			return caches.values()
 					.stream()
@@ -665,7 +646,7 @@ public final class CacheMgt
 		public long invalidateAllNoFail()
 		{
 			return streamCaches()
-					.mapToLong(cache -> invalidateNoFail(cache))
+					.mapToLong(CachesGroup::invalidateNoFail)
 					.sum();
 		}
 
@@ -676,9 +657,9 @@ public final class CacheMgt
 					.sum();
 		}
 
-		private static final long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
+		private static long invalidateNoFail(final CacheInterface cacheInstance, final TableRecordReference recordRef)
 		{
-			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
+			try (final IAutoCloseable ignored = CacheMDC.putCache(cacheInstance))
 			{
 				return cacheInstance.resetForRecordId(recordRef);
 			}
@@ -690,9 +671,9 @@ public final class CacheMgt
 			}
 		}
 
-		private static final long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
+		private static long invalidateNoFail(@Nullable final CacheInterface cacheInstance)
 		{
-			try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cacheInstance))
+			try (final IAutoCloseable ignored = CacheMDC.putCache(cacheInstance))
 			{
 				if (cacheInstance == null)
 				{

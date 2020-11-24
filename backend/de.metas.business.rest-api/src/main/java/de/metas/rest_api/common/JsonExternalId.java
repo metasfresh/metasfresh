@@ -1,23 +1,8 @@
-package de.metas.rest_api.common;
-
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isEmpty;
-
-import java.util.Objects;
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.business.rest-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +20,23 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.rest_api.common;
+
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
+
+import java.util.Objects;
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import de.metas.common.util.EmptyUtil;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import lombok.Value;
+
 @Value
 public class JsonExternalId
 {
@@ -48,7 +50,7 @@ public class JsonExternalId
 
 	public static JsonExternalId ofOrNull(@Nullable final String value)
 	{
-		if (isEmpty(value, true))
+		if (EmptyUtil.isBlank(value))
 		{
 			return null;
 		}
@@ -72,7 +74,7 @@ public class JsonExternalId
 
 	private JsonExternalId(@NonNull final String value)
 	{
-		this.value = assumeNotEmpty(value, "Param value={} may not be empty", value);
+		this.value = Check.assumeNotEmpty(value, "Param value={} may not be empty", value);
 	}
 
 	@JsonValue

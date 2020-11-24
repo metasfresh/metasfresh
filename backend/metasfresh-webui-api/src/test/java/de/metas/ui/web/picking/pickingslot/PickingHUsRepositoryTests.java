@@ -1,18 +1,6 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ListMultimap;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -21,7 +9,7 @@ import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.quantity.Quantity;
@@ -32,6 +20,14 @@ import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -190,16 +186,4 @@ public class PickingHUsRepositoryTests
 			assertThat(resultRow).isEqualTo(expectedRow);
 		}
 	}
-
-	@Test
-	public void test_retrieveSourceHUs_empty_shipmentScheduleIds()
-	{
-		final HUEditorViewRepository huEditorViewRepository = new MockedHUEditorViewRepository();
-		final PickingHURowsRepository pickingHUsRepository = new PickingHURowsRepository(
-				() -> huEditorViewRepository,
-				new PickingCandidateRepository());
-		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(PickingSlotRepoQuery.builder().build());
-		assertThat(sourceHUs).isEmpty();
-	}
-
 }

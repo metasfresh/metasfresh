@@ -15,7 +15,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.util.FileUtils;
+import de.metas.util.FileUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -79,7 +79,7 @@ public class WebuiImageService
 			nameNormalized = name.trim();
 		}
 
-		return FileUtils.changeFileExtension(nameNormalized, fileExtension);
+		return FileUtil.changeFileExtension(nameNormalized, fileExtension);
 	}
 
 	public WebuiImage getWebuiImage(@NonNull final WebuiImageId imageId, final int maxWidth, final int maxHeight)

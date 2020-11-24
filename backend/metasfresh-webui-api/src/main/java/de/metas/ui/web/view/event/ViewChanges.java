@@ -1,15 +1,15 @@
 package de.metas.ui.web.view.event;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * #%L
@@ -38,6 +38,7 @@ public class ViewChanges
 	private final ViewId viewId;
 
 	private boolean fullyChanged;
+	private boolean headerPropertiesChanged;
 	private Set<DocumentId> changedRowIds = null;
 
 	public ViewChanges(@NonNull final ViewId viewId)
@@ -69,6 +70,7 @@ public class ViewChanges
 				.omitNullValues()
 				.add("viewId", viewId)
 				.add("fullyChanged", fullyChanged ? Boolean.TRUE : null)
+				.add("headerPropertiesChanged", headerPropertiesChanged ? Boolean.TRUE : null)
 				.add("changedRowIds", changedRowIds)
 				.toString();
 	}
@@ -83,6 +85,16 @@ public class ViewChanges
 		fullyChanged = true;
 	}
 
+	public boolean isHeaderPropertiesChanged()
+	{
+		return headerPropertiesChanged;
+	}
+
+	public void setHeaderPropertiesChanged()
+	{
+		this.headerPropertiesChanged = true;
+	}
+
 	public boolean isFullyChanged()
 	{
 		return fullyChanged;
@@ -95,10 +107,15 @@ public class ViewChanges
 			return true;
 		}
 
+		if (headerPropertiesChanged)
+		{
+			return true;
+		}
+
 		return changedRowIds != null && !changedRowIds.isEmpty();
 	}
 
-	public void addChangedRowIds(final DocumentIdsSelection rowIds)
+	public void addChangedRowIds(@Nullable final DocumentIdsSelection rowIds)
 	{
 		// Don't collect rowIds if this was already flagged as fully changed.
 		if (fullyChanged)
@@ -125,16 +142,20 @@ public class ViewChanges
 			changedRowIds.addAll(rowIds.toSet());
 		}
 	}
-	
+
 	public void addChangedRowIds(final Collection<DocumentId> rowIds)
 	{
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
 		if (changedRowIds == null)
 		{
 			changedRowIds = new HashSet<>();
 		}
 		changedRowIds.addAll(rowIds);
 	}
-
 
 	public void addChangedRowId(@NonNull final DocumentId rowId)
 	{

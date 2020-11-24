@@ -38,11 +38,11 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.IWeightable;
-import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.SaveDecoupledHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.LUTUKeyVisitorAdapter;
@@ -66,9 +66,6 @@ import de.metas.util.collections.IdentityHashSet;
 
 public class HUKeyFactory implements IHUKeyFactory
 {
-	// Services
-	private final IWeightableFactory weightHelperFactory = Services.get(IWeightableFactory.class);
-
 	private ITerminalContext terminalContext;
 	private final IHUStorageFactory storageFactory;
 	private final HUKeyAttributeStorageFactory attributesStorageFactory;
@@ -514,6 +511,6 @@ public class HUKeyFactory implements IHUKeyFactory
 		}
 
 		final IAttributeStorage attributeStorage = key.getAttributeSet();
-		return weightHelperFactory.createWeightableOrNull(attributeStorage);
+		return Weightables.wrap(attributeStorage);
 	}
 }

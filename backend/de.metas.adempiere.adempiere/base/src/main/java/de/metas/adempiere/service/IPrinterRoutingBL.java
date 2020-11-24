@@ -48,18 +48,12 @@ public interface IPrinterRoutingBL extends ISingletonService
 
 	/**
 	 * Uses the properties of the given <code>pi</code> to retrieve the printer to use via <code>AD_PrinterRouting</code>
-	 * @param pi
-	 * @return
 	 */
 	String findPrinterName(ProcessInfo pi);
 
 	/**
 	 * Try to find printing service for given parameters.
 	 *
-	 * @param ctx
-	 * @param C_DocType_ID
-	 * @param AD_Process_ID
-	 * @param printerType
 	 * @return printing service; never return null
 	 * @throws AdempiereException if printing service was not found or printerType is not supported
 	 */

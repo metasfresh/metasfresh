@@ -1,9 +1,17 @@
-import React, { cloneElement, Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+
 import { patchViewAttributes } from '../actions/ViewAttributesActions';
 import { parseToDisplay } from '../utils/documentListHelper';
 
-class DataLayoutWrapper extends Component {
+import SelectionAttributes from './app/SelectionAttributes';
+
+/**
+ * @file Class based component.
+ * @module DocumentList
+ * @extends PureComponent
+ */
+export default class DataLayoutWrapper extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -35,7 +43,7 @@ class DataLayoutWrapper extends Component {
   };
 
   handlePatch = (prop, value, cb) => {
-    const { windowType: windowId, viewId, onRowEdited } = this.props;
+    const { windowId, viewId, onRowEdited } = this.props;
     const { dataId: rowId } = this.state;
 
     onRowEdited && onRowEdited(true);
@@ -71,11 +79,9 @@ class DataLayoutWrapper extends Component {
       this.setState(
         {
           data: preparedData,
-          dataId: dataId,
+          dataId,
         },
-        () => {
-          cb && cb();
-        }
+        cb
       );
   };
 
@@ -83,36 +89,31 @@ class DataLayoutWrapper extends Component {
     this.mounted &&
       this.setState(
         {
-          layout: layout,
+          layout,
         },
-        () => {
-          cb && cb();
-        }
+        cb
       );
   };
 
   render() {
     const { layout, data } = this.state;
-    const { children, className } = this.props;
+    const { className } = this.props;
 
     // sometimes it's a number, and React complains about wrong type
     const dataId = this.state.dataId + '';
 
     return (
       <div className={className}>
-        {// The nameing of props has a significant prefix
-        // to suggest dev that these props are from wrapper
-        cloneElement(children, {
-          ...this.props,
-          DLWrapperData: data,
-          DLWrapperDataId: dataId,
-          DLWrapperLayout: layout,
-
-          DLWrapperSetData: this.setData,
-          DLWrapperSetLayout: this.setLayout,
-          DLWrapperHandleChange: this.handleChange,
-          DLWrapperHandlePatch: this.handlePatch,
-        })}
+        <SelectionAttributes
+          {...this.props}
+          DLWrapperData={data}
+          DLWrapperDataId={dataId}
+          DLWrapperLayout={layout}
+          DLWrapperSetData={this.setData}
+          DLWrapperSetLayout={this.setLayout}
+          DLWrapperHandleChange={this.handleChange}
+          DLWrapperHandlePatch={this.handlePatch}
+        />
       </div>
     );
   }
@@ -120,10 +121,8 @@ class DataLayoutWrapper extends Component {
 
 DataLayoutWrapper.propTypes = {
   onRowEdited: PropTypes.func,
-  windowType: PropTypes.string,
+  windowId: PropTypes.string,
   viewId: PropTypes.string,
   children: PropTypes.node,
   className: PropTypes.string,
 };
-
-export default DataLayoutWrapper;

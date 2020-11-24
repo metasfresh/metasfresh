@@ -4,291 +4,521 @@ import {
   filterViewRequest,
   getViewLayout,
   locationConfigRequest,
+  headerPropertiesRequest,
 } from '../api';
+import { getTableId } from '../reducers/tables';
+import { getView } from '../reducers/viewHandler';
 
 import {
   ADD_VIEW_LOCATION_DATA,
+  CREATE_VIEW,
+  CREATE_VIEW_SUCCESS,
+  CREATE_VIEW_ERROR,
+  DELETE_VIEW,
   FETCH_DOCUMENT_PENDING,
   FETCH_DOCUMENT_SUCCESS,
   FETCH_DOCUMENT_ERROR,
   FETCH_LAYOUT_PENDING,
   FETCH_LAYOUT_SUCCESS,
   FETCH_LAYOUT_ERROR,
-  CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
-  CREATE_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
-  UPDATE_VIEW_DATA,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
-  DELETE_VIEW,
+  TOGGLE_INCLUDED_VIEW,
+  UPDATE_VIEW_DATA_ERROR,
+  UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
-export function resetView(id) {
+import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import { setListIncludedView, closeListIncludedView } from './ListActions';
+
+/**
+ * @method resetView
+ * @summary
+ */
+export function resetView(id, isModal) {
   return {
     type: RESET_VIEW,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
-export function deleteView(id) {
+/**
+ * @method deleteView
+ * @summary
+ */
+export function deleteView(id, isModal) {
   return {
     type: DELETE_VIEW,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
-function fetchDocumentPending(id) {
+/**
+ * @method fetchDocumentPending
+ * @summary
+ */
+function fetchDocumentPending(id, isModal) {
   return {
     type: FETCH_DOCUMENT_PENDING,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
-function fetchDocumentSuccess(id, data) {
+/**
+ * @method fetchDocumentSuccess
+ * @summary
+ */
+function fetchDocumentSuccess(id, data, isModal) {
   return {
     type: FETCH_DOCUMENT_SUCCESS,
-    payload: { id, data },
+    payload: { id, data, isModal },
   };
 }
 
-function fetchDocumentError(id, error) {
+/**
+ * @method fetchDocumentError
+ * @summary
+ */
+function fetchDocumentError(id, error, isModal) {
   return {
     type: FETCH_DOCUMENT_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
-function fetchLayoutPending(id) {
+/**
+ * @method fetchLayoutPending
+ * @summary
+ */
+function fetchLayoutPending(id, isModal) {
   return {
     type: FETCH_LAYOUT_PENDING,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
-function fetchLayoutSuccess(id, layout) {
+/**
+ * @method fetchLayoutSuccess
+ * @summary
+ */
+function fetchLayoutSuccess(id, layout, isModal) {
   return {
     type: FETCH_LAYOUT_SUCCESS,
-    payload: { id, layout },
+    payload: { id, layout, isModal },
   };
 }
 
-function fetchLayoutError(id, error) {
+/**
+ * @method fetchLayoutError
+ * @summary
+ */
+function fetchLayoutError(id, error, isModal) {
   return {
     type: FETCH_LAYOUT_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
-function createViewPending(id) {
+/**
+ * @method createViewPending
+ * @summary
+ */
+function createViewPending(id, isModal) {
   return {
     type: CREATE_VIEW,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
-function createViewSuccess(id, data) {
+/**
+ * @method createViewSuccess
+ * @summary
+ */
+function createViewSuccess(id, data, isModal) {
   return {
     type: CREATE_VIEW_SUCCESS,
-    payload: { id, viewId: data.viewId },
+    payload: { id, viewId: data.viewId, isModal },
   };
 }
 
-function createViewError(id, error) {
+/**
+ * @method createViewError
+ * @summary
+ */
+function createViewError(id, error, isModal) {
   return {
     type: CREATE_VIEW_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
-function filterViewPending(id) {
+/**
+ * @method filterViewPending
+ * @summary
+ */
+function filterViewPending(id, isModal) {
   return {
     type: FILTER_VIEW_PENDING,
-    payload: { id },
+    payload: { id, isModal },
   };
 }
 
-function filterViewSuccess(id, data) {
+/**
+ * @method filterViewSuccess
+ * @summary
+ */
+function filterViewSuccess(id, data, isModal) {
   return {
     type: FILTER_VIEW_SUCCESS,
-    payload: { id, data },
+    payload: { id, data, isModal },
   };
 }
 
-function filterViewError(id, error) {
+/**
+ * @method filterViewError
+ * @summary
+ */
+function filterViewError(id, error, isModal) {
   return {
     type: FILTER_VIEW_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
-export function updateViewData(id, rows, tabId) {
-  return {
-    type: UPDATE_VIEW_DATA,
-    payload: {
-      id,
-      rows,
-      tabId,
-    },
-  };
-}
-
-function fetchLocationConfigSuccess(id, data) {
+/**
+ * @method fetchLocationConfigSuccess
+ * @summary
+ */
+function fetchLocationConfigSuccess(id, data, isModal) {
   return {
     type: FETCH_LOCATION_CONFIG_SUCCESS,
-    payload: { id, data },
+    payload: { id, data, isModal },
   };
 }
 
-function fetchLocationConfigError(id, error) {
+/**
+ * @method fetchLocationConfigError
+ * @summary error when fetching geolocation config
+ */
+function fetchLocationConfigError(id, error, isModal) {
   return {
     type: FETCH_LOCATION_CONFIG_ERROR,
-    payload: { id, error },
+    payload: { id, error, isModal },
   };
 }
 
-export function addLocationData(id, locationData) {
+/**
+ * @method addLocationData
+ * @summary save geolocation data in the store
+ */
+export function addViewLocationData(id, locationData, isModal) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
-    payload: { id, locationData },
+    payload: { id, locationData, isModal },
+  };
+}
+
+/**
+ * @method toggleIncludedView
+ * @summary sets internal hasIncluded/isIncluded values
+ */
+export function toggleIncludedView(id, showIncludedView, isModal) {
+  return {
+    type: TOGGLE_INCLUDED_VIEW,
+    payload: { id, showIncludedView, isModal },
+  };
+}
+
+/**
+ * @method toggleIncludedView
+ * @summary success when updating view's properties
+ */
+export function updateViewSuccess(id, data, isModal) {
+  return {
+    type: UPDATE_VIEW_DATA_SUCCESS,
+    payload: { id, data, isModal },
+  };
+}
+
+/**
+ * @method toggleIncludedView
+ * @summary failure when updating view's properties
+ */
+export function updateViewError(id, error, isModal) {
+  return {
+    type: UPDATE_VIEW_DATA_ERROR,
+    payload: { id, error, isModal },
   };
 }
 
 // THUNK ACTIONS
 
-export function fetchDocument(
+/**
+ * @method fetchDocument
+ * @summary Get grid rows when the view already exists
+ *
+ * @param {*} windowId
+ * @param {*} viewId
+ * @param {number} page
+ * @param {number} pageLength
+ * @param {*} orderBy
+ * @param {bool} isModal - flag defining if the view is in modal or not.
+ * Set to `true` for modals because otherwise if using `windowId` we would have a collision
+ * with the underlaying window (as they both have the same `windowId`) so we store modal
+ * views in `modals` instead of regular `views`
+ */
+export function fetchDocument({
   windowId,
   viewId,
   page,
   pageLength,
   orderBy,
-  // for modals
-  useViewId = false,
-  //for filtering in modals
-  modalId = null
-) {
-  return (dispatch) => {
-    let identifier = useViewId ? viewId : windowId;
+  isModal = false,
+}) {
+  return (dispatch, getState) => {
+    dispatch(fetchDocumentPending(windowId, isModal));
 
-    if (useViewId && modalId) {
-      identifier = modalId;
-    }
-
-    dispatch(fetchDocumentPending(identifier));
-
-    return browseViewRequest({ windowId, viewId, page, pageLength, orderBy })
+    return browseViewRequest({
+      windowId,
+      viewId,
+      page,
+      pageLength,
+      orderBy,
+    })
       .then((response) => {
-        dispatch(fetchDocumentSuccess(identifier, response.data));
+        dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
+
+        const tableId = getTableId({ windowId, viewId });
+        const tableData = { windowId, viewId, ...response.data };
+
+        // we use this in table ACs to differentiate between a table in modal and
+        // regular grid
+        if (isModal) {
+          tableData.modalId = windowId;
+        }
+
+        dispatch(updateGridTable(tableId, tableData));
+
+        const state = getState();
+        const view = getView(state, windowId, isModal);
+        const openIncludedViewOnSelect =
+          view.layout &&
+          view.layout.includedView &&
+          view.layout.includedView.openOnSelect;
+
+        if (
+          openIncludedViewOnSelect &&
+          response.data.result &&
+          response.data.result.length
+        ) {
+          const row = response.data.result[0];
+          const includedWindowId = row.supportIncludedViews
+            ? state.listHandler.includedView.windowType ||
+              row.includedView.windowType ||
+              row.includedView.windowId
+            : null;
+          const includedViewId = row.supportIncludedViews
+            ? state.listHandler.includedView.viewId || row.includedView.viewId
+            : null;
+
+          dispatch(
+            showIncludedView({
+              id: windowId,
+              showIncludedView: row.supportIncludedViews,
+              windowId: includedWindowId,
+              viewId: includedViewId,
+              isModal,
+            })
+          );
+        }
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(fetchDocumentError(identifier, error));
+        dispatch(fetchDocumentError(windowId, error, isModal));
 
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
 
+/**
+ * @method createView
+ * @summary create a new grid view
+ */
 export function createView({
   windowId,
   viewType,
   filters,
+  referenceId,
   refDocType,
-  refDocId,
+  refDocumentId,
   refTabId,
   refRowIds,
-  inModalId,
+  isModal,
 }) {
   return (dispatch) => {
-    const identifier = inModalId ? inModalId : windowId;
-
-    dispatch(createViewPending(identifier));
+    dispatch(createViewPending(windowId, isModal));
 
     return createViewRequest({
       windowId,
       viewType,
       filters,
+      referenceId,
       refDocType,
-      refDocId,
+      refDocumentId,
       refTabId,
       refRowIds,
     })
       .then((response) => {
-        dispatch(createViewSuccess(identifier, response.data));
+        dispatch(createViewSuccess(windowId, response.data, isModal));
+
+        const { viewId } = response.data;
+        const tableId = getTableId({ windowId, viewId });
+        const tableData = { windowId, viewId };
+
+        if (isModal) {
+          tableData.modalId = windowId;
+        }
+
+        dispatch(createGridTable(tableId, tableData));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(createViewError(identifier, error));
+        dispatch(createViewError(windowId, error, isModal));
 
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
 
+/**
+ * @method fetchLayout
+ * @summary fetch layout data for the grid view
+ */
 export function fetchLayout(
   windowId,
   viewType,
   viewProfileId = null,
-  viewId = null
+  isModal = false
 ) {
   return (dispatch) => {
-    const identifier = viewId ? viewId : windowId;
-
-    dispatch(fetchLayoutPending(identifier));
+    dispatch(fetchLayoutPending(windowId, isModal));
 
     return getViewLayout(windowId, viewType, viewProfileId)
       .then((response) => {
-        dispatch(fetchLayoutSuccess(identifier, response.data));
+        dispatch(fetchLayoutSuccess(windowId, response.data, isModal));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(fetchLayoutError(identifier, error));
+        dispatch(fetchLayoutError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
 
-export function filterView(windowId, viewId, filters, useViewId = false) {
+/**
+ * @method filterView
+ * @summary filter grid view
+ */
+export function filterView(windowId, viewId, filters, isModal = false) {
   return (dispatch) => {
-    const identifier = useViewId ? viewId : windowId;
-
-    dispatch(filterViewPending(identifier));
+    dispatch(filterViewPending(windowId, isModal));
 
     return filterViewRequest(windowId, viewId, filters)
       .then((response) => {
-        dispatch(filterViewSuccess(identifier, response.data));
+        dispatch(filterViewSuccess(windowId, response.data, isModal));
+
+        // remove table, so that we won't add filtered rows to the previous data
+        const tableId = getTableId({ windowId, viewId });
+
+        dispatch(deleteTable(tableId));
 
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(filterViewError(identifier, error));
+        dispatch(filterViewError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
       });
   };
 }
 
-export function fetchLocationConfig(windowId, viewId = null) {
+/**
+ * @method fetchLocationConfig
+ * @summary Get the location search configuration from the API
+ */
+export function fetchLocationConfig(windowId, isModal = false) {
   return (dispatch) => {
-    const identifier = viewId ? viewId : windowId;
-
     return locationConfigRequest()
       .then((response) => {
-        dispatch(fetchLocationConfigSuccess(identifier, response.data));
+        dispatch(fetchLocationConfigSuccess(windowId, response.data, isModal));
       })
       .catch((error) => {
-        dispatch(fetchLocationConfigError(identifier, error));
+        dispatch(fetchLocationConfigError(windowId, error, isModal));
 
-        return Promise.resolve(error);
+        return Promise.reject(error);
+      });
+  };
+}
+
+/**
+ * @method showIncludedView
+ * @summary ToDo: Describe the method.
+ */
+export function showIncludedView({
+  id,
+  showIncludedView,
+  windowId,
+  viewId,
+  forceClose,
+  isModal,
+} = {}) {
+  return (dispatch) => {
+    if (id) {
+      dispatch(toggleIncludedView(id, showIncludedView, isModal));
+    }
+
+    if (showIncludedView) {
+      dispatch(setListIncludedView({ windowType: windowId, viewId }));
+    }
+
+    if (!showIncludedView) {
+      dispatch(
+        closeListIncludedView({ windowType: windowId, viewId, forceClose })
+      );
+    }
+  };
+}
+
+/**
+ * @method fetchHeaderProperties
+ * @summary Request view's header properties
+ */
+export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
+  return (dispatch) => {
+    dispatch(fetchDocumentPending(windowId, isModal));
+
+    return headerPropertiesRequest({ windowId, viewId })
+      .then((response) => {
+        const updatedData = {
+          headerProperties: response.data,
+        };
+        dispatch(updateViewSuccess(windowId, updatedData, isModal));
+      })
+      .catch((error) => {
+        dispatch(updateViewError(windowId, error, isModal));
+
+        return Promise.reject(error);
       });
   };
 }

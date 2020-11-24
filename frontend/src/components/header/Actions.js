@@ -8,8 +8,9 @@ import {
   actionsRequest,
   rowActionsRequest,
 } from '../../actions/GenericActions';
+import { getSelection, getTableId } from '../../reducers/tables';
+
 import Loader from '../app/Loader';
-import { getSelectionInstant } from '../../reducers/windowHandler';
 
 /**
  * @file Class based component.
@@ -17,16 +18,12 @@ import { getSelectionInstant } from '../../reducers/windowHandler';
  * @extends Component
  */
 class Actions extends Component {
+  // TODO: Move to redux
   state = {
     actions: null,
     rowActions: null,
   };
 
-  /**
-   * @async
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   async componentDidMount() {
     const {
       windowType,
@@ -34,7 +31,7 @@ class Actions extends Component {
       docId,
       notfound,
       activeTab,
-      activeTabSelected,
+      selected,
     } = this.props;
     const requests = [this.requestActions()];
 
@@ -54,7 +51,7 @@ class Actions extends Component {
       return;
     }
 
-    if (activeTab && activeTabSelected && activeTabSelected.length > 0) {
+    if (activeTab && selected.length) {
       requests.push(this.requestRowActions());
     }
 
@@ -79,9 +76,8 @@ class Actions extends Component {
       childViewSelectedIds,
       entity,
       docId,
-      rowId,
       activeTab,
-      activeTabSelected,
+      selected,
     } = this.props;
 
     try {
@@ -95,12 +91,12 @@ class Actions extends Component {
       };
 
       if (entity === 'documentView') {
-        request.selectedIds = rowId;
+        request.selectedIds = selected;
       }
 
-      if (activeTab && activeTabSelected && activeTabSelected.length > 0) {
+      if (activeTab && selected.length > 0) {
         request.selectedTabId = activeTab;
-        request.selectedRowIds = activeTabSelected;
+        request.selectedRowIds = selected;
       }
 
       const { actions } = (await actionsRequest(request)).data;
@@ -120,10 +116,10 @@ class Actions extends Component {
    * @summary ToDo: Describe the method.
    */
   requestRowActions = async () => {
-    const { windowType, docId, activeTab, activeTabSelected } = this.props;
+    const { windowType, docId, activeTab, selected } = this.props;
 
     try {
-      const requests = activeTabSelected.map(async (rowId) => {
+      const requests = selected.map(async (rowId) => {
         const response = await rowActionsRequest({
           windowId: windowType,
           documentId: docId,
@@ -368,31 +364,21 @@ Actions.propTypes = {
   plugins: PropTypes.any,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- * @param {object} props
- */
-const mapStateToProps = (state, props) => {
+const mapStateToProps = (state) => {
   const includedView = state.listHandler.includedView;
-
   const result = {
-    selected: getSelectionInstant(
-      state,
-      props,
-      state.windowHandler.selectionsHash
-    ),
     plugins: state.pluginsHandler.files,
   };
 
   if (includedView && includedView.viewId) {
+    const childViewTableId = getTableId({
+      windowId: includedView.windowType,
+      viewId: includedView.viewId,
+    });
+    const childSelector = getSelection();
+
     result.childViewId = includedView.viewId;
-    result.childViewSelectedIds = getSelectionInstant(
-      state,
-      { windowType: includedView.windowType, viewId: includedView.viewId },
-      state.windowHandler.selectionsHash
-    );
+    result.childViewSelectedIds = childSelector(state, childViewTableId);
   }
 
   return result;
@@ -403,8 +389,6 @@ Actions.propTypes = {
   docId: PropTypes.any,
   notfound: PropTypes.bool,
   activeTab: PropTypes.any,
-  activeTabSelected: PropTypes.array,
-  rowId: PropTypes.any,
   closeSubheader: PropTypes.func,
   openModal: PropTypes.func,
   openModalRow: PropTypes.func,

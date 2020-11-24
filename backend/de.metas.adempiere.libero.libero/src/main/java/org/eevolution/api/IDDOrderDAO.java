@@ -22,8 +22,7 @@ package org.eevolution.api;
  * #L%
  */
 
-import java.util.List;
-
+import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_Forecast;
@@ -34,7 +33,7 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.util.ISingletonService;
+import java.util.List;
 
 public interface IDDOrderDAO extends ISingletonService
 {
@@ -106,4 +105,6 @@ public interface IDDOrderDAO extends ISingletonService
 	void save(I_DD_OrderLine_Alternative ddOrderLineAlternative);
 
 	void save(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative);
+
+	I_DD_OrderLine getLineById(final DDOrderLineId ddOrderLineID);
 }

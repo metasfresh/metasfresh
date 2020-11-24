@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_DesadvLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_DesadvLine 
@@ -14,17 +14,10 @@ public interface I_EDI_DesadvLine
     /** AD_Table_ID=540645 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -36,8 +29,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -46,8 +39,8 @@ public interface I_EDI_DesadvLine
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,8 +52,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -74,8 +67,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -87,8 +80,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -97,8 +90,8 @@ public interface I_EDI_DesadvLine
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -183,7 +176,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
-	 * Set DESADV-Position.
+	 * Set DESADV Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -192,7 +185,7 @@ public interface I_EDI_DesadvLine
 	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID);
 
 	/**
-	 * Get DESADV-Position.
+	 * Get DESADV Line.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -229,8 +222,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_GTIN = "GTIN";
 
 	/**
-	 * Set Abr. Menge basiert auf.
-	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 * Set Invoicable Quantity per.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -239,8 +231,7 @@ public interface I_EDI_DesadvLine
 	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
 
 	/**
-	 * Get Abr. Menge basiert auf.
-	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 * Get Invoicable Quantity per.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -254,8 +245,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -264,8 +255,8 @@ public interface I_EDI_DesadvLine
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -304,8 +295,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_IsSubsequentDeliveryPlanned = "IsSubsequentDeliveryPlanned";
 
 	/**
-	 * Set Zeile Nr..
-	 * Einzelne Zeile in dem Dokument
+	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -314,8 +304,7 @@ public interface I_EDI_DesadvLine
 	public void setLine (int Line);
 
 	/**
-	 * Get Zeile Nr..
-	 * Einzelne Zeile in dem Dokument
+	 * Get SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -329,8 +318,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -339,8 +328,8 @@ public interface I_EDI_DesadvLine
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -352,8 +341,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Einzelpreis.
-	 * Effektiver Preis
+	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -362,8 +350,7 @@ public interface I_EDI_DesadvLine
 	public void setPriceActual (java.math.BigDecimal PriceActual);
 
 	/**
-	 * Get Einzelpreis.
-	 * Effektiver Preis
+	 * Get Price Actual.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -425,7 +412,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_ProductNo = "ProductNo";
 
 	/**
-	 * Set Geliefert (Lagereinheit).
+	 * Set Delivered (stock unit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -434,7 +421,7 @@ public interface I_EDI_DesadvLine
 	public void setQtyDeliveredInStockingUOM (java.math.BigDecimal QtyDeliveredInStockingUOM);
 
 	/**
-	 * Get Geliefert (Lagereinheit).
+	 * Get Delivered (stock unit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -448,8 +435,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_QtyDeliveredInStockingUOM = "QtyDeliveredInStockingUOM";
 
 	/**
-	 * Set Liefermenge.
-	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 * Set Delivered quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -458,8 +444,7 @@ public interface I_EDI_DesadvLine
 	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM);
 
 	/**
-	 * Get Liefermenge.
-	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 * Get Delivered quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -473,8 +458,7 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_QtyDeliveredInUOM = "QtyDeliveredInUOM";
 
 	/**
-	 * Set Menge.
-	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
+	 * Set Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -483,8 +467,7 @@ public interface I_EDI_DesadvLine
 	public void setQtyEntered (java.math.BigDecimal QtyEntered);
 
 	/**
-	 * Get Menge.
-	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
+	 * Get Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -498,8 +481,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
-	 * Set Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Set Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -508,8 +491,8 @@ public interface I_EDI_DesadvLine
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Get Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -569,8 +552,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_UPC_TU = "UPC_TU";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -584,8 +567,8 @@ public interface I_EDI_DesadvLine
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

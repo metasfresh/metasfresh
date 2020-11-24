@@ -52,6 +52,7 @@ public class UOMPrecision
 
 	public static final UOMPrecision ZERO = new UOMPrecision(0);
 	public static final UOMPrecision TWO = new UOMPrecision(2);
+	public static final UOMPrecision TWELVE = new UOMPrecision(12);
 
 	private static final UOMPrecision[] cachedValues = new UOMPrecision[] {
 			ZERO,
@@ -66,7 +67,7 @@ public class UOMPrecision
 			new UOMPrecision(9),
 			new UOMPrecision(10),
 			new UOMPrecision(11),
-			new UOMPrecision(12),
+			TWELVE,
 	};
 
 	private final int precision;
@@ -83,9 +84,12 @@ public class UOMPrecision
 		return precision;
 	}
 
+	/**
+	 * @return always RoundingMode#UP. Example: we convert 300GR to piece; one piece is one kilo; we need one piece and not 0 piece as the result, so we need to round UP.
+	 */
 	public RoundingMode getRoundingMode()
 	{
-		return RoundingMode.HALF_UP;
+		return RoundingMode.UP;
 	}
 
 	public BigDecimal roundIfNeeded(@NonNull final BigDecimal qty)

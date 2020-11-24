@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
@@ -109,7 +110,7 @@ public class AttributeSetInstanceBLTest
 		private final I_M_Attribute listAttribute;
 		private final I_M_Attribute numberAttribute;
 		private final I_M_Attribute stringAttribute;
-		private final ImmutableMap<String, ? extends Object> valuesByAttributeKey;
+		private final ImmutableMap<AttributeCode, ? extends Object> valuesByAttributeCode;
 
 		private TestAttributeSet()
 		{
@@ -120,11 +121,11 @@ public class AttributeSetInstanceBLTest
 			stringAttribute = attributesTestHelper.createM_Attribute("StringAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 			dateAttributeValue = SystemTime.asTimestamp();
-			valuesByAttributeKey = ImmutableMap.of(
-					dateAttribute.getValue(), dateAttributeValue,
-					listAttribute.getValue(), "listValue",
-					numberAttribute.getValue(), BigDecimal.ONE,
-					stringAttribute.getValue(), "stringValue");
+			valuesByAttributeCode = ImmutableMap.of(
+					AttributeCode.ofString(dateAttribute.getValue()), dateAttributeValue,
+					AttributeCode.ofString(listAttribute.getValue()), "listValue",
+					AttributeCode.ofString(numberAttribute.getValue()), BigDecimal.ONE,
+					AttributeCode.ofString(stringAttribute.getValue()), "stringValue");
 		}
 
 		@Override
@@ -134,7 +135,7 @@ public class AttributeSetInstanceBLTest
 		}
 
 		@Override
-		public boolean hasAttribute(final String attributeKey)
+		public boolean hasAttribute(final AttributeCode attributeCode)
 		{
 			throw new UnsupportedOperationException("The method hasAttribute is expected not to be called by the method under test");
 		}
@@ -158,41 +159,41 @@ public class AttributeSetInstanceBLTest
 		}
 
 		@Override
-		public Object getValue(final String attributeKey)
+		public Object getValue(final AttributeCode attributeCode)
 		{
-			assertThat(valuesByAttributeKey).containsKey(attributeKey);
-			return valuesByAttributeKey.get(attributeKey);
+			assertThat(valuesByAttributeCode).containsKey(attributeCode);
+			return valuesByAttributeCode.get(attributeCode);
 		}
 
 		@Override
-		public BigDecimal getValueAsBigDecimal(final String attributeKey)
+		public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
 		{
-			assertThat(attributeKey).isEqualTo(numberAttribute.getValue());
-			return (BigDecimal)valuesByAttributeKey.get(attributeKey);
+			assertThat(attributeCode).isEqualTo(AttributeCode.ofString(numberAttribute.getValue()));
+			return (BigDecimal)valuesByAttributeCode.get(attributeCode);
 		}
 
 		@Override
-		public int getValueAsInt(final String attributeKey)
+		public int getValueAsInt(final AttributeCode attributeCode)
 		{
-			return getValueAsBigDecimal(attributeKey).intValue();
+			return getValueAsBigDecimal(attributeCode).intValue();
 		}
 
 		@Override
-		public Date getValueAsDate(final String attributeKey)
+		public Date getValueAsDate(final AttributeCode attributeCode)
 		{
-			assertThat(attributeKey).isEqualTo(dateAttribute.getValue());
-			return (Date)valuesByAttributeKey.get(attributeKey);
+			assertThat(attributeCode).isEqualTo(AttributeCode.ofString(dateAttribute.getValue()));
+			return (Date)valuesByAttributeCode.get(attributeCode);
 		}
 
 		@Override
-		public String getValueAsString(final String attributeKey)
+		public String getValueAsString(final AttributeCode attributeCode)
 		{
-			assertThat(ImmutableSet.of(stringAttribute.getValue(), listAttribute.getValue())).contains(attributeKey);
-			return (String)valuesByAttributeKey.get(attributeKey);
+			assertThat(ImmutableSet.of(stringAttribute.getValue(), listAttribute.getValue())).contains(attributeCode.getCode());
+			return (String)valuesByAttributeCode.get(attributeCode);
 		}
 
 		@Override
-		public void setValue(final String attributeKey, final Object value)
+		public void setValue(final AttributeCode attributeCode, final Object value)
 		{
 			throw new UnsupportedOperationException("The method setValue is expected not to be called by the method under test");
 		}

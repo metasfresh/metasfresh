@@ -1,9 +1,13 @@
 package de.metas.handlingunits.inventory;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -11,14 +15,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.reducers.Reducers;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -42,28 +48,45 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString
+@Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class Inventory
 {
-	@Getter
 	private final InventoryId id;
-	@Getter
+	private final OrgId orgId;
 	private final DocBaseAndSubType docBaseAndSubType;
-
 	private final InventoryType inventoryType;
+	private final ZonedDateTime movementDate;
+	private final WarehouseId warehouseId;
+	private final String description;
+	private final ActivityId activityId;
+	private final DocStatus docStatus;
+
 	private final ImmutableList<InventoryLine> lines;
 
 	@Builder
 	private Inventory(
 			@NonNull final InventoryId id,
+			@NonNull final OrgId orgId,
 			@NonNull final DocBaseAndSubType docBaseAndSubType,
+			@NonNull final ZonedDateTime movementDate,
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final String description,
+			@Nullable final ActivityId activityId,
+			@NonNull final DocStatus docStatus,
 			@NonNull final List<InventoryLine> lines)
 	{
 		this.id = id;
+		this.orgId = orgId;
 		this.docBaseAndSubType = docBaseAndSubType;
-		this.lines = ImmutableList.copyOf(lines);
 		this.inventoryType = extractInventoryType(lines, InventoryType.PHYSICAL);
+		this.movementDate = movementDate;
+		this.warehouseId = warehouseId;
+		this.description = description;
+		this.activityId = activityId;
+		this.docStatus = docStatus;
+
+		this.lines = ImmutableList.copyOf(lines);
 	}
 
 	private static InventoryType extractInventoryType(
@@ -79,11 +102,6 @@ public final class Inventory
 	public boolean isInternalUseInventory()
 	{
 		return inventoryType.isInternalUse();
-	}
-
-	public ImmutableList<InventoryLine> getLines()
-	{
-		return lines;
 	}
 
 	public InventoryLine getLineById(@NonNull final InventoryLineId inventoryLineId)

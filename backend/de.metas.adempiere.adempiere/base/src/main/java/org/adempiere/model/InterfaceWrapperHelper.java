@@ -309,14 +309,8 @@ public class InterfaceWrapperHelper
 	 * <p>
 	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
-	 *
-	 * @param ctx
-	 * @param id
-	 * @param cl
-	 * @param trxName
-	 * @return
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -539,7 +533,7 @@ public class InterfaceWrapperHelper
 		helpers.refresh(model, trxName);
 	}
 
-	public static void setTrxName(final Object model, final String trxName)
+	public static void setTrxName(final Object model, @Nullable final String trxName)
 	{
 		final boolean ignoreIfNotHandled = false;
 		setTrxName(model, trxName, ignoreIfNotHandled);
@@ -677,11 +671,8 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Get context from model.
-	 *
-	 * @param model
-	 * @return
 	 */
-	public static Properties getCtx(final Object model)
+	public static Properties getCtx(@Nullable final Object model)
 	{
 		return getCtx(model, false);
 	}
@@ -723,7 +714,7 @@ public class InterfaceWrapperHelper
 	 * IMPORTANT: only call with <b>model interfaces</b> such as {@code I_AD_Table}, {@code C_Order} (legacy classes like `MProduct` and {@link IContextAware}s will also work) and the like.
 	 * Despite the parameter type being "Object" it does not work with all objects.
 	 */
-	public static String getTrxName(final Object model)
+	public static String getTrxName(@Nullable final Object model)
 	{
 		final boolean ignoreIfNotHandled = false;
 		return getTrxName(model, ignoreIfNotHandled);

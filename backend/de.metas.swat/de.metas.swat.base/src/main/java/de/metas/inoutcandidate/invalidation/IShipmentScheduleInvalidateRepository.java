@@ -5,8 +5,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.IQuery;
 
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
@@ -89,4 +90,6 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	void releaseRecomputeMarkerOutOfTrx(PInstanceId adPInstanceId);
 
 	IQueryFilter<I_M_ShipmentSchedule> createInvalidShipmentSchedulesQueryFilter(PInstanceId pinstanceId);
+
+	void invalidateShipmentSchedulesFor(IQuery<I_M_ShipmentSchedule> query);
 }

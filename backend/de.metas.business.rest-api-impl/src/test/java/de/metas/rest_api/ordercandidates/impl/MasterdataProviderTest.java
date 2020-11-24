@@ -195,6 +195,7 @@ public class MasterdataProviderTest
 		assertThat(bpartnerRecord.getName()).isEqualTo("jsonBPartner.name");
 	}
 
+	/** Create a C_BPartner, and then add a location and a contact to it via masterDataProvider.*/
 	@Test
 	void getCreateBPartnerInfo()
 	{
@@ -229,6 +230,7 @@ public class MasterdataProviderTest
 		jsonContact.setSyncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build());
 
 		final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo = JsonRequestBPartnerLocationAndContact.builder()
+				.syncAdvise(SyncAdvise.builder().ifNotExists(IfNotExists.CREATE).ifExists(IfExists.DONT_UPDATE).build())
 				.bpartner(jsonBPartner)
 				.location(jsonBPartnerLocation)
 				.contact(jsonContact)
