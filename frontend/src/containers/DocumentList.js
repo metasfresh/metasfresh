@@ -134,8 +134,11 @@ class DocumentListContainer extends Component {
      * TODO: This could probably be handled by a combination of
      * middleware reacting to route changes and reducers
      */
+
     if (
-      (nextProps.viewId !== nextProps.queryViewId && nextProps.queryViewId) || // for the case when you applied a filter and come back via browser back button
+      (nextProps.viewId !== nextProps.queryViewId &&
+        nextProps.queryViewId &&
+        !this.renderedSuccessfuly) || // for the case when you applied a filter and come back via browser back button
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
@@ -144,6 +147,7 @@ class DocumentListContainer extends Component {
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
+      this.renderedSuccessfuly = true;
       // if view is already loading or reloading (after filtering) don't fetch
       // the data and layout again
       if (!(pending || (nextViewData && nextViewData.pending))) {
