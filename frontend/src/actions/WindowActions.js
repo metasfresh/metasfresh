@@ -1042,7 +1042,7 @@ export function createProcess({
   processType,
   rowId,
   tabId,
-  type,
+  parentId,
   viewId,
   selectedTab,
   childViewId,
@@ -1069,7 +1069,7 @@ export function createProcess({
         processId: processType,
         rowId,
         tabId,
-        type,
+        parentId,
         viewId,
         selectedTab,
         childViewId,
@@ -1096,7 +1096,9 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
-          await dispatch(handleProcessResponse(response, processType, pid, type));
+          await dispatch(
+            handleProcessResponse(response, processType, pid, parentId)
+          );
         } catch (error) {
           await dispatch(closeModal());
           await dispatch(setProcessSaved());
