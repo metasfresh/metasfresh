@@ -34,9 +34,10 @@ public class MacAddress
 
 	public static final String GROUP_DELIMITER = ":";
 
+	@SuppressWarnings("ConstantConditions")
 	@NonNull
 	public String withGroupDelimiter(@NonNull final String newGroupDelimiter)
 	{
-		return StringUtils.replace(address, ":", newGroupDelimiter);
+		return StringUtils.replace(address, GROUP_DELIMITER, newGroupDelimiter);
 	}
 }
