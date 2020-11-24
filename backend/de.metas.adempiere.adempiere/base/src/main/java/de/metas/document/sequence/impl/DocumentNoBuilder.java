@@ -122,72 +122,105 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return NO_DOCUMENTNO;
 	}
 
-	private final String build0() throws Exception
+	@Nullable
+	@Override
+	public DocumentNoParts buildParts()
 	{
+		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
+
 		//
-		// Get the sequence number that we shall use
-		final String sequenceNo = getSequenceNoToUse();
-		if (Objects.equals(NO_DOCUMENTNO, sequenceNo))
+		// SequenceNo
+		final String sequenceNoEvaluated;
+		{
+			final String sequenceNo = getSequenceNoToUse();
+			if (sequenceNo == null)
+			{
+				return null;
+			}
+
+			final String decimalPattern = docSeqInfo.getDecimalPattern();
+			if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt(sequenceNo))
+			{
+				try
+				{
+					final int seqNoAsInt = Integer.parseInt(sequenceNo);
+					sequenceNoEvaluated = new DecimalFormat(decimalPattern).format(seqNoAsInt);
+				}
+				catch (final Exception e)
+				{
+					throw new DocumentNoBuilderException("Failed formatting sequenceNo '" + sequenceNo + "' using format '" + decimalPattern + "'");
+				}
+			}
+			else
+			{
+				sequenceNoEvaluated = sequenceNo;
+			}
+		}
+
+		//
+		// Prefix
+		final String prefixEvaluated;
+		{
+			final IStringExpression prefix = docSeqInfo.getPrefix();
+			if (!prefix.isNullExpression())
+			{
+				prefixEvaluated = prefix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
+			}
+			else
+			{
+				prefixEvaluated = "";
+			}
+		}
+
+		//
+		// Suffix
+		final String suffixEvaluated;
+		{
+			final IStringExpression suffix = docSeqInfo.getSuffix();
+			if (!suffix.isNullExpression())
+			{
+				suffixEvaluated = suffix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
+			}
+			else
+			{
+				suffixEvaluated = "";
+			}
+		}
+
+		return DocumentNoParts.builder()
+				.prefix(prefixEvaluated)
+				.suffix(suffixEvaluated)
+				.sequenceNumber(sequenceNoEvaluated)
+				.build();
+
+	}
+
+	@Nullable
+	private String build0(@Nullable final DocumentNoParts documentNoParts)
+	{
+		if (documentNoParts == null)
 		{
 			return NO_DOCUMENTNO;
 		}
 
 		//
 		// Build DocumentNo
-		final StringBuilder documentNo = new StringBuilder();
-
-		//
-		// DocumentNo - Prefix
-		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
-		final IStringExpression prefix = docSeqInfo.getPrefix();
-		if (!prefix.isNullExpression())
-		{
-			final String prefixEvaluated = prefix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
-			documentNo.append(prefixEvaluated);
-		}
-
-		//
-		// DocumentNo - SequenceNo
-		final String decimalPattern = docSeqInfo.getDecimalPattern();
-		final String sequenceNoFinal;
-		if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt(sequenceNo))
-		{
-			try
-			{
-				final int seqNoAsInt = Integer.parseInt(sequenceNo);
-				sequenceNoFinal = new DecimalFormat(decimalPattern).format(seqNoAsInt);
-			}
-			catch (final Exception e)
-			{
-				throw new DocumentNoBuilderException("Failed formatting sequenceNo '" + sequenceNo + "' using format '" + decimalPattern + "'");
-			}
-		}
-		else
-		{
-			sequenceNoFinal = String.valueOf(sequenceNo);
-		}
-		documentNo.append(sequenceNoFinal);
-
-		//
-		// DocumentNo - Suffix
-		final IStringExpression suffix = docSeqInfo.getSuffix();
-		if (!suffix.isNullExpression())
-		{
-			final String suffixEvaluated = suffix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
-			documentNo.append(suffixEvaluated);
-		}
+		final StringBuilder finalDocumentNo = new StringBuilder()
+				.append(documentNoParts.getPrefix())
+				.append(documentNoParts.getSequenceNumber())
+				.append(documentNoParts.getSuffix());
 
 		//
 		// Append preliminary markers if needed
 		if (isUsePreliminaryDocumentNo())
 		{
-			documentNo
+			finalDocumentNo
 					.insert(0, IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_BEGIN)
 					.append(IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_END);
 		}
 
 		//
-		return documentNo.toString();
+		return finalDocumentNo.toString();
 	}
 
 	private String getCalendarYear(final String dateColumn)
