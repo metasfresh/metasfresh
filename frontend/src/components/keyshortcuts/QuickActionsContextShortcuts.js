@@ -30,11 +30,6 @@ export default class QuickActionsContextShortcuts extends Component {
     },
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     return [
       <Shortcut
