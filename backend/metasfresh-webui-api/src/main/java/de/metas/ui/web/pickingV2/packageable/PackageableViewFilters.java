@@ -115,5 +115,4 @@ final class PackageableViewFilters
 				.shipperId(filter.getParameterValueAsRepoIdOrNull(PackageableViewFilterVO.PARAM_M_Shipper_ID, ShipperId::ofRepoIdOrNull))
 				.build();
 	}
-
 }
