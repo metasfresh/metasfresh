@@ -1,10 +1,5 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import org.adempiere.warehouse.WarehouseTypeId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Warehouse_Type;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.i18n.IMsgBL;
@@ -21,6 +16,11 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Warehouse_Type;
 
 /*
  * #%L
@@ -66,6 +66,10 @@ final class PackageableViewFilters
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse_Type.Table_Name).provideForFilter());
 
+		final DocumentFilterParamDescriptor.Builder warehouseParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Warehouse_ID)
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse.Table_Name).provideForFilter());
+
 		final DocumentFilterParamDescriptor.Builder deliveryDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_DeliveryDate)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(PackageableViewFilterVO.PARAM_DeliveryDate))
 				.setWidgetType(DocumentFieldWidgetType.LocalDate);
@@ -83,6 +87,7 @@ final class PackageableViewFilters
 				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText("Default"))
 				.addParameter(orderParameter)
 				.addParameter(customerParameter)
+				.addParameter(warehouseParameter)
 				.addParameter(warehouseTypeParameter)
 				.addParameter(deliveryDateParameter)
 				.addParameter(preparationDateParameter)
@@ -115,4 +120,5 @@ final class PackageableViewFilters
 				.shipperId(filter.getParameterValueAsRepoIdOrNull(PackageableViewFilterVO.PARAM_M_Shipper_ID, ShipperId::ofRepoIdOrNull))
 				.build();
 	}
+
 }
