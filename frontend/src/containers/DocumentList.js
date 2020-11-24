@@ -70,6 +70,7 @@ class DocumentListContainer extends Component {
     };
 
     this.fetchLayoutAndData();
+    this.renderedSuccessfuly = false;
   }
 
   UNSAFE_componentWillMount() {
@@ -136,9 +137,9 @@ class DocumentListContainer extends Component {
      */
 
     if (
-      (nextProps.viewId !== nextProps.queryViewId &&
+      (nextProps.viewId !== nextProps.queryViewId && // for the case when you applied a filter and come back via browser back button
         nextProps.queryViewId &&
-        !this.renderedSuccessfuly) || // for the case when you applied a filter and come back via browser back button
+        !this.renderedSuccessfuly) ||
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
