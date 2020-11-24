@@ -157,7 +157,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * Retrieve items that reference the given {@code hu}, ordered by {@link #HU_ITEMS_COMPARATOR}.
 	 */
-	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
+	List<I_M_HU_Item> retrieveItems(I_M_HU hu);
+
+	List<I_M_HU_Item> retrieveItems(I_M_HU hu, HUItemType type);
 
 	I_M_HU_Item retrieveItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 

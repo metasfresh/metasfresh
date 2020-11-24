@@ -74,6 +74,7 @@ class DocumentListContainer extends Component {
     };
 
     this.fetchLayoutAndData();
+    this.renderedSuccessfuly = false;
   }
 
   UNSAFE_componentWillMount() {
@@ -111,7 +112,6 @@ class DocumentListContainer extends Component {
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
       windowId: nextWindowId,
-      queryViewId: nextQueryViewId,
       viedData: nextViewData,
     } = nextProps;
     const {
@@ -126,9 +126,6 @@ class DocumentListContainer extends Component {
       deleteView,
       deleteTable,
       isModal,
-      updateUri,
-      page,
-      sort,
       filters,
       viewData: { pending },
       deleteQuickActions,
@@ -137,21 +134,6 @@ class DocumentListContainer extends Component {
     const included =
       includedView && includedView.windowId && includedView.viewId;
     const location = document.location;
-
-    /*
-     * This is a fix for the case when user selects the link to the current
-     * view from the menu. Without this the `viewId` would disappear from the
-     * url, as react-router is not aware of it's existence.
-     */
-    if (viewId === nextViewId && !nextQueryViewId && updateUri) {
-      const updateQuery = {
-        viewId,
-        page,
-        sort,
-      };
-
-      updateUri(updateQuery);
-    }
 
     /*
      * If we browse list of docs, changing type of Document
@@ -165,8 +147,11 @@ class DocumentListContainer extends Component {
      * TODO: This could probably be handled by a combination of
      * middleware reacting to route changes and reducers
      */
+
     if (
-      (nextProps.viewId !== nextProps.queryViewId && nextProps.queryViewId) || // for the case when you applied a filter and come back via browser back button
+      (nextProps.viewId !== nextProps.queryViewId && // for the case when you applied a filter and come back via browser back button
+        nextProps.queryViewId &&
+        !this.renderedSuccessfuly) ||
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
@@ -175,6 +160,7 @@ class DocumentListContainer extends Component {
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
+      this.renderedSuccessfuly = true;
       // if view is already loading or reloading (after filtering) don't fetch
       // the data and layout again
       if (!(pending || (nextViewData && nextViewData.pending))) {

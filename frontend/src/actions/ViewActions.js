@@ -596,8 +596,6 @@ export function showIncludedView({
  */
 export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
   return (dispatch) => {
-    dispatch(fetchDocumentPending(windowId, isModal));
-
     return headerPropertiesRequest({ windowId, viewId })
       .then((response) => {
         const updatedData = {

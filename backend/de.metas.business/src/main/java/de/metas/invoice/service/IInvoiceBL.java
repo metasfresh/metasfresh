@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
@@ -60,6 +61,8 @@ import lombok.NonNull;
 
 public interface IInvoiceBL extends ISingletonService
 {
+	I_C_Invoice getById(final InvoiceId invoiceId);
+
 	/**
 	 * Copies a given invoice
 	 *
@@ -200,7 +203,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * @param order
-	 * @param C_DocTypeTarget_ID invoice's document type
+	 * @param docTypeTargetId invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
 	 * @param dateAcct may be <code>null</code> (see task 08438)
 	 * @return created invoice

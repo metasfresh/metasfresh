@@ -119,8 +119,6 @@ public interface IOrgDAO extends ISingletonService
 	/**
 	 * Search for the organization when the value is known
 	 *
-	 * @param ctx
-	 * @param value
 	 * @return AD_Org Object if the organization was found, null otherwise.
 	 */
 	I_AD_Org retrieveOrganizationByValue(Properties ctx, String value);

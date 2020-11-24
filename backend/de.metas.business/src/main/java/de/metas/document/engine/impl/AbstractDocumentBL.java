@@ -3,6 +3,8 @@ package de.metas.document.engine.impl;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
@@ -42,6 +44,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -64,7 +67,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		return docActionHandlerProvidersByTableName.get().get(tableName);
 	}
 
-	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
+	private static Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
 		if (!SpringContextHolder.instance.isApplicationContextSet())
 		{
@@ -399,21 +402,23 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public I_C_DocType getDocTypeOrNull(final Object model)
 	{
-		final Integer docTypeId = InterfaceWrapperHelper.getValueOrNull(model, COLUMNNAME_C_DocType_ID);
+		final DocTypeId docTypeId = getDocTypeId(model).orElse(null);
 		if (docTypeId == null)
 		{
 			return null;
 		}
 
-		if (docTypeId <= 0)
-		{
-			return null;
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-		return InterfaceWrapperHelper.create(ctx, docTypeId, I_C_DocType.class, trxName);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		return docTypeDAO.getById(docTypeId);
 	}
+
+	@Override
+	public Optional<DocTypeId> getDocTypeId(final Object model)
+	{
+		final Integer docTypeId = InterfaceWrapperHelper.getValueOrNull(model, COLUMNNAME_C_DocType_ID);
+		return DocTypeId.optionalOfRepoId(docTypeId);
+	}
+
 
 	protected final LocalDate getDocumentDate(final Object model)
 	{

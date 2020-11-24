@@ -24,11 +24,14 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -38,7 +41,7 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.print.ReportEngine;
+import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -57,7 +60,6 @@ import de.metas.util.Services;
  * Order Distribution Model. Please do not set DocStatus and C_DocType_ID directly. They are set in the process() method. Use DocAction and C_DocTypeTarget_ID instead.
  *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>Original contributor of Distribution Functionality <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public class MDDOrder extends X_DD_Order implements IDocument
 {
@@ -231,27 +233,10 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (Exception e)
-		{
-			log.error("Could not create PDF - " + e.getMessage());
-		}
-		return null;
-	}	// getPDF
-
-	private File createPDF(File file)
-	{
-		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.DISTRIBUTION_ORDER, getDD_Order_ID());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	}	// createPDF
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.DISTRIBUTION_ORDER, getDD_Order_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
+	}
 
 	/**************************************************************************
 	 * Get Lines of Order

@@ -8,5 +8,5 @@ public interface ICCAbleDocumentFactoryService extends ISingletonService
 
 	ICCAbleDocument createCCAbleDocument(Object model);
 	
-	boolean isSupported(Object model);
+	boolean isTableNameSupported(String tableName);
 }

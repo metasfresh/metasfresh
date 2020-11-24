@@ -21,29 +21,29 @@
  */
 package org.compiere.apps;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.io.File;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailSentStatus;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.letters.model.I_AD_BoilerPlate;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.logging.LogManager;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.model.PlainContextAware;
+import org.adempiere.archive.api.IPDFArchiveProvider;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLetterAttachment;
 import org.compiere.grid.ed.VLookup;
@@ -64,22 +64,15 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.email.EMail;
-import de.metas.email.EMailAddress;
-import de.metas.email.EMailSentStatus;
-import de.metas.email.mailboxes.UserEMailConfig;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.letters.model.I_AD_BoilerPlate;
-import de.metas.letters.model.MADBoilerPlate;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import de.metas.logging.LogManager;
-import de.metas.user.api.IUserBL;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.File;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * EMail Dialog
@@ -109,7 +102,6 @@ public class EMailDialog
 	 *
 	 * @param owner calling window
 	 * @param title title
-	 * @param from from
 	 * @param to to
 	 * @param subject subject
 	 * @param message message
@@ -158,7 +150,6 @@ public class EMailDialog
 	/**
 	 * Common Init
 	 *
-	 * @param from from
 	 * @param to to
 	 * @param subject subject
 	 * @param message message
@@ -610,19 +601,19 @@ public class EMailDialog
 			}
 			if (emailSentStatus.isSentOK())
 			{
-				updateDocExchange(msgBL.getMsg(ctx, "MessageSent")); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
+				updateDocExchange(ArchiveEmailSentStatus.MESSAGE_SENT); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
 				ADialog.info(0, this, "MessageSent");
 				dispose();
 			}
 			else
 			{
-				updateDocExchange(msgBL.getMsg(ctx, "MessageNotSent") + " " + status); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
+				updateDocExchange(ArchiveEmailSentStatus.MESSAGE_NOT_SENT); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
 				ADialog.error(0, this, "MessageNotSent", status);
 			}
 		}
 		else
 		{
-			updateDocExchange(msgBL.getMsg(ctx, "MessageNotSent") + " " + status); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
+			updateDocExchange(ArchiveEmailSentStatus.MESSAGE_NOT_SENT); // updating the status first, to make sure it's done when the user reads the message and clicks on OK
 			ADialog.error(0, this, "MessageNotSent", status);
 		}
 		//
@@ -695,7 +686,7 @@ public class EMailDialog
 		commonInit(fromUserEmailConfig, to, subject, message, attachment, textPreset);
 	}	// EmailDialog
 
-	private void updateDocExchange(final String status)
+	private void updateDocExchange(final ArchiveEmailSentStatus status)
 	{
 		if (archive == null)
 		{
@@ -703,21 +694,18 @@ public class EMailDialog
 			{
 				return;
 			}
-			final Object model = TableRecordReference.of(m_AD_Table_ID, m_Record_ID)
-					.getModel(PlainContextAware.newOutOfTrx());
-
-			archive = Services.get(IArchiveDAO.class).retrievePDFArchiveForModel(model, I_AD_Archive.class);
+			final TableRecordReference recordRef = TableRecordReference.of(m_AD_Table_ID, m_Record_ID);
+			final IPDFArchiveProvider pdfArchiveProvider = SpringContextHolder.instance.getBean(IPDFArchiveProvider.class);
+			archive = pdfArchiveProvider.getPDFArchiveForModel(recordRef, I_AD_Archive.class).orElse(null);
 		}
 		if (archive == null)
 		{
 			return;
 		}
-		final String action = "eMail";
 		final UserEMailConfig fromUserEMailConfig = getFromUserEMailConfig();
 		Services.get(IArchiveEventManager.class).fireEmailSent(
-				archive, 
-				action, 
-				fromUserEMailConfig, 
+				archive,
+				fromUserEMailConfig,
 				fromUserEMailConfig != null ? fromUserEMailConfig.getEmail() : null, 
 				EMailAddress.ofNullableString(getTo()), 
 				EMailAddress.ofNullableString(getCc()), 

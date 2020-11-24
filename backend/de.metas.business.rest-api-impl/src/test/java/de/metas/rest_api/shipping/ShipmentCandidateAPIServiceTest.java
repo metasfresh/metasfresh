@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.shipping;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -60,8 +61,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import com.google.common.collect.ImmutableList;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

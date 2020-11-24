@@ -202,3 +202,26 @@ export function getProcessData({
 
   return post(`${config.API_URL}/process/${processId}`, payload);
 }
+
+/**
+ * @method getPrintingOptions
+ * @summary Get the printing options for a specified entity
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} rowId
+ */
+export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
+  return get(
+    config.API_URL +
+      '/' +
+      entity +
+      '/' +
+      windowId +
+      (docId ? '/' + docId : '') +
+      (tabId ? '/' + tabId : '') +
+      (rowId ? '/' + rowId : '') +
+      '/printingOptions'
+  );
+}

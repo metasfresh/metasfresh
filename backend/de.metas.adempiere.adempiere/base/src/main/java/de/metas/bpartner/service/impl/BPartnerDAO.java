@@ -35,12 +35,16 @@ import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.service.BPRelation;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.bpartner.service.BPartnerPrintFormat;
+import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocTypeId;
 import de.metas.email.EMailAddress;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -53,6 +57,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
+import de.metas.report.PrintFormatId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
@@ -69,6 +74,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -79,6 +85,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -119,6 +126,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final GLNLoadingCache glnsLoadingCache = new GLNLoadingCache();
+	private final CCache<BPartnerId, BPartnerPrintFormatMap> printFormatsCache = CCache.<BPartnerId, BPartnerPrintFormatMap>builder()
+			.tableName(I_C_BP_PrintFormat.Table_Name)
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(100)
+			.build();
 
 	private static final AdMessageKey MSG_ADDRESS_INACTIVE = AdMessageKey.of("webui.salesorder.clone.inactivelocation");
 
@@ -785,8 +797,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-			final String bpValue,
-			final String bpValueSuffixToFallback)
+														final String bpValue,
+														final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1641,6 +1653,34 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
 
 		return createLocationIdOrNull(partnerId, billToLocation);
+	}
+
+	@Override
+	public BPartnerPrintFormatMap getPrintFormats(@NonNull final BPartnerId bpartnerId)
+	{
+		return printFormatsCache.getOrLoad(bpartnerId, this::retrievePrintFormats);
+	}
+
+	private BPartnerPrintFormatMap retrievePrintFormats(@NonNull final BPartnerId bpartnerId)
+	{
+		final ImmutableList<BPartnerPrintFormat> printFormats = queryBL.createQueryBuilderOutOfTrx(I_C_BP_PrintFormat.class)
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(record -> toBPartnerPrintFormat(record))
+				.collect(ImmutableList.toImmutableList());
+
+		return BPartnerPrintFormatMap.ofList(printFormats);
+	}
+
+	private static BPartnerPrintFormat toBPartnerPrintFormat(final I_C_BP_PrintFormat record)
+	{
+		return BPartnerPrintFormat.builder()
+				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
+				.adTableId(AdTableId.ofRepoIdOrNull(record.getAD_Table_ID()))
+				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
+				.build();
 	}
 
 }

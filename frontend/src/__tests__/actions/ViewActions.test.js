@@ -1,11 +1,14 @@
-import thunk from 'redux-thunk'
+import thunk from 'redux-thunk';
 import nock from 'nock';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
 import _ from 'lodash';
 
-import viewHandler, { viewState, initialState } from '../../reducers/viewHandler';
-import tablesHandler, {  getTableId } from '../../reducers/tables';
+import viewHandler, {
+  viewState,
+  initialState,
+} from '../../reducers/viewHandler';
+import tablesHandler, { getTableId } from '../../reducers/tables';
 import windowState from '../../reducers/windowHandler';
 import { getEntityRelatedId } from '../../reducers/filters';
 
@@ -13,7 +16,10 @@ import * as viewActions from '../../actions/ViewActions';
 import { createTableData } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
-import { formatFilters, populateFiltersCaptions } from '../../utils/filterHelpers';
+import {
+  formatFilters,
+  populateFiltersCaptions,
+} from '../../utils/filterHelpers';
 
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
 import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
@@ -35,7 +41,7 @@ const createStore = function(state = {}) {
   );
 
   return res;
-}
+};
 
 describe('ViewActions synchronous', () => {
   const viewLayout = fixtures.viewLayout1;
@@ -86,23 +92,26 @@ describe('ViewActions synchronous', () => {
     expect(action.type).toEqual(ACTION_TYPES.UNSET_INCLUDED_VIEW);
     expect(action.payload).toHaveProperty('id', id);
     expect(action.payload).toHaveProperty('viewId', viewId);
-  }); 
+  });
 });
 
 describe('ViewActions thunks', () => {
   const limitedViewLayout = fixtures.viewLayout1;
   const limitedViewData = fixtures.basicViewData1;
-  const limitedCreateViewData = _.omit(
-    limitedViewData,
-    ['columnsByFieldName', 'result', 'firstRow', 'pageLength', 'headerProperties']
-  );
+  const limitedCreateViewData = _.omit(limitedViewData, [
+    'columnsByFieldName',
+    'result',
+    'firstRow',
+    'pageLength',
+    'headerProperties',
+  ]);
   const limitedModalLayout = fixtures.modalLayout1;
   const limitedModalData = fixtures.basicModalData1;
 
   it(`dispatches 'FETCH_LAYOUT_PENDING/SUCCESS' when fetching layout data`, () => {
     const { windowId } = limitedViewLayout;
     const state = createStore();
-    const store = mockStore(state); 
+    const store = mockStore(state);
     const payload1 = {
       id: windowId,
       isModal: false,
@@ -122,9 +131,13 @@ describe('ViewActions thunks', () => {
       .get(`/documentView/${windowId}/layout?viewType=grid`)
       .reply(200, limitedViewLayout);
 
-    return store.dispatch(viewActions.fetchLayout(windowId, 'grid')).then(() => {
-      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-    });
+    return store
+      .dispatch(viewActions.fetchLayout(windowId, 'grid'))
+      .then(() => {
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
+      });
   });
 
   it(`dispatches 'CREATE_VIEW*' and 'CREATE_TABLE' actions when fetching view data`, () => {
@@ -152,7 +165,10 @@ describe('ViewActions thunks', () => {
       viewId,
       isModal: false,
     };
-    const actionData = _.omit(createTableData({ ...limitedCreateViewData, ...limitedViewLayout }), 'size');
+    const actionData = _.omit(
+      createTableData({ ...limitedCreateViewData, ...limitedViewLayout }),
+      'size'
+    );
     const payload3 = {
       id: tableId,
       // we have to remove `size` as in the real flow it's not present in the layout
@@ -170,9 +186,18 @@ describe('ViewActions thunks', () => {
       .reply(200, limitedCreateViewData);
 
     return store
-      .dispatch(viewActions.createView({ windowId, viewType: 'grid', filters: [], isModal: false }))
+      .dispatch(
+        viewActions.createView({
+          windowId,
+          viewType: 'grid',
+          filters: [],
+          isModal: false,
+        })
+      )
       .then(() => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 
@@ -199,7 +224,7 @@ describe('ViewActions thunks', () => {
         visible: true,
         viewId,
         windowId,
-      }
+      },
     });
     const store = mockStore(state);
     const payload1 = {
@@ -214,7 +239,7 @@ describe('ViewActions thunks', () => {
     const payload3 = {
       id: tableId,
       data: tableData,
-    }
+    };
     const expectedActions = [
       { type: ACTION_TYPES.FETCH_DOCUMENT_PENDING, payload: payload1 },
       { type: ACTION_TYPES.FETCH_DOCUMENT_SUCCESS, payload: payload2 },
@@ -223,8 +248,10 @@ describe('ViewActions thunks', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
-      (page - 1)}&pageLength=${pageLength}`)
+      .get(
+        `/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+          (page - 1)}&pageLength=${pageLength}`
+      )
       .reply(200, limitedModalData);
 
     nock(config.API_URL)
@@ -233,14 +260,29 @@ describe('ViewActions thunks', () => {
       .reply(200, { data: { actions: [] } });
 
     return store
-      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: true }))
+      .dispatch(
+        viewActions.fetchDocument({
+          windowId,
+          viewId,
+          pageLength,
+          page,
+          isModal: true,
+        })
+      )
       .then(() => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 
   it(`dispatches 'FETCH_DOCUMENT_*' and 'UPDATE_TABLE' actions when fetching view rows data`, () => {
-    const { windowId, viewId, pageLength, columnsByFieldName } = limitedViewData;
+    const {
+      windowId,
+      viewId,
+      pageLength,
+      columnsByFieldName,
+    } = limitedViewData;
     const tableId = getTableId({ windowId, viewId });
     const page = 1;
     const tableData = createTableData({
@@ -250,12 +292,12 @@ describe('ViewActions thunks', () => {
         'size',
         'headerProperties',
         'result',
-        'firstRow'
+        'firstRow',
       ]),
       ...limitedViewLayout,
       headerElements: limitedViewData.columnsByFieldName,
       keyProperty: 'id',
-    })
+    });
     const state = createStore({
       viewHandler: {
         views: {
@@ -268,8 +310,8 @@ describe('ViewActions thunks', () => {
       tables: {
         [tableId]: createTableData({
           ...limitedCreateViewData,
-          ...limitedViewLayout
-        })
+          ...limitedViewLayout,
+        }),
       },
     });
     const store = mockStore(state);
@@ -285,7 +327,7 @@ describe('ViewActions thunks', () => {
     const payload3 = {
       id: tableId,
       data: tableData,
-    }
+    };
     const expectedActions = [
       { type: ACTION_TYPES.FETCH_DOCUMENT_PENDING, payload: payload1 },
       { type: ACTION_TYPES.FETCH_DOCUMENT_SUCCESS, payload: payload2 },
@@ -294,8 +336,10 @@ describe('ViewActions thunks', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
-      (page - 1)}&pageLength=${pageLength}`)
+      .get(
+        `/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+          (page - 1)}&pageLength=${pageLength}`
+      )
       .reply(200, limitedViewData);
 
     nock(config.API_URL)
@@ -304,20 +348,38 @@ describe('ViewActions thunks', () => {
       .reply(200, { data: { actions: [] } });
 
     return store
-      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: false }))
+      .dispatch(
+        viewActions.fetchDocument({
+          windowId,
+          viewId,
+          pageLength,
+          page,
+          isModal: false,
+        })
+      )
       .then(() => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 
   it(`dispatches 'CREATE_FILTER' with properly formatted filters when fetching filtered view rows data`, () => {
     const limitedViewLayout = fixtures.viewLayout2;
     const limitedViewData = fixtures.basicViewData2;
-    const limitedCreateViewData = _.omit(
-      limitedViewData,
-      ['columnsByFieldName', 'result', 'firstRow', 'pageLength', 'headerProperties']
-    );
-    const { windowId, viewId, pageLength, columnsByFieldName } = limitedViewData;
+    const limitedCreateViewData = _.omit(limitedViewData, [
+      'columnsByFieldName',
+      'result',
+      'firstRow',
+      'pageLength',
+      'headerProperties',
+    ]);
+    const {
+      windowId,
+      viewId,
+      pageLength,
+      columnsByFieldName,
+    } = limitedViewData;
     const page = 1;
     const state = createStore({
       viewHandler: {
@@ -351,13 +413,15 @@ describe('ViewActions thunks', () => {
       data: filtersData,
     };
     const expectedActions = [
-      { type: ACTION_TYPES.CREATE_FILTER, payload: payload2}
+      { type: ACTION_TYPES.CREATE_FILTER, payload: payload2 },
     ];
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
-      (page - 1)}&pageLength=${pageLength}`)
+      .get(
+        `/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+          (page - 1)}&pageLength=${pageLength}`
+      )
       .reply(200, _.cloneDeep(limitedViewData));
 
     nock(config.API_URL)
@@ -366,9 +430,19 @@ describe('ViewActions thunks', () => {
       .reply(200, { data: { actions: [] } });
 
     return store
-      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: false }))
+      .dispatch(
+        viewActions.fetchDocument({
+          windowId,
+          viewId,
+          pageLength,
+          page,
+          isModal: false,
+        })
+      )
       .then(() => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 
@@ -395,10 +469,15 @@ describe('ViewActions thunks', () => {
     const parentId = layoutData.windowId;
 
     const payload1 = {
-      id: windowId, showIncludedView: true, isModal: true,
+      id: windowId,
+      showIncludedView: true,
+      isModal: true,
     };
     const payload2 = {
-      id: includedWindowId, viewId: includedViewId, viewProfileId: null, parentId
+      id: includedWindowId,
+      viewId: includedViewId,
+      viewProfileId: null,
+      parentId,
     };
 
     const expectedActions = [
@@ -408,8 +487,10 @@ describe('ViewActions thunks', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
-      (page - 1)}&pageLength=${pageLength}`)
+      .get(
+        `/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+          (page - 1)}&pageLength=${pageLength}`
+      )
       .reply(200, rowsData);
 
     nock(config.API_URL)
@@ -418,9 +499,19 @@ describe('ViewActions thunks', () => {
       .reply(200, { data: { actions: [] } });
 
     return store
-      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: true }))
+      .dispatch(
+        viewActions.fetchDocument({
+          windowId,
+          viewId,
+          pageLength,
+          page,
+          isModal: true,
+        })
+      )
       .then(() => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 
@@ -445,16 +536,21 @@ describe('ViewActions thunks', () => {
           windowType: includedWindowId,
           parentId: windowId,
           viewProfileId: null,
-        }
+        },
       },
     });
     const store = mockStore(state);
 
     const payload1 = {
-      id: windowId, showIncludedView: true, isModal: true,
+      id: windowId,
+      showIncludedView: true,
+      isModal: true,
     };
     const payload2 = {
-      id: includedWindowId, viewId: includedViewId, viewProfileId: null, parentId: windowId
+      id: includedWindowId,
+      viewId: includedViewId,
+      viewProfileId: null,
+      parentId,
     };
 
     const expectedActions = [
@@ -464,8 +560,10 @@ describe('ViewActions thunks', () => {
 
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-      .get(`/documentView/${windowId}/${viewId}?firstRow=${pageLength *
-      (page - 1)}&pageLength=${pageLength}`)
+      .get(
+        `/documentView/${windowId}/${viewId}?firstRow=${pageLength *
+          (page - 1)}&pageLength=${pageLength}`
+      )
       .reply(200, rowsData);
 
     nock(config.API_URL)
@@ -474,18 +572,25 @@ describe('ViewActions thunks', () => {
       .reply(200, { data: { actions: [] } });
 
     return store
-      .dispatch(viewActions.fetchDocument({ windowId, viewId, pageLength, page, isModal: true }))
+      .dispatch(
+        viewActions.fetchDocument({
+          windowId,
+          viewId,
+          pageLength,
+          page,
+          isModal: true,
+        })
+      )
       .then(() => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 
   it(`dispatches 'UPDATE_VIEW_DATA' when fetching header properties for views`, () => {
     const headersData = generalData.headerProperties1;
-    const viewData = _.omit(
-      limitedViewData,
-      ['result']
-    );
+    const viewData = _.omit(limitedViewData, ['result']);
     const { windowId, viewId, pageLength, columnsByFieldName } = viewData;
     const tableId = getTableId({ windowId, viewId });
     const page = 1;
@@ -496,7 +601,7 @@ describe('ViewActions thunks', () => {
         'size',
         'headerProperties',
         'result',
-        'firstRow'
+        'firstRow',
       ]),
       headerElements: limitedViewData.columnsByFieldName,
       keyProperty: 'id',
@@ -513,8 +618,8 @@ describe('ViewActions thunks', () => {
       tables: {
         [tableId]: createTableData({
           ...limitedViewData,
-          ...limitedViewLayout
-        })
+          ...limitedViewLayout,
+        }),
       },
     });
     const store = mockStore(state);
@@ -531,7 +636,6 @@ describe('ViewActions thunks', () => {
     };
 
     const expectedActions = [
-      { type: ACTION_TYPES.FETCH_DOCUMENT_PENDING, payload: payload1 },
       { type: ACTION_TYPES.UPDATE_VIEW_DATA_SUCCESS, payload: payload2 },
     ];
 
@@ -541,12 +645,19 @@ describe('ViewActions thunks', () => {
       .reply(200, headersData);
 
     // check if headerProperties are empty before running actions
-    expect(store.getState().viewHandler.views[windowId].headerProperties.groups.length).toEqual(0);
+    expect(
+      store.getState().viewHandler.views[windowId].headerProperties.groups
+        .length
+    ).toEqual(0);
 
     return store
-      .dispatch(viewActions.fetchHeaderProperties({ windowId, viewId, isModal: false }))
+      .dispatch(
+        viewActions.fetchHeaderProperties({ windowId, viewId, isModal: false })
+      )
       .then(() => {
-        expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
       });
   });
 

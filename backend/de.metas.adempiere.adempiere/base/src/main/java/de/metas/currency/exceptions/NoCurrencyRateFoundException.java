@@ -27,6 +27,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -42,8 +43,8 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	private static final AdMessageKey MSG = AdMessageKey.of("NoCurrencyConversion");
 
 	public NoCurrencyRateFoundException(
-			final CurrencyCode currencyFrom,
-			final CurrencyCode currencyTo,
+			@NonNull final CurrencyCode currencyFrom,
+			@NonNull final CurrencyCode currencyTo,
 			@Nullable final LocalDate conversionDate,
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{
@@ -51,8 +52,8 @@ public class NoCurrencyRateFoundException extends AdempiereException
 	}
 
 	private static ITranslatableString buildMsg(
-			final CurrencyCode currencyFrom,
-			final CurrencyCode currencyTo,
+			@NonNull final CurrencyCode currencyFrom,
+			@NonNull final CurrencyCode currencyTo,
 			@Nullable final LocalDate conversionDate,
 			@Nullable final ConversionTypeMethod conversionTypeMethod)
 	{

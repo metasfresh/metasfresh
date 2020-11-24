@@ -48,6 +48,7 @@ import de.metas.printing.spi.impl.C_Printing_Queue_RecipientHandler;
 import de.metas.printing.spi.impl.CompositePrintingQueueHandler;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.report.PrintCopies;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -137,17 +138,17 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			// Some printing queue handlers might also have set a value. We don't want to override it in a "hard" way.
 			// Instead we assume that if a printingQueueHandler wants "two" in general, and now some user wants "three" in particular, then that user wants the "general" behavior times three, i.e. six.
 			// Also note that right now I don't know any case where a user can set copies-per-archiveRecord in a case that is also handled by a printingQueueHandler.
-			final Optional<Integer> copiesIfExists = IArchiveBL.COPIES_PER_ARCHIVE.getValueIfExists(archiveRecord);
+			final Optional<PrintCopies> copiesIfExists = IArchiveBL.COPIES_PER_ARCHIVE.getValueIfExists(archiveRecord);
 			if (copiesIfExists.isPresent())
 			{
 				final int oldItemCopies = Math.max(item.getCopies(), 1); // note about Math.max(): it should not happen that a printingQueueHandler sets copies:=0, but if it happens and COPIES_PER_ARCHIVE contained a value, then go with COPIES_PER_ARCHIVE
-				final Integer copiesMultipliers = copiesIfExists.get();
-				final int newItemCopies = oldItemCopies * copiesMultipliers;
+				final PrintCopies copiesMultipliers = copiesIfExists.get();
+				final int newItemCopies = oldItemCopies * copiesMultipliers.toInt();
 
 				if (oldItemCopies != newItemCopies)
 				{
 					Loggables.withLogger(logger, Level.DEBUG).addLog(
-							"An explicit number of copies={} was specified for the given achive. Overwriting previous value={} with new value {}x{}={}; item={}",
+							"An explicit number of copies={} was specified for the given archive. Overwriting previous value={} with new value {}x{}={}; item={}",
 							copiesMultipliers, item.getCopies(), oldItemCopies, copiesMultipliers, newItemCopies, item);
 					item.setCopies(newItemCopies);
 				}

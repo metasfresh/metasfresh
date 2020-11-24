@@ -1,10 +1,9 @@
 package de.metas.rest_api.exception;
 
-import javax.annotation.Nullable;
-
+import de.metas.rest_api.utils.IdentifierString;
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.rest_api.utils.IdentifierString;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -45,6 +44,6 @@ public class InvalidIdentifierException extends AdempiereException
 			@Nullable final String invalidIdentifierString,
 			@Nullable final Throwable cause)
 	{
-		super(invalidIdentifierString);
+		super("Unable to interpret identifierString=" + invalidIdentifierString);
 	}
 }

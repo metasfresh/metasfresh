@@ -1,20 +1,10 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isEmpty;
-
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.bpartner.GLN;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
@@ -23,6 +13,13 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.function.IntFunction;
+
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -46,17 +43,23 @@ import lombok.Value;
  * #L%
  */
 
-/** Identifies a metasfresh resourse (e.g. business partner). */
+/**
+ * Identifies a metasfresh resource (e.g. business partner).
+ * In most cases, the identifier is unique only within one org.
+ */
 @Value
 public class IdentifierString
 {
-
 	public enum Type
 	{
-		/** Every metasfresh ressource can be identified via its metasfresh-ID (i.e. the PK of its data base record, e.g. {@code C_BPartner_ID} or {@code M_Product_ID}) */
+		/**
+		 * Every metasfresh ressource can be identified via its metasfresh-ID (i.e. the PK of its data base record, e.g. {@code C_BPartner_ID} or {@code M_Product_ID})
+		 */
 		METASFRESH_ID,
 
-		/** Note that at least for C_BPartner, the external ID is only unique per Org!*/
+		/**
+		 * Note that at least for C_BPartner, the external ID is only unique per Org!
+		 */
 		EXTERNAL_ID,
 
 		VALUE,
@@ -90,7 +93,7 @@ public class IdentifierString
 	@JsonCreator
 	public static final IdentifierString of(@NonNull final String rawIdentifierString)
 	{
-		assumeNotEmpty("Parameter may not be empty", rawIdentifierString);
+		assumeNotEmpty("Parameter rawIdentifierString may not be empty", rawIdentifierString);
 		if (rawIdentifierString.toLowerCase().startsWith(PREFIX_EXTERNAL_ID))
 		{
 			final String externalId = rawIdentifierString.substring(4).trim();

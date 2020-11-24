@@ -75,7 +75,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 @Component
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
-	private static IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final static IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;

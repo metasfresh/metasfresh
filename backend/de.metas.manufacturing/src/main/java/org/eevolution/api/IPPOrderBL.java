@@ -18,6 +18,8 @@ import lombok.NonNull;
 
 public interface IPPOrderBL extends ISingletonService
 {
+	I_PP_Order getById(@NonNull PPOrderId id);
+
 	I_PP_Order createOrder(PPOrderCreateRequest request);
 
 	void setDefaults(I_PP_Order ppOrder);

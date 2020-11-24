@@ -1,22 +1,4 @@
-/**
- * 
- */
 package de.metas.printing.async.spi.impl;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.I_AD_Archive;
 
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
@@ -25,6 +7,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IAsyncBatchListener;
+import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -37,6 +20,18 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_AD_Archive;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Listener for notifying the user when a PDF printing was done
@@ -47,7 +42,7 @@ import de.metas.util.Services;
  * checks first if the workpackage was notified
  * </ul>
  * <ul>
- * if the Wp needs to be notified, build a message with a summary and a link to the newlly cretaed printing queue
+ * if the Wp needs to be notified, build a message with a summary and a link to the newly created printing queue
  * </ul>
  * 
  * @author cg
@@ -62,7 +57,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private static final AdMessageKey MSG_Event_PDFGenerated = AdMessageKey.of("PDFPrintingAsyncBatchListener_PrintJob_Done");
-	private static int WINDOW_ID_PrintingQueue = 540165; // FIXME: hardcoded
+	private static final AdWindowId WINDOW_ID_PrintingQueue = AdWindowId.ofRepoId(540165); // FIXME: hardcoded
 
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
@@ -128,20 +123,18 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 		}
 
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
-		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+		final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 		// create notes for print packages
-		final Properties ctx = InterfaceWrapperHelper.getCtx(notifiableWP);
 		final int countExpected = asyncBatch.getCountExpected();
 		for (final int printPackageId : seenPrintPackages.getPrintPackageIds())
 		{
-			final ITableRecordReference printPackageRef = TableRecordReference.of(I_C_Print_Package.Table_Name, printPackageId);
-			final List<I_AD_Archive> archivesList = archiveDAO.retrieveLastArchives(ctx, printPackageRef, 1);
-			if (archivesList.isEmpty())
+			final TableRecordReference printPackageRef = TableRecordReference.of(I_C_Print_Package.Table_Name, printPackageId);
+			final I_AD_Archive lastArchive = archiveBL.getLastArchive(printPackageRef).orElse(null);
+			if(lastArchive == null)
 			{
 				continue;
 			}
-			final I_AD_Archive lastArchive = archivesList.get(0);
 
 			final I_C_Printing_Queue printingQueueItem = dao.retrievePrintingQueue(lastArchive);
 			if (printingQueueItem == null)

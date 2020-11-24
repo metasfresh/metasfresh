@@ -65,7 +65,6 @@ import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChangeLogService;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -80,9 +79,6 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -882,33 +878,6 @@ public class WindowRestController
 					.filter(isEnabled)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
-	}
-
-	@GetMapping("/{windowId}/{documentId}/print/{filename:.*}")
-	public ResponseEntity<byte[]> getDocumentPrint(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
-			@PathVariable("filename") final String filename)
-	{
-		userSession.assertLoggedIn();
-
-		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-
-		final DocumentPrint documentPrint = documentCollection.createDocumentPrint(documentPath);
-		final byte[] reportData = documentPrint.getReportData();
-		final String reportContentType = documentPrint.getReportContentType();
-
-		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType(reportContentType));
-		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
-		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
-		return new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 	}
 
 	/**

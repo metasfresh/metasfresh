@@ -38,6 +38,8 @@ import java.util.List;
 public interface IDDOrderDAO extends ISingletonService
 {
 
+	I_DD_Order getById(int ddOrderId);
+
 	/**
 	 *
 	 * @param order
