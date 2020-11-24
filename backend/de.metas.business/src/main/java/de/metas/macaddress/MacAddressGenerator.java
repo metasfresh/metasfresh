@@ -22,6 +22,7 @@
 
 package de.metas.macaddress;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.sequence.DocSequenceId;
@@ -32,6 +33,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import static de.metas.macaddress.MacAddress.GROUP_DELIMITER;
@@ -47,8 +49,9 @@ public class MacAddressGenerator
 	@NonNull
 	public MacAddress generateNextMacAddress(@NonNull final DocSequenceId macAddressSequenceId)
 	{
-		final IDocumentNoBuilder sequenceGenerator = Services.get(IDocumentNoBuilderFactory.class)
-				.forSequenceId(macAddressSequenceId);
+		final IDocumentNoBuilder sequenceGenerator = Services.get(IDocumentNoBuilderFactory.class).forSequenceId(macAddressSequenceId)
+				.setClientId(Env.getClientId())
+				.setFailOnError(true);
 
 		final DocumentNoParts documentNoParts = sequenceGenerator.buildParts();
 
@@ -57,12 +60,43 @@ public class MacAddressGenerator
 			throw new AdempiereException("Could not retrieve next sequence number.");
 		}
 
+		return generateNextMacAddress0(documentNoParts);
+	}
+
+	public ImmutableList<MacAddress> generateNextMacAddresses(@NonNull final DocSequenceId macAddressSequenceId, final int numberOfResults)
+	{
+		final ImmutableList.Builder<MacAddress> result = ImmutableList.builder();
+
+		for (int i = 0; i < numberOfResults; i++)
+		{
+			result.add(generateNextMacAddress(macAddressSequenceId));
+		}
+		return result.build();
+	}
+
+	@VisibleForTesting
+	@NonNull
+	MacAddress generateNextMacAddress0(@NonNull final DocumentNoParts documentNoParts)
+	{
 		final String prefix = StringUtils.nullToEmpty(StringUtils.replace(documentNoParts.getPrefix(), GROUP_DELIMITER, ""));
 		final String sequenceNo;
+
 		{
+			final String sequenceNumberHexa;
+
+			try
+			{
+				final int unsignedInt = Integer.parseUnsignedInt(documentNoParts.getSequenceNumber());
+				sequenceNumberHexa = Integer.toHexString(unsignedInt);
+			}
+			catch (final NumberFormatException e)
+			{
+				throw new AdempiereException("Wrong sequence format");
+			}
+
 			final int prefixLen = prefix.length();
 			final int neededDigits = NUMBER_OF_DIGITS - prefixLen;
-			sequenceNo = Strings.padStart(documentNoParts.getSequenceNumber(), neededDigits, '0');
+			sequenceNo = Strings.padStart(sequenceNumberHexa, neededDigits, '0');
 		}
 
 		final StringBuilder result = new StringBuilder(prefix + sequenceNo);
@@ -76,17 +110,6 @@ public class MacAddressGenerator
 			}
 		}
 
-		return MacAddress.of(result.toString());
-	}
-
-	public ImmutableList<MacAddress> generateNextMacAddresses(@NonNull final DocSequenceId macAddressSequenceId, final int numberOfResults)
-	{
-		final ImmutableList.Builder<MacAddress> result = ImmutableList.builder();
-
-		for (int i = 0; i < numberOfResults; i++)
-		{
-			result.add(generateNextMacAddress(macAddressSequenceId));
-		}
-		return result.build();
+		return MacAddress.of(result.toString().toUpperCase());
 	}
 }
