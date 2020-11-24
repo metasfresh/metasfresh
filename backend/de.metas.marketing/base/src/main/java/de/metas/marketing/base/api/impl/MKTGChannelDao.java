@@ -22,6 +22,7 @@
 
 package de.metas.marketing.base.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.marketing.base.api.IMKTGChannelDao;
 import de.metas.marketing.base.model.I_AD_User_MKTG_Channels;
@@ -39,5 +40,18 @@ public class MKTGChannelDao implements IMKTGChannelDao
 				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.count();
+	}
+
+	public ImmutableSet<UserId> retrieveUsersHavingChannel(final int marketingChannelId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_MKTG_Channels.class)
+				.addEqualsFilter(I_AD_User_MKTG_Channels.COLUMNNAME_MKTG_Channel_ID, marketingChannelId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_AD_User_MKTG_Channels.COLUMNNAME_AD_User_ID, Integer.class)
+				.stream()
+				.map(UserId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

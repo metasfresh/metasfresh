@@ -41,7 +41,7 @@ public class MainInterceptor extends AbstractModuleInterceptor
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(MKTG_Campaign_ContactPerson.INSTANCE);
-		calloutsRegistry.registerAnnotatedCallout(MKTG_Channel.INSTANCE);
-		calloutsRegistry.registerAnnotatedCallout(AD_User_MKTG_Channels.INSTANCE);
+		// calloutsRegistry.registerAnnotatedCallout(MKTG_Channel.INSTANCE);
+		// calloutsRegistry.registerAnnotatedCallout(AD_User_MKTG_Channels.INSTANCE);
 	}
 }

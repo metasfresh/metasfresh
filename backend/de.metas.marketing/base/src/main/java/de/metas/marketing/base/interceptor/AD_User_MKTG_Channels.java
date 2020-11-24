@@ -28,7 +28,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,14 +45,13 @@ public class AD_User_MKTG_Channels
 	{
 	}
 
-	@CalloutMethod(columnNames = I_AD_User_MKTG_Channels.COLUMNNAME_AD_User_ID)
 	@ModelChange(//
-			timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = I_AD_User_MKTG_Channels.COLUMNNAME_AD_User_ID)
+			timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void checkIfCanBeDeleted(@NonNull final I_AD_User_MKTG_Channels userMktgChannel)
 	{
 		int count = mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(userMktgChannel.getAD_User_ID()));
-		if ( count == 1 ) {
+		if (count == 1)
+		{
 			throw new AdempiereException("User must have at least one marketing channel").markAsUserValidationError();
 		}
 	}

@@ -22,9 +22,18 @@
 
 package de.metas.marketing.base.interceptor;
 
+import de.metas.marketing.base.api.IMKTGChannelDao;
 import de.metas.marketing.base.model.I_MKTG_Channel;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.ModelValidator;
+
+import java.util.Set;
 
 @Callout(I_MKTG_Channel.class)
 @Interceptor(I_MKTG_Channel.class)
@@ -32,7 +41,30 @@ public class MKTG_Channel
 {
 	public static final MKTG_Channel INSTANCE = new MKTG_Channel();
 
+	private final IMKTGChannelDao mktgChannelDao = Services.get(IMKTGChannelDao.class);
+
 	private MKTG_Channel()
 	{
+	}
+
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void checkIfCanBeDeleted(@NonNull final I_MKTG_Channel mktgChannel)
+	{
+		boolean canBeDeleted = true;
+		Set<UserId> usersSet = mktgChannelDao.retrieveUsersHavingChannel(mktgChannel.getMKTG_Channel_ID());
+		for (UserId userId : usersSet)
+		{
+			if (mktgChannelDao.retrieveMarketingChannelsCountForUser(userId) == 1)
+			{
+				canBeDeleted = false;
+				break;
+			}
+		}
+		if (canBeDeleted == false)
+		{
+			throw new AdempiereException("There are users only having this channel. Can't delete").markAsUserValidationError();
+		}
+
 	}
 }

@@ -22,10 +22,13 @@
 
 package de.metas.marketing.base.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 public interface IMKTGChannelDao extends ISingletonService
 {
 	int retrieveMarketingChannelsCountForUser(UserId userId);
+
+	ImmutableSet<UserId> retrieveUsersHavingChannel(int marketingChannelId);
 }
