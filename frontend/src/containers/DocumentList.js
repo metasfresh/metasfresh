@@ -11,7 +11,6 @@ import { connectWS, disconnectWS } from '../utils/websockets';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
-import { getQuickActionsId } from '../reducers/actionsHandler';
 
 import {
   addViewLocationData,
@@ -88,20 +87,12 @@ class DocumentListContainer extends Component {
   };
 
   componentWillUnmount() {
-    const {
-      isModal,
-      windowId,
-      viewId,
-      deleteView,
-      deleteTable,
-      deleteQuickActions,
-    } = this.props;
+    const { isModal, windowId, viewId, deleteView, deleteTable } = this.props;
 
     this.mounted = false;
     disconnectWS.call(this);
 
     deleteTable(getTableId({ windowId, viewId }));
-    deleteQuickActions(getQuickActionsId({ windowId, viewId }));
     deleteView(windowId, isModal);
   }
 
@@ -165,7 +156,7 @@ class DocumentListContainer extends Component {
       // the data and layout again
       if (!(pending || (nextViewData && nextViewData.pending))) {
         deleteTable(getTableId({ windowId, viewId }));
-        deleteQuickActions(getQuickActionsId({ windowId, viewId }));
+        deleteQuickActions(windowId, viewId);
 
         const entityRelatedId = getEntityRelatedId({ windowId, viewId });
         deleteFilter(entityRelatedId);

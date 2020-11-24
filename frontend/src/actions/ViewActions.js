@@ -38,7 +38,7 @@ import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 import { createFilter, deleteFilter } from './FiltersActions';
-import { fetchQuickActions } from './Actions';
+import { fetchQuickActions, deleteQuickActions } from './Actions';
 
 /**
  * @method resetView
@@ -531,6 +531,8 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         // remove table, so that we won't add filtered rows to the previous data
         const tableId = getTableId({ windowId, viewId });
         dispatch(deleteTable(tableId));
+        // delete quick actions as they will be re-fetched
+        dispatch(deleteQuickActions(windowId, viewId));
 
         return Promise.resolve(response.data);
       })
