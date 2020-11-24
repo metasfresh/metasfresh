@@ -22,26 +22,8 @@
 
 package de.metas.edi.esb.ordersimport;
 
-import static de.metas.edi.esb.commons.Util.createCalendarDate;
-import static de.metas.edi.esb.commons.Util.createJaxbMessage;
-import static de.metas.edi.esb.commons.Util.isEmpty;
-import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
-import static de.metas.edi.esb.commons.Util.stripTrailingDecimalZeros;
-import static de.metas.edi.esb.commons.Util.trimString;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.camel.Body;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.ExchangeProperty;
-import org.apache.camel.Message;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIADOrgLookupBPLGLNVType;
@@ -57,11 +39,29 @@ import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
-import de.metas.edi.esb.ordersimport.compudata.H000;
 import de.metas.edi.esb.ordersimport.compudata.H100;
 import de.metas.edi.esb.ordersimport.compudata.P100;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import lombok.NonNull;
+import org.apache.camel.Body;
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.ExchangeProperty;
+import org.apache.camel.Message;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.metas.edi.esb.commons.Util.TimeIfNotSpecified.END_OF_DAY;
+import static de.metas.edi.esb.commons.Util.TimeIfNotSpecified.START_OF_DAY;
+import static de.metas.edi.esb.commons.Util.createCalendarDate;
+import static de.metas.edi.esb.commons.Util.createJaxbMessage;
+import static de.metas.edi.esb.commons.Util.isEmpty;
+import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
+import static de.metas.edi.esb.commons.Util.stripTrailingDecimalZeros;
+import static de.metas.edi.esb.commons.Util.trimString;
 
 public abstract class AbstractEDIOrdersBean
 {
@@ -159,12 +159,12 @@ public abstract class AbstractEDIOrdersBean
 
 		final P100 p100 = orderLine.getP100();
 
-		final String dateCandidateStr = trimString(h100.getMessageDate()); // TODO Check if this is it
-		olcand.setDateCandidate(createCalendarDate(dateCandidateStr, ctx.getEDIMessageDatePattern()));
+		final String dateCandidateStr = trimString(h100.getMessageDate());
+		olcand.setDateCandidate(createCalendarDate(dateCandidateStr, ctx.getEDIMessageDatePattern(), START_OF_DAY));
 
 		// task 06269: also get the desired delivery date from the customer (if set)
 		final String datePromisedStr = trimString(h100.getDeliveryDate());
-		olcand.setDatePromised(createCalendarDate(datePromisedStr, ctx.getEDIMessageDatePattern()));
+		olcand.setDatePromised(createCalendarDate(datePromisedStr, ctx.getEDIMessageDatePattern(), END_OF_DAY));
 
 		final COrderDeliveryRuleEnum deliveryRule = COrderDeliveryRuleEnum.fromValue(ctx.getDeliveryRule());
 		olcand.setDeliveryRule(deliveryRule);
@@ -350,11 +350,6 @@ public abstract class AbstractEDIOrdersBean
 		{
 			return ADClientValue;
 		}
-
-		// public BigInteger getADOrgID()
-		// {
-		// return ADOrgID;
-		// }
 
 		public String getADInputDataDestination_InternalName()
 		{
