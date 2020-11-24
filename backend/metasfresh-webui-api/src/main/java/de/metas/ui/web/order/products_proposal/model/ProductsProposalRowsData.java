@@ -22,10 +22,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
+import de.metas.ui.web.order.products_proposal.campaign_price.ScalePriceProvider;
+import de.metas.ui.web.order.products_proposal.campaign_price.ScalePriceProviders;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
@@ -69,6 +72,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 {
 	private final DocumentIdIntSequence nextRowIdSequence;
 	private final CampaignPriceProvider campaignPriceProvider;
+	private final ScalePriceProvider scalePriceProvider;
 
 	private ArrayList<DocumentId> rowIdsOrderedAndFiltered;
 	private final ArrayList<DocumentId> rowIdsOrdered; // used to preserve the order
@@ -95,6 +99,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private ProductsProposalRowsData(
 			@NonNull final DocumentIdIntSequence nextRowIdSequence,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
+			@Nullable final ScalePriceProvider scalePriceProvider,
 			//
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
@@ -108,6 +113,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	{
 		this.nextRowIdSequence = nextRowIdSequence;
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
+		this.scalePriceProvider = scalePriceProvider != null ? scalePriceProvider : ScalePriceProviders.none();
 
 		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
 		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
@@ -230,7 +236,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		if (existingRow != null)
 		{
 			patchRow(existingRow.getId(), RowUpdate.builder()
-					.price(createPrice(request.getProductId(), request.getPriceListPrice()))
+					.price(createPrice(request.getProductId(), request.getPriceListPrice(), request.getCopiedFromProductPriceId()))
 					.lastShipmentDays(request.getLastShipmentDays())
 
 					.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
@@ -242,13 +248,17 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		}
 	}
 
-	private ProductProposalPrice createPrice(@NonNull final ProductId productId, @NonNull final Amount priceListPrice)
+	private ProductProposalPrice createPrice(@NonNull final ProductId productId,
+			@NonNull final Amount priceListPrice,
+			@NonNull final ProductPriceId productPriceId)
 	{
 		final ProductProposalCampaignPrice campaignPrice = campaignPriceProvider.getCampaignPrice(productId).orElse(null);
+		final ProductProposalScalePrices scalePrices = scalePriceProvider.getScalePrice(productPriceId).orElse(null);
 
 		return ProductProposalPrice.builder()
 				.priceListPrice(priceListPrice)
 				.campaignPrice(campaignPrice)
+				.scalePrices(scalePrices)
 				.build();
 	}
 
@@ -258,7 +268,9 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(request.getProduct())
 				.asiDescription(request.getAsiDescription())
-				.price(createPrice(request.getProductId(), request.getPriceListPrice()))
+				.price(createPrice(request.getProductId(), 
+						request.getPriceListPrice(), 
+						request.getCopiedFromProductPriceId()))
 				.packingMaterialId(request.getPackingMaterialId())
 				.packingDescription(request.getPackingDescription())
 				.lastShipmentDays(request.getLastShipmentDays())

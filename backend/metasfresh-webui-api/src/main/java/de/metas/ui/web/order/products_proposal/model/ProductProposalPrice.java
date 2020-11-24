@@ -46,20 +46,30 @@ public class ProductProposalPrice
 	private final Amount priceListPrice;
 	private final ProductProposalCampaignPrice campaignPrice;
 
+	// TODO: add scale prices: list/map of (QtyMin, Price)
+	private final ProductProposalScalePrices scalePrices;
+
 	@Getter
 	private final boolean campaignPriceUsed;
 
 	@Getter
 	private final boolean priceListPriceUsed;
 
+	@Getter
+	private final BigDecimal qty;
+
 	@Builder(toBuilder = true)
 	private ProductProposalPrice(
 			@NonNull final Amount priceListPrice,
 			@Nullable final ProductProposalCampaignPrice campaignPrice,
-			@Nullable final BigDecimal userEnteredPriceValue)
+			@Nullable final ProductProposalScalePrices scalePrices,
+			@Nullable final BigDecimal userEnteredPriceValue,
+			@Nullable final BigDecimal qty)
 	{
 		this.priceListPrice = priceListPrice;
 		this.campaignPrice = campaignPrice;
+		this.scalePrices = scalePrices;
+		this.qty = qty;
 
 		//
 		this.currencyCode = priceListPrice.getCurrencyCode();
@@ -77,6 +87,10 @@ public class ProductProposalPrice
 		{
 			this.userEnteredPriceValue = campaignPrice.applyOn(priceListPrice).getAsBigDecimal();
 		}
+		else if (scalePrices != null)
+		{
+			this.userEnteredPriceValue = scalePrices.applyOn(priceListPrice, qty).getAsBigDecimal();
+		}
 		else
 		{
 			this.userEnteredPriceValue = priceListPrice.getAsBigDecimal();
@@ -87,6 +101,8 @@ public class ProductProposalPrice
 		this.campaignPriceUsed = this.campaignPrice != null
 				&& !priceListPriceUsed
 				&& this.campaignPrice.amountValueComparingEqualsTo(this.userEnteredPriceValue);
+		
+		this.scalePrices = this.scalePrices != null 
 	}
 
 	public Amount getUserEnteredPrice()
@@ -117,5 +133,21 @@ public class ProductProposalPrice
 		}
 
 		return toBuilder().priceListPrice(priceListPrice).build();
+	}
+
+	public ProductProposalPrice withUserEnteredQty(@Nullable final BigDecimal newQty)
+	{
+		if (newQty == null)
+		{
+
+			return toBuilder().qty(BigDecimal.ONE).build();
+		}
+
+		if (newQty.equals(this.qty))
+		{
+			return this;
+		}
+
+		return toBuilder().qty(newQty).build();
 	}
 }
