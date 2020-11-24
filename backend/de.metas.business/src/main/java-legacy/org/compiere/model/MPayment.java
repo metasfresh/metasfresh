@@ -1764,13 +1764,24 @@ public final class MPayment extends X_C_Payment
 		// Unlink (in case allocation did not get it)
 		if (getC_Invoice_ID() != 0)
 		{
+			// Invoice
+			String sql = "UPDATE C_Invoice "
+					+ "SET C_Payment_ID = NULL "
+					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID()
+					+ " AND C_Payment_ID=" + getC_Payment_ID();
+						int no = DB.executeUpdate(sql, get_TrxName());
+			if (no != 0)
+			{
+				CacheMgt.get().reset(I_C_Invoice.Table_Name, getC_Invoice_ID());
+				log.debug("Unlink Invoice #" + no);
+			}
 			// Order
-			String sql = "UPDATE C_Order o "
+			sql = "UPDATE C_Order o "
 					+ "SET C_Payment_ID = NULL "
 					+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + getC_Invoice_ID() + ")"
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
-			int no = DB.executeUpdate(sql, get_TrxName());
+			no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
 			{
 				log.debug("Unlink Order #" + no);
