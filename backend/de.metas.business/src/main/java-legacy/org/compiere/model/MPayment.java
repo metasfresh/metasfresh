@@ -21,29 +21,6 @@
  */
 package org.compiere.model;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateRequest;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -77,6 +54,26 @@ import de.metas.payment.api.impl.PaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -1761,33 +1758,6 @@ public final class MPayment extends X_C_Payment
 			allocation.saveEx();
 		}
 
-		// Unlink (in case allocation did not get it)
-		if (getC_Invoice_ID() != 0)
-		{
-			// Invoice
-			String sql = "UPDATE C_Invoice "
-					+ "SET C_Payment_ID = NULL, IsPaid='N' "
-					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID()
-					+ " AND C_Payment_ID=" + getC_Payment_ID();
-						int no = DB.executeUpdate(sql, get_TrxName());
-			if (no != 0)
-			{
-				CacheMgt.get().reset(I_C_Invoice.Table_Name, getC_Invoice_ID());
-				log.debug("Unlink Invoice #" + no);
-			}
-			// Order
-			sql = "UPDATE C_Order o "
-					+ "SET C_Payment_ID = NULL "
-					+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
-					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + getC_Invoice_ID() + ")"
-					+ " AND C_Payment_ID=" + getC_Payment_ID();
-			no = DB.executeUpdate(sql, get_TrxName());
-			if (no != 0)
-			{
-				log.debug("Unlink Order #" + no);
-			}
-		}
-		//
 		setC_Invoice_ID(0);
 		setIsAllocated(false);
 	}    // deallocate
