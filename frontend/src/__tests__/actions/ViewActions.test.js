@@ -550,7 +550,7 @@ describe('ViewActions thunks', () => {
       id: includedWindowId,
       viewId: includedViewId,
       viewProfileId: null,
-      parentId,
+      parentId: windowId,
     };
 
     const expectedActions = [
