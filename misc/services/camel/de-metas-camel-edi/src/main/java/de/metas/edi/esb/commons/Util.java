@@ -2,12 +2,10 @@ package de.metas.edi.esb.commons;
 
 import de.metas.edi.esb.commons.api.ILookupTemplate;
 import de.metas.edi.esb.commons.api.ILookupValue;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.support.DefaultMessage;
 import org.springframework.lang.Nullable;
 
@@ -21,12 +19,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -60,29 +56,16 @@ public final class Util
 {
 	private static final transient Logger LOGGER = Logger.getLogger(Util.class.getName());
 
+	public enum TimeIfNotSpecified
+	{
+		START_OF_DAY,
+		END_OF_DAY;
+	}
+
 	private Util()
 	{
 		super();
 	}
-
-	// public static void readProperties(
-	// 		final CamelContext context,
-	// 		final String... propertiesLocations)
-	// {
-	// 	if (context.hasComponent("properties") == null)
-	// 	{
-	// 		final StringBuilder msg = new StringBuilder("Going to add a PropertiesComponent with propertiesLocation(s)=");
-	// 		for (final String loc : propertiesLocations)
-	// 		{
-	// 			msg.append(loc + " ");
-	// 		}
-	// 		Util.LOGGER.info(msg.toString());
-	//
-	// 		final PropertiesComponent pc = new PropertiesComponent();
-	// 		pc.setLocations(propertiesLocations);
-	// 		context.addComponent("properties", pc);
-	// 	}
-	// }
 
 	/**
 	 * @return date converted to {@link XMLGregorianCalendar} or <code>null</code> if date was <code>null</code>.
@@ -136,68 +119,96 @@ public final class Util
 	}
 
 	/**
-	 * Creates an {@link XMLGregorianCalendar} date.<br />
-	 * If the isNewDateOverride is used, on exception, create today's date.
+	 * Creates an {@link XMLGregorianCalendar} date.
+	 * If the given given {@code date} and {@code datePattern} have no time, then 23:59 is used.
 	 *
-	 * @return {@link XMLGregorianCalendar} date
+	 * @param isNewDateOverride if {@code true} and the given {@code date} can't be parsed, then return today's date on 23:59.
+	 *                          Otherwise, {@code null} is returned.
 	 */
-	public static XMLGregorianCalendar createCalendarDate(final String date, final boolean isNewDateOverride, final String datePattern)
+	public static XMLGregorianCalendar createCalendarDate(
+			final String date,
+			final boolean isNewDateOverride,
+			final String datePattern,
+			@NonNull final TimeIfNotSpecified timeIfNotSpecified)
 	{
 		try
 		{
-			final Date created = new SimpleDateFormat(datePattern).parse(date); // NOPMD by al on 4/15/13 11:09 AM
+			final Date created = new SimpleDateFormat(datePattern).parse(date);
 
-			return Util.toXMLCalendar(created);
+			final var calendar = Util.toXMLCalendar(created);
+			setCalendarTimeIfNeeded(timeIfNotSpecified, calendar);
+			return calendar;
 		}
 		catch (final Exception e)
 		{
 			if (isNewDateOverride)
 			{
-				return Util.toXMLCalendar(new Date());
+				final var calendarOverride = Util.toXMLCalendar(new Date());
+				setCalendarTimeIfNeeded(timeIfNotSpecified, calendarOverride);
+				return calendarOverride;
 			}
-
 			return null;
+		}
+	}
+
+	private static void setCalendarTimeIfNeeded(
+			@NonNull final TimeIfNotSpecified timeIfNotSpecified,
+			@NonNull final XMLGregorianCalendar calendar)
+	{
+		final var timeSpecified = calendar.getHour() != 0 || calendar.getMinute() != 0;
+		if (!timeSpecified && timeIfNotSpecified.equals(TimeIfNotSpecified.END_OF_DAY))
+		{
+			calendar.setHour(23);
+			calendar.setMinute(59);
 		}
 	}
 
 	/**
 	 * Creates an {@link XMLGregorianCalendar} date.<br />
 	 * If the isNewDateOverride is used, on exception, create today's date.<br />
-	 * See {@link #createCalendarDate(String, boolean, String)}<br />
+	 * See {@link #createCalendarDate(String, boolean, String, TimeIfNotSpecified)}<br />
 	 * <br />
 	 * Date pattern used: {@link Constants#METASFRESH_DATE_PATTERN}
 	 *
 	 * @return {@link XMLGregorianCalendar} date
 	 */
-	public static XMLGregorianCalendar createCalendarDate(final String date, final boolean isNewDateOverride)
+	public static XMLGregorianCalendar createCalendarDate(
+			final String date,
+			final boolean isNewDateOverride,
+			@NonNull final TimeIfNotSpecified timeIfNotSpecified)
 	{
-		return Util.createCalendarDate(date, isNewDateOverride, Constants.METASFRESH_DATE_PATTERN);
+		return Util.createCalendarDate(date, isNewDateOverride, Constants.METASFRESH_DATE_PATTERN, timeIfNotSpecified);
 	}
 
 	/**
 	 * Creates an {@link XMLGregorianCalendar} date, using the datePattern provided.<br />
 	 * Assumes isNewDateOverride=false<br />
-	 * See {@link #createCalendarDate(String, boolean, String)}<br />
+	 * See {@link #createCalendarDate(String, boolean, String, TimeIfNotSpecified)}<br />
 	 * <br />
 	 *
 	 * @return {@link XMLGregorianCalendar} date or null if the given date was null or empty
 	 */
-	public static XMLGregorianCalendar createCalendarDate(final String date, final String datePattern)
+	public static XMLGregorianCalendar createCalendarDate(
+			final String date,
+			final String datePattern,
+			final TimeIfNotSpecified timeIfNotSpecified)
 	{
-		return Util.createCalendarDate(date, false, datePattern);
+		return Util.createCalendarDate(date, false, datePattern, timeIfNotSpecified);
 	}
 
 	/**
 	 * Creates an {@link XMLGregorianCalendar} date.<br />
-	 * On exception, assumes isNewDateOverride=false (see {@link #createCalendarDate(String, boolean)}).<br />
+	 * On exception, assumes isNewDateOverride=false (see {@link #createCalendarDate(String, boolean, TimeIfNotSpecified)}).<br />
 	 * <br />
 	 * Date pattern used: {@link Constants#METASFRESH_DATE_PATTERN}
 	 *
 	 * @return {@link XMLGregorianCalendar} date
 	 */
-	public static XMLGregorianCalendar createCalendarDate(final String date)
+	public static XMLGregorianCalendar createCalendarDate(
+			final String date,
+			@NonNull final TimeIfNotSpecified timeIfNotSpecified)
 	{
-		return Util.createCalendarDate(date, false, Constants.METASFRESH_DATE_PATTERN);
+		return Util.createCalendarDate(date, false, Constants.METASFRESH_DATE_PATTERN, timeIfNotSpecified);
 	}
 
 	/**

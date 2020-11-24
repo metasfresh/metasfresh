@@ -22,26 +22,25 @@ package de.metas.edi.esb.commons;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UtilTest
 {
 	@Test
-	public void normalize()
+	void normalize()
 	{
 		final String input = "~!@#$%^&*()_+{}:\"|<>?|`-=[];'\\,./ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
 		final String actualResult = Util.normalize(input);
 
 		final String expectedResult = "~!@#$%^&*()_+{}:\"|<>?|`-=[];'\\,./AAAAAAAECEEEEIIIIDNOOOOOxOUUUUYthssaaaaaaaceeeeiiiionooooo÷ouuuuythy";
 
-		assertEquals(input + " must be converted to " + actualResult, expectedResult, actualResult);
+		assertThat(actualResult).as(input + " must be converted to " + actualResult).isEqualTo(expectedResult);
 	}
 
 	@Test
-	public void trimAndTruncate()
+	void trimAndTruncate()
 	{
 		assertThat(Util.trimAndTruncate("   12345678", 7)).isEqualTo("1234567");
 	}
