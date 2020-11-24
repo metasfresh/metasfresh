@@ -1,17 +1,15 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -113,9 +111,9 @@ public final class DocumentLayoutElementLineDescriptor
 				return false;
 			}
 
-			if(elementBuilder.getFieldsCount() <= 0)
+			if (elementBuilder.isEmpty())
 			{
-				logger.trace("Skip adding {} to {} because it does not have fields", elementBuilder, this);
+				logger.trace("Skip adding {} to {} because it's empty", elementBuilder, this);
 				return false;
 			}
 
@@ -124,7 +122,7 @@ public final class DocumentLayoutElementLineDescriptor
 
 		private final boolean checkValid(final DocumentLayoutElementDescriptor element)
 		{
-			if (!element.hasFields())
+			if (element.isEmpty())
 			{
 				logger.trace("Skip adding {} to {} because it does not have fields", element, this);
 				return false;

@@ -22,13 +22,15 @@ package de.metas.ui.web.window.descriptor;
  * #L%
  */
 
+import javax.annotation.Nullable;
+
 public enum LayoutType
 {
 	primary,
 	secondary
 	;
 	
-	public static LayoutType fromNullable(final String layoutTypeStr)
+	public static LayoutType fromNullable(@Nullable final String layoutTypeStr)
 	{
 		if(layoutTypeStr == null || layoutTypeStr.isEmpty())
 		{

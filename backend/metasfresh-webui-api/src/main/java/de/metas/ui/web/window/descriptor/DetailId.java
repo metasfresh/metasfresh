@@ -1,28 +1,25 @@
 package de.metas.ui.web.window.descriptor;
 
-import static de.metas.util.Check.assumeNotEmpty;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.ad.element.api.AdTabId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.Set;
+
+import static de.metas.util.Check.assumeNotEmpty;
 
 /*
  * #%L
@@ -55,10 +52,11 @@ public final class DetailId implements Comparable<DetailId>
 
 	private static final String PREFIX_AD_TAB_ID = "AD_Tab";
 
-	public static DetailId fromAD_Tab_ID(final int adTabId)
+	public static DetailId fromAD_Tab_ID(@NonNull final AdTabId adTabId)
 	{
-		return new DetailId(PREFIX_AD_TAB_ID, adTabId);
+		return new DetailId(PREFIX_AD_TAB_ID, adTabId.getRepoId());
 	}
+
 
 	public static DetailId fromPrefixAndId(final String prefix, final int id)
 	{
@@ -66,6 +64,7 @@ public final class DetailId implements Comparable<DetailId>
 	}
 
 	@JsonCreator
+	@Nullable
 	public static DetailId fromJson(@Nullable final String json)
 	{
 		if (json == null)
@@ -88,6 +87,7 @@ public final class DetailId implements Comparable<DetailId>
 		return DetailId.fromPrefixAndId(prefix, idInt);
 	}
 
+	@Nullable
 	public static String toJson(@Nullable final DetailId detailId)
 	{
 		return detailId == null ? null : (detailId.idPrefix + PARTS_SEPARATOR + detailId.idInt);
@@ -141,6 +141,7 @@ public final class DetailId implements Comparable<DetailId>
 		return _tableAlias;
 	}
 
+	@Nullable
 	public AdTabId toAdTabId()
 	{
 		if (PREFIX_AD_TAB_ID.equals(idPrefix))
@@ -159,5 +160,10 @@ public final class DetailId implements Comparable<DetailId>
 		}
 
 		return Objects.compare(toJson(), o.toJson(), Comparator.naturalOrder());
+	}
+
+	public static boolean equals(@Nullable final DetailId o1, @Nullable final DetailId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

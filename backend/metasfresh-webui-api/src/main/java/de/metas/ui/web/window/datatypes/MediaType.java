@@ -14,6 +14,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -67,9 +70,9 @@ public enum MediaType
 		return type;
 	}
 
-	public static final Set<MediaType> fromNullableCommaSeparatedString(final String str)
+	public static final ImmutableSet<MediaType> fromNullableCommaSeparatedString(@Nullable final String str)
 	{
-		if (str == null || str.isEmpty())
+		if(Check.isBlank(str))
 		{
 			return ImmutableSet.of();
 		}

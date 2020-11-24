@@ -1,43 +1,12 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.Adempiere;
-import org.compiere.model.GridFieldDefaultFilterDescriptor;
-import org.compiere.model.GridFieldVO;
-import org.compiere.model.GridTabVO;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.I_AD_Tab;
-import org.compiere.model.I_AD_UI_Element;
-import org.compiere.model.I_AD_UI_ElementField;
-import org.compiere.model.X_AD_UI_ElementField;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Evaluatees;
-import org.elasticsearch.client.Client;
-import org.slf4j.Logger;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.WindowConstants;
@@ -68,6 +37,36 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.Adempiere;
+import org.compiere.model.GridFieldDefaultFilterDescriptor;
+import org.compiere.model.GridFieldVO;
+import org.compiere.model.GridTabVO;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_UI_Element;
+import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.X_AD_UI_ElementField;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Evaluatees;
+import org.elasticsearch.client.Client;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -98,7 +97,7 @@ import lombok.NonNull;
 	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 
-	private final Map<Integer, String> _adFieldId2columnName;
+	private final ImmutableMap<Integer, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
 
@@ -106,7 +105,8 @@ import lombok.NonNull;
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 
-	public GridTabVOBasedDocumentEntityDescriptorFactory(
+	@lombok.Builder
+	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
@@ -120,7 +120,7 @@ import lombok.NonNull;
 				.stream()
 				.filter(gridFieldVO -> gridFieldVO.getAD_Field_ID() > 0)
 				.filter(gridFieldVO -> gridFieldVO.getDisplayType() != DocumentFieldWidgetType.BinaryData.getDisplayType()) // exclude BinaryData columns
-				.collect(Collectors.toMap(GridFieldVO::getAD_Field_ID, GridFieldVO::getColumnName));
+				.collect(ImmutableMap.toImmutableMap(GridFieldVO::getAD_Field_ID, GridFieldVO::getColumnName));
 
 		defaultValueExpressionsFactory = DefaultValueExpressionsFactory.newInstance(gridTabVO.getTableName(), gridTabVO.getTabLevel() > 0);
 
@@ -186,7 +186,7 @@ import lombok.NonNull;
 	{
 		final String tableName = gridTabVO.getTableName();
 
-		final DetailId detailId = parentTabVO == null ? null : DetailId.fromAD_Tab_ID(gridTabVO.getAD_Tab_ID());
+		final DetailId detailId = parentTabVO == null ? null : DetailId.fromAD_Tab_ID(gridTabVO.getAdTabId());
 
 		//
 		// Entity Data binding
@@ -242,11 +242,10 @@ import lombok.NonNull;
 		// Fields descriptor
 		gridTabVO
 				.getFields()
-				.stream()
 				.forEach(gridFieldVO -> createAndAddDocumentField(
 						entityDescriptorBuilder,
 						gridFieldVO,
-						isTreatFieldAsKey(gridFieldVO, gridTabVO, entityDescriptorBuilder)));
+						isTreatFieldAsKey(gridFieldVO, gridTabVO)));
 
 		//
 		// Labels field descriptors
@@ -260,8 +259,7 @@ import lombok.NonNull;
 	// keyColumn==true will mean "readOnly" further down the road
 	private static boolean isTreatFieldAsKey(
 			@NonNull final GridFieldVO gridFieldVO,
-			@NonNull final GridTabVO gridTabVO,
-			@NonNull final DocumentEntityDescriptor.Builder entityDescriptorBuilder)
+			@NonNull final GridTabVO gridTabVO)
 	{
 		final boolean gridTabVOHasKeyColumns = gridTabVO.getFields().stream().anyMatch(GridFieldVO::isKey);
 
@@ -298,7 +296,7 @@ import lombok.NonNull;
 		return documentEntity().getFieldBuilder(fieldName);
 	}
 
-	private final void createAndAddDocumentField(
+	private void createAndAddDocumentField(
 			final DocumentEntityDescriptor.Builder entityDescriptorBuilder,
 			final GridFieldVO gridFieldVO,
 			final boolean keyColumn)
@@ -570,6 +568,7 @@ import lombok.NonNull;
 		}
 	}
 
+	@Nullable
 	private DocumentFieldDefaultFilterDescriptor createDefaultFilterDescriptor(
 			@Nullable final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
 			@NonNull final String fieldName,
@@ -599,6 +598,7 @@ import lombok.NonNull;
 				.build();
 	}
 
+	@Nullable
 	private Object extractAutoFilterInitialValue(
 			@NonNull final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
 			@NonNull final String fieldName,
@@ -617,7 +617,7 @@ import lombok.NonNull;
 		{
 			return DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
 		}
-		else if(widgetType.isLookup()
+		else if (widgetType.isLookup()
 				&& DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
 		{
 			return DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER;
@@ -631,6 +631,7 @@ import lombok.NonNull;
 		}
 	}
 
+	@Nullable
 	private LookupDataSource createFilterLookupDataSourceOrNull(@Nullable final LookupDescriptorProvider lookupDescriptorProvider)
 	{
 		if (lookupDescriptorProvider == null)
@@ -647,6 +648,7 @@ import lombok.NonNull;
 		return LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 	}
 
+	@Nullable
 	private ButtonFieldActionDescriptor extractButtonFieldActionDescriptor(final String tableName, final String fieldName, final int adProcessId)
 	{
 		// Process call
@@ -682,10 +684,10 @@ import lombok.NonNull;
 		return null;
 	}
 
-	private final void createAndAddLabelsDocumentField(final DocumentEntityDescriptor.Builder entityDescriptor, final I_AD_UI_Element labelsUIElement)
+	private void createAndAddLabelsDocumentField(final DocumentEntityDescriptor.Builder entityDescriptor, final I_AD_UI_Element labelsUIElement)
 	{
 		final String labelsFieldName = getLabelsFieldName(labelsUIElement);
-		final String tablename = entityDescriptor.getTableName().get();
+		final String tablename = entityDescriptor.getTableName().orElseThrow(() -> new AdempiereException("No tablename defined for " + entityDescriptor));
 		final LabelsLookup lookupDescriptor = createLabelsLookup(labelsUIElement, tablename);
 
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptor.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
@@ -747,13 +749,15 @@ import lombok.NonNull;
 	private String getLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
 	{
 		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
-
-		Check.assumeNotNull(labelField, I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for UI Element {} !", labelsUIElement);
+		if(labelField == null)
+		{
+			throw new AdempiereException(I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for " + labelsUIElement);
+		}
 
 		return labelField.getDisplayLogic();
 	}
 
-	private static final LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
+	private static LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
 	{
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
 		final String labelsTableName = labelsTab.getAD_Table().getTableName();
@@ -779,10 +783,10 @@ import lombok.NonNull;
 		}
 
 		final I_AD_Field labelsSelectorField = labelsUIElement.getLabels_Selector_Field();
-		
+
 		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
-		
+
 		final int referenceIDToUse = labelsSelectorField.getAD_Reference_ID() > 0
 				? labelsSelectorField.getAD_Reference_ID()
 				: labelsValueColumn.getAD_Reference_ID();
@@ -821,11 +825,12 @@ import lombok.NonNull;
 				.build();
 	}
 
-	public static final String getLabelsFieldName(final I_AD_UI_Element uiElement)
+	public static String getLabelsFieldName(final I_AD_UI_Element uiElement)
 	{
 		return "Labels_" + uiElement.getAD_UI_Element_ID();
 	}
 
+	@Nullable
 	private static DocumentFieldDefaultFilterDescriptor createLabelsDefaultFilterInfo(final I_AD_UI_Element labelsUIElement)
 	{
 		if (!labelsUIElement.isAllowFiltering())
@@ -866,7 +871,8 @@ import lombok.NonNull;
 	/**
 	 * @return a pair of "child link column name" - "parent link column name"
 	 */
-	private static final IPair<String, String> extractChildParentLinkColumnNames(final GridTabVO childTabVO, final GridTabVO parentTabVO)
+	@Nullable
+	private static IPair<String, String> extractChildParentLinkColumnNames(final GridTabVO childTabVO, @Nullable final GridTabVO parentTabVO)
 	{
 		// If this is the master tab then there is no parent link
 		if (parentTabVO == null)
@@ -916,7 +922,7 @@ import lombok.NonNull;
 		Check.assumeNotNull(characteristic, "Parameter characteristic is not null");
 		fieldNames
 				.stream()
-				.map(fieldName -> documentField(fieldName))
+				.map(this::documentField)
 				.forEach(field -> field.addCharacteristic(characteristic));
 	}
 
@@ -953,7 +959,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private final void collectSpecialField(final DocumentFieldDescriptor.Builder field)
+	private void collectSpecialField(final DocumentFieldDescriptor.Builder field)
 	{
 		if (_specialFieldsCollector == null)
 		{
@@ -963,7 +969,7 @@ import lombok.NonNull;
 		_specialFieldsCollector.collect(field);
 	}
 
-	private final void collectSpecialFieldsDone()
+	private void collectSpecialFieldsDone()
 	{
 		if (_specialFieldsCollector == null)
 		{
@@ -973,11 +979,13 @@ import lombok.NonNull;
 		_specialFieldsCollector.collectFinish();
 	}
 
+	@Nullable
 	public DocumentFieldDescriptor.Builder getSpecialField_DocumentSummary()
 	{
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocumentSummary();
 	}
 
+	@Nullable
 	public Map<Characteristic, DocumentFieldDescriptor.Builder> getSpecialField_DocSatusAndDocAction()
 	{
 		return _specialFieldsCollector == null ? null : _specialFieldsCollector.getDocStatusAndDocAction();
