@@ -5,6 +5,7 @@ import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 
 import java.time.LocalDate;
@@ -49,6 +50,7 @@ public class PackageableViewFilterVO
 	OrderId salesOrderId;
 	BPartnerId customerId;
 	WarehouseTypeId warehouseTypeId;
+	WarehouseId warehouseId;
 	LocalDate deliveryDate;
 	LocalDate preparationDate;
 	ShipperId shipperId;
