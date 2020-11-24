@@ -50,7 +50,7 @@ WITH PriceListVersionsByValidFrom AS
                            plv.m_pricelist_version_id,
                            plv.validfrom,
                            plv.name,
-                           row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank
+                           1 as rank
                     FROM Report.Fresh_PriceList_Version_Val_Rule plv
                     WHERE TRUE
                       AND plv.validfrom <= now()
@@ -60,15 +60,14 @@ WITH PriceListVersionsByValidFrom AS
                     ORDER BY TRUE,
                              plv.validfrom DESC,
                              plv.m_pricelist_version_id DESC
-                   )
+                    LIMIT 1)
                    UNION ALL
                    (SELECT --
                            plv.c_bpartner_id,
                            plv.m_pricelist_version_id,
                            plv.validfrom,
                            plv.name,
-                           101 - (row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom ASC, plv.m_pricelist_version_id ASC)) rank
-
+                           2 as rank
                     FROM Report.Fresh_PriceList_Version_Val_Rule plv
                     WHERE TRUE
                       AND plv.validfrom > now()
@@ -78,23 +77,20 @@ WITH PriceListVersionsByValidFrom AS
                     ORDER BY TRUE,
                              plv.validfrom ASC,
                              plv.m_pricelist_version_id ASC
-                   )
+                    LIMIT 1)
                   ) t
-
-             WHERE t.rank = 1
-                OR t.rank = 100
          ),
      currentAndPreviousPLV AS
          (
              -- implementation detail: all these sub-selects would be better implemented with a pivot. Unfortunately i cant understand how pivots work.
              SELECT DISTINCT --
                              plvv.c_bpartner_id,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)   PLV1_ID,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 100 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV2_ID,
-                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                validFromPLV1,
-                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 100 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2,
-                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                     namePLV1,
-                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 100 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV2
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV1_ID,
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV2_ID,
+                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV1,
+                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV1,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV2
              FROM PriceListVersionsByValidFrom plvv
              ORDER BY plvv.c_bpartner_id
          ),
