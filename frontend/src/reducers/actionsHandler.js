@@ -9,7 +9,7 @@ import {
   FETCH_QUICK_ACTIONS_SUCCESS,
 } from '../constants/ActionTypes';
 
-export const initialActionsState = {};
+export const initialState = {};
 export const initialSingleActionsState = {
   actions: [],
   pending: false,
@@ -88,6 +88,6 @@ const reducer = produce((draftState, action) => {
       return;
     }
   }
-}, initialActionsState);
+}, initialState);
 
 export default reducer;

@@ -297,7 +297,6 @@ export default class DocumentList extends Component {
                       }
                     : NO_VIEW
                 }
-                onInvalidViewId={onFetchLayoutAndData}
               />
             )}
           </div>

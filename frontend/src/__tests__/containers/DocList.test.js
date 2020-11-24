@@ -37,6 +37,10 @@ import tables, {
 import filters, {
   initialState as filtersHandlerState,
 } from '../../reducers/tables';
+import actionsHandler, {
+  getQuickActionsId,
+  initialState as actionsHandlerState,
+} from '../../reducers/actionsHandler';
 
 import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../test_setup/fixtures/keymap.json';
@@ -64,6 +68,7 @@ const rootReducer = combineReducers({
   tables,
   routing,
   filters,
+  actionsHandler,
 });
 
 const createInitialState = function(state = {}) {
@@ -79,6 +84,7 @@ const createInitialState = function(state = {}) {
       tables: tablesHandlerState,
       filters: { ...filtersHandlerState },
       routing: { ...propsFixtures.state1.routing },
+      actionsHandler: actionsHandlerState,
     },
     state
   );
@@ -174,6 +180,24 @@ describe('DocList', () => {
         )
         .reply(200, rowFixtures.includedViewData1);
 
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${windowId}/${viewId}/quickActions?selectedIds=${
+            data.result[0].id
+          }`
+        )
+        .reply(200, quickActionsData.parent_quickactions1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/quickActions?selectedIds=${
+            includedData.result[0].id
+          }`
+        )
+        .reply(200, quickActionsData.included_quickactions);
+
       const wrapper = mount(
         <Provider store={store}>
           <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
@@ -210,7 +234,7 @@ describe('DocList', () => {
      * with the current architecture it's really hard to implement and would require changes
      * in the QuickActions component anyway.
      */
-    it.skip('renders without errors and loads quick actions', async (done) => {
+    it('renders without errors and loads quick actions', async (done) => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
@@ -284,16 +308,6 @@ describe('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${windowId}/${viewId}/quickActions`)
-        .reply(200, quickActionsData.parent_quickactions1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${includedWindowId}/${includedViewId}/quickActions`)
-        .reply(200, quickActionsData.included_quickactions);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(
           `/documentView/${windowId}/${viewId}/quickActions?selectedIds=${
             data.result[0].id
@@ -343,12 +357,10 @@ describe('DocList', () => {
         expect(html).toContain('document-list-is-included');
       }, 4000);
 
-      
+      const quickActionsId = getQuickActionsId({ windowId: includedWindowId, viewId: includedViewId });
       await waitFor(() => {
         expect(
-          store.getState().windowHandler.quickActions[
-            `${includedWindowId}-${includedViewId}`
-          ]
+          store.getState().actionsHandler[quickActionsId]
         ).toBeTruthy();
         expect(store.getState().windowHandler.indicator).toEqual('saved');
       });

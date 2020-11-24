@@ -12,7 +12,7 @@ import {
   getQuickActionsId,
 } from '../../reducers/actionsHandler';
 import { openModal } from '../../actions/WindowActions';
-import { fetchQuickActions, deleteQuickActions } from '../../actions/Actions';
+import { deleteQuickActions } from '../../actions/Actions';
 
 import Tooltips from '../tooltips/Tooltips.js';
 import QuickActionsDropdown from './QuickActionsDropdown';
@@ -240,12 +240,11 @@ export class QuickActions extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
  * @prop {object} childView
+ * @prop {object} parentView
  * @prop {string} windowId
  * @prop {string} [viewId]
  * @prop {string} [viewProfileId]
- * @prop {bool} [fetchOnInit]
  * @prop {bool} [inBackground]
  * @prop {bool} [inModal]
  * @prop {bool} [disabled]
@@ -259,7 +258,6 @@ QuickActions.propTypes = {
   // from @connect
   quickActions: PropTypes.object,
   openModal: PropTypes.func.isRequired,
-  fetchQuickActions: PropTypes.func.isRequired,
   deleteQuickActions: PropTypes.func.isRequired,
 
   // from <DocumentList>
@@ -268,7 +266,6 @@ QuickActions.propTypes = {
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
   viewProfileId: PropTypes.string,
-  fetchOnInit: PropTypes.bool,
   inBackground: PropTypes.bool,
   inModal: PropTypes.bool,
   disabled: PropTypes.bool,
@@ -277,7 +274,6 @@ QuickActions.propTypes = {
   shouldNotUpdate: PropTypes.any,
   selected: PropTypes.any,
   className: PropTypes.string,
-  onInvalidViewId: PropTypes.func,
 };
 
 const mapStateToProps = (state, { viewId, windowId }) => {
@@ -290,7 +286,7 @@ const mapStateToProps = (state, { viewId, windowId }) => {
 
 export default connect(
   mapStateToProps,
-  { openModal, fetchQuickActions, deleteQuickActions },
+  { openModal, deleteQuickActions },
   false,
   { forwardRef: true }
 )(QuickActions);

@@ -1,0 +1,33 @@
+{
+  "processData1": {
+    "pid": "1135474",
+    "processType": "ADP_541214",
+    "parentId": "195"
+  },
+  "processData2": {
+    "pid": "1135949",
+    "processType": "ADP_540801",
+    "parentId": "540345"
+  },
+  "processResponse1": {
+    "action": {
+      "windowId": "540759",
+      "viewId": "540759-M",
+      "targetTab": "SAME_TAB_OVERLAY",
+      "type": "openView"
+    },
+    "error": false,
+    "pinstanceId": "1135474"
+  },
+  "processResponse2": {
+    "pinstanceId": "1135952",
+    "error": false,
+    "action": {
+      "windowId": "husToPick",
+      "viewId": "husToPick-4",
+      "viewType": "includedView",
+      "profileId": "husToPick",
+      "type": "openIncludedView"
+    }
+  }
+}
