@@ -456,11 +456,6 @@ class TableRow extends PureComponent {
       rowIndex,
       fieldsByName: cells,
       hasComments,
-      /*
-       * This function is called when cell's value changes and triggers re-fetching
-       * quickactions in grids.
-       */
-      onItemChange,
       handleFocusAction,
       tableId,
       listenOnKeys,
@@ -563,7 +558,6 @@ class TableRow extends PureComponent {
                 handleDoubleClick={this.handleEditProperty}
                 handleFocusAction={handleFocusAction}
                 onClickOutside={this.handleClickOutside}
-                onCellChange={onItemChange}
                 updatedRow={updatedRow || newRow}
                 updateRow={this.updateRow}
                 onKeyDown={this.handleKeyDown}
