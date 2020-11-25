@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.password;
+package de.metas.manufacturing.generatedcomponents;
 
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,7 +35,7 @@ import java.util.Random;
  * Borrowed from: https://mkyong.com/java/java-password-generator-example/
  */
 @Service
-public class PasswordGenerator
+public class PasswordGenerator implements IComponentGenerator
 {
 	private static final String CHAR_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
 	private static final String CHAR_UPPERCASE = CHAR_LOWERCASE.toUpperCase();

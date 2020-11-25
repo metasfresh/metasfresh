@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.macaddress;
+package de.metas.manufacturing.generatedcomponents;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -29,6 +29,7 @@ import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
+import de.metas.macaddress.MacAddress;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -42,7 +43,7 @@ import static de.metas.macaddress.MacAddress.GROUP_DELIMITER;
  * A MAC Address looks like this: 01:23:45:67:89:AB
  */
 @Service
-public class MacAddressGenerator
+public class MacAddressGenerator implements IComponentGenerator
 {
 	public static final int NUMBER_OF_DIGITS = 12;
 

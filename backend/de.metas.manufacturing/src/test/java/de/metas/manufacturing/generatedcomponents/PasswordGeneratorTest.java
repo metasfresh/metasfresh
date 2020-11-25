@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.password;
+package de.metas.manufacturing.generatedcomponents;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

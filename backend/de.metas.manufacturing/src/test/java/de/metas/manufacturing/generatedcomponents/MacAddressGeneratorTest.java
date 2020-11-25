@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,11 +20,12 @@
  * #L%
  */
 
-package de.metas.macaddress;
+package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
+import de.metas.macaddress.MacAddress;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
