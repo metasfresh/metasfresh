@@ -1,6 +1,7 @@
 package de.metas.ui.web.pporder;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
@@ -104,8 +105,8 @@ import lombok.NonNull;
 
 		return documentIds.stream()
 				.distinct()
-				.map(documentId -> allRecordsById.get(documentId))
-				.filter(document -> document != null);
+				.map(allRecordsById::get)
+				.filter(Objects::nonNull);
 	}
 
 	public Stream<PPOrderLineRow> stream()
@@ -116,7 +117,7 @@ import lombok.NonNull;
 	public Stream<PPOrderLineRow> streamRecursive()
 	{
 		return records.stream()
-				.map(row -> streamRecursive(row))
+				.map(PPOrderLinesViewData::streamRecursive)
 				.reduce(Stream::concat)
 				.orElse(Stream.of());
 	}
@@ -125,7 +126,7 @@ import lombok.NonNull;
 	{
 		return row.getIncludedRows()
 				.stream()
-				.map(includedRow -> streamRecursive(includedRow))
+				.map(PPOrderLinesViewData::streamRecursive)
 				.reduce(Stream.of(row), Stream::concat);
 	}
 
@@ -146,7 +147,7 @@ import lombok.NonNull;
 		return rowsById.build();
 	}
 
-	private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow row)
+	private static void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow row)
 	{
 		collector.put(row.getRowId().toDocumentId(), row);
 		row.getIncludedRows()
