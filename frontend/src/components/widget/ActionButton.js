@@ -3,8 +3,10 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { get } from 'lodash';
 import classnames from 'classnames';
-import { fetchTopActions } from '../../actions/WindowActions';
+
+import { fetchTopActions } from '../../actions/Actions';
 import { dropdownRequest } from '../../actions/GenericActions';
+
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 import Prompt from '../../components/app/Prompt';
 
@@ -390,7 +392,6 @@ ActionButton.propTypes = {
   dataId: PropTypes.any,
   docId: PropTypes.any,
   activeTab: PropTypes.string,
-  readonly: PropTypes.boolean,
   processStatus: PropTypes.string,
 };
 

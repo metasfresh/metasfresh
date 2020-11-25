@@ -213,7 +213,7 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId,
-            type: parentWindowId,
+            parentId: parentWindowId,
             ids: viewId
               ? modalViewDocumentIds
               : dataId

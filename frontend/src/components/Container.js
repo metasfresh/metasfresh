@@ -159,13 +159,6 @@ class Container extends PureComponent {
                   viewProfileId={rawModal.profileId}
                   setModalTitle={setRawModalTitle}
                   setModalDescription={setRawModalDescription}
-                  fetchQuickActionsOnInit={
-                    !(
-                      includedView &&
-                      includedView.windowId &&
-                      includedView.viewId
-                    )
-                  }
                   modalDescription={rawModal.description}
                   isModal
                   processStatus={processStatus}
@@ -186,7 +179,6 @@ class Container extends PureComponent {
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
                       parentWindowType={rawModal.windowId}
-                      fetchQuickActionsOnInit
                       isModal
                       isIncluded
                       processStatus={processStatus}

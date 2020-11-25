@@ -85,7 +85,6 @@ class MasterWidget extends PureComponent {
       patch,
       rowId,
       tabId,
-      onChange,
       relativeDocId,
       isAdvanced = false,
       viewId,
@@ -134,7 +133,6 @@ class MasterWidget extends PureComponent {
       isEdit
     );
     this.setState({ edited: false });
-    onChange && onChange(ret); //callback
 
     return ret;
   };
@@ -303,7 +301,6 @@ MasterWidget.propTypes = {
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
   patch: PropTypes.func,
-  onChange: PropTypes.func,
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
   entity: PropTypes.string,

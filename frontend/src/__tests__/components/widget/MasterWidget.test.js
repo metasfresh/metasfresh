@@ -91,7 +91,6 @@ describe('MasterWidget component', () => {
       {
         ...localFixtures.data1,
         ...localFixtures.props1,
-        onChange: jest.fn(),
       },
     );
     const wrapper = shallow(<MasterWidget {...props} />);
@@ -100,7 +99,6 @@ describe('MasterWidget component', () => {
     wrapper.instance().handlePatch(property, 'foo');
 
     expect(props.patch).toBeCalled();
-    expect(props.onChange).toBeCalled();
     expect(props.updatePropertyValue).not.toBeCalled();
   });
 

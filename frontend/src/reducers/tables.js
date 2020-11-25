@@ -265,10 +265,11 @@ const reducer = produce((draftState, action) => {
 
     case types.DESELECT_TABLE_ROWS: {
       const { id, selection } = action.payload;
-      const rows = original(draftState[id].rows);
 
       // just for precaution
       if (draftState[id]) {
+        const rows = original(draftState[id].rows);
+
         if (selection.length) {
           draftState[id].selected = difference(
             draftState[id].selected,
