@@ -22,7 +22,7 @@ import {
 
 import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
-import InlineTab from '../components/widget/InlineTab';
+import InlineTabWrapper from '../components/widget/InlineTabWrapper';
 
 /**
  * @file Class based component.
@@ -39,7 +39,7 @@ class WidgetWrapper extends PureComponent {
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
-      return <InlineTab />;
+      return <InlineTabWrapper {...this.props} />;
     }
 
     if (renderMaster) {

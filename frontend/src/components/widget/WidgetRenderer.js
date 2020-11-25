@@ -27,7 +27,6 @@ import Lookup from './Lookup/Lookup';
 import Switch from './Switch';
 import Amount from './Amount';
 import Password from './Password';
-import InlineTab from './InlineTab';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -586,15 +585,6 @@ class WidgetRenderer extends PureComponent {
           />
         );
       }
-      case 'InlineTab':
-        return (
-          <InlineTab
-            fields={fields}
-            data={widgetData[0]}
-            handlePatch={onPatch}
-            readonly={readonly}
-          />
-        );
       default:
         return false;
     }

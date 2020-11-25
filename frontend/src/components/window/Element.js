@@ -32,7 +32,12 @@ class Element extends PureComponent {
     const layoutId = `${sectionIndex}_${columnIndex}_${elementGroupIndex}_${elementsLineIndex}_${elementIndex}`;
     const element = omit(elementLayout, ['fields']);
     let dataSource = isModal ? 'modal' : 'element';
+    // InlineTab specific adapts
     dataSource = widgetType === 'InlineTab' ? 'inline-tab' : dataSource;
+    if (widgetType === 'InlineTab') {
+      // this is because from the be we don't get any fields arr
+      element.fields = [];
+    }
 
     return (
       <WidgetWrapper

@@ -191,7 +191,6 @@ const getProcessLayout = (state, isModal, elementIndex) =>
  * @param {object} layout
  */
 const selectWidgetData = (data, layout) => {
-  if (layout.widgetType === 'InlineTab') return [{}];
   let widgetData = null;
 
   if (layout.fields) {
