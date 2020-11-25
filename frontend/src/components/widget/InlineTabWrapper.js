@@ -13,8 +13,6 @@ class InlineTabWrapper extends Component {
       <div className="inline-tab-wrapper">
         <span>{caption}</span>
         <InlineTab {...this.props} />
-        <InlineTab {...this.props} />
-        <InlineTab {...this.props} />
       </div>
     );
   }

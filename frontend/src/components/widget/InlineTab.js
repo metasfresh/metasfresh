@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 
-class InlineTab extends Component {
+class InlineTab extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -15,6 +16,9 @@ class InlineTab extends Component {
 
   render() {
     const { isOpen } = this.state;
+    const {
+      inlineTab: { caption, elements },
+    } = this.props;
 
     return (
       <div>
@@ -30,7 +34,21 @@ class InlineTab extends Component {
             <span className="arrow-pointer" />
           </div>
           {/* Header  */}
-          <div className="pull-left offset-left">Inline Tab</div>
+          <div className="pull-left offset-left">
+            {caption}
+            {/* 
+             TODO: select which exactly will be displayed and by what criteria - talk to BE team
+                   currently these are randomly picked
+             */}
+            {elements &&
+              elements.map((item, index) => {
+                if (index < 4) {
+                  return (
+                    <span key={`${index}_${item}`}> {item.caption} -- </span>
+                  );
+                }
+              })}
+          </div>
 
           {/* Content */}
           {isOpen && (
@@ -45,4 +63,7 @@ class InlineTab extends Component {
   }
 }
 
+InlineTab.propTypes = {
+  inlineTab: PropTypes.string.isRequired,
+};
 export default InlineTab;
