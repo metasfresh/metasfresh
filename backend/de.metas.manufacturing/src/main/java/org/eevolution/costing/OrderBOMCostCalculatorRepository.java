@@ -1,39 +1,49 @@
 package org.eevolution.costing;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.IProductCostingBL;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCostTrxType;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.costing.CostElementId;
-import de.metas.costing.CostSegmentAndElement;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.IProductCostingBL;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.Builder;
-import lombok.NonNull;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -60,10 +70,14 @@ import lombok.NonNull;
 public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorRepository
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(OrderBOMCostCalculatorRepository.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IPPOrderCostBL orderCostBL = Services.get(IPPOrderCostBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 
 	private final PPOrderId orderId;
 	private final ProductId mainProductId;
@@ -127,13 +141,15 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		return BOM.builder()
 				.productId(mainProductId)
 				.asiId(mainProductAsiId)
-				.qty(mainProductQty.toBigDecimal())
+				.qty(mainProductQty)
 				.lines(bomLines)
-				.costPrice(getProductCostPrice(mainProductId, orderCosts))
+				.costPrice(getProductCostPrice(mainProductId, orderCosts, mainProductQty.getUOM()))
 				.build();
 	}
 
-	private BOMLine toCostingBOMLine(final I_PP_Order_BOMLine orderBOMLineRecord, final PPOrderCosts orderCosts)
+	private BOMLine toCostingBOMLine(
+			final I_PP_Order_BOMLine orderBOMLineRecord,
+			final PPOrderCosts orderCosts)
 	{
 		final ProductId productId = ProductId.ofRepoId(orderBOMLineRecord.getM_Product_ID());
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderBOMLineRecord.getM_AttributeSetInstance_ID());
@@ -164,32 +180,66 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 				.asiId(asiId)
 				.qty(qty)
 				.scrapPercent(scrapPercent)
-				.costPrice(getProductCostPrice(productId, orderCosts))
+				.costPrice(getProductCostPrice(productId, orderCosts, qty.getUOM()))
 				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
 
 	}
 
-	private BOMCostPrice getProductCostPrice(final ProductId productId, final PPOrderCosts orderCosts)
+	private BOMCostPrice getProductCostPrice(
+			@NonNull final ProductId productId,
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final I_C_UOM targetUOM)
 	{
+		final UomId targetUomId = UomId.ofRepoId(targetUOM.getC_UOM_ID());
+
 		final List<BOMCostElementPrice> costElementPrices = orderCosts.getByProductAndCostElements(productId, costElementIds)
 				.stream()
-				.map(this::toBOMCostElementPrice)
+				.map(cost -> toBOMCostElementPrice(cost, targetUomId))
 				.collect(ImmutableList.toImmutableList());
 
 		return BOMCostPrice.builder()
 				.productId(productId)
+				.uomId(targetUomId)
 				.costElementPrices(costElementPrices)
 				.build();
 	}
 
-	private BOMCostElementPrice toBOMCostElementPrice(final PPOrderCost cost)
+	@NonNull
+	private BOMCostElementPrice toBOMCostElementPrice(
+			@NonNull final PPOrderCost cost,
+			@NonNull final UomId targetUomId)
 	{
+		final CostPrice costPrice = convertCostPrice(cost.getPrice(), cost.getProductId(), targetUomId);
 		return BOMCostElementPrice.builder()
 				.id(cost.getId())
 				.costElementId(cost.getCostElementId())
-				.costPrice(cost.getPrice())
+				.costPrice(costPrice)
 				.build();
+	}
+
+	private CostPrice convertCostPrice(
+			@NonNull final CostPrice costPrice,
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUomId)
+	{
+		if (UomId.equals(costPrice.getUomId(), targetUomId))
+		{
+			return costPrice;
+		}
+
+		final UomId uomId = costPrice.getUomId();
+		final CurrencyPrecision costingPrecision = currencyRepository.getCostingPrecision(costPrice.getCurrencyId());
+
+		return costPrice.convertAmounts(targetUomId, costAmount -> {
+			final ProductPrice productPrice = ProductPrice.builder()
+					.productId(productId)
+					.uomId(uomId)
+					.money(costAmount.toMoney())
+					.build();
+			final ProductPrice productPriceConv = uomConversionBL.convertProductPriceToUom(productPrice, targetUomId, costingPrecision);
+			return CostAmount.ofProductPrice(productPriceConv);
+		});
 	}
 
 	@Override
@@ -200,28 +250,40 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		orderCostBL.save(orderCosts);
 	}
 
-	public void changeOrderCostsFromBOM(final PPOrderCosts orderCosts, final BOM bom)
+	/**
+	 * Updates order costs from BOM line costs
+	 */
+	public void changeOrderCostsFromBOM(
+			@NonNull final PPOrderCosts currentOrderCosts,
+			@NonNull final BOM fromBOM)
 	{
 		final LinkedHashMap<CostSegmentAndElement, PPOrderCost> newOrderCosts = new LinkedHashMap<>();
 
 		//
 		// BOM Header Product Cost
-		for (final BOMCostElementPrice elementCostPrice : bom.getCostPrice().getElementPrices())
+		for (final BOMCostElementPrice fromElementCostPrice : fromBOM.getElementPrices())
 		{
-			final CostSegmentAndElement costSegmentAndElement = createCostSegmentAndElement(bom.getProductId(), bom.getAsiId(), elementCostPrice.getCostElementId());
+			final CostSegmentAndElement costSegmentAndElement = createCostSegmentAndElement(fromBOM.getProductId(), fromBOM.getAsiId(), fromElementCostPrice.getCostElementId());
 
 			PPOrderCost elementOrderCost = newOrderCosts.get(costSegmentAndElement);
 			if (elementOrderCost == null)
 			{
+				final I_C_UOM uom = uomDAO.getById(fromElementCostPrice.getUomId());
+
 				elementOrderCost = PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.MainProduct)
 						.costSegmentAndElement(costSegmentAndElement)
-						.price(elementCostPrice.getCostPrice())
+						.price(fromElementCostPrice.getCostPrice())
+						.accumulatedQty(Quantity.zero(uom))
 						.build();
 			}
 			else
 			{
-				elementOrderCost = elementOrderCost.withPrice(elementCostPrice.getCostPrice());
+				// shall not happen
+				throw new AdempiereException("Finished good cost price defined more than once for " + fromElementCostPrice.getCostElementId())
+						.setParameter("costSegmentAndElement", costSegmentAndElement)
+						.setParameter("elementCostPrice", fromElementCostPrice)
+						.appendParametersToMessage();
 			}
 
 			newOrderCosts.put(elementOrderCost.getCostSegmentAndElement(), elementOrderCost);
@@ -229,30 +291,37 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 
 		//
 		// BOM Line Product Cost
-		for (final BOMLine bomLine : bom.getLines())
+		for (final BOMLine fromBOMLine : fromBOM.getLines())
 		{
-			final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(bomLine.getComponentType());
+			final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(fromBOMLine.getComponentType());
 			final Percent coProductCostDistributionPercent = trxType.isCoProduct()
-					? bomLine.getCoProductCostDistributionPercent()
+					? fromBOMLine.getCoProductCostDistributionPercent()
 					: null;
 
-			for (final BOMCostElementPrice elementCostPrice : bomLine.getCostPrice().getElementPrices())
+			for (final BOMCostElementPrice fromElementCostPrice : fromBOMLine.getElementPrices())
 			{
-				final CostSegmentAndElement costSegmentAndElement = createCostSegmentAndElement(bomLine.getComponentId(), bomLine.getAsiId(), elementCostPrice.getCostElementId());
+				final CostSegmentAndElement costSegmentAndElement = createCostSegmentAndElement(fromBOMLine.getComponentId(), fromBOMLine.getAsiId(), fromElementCostPrice.getCostElementId());
 
 				PPOrderCost elementOrderCost = newOrderCosts.get(costSegmentAndElement);
 				if (elementOrderCost == null)
 				{
+					final I_C_UOM uom = uomDAO.getById(fromElementCostPrice.getUomId());
+
 					elementOrderCost = PPOrderCost.builder()
 							.trxType(trxType)
 							.costSegmentAndElement(costSegmentAndElement)
-							.price(elementCostPrice.getCostPrice())
+							.price(fromElementCostPrice.getCostPrice())
 							.coProductCostDistributionPercent(coProductCostDistributionPercent)
+							.accumulatedQty(Quantity.zero(uom))
 							.build();
 				}
 				else
 				{
-					elementOrderCost = elementOrderCost.withPrice(elementCostPrice.getCostPrice());
+					// Case: we have the same component product defined multiple times in our BOM.
+					// The order cost was created for the first BOM line found.
+					// We assume the next BOM lines (of same component product) have EXACTLY the same cost price (maybe converted to a different UOM),
+					// so it's pointless to touch the current order cost.
+					logger.debug("Skip updating {} from {}. We assume first time was created correctly. Check the code for more inside info.", elementOrderCost, fromElementCostPrice);
 				}
 
 				newOrderCosts.put(elementOrderCost.getCostSegmentAndElement(), elementOrderCost);
@@ -260,8 +329,8 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 		}
 
 		//
-		orderCosts.removeByProductsAndCostElements(bom.getProductIds(), costElementIds);
-		orderCosts.addCosts(newOrderCosts.values());
+		currentOrderCosts.removeByProductsAndCostElements(fromBOM.getProductIds(), costElementIds);
+		currentOrderCosts.addCosts(newOrderCosts.values());
 	}
 
 	private CostSegmentAndElement createCostSegmentAndElement(

@@ -42,12 +42,14 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -60,6 +62,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -73,6 +76,7 @@ import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.money.CurrencyId;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.impl.ESRImportBL;
@@ -103,6 +107,7 @@ public class ESRTestBase
 	private I_C_Invoice invoice;
 	private I_C_BPartner partner;
 
+	protected IPaymentDAO paymentDAO;
 	protected ESRImportBL esrImportBL;
 
 	@BeforeEach
@@ -110,10 +115,14 @@ public class ESRTestBase
 	{
 		AdempiereTestHelper.get().init();
 
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		
 		dao = Services.get(IESRImportDAO.class);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
+
+		paymentDAO = Services.get(IPaymentDAO.class);
 
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
 		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
@@ -195,6 +204,30 @@ public class ESRTestBase
 		save(esrImport);
 
 		return esrImport;
+	}
+
+	protected I_C_BP_BankAccount createBankAccount(final boolean isEsrAccount,
+			final int orgId,
+			final int userId,
+			final String esrRenderedAcctNo,
+			@NonNull final CurrencyId currencyId)
+	{
+		final I_C_Bank bank = newInstance(I_C_Bank.class);
+		bank.setName("Test Bank");
+		save(bank);
+
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
+
+		account.setC_Bank_ID(bank.getC_Bank_ID());
+		account.setIsEsrAccount(isEsrAccount);
+		account.setAD_Org_ID(orgId);
+		account.setAD_User_ID(userId);
+		account.setESR_RenderedAccountNo(esrRenderedAcctNo);
+		account.setC_Currency_ID(currencyId.getRepoId());
+
+		save(account);
+
+		return account;
 	}
 
 	public void assertNoErrors(final List<I_ESR_ImportLine> lines)
@@ -335,12 +368,12 @@ public class ESRTestBase
 		// esr line
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final I_ESR_Import esrImport = createImport();
-		esrImport.setC_BP_BankAccount(account);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
 		esrImportLine.setESR_Import(esrImport);
-		esrImportLine.setC_BP_BankAccount(account);
+		esrImportLine.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
 		esrImportLine.setESRPostParticipantNumber(ESR_RenderedAccountNo.replaceAll("-", ""));
 		esrImportLine.setESRFullReferenceNumber(fullRefNo);

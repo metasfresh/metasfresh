@@ -1,9 +1,31 @@
 package de.metas.costing.methods;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailVoidRequest;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
@@ -13,29 +35,9 @@ import org.eevolution.api.PPOrderCosts;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailCreateResult;
-import de.metas.costing.CostDetailVoidRequest;
-import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
-import de.metas.costing.CostSegmentAndElement;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingMethod;
-import de.metas.costing.CurrentCost;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -70,7 +72,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	//
 	private final CostingMethodHandlerUtils utils;
 
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
@@ -181,21 +183,26 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
 					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
 
-			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCost.getPrecision());
-
-			requestEffective = request.withAmount(amt);
+			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
+			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			requestEffective = request.withAmountAndQty(amt, qty);
 		}
 		else
 		{
 			requestEffective = request;
 		}
 
-		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCost);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCost);
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 		currentCost.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 
 		// Accumulate to order costs
 		// NOTE: outbound amounts are negative, so we have to negate it here in order to get a positive value
-		orderCosts.accumulateOutboundCostAmount(costSegmentAndElement, requestEffective.getAmt().negate(), requestEffective.getQty().negate());
+		orderCosts.accumulateOutboundCostAmount(
+				costSegmentAndElement,
+				requestEffective.getAmt().negate(),
+				requestEffective.getQty().negate(),
+				utils.getQuantityUOMConverter());
 
 		return result;
 	}
@@ -205,45 +212,62 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			@NonNull final CurrentCost currentCosts,
 			@NonNull final PPOrderCosts orderCosts)
 	{
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
 		final CostDetailCreateResult result;
 		if (request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, currentCosts);
+			result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
 			currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
-			final CostAmount amt = price.multiply(request.getQty()).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmount(amt);
-			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, currentCosts);
+			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
+			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			final CostDetailCreateRequest requestEffective = request.withAmountAndQty(amt, qty);
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
-			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt(), utils.getQuantityUOMConverter());
+			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
 		// Accumulate to order costs
-		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
-		orderCosts.accumulateInboundCostAmount(costSegmentAndElement, request.getAmt(), request.getQty());
+		orderCosts.accumulateInboundCostAmount(
+				utils.extractCostSegmentAndElement(request),
+				request.getAmt(),
+				request.getQty(),
+				utils.getQuantityUOMConverter());
 
 		return result;
 	}
 
-	private CostDetailCreateResult createActivityControl(final CostDetailCreateRequest request, final Duration totalDuration)
+	private CostDetailCreateResult createActivityControl(
+			final CostDetailCreateRequest request,
+			final Duration totalDuration)
 	{
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		throw new AdempiereException("Computing activity costs is not yet supported");
 	}
 
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
 		// TODO
-		throw new UnsupportedOperationException();
+		throw new AdempiereException("Voiding costs is not yet supported");
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final OrderLineId orderLineId)
 	{
 		return Optional.empty();
+	}
+
+	@Override
+	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
 	}
 }

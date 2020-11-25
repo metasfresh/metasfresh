@@ -1,19 +1,5 @@
 package de.metas.material.planning.pporder;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IProductBOMBL;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
-
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.BOMExpiredException;
@@ -25,6 +11,19 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /*
  * #%L
@@ -79,26 +78,6 @@ public class PPOrderUtil
 		return componentType.isByProduct();
 	}
 
-	/**
-	 *
-	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
-	 * @return true if given {@code componentType} is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
-	 */
-	public boolean isReceipt(final BOMComponentType componentType)
-	{
-		return componentType != null && componentType.isReceipt();
-	}
-
-	/**
-	 *
-	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
-	 * @return
-	 */
-	public boolean isIssue(final BOMComponentType componentType)
-	{
-		return componentType != null && componentType.isIssue();
-	}
-
 	public boolean isCoOrByProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
@@ -106,7 +85,6 @@ public class PPOrderUtil
 	}
 
 	/**
-	 *
 	 * @param bomLine
 	 * @return true if given BOM Line is a alternative/variant for a main component line
 	 */
@@ -118,8 +96,8 @@ public class PPOrderUtil
 
 	public boolean isReceipt(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
-		return isReceipt(componentType);
+		return BOMComponentType.ofCode(bomLine.getComponentType())
+				.isReceipt();
 	}
 
 	public boolean isMethodChangeVariance(@NonNull final I_PP_Order_BOMLine bomLine)
@@ -133,8 +111,8 @@ public class PPOrderUtil
 	 * Asserts given <code>bomLine</code> is receipt.
 	 *
 	 * @param bomLine
-	 * @see #isReceipt(I_PP_Order_BOMLine)
 	 * @throws MrpException if BOM Line is not of type receipt (see {@link #isReceipt(I_PP_Order_BOMLine)}).
+	 * @see #isReceipt(I_PP_Order_BOMLine)
 	 */
 	public void assertReceipt(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
@@ -160,9 +138,9 @@ public class PPOrderUtil
 	/**
 	 * Verifies that the given three parameters fit together.
 	 *
-	 * @param ppOrderProductId the {@code M_Product_ID} of a given ppOrder
+	 * @param ppOrderProductId     the {@code M_Product_ID} of a given ppOrder
 	 * @param ppOrderStartSchedule the {@code M_Product_ID} of a given ppOrder
-	 * @param ppOrderProductBOM the {@code DateStartSchedule} of a given ppOrder
+	 * @param ppOrderProductBOM    the {@code DateStartSchedule} of a given ppOrder
 	 * @return
 	 */
 	public I_PP_Product_BOM verifyProductBOMAndReturnIt(
@@ -198,7 +176,9 @@ public class PPOrderUtil
 		return ppOrderProductBOM;
 	}
 
-	public static void updateBOMLineWarehouseAndLocatorFromOrder(@NonNull final I_PP_Order_BOMLine orderBOMLine, @NonNull final I_PP_Order fromOrder)
+	public static void updateBOMLineWarehouseAndLocatorFromOrder(
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@NonNull final I_PP_Order fromOrder)
 	{
 		orderBOMLine.setAD_Org_ID(fromOrder.getAD_Org_ID());
 		orderBOMLine.setM_Warehouse_ID(fromOrder.getM_Warehouse_ID());

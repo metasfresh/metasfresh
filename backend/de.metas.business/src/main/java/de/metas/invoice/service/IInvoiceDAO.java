@@ -66,6 +66,8 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
 
+	I_C_InvoiceLine retrieveLineById(InvoiceLineId invoiceLineId);
+
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceLine> retrieveLines(@NonNull InvoiceId invoiceId);
@@ -169,7 +171,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
 
-	List<org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
+	List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 

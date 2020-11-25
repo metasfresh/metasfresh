@@ -7,6 +7,7 @@ import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.interceptor.C_Invoice;
@@ -107,7 +108,7 @@ public class PaymentBLTest
 			order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(1);
 			order.setC_Currency_ID(currencyEUR.getRepoId());
-			order.setGrandTotal(new BigDecimal(50.0));
+			order.setGrandTotal(new BigDecimal("50.0"));
 			order.setIsSOTrx(true);
 			order.setProcessed(true);
 			saveRecord(order);
@@ -115,7 +116,7 @@ public class PaymentBLTest
 			invoice = newInstance(I_C_Invoice.class);
 			invoice.setAD_Org_ID(1);
 			invoice.setC_Currency_ID(currencyEUR.getRepoId());
-			invoice.setGrandTotal(new BigDecimal(50.0));
+			invoice.setGrandTotal(new BigDecimal("50.0"));
 			invoice.setIsSOTrx(true);
 			invoice.setProcessed(true);
 			saveRecord(invoice);
@@ -132,8 +133,8 @@ public class PaymentBLTest
 		{
 			final PaymentBL paymentBL = new PaymentBL(); // the class under test
 			final Timestamp today = SystemTime.asDayTimestamp();
-			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
-			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal("2.0"));
+			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal("0.5"));
 
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
 			payment.setDateTrx(today); // needed for default C_ConversionType_ID retrieval
@@ -220,26 +221,26 @@ public class PaymentBLTest
 			saveRecord(payment);
 
 			// Test writeoff completion
-			payment.setPayAmt(new BigDecimal(40.0));
+			payment.setPayAmt(new BigDecimal("40.0"));
 			saveRecord(payment);
 			invoice.setC_Currency_ID(currencyEUR.getRepoId());
-			invoice.setGrandTotal(new BigDecimal(50.0));
+			invoice.setGrandTotal(new BigDecimal("50.0"));
 			saveRecord(invoice);
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect writeoff amount", new BigDecimal(10.0), payment.getWriteOffAmt());
+			Assert.assertEquals("Incorrect writeoff amount", new BigDecimal("10.0"), payment.getWriteOffAmt());
 
 			// Test over/under completion
-			payment.setPayAmt(new BigDecimal(60.0));
+			payment.setPayAmt(new BigDecimal("60.0"));
 			payment.setIsOverUnderPayment(true);
 			saveRecord(payment);
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", new BigDecimal(-10.0), payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.valueOf(-10.0), payment.getOverUnderAmt());
 
-			Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal(60.0), payment.getPayAmt());
+			Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal("60.0"), payment.getPayAmt());
 
 			// Test currency change
 			payment.setC_Currency_ID(currencyCHF.getRepoId());
@@ -247,24 +248,24 @@ public class PaymentBLTest
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
+			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal("120.0").compareTo(payment.getPayAmt()));
 
 			paymentBL.updateAmounts(payment, null, /* creditMemoAdjusted */false); // B==D
 
-			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
+			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal("120.0").compareTo(payment.getPayAmt()));
 
-			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
-			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal("2.0"));
+			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal("0.5"));
 
 			// Called manually because we can't test properly with "creditMemoAdjusted" true
 			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
 
-			Assert.assertTrue("Incorrect payment amount in CHF", new BigDecimal(120.0).compareTo(payment.getPayAmt()) == 0);
+			Assert.assertTrue("Incorrect payment amount in CHF", new BigDecimal("120.0").compareTo(payment.getPayAmt()) == 0);
 
 			payment.setC_Invoice_ID(0);
 			payment.setC_Order_ID(order.getC_Order_ID());
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
-			payment.setPayAmt(new BigDecimal(30.0));
+			payment.setPayAmt(new BigDecimal("30.0"));
 			saveRecord(payment);
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
@@ -277,7 +278,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void exceptionTest()
+		public void noCurrencyConversionDefined()
 		{
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
 			payment.setAD_Org_ID(1);
@@ -293,12 +294,11 @@ public class PaymentBLTest
 			saveRecord(invoice);
 			saveRecord(payment);
 
-			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(0.0));
-			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.0));
+			//currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(0.0));
+			//currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.0));
 
 			assertThatThrownBy(() -> paymentBL.updateAmounts(payment, null, false))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessage("NoCurrencyConversion");
+					.isInstanceOf(NoCurrencyRateFoundException.class);
 		}
 	}
 
@@ -510,7 +510,9 @@ public class PaymentBLTest
 
 		@SuppressWarnings("ConstantConditions")
 		@NonNull
-		protected I_C_DocType createDocType(@NonNull final String baseType, @Nullable final String subType)
+		protected I_C_DocType createDocType(
+				@NonNull final String baseType,
+				@Nullable final String subType)
 		{
 			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 			docType.setDocBaseType(baseType);
@@ -575,12 +577,6 @@ public class PaymentBLTest
 			final de.metas.adempiere.model.I_C_Order salesOrder = createSalesOrder(null, salesOrderDocType, null);
 
 			Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
-		}
-
-		@Test
-		void canNotAllocate_NullOrder()
-		{
-				Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(null));
 		}
 
 		@SuppressWarnings("ConstantConditions")

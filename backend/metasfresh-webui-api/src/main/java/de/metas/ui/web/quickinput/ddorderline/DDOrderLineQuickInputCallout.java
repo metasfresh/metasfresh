@@ -30,6 +30,7 @@ import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
 import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Component;
@@ -79,12 +80,14 @@ public class DDOrderLineQuickInputCallout
 	{
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID(), ddOrder.getC_BPartner_Location_ID());
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(ddOrder.getDateOrdered());
-
+		final ClientId clientId = ClientId.ofRepoId(ddOrder.getAD_Client_ID());
+		
 		final DefaultPackingItemCriteria defaultPackingItemCriteria = DefaultPackingItemCriteria
 				.builder()
 				.productId(productId)
 				.bPartnerLocationId(bpartnerLocationId)
 				.date(date)
+				.clientId(clientId)
 				.build();
 
 		return packingItemProductFieldHelper.getDefaultPackingMaterial(defaultPackingItemCriteria).orElse(null);

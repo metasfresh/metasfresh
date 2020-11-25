@@ -1,13 +1,9 @@
 package org.adempiere.process;
 
-import java.time.LocalDate;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.CreateSalesOrderAndBOMsFromQuotationCommand;
@@ -15,10 +11,17 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 /*
  * #%L
@@ -46,6 +49,7 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 {
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final Optional<AdWindowId> orderWindowId = RecordZoomWindowFinder.findAdWindowId(I_C_Order.Table_Name);
 
 	@Param(parameterName = "C_DocType_ID")
 	private int salesOrderDocTypeRepoId;
@@ -120,8 +124,9 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 
 		getResult().setRecordToOpen(
 				TableRecordReference.of(salesOrder),
-				(String)null, // adWindowId
-				OpenTarget.SingleDocument);
+				orderWindowId.get().getRepoId(), // adWindowId
+				OpenTarget.SingleDocument,
+				ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB);
 
 		return MSG_OK;
 	}

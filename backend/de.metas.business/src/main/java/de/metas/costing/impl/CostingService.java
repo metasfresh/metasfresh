@@ -1,25 +1,9 @@
 package de.metas.costing.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -45,6 +29,8 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.currency.CurrencyConversionContext;
@@ -59,6 +45,20 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -173,7 +173,18 @@ public class CostingService implements ICostingService
 		final CostElement costElement = request.getCostElement();
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
-				.map(handler -> handler.createOrUpdateCost(request))
+				.map(handler -> {
+					try
+					{
+						return handler.createOrUpdateCost(request);
+					}
+					catch (final Exception ex)
+					{
+						throw AdempiereException.wrapIfNeeded(ex)
+								.setParameter("request", request)
+								.appendParametersToMessage();
+					}
+				})
 				.filter(Optional::isPresent)
 				.map(Optional::get);
 	}
@@ -215,7 +226,9 @@ public class CostingService implements ICostingService
 				.forEach(costDetail -> voidAndDelete(costDetail, documentRef));
 	}
 
-	private void voidAndDelete(final CostDetail costDetail, final CostingDocumentRef documentRef)
+	private void voidAndDelete(
+			final CostDetail costDetail,
+			final CostingDocumentRef documentRef)
 	{
 		if (costDetail.isChangingCosts())
 		{
@@ -295,16 +308,22 @@ public class CostingService implements ICostingService
 
 	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
 	{
-		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
+		return request.isAllCostElements()
+				? getAllCostElements(request.getClientId())
+				: ImmutableList.of(request.getCostElement());
+	}
 
-		if (request.isAllCostElements())
-		{
-			return costElementsRepo.getMaterialCostingMethods(request.getClientId());
-		}
-		else
-		{
-			return ImmutableList.of(request.getCostElement());
-		}
+	private List<CostElement> extractCostElements(final MoveCostsRequest request)
+	{
+		return request.isAllCostElements()
+				? getAllCostElements(request.getClientId())
+				: ImmutableList.of(Objects.requireNonNull(request.getCostElement()));
+	}
+
+	private List<CostElement> getAllCostElements(@NonNull final ClientId clientId)
+	{
+		// FIXME: we need to handle manufacturing costs, where we have non-material cost elements!!!
+		return costElementsRepo.getMaterialCostingMethods(clientId);
 	}
 
 	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod)
@@ -318,9 +337,11 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
-	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod, final CostingDocumentRef documentRef)
+	private Set<CostingMethodHandler> getCostingMethodHandlers(
+			final CostingMethod costingMethod,
+			final CostingDocumentRef documentRef)
 	{
-		Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
+		final Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
 		final Set<CostingMethodHandler> costingMethodHandlers = allCostingMethodHandlers
 				.stream()
 				.filter(handler -> isHandledBy(handler, documentRef))
@@ -332,7 +353,9 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
-	private boolean isHandledBy(final CostingMethodHandler handler, final CostingDocumentRef documentRef)
+	private boolean isHandledBy(
+			final CostingMethodHandler handler,
+			final CostingDocumentRef documentRef)
 	{
 		final Set<String> handledTableNames = handler.getHandledTableNames();
 		return handledTableNames.contains(CostingMethodHandler.ANY)
@@ -340,7 +363,10 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final CostingMethod costingMethod, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final CostingMethod costingMethod,
+			final OrderLineId orderLineId)
 	{
 		return getCostingMethodHandlers(costingMethod)
 				.stream()
@@ -414,7 +440,7 @@ public class CostingService implements ICostingService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static final CostDetailCreateRequest toCostDetailCreateRequestFromReversalRequest(
+	private static CostDetailCreateRequest toCostDetailCreateRequestFromReversalRequest(
 			@NonNull final CostDetailReverseRequest reversalRequest,
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostElement costElement)
@@ -437,9 +463,44 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public Optional<CostPrice> getCurrentCostPrice(final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<CostPrice> getCurrentCostPrice(
+			final CostSegment costSegment,
+			final CostingMethod costingMethod)
 	{
 		return currentCostsRepo.getAggregatedCostPriceByCostSegmentAndCostingMethod(costSegment, costingMethod)
 				.map(AggregatedCostPrice::getTotalPrice);
+	}
+
+	@Override
+	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
+	{
+		MoveCostsResult result = null;
+
+		final List<CostElement> costElements = extractCostElements(request);
+		if (costElements.isEmpty())
+		{
+			throw new AdempiereException("No active cost elements found for " + request);
+		}
+
+		for (final CostElement costElement : costElements)
+		{
+			final MoveCostsRequest requestEffective = request.withCostElement(costElement);
+
+			for (final CostingMethodHandler handler : getCostingMethodHandlers(costElement.getCostingMethod(), request.getOutboundDocumentRef()))
+			{
+				final MoveCostsResult partialResult = handler.createMovementCosts(requestEffective);
+
+				result = result != null
+						? result.add(partialResult)
+						: partialResult;
+			}
+		}
+
+		if (result == null)
+		{
+			throw new AdempiereException("No costs for " + request);
+		}
+
+		return result;
 	}
 }

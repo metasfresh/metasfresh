@@ -1,9 +1,14 @@
 package org.adempiere.util.lang;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -29,18 +34,20 @@ import lombok.NonNull;
 
 public final class SynchronizedMutable<T> implements IMutable<T>
 {
-	public static <T> SynchronizedMutable<T> of(final T value)
+	public static <T> SynchronizedMutable<T> of(@Nullable final T value)
 	{
 		return new SynchronizedMutable<>(value);
 	}
 
+	@Nullable
 	private T value;
 
-	private SynchronizedMutable(final T value)
+	private SynchronizedMutable(@Nullable final T value)
 	{
 		this.value = value;
 	}
 
+	@Nullable
 	@Override
 	public synchronized T getValue()
 	{
@@ -48,11 +55,12 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 	}
 
 	@Override
-	public synchronized void setValue(final T value)
+	public synchronized void setValue(@Nullable final T value)
 	{
 		this.value = value;
 	}
 
+	@Nullable
 	public synchronized T setValueAndReturnPrevious(final T value)
 	{
 		final T previousValue = this.value;
@@ -78,6 +86,7 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 		return this.value;
 	}
 
+	@Nullable
 	public synchronized T computeIfNotNull(@NonNull final UnaryOperator<T> remappingFunction)
 	{
 		if (value != null)
@@ -86,6 +95,39 @@ public final class SynchronizedMutable<T> implements IMutable<T>
 		}
 
 		return this.value;
+	}
+
+	@Value
+	@Builder
+	public static class OldAndNewValues<T>
+	{
+		T oldValue;
+		T newValue;
+
+		public boolean isValueChanged()
+		{
+			return !Objects.equals(oldValue, newValue);
+		}
+	}
+
+	public synchronized OldAndNewValues<T> computeIfNotNullReturningOldAndNew(@NonNull final UnaryOperator<T> remappingFunction)
+	{
+		if (value != null)
+		{
+			final T oldValue = this.value;
+			this.value = remappingFunction.apply(oldValue);
+			return OldAndNewValues.<T>builder()
+					.oldValue(oldValue)
+					.newValue(this.value)
+					.build();
+		}
+		else
+		{
+			return OldAndNewValues.<T>builder()
+					.oldValue(this.value)
+					.newValue(this.value)
+					.build();
+		}
 	}
 
 }

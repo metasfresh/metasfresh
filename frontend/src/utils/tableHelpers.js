@@ -49,7 +49,7 @@ export const containerPropTypes = {
 
   // action creators
   collapseTableRow: PropTypes.func.isRequired,
-  deselectTableItems: PropTypes.func.isRequired,
+  deselectTableRows: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
   updateTableSelection: PropTypes.func.isRequired,
 };
@@ -62,6 +62,60 @@ export const componentPropTypes = {
   onSelectAll: PropTypes.func.isRequired,
   onDeselectAll: PropTypes.func.isRequired,
   onDeselect: PropTypes.func.isRequired,
+};
+
+// TableRow props
+export const tableRowPropTypes = {
+  lastPage: PropTypes.string,
+  cols: PropTypes.array.isRequired,
+  onClick: PropTypes.func.isRequired,
+  item: PropTypes.object.isRequired,
+  dataKey: PropTypes.string.isRequired,
+  handleSelect: PropTypes.func,
+  onDoubleClick: PropTypes.func,
+  indentSupported: PropTypes.bool,
+  collapsible: PropTypes.bool,
+  collapsed: PropTypes.bool,
+  processed: PropTypes.bool,
+  notSaved: PropTypes.bool,
+  isSelected: PropTypes.bool,
+  odd: PropTypes.number,
+  caption: PropTypes.string,
+  changeListenOnTrue: PropTypes.func,
+  onRowCollapse: PropTypes.func,
+  handleRightClick: PropTypes.func,
+  fieldsByName: PropTypes.object,
+  indent: PropTypes.array,
+  rowId: PropTypes.string,
+  onItemChange: PropTypes.func,
+  supportOpenRecord: PropTypes.bool,
+  changeListenOnFalse: PropTypes.func,
+  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  mainTable: PropTypes.bool,
+  newRow: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  entity: PropTypes.string,
+  colspan: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+  // TODO: ^^ We cannot allow having a prop which is sometimes bool and sometimes string
+  viewId: PropTypes.string,
+  docId: PropTypes.string,
+  windowId: PropTypes.string,
+  lastChild: PropTypes.bool,
+  includedDocuments: PropTypes.array,
+  contextType: PropTypes.any,
+  focusOnFieldName: PropTypes.string,
+  modalVisible: PropTypes.bool,
+  isGerman: PropTypes.bool,
+  keyProperty: PropTypes.string,
+  page: PropTypes.number,
+  activeSort: PropTypes.bool,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table
+  hasComments: PropTypes.bool,
+  handleFocusAction: PropTypes.func,
+  tableId: PropTypes.string,
+  updatePropertyValue: PropTypes.func,
+  onFastInlineEdit: PropTypes.func,
 };
 
 /**
@@ -382,7 +436,7 @@ export function prepareWidgetData(item, cells) {
  * @method getWidgetData
  * @summary prepare data for the widget
  *
- * @param {object} cells
+ * @param {object} cells - row's `fieldsByName` that hold the field value/type
  * @param {object} item - widget data object
  * @param {boolean} isEditable - flag if cell is editable
  * @param {boolean} supportfieldEdit - flag if selected cell can be editable
@@ -418,4 +472,111 @@ export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
   }
 
   return [{}];
+}
+
+/**
+ * @method getTdValue
+ * @summary Get the content of the table divider based on the widgetData provided
+ *
+ * @param {array} widgetData
+ * @param {object} item
+ * @param {bool} isEdited
+ * @param {bool} isGerman
+ */
+export function getTdValue({ widgetData, item, isEdited, isGerman }) {
+  return !isEdited
+    ? fieldValueToString({
+        fieldValue: widgetData[0].value,
+        fieldType: item.widgetType,
+        precision: widgetData[0].precision,
+        isGerman,
+      })
+    : null;
+}
+
+/**
+ * @method getDescription
+ * @summary Get the description based on the widgetData and table divider value provided
+ *
+ * @param {array} widgetData
+ * @param {string|null} tdValue
+ */
+export function getDescription({ widgetData, tdValue }) {
+  return widgetData[0].value && widgetData[0].value.description
+    ? widgetData[0].value.description
+    : tdValue;
+}
+
+/**
+ * @method getTdTitle
+ * @summary Get the table divider title based on item content and provided description
+ *
+ * @param {object} item
+ * @param {string} desciption
+ */
+export function getTdTitle({ item, description }) {
+  return item.widgetType === 'YesNo' ||
+    item.widgetType === 'Switch' ||
+    item.widgetType === 'Color'
+    ? ''
+    : description;
+}
+
+/**
+ * @method checkIfDateField
+ * @summary check if it's a date field or not
+ *
+ * @param {object} item
+ */
+export function checkIfDateField({ item }) {
+  return DATE_FIELD_FORMATS[item.widgetType]
+    ? getDateFormat(item.widgetType)
+    : false;
+}
+
+/**
+ * @method nestedSelect
+ * @summary Recursive fn to get row and it's descendants
+ *
+ * @param {array} elem - row element
+ */
+export function nestedSelect(elem) {
+  let res = [];
+
+  elem &&
+    elem.map((item) => {
+      res = res.concat([item.id]);
+
+      if (item.includedDocuments) {
+        res = res.concat(nestedSelect(item.includedDocuments));
+      }
+    });
+
+  return res;
+}
+
+/**
+ * @method getTooltipWidget
+ * @summary check if cell has a tooltip and selects it's data if needed
+ *
+ * @param {object} item - row element
+ * @param {array} widgetData
+ */
+export function getTooltipWidget(item, widgetData) {
+  let tooltipData = null;
+  let tooltipWidget =
+    item.fields && item.widgetType === 'Lookup'
+      ? item.fields.find((field, idx) => {
+          if (field.type === 'Tooltip') {
+            tooltipData = widgetData[idx];
+
+            if (tooltipData && tooltipData.value) {
+              return field;
+            }
+          }
+          return false;
+        })
+      : null;
+
+  return { tooltipData, tooltipWidget };
 }

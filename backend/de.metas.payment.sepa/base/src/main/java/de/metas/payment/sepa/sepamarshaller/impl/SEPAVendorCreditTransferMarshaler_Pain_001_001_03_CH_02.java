@@ -743,12 +743,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		splitStreetAndNumber(bpBankAccount.getA_Street(), pstlAdr);
 
 		pstlAdr.setPstCd(getFirstNonEmpty(
-				() -> bpBankAccount.getA_Zip(),
-				() -> pstlAdr.getPstCd()));
+				bpBankAccount::getA_Zip,
+				pstlAdr::getPstCd));
 
 		pstlAdr.setTwnNm(getFirstNonEmpty(
-				() -> bpBankAccount.getA_City(),
-				() -> pstlAdr.getTwnNm()));
+				bpBankAccount::getA_City,
+				pstlAdr::getTwnNm));
 
 		// Note: don't use the bankAccount's A_Country, because we need an ISO-3166 in this field
 
@@ -820,8 +820,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 * for IBANs that start with "CH" or "LI", this method extracts the swizz Banking code and returns it. If the given <code>iban</code> is <code>null</code>, emtpy of not "CH"/"LI", it returns
 	 * <code>null</code>.
 	 *
-	 * @param iban
-	 * @return
 	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a> for what it does (it's simple).
 	 */
 	private String extractBCFromIban(
@@ -850,9 +848,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 	/**
 	 * Returns true if the given IBAN is supposed to contain a swizz bank code (BC). This can be assumes if the given IBAN (stripped from spaces) starts with either "CH" or "LI".
-	 *
-	 * @param iban
-	 * @return
 	 */
 	private boolean isSwizzIBAN(final String iban)
 	{

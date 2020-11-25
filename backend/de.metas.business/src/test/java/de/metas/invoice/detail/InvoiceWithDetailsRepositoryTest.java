@@ -28,9 +28,6 @@ import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-
-import static org.assertj.core.api.Assertions.*;
-
 import org.compiere.model.I_C_Invoice_Detail;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +36,9 @@ import org.junit.jupiter.api.Test;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class InvoiceWithDetailsRepositoryTest
 {

@@ -1,12 +1,12 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.function.Supplier;
-
 import de.metas.handlingunits.HuId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -42,6 +42,7 @@ public class HUEditorRowAttributesSupplier implements Supplier<HUEditorRowAttrib
 	HUEditorRowAttributesProvider provider;
 
 	@Override
+	@NonNull
 	public HUEditorRowAttributes get()
 	{
 		return provider.getAttributes(

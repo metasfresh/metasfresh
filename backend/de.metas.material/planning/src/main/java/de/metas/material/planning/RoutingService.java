@@ -42,16 +42,6 @@ public interface RoutingService
 	public WorkingTime estimateWorkingTimePerOneUnit(PPRoutingActivity activity);
 
 	/**
-	 * Estimate Activity Working Time for given qty.
-	 * Please not that SetupTime or any other times are not considered.
-	 *
-	 * @param activity activity
-	 * @param qty qty required
-	 * @return working time
-	 */
-	public WorkingTime estimateWorkingTime(PPRoutingActivity activity, BigDecimal qty);
-
-	/**
 	 * Calculate node duration for 1 item, AD_Workflow.DurationUnit UOM will be used
 	 *
 	 * @param activity operation
@@ -69,7 +59,6 @@ public interface RoutingService
 	/**
 	 * Return node base value in resource UOM (e.g. duration)
 	 *
-	 * @param resourceId resource
 	 * @param activity
 	 * @return value (e.g. duration)
 	 */

@@ -18,6 +18,8 @@ import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -71,10 +73,11 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 	private final String internalName;
 
 	@Getter
-	private ClosableMode closableMode;
-
+	private final ClosableMode closableMode;
 	@Getter
-	private CaptionMode captionMode;
+	private final CaptionMode captionMode;
+	@Getter
+	@Nullable private final String uiStyle;
 
 	@Getter
 	private final List<DocumentLayoutColumnDescriptor> columns;
@@ -86,6 +89,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		internalName = builder.internalName;
 		closableMode = builder.closableMode;
 		captionMode = builder.captionMode;
+		uiStyle = builder.uiStyle;
 		columns = ImmutableList.copyOf(builder.buildColumns());
 	}
 
@@ -122,6 +126,8 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		private ITranslatableString caption = TranslatableStrings.empty();
 		private ITranslatableString description = TranslatableStrings.empty();
 		private String internalName;
+		@Nullable
+		private String uiStyle;
 		private final List<DocumentLayoutColumnDescriptor.Builder> columnsBuilders = new ArrayList<>();
 
 		@Getter
@@ -191,6 +197,12 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		public Builder setInternalName(final String internalName)
 		{
 			this.internalName = internalName;
+			return this;
+		}
+
+		public Builder setUIStyle(@Nullable final String uiStyle)
+		{
+			this.uiStyle = uiStyle;
 			return this;
 		}
 

@@ -2,7 +2,7 @@ package de.metas.payment.esr.model;
 
 
 /** Generated Interface for ESR_ImportLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_ESR_ImportLine 
@@ -14,13 +14,6 @@ public interface I_ESR_ImportLine
     /** AD_Table_ID=540410 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Buchungsdatum.
@@ -71,8 +64,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_AccountNo = "AccountNo";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -85,7 +78,7 @@ public interface I_ESR_ImportLine
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -95,7 +88,7 @@ public interface I_ESR_ImportLine
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -107,8 +100,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Betrag.
-	 * Betrag in einer definierten Währung
+	 * Set Amount.
+	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -117,8 +110,8 @@ public interface I_ESR_ImportLine
 	public void setAmount (java.math.BigDecimal Amount);
 
 	/**
-	 * Get Betrag.
-	 * Betrag in einer definierten Währung
+	 * Get Amount.
+	 * Amount in a defined currency
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -157,7 +150,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_BPartner_Value = "BPartner_Value";
 
 	/**
-	 * Set Bankauszug.
+	 * Set Bank Statement.
 	 * Bank Statement of account
 	 *
 	 * <br>Type: Search
@@ -167,7 +160,7 @@ public interface I_ESR_ImportLine
 	public void setC_BankStatement_ID (int C_BankStatement_ID);
 
 	/**
-	 * Get Bankauszug.
+	 * Get Bank Statement.
 	 * Bank Statement of account
 	 *
 	 * <br>Type: Search
@@ -180,8 +173,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_BankStatement_ID = "C_BankStatement_ID";
 
 	/**
-	 * Set Auszugs-Position.
-	 * Position auf einem Bankauszug zu dieser Bank
+	 * Set Statement Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -190,8 +182,7 @@ public interface I_ESR_ImportLine
 	public void setC_BankStatementLine_ID (int C_BankStatementLine_ID);
 
 	/**
-	 * Get Auszugs-Position.
-	 * Position auf einem Bankauszug zu dieser Bank
+	 * Get Statement Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -203,7 +194,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_BankStatementLine_ID = "C_BankStatementLine_ID";
 
 	/**
-	 * Set Bankstatementline Reference.
+	 * Set Bank Statement Line Reference.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -212,7 +203,7 @@ public interface I_ESR_ImportLine
 	public void setC_BankStatementLine_Ref_ID (int C_BankStatementLine_Ref_ID);
 
 	/**
-	 * Get Bankstatementline Reference.
+	 * Get Bank Statement Line Reference.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -226,8 +217,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_BankStatementLine_Ref_ID = "C_BankStatementLine_Ref_ID";
 
 	/**
-	 * Set Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -236,8 +227,8 @@ public interface I_ESR_ImportLine
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
-	 * Get Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -245,18 +236,11 @@ public interface I_ESR_ImportLine
 	 */
 	public int getC_BP_BankAccount_ID();
 
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
-
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
-
-    /** Column definition for C_BP_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BP_BankAccount>(I_ESR_ImportLine.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
     /** Column name C_BP_BankAccount_ID */
     public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -265,8 +249,7 @@ public interface I_ESR_ImportLine
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -278,7 +261,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Rechnung.
+	 * Set Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
@@ -288,7 +271,7 @@ public interface I_ESR_ImportLine
 	public void setC_Invoice_ID (int C_Invoice_ID);
 
 	/**
-	 * Get Rechnung.
+	 * Get Invoice.
 	 * Invoice Identifier
 	 *
 	 * <br>Type: Search
@@ -307,7 +290,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Zahlung.
+	 * Set Payment.
 	 * Payment identifier
 	 *
 	 * <br>Type: Search
@@ -317,7 +300,7 @@ public interface I_ESR_ImportLine
 	public void setC_Payment_ID (int C_Payment_ID);
 
 	/**
-	 * Get Zahlung.
+	 * Get Payment.
 	 * Payment identifier
 	 *
 	 * <br>Type: Search
@@ -326,12 +309,6 @@ public interface I_ESR_ImportLine
 	 */
 	public int getC_Payment_ID();
 
-	public org.compiere.model.I_C_Payment getC_Payment();
-
-	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
-
-    /** Column definition for C_Payment_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_Payment>(I_ESR_ImportLine.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
@@ -359,8 +336,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_ReferenceNo_ID = "C_ReferenceNo_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -374,8 +351,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -387,7 +364,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -396,7 +373,7 @@ public interface I_ESR_ImportLine
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -704,7 +681,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_ESRPostParticipantNumber = "ESRPostParticipantNumber";
 
 	/**
-	 * Set ESR Referenznummer (Rechnung).
+	 * Set ESR Referenznummer.
 	 * Referenznummer der jeweiligen Rechnung
 	 *
 	 * <br>Type: String
@@ -714,7 +691,7 @@ public interface I_ESR_ImportLine
 	public void setESRReferenceNumber (java.lang.String ESRReferenceNumber);
 
 	/**
-	 * Get ESR Referenznummer (Rechnung).
+	 * Get ESR Referenznummer.
 	 * Referenznummer der jeweiligen Rechnung
 	 *
 	 * <br>Type: String
@@ -752,7 +729,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_ESRTrxType = "ESRTrxType";
 
 	/**
-	 * Set Import-Fehler.
+	 * Set Error Message.
 	 * Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
 	 *
 	 * <br>Type: String
@@ -762,7 +739,7 @@ public interface I_ESR_ImportLine
 	public void setImportErrorMsg (java.lang.String ImportErrorMsg);
 
 	/**
-	 * Get Import-Fehler.
+	 * Get Error Message.
 	 * Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
 	 *
 	 * <br>Type: String
@@ -777,8 +754,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_ImportErrorMsg = "ImportErrorMsg";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -787,8 +764,8 @@ public interface I_ESR_ImportLine
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -827,8 +804,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_IsManual = "IsManual";
 
 	/**
-	 * Set Gültig.
-	 * Element ist gültig
+	 * Set Is Valid.
+	 * The element is valid
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -837,8 +814,8 @@ public interface I_ESR_ImportLine
 	public void setIsValid (boolean IsValid);
 
 	/**
-	 * Get Gültig.
-	 * Element ist gültig
+	 * Get Is Valid.
+	 * The element is valid
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -852,8 +829,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_IsValid = "IsValid";
 
 	/**
-	 * Set Position.
-	 * Zeile Nr.
+	 * Set Line.
+	 * Line No
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -862,8 +839,8 @@ public interface I_ESR_ImportLine
 	public void setLineNo (int LineNo);
 
 	/**
-	 * Get Position.
-	 * Zeile Nr.
+	 * Get Line.
+	 * Line No
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -903,7 +880,6 @@ public interface I_ESR_ImportLine
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -913,7 +889,6 @@ public interface I_ESR_ImportLine
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -948,8 +923,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_PaymentDate = "PaymentDate";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -958,8 +932,7 @@ public interface I_ESR_ImportLine
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -996,8 +969,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_SektionNo = "SektionNo";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1011,8 +984,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

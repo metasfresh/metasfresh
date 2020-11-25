@@ -5,17 +5,17 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_MovementLine;
 
 import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.AggregatedCostAmount;
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
-import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -72,80 +72,55 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		return movementLine.getM_LocatorTo_ID();
 	}
 
-	public final AggregatedCostAmount getCreateInboundCosts(final AcctSchema as)
+	@Value
+	@Builder
+	private static class MovementLineCostAmounts
 	{
-		if (isReversalLine())
-		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
-					.date(getDateAcct())
-					.build());
-		}
-		else
-		{
-			final AggregatedCostAmount outboundCostResult = getCreateOutboundCosts(as);
-			final AggregatedCostAmount inboundCostResult = outboundCostResult.getCostElements()
-					.stream()
-					.map(costElement -> createInboundCostDetailCreateRequest(as.getId(), costElement, outboundCostResult.getCostAmountForCostElement(costElement).negate()))
-					.map(services::createCostDetail)
-					.reduce(AggregatedCostAmount::merge)
-					.orElse(null);
-
-			return inboundCostResult;
-		}
+		final AggregatedCostAmount outboundCosts;
+		final AggregatedCostAmount inboundCosts;
 	}
 
-	public final AggregatedCostAmount getCreateOutboundCosts(final AcctSchema as)
+	public final MoveCostsResult getCreateCosts(@NonNull final AcctSchema as)
 	{
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
+			final AggregatedCostAmount outboundCosts = services.createReversalCostDetails(CostDetailReverseRequest.builder()
 					.acctSchemaId(as.getId())
 					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
 					.date(getDateAcct())
 					.build());
+
+			final AggregatedCostAmount inboundCosts = services.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(as.getId())
+					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
+					.date(getDateAcct())
+					.build());
+
+			return MoveCostsResult.builder()
+					.outboundCosts(outboundCosts)
+					.inboundCosts(inboundCosts)
+					.build();
 		}
 		else
 		{
-			return services.createCostDetail(createOutboundCostDetailCreateRequest(as));
+			return services.moveCosts(MoveCostsRequest.builder()
+					.acctSchemaId(as.getId())
+					.clientId(getClientId())
+					.date(getDateAcct())
+					// .costElement(null) // all cost elements
+					.productId(getProductId())
+					.attributeSetInstanceId(getAttributeSetInstanceId())
+					.qtyToMove(getQty())
+					//
+					.outboundOrgId(getFromOrgId())
+					.outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
+					//
+					.inboundOrgId(getToOrgId())
+					.inboundDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
+					//
+					.build());
 		}
 	}
-
-	private CostDetailCreateRequest createOutboundCostDetailCreateRequest(final AcctSchema as)
-	{
-		return CostDetailCreateRequest.builder()
-				.acctSchemaId(as.getId())
-				.clientId(getClientId())
-				.orgId(getFromOrgId())
-				.productId(getProductId())
-				.attributeSetInstanceId(getAttributeSetInstanceId())
-				.documentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
-				.qty(getQty().negate())
-				.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
-				.date(getDateAcct())
-				.build();
-	}
-
-	private CostDetailCreateRequest createInboundCostDetailCreateRequest(
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CostElement costElement,
-			@NonNull final CostAmount amt)
-	{
-		return CostDetailCreateRequest.builder()
-				.acctSchemaId(acctSchemaId)
-				.clientId(getClientId())
-				.orgId(getToOrgId())
-				.productId(getProductId())
-				.attributeSetInstanceId(getAttributeSetInstanceId())
-				.documentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
-				.qty(getQty())
-				.amt(amt)
-				.costElement(costElement)
-				.date(getDateAcct())
-				.build();
-	}
-
 }

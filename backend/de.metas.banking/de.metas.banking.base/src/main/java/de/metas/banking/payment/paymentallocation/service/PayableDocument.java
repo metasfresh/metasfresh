@@ -1,27 +1,50 @@
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.banking.payment.paymentallocation.service;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 /**
  * Mutable invoice allocation candidate.
@@ -39,9 +62,6 @@ public class PayableDocument
 	{
 		Invoice, PrepaidOrder,
 	}
-
-	@Getter
-	private final OrgId orgId;
 
 	@Getter
 	private final InvoiceId invoiceId;
@@ -71,11 +91,19 @@ public class PayableDocument
 	private AllocationAmounts amountsAllocated;
 
 	@Getter
-	private InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+	private final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+
+	@Getter
+	private final ClientAndOrgId clientAndOrgId;
+
+	@Getter
+	private final LocalDate date;
+
+	@Getter
+	private final CurrencyConversionTypeId currencyConversionTypeId;
 
 	@Builder
 	private PayableDocument(
-			@NonNull final OrgId orgId,
 			@Nullable final InvoiceId invoiceId,
 			@Nullable final OrderId prepayOrderId,
 			@Nullable final BPartnerId bpartnerId,
@@ -84,9 +112,14 @@ public class PayableDocument
 			final boolean creditMemo,
 			//
 			@NonNull final Money openAmt,
-			@NonNull AllocationAmounts amountsToAllocate,
-			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
+			@NonNull final AllocationAmounts amountsToAllocate,
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final LocalDate date,
+			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
+	)
 	{
+		final OrgId orgId = clientAndOrgId.getOrgId();
 		if (!orgId.isRegular())
 		{
 			throw new AdempiereException("Transactional organization expected: " + orgId);
@@ -116,7 +149,6 @@ public class PayableDocument
 			throw new AdempiereException("Invoice or Prepay Order shall be set");
 		}
 
-		this.orgId = orgId;
 		this.bpartnerId = bpartnerId;
 		this.documentNo = documentNo;
 		this.soTrx = soTrx;
@@ -132,6 +164,10 @@ public class PayableDocument
 		this.amountsAllocated = amountsToAllocate.toZero();
 
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
+
+		this.clientAndOrgId = clientAndOrgId;
+		this.date = date;
+		this.currencyConversionTypeId = currencyConversionTypeId;
 	}
 
 	public CurrencyId getCurrencyId()

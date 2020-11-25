@@ -11,16 +11,16 @@ import java.util.Properties;
 public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 857829481L;
+	private static final long serialVersionUID = -241043055L;
 
     /** Standard Constructor */
-    public X_C_UOM (Properties ctx, int C_UOM_ID, String trxName)
+    public X_C_UOM (final Properties ctx, final int C_UOM_ID, final String trxName)
     {
       super (ctx, C_UOM_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_UOM (Properties ctx, ResultSet rs, String trxName)
+    public X_C_UOM (final Properties ctx, final ResultSet rs, final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,18 +28,18 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -49,9 +49,9 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	}
 
 	@Override
-	public void setCostingPrecision (int CostingPrecision)
+	public void setCostingPrecision (final int CostingPrecision)
 	{
-		set_Value (COLUMNNAME_CostingPrecision, Integer.valueOf(CostingPrecision));
+		set_Value (COLUMNNAME_CostingPrecision, CostingPrecision);
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -69,13 +69,13 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setHF134_IsImputedUnit (boolean HF134_IsImputedUnit)
+	public void setHF134_IsImputedUnit (final boolean HF134_IsImputedUnit)
 	{
-		set_Value (COLUMNNAME_HF134_IsImputedUnit, Boolean.valueOf(HF134_IsImputedUnit));
+		set_Value (COLUMNNAME_HF134_IsImputedUnit, HF134_IsImputedUnit);
 	}
 
 	@Override
@@ -85,9 +85,9 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	}
 
 	@Override
-	public void setIsDefault (boolean IsDefault)
+	public void setIsDefault (final boolean IsDefault)
 	{
-		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+		set_Value (COLUMNNAME_IsDefault, IsDefault);
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	}
 
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -105,13 +105,13 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	@Override
 	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setStdPrecision (int StdPrecision)
+	public void setStdPrecision (final int StdPrecision)
 	{
-		set_Value (COLUMNNAME_StdPrecision, Integer.valueOf(StdPrecision));
+		set_Value (COLUMNNAME_StdPrecision, StdPrecision);
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	}
 
 	@Override
-	public void setUOMSymbol (java.lang.String UOMSymbol)
+	public void setUOMSymbol (final java.lang.String UOMSymbol)
 	{
 		set_Value (COLUMNNAME_UOMSymbol, UOMSymbol);
 	}
@@ -129,7 +129,7 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	@Override
 	public java.lang.String getUOMSymbol() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UOMSymbol);
+		return get_ValueAsString(COLUMNNAME_UOMSymbol);
 	}
 
 	/** 
@@ -184,20 +184,19 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	/** Zeit (Erfassungsgenauigkeit) = TD */
 	public static final String UOMTYPE_ZeitErfassungsgenauigkeit = "TD";
 	@Override
-	public void setUOMType (java.lang.String UOMType)
+	public void setUOMType (final java.lang.String UOMType)
 	{
-
 		set_Value (COLUMNNAME_UOMType, UOMType);
 	}
 
 	@Override
 	public java.lang.String getUOMType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UOMType);
+		return get_ValueAsString(COLUMNNAME_UOMType);
 	}
 
 	@Override
-	public void setX12DE355 (java.lang.String X12DE355)
+	public void setX12DE355 (final java.lang.String X12DE355)
 	{
 		set_Value (COLUMNNAME_X12DE355, X12DE355);
 	}
@@ -205,6 +204,6 @@ public class X_C_UOM extends org.compiere.model.PO implements I_C_UOM, org.compi
 	@Override
 	public java.lang.String getX12DE355() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_X12DE355);
+		return get_ValueAsString(COLUMNNAME_X12DE355);
 	}
 }

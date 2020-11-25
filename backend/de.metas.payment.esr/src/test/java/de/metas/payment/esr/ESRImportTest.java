@@ -3,30 +3,10 @@
  */
 package de.metas.payment.esr;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -43,7 +23,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
@@ -74,6 +53,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
+import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
@@ -128,7 +108,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid(), is(true));
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
@@ -137,12 +117,16 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getMatchErrorMsg(), nullValue());
 
 		// check invoice
-		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
+		refresh(getC_Invoice(), true);
 		assertThat(getC_Invoice().isPaid(), is(true));
 
 		// check the created payments
-		final I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
-		InterfaceWrapperHelper.refresh(esrLine1Payment, true);
+
+		final PaymentId esrImportLine1PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = esrImportLine1PaymentId == null ? null
+				: paymentDAO.getById(esrImportLine1PaymentId);
+
+		refresh(esrLine1Payment, true);
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(esrImportLine.getC_Invoice_ID()));
 		assertThat(esrLine1Payment.isAllocated(), is(true));
@@ -173,37 +157,34 @@ public class ESRImportTest extends ESRTestBase
 		// org
 		final I_AD_Org org = getAD_Org();
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue("123456");
 		partner.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
-		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
-		account.setIsEsrAccount(true);
-		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
-		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
-		account.setESR_RenderedAccountNo("01-067789-3");
-		InterfaceWrapperHelper.save(account);
-
-		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		final I_C_BP_BankAccount account = createBankAccount(true,
+				Env.getAD_Org_ID(getCtx()),
+				Env.getAD_User_ID(getCtx()),
+				"01-067789-3",
+				currencyEUR);
+
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal("25");
-		final I_C_Invoice inv = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv = newInstance(I_C_Invoice.class, contextProvider);
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setGrandTotal(invoiceGrandTotal);
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -213,29 +194,29 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setProcessed(true);
 		inv.setIsSOTrx(true);
-		InterfaceWrapperHelper.save(inv);
+		save(inv);
 
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
 		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 
 		// reference no
-		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
 		referenceNo.setReferenceNo(completeRef);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
-		InterfaceWrapperHelper.save(referenceNo);
+		save(referenceNo);
 
 		// reference nodoc
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(inv.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
-		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
 		final I_ESR_Import esrImport = createImport();
 
-		esrImport.setC_BP_BankAccount(account);
-		InterfaceWrapperHelper.save(esrImport);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		save(esrImport);
 
 		// register listeners
 		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
@@ -270,15 +251,20 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine1.getC_Invoice().isPaid(), is(true));
 
 		// check the created payments - first payment
-		final I_C_Payment esrLine1Payment1 = esrImportLine1.getC_Payment();
-		InterfaceWrapperHelper.refresh(esrLine1Payment1, true);
+		final PaymentId esrImportLine1PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine1.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment1 = paymentDAO.getById(esrImportLine1PaymentId);
+
+		refresh(esrLine1Payment1, true);
 		assertThat(esrLine1Payment1.getPayAmt(), comparesEqualTo(new BigDecimal(25)));
 		assertThat(esrLine1Payment1.getC_Invoice_ID(), is(esrImportLine1.getC_Invoice_ID()));
 		assertThat(esrLine1Payment1.isAllocated(), is(true));
 
 		// check the created payments - second payment
-		final I_C_Payment esrLine1Payment2 = esrImportLine2.getC_Payment();
-		InterfaceWrapperHelper.refresh(esrLine1Payment2, true);
+
+		final PaymentId esrImportLine2PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine2.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment2 = paymentDAO.getById(esrImportLine2PaymentId);
+
+		refresh(esrLine1Payment2, true);
 		assertThat(esrLine1Payment2.getPayAmt(), comparesEqualTo(new BigDecimal(25)));
 		assertThat(esrLine1Payment2.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment2.isAllocated(), is(false));
@@ -324,7 +310,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid(), is(false));
 		assertThat(esrImportLine.isProcessed(), is(false));
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
@@ -335,7 +321,10 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 		// check the created payments
-		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
+
+		final PaymentId esrImportLine1PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = paymentDAO.getById(esrImportLine1PaymentId);
+
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
@@ -345,7 +334,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(allocLines.size(), is(1));
 
 		// create new invoice
-		final I_C_Invoice inv1 = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv1 = newInstance(I_C_Invoice.class, contextProvider);
 		inv1.setGrandTotal(new BigDecimal(50));
 		inv1.setC_BPartner_ID(esrImportLine.getC_BPartner_ID());
 		inv1.setDocumentNo("654322");
@@ -354,37 +343,39 @@ public class ESRImportTest extends ESRTestBase
 		inv1.setC_Currency_ID(esrImportLine.getC_Invoice().getC_Currency_ID());
 		inv1.setIsSOTrx(true);
 		inv1.setProcessed(true);
-		InterfaceWrapperHelper.save(inv1);
+		save(inv1);
 
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 
 		// assign the new invoice to the esrline
-		InterfaceWrapperHelper.refresh(esrLine1Payment, true);
+		refresh(esrLine1Payment, true);
 		esrImportLine.setC_Invoice_ID(inv1.getC_Invoice_ID());
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 		Services.get(IESRImportBL.class).setInvoice(esrImportLine, inv1);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		esrImportBL.complete(esrImport, "Complete");
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid(), is(false));
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice));
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 
 		// check if invoice is paid
-		InterfaceWrapperHelper.refresh(inv1, true);
+		refresh(inv1, true);
 		assertThat(inv1.isPaid(), is(true));
 
 		// check the created payments
 		// reload payment
-		esrLine1Payment = esrImportLine.getC_Payment();
-		InterfaceWrapperHelper.refresh(esrLine1Payment, true);
-		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
-		assertThat(esrLine1Payment.isAllocated(), is(true));
+		final PaymentId esrImportLine1CreatedPaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1CreatedPayment = paymentDAO.getById(esrImportLine1CreatedPaymentId);
+
+		refresh(esrLine1CreatedPayment, true);
+		assertThat(esrLine1CreatedPayment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(esrLine1CreatedPayment.isAllocated(), is(true));
 		// shall be one allocation
 		allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(1));
@@ -428,14 +419,17 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid(), is(true));
 		assertThat(esrImportLine.isProcessed(), is(false));
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
 
 		// check the created payments
-		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = paymentDAO.getById(esrImportLinePaymentId);
+
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(25)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
@@ -443,15 +437,15 @@ public class ESRImportTest extends ESRTestBase
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount, new WriteoffESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		esrImportBL.complete(esrImport, "Complete");
 
-		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
+		refresh(getC_Invoice(), true);
 		assertThat(getC_Invoice().isPaid(), is(true));
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getC_Invoice_ID(), is(getC_Invoice().getC_Invoice_ID()));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount));
@@ -459,11 +453,14 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(25)));
 
 		// check the created payments
-		esrLine1Payment = esrImportLine.getC_Payment();
-		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(25)));
-		assertThat(esrLine1Payment.getC_Invoice_ID(), is(getC_Invoice().getC_Invoice_ID()));
-		assertThat(esrLine1Payment.isAllocated(), is(true));
-		assertThat(esrLine1Payment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(-25)));
+
+		final PaymentId esrImportLineCreatedPaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1CreatedPayment = paymentDAO.getById(esrImportLineCreatedPaymentId);
+
+		assertThat(esrLine1CreatedPayment.getPayAmt(), comparesEqualTo(new BigDecimal(25)));
+		assertThat(esrLine1CreatedPayment.getC_Invoice_ID(), is(getC_Invoice().getC_Invoice_ID()));
+		assertThat(esrLine1CreatedPayment.isAllocated(), is(true));
+		assertThat(esrLine1CreatedPayment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(-25)));
 
 		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines.size(), is(2));
@@ -473,7 +470,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(allocLines.get(1).getC_Invoice_ID(), notNullValue());
 
 		// esr processed
-		InterfaceWrapperHelper.refresh(esrImport, true);
+		refresh(esrImport, true);
 		assertThat(esrImport.isProcessed(), is(true));
 	}
 
@@ -509,14 +506,17 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid(), is(true));
 		assertThat(esrImportLine.isProcessed(), is(false));
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
 
 		// check the created payments
-		final I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
+
+		final PaymentId esrImportLineCreatedPaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = paymentDAO.getById(esrImportLineCreatedPaymentId);
+
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(70)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
@@ -524,22 +524,22 @@ public class ESRImportTest extends ESRTestBase
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, new WithNextInvoiceESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		esrImportBL.complete(esrImport, "Complete");
 
 		// check the invoice
-		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
+		refresh(getC_Invoice(), true);
 		assertThat(getC_Invoice().isPaid(), is(true));
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice));
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
 
 		// check the created payments
-		InterfaceWrapperHelper.refresh(esrLine1Payment, true);
+		refresh(esrLine1Payment, true);
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(getC_Invoice().getC_Invoice_ID()));
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(70)));
 		assertThat(esrLine1Payment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(20)));
@@ -552,7 +552,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		// esr processed
-		InterfaceWrapperHelper.refresh(esrImport, true);
+		refresh(esrImport, true);
 		assertThat(esrImport.isProcessed(), is(true));
 	}
 
@@ -587,15 +587,19 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.process(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid(), is(true));
 		assertThat(esrImportLine.isProcessed(), is(false));
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
-		assertThat(esrImportLine.getC_Payment(), notNullValue());
+
+		final PaymentId esrImportLineCreatedPaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = esrImportLineCreatedPaymentId == null ? null
+				: paymentDAO.getById(esrImportLineCreatedPaymentId);
+
+		assertThat(esrLine1Payment, notNullValue());
 
 		// check the created payments
-		final I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(70)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(0));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
@@ -607,27 +611,27 @@ public class ESRImportTest extends ESRTestBase
 		// Register payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, new MoneyTransferedBackESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		// create doc type credit memo - need for B action
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		esrImportBL.complete(esrImport, "Complete");
 
 		// check the invoice
-		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
+		refresh(getC_Invoice(), true);
 		assertThat(getC_Invoice().isPaid(), is(true));
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner));
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
 
 		// check the created payments
-		InterfaceWrapperHelper.refresh(esrLine1Payment, true);
+		refresh(esrLine1Payment, true);
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(70)));
 		assertThat(esrLine1Payment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(20)));
 		assertThat(esrLine1Payment.isAllocated(), is(true));
@@ -643,7 +647,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(allocLines.get(1).getAmount(), comparesEqualTo(new BigDecimal(20)));
 
 		// esr processed
-		InterfaceWrapperHelper.refresh(esrImport, true);
+		refresh(esrImport, true);
 		assertThat(esrImport.isProcessed(), is(true));
 	}
 
@@ -662,34 +666,29 @@ public class ESRImportTest extends ESRTestBase
 	public void testReferenceCompletelyNotFound_T06()
 	{
 		// org
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
-		// currency
-		CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
-		account.setIsEsrAccount(true);
-		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
-		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
-		account.setESR_RenderedAccountNo("01-067789-3");
-		account.setC_Currency_ID(currencyEUR.getRepoId());
-		InterfaceWrapperHelper.save(account);
+		final I_C_BP_BankAccount account = createBankAccount(true,
+				Env.getAD_Org_ID(getCtx()),
+				Env.getAD_User_ID(getCtx()),
+				"01-067789-3",
+				currencyEUR);
 
 		// esr line
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final String esrLineText = "01201067789300000001060000000000000000400000050009072  030014040914041014041100001006800000000000090                          ";
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
-		esrImport.setC_BP_BankAccount(account);
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
-		InterfaceWrapperHelper.save(esrImport);
+		save(esrImport);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
@@ -700,7 +699,7 @@ public class ESRImportTest extends ESRTestBase
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setESR_IsManual_ReferenceNo(true); // is by default on 'Y' in db
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		// check import line
 		assertThat(esrImportLine.isValid(), is(false));
@@ -711,22 +710,26 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 		// check the created payments
-		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
+
 		assertThat(esrLine1Payment, nullValue());
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue("123456");
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal("50");
-		final I_C_Invoice inv = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv = newInstance(I_C_Invoice.class, contextProvider);
 		inv.setGrandTotal(invoiceGrandTotal);
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
 		inv.setDocumentNo("654321");
@@ -735,33 +738,37 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsSOTrx(true);
 		inv.setProcessed(true);
-		InterfaceWrapperHelper.save(inv);
+		save(inv);
 
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
 
 		esrImportBL.setInvoice(esrImportLine, inv);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 		lines.add(esrImportLine);
 
 		esrImportBL.complete(esrImport, "Complete");
 
 		// check invoice
-		InterfaceWrapperHelper.refresh(inv, true);
+		refresh(inv, true);
 		assertThat(inv.isPaid(), is(true));
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice));
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 
 		// check the created payments
-		esrLine1Payment = esrImportLine.getC_Payment();
-		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
-		assertThat(esrLine1Payment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(0)));
-		assertThat(esrLine1Payment.isAllocated(), is(true));
+
+		final PaymentId esrImportLineCreatedPaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1CreatedPayment = esrImportLineCreatedPaymentId == null ? null
+				: paymentDAO.getById(esrImportLineCreatedPaymentId);
+
+		assertThat(esrLine1CreatedPayment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(esrLine1CreatedPayment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(0)));
+		assertThat(esrLine1CreatedPayment.isAllocated(), is(true));
 
 		// allocations
 		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
@@ -769,7 +776,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		// esr processed
-		InterfaceWrapperHelper.refresh(esrImport, true);
+		refresh(esrImport, true);
 		assertThat(esrImport.isProcessed(), is(true));
 	}
 
@@ -788,19 +795,19 @@ public class ESRImportTest extends ESRTestBase
 	public void testInvoiceReferenceNotFound_T07()
 	{
 		// org
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue("123456");
 		partner.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
 		// esr line
 		final String esrLineText = "01201067789300000001060012345600000000400000050009072  030014040914041014041100001006800000000000090                          ";
@@ -811,17 +818,17 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(currencyEUR.getRepoId());
-		InterfaceWrapperHelper.save(account);
+		save(account);
 
-		esrImport.setC_BP_BankAccount(account);
-		InterfaceWrapperHelper.save(esrImport);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		save(esrImport);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
@@ -831,14 +838,14 @@ public class ESRImportTest extends ESRTestBase
 
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		esrImportLine.setC_BPartner_ID(partner.getC_BPartner_ID());
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 		lines.add(esrImportLine);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		esrImportLine.setESR_IsManual_ReferenceNo(true); // is by default on 'Y' in db
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		// check import line
 		assertThat(esrImportLine.isValid()).isFalse();
@@ -850,18 +857,22 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getMatchErrorMsg()).isNotNull();
 
 		// check the created payments
-		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
+
 		assertThat(esrLine1Payment.getPayAmt(), is(esrImportLine.getAmount()));
 		assertThat(esrLine1Payment.isAllocated(), is(false));
 
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal("50");
-		final I_C_Invoice inv = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv = newInstance(I_C_Invoice.class, contextProvider);
 		inv.setGrandTotal(invoiceGrandTotal);
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
 		inv.setDocumentNo("654321");
@@ -870,38 +881,42 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsSOTrx(true);
 		inv.setProcessed(true);
-		InterfaceWrapperHelper.save(inv);
+		save(inv);
 
 		// Register payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
 		esrImportBL.setInvoice(esrImportLine, inv);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		esrImportBL.complete(esrImport, "Complete");
 
 		// check invoice
-		InterfaceWrapperHelper.refresh(inv, true);
+		refresh(inv, true);
 		assertThat(inv.isPaid(), is(true));
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice));
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 
 		// check the created payments
-		esrLine1Payment = esrImportLine.getC_Payment();
-		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
-		assertThat(esrLine1Payment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(0)));
-		assertThat(esrLine1Payment.isAllocated(), is(true));
+
+		final PaymentId esrImportLineCreatedPaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1CreatedPayment = esrImportLineCreatedPaymentId == null ? null
+				: paymentDAO.getById(esrImportLineCreatedPaymentId);
+
+		assertThat(esrLine1CreatedPayment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(esrLine1CreatedPayment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(0)));
+		assertThat(esrLine1CreatedPayment.isAllocated(), is(true));
 
 		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(inv);
 		assertThat(allocLines.size(), is(1));
 		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(50)));
 
 		// esr processed
-		InterfaceWrapperHelper.refresh(esrImport, true);
+		refresh(esrImport, true);
 		assertThat(esrImport.isProcessed(), is(true));
 	}
 
@@ -920,19 +935,19 @@ public class ESRImportTest extends ESRTestBase
 	{
 
 		// org
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue("123456");
 		partner.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
 		// esr line
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
@@ -944,17 +959,17 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(currencyEUR.getRepoId());
-		InterfaceWrapperHelper.save(account);
+		save(account);
 
-		esrImport.setC_BP_BankAccount(account);
-		InterfaceWrapperHelper.save(esrImport);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		save(esrImport);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
@@ -963,14 +978,14 @@ public class ESRImportTest extends ESRTestBase
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setC_BPartner_ID(partner.getC_BPartner_ID());
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 		lines.add(esrImportLine);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		esrImportLine.setESR_IsManual_ReferenceNo(true); // is by default on 'Y' in db
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		// check import line
 		assertThat(esrImportLine.isValid(), is(false));
@@ -981,31 +996,37 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 		// check the created payments
-		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1Payment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
 		assertThat(esrLine1Payment.getPayAmt(), is(esrImportLine.getAmount()));
 
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		esrImportBL.complete(esrImport, "Complete");
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income));
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 
 		// check the created payments
-		esrLine1Payment = esrImportLine.getC_Payment();
-		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
-		assertThat(esrLine1Payment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(0)));
-		assertThat(esrLine1Payment.isAutoAllocateAvailableAmt(), is(false));
-		assertThat(esrLine1Payment.isAllocated(), is(false));
+		final PaymentId esrImportLineCreatedPaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLine1CreatedPayment = esrImportLineCreatedPaymentId == null ? null
+				: paymentDAO.getById(esrImportLineCreatedPaymentId);
+
+		assertThat(esrLine1CreatedPayment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
+		assertThat(esrLine1CreatedPayment.getOverUnderAmt(), comparesEqualTo(new BigDecimal(0)));
+		assertThat(esrLine1CreatedPayment.isAutoAllocateAvailableAmt(), is(false));
+		assertThat(esrLine1CreatedPayment.isAllocated(), is(false));
 
 		// esr processed
-		InterfaceWrapperHelper.refresh(esrImport, true);
+		refresh(esrImport, true);
 		assertThat(esrImport.isProcessed(), is(true));
 	}
 
@@ -1108,44 +1129,41 @@ public class ESRImportTest extends ESRTestBase
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
 		// org
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// second org
-		final I_AD_Org org1 = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org1 = newInstance(I_AD_Org.class, contextProvider);
 		org1.setValue("105");
-		InterfaceWrapperHelper.save(org1);
+		save(org1);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue(partnerValue);
 		partner.setAD_Org_ID(org1.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
-		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
-		account.setIsEsrAccount(true);
-		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
-		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
-		account.setESR_RenderedAccountNo(ESR_Rendered_AccountNo);
-		InterfaceWrapperHelper.save(account);
-
-		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		final I_C_BP_BankAccount account = createBankAccount(true,
+				Env.getAD_Org_ID(getCtx()),
+				Env.getAD_User_ID(getCtx()),
+				ESR_Rendered_AccountNo,
+				currencyEUR);
+
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal(grandTotal);
-		final I_C_Invoice inv = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv = newInstance(I_C_Invoice.class, contextProvider);
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setGrandTotal(invoiceGrandTotal);
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -1155,30 +1173,28 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsPaid(false);
 		inv.setIsSOTrx(true);
-		InterfaceWrapperHelper.save(inv);
+		save(inv);
 
 		// reference no
-		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
 		referenceNo.setReferenceNo(refNo);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
-		InterfaceWrapperHelper.save(referenceNo);
+		save(referenceNo);
 
 		// reference nodoc
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(inv.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
-		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
 		// esr line
 		final I_ESR_Import esrImport = createImport();
-		esrImport.setC_BP_BankAccount(account);
-		esrImport.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImport);
 
-		esrImport.setC_BP_BankAccount(account);
-		InterfaceWrapperHelper.save(esrImport);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
+		save(esrImport);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
@@ -1187,7 +1203,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid()).isFalse();
 		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getC_Invoice_ID()).isLessThanOrEqualTo(0);
@@ -1223,44 +1239,41 @@ public class ESRImportTest extends ESRTestBase
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
 		// org
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// second org
-		final I_AD_Org org1 = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org1 = newInstance(I_AD_Org.class, contextProvider);
 		org1.setValue("105");
-		InterfaceWrapperHelper.save(org1);
+		save(org1);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue(partnerValue);
 		partner.setAD_Org_ID(org1.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
-		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
-		account.setIsEsrAccount(true);
-		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
-		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
-		account.setESR_RenderedAccountNo(ESR_Rendered_AccountNo);
-		InterfaceWrapperHelper.save(account);
-
-		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		final I_C_BP_BankAccount account = createBankAccount(true,
+				Env.getAD_Org_ID(getCtx()),
+				Env.getAD_User_ID(getCtx()),
+				ESR_Rendered_AccountNo,
+				currencyEUR);
+
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal(grandTotal);
-		final I_C_Invoice inv = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv = newInstance(I_C_Invoice.class, contextProvider);
 		inv.setAD_Org_ID(org1.getAD_Org_ID());
 		inv.setGrandTotal(invoiceGrandTotal);
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -1270,32 +1283,30 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsPaid(false);
 		inv.setIsSOTrx(true);
-		InterfaceWrapperHelper.save(inv);
+		save(inv);
 
 		// reference no
-		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
 		referenceNo.setReferenceNo(refNo);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setAD_Org_ID(org1.getAD_Org_ID());
 		referenceNo.setIsManual(true);
-		InterfaceWrapperHelper.save(referenceNo);
+		save(referenceNo);
 
 		// reference nodoc
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(inv.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		esrReferenceNumberDocument.setAD_Org_ID(org1.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
 		// esr line
 		final I_ESR_Import esrImport = createImport();
-		esrImport.setC_BP_BankAccount(account);
-		esrImport.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImport);
 
-		esrImport.setC_BP_BankAccount(account);
-		InterfaceWrapperHelper.save(esrImport);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
+		save(esrImport);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
@@ -1304,7 +1315,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		assertThat(esrImportLine.isValid()).isFalse();
 		assertThat(esrImportLine.isProcessed()).isFalse();
 		assertThat(esrImportLine.getC_Invoice_ID()).isLessThanOrEqualTo(0);
@@ -1339,46 +1350,46 @@ public class ESRImportTest extends ESRTestBase
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
 		// org
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// second org
-		final I_AD_Org org1 = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org1 = newInstance(I_AD_Org.class, contextProvider);
 		org1.setValue("105");
-		InterfaceWrapperHelper.save(org1);
+		save(org1);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue(partnerValue);
 		partner.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
 		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo(ESR_Rendered_AccountNo);
 		account.setC_Currency_ID(999);
-		InterfaceWrapperHelper.save(account);
+		save(account);
 
 		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal(grandTotal);
-		final I_C_Invoice inv = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv = newInstance(I_C_Invoice.class, contextProvider);
 		inv.setAD_Org_ID(org1.getAD_Org_ID());
 		inv.setGrandTotal(invoiceGrandTotal);
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -1387,33 +1398,30 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsPaid(false);
 		inv.setIsSOTrx(true);
-		InterfaceWrapperHelper.save(inv);
+		save(inv);
 
 		// reference no
-		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
 		referenceNo.setReferenceNo(refNo);
 		referenceNo.setAD_Org_ID(org1.getAD_Org_ID());
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
-		InterfaceWrapperHelper.save(referenceNo);
+		save(referenceNo);
 
 		// reference nodoc
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(inv.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		esrReferenceNumberDocument.setAD_Org_ID(org1.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
 		// esr line
 		final I_ESR_Import esrImport = createImport();
-		esrImport.setC_BP_BankAccount(account);
-		esrImport.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImport);
 
-		esrImport.setC_BP_BankAccount(account);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImport);
+		save(esrImport);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
 
@@ -1422,13 +1430,18 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// check import line
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		final String msg = "Invalid (errmsg=" + esrImportLine.getMatchErrorMsg() + ")";
 		assertThat(msg, esrImportLine.isValid(), is(false));
 		assertThat(msg, esrImportLine.isProcessed(), is(false));
 		assertThat(msg, esrImportLine.getC_Invoice(), nullValue());
 		assertThat(msg, esrImportLine.getC_BPartner_ID(), is(partner.getC_BPartner_ID()));
-		assertThat(msg, esrImportLine.getC_Payment(), notNullValue());
+
+		final PaymentId esrImportLinePaymentId = PaymentId.ofRepoIdOrNull(esrImportLine.getC_Payment_ID());
+		final I_C_Payment esrLinePayment = esrImportLinePaymentId == null ? null
+				: paymentDAO.getById(esrImportLinePaymentId);
+
+		assertThat(msg, esrLinePayment, notNullValue());
 		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
 		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
@@ -1449,41 +1462,41 @@ public class ESRImportTest extends ESRTestBase
 	public void testMultipleLines_NoAction()
 	{
 		// org
-		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, contextProvider);
+		final I_AD_Org org = newInstance(I_AD_Org.class, contextProvider);
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue("123456");
 		partner.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
 		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(999);
-		InterfaceWrapperHelper.save(account);
+		save(account);
 
 		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal("25");
-		final I_C_Invoice inv = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		final I_C_Invoice inv = newInstance(I_C_Invoice.class, contextProvider);
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setGrandTotal(invoiceGrandTotal);
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -1494,32 +1507,33 @@ public class ESRImportTest extends ESRTestBase
 		inv.setProcessed(true);
 		inv.setIsSOTrx(true);
 		inv.setIsPaid(true);
-		InterfaceWrapperHelper.save(inv);
+		save(inv);
 
 		// allocation for invoice
-		final I_C_AllocationLine allocAmt = InterfaceWrapperHelper.newInstance(I_C_AllocationLine.class, contextProvider);
+		final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);
 		allocAmt.setAmount(new BigDecimal(25));
 		allocAmt.setC_Invoice_ID(inv.getC_Invoice_ID());
-		InterfaceWrapperHelper.save(allocAmt);
+		save(allocAmt);
 
 		// reference no
-		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
 		referenceNo.setReferenceNo("300000001060012345600654321");
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
-		InterfaceWrapperHelper.save(referenceNo);
+		save(referenceNo);
 
 		// reference nodoc
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(inv.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
-		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
 		final I_ESR_Import esrImport = createImport();
-		esrImport.setC_BP_BankAccount(account);
+
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImport);
+		save(esrImport);
 
 		// esr line
 		// first line
@@ -1535,28 +1549,28 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 
 		// check first import line
-		InterfaceWrapperHelper.refresh(esrImportLine1, true);
+		refresh(esrImportLine1, true);
 		assertThat(esrImportLine1.isProcessed(), is(false));
 		assertThat(esrImportLine1.getESR_Payment_Action(), nullValue());
 
 		// check second import line
-		InterfaceWrapperHelper.refresh(esrImportLine2, true);
+		refresh(esrImportLine2, true);
 		assertThat(esrImportLine2.isProcessed(), is(false));
 		assertThat(esrImportLine2.getESR_Payment_Action(), nullValue());
 
 		// check third import line
-		InterfaceWrapperHelper.refresh(esrImportLine3, true);
+		refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(false));
 		assertThat(esrImportLine3.getESR_Payment_Action(), nullValue());
 
 		// Registrate payment action handlers.
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 		esrImportLine3.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
-		InterfaceWrapperHelper.save(esrImportLine3);
+		save(esrImportLine3);
 		// esrBL.process(esrImport, trxRunConfig);
 		esrImportBL.complete(esrImport, "test");
 
-		InterfaceWrapperHelper.refresh(esrImportLine3, true);
+		refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(true));
 	}
 

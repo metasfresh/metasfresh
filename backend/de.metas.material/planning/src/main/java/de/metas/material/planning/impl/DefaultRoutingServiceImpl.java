@@ -38,8 +38,12 @@ import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 
 /**
  * Default Routing Service Implementation
@@ -51,11 +55,11 @@ public class DefaultRoutingServiceImpl implements RoutingService
 	@Override
 	public WorkingTime estimateWorkingTimePerOneUnit(final PPRoutingActivity activity)
 	{
-		return estimateWorkingTime(activity, BigDecimal.ONE);
+		final I_C_UOM uomEach = Services.get(IUOMDAO.class).getEachUOM();
+		return estimateWorkingTime(activity, Quantity.of(1, uomEach));
 	}
 
-	@Override
-	public WorkingTime estimateWorkingTime(@NonNull final PPRoutingActivity activity, @NonNull final BigDecimal qty)
+	private WorkingTime estimateWorkingTime(@NonNull final PPRoutingActivity activity, @NonNull final Quantity qty)
 	{
 		return WorkingTime.builder()
 				.durationPerOneUnit(activity.getDurationPerOneUnit())

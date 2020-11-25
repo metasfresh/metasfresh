@@ -22,12 +22,12 @@ package de.metas.handlingunits.client.terminal.pporder.model;
  * #L%
  */
 
-
 import java.awt.Color;
-import java.math.BigDecimal;
 
+import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.compiere.model.I_M_AttributeSetInstance;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.eevolution.api.BOMComponentType;
@@ -63,8 +63,8 @@ import de.metas.util.StringUtils;
 	private final String id;
 	private final String productName;
 	private final boolean coProduct;
-	private final BigDecimal qtyRequired;
-	private final BigDecimal qtyDelivered;
+	private final Quantity qtyRequired;
+	private final Quantity qtyDelivered;
 	private final KeyNamePair value;
 	private final I_PP_Order_BOMLine orderBOMLine;
 
@@ -85,11 +85,12 @@ import de.metas.util.StringUtils;
 		productName = orderBOMLine.getM_Product().getName();
 
 		final int orderBOMLineId = orderBOMLine.getPP_Order_BOMLine_ID();
-		value = new KeyNamePair(orderBOMLineId, productName);
+		value = KeyNamePair.of(orderBOMLineId, productName);
 
 		coProduct = PPOrderUtil.isCoOrByProduct(orderBOMLine);
-		qtyRequired = orderBOMLine.getQtyRequiered();
-		qtyDelivered = orderBOMLine.getQtyDelivered();
+		final OrderBOMLineQuantities bomQuantities = Services.get(IPPOrderBOMBL.class).getQuantities(orderBOMLine);
+		qtyRequired = bomQuantities.getQtyRequired();
+		qtyDelivered = bomQuantities.getQtyIssuedOrReceived();
 
 		final Quantity qtyOpen;
 		if (coProduct)
@@ -140,16 +141,16 @@ import de.metas.util.StringUtils;
 
 		//
 		// Line: Qty Delivered / Qty Required
-		BigDecimal qtyDeliveredToDisplay = qtyDelivered;
-		BigDecimal qtyRequiredToDisplay = qtyRequired;
+		Quantity qtyDeliveredToDisplay = qtyDelivered;
+		Quantity qtyRequiredToDisplay = qtyRequired;
 		if (coProduct)
 		{
 			qtyDeliveredToDisplay = ppOrderBOMLineBL.adjustCoProductQty(qtyDelivered);
 			qtyRequiredToDisplay = ppOrderBOMLineBL.adjustCoProductQty(qtyRequired);
 		}
-		qtyDeliveredToDisplay = NumberUtils.stripTrailingDecimalZeros(qtyDeliveredToDisplay);
-		qtyRequiredToDisplay = NumberUtils.stripTrailingDecimalZeros(qtyRequiredToDisplay);
-		sb.append(qtyDeliveredToDisplay).append("/").append(qtyRequiredToDisplay);
+		sb.append(NumberUtils.stripTrailingDecimalZeros(qtyDeliveredToDisplay.toBigDecimal()))
+				.append("/")
+				.append(NumberUtils.stripTrailingDecimalZeros(qtyRequiredToDisplay.toBigDecimal()));
 
 		//
 		// Line(s): Product Name
@@ -177,12 +178,13 @@ import de.metas.util.StringUtils;
 
 		//
 		// Line: ASI (08074)
-		if (orderBOMLine.getM_AttributeSetInstance_ID() > 0)
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderBOMLine.getM_AttributeSetInstance_ID());
+		if (asiId.isRegular())
 		{
-			final I_M_AttributeSetInstance asi = orderBOMLine.getM_AttributeSetInstance();
+			final String asiDescription = Services.get(IAttributeSetInstanceBL.class).getASIDescriptionById(asiId);
 
 			sb.append("<br>");
-			sb.append(StringUtils.maskHTML(asi == null ? "" : asi.getDescription()));
+			sb.append(StringUtils.maskHTML(asiDescription));
 		}
 
 		//
@@ -209,7 +211,6 @@ import de.metas.util.StringUtils;
 	}
 
 	/**
-	 *
 	 * @return status color
 	 */
 	public Color getColor()

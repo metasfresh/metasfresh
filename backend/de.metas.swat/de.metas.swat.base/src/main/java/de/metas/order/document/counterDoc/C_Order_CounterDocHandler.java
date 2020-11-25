@@ -18,6 +18,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.spi.CounterDocumentHandlerAdapter;
@@ -52,6 +53,8 @@ import de.metas.util.Services;
 @Immutable
 public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 {
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	private static final transient Logger logger = LogManager.getLogger(C_Order_CounterDocHandler.class);
 
 	public static final ICounterDocHandler instance = new C_Order_CounterDocHandler();
@@ -93,7 +96,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		counterOrder.setAD_Org_ID(counterOrg.getAD_Org_ID()); // 09700
 
 		//
-		Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, counterDocType.getC_DocType_ID());
+		orderBL.setDocTypeTargetIdAndUpdateDescription(counterOrder, DocTypeId.ofRepoId(counterDocType.getC_DocType_ID()));
 		counterOrder.setIsSOTrx(counterDocType.isSOTrx());
 
 		// the new order needs to figure out the pricing by itself

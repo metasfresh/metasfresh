@@ -11,6 +11,8 @@ import lombok.NonNull;
 
 public class PPOrderCostBL implements IPPOrderCostBL
 {
+	private final IPPOrderCostDAO orderCostsRepo = Services.get(IPPOrderCostDAO.class);
+
 	@Override
 	public void createOrderCosts(@NonNull final I_PP_Order ppOrder)
 	{
@@ -19,23 +21,26 @@ public class PPOrderCostBL implements IPPOrderCostBL
 	}
 
 	@Override
+	public boolean hasPPOrderCosts(@NonNull final PPOrderId orderId)
+	{
+		return orderCostsRepo.hasPPOrderCosts(orderId);
+	}
+
+	@Override
 	public PPOrderCosts getByOrderId(@NonNull final PPOrderId orderId)
 	{
-		final IPPOrderCostDAO orderCostsRepo = Services.get(IPPOrderCostDAO.class);
 		return orderCostsRepo.getByOrderId(orderId);
 	}
 
 	@Override
 	public void deleteByOrderId(@NonNull final PPOrderId orderId)
 	{
-		final IPPOrderCostDAO orderCostsRepo = Services.get(IPPOrderCostDAO.class);
 		orderCostsRepo.deleteByOrderId(orderId);
 	}
 
 	@Override
 	public void save(@NonNull final PPOrderCosts orderCosts)
 	{
-		final IPPOrderCostDAO orderCostsRepo = Services.get(IPPOrderCostDAO.class);
 		orderCostsRepo.save(orderCosts);
 	}
 }

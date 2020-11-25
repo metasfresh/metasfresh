@@ -1,25 +1,6 @@
 package org.eevolution.costing;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IProductBOMBL;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.I_PP_Product_Planning;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
@@ -35,6 +16,9 @@ import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -42,6 +26,23 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.I_PP_Product_Planning;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -72,6 +73,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	//
 	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
 
@@ -123,7 +125,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 		if (productBOMId == null)
 		{
 			createNotice(productId, "@NotFound@ @PP_Product_BOM_ID@");
-			return null;
+			return Optional.empty();
 		}
 
 		final I_PP_Product_BOM bomRecord = productBOMsRepo.getById(productBOMId);
@@ -147,24 +149,31 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 				.collect(ImmutableList.toImmutableList());
 
 		final ProductId productId = ProductId.ofRepoId(bomRecord.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(bomRecord.getC_UOM_ID());
+		final I_C_UOM uom = uomDAO.getById(uomId);
+
 		return BOM.builder()
 				.productId(productId)
+				.qty(Quantity.of(1, uom))
 				.lines(bomLines)
-				.costPrice(getBOMCostPrice(productId))
+				.costPrice(getBOMCostPrice(productId, uomId))
 				.build();
 	}
 
-	private BOMCostPrice getBOMCostPrice(final ProductId productId)
+	private BOMCostPrice getBOMCostPrice(
+			final ProductId productId,
+			final UomId uomId)
 	{
 		final CostSegment costSegment = createCostSegment(productId);
 
 		final List<BOMCostElementPrice> costElementPrices = currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod)
 				.stream()
-				.map(this::toBOMCostElementPrice)
+				.map(BatchProcessBOMCostCalculatorRepository::toBOMCostElementPrice)
 				.collect(ImmutableList.toImmutableList());
 
 		return BOMCostPrice.builder()
 				.productId(productId)
+				.uomId(uomId)
 				.costElementPrices(costElementPrices)
 				.build();
 	}
@@ -188,6 +197,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	{
 		final BOMComponentType componentType = BOMComponentType.ofCode(bomLineRecord.getComponentType());
 		final ProductId productId = ProductId.ofRepoId(bomLineRecord.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(bomLineRecord.getC_UOM_ID());
 		final Percent coProductCostDistributionPercent = componentType.isCoProduct()
 				? productBOMBL.getCoProductCostDistributionPercent(bomLineRecord)
 				: null;
@@ -197,12 +207,14 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 				.componentId(productId)
 				.qty(productBOMBL.getQtyExcludingScrap(bomLineRecord))
 				.scrapPercent(Percent.of(bomLineRecord.getScrap()))
-				.costPrice(getBOMCostPrice(productId))
+				.costPrice(getBOMCostPrice(productId, uomId))
 				.coProductCostDistributionPercent(coProductCostDistributionPercent)
 				.build();
 	}
 
-	private void createNotice(final ProductId productId, final String msg)
+	private void createNotice(
+			final ProductId productId,
+			final String msg)
 	{
 		final ILoggable loggable = Loggables.get();
 		if (Loggables.isNull(loggable))
@@ -238,7 +250,9 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 
 		for (final BOMCostElementPrice elementPrice : bomCostPrice.getElementPrices())
 		{
-			CurrentCost existingCost = existingCostsByRepoId.get(elementPrice.getId());
+			final CurrentCostId currentCostId = elementPrice.getId(CurrentCostId.class);
+
+			CurrentCost existingCost = existingCostsByRepoId.get(currentCostId);
 			if (existingCost == null)
 			{
 				final CostSegmentAndElement costSegmentAndElement = createCostSegment(productId)
@@ -252,7 +266,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 		}
 	}
 
-	private BOMCostElementPrice toBOMCostElementPrice(final CurrentCost currentCost)
+	private static BOMCostElementPrice toBOMCostElementPrice(@NonNull final CurrentCost currentCost)
 	{
 		return BOMCostElementPrice.builder()
 				.id(currentCost.getId())
@@ -262,7 +276,7 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	}
 
 	@Override
-	public void resetComponentsCostPrices(ProductId productId)
+	public void resetComponentsCostPrices(final ProductId productId)
 	{
 		final CostSegment costSegment = createCostSegment(productId);
 		for (final CurrentCost cost : currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod))

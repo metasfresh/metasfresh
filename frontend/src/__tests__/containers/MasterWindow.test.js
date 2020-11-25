@@ -181,12 +181,12 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .get(`/window/${windowType}/${docId}/`)
         .reply(200, dataFixtures.data1);
 
       const wrapper = await mount(
         <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
             <CustomRouter history={history} auth={auth} />
           </ShortcutProvider>
         </Provider>
@@ -232,7 +232,9 @@ describe('MasterWindowContainer', () => {
     }, 20000);
 
     it('removes old and includes new rows on ws event', async (done) => {
-      const initialState = createInitialState({ routing: { ...fixtures.state2.routing } });
+      const initialState = createInitialState({
+        routing: { ...fixtures.state2.routing },
+      });
       const store = createStore(
         rootReducer,
         initialState,
@@ -300,19 +302,17 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/window/${windowType}/${docId}/${tabId}?ids=${rows}`
-        )
+        .get(`/window/${windowType}/${docId}/${tabId}?ids=${rows}`)
         .reply(200, updatedRows);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .get(`/window/${windowType}/${docId}/`)
         .reply(200, dataFixtures.data2);
 
       const wrapper = mount(
         <Provider store={store}>
-          <ShortcutProvider hotkeys={{}} keymap={{}}>
+          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
             <CustomRouter history={localHistory} auth={auth} />
           </ShortcutProvider>
         </Provider>
@@ -419,7 +419,7 @@ describe('MasterWindowContainer', () => {
         .reply(200, docActionFixtures.data1);
 
       let wrapper;
-      // try {
+      try {
         wrapper = mount(
           <Provider store={store}>
             <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
@@ -427,16 +427,16 @@ describe('MasterWindowContainer', () => {
             </ShortcutProvider>
           </Provider>
         );
-      // } catch (e) {
-      //     console.log('e: ', e);
-      // }
+      } catch (e) {
+        console.log('e: ', e);
+      }
 
       await waitForExpect(() => {
-        // try {
+        try {
           wrapper.update();
-        // } catch (e) {
-        //   console.log(e);
-        // }
+        } catch (e) {
+          console.log(e);
+        }
 
         const html = wrapper.html();
         expect(html).toContain('<table');

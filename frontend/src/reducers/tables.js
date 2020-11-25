@@ -99,8 +99,10 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
 
       if (data.rows && data.rows.length) {
+        const selected = [data.rows[0][data.keyProperty]];
         updatedSelected = {
-          selected: [data.rows[0][data.keyProperty]],
+          selected,
+          supportAttribute: setSupportAttribute(selected, data.rows),
         };
       }
 
@@ -261,7 +263,7 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case types.DESELECT_TABLE_ITEMS: {
+    case types.DESELECT_TABLE_ROWS: {
       const { id, selection } = action.payload;
       const rows = original(draftState[id].rows);
 

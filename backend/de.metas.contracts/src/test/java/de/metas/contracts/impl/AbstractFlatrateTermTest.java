@@ -372,7 +372,8 @@ public abstract class AbstractFlatrateTermTest
 		contract.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
 		contract.setC_TaxCategory_ID(taxCategoryId.getRepoId());
 		contract.setIsTaxIncluded(true);
-		contract.setC_OrderLine_Term(orderLine);
+		contract.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
+		contract.setC_Order_Term_ID(orderLine.getC_Order_ID());
 		save(contract);
 		flatrateBL.complete(contract);
 

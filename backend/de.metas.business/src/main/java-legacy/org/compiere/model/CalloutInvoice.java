@@ -494,7 +494,17 @@ public class CalloutInvoice extends CalloutEngine
 		final int orgID = invoiceLine.getAD_Org_ID();
 		log.debug("Org=" + orgID);
 
-		final int warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		final int warehouseID;
+		if (invoice.getM_Warehouse_ID() > 0)
+		{
+			warehouseID = invoice.getM_Warehouse_ID();
+
+		}
+		else
+		{
+			warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		}
+
 		log.debug("Warehouse={}", warehouseID);
 
 		//

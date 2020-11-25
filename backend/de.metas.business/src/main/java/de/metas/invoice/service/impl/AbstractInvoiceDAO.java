@@ -106,6 +106,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
+	public I_C_InvoiceLine retrieveLineById(final InvoiceLineId invoiceLineId)
+	{
+		return load(invoiceLineId, I_C_InvoiceLine.class);
+	}
+
+	@Override
 	public final I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, BPartnerId bpartnerId)
 	{
 		if (bpartnerId == null)
@@ -349,7 +355,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
+	public List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return loadByRepoIdAwares(ImmutableSet.copyOf(invoiceIds), org.compiere.model.I_C_Invoice.class);
 	}

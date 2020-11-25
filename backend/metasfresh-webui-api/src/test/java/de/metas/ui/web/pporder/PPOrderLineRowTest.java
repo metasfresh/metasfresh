@@ -114,7 +114,7 @@ public class PPOrderLineRowTest
 				.includedRows(ImmutableList.of())
 				.packingInfoOrNull(null)
 				.ppOrderBomLine(ppOrderBomLine)
-				.qtyPlan(BigDecimal.TEN)
+				.qtyPlan(Quantity.of(10, uom))
 				.type(PPOrderLineType.BOMLine_Component)
 				.processed(true)
 				.build();

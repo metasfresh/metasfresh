@@ -2,7 +2,7 @@ package de.metas.payment.esr.model;
 
 
 /** Generated Interface for ESR_Import
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_ESR_Import 
@@ -14,16 +14,9 @@ public interface I_ESR_Import
     /** AD_Table_ID=540409 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Anhang.
+	 * Set Attachment.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -32,7 +25,7 @@ public interface I_ESR_Import
 	public void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID);
 
 	/**
-	 * Get Anhang.
+	 * Get Attachment.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -46,8 +39,8 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_AD_AttachmentEntry_ID = "AD_AttachmentEntry_ID";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -60,7 +53,7 @@ public interface I_ESR_Import
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -70,7 +63,7 @@ public interface I_ESR_Import
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -82,8 +75,8 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -92,8 +85,8 @@ public interface I_ESR_Import
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
-	 * Get Bankverbindung.
-	 * Bankverbindung des Geschäftspartners
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -101,18 +94,12 @@ public interface I_ESR_Import
 	 */
 	public int getC_BP_BankAccount_ID();
 
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
-
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
-
-    /** Column definition for C_BP_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_ESR_Import, org.compiere.model.I_C_BP_BankAccount>(I_ESR_Import.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
     /** Column name C_BP_BankAccount_ID */
     public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -126,8 +113,8 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -164,8 +151,7 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_DataType = "DataType";
 
 	/**
-	 * Set Belegdatum.
-	 * Datum des Belegs
+	 * Set Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -174,8 +160,7 @@ public interface I_ESR_Import
 	public void setDateDoc (java.sql.Timestamp DateDoc);
 
 	/**
-	 * Get Belegdatum.
-	 * Datum des Belegs
+	 * Get Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -189,7 +174,7 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -198,7 +183,7 @@ public interface I_ESR_Import
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -235,7 +220,7 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_ESR_Control_Amount = "ESR_Control_Amount";
 
 	/**
-	 * Set Anzahl Transaktionen (kontr.).
+	 * Set Anzahl Transaktionen.
 	 * Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
 	 *
 	 * <br>Type: Quantity
@@ -245,7 +230,7 @@ public interface I_ESR_Import
 	public void setESR_Control_Trx_Qty (java.math.BigDecimal ESR_Control_Trx_Qty);
 
 	/**
-	 * Get Anzahl Transaktionen (kontr.).
+	 * Get Anzahl Transaktionen.
 	 * Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
 	 *
 	 * <br>Type: Quantity
@@ -335,8 +320,8 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_Hash = "Hash";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -345,8 +330,8 @@ public interface I_ESR_Import
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -385,8 +370,33 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_IsReceipt = "IsReceipt";
 
 	/**
-	 * Set GĂĽltig.
-	 * Element ist gĂĽltig
+	 * Set Reconciled.
+	 * Payment is reconciled with bank statement
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReconciled (boolean IsReconciled);
+
+	/**
+	 * Get Reconciled.
+	 * Payment is reconciled with bank statement
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReconciled();
+
+    /** Column definition for IsReconciled */
+    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "IsReconciled", null);
+    /** Column name IsReconciled */
+    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+
+	/**
+	 * Set Is Valid.
+	 * The element is valid
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -395,8 +405,8 @@ public interface I_ESR_Import
 	public void setIsValid (boolean IsValid);
 
 	/**
-	 * Get GĂĽltig.
-	 * Element ist gĂĽltig
+	 * Get Is Valid.
+	 * The element is valid
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -410,8 +420,7 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_IsValid = "IsValid";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -420,8 +429,7 @@ public interface I_ESR_Import
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -460,8 +468,8 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -475,8 +483,8 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

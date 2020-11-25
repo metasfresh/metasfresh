@@ -73,7 +73,6 @@ public interface IHUAndItemsDAO
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
-
 	 * @see IHandlingUnitsDAO#createAggregateHUItem(I_M_HU)
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);

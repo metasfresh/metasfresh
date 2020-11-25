@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
@@ -154,6 +155,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
 
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
+
+	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule schedule);
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 

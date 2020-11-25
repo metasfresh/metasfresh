@@ -16,11 +16,9 @@ export function getData({
   orderBy,
   viewId,
   fetchAdvancedFields,
-  doNotFetchIncludedTabs,
 }) {
   let queryParams = getQueryString({
     advanced: fetchAdvancedFields,
-    noTabs: doNotFetchIncludedTabs,
     orderBy: orderBy,
   });
 
@@ -181,6 +179,11 @@ export function locationSearchRequest({ windowId, viewId }) {
 
 export function locationConfigRequest() {
   return get(`${config.API_URL}/geolocation/config`);
+}
+
+export function headerPropertiesRequest({ windowId, viewId }) {
+  return get(`
+    ${config.API_URL}/documentView/${windowId}/${viewId}/headerProperties`);
 }
 
 export function deleteViewRequest(windowId, viewId, action) {

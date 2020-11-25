@@ -42,7 +42,6 @@ import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingsRequest;
 import de.metas.serviceprovider.timebooking.importer.TimeBookingsImporter;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBooking;
-import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingId;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBookingRepository;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -205,11 +204,6 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 	private void storeFailed(@NonNull final TimeRecord timeRecord, @NonNull final String errorMsg)
 	{
-		final FailedTimeBookingId existingFailedId = failedTimeBookingRepository
-				.getOptionalByExternalIdAndSystem(ExternalSystem.EVERHOUR, timeRecord.getId())
-				.map(FailedTimeBooking::getFailedTimeBookingId)
-				.orElse(null);
-
 		final StringBuilder errorMessage = new StringBuilder(errorMsg);
 
 		String jsonValue = null;
@@ -226,7 +220,6 @@ public class EverhourImporterService implements TimeBookingsImporter
 		}
 
 		final FailedTimeBooking failedTimeBooking = FailedTimeBooking.builder()
-				.failedTimeBookingId(existingFailedId)
 				.jsonValue(jsonValue)
 				.externalId(timeRecord.getId())
 				.externalSystem(ExternalSystem.EVERHOUR)

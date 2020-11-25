@@ -64,6 +64,32 @@ body {
     color: #fff;
 }
 
+html, body{
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+html {
+    overflow: scroll;
+}
+
+body{
+    min-height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+}
+
+#root,
+#root>div,
+.root-children,
+.root-children>div {
+    height: 100%;
+}
+
 .container-fluid {
     padding-left: 3rem;
     padding-right: 3rem;
@@ -718,15 +744,6 @@ body {
     text-transform: uppercase;
 }
 
-.header-super-faded {
-    box-shadow: none;
-    transition: all 0.2s ease;
-}
-
-.header-shadow {
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.24);
-}
-
 .overlay-shadow {
     box-shadow: 0 5px 15px 0 rgba(165, 165, 165, 0.8);
 }
@@ -776,19 +793,28 @@ body {
 }
 
 .notification-number {
-    width: 15px;
-    height: 15px;
     background: $brand-font-color-danger;
     color: #fff;
-    font-size: 8px;
     display: inline-block;
     vertical-align: middle;
     line-height: 16px;
     text-align: center;
     border-radius: 50%;
     position: absolute;
-    top: -5px;
-    right: 10px;
+    top: 0;
+    left: 0;
+
+    &.size-sm {
+        width: 8px;
+        height: 8px;
+        font-size: 6px;
+    }
+
+    &.size-md {
+        width: 15px;
+        height: 15px;
+        font-size: 8px;
+    }
 }
 
 .queried-result {
@@ -948,87 +974,6 @@ body {
     height: 100%;
 }
 
-html, body{
-    padding: 0;
-    margin: 0;
-    height: 100%;
-}
-
-html {
-    overflow: scroll;
-}
-
-body{
-    min-height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: auto;
-}
-
-#root,
-#root>div,
-.root-children,
-.root-children>div {
-    height: 100%;
-}
-
-.sort-menu {
-    width: 100%;
-    line-height: 22px;
-    vertical-align: middle;
-    position: relative;
-}
-
-.sort-menu--sortable {
-    cursor: pointer;
-}
-.sort-menu .sort-ico {
-    position: absolute;
-    right: -12px;
-    cursor: pointer;
-    color: $brand-font-color;
-    opacity: 0;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.sort-menu .sort-ico:not(.rotate-90) {
-    top: 3px;
-}
-
-.sort-menu .th-caption {
-    color: white;
-    vertical-align: middle;
-}
-
-.sort-menu .sort {
-    color: white;
-    opacity: 1;
-}
-
-.sort-menu:hover {
-    .th-caption {
-        color: $brand-font-color;
-        text-decoration: underline;
-    }
-    .sort-ico {
-        color: $brand-font-color;
-    }
-}
-
-th {
-    position: relative;
-}
-.rotate-90 {
-    transform: rotate(180deg);
-}
-
-.sort.rotate-90 {
-    text-align: left;
-}
-
 .pulse-on {
     background: $brand-pulse-effect !important;
     transition: background-color .33s;
@@ -1036,14 +981,6 @@ th {
 
 .pulse-off {
     transition: background-color 1.33s;
-}
-
-td.pulse-on input {
-    background: transparent !important;
-}
-
-td.pulse-off input {
-    background: transparent !important;
 }
 
 .filter-wrapper {

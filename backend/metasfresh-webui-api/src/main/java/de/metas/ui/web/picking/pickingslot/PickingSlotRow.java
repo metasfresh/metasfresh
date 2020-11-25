@@ -1,18 +1,9 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -37,6 +28,13 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -403,6 +401,11 @@ public final class PickingSlotRow implements IViewRow
 	public boolean isTopLevelHU()
 	{
 		return huTopLevel;
+	}
+
+	public boolean isTopLevelTU()
+	{
+		return isTU() && isTopLevelHU();
 	}
 
 	public boolean isLU()

@@ -544,6 +544,13 @@ input:checked + .input-slider:before {
     font-size: 16px;
 }
 
+.input-icon-m-right {
+    margin-right: 1rem;
+}
+.input-icon-m-top-small {
+  margin-top: 0.1rem;
+}
+
 .input-dropdown-container {
     position: relative;
     cursor: pointer;
@@ -885,6 +892,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     z-index: 50;
     margin-top:5px;
     width: 450px;
+}
+
+.attributes-dropup {
+  bottom: 35px;
 }
 
 /* Others */

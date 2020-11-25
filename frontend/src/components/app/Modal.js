@@ -383,6 +383,7 @@ class Modal extends Component {
 
           this.removeModal();
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Modal.handleStart error: ', error);
         } finally {
           if (this.mounted) {
@@ -481,7 +482,7 @@ class Modal extends Component {
       <div className="modal-content-wrapper">
         <div className="panel panel-modal panel-modal-primary">
           <div
-            className={classnames('panel-modal-header', {
+            className={classnames('panel-groups-header', 'panel-modal-header', {
               'header-shadow': scrolled,
             })}
           >

@@ -6,7 +6,7 @@ import currentDevice from 'current-device';
 import { handleCopy, componentPropTypes } from '../../utils/tableHelpers';
 
 import TableHeader from './TableHeader';
-import TableItem from './TableItem';
+import TableRow from './TableRow';
 
 const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
 const isMobileOrTablet =
@@ -24,7 +24,7 @@ export default class Table extends PureComponent {
 
   componentDidMount() {
     this._isMounted = true;
-
+    this.initialPaddingBottom = 100;
     if (this.props.autofocus && this.table) {
       this.table.focus();
     }
@@ -70,6 +70,20 @@ export default class Table extends PureComponent {
 
   setTfootRef = (ref) => {
     this.tfoot = ref;
+  };
+
+  getCurrentRowId = () => {
+    const { keyProperty, selected, rows, collapsedArrayMap } = this.props;
+
+    const array =
+      collapsedArrayMap.length > 0
+        ? collapsedArrayMap.map((item) => item[keyProperty])
+        : rows.map((item) => item[keyProperty]);
+    const currentId = array.findIndex(
+      (x) => x === selected[selected.length - 1]
+    );
+
+    return { currentId, array };
   };
 
   getProductRange = (id) => {
@@ -136,6 +150,11 @@ export default class Table extends PureComponent {
           updateQuickActions && updateQuickActions(id);
           newSelection = [id];
           onSelect(id);
+        } else {
+          let afterDeselect = Array.isArray(selected)
+            ? selected.filter((selItem) => selItem !== id)
+            : id;
+          newSelection = onSelect(afterDeselect);
         }
       }
 
@@ -151,10 +170,9 @@ export default class Table extends PureComponent {
         id: identifier,
         showIncludedView: item.supportIncludedViews,
         forceClose: false,
-        windowId: item.supportIncludedViews
-          ? item.includedView.windowType || item.includedView.windowId
-          : null,
+        windowId: item.supportIncludedViews ? item.includedView.windowId : null,
         viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+        isModal,
       });
     }
   };
@@ -169,14 +187,11 @@ export default class Table extends PureComponent {
 
   handleKeyDown = (e) => {
     const {
-      keyProperty,
       mainTable,
       readonly,
       closeOverlays,
       selected,
-      rows,
       showSelectedIncludedView,
-      collapsedArrayMap,
       handleSelect,
     } = this.props;
     const { listenOnKeys } = this.state;
@@ -200,13 +215,7 @@ export default class Table extends PureComponent {
       case 'ArrowDown': {
         e.preventDefault();
 
-        const array =
-          collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map((item) => item[keyProperty])
-            : rows.map((item) => item[keyProperty]);
-        const currentId = array.findIndex(
-          (x) => x === selected[selected.length - 1]
-        );
+        const { currentId, array } = this.getCurrentRowId();
 
         if (currentId >= array.length - 1) {
           return;
@@ -228,13 +237,7 @@ export default class Table extends PureComponent {
       case 'ArrowUp': {
         e.preventDefault();
 
-        const array =
-          collapsedArrayMap.length > 0
-            ? collapsedArrayMap.map((item) => item[keyProperty])
-            : rows.map((item) => item[keyProperty]);
-        const currentId = array.findIndex(
-          (x) => x === selected[selected.length - 1]
-        );
+        const { currentId, array } = this.getCurrentRowId();
 
         if (currentId <= 0) {
           return;
@@ -267,21 +270,36 @@ export default class Table extends PureComponent {
         break;
       case 'Tab':
         if (mainTable) {
-          e.preventDefault();
-          const focusedElem = document.getElementsByClassName(
-            'js-attributes'
-          )[0];
-          if (focusedElem) {
-            focusedElem.getElementsByTagName('input')[0].focus();
+          if (document.activeElement.nextSibling) {
+            e.preventDefault();
+            document.activeElement.nextSibling.focus();
+          } else {
+            const { currentId, array } = this.getCurrentRowId();
+
+            if (currentId < array.length - 1) {
+              e.preventDefault();
+
+              handleSelect(array[currentId + 1], false, 0);
+
+              const focusedElem = document.getElementsByClassName(
+                'js-attributes'
+              )[0];
+
+              if (focusedElem) {
+                focusedElem.getElementsByTagName('input')[0].focus();
+              }
+            } else {
+              // TODO: How we should handle tabbing when we're out of rows ?
+              // For now we'll just let the browser do the default
+            }
           }
+
           break;
         } else {
           if (e.shiftKey) {
+            e.preventDefault();
             //passing focus over table cells backwards
             this.table.focus();
-          } else {
-            //passing focus over table cells
-            this.tfoot.focus();
           }
         }
         break;
@@ -329,6 +347,10 @@ export default class Table extends PureComponent {
       collapsedParentRows,
       onRightClick,
       rowRefs,
+      handleFocusAction,
+      updatePropertyValue,
+      tableId,
+      onFastInlineEdit,
     } = this.props;
 
     if (!rows.length || !columns.length) {
@@ -347,7 +369,7 @@ export default class Table extends PureComponent {
     }
 
     return renderRows.map((item, i) => (
-      <TableItem
+      <TableRow
         {...item}
         {...{
           page,
@@ -367,6 +389,8 @@ export default class Table extends PureComponent {
           modalVisible,
           isGerman,
           activeSort,
+          updatePropertyValue,
+          tableId,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
@@ -386,11 +410,14 @@ export default class Table extends PureComponent {
           }
         }}
         keyProperty={item[keyProperty]}
+        rowIndex={i}
         rowId={item[keyProperty]}
         tabId={tabId}
         onDoubleClick={this.handleDoubleClick}
+        onFastInlineEdit={onFastInlineEdit}
         onClick={this.handleClick}
         handleRightClick={onRightClick}
+        handleFocusAction={handleFocusAction}
         changeListenOnTrue={this.setListenTrue}
         changeListenOnFalse={this.setListenFalse}
         newRow={i === rows.length - 1 ? newRow : false}
@@ -399,11 +426,13 @@ export default class Table extends PureComponent {
           selected[0] === 'all' ||
           (!selected[0] && focusOnFieldName && i === 0)
         }
+        updateHeight={this.updateHeight}
         handleSelect={onSelect}
         contextType={item.type}
         caption={item.caption ? item.caption : ''}
         colspan={item.colspan}
         notSaved={item.saveStatus && !item.saveStatus.saved}
+        hasComments={item.hasComments}
         onRowCollapse={onRowCollapse}
         onItemChange={onItemChange}
         onCopy={handleCopy}
@@ -432,6 +461,12 @@ export default class Table extends PureComponent {
     return false;
   };
 
+  updateHeight = (heightNew) => {
+    heightNew = heightNew ? heightNew : 0;
+    this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
+      heightNew}px`;
+  };
+
   render() {
     const {
       columns,
@@ -455,6 +490,7 @@ export default class Table extends PureComponent {
 
     return (
       <div
+        ref={(ref) => (this.tableContainer = ref)}
         className={classnames(
           'panel panel-primary panel-bordered',
           'panel-bordered-force table-flex-wrapper',

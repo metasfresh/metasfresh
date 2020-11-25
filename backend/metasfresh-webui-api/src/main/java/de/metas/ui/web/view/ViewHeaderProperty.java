@@ -57,5 +57,9 @@ public class ViewHeaderProperty
 			return value(TranslatableStrings.dateAndTime(value));
 		}
 
+		public ViewHeaderPropertyBuilder value(final int value)
+		{
+			return value(TranslatableStrings.number(value));
+		}
 	}
 }

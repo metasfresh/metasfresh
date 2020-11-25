@@ -80,7 +80,10 @@ public class Candidate
 	CandidateId parentId;
 
 	/**
-	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
+	 * The different supply candidate(s) and their corresponding demand candidate(s)
+	 * that make up one business case are associated by a common group id.
+	 * Note that {@link CandidateBusinessCase#PRODUCTION} and {@link CandidateBusinessCase#DISTRIBUTION} have multiple candidates in one group,
+	 * Others like {@link CandidateBusinessCase#PURCHASE} have just one candidate in a group.
 	 */
 	MaterialDispoGroupId groupId;
 

@@ -1,11 +1,62 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.view;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.List;
-import java.util.Objects;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.impexp.excel.ExcelFormat;
+import de.metas.impexp.excel.ExcelFormats;
+import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
+import de.metas.ui.web.comments.CommentsService;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.process.ProcessRestController;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
+import de.metas.ui.web.process.WebuiPreconditionsContext;
+import de.metas.ui.web.process.json.JSONDocumentActionsList;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONCreateViewRequest;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.view.json.JSONViewHeaderProperties;
+import de.metas.ui.web.view.json.JSONViewLayout;
+import de.metas.ui.web.view.json.JSONViewProfilesList;
+import de.metas.ui.web.view.json.JSONViewResult;
+import de.metas.ui.web.view.json.JSONViewRow;
+import de.metas.ui.web.window.controller.WindowRestController;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -26,61 +77,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.impexp.excel.ExcelFormat;
-import de.metas.impexp.excel.ExcelFormats;
-import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ui.web.cache.ETagResponseEntityBuilder;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.process.ProcessRestController;
-import de.metas.ui.web.process.ViewAsPreconditionsContext;
-import de.metas.ui.web.process.WebuiPreconditionsContext;
-import de.metas.ui.web.process.json.JSONDocumentActionsList;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.json.JSONCreateViewRequest;
-import de.metas.ui.web.view.json.JSONFilterViewRequest;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.view.json.JSONViewLayout;
-import de.metas.ui.web.view.json.JSONViewProfilesList;
-import de.metas.ui.web.view.json.JSONViewResult;
-import de.metas.ui.web.view.json.JSONViewRow;
-import de.metas.ui.web.window.controller.WindowRestController;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import lombok.Builder;
-import lombok.NonNull;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 @Api
 @RestController
@@ -107,17 +109,20 @@ public class ViewRestController
 	private final IViewsRepository viewsRepo;
 	private final ProcessRestController processRestController;
 	private final WindowRestController windowRestController;
+	private final CommentsService commentsService;
 
 	public ViewRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final ProcessRestController processRestController,
-			@NonNull final WindowRestController windowRestController)
+			@NonNull final WindowRestController windowRestController,
+			@NonNull final CommentsService commentsService)
 	{
 		this.userSession = userSession;
 		this.viewsRepo = viewsRepo;
 		this.processRestController = processRestController;
 		this.windowRestController = windowRestController;
+		this.commentsService = commentsService;
 	}
 
 	private JSONOptions newJSONOptions()
@@ -169,7 +174,11 @@ public class ViewRestController
 
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewResult.of(result, rowOverrides, jsonOpts);
+
+		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
+
+		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
@@ -202,7 +211,12 @@ public class ViewRestController
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts);
+		final ViewResult viewResult = ViewResult.ofView(newView);
+
+		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
+
+		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
@@ -215,7 +229,12 @@ public class ViewRestController
 
 		final IView newView = viewsRepo.deleteStickyFilter(viewId, filterId);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts);
+		final ViewResult viewResult = ViewResult.ofView(newView);
+
+		final List<IViewRow> rows = viewResult.isPageLoaded() ? viewResult.getPage() : Collections.emptyList();
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
+
+		return JSONViewResult.of(viewResult, ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts, viewRowCommentsSummary);
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -250,7 +269,11 @@ public class ViewRestController
 				pageLength,
 				ViewRowsOrderBy.parseString(orderBysListStr, jsonOpts));
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewResult.of(result, rowOverrides, jsonOpts);
+
+		final List<IViewRow> rows = result.isPageLoaded() ? result.getPage() : Collections.emptyList();
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
+
+		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	@GetMapping("/layout")
@@ -282,6 +305,21 @@ public class ViewRestController
 		return JSONViewProfilesList.of(availableProfiles, userSession.getAD_Language());
 	}
 
+	@GetMapping("/{viewId}/headerProperties")
+	public JSONViewHeaderProperties getHeaderProperties(
+			@PathVariable(PARAM_WindowId) final String windowId //
+			, @PathVariable(PARAM_ViewId) final String viewIdStr//
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final ViewId viewId = ViewId.of(windowId, viewIdStr);
+		final IView view = viewsRepo.getView(viewId);
+		final JSONOptions jsonOpts = newJSONOptions();
+		final ViewHeaderProperties headerProperties = view.getHeaderProperties();
+		return JSONViewHeaderProperties.of(headerProperties, jsonOpts.getAdLanguage());
+	}
+
 	@GetMapping("/{viewId}/byIds")
 	public List<JSONViewRow> getByIds(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -302,7 +340,10 @@ public class ViewRestController
 		final List<? extends IViewRow> result = view.streamByIds(rowIds).collect(ImmutableList.toImmutableList());
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		final JSONOptions jsonOpts = newJSONOptions();
-		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts);
+
+		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(result);
+
+		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
 	private Evaluatee createFilterParameterLookupContext(final IView view)

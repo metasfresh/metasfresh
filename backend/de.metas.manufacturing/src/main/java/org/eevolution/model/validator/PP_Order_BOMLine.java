@@ -93,21 +93,10 @@ public class PP_Order_BOMLine
 		if (newRecord && BOMComponentType.ofCode(orderBOMLine.getComponentType()).isPhantom())
 		{
 			final Quantity qtyRequired = ppOrderBOMBL.getQtyRequiredToIssue(orderBOMLine);
-			orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
+			ppOrderBOMBL.setQtyRequiredToIssueOrReceive(orderBOMLine, qtyRequired.toZero());
 
 			final Runnable explodePhantomRunnable = () -> ppOrderBOMBL.explodePhantom(orderBOMLine, qtyRequired);
 			InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ExplodePhantomRunnable, explodePhantomRunnable);
-		}
-
-		if (newRecord
-				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_C_UOM_ID)
-				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyEntered)
-				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered))
-		{
-			I_C_UOM uom = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
-			final int precision = uom.getStdPrecision();
-			orderBOMLine.setQtyEntered(orderBOMLine.getQtyEntered().setScale(precision, RoundingMode.UP));
-			orderBOMLine.setQtyRequiered(orderBOMLine.getQtyRequiered().setScale(precision, RoundingMode.UP));
 		}
 
 		//

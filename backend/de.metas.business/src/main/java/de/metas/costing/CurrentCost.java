@@ -1,21 +1,19 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -87,6 +85,7 @@ public final class CurrentCost
 		this.costPrice = CostPrice.builder()
 				.ownCostPrice(ownCostPrice != null ? CostAmount.of(ownCostPrice, currencyId) : CostAmount.zero(currencyId))
 				.componentsCostPrice(componentsCostPrice != null ? CostAmount.of(componentsCostPrice, currencyId) : CostAmount.zero(currencyId))
+				.uomId(uomId)
 				.build();
 		this.currentQty = currentQty != null ? Quantity.of(currentQty, uom) : Quantity.zero(uom);
 		this.cumulatedAmt = cumulatedAmt != null ? CostAmount.of(cumulatedAmt, currencyId) : CostAmount.zero(currencyId);
@@ -119,8 +118,14 @@ public final class CurrentCost
 
 	public void setFrom(final CostDetailPreviousAmounts previousAmounts)
 	{
+		assertCostCurrency(previousAmounts.getCostPrice());
+		assertCostUOM(previousAmounts.getQty());
+
+		assertCostCurrency(previousAmounts.getCumulatedAmt());
+		assertCostUOM(previousAmounts.getCumulatedQty());
+
 		this.costPrice = previousAmounts.getCostPrice();
-		this.currentQty = previousAmounts.getCumulatedQty();
+		this.currentQty = previousAmounts.getQty();
 
 		this.cumulatedAmt = previousAmounts.getCumulatedAmt();
 		this.cumulatedQty = previousAmounts.getCumulatedQty();
@@ -131,6 +136,14 @@ public final class CurrentCost
 		return getCostElement().getId();
 	}
 
+	private void assertCostCurrency(@NonNull final CostPrice costPrice)
+	{
+		if (!costPrice.getCurrencyId().equals(getCurrencyId()))
+		{
+			throw new AdempiereException("Invalid amount currency for `" + costPrice + "`. Expected: " + getCurrencyId());
+		}
+	}
+
 	private void assertCostCurrency(@NonNull final CostAmount amt)
 	{
 		if (!amt.getCurrencyId().equals(getCurrencyId()))
@@ -139,10 +152,18 @@ public final class CurrentCost
 		}
 	}
 
+	private void assertCostUOM(final Quantity qty)
+	{
+		if (!UomId.equals(qty.getUomId(), getUomId()))
+		{
+			throw new AdempiereException("Invalid UOM for `" + qty + "`. Expected: " + getUomId());
+		}
+	}
+
 	/**
 	 * Add Amt/Qty and calculate weighted average.
 	 * ((OldAvg*OldQty)+(Price*Qty)) / (OldQty+Qty).
-	 * 
+	 * <p>
 	 * Also calls {@link #addCumulatedAmtAndQty(CostAmount, Quantity)}.
 	 *
 	 * @param amt total amt (price * qty)
@@ -154,7 +175,11 @@ public final class CurrentCost
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		assertCostCurrency(amt);
-		Check.assume(qty.signum() != 0, "qty not zero");
+
+		if (qty.signum() == 0 && amt.signum() != 0)
+		{
+			throw new AdempiereException("Qty shall not be zero when amount is non zero: " + amt);
+		}
 
 		final CostAmount currentAmt = costPrice.getOwnCostPrice().multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);
@@ -171,9 +196,12 @@ public final class CurrentCost
 		addCumulatedAmtAndQty(amt, qtyConv);
 	}
 
-	private void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	private void addCumulatedAmtAndQty(
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
+		assertCostUOM(qty);
 
 		cumulatedAmt = cumulatedAmt.add(amt);
 		cumulatedQty = cumulatedQty.add(qty);
@@ -185,18 +213,26 @@ public final class CurrentCost
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		final Quantity qtyToAddConv = uomConverter.convertQuantityTo(qtyToAdd, costSegment.getProductId(), uomId);
-		addToCurrentQty(qtyToAddConv);
-		addCumulatedAmtAndQty(amt, qtyToAddConv);
+		addToCurrentQtyAndCumulate(qtyToAddConv, amt);
 	}
 
-	private void addToCurrentQty(@NonNull final Quantity qtyToAdd)
+	public void addToCurrentQtyAndCumulate(
+			@NonNull final Quantity qtyToAdd,
+			@NonNull final CostAmount amt)
 	{
-		currentQty = currentQty.add(qtyToAdd);
+		currentQty = currentQty.add(qtyToAdd).toZeroIfNegative();
+
+		addCumulatedAmtAndQty(amt, qtyToAdd);
 	}
 
 	public void setCostPrice(@NonNull final CostPrice costPrice)
 	{
 		this.costPrice = costPrice;
+	}
+
+	public void setOwnCostPrice(@NonNull final CostAmount ownCostPrice)
+	{
+		setCostPrice(getCostPrice().withOwnCostPrice(ownCostPrice));
 	}
 
 	public void addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)

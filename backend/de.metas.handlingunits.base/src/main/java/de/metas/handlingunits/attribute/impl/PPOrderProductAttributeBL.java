@@ -273,9 +273,6 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 	/**
 	 * Set the correct values in the already existing attributes of the HU
-	 *
-	 * @param hu
-	 * @param from
 	 */
 	private static void updateHUAttributesFromAttributesMap(
 			final I_M_HU hu,

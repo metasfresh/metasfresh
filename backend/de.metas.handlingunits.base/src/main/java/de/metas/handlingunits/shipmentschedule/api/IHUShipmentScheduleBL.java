@@ -1,11 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import java.time.LocalDate;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.warehouse.LocatorId;
-
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -19,6 +13,11 @@ import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.LocatorId;
+
+import java.time.LocalDate;
 
 public interface IHUShipmentScheduleBL extends ISingletonService
 {

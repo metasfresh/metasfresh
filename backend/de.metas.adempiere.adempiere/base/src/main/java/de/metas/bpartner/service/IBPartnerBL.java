@@ -2,29 +2,6 @@ package de.metas.bpartner.service;
 
 import java.util.Comparator;
 import java.util.Optional;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.util.Properties;
 import java.util.function.Predicate;
 
@@ -53,6 +30,28 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 public interface IBPartnerBL extends ISingletonService
 {
 	I_C_BPartner getById(BPartnerId bpartnerId);
@@ -65,7 +64,6 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * make full address
-	 *
 	 */
 	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, String trxName);
 
@@ -87,16 +85,16 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * Compute and set {@link I_C_BPartner_Location#COLUMNNAME_Address} field.
-	 *
-	 * @param bpLocation
 	 */
 	void setAddress(I_C_BPartner_Location bpLocation);
+
+	void updateAllAddresses(I_C_BPartner bpartner);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
 	/**
 	 * Creates a draft contact linked to given partner.
-	 *
+	 * <p>
 	 * It's up to the caller to set the other fields and then save it or not.
 	 *
 	 * @param bpartner
@@ -198,11 +196,15 @@ public interface IBPartnerBL extends ISingletonService
 		@Nullable
 		ContactType contactType;
 
-		/** If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user. */
+		/**
+		 * If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user.
+		 */
 		@Nullable
 		BPartnerLocationId bPartnerLocationId;
 
-		/** If specified, then only matching contacts are considered */
+		/**
+		 * If specified, then only matching contacts are considered
+		 */
 		@Default
 		@NonNull
 		Predicate<User> filter = Predicates.alwaysTrue();

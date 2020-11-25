@@ -4,37 +4,40 @@ import {
   filterViewRequest,
   getViewLayout,
   locationConfigRequest,
+  headerPropertiesRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
+import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
+import { formatFilters, populateFiltersCaptions } from '../utils/filterHelpers';
 
 import {
   ADD_VIEW_LOCATION_DATA,
+  CREATE_VIEW,
+  CREATE_VIEW_SUCCESS,
+  CREATE_VIEW_ERROR,
+  DELETE_VIEW,
   FETCH_DOCUMENT_PENDING,
   FETCH_DOCUMENT_SUCCESS,
   FETCH_DOCUMENT_ERROR,
   FETCH_LAYOUT_PENDING,
   FETCH_LAYOUT_SUCCESS,
   FETCH_LAYOUT_ERROR,
-  CREATE_VIEW,
-  CREATE_VIEW_SUCCESS,
-  CREATE_VIEW_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
   FILTER_VIEW_ERROR,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
-  DELETE_VIEW,
+  SET_INCLUDED_VIEW,
   TOGGLE_INCLUDED_VIEW,
+  UNSET_INCLUDED_VIEW,
+  UPDATE_VIEW_DATA_ERROR,
+  UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
-import {
-  createGridTable,
-  updateGridTable,
-  clearTableData,
-} from './TableActions';
-import { setListIncludedView, closeListIncludedView } from './ListActions';
+import { createFilter, deleteFilter } from './FiltersActions';
+import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 
 /**
  * @method resetView
@@ -213,13 +216,35 @@ function fetchLocationConfigError(id, error, isModal) {
 }
 
 /**
- * @method addLocationData
+ * @method addViewLocationData
  * @summary save geolocation data in the store
  */
 export function addViewLocationData(id, locationData, isModal) {
   return {
     type: ADD_VIEW_LOCATION_DATA,
     payload: { id, locationData, isModal },
+  };
+}
+
+/**
+ * @method updateViewSuccess
+ * @summary success when updating view's properties
+ */
+export function updateViewSuccess({ id, data, isModal }) {
+  return {
+    type: UPDATE_VIEW_DATA_SUCCESS,
+    payload: { id, data, isModal },
+  };
+}
+
+/**
+ * @method updateViewError
+ * @summary failure when updating view's properties
+ */
+export function updateViewError(id, error, isModal) {
+  return {
+    type: UPDATE_VIEW_DATA_ERROR,
+    payload: { id, error, isModal },
   };
 }
 
@@ -234,11 +259,41 @@ export function toggleIncludedView(id, showIncludedView, isModal) {
   };
 }
 
+/**
+ * @method setIncludedView
+ * @summary set id of the included view in the store
+ */
+export function setIncludedView({
+  windowId,
+  viewId,
+  viewProfileId = null,
+} = {}) {
+  return {
+    type: SET_INCLUDED_VIEW,
+    payload: { id: windowId, viewId, viewProfileId },
+  };
+}
+
+/**
+ * @method unsetIncludedView
+ * @summary reset included view's id in the store
+ */
+export function unsetIncludedView({
+  windowId,
+  viewId,
+  forceClose = false,
+} = {}) {
+  return {
+    type: UNSET_INCLUDED_VIEW,
+    payload: { id: windowId, viewId, forceClose },
+  };
+}
+
 // THUNK ACTIONS
 
 /**
  * @method fetchDocument
- * @summary Get grid rows
+ * @summary Get grid rows when the view already exists
  *
  * @param {*} windowId
  * @param {*} viewId
@@ -270,7 +325,6 @@ export function fetchDocument({
     })
       .then((response) => {
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
-
         const tableId = getTableId({ windowId, viewId });
         const tableData = { windowId, viewId, ...response.data };
 
@@ -284,6 +338,29 @@ export function fetchDocument({
 
         const state = getState();
         const view = getView(state, windowId, isModal);
+
+        const filterId = getEntityRelatedId({ windowId, viewId });
+        const activeFiltersCaptions = populateFiltersCaptions({
+          filterData: view.layout.filters,
+          filtersActive: response.data.filters,
+        });
+        const filtersActive = formatFilters({
+          filtersData: view.layout.filters,
+          filtersActive: response.data.filters,
+        });
+
+        dispatch(
+          createFilter({
+            filterId,
+            data: {
+              filterData: view.layout.filters, // set the proper layout for the filters
+              filtersActive,
+              activeFiltersCaptions,
+            },
+          })
+        );
+
+        // set the Layout for the view
         const openIncludedViewOnSelect =
           view.layout &&
           view.layout.includedView &&
@@ -296,12 +373,12 @@ export function fetchDocument({
         ) {
           const row = response.data.result[0];
           const includedWindowId = row.supportIncludedViews
-            ? state.listHandler.includedView.windowType ||
+            ? state.viewHandler.includedView.windowId ||
               row.includedView.windowType ||
               row.includedView.windowId
             : null;
           const includedViewId = row.supportIncludedViews
-            ? state.listHandler.includedView.viewId || row.includedView.viewId
+            ? state.viewHandler.includedView.viewId || row.includedView.viewId
             : null;
 
           dispatch(
@@ -417,9 +494,14 @@ export function filterView(windowId, viewId, filters, isModal = false) {
       .then((response) => {
         dispatch(filterViewSuccess(windowId, response.data, isModal));
 
-        // clear data, so that we won't add filtered rows to previous data
+        // remove table, so that we won't add filtered rows to the previous data
         const tableId = getTableId({ windowId, viewId });
-        dispatch(clearTableData(tableId));
+
+        dispatch(deleteTable(tableId));
+
+        // remove the old filter from the store
+        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+        dispatch(deleteFilter(entityRelatedId));
 
         return Promise.resolve(response.data);
       })
@@ -437,8 +519,6 @@ export function filterView(windowId, viewId, filters, isModal = false) {
  */
 export function fetchLocationConfig(windowId, isModal = false) {
   return (dispatch) => {
-    const windowId = windowId;
-
     return locationConfigRequest()
       .then((response) => {
         dispatch(fetchLocationConfigSuccess(windowId, response.data, isModal));
@@ -469,13 +549,36 @@ export function showIncludedView({
     }
 
     if (showIncludedView) {
-      dispatch(setListIncludedView({ windowType: windowId, viewId }));
+      dispatch(setIncludedView({ windowId, viewId }));
     }
 
     if (!showIncludedView) {
-      dispatch(
-        closeListIncludedView({ windowType: windowId, viewId, forceClose })
-      );
+      dispatch(unsetIncludedView({ windowId, viewId, forceClose }));
     }
+  };
+}
+
+/**
+ * @method fetchHeaderProperties
+ * @summary Request view's header properties
+ */
+export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
+  return (dispatch) => {
+    dispatch(fetchDocumentPending(windowId, isModal));
+
+    return headerPropertiesRequest({ windowId, viewId })
+      .then((response) => {
+        const updatedData = {
+          headerProperties: response.data,
+        };
+        dispatch(
+          updateViewSuccess({ id: windowId, data: updatedData, isModal })
+        );
+      })
+      .catch((error) => {
+        dispatch(updateViewError(windowId, error, isModal));
+
+        return Promise.reject(error);
+      });
   };
 }

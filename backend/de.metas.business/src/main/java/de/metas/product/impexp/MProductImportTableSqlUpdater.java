@@ -101,6 +101,10 @@ public class MProductImportTableSqlUpdater
 		dbUpdateDosageForm(selection);
 
 		dbUpdateIndication(selection);
+		
+		dbUpdateCustomsTarrif(selection);
+		
+		dbUpdateRawMaterialOrignCountry(selection);
 
 		dbUpdateErrorMessages(selection);
 	}
@@ -509,7 +513,32 @@ public class MProductImportTableSqlUpdater
 		final Object[] params = new Object[] { nameToMatch, adClientId };
 		DB.executeUpdateEx(sql.toString(), params, ITrx.TRXNAME_ThreadInherited);
 	}
+	
+	private void dbUpdateCustomsTarrif(@NonNull final ImportRecordsSelection selection)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET M_CustomsTariff_ID =(SELECT M_CustomsTariff_ID FROM M_CustomsTariff tf")
+				.append(" WHERE tf.AD_Client_ID=i.AD_Client_ID AND i.CustomsTariff = tf.value) ")
+				.append("WHERE M_CustomsTariff_ID IS NULL AND i.CustomsTariff IS NOT NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
 
+	
+	private void dbUpdateRawMaterialOrignCountry(@NonNull final ImportRecordsSelection selection)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET RawMaterialOrigin_ID =(SELECT C_Country_id FROM C_Country tf")
+				.append(" WHERE i.RawMaterialOriginCountryCode = tf.CountryCode) ")
+				.append("WHERE RawMaterialOrigin_ID IS NULL AND i.RawMaterialOriginCountryCode IS NOT NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+	
 	private void dbUpdateErrorMessages(@NonNull final ImportRecordsSelection selection)
 	{
 		StringBuilder sql;
@@ -620,4 +649,6 @@ public class MProductImportTableSqlUpdater
 				.append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
+	
+
 }

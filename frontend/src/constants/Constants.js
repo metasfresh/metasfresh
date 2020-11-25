@@ -108,4 +108,46 @@ export const PROCESS_NAME = 'process';
 
 export const LOCATION_SEARCH_NAME = 'location-area-search';
 
+/**
+ * @constant
+ * @type {integer} Used to indicate the row position from where the dropup should be shown.
+ */
+export const DROPUP_START = 10;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset position for resizing the table container
+ */
+export const DROPDOWN_OFFSET_BIG = 250;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset position for resizing the table container
+ */
+export const DROPUP_OFFSET_SMALL = 150;
 export const LOCAL_LANG = 'metasfreshLanguage';
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the code of the F2 key. Visualy is easier to see the constant name and reason about
+ */
+export const F2_KEY = 113;
+
+/**
+ * @constant
+ * @type {string} Used to indicate the max height for the TableContextMenu from where the autoscroll will start
+ */
+export const TBL_CONTEXT_MENU_HEIGHT = '300px';
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the max Y mouse position from where the routine to scroll the table and readjust position begins
+ *                 case when there are many OL and you click on one line at the bottom.
+ */
+export const TBL_CONTEXT_MENU_MAX_Y = 706;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the debounce time when performing a search
+ */
+export const DEBOUNCE_TIME_SEARCH = 150;

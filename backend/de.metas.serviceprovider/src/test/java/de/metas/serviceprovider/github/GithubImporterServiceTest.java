@@ -36,6 +36,7 @@ import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+import de.metas.serviceprovider.github.label.LabelService;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
@@ -98,8 +99,10 @@ public class GithubImporterServiceTest
 
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 
+	private final LabelService labelService = new LabelService();
+
 	private final GithubImporterService githubImporterService =
-			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository);
+			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
 	@Before
 	public void init()
 	{

@@ -386,7 +386,7 @@ public class MRMALine extends X_M_RMALine
 	/**
 	 * Get UOM based on Shipment line if present.
 	 * 
-	 * @return UOM if based on shipment line or {@link IUOMDAO#C_UOM_ID_Each}
+	 * @return UOM if based on shipment line or {@link UomId#EACH}
 	 */
 	public int getC_UOM_ID()
 	{

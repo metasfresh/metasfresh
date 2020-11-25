@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.manufacturing
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.eevolution.api.impl;
 
 import java.math.BigDecimal;
@@ -10,6 +32,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -17,9 +41,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_WF_Node_Template;
-import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -40,28 +62,6 @@ import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Order;
 import org.slf4j.Logger;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
@@ -77,17 +77,22 @@ import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -98,6 +103,15 @@ public class PPOrderBL implements IPPOrderBL
 {
 	private static final Logger logger = LogManager.getLogger(PPOrderBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+	private final IPPOrderBOMBL orderBOMService = Services.get(IPPOrderBOMBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IPPRoutingRepository routingRepo = Services.get(IPPRoutingRepository.class);
+	private final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -117,9 +131,9 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setLine(10);
 		ppOrder.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
 		ppOrder.setDescription("");
-		ppOrder.setQtyDelivered(BigDecimal.ZERO);
-		ppOrder.setQtyReject(BigDecimal.ZERO);
-		ppOrder.setQtyScrap(BigDecimal.ZERO);
+		// ppOrder.setQtyDelivered(BigDecimal.ZERO);
+		// ppOrder.setQtyReject(BigDecimal.ZERO);
+		// ppOrder.setQtyScrap(BigDecimal.ZERO);
 		ppOrder.setIsSelected(false);
 		ppOrder.setIsSOTrx(false);
 		ppOrder.setIsApproved(false);
@@ -133,7 +147,9 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public void addDescription(final I_PP_Order order, final String description)
+	public void addDescription(
+			final I_PP_Order order,
+			final String description)
 	{
 		final String desc = order.getDescription();
 		if (desc == null || desc.isEmpty())
@@ -147,116 +163,85 @@ public class PPOrderBL implements IPPOrderBL
 	}    // addDescription
 
 	@Override
-	public void updateQtyBatchs(final I_PP_Order order, final boolean override)
+	public void updateQtyBatchs(
+			@NonNull final I_PP_Order order,
+			final boolean alwaysUpdateQtyBatchSize)
 	{
 		BigDecimal qtyBatchSize = order.getQtyBatchSize();
-		if (qtyBatchSize.signum() == 0 || override)
+		if (qtyBatchSize.signum() == 0 || alwaysUpdateQtyBatchSize)
 		{
-			final int AD_Workflow_ID = order.getAD_Workflow_ID();
-			// No workflow entered, or is just a new record:
-			if (AD_Workflow_ID <= 0)
+			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(order.getAD_Workflow_ID());
+			// No routing set, or is just a new record
+			if (routingId == null)
 			{
 				return;
 			}
 
-			final I_AD_Workflow wf = order.getAD_Workflow();
-			qtyBatchSize = wf.getQtyBatchSize().setScale(0, RoundingMode.UP);
+			final PPRouting routing = routingRepo.getById(routingId);
+
+			qtyBatchSize = routing.getQtyPerBatch().setScale(0, RoundingMode.UP);
 			order.setQtyBatchSize(qtyBatchSize);
 		}
 
-		final BigDecimal qtyBatchs;
+		final int numberOfBatches;
 		if (qtyBatchSize.signum() == 0)
 		{
-			qtyBatchs = BigDecimal.ONE;
+			numberOfBatches = 1;
 		}
 		else
 		{
-			final BigDecimal qtyOrdered = order.getQtyOrdered();
-			qtyBatchs = qtyOrdered.divide(qtyBatchSize, 0, BigDecimal.ROUND_UP);
+			final Quantity qtyRequiredToProduce = orderBOMService.getQuantities(order).getQtyRequiredToProduce();
+			numberOfBatches = qtyRequiredToProduce.divide(qtyBatchSize, 0, RoundingMode.UP).toBigDecimal().intValueExact();
 		}
-		order.setQtyBatchs(qtyBatchs);
+		order.setQtyBatchs(BigDecimal.valueOf(numberOfBatches));
 	}
 
 	@Override
 	public boolean isSomethingProcessed(final I_PP_Order ppOrder)
 	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
-
 		//
-		// Main product
-		if (ppOrder.getQtyDelivered().signum() != 0 || ppOrder.getQtyScrap().signum() != 0 || ppOrder.getQtyReject().signum() != 0)
-		{
-			return true;
-		}
-
-		//
-		// BOM
-		final IPPOrderBOMBL orderBOMService = Services.get(IPPOrderBOMBL.class);
-		if (orderBOMService.isSomethingReportedOnBOMLines(orderId))
+		// Any finished good received or any component issued?
+		if (orderBOMService.isSomethingReported(ppOrder))
 		{
 			return true;
 		}
 
 		//
 		// Routing
-		final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
+		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
-		if (orderRouting.isSomethingProcessed())
-		{
-			return true;
-		}
+		return orderRouting.isSomethingProcessed();
+	}
+
+	@Override
+	public void addQty(@NonNull final OrderQtyChangeRequest request)
+	{
+		final I_PP_Order order = ppOrdersRepo.getById(request.getPpOrderId());
+
+		PPOrderQuantities qtys = orderBOMService.getQuantities(order);
+
+		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+		final UomId uomId = qtys.getUomId();
+		final OrderQtyChangeRequest requestConv = request.convertQuantities(qty -> uomConversionBL.convertQuantityTo(qty, productId, uomId));
+
+		qtys = qtys.reduce(requestConv);
+		orderBOMService.setQuantities(order, qtys);
 
 		//
-		return false;
-	}
+		// Update PP Order Dates
+		final Timestamp date = TimeUtil.asTimestamp(request.getDate());
+		order.setDateDelivered(date); // overwrite=last
+		if (order.getDateStart() == null)
+		{
+			order.setDateStart(date);
+		}
 
-	private I_C_UOM getMainProductStockingUOM(final I_PP_Order ppOrder)
-	{
-		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		return Services.get(IProductBL.class).getStockUOM(mainProductId);
-	}
+		if (qtys.getQtyRemainingToProduce().signum() <= 0)
+		{
+			order.setDateFinish(date);
+		}
 
-	@Override
-	public Quantity getQtyOpen(final I_PP_Order ppOrder)
-	{
-		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
-		final BigDecimal qtyOrdered = ppOrder.getQtyOrdered();
-		final BigDecimal qtyReceived = ppOrder.getQtyDelivered();
-		final BigDecimal qtyScrap = ppOrder.getQtyScrap();
-		final BigDecimal qtyToReceive = qtyOrdered.subtract(qtyReceived).subtract(qtyScrap);
-		return Quantity.of(qtyToReceive, uom);
-	}
-
-	@Override
-	public Quantity getQtyReceived(final I_PP_Order ppOrder)
-	{
-		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
-		final BigDecimal qtyReceived = ppOrder.getQtyDelivered();
-		return Quantity.of(qtyReceived, uom);
-	}
-
-	@Override
-	public Quantity getQtyReceived(@NonNull final PPOrderId ppOrderId)
-	{
-		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
-		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
-		return getQtyReceived(ppOrder);
-	}
-
-	@Override
-	public Quantity getQtyScrapped(final I_PP_Order ppOrder)
-	{
-		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
-		final BigDecimal qtyScrap = ppOrder.getQtyScrap();
-		return Quantity.of(qtyScrap, uom);
-	}
-
-	@Override
-	public Quantity getQtyRejected(final I_PP_Order ppOrder)
-	{
-		final I_C_UOM uom = getMainProductStockingUOM(ppOrder);
-		final BigDecimal qtyReject = ppOrder.getQtyReject();
-		return Quantity.of(qtyReject, uom);
+		ppOrdersRepo.save(order);
 	}
 
 	@Override
@@ -287,8 +272,6 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void updateBOMOrderLinesWarehouseAndLocator(final I_PP_Order ppOrder)
 	{
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-
 		for (final I_PP_Order_BOMLine orderBOMLine : ppOrderBOMsRepo.retrieveOrderBOMLines(ppOrder))
 		{
 			PPOrderUtil.updateBOMLineWarehouseAndLocatorFromOrder(orderBOMLine, ppOrder);
@@ -297,10 +280,11 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public void setDocType(@NonNull final I_PP_Order ppOrder, @NonNull final String docBaseType, final String docSubType)
+	public void setDocType(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final String docBaseType,
+			@Nullable final String docSubType)
 	{
-		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
-
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(docBaseType)
 				.docSubType(docSubType)
@@ -315,9 +299,6 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void closeOrder(@NonNull final PPOrderId ppOrderId)
 	{
-		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
 		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 
 		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
@@ -329,33 +310,22 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void closeQtyOrdered(final I_PP_Order ppOrder)
 	{
-		final BigDecimal qtyOrderedOld = ppOrder.getQtyOrdered();
-		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
-
-		ppOrder.setQtyBeforeClose(qtyOrderedOld);
-		ppOrder.setQtyOrdered(qtyDelivered);
-
-		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		orderBOMService.changeQuantities(ppOrder, PPOrderQuantities::close);
 		ppOrdersRepo.save(ppOrder);
 	}
 
 	@Override
-	public void uncloseQtyOrdered(final I_PP_Order ppOrder)
+	public void uncloseQtyOrdered(@NonNull final I_PP_Order ppOrder)
 	{
-		final BigDecimal qtyOrderedBeforeClose = ppOrder.getQtyBeforeClose();
-
-		ppOrder.setQtyOrdered(qtyOrderedBeforeClose);
-		ppOrder.setQtyBeforeClose(BigDecimal.ZERO);
-
-		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		orderBOMService.changeQuantities(ppOrder, PPOrderQuantities::unclose);
 		ppOrdersRepo.save(ppOrder);
 	}
 
 	@Override
 	public void changeScheduling(@NonNull final PPOrderScheduleChangeRequest request)
 	{
-		Services.get(IPPOrderRoutingRepository.class).changeActivitiesScheduling(request.getOrderId(), request.getActivityChangeRequests());
-		Services.get(IPPOrderDAO.class).changeOrderScheduling(request.getOrderId(), request.getScheduledStartDate(), request.getScheduledEndDate());
+		orderRoutingRepo.changeActivitiesScheduling(request.getOrderId(), request.getActivityChangeRequests());
+		ppOrdersRepo.changeOrderScheduling(request.getOrderId(), request.getScheduledStartDate(), request.getScheduledEndDate());
 	}
 
 	@Override
@@ -365,12 +335,11 @@ public class PPOrderBL implements IPPOrderBL
 				.routingId(PPRoutingId.ofRepoId(ppOrderRecord.getAD_Workflow_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
 				.dateStartSchedule(TimeUtil.asLocalDateTime(ppOrderRecord.getDateStartSchedule()))
-				.qtyOrdered(getQtyOrdered(ppOrderRecord))
+				.qtyOrdered(orderBOMService.getQuantities(ppOrderRecord).getQtyRequiredToProduce())
 				.build()
 				.execute();
 
-		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-		orderRoutingsRepo.save(orderRouting);
+		orderRoutingRepo.save(orderRouting);
 
 		copyAttachmentsFromTemplates(orderRouting);
 	}
@@ -392,8 +361,8 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	private static void copyAttachmentsFromTemplate(
-			final PPOrderRoutingActivity activity,
-			final AttachmentEntryService attachmentEntryService)
+			@NonNull final PPOrderRoutingActivity activity,
+			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
 		final PPRoutingActivityTemplateId activityTemplateId = activity.getActivityTemplateId();
 		if (activityTemplateId == null)
@@ -411,19 +380,11 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public Quantity getQtyOrdered(final I_PP_Order ppOrderRecord)
-	{
-		final I_C_UOM mainProductUOM = getMainProductStockingUOM(ppOrderRecord);
-		return Quantity.of(ppOrderRecord.getQtyOrdered(), mainProductUOM);
-	}
-
-	@Override
 	public void closeAllActivities(@NonNull final PPOrderId orderId)
 	{
 		reportQtyToProcessOnNotStartedActivities(orderId);
 
-		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-		final PPOrderRouting orderRouting = orderRoutingsRepo.getByOrderId(orderId);
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
@@ -435,17 +396,13 @@ public class PPOrderBL implements IPPOrderBL
 			}
 		}
 
-		orderRoutingsRepo.save(orderRouting);
+		orderRoutingRepo.save(orderRouting);
 	}
 
 	private void reportQtyToProcessOnNotStartedActivities(final PPOrderId orderId)
 	{
-		final IPPOrderDAO ordersRepo = Services.get(IPPOrderDAO.class);
-		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-		final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
-
-		final PPOrderRouting orderRouting = orderRoutingsRepo.getByOrderId(orderId);
-		final I_PP_Order orderRecord = ordersRepo.getById(orderId);
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
+		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
 		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
@@ -464,7 +421,7 @@ public class PPOrderBL implements IPPOrderBL
 				final WorkingTime durationRemaining = WorkingTime.builder()
 						.durationPerOneUnit(activity.getDurationPerOneUnit())
 						.unitsPerCycle(activity.getUnitsPerCycle())
-						.qty(qtyToProcess.toBigDecimal())
+						.qty(qtyToProcess)
 						.activityTimeUnit(activity.getDurationUnit())
 						.build();
 
@@ -481,20 +438,8 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public void voidOrderRouting(final PPOrderId orderId)
-	{
-		final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
-		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
-		orderRouting.voidIt();
-		orderRoutingRepo.save(orderRouting);
-	}
-
-	@Override
 	public Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(@NonNull final PPOrderId pickingOrderId)
 	{
-		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
-		final IPPOrderBOMBL ppOrderBOMsService = Services.get(IPPOrderBOMBL.class);
-
 		final I_PP_Order pickingOrder = ppOrdersRepo.getById(pickingOrderId);
 		final DocStatus pickingOrderDocStatus = DocStatus.ofCode(pickingOrder.getDocStatus());
 		if (!pickingOrderDocStatus.isCompleted())
@@ -502,7 +447,7 @@ public class PPOrderBL implements IPPOrderBL
 			return Optional.empty();
 		}
 
-		return Optional.of(ppOrderBOMsService.getQtyCalculationsBOM(pickingOrder));
+		return Optional.of(orderBOMService.getQtyCalculationsBOM(pickingOrder));
 	}
 
 	@Override
@@ -571,11 +516,11 @@ public class PPOrderBL implements IPPOrderBL
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} PP_Order", updatedCounter.get(), allCounter.get());
 	}
-	
-	
 
-	
-	
+
+
+
+
 	@Override
 	public void updateCanBeExportedFrom(@NonNull final I_PP_Order ppOrder)
 	{
@@ -599,6 +544,6 @@ public class PPOrderBL implements IPPOrderBL
 			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, ppOrder.getCanBeExportedFrom());
 		}
 	}
-	
+
 
 }

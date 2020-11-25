@@ -7,12 +7,12 @@ import { getTableId, getTable } from '../reducers/tables';
 
 import {
   updateTableSelection,
-  deselectTableItems,
+  deselectTableRows,
   collapseTableRow,
   setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
-import { openModal } from '../actions/WindowActions';
+import { openModal, updatePropertyValue } from '../actions/WindowActions';
 
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
@@ -20,27 +20,6 @@ import { mapIncluded } from '../utils/documentListHelper';
 import Table from '../components/table/TableWrapper';
 
 class TableContainer extends PureComponent {
-  componentWillUnmount() {
-    const {
-      showIncludedView,
-      viewId,
-      windowId,
-      isIncluded,
-      isModal,
-    } = this.props;
-
-    if (!isIncluded) {
-      const identifier = isModal ? viewId : windowId;
-
-      showIncludedView({
-        id: identifier,
-        showIncludedView: false,
-        windowId,
-        viewId,
-      });
-    }
-  }
-
   /**
    * @method getAllLeaves
    * @summary select parent and all it's leaves
@@ -102,7 +81,7 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const { deselectTableItems, windowId, viewId, selected } = this.props;
+    const { deselectTableRows, windowId, viewId, selected } = this.props;
     const tableId = getTableId({ windowId, viewId });
     const index = selected.indexOf(id);
 
@@ -111,21 +90,22 @@ class TableContainer extends PureComponent {
     const newSelected = update(selected, { $splice: [[index, 1]] });
 
     if (!newSelected.length) {
-      deselectTableItems(tableId, [id]);
+      deselectTableRows(tableId, [id]);
     }
 
     return newSelected;
   };
 
   handleDeselectAll = (callback) => {
-    const { deselectTableItems, windowId, viewId, docId, tabId } = this.props;
+    const { deselectTableRows, windowId, viewId, docId, tabId } = this.props;
 
     callback && callback();
 
-    deselectTableItems(getTableId({ windowId, viewId, docId, tabId }), []);
+    deselectTableRows(getTableId({ windowId, viewId, docId, tabId }), []);
   };
 
-  // TODO: This reallydoesn't do anything. Check if it's still a valid solution
+  // TODO: This re-fetches quick actions on editing row. Can be cemoved once
+  // we'll properly handle quickactions in the redux store
   handleItemChange = () => {
     const { onRowEdited } = this.props;
 
@@ -293,9 +273,10 @@ export default connect(
   mapStateToProps,
   {
     collapseTableRow,
-    deselectTableItems,
+    deselectTableRows,
     openModal,
     updateTableSelection,
+    updatePropertyValue,
     showIncludedView,
     setActiveSort,
   },

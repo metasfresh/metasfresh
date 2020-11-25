@@ -32,6 +32,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
@@ -1767,9 +1769,10 @@ public final class MPayment extends X_C_Payment
 					+ "SET C_Payment_ID = NULL, IsPaid='N' "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID()
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
-			int no = DB.executeUpdate(sql, get_TrxName());
+						int no = DB.executeUpdate(sql, get_TrxName());
 			if (no != 0)
 			{
+				CacheMgt.get().reset(I_C_Invoice.Table_Name, getC_Invoice_ID());
 				log.debug("Unlink Invoice #" + no);
 			}
 			// Order

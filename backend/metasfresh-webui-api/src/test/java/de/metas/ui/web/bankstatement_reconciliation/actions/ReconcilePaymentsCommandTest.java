@@ -1,6 +1,7 @@
 package de.metas.ui.web.bankstatement_reconciliation.actions;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -66,7 +67,9 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.payment.esr.api.impl.ESRImportBL;
+import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_Import;
 import de.metas.payment.esr.model.validator.ESRBankStatementListener;
 import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineAndPaymentsToReconcileRepository;
 import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineRow;
@@ -296,7 +299,12 @@ public class ReconcilePaymentsCommandTest
 
 	private I_ESR_ImportLine createESRImportLine(@NonNull final PaymentId paymentId)
 	{
+		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
+		esrImport.setDataType(X_ESR_Import.DATATYPE_V11);
+		save(esrImport);
+		
 		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class);
+		esrImportLine.setESR_Import_ID(esrImport.getESR_Import_ID());
 		esrImportLine.setC_Payment_ID(paymentId.getRepoId());
 		saveRecord(esrImportLine);
 		return esrImportLine;

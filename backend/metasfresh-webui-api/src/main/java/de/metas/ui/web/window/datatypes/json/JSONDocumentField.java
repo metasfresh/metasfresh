@@ -287,7 +287,7 @@ public final class JSONDocumentField implements Serializable
 		}
 	}
 
-	public JSONDocumentField setWidgetType(final JSONLayoutWidgetType widgetType)
+	public JSONDocumentField setWidgetType(@Nullable final JSONLayoutWidgetType widgetType)
 	{
 		this.widgetType = widgetType;
 		return this;

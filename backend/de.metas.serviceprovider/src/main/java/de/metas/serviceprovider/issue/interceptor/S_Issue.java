@@ -43,6 +43,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -161,6 +162,22 @@ public class S_Issue
 					.appendParametersToMessage()
 					.setParameter("ParentIssueId", record.getS_Parent_Issue_ID())
 					.setParameter("TargetIssueId", record.getS_Issue_ID());
+		}
+	}
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW}, ifColumnsChanged = I_S_Issue.COLUMNNAME_Processed)
+	public void setProcessedTimestamp(@NonNull final I_S_Issue record)
+	{
+		final I_S_Issue oldRecord = InterfaceWrapperHelper.createOld(record, I_S_Issue.class);
+
+		if (oldRecord != null && oldRecord.isProcessed())
+		{
+			return;//nothing to do; it means the processed timestamp was already set
+		}
+
+		if (record.isProcessed())
+		{
+			record.setProcessedDate(TimeUtil.asTimestamp(Instant.now()));
 		}
 	}
 

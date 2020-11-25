@@ -22,12 +22,9 @@ import Header from './header/Header';
 class Container extends PureComponent {
   render() {
     const {
-      docActionElem,
-      docStatusData,
       docNoData,
       docId,
       processStatus,
-      docSummaryData,
       dataId,
       windowId,
       breadcrumb,
@@ -55,11 +52,11 @@ class Container extends PureComponent {
       closeModalCallback,
       editmode,
       handleEditModeToggle,
-      activeTab,
       masterDocumentList,
       pluginComponents,
       setRawModalTitle,
       setRawModalDescription,
+      hasComments,
     } = this.props;
     const pluginModalVisible = pluginModal.visible;
     let PluginModalComponent = null;
@@ -85,14 +82,11 @@ class Container extends PureComponent {
         {!hideHeader && (
           // Forcing refresh component
           <Header
-            docStatus={docActionElem}
             windowId={windowId}
             showIndicator={modalHidden}
             {...{
               entity,
-              docStatusData,
               docNoData,
-              docSummaryData,
               handleDeletedStatus,
               isDocumentNotSaved,
               viewId,
@@ -108,7 +102,7 @@ class Container extends PureComponent {
               docId,
               editmode,
               handleEditModeToggle,
-              activeTab,
+              hasComments,
             }}
           />
         )}
@@ -168,7 +162,7 @@ class Container extends PureComponent {
                   fetchQuickActionsOnInit={
                     !(
                       includedView &&
-                      includedView.windowType &&
+                      includedView.windowId &&
                       includedView.viewId
                     )
                   }
@@ -177,19 +171,17 @@ class Container extends PureComponent {
                   processStatus={processStatus}
                   includedView={includedView}
                   inBackground={
-                    includedView &&
-                    includedView.windowType &&
-                    includedView.viewId
+                    includedView && includedView.windowId && includedView.viewId
                   }
                   inModal={modal.visible}
                 />
 
                 {includedView &&
-                  includedView.windowType &&
+                  includedView.windowId &&
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowId={includedView.windowType}
+                      windowId={includedView.windowId}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
@@ -226,18 +218,14 @@ class Container extends PureComponent {
 /**
  * @typedef {object} Props Component props
  * @prop {*} actions
- * @prop {*} activeTab
  * @prop {*} attachments
  * @prop {*} breadcrumb
  * @prop {*} children
  * @prop {bool} connectionError
  * @prop {*} closeModalCallback
  * @prop {string} dataId
- * @prop {*} docActionElem
- * @prop {*} docStatusData
  * @prop {*} docNoData
  * @prop {string} docId
- * @prop {*} docSummaryData
  * @prop {*} dropzoneFocused
  * @prop {*} editmode
  * @prop {*} entity
@@ -265,21 +253,18 @@ class Container extends PureComponent {
  * @prop {*} setModalTitle
  * @prop {string} siteName
  * @prop {string} windowId
+ * @prop {bool} hasComments - used to indicate comments in the details view
  */
 Container.propTypes = {
   actions: PropTypes.any,
-  activeTab: PropTypes.any,
   attachments: PropTypes.any,
   breadcrumb: PropTypes.any,
   children: PropTypes.any,
   closeModalCallback: PropTypes.any,
   connectionError: PropTypes.bool,
   dataId: PropTypes.any,
-  docActionElem: PropTypes.any,
   docId: PropTypes.any,
   docNoData: PropTypes.any,
-  docSummaryData: PropTypes.any,
-  docStatusData: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
@@ -306,6 +291,7 @@ Container.propTypes = {
   setRawModalDescription: PropTypes.any,
   setRawModalTitle: PropTypes.any,
   windowId: PropTypes.string,
+  hasComments: PropTypes.bool,
 };
 
 /**

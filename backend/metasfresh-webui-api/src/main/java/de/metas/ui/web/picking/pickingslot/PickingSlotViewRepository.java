@@ -1,20 +1,11 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.DisplayType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
-
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -23,7 +14,6 @@ import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
@@ -33,6 +23,13 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.DisplayType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -145,8 +142,6 @@ public class PickingSlotViewRepository
 	// ..at least for checkPreconditionsApplicable()
 	public List<PickingSlotRow> retrieveRows(@NonNull final PickingSlotRepoQuery query)
 	{
-		Check.errorIf(query.getShipmentScheduleIds().isEmpty(), "Given query has no shipmentScheduleIds; query={}", query);
-
 		// get M_HU_Source records that reference active HUs with their locator in this WH and not on the picking location
 		final List<HUEditorRow> sourceHUEditorRows = pickingHUsRepo.retrieveSourceHUs(query);
 		final List<PickingSlotRow> sourceHUPickingSlotRows = sourceHUEditorRows.stream()

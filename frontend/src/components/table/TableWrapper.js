@@ -3,7 +3,7 @@ import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
-
+import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
 
 import Prompt from '../app/Prompt';
@@ -37,6 +37,7 @@ class TableWrapper extends PureComponent {
   }
 
   closeContextMenu = () => {
+    this.fwdUpdateHeight(DROPDOWN_OFFSET_SMALL);
     this.setState({
       contextMenu: {
         ...this.state.contextMenu,
@@ -156,6 +157,30 @@ class TableWrapper extends PureComponent {
     }
   };
 
+  handleFocusAction = ({ fieldName, supportFieldEdit }) => {
+    this.setState({
+      contextMenu: {
+        ...this.state.contextMenu,
+        fieldName,
+      },
+      supportFieldEdit,
+    });
+  };
+
+  handleFastInlineEdit = () => {
+    const { selected } = this.props;
+    const { contextMenu, supportFieldEdit } = this.state;
+
+    const selectedId = selected[0];
+
+    if (this.rowRefs && this.rowRefs[selectedId] && supportFieldEdit) {
+      this.rowRefs[selectedId].initPropertyEditor({
+        fieldName: contextMenu.fieldName,
+        mark: true,
+      });
+    }
+  };
+
   handleFieldEdit = () => {
     const { selected } = this.props;
     const { contextMenu } = this.state;
@@ -166,7 +191,10 @@ class TableWrapper extends PureComponent {
       this.closeContextMenu();
 
       if (this.rowRefs && this.rowRefs[selectedId]) {
-        this.rowRefs[selectedId].initPropertyEditor(contextMenu.fieldName);
+        this.rowRefs[selectedId].initPropertyEditor({
+          fieldName: contextMenu.fieldName,
+          mark: false,
+        });
       }
     }
   };
@@ -222,6 +250,7 @@ class TableWrapper extends PureComponent {
         showIncludedView: false,
         windowId,
         viewId,
+        isModal,
       });
     }
   };
@@ -251,6 +280,16 @@ class TableWrapper extends PureComponent {
         );
       });
     }
+  };
+
+  /**
+   * @method fwdUpdateHeight
+   * @summary - Forward the update height to the child component Table.
+   *            This is needed to call the table height update from within TableContextMenu
+   * @param {integer} height
+   */
+  fwdUpdateHeight = (height) => {
+    this.table.updateHeight(height);
   };
 
   render() {
@@ -289,7 +328,7 @@ class TableWrapper extends PureComponent {
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
-    let showPagination = page && pageLength;
+    let showPagination = !!(page && pageLength);
     if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
       showPagination = false;
     }
@@ -332,6 +371,7 @@ class TableWrapper extends PureComponent {
                   : null
               }
               handleZoomInto={onHandleZoomInto}
+              updateTableHeight={this.fwdUpdateHeight}
             />
           )}
           {!readonly && (
@@ -356,7 +396,9 @@ class TableWrapper extends PureComponent {
           <Table
             {...this.props}
             handleSelect={this.handleSelect}
+            handleFocusAction={this.handleFocusAction}
             onRightClick={this.handleRightClick}
+            onFastInlineEdit={this.handleFastInlineEdit}
             rowRefs={this.rowRefs}
             ref={this.setTableRef}
           />
@@ -367,7 +409,7 @@ class TableWrapper extends PureComponent {
             this.props.children
           }
         </div>
-        {showPagination && (
+        {showPagination ? (
           <div onClick={this.handleClickOutside}>
             <TablePagination
               {...{
@@ -387,7 +429,7 @@ class TableWrapper extends PureComponent {
               onDeselectAll={onDeselectAll}
             />
           </div>
-        )}
+        ) : null}
         {promptOpen && (
           <Prompt
             title="Delete"
@@ -419,6 +461,7 @@ class TableWrapper extends PureComponent {
                 ? this.handleDelete
                 : null
             }
+            onFastInlineEdit={this.handleFastInlineEdit}
             onGetAllLeaves={onGetAllLeaves}
             onIndent={this.handleShortcutIndent}
           />

@@ -18,5 +18,41 @@
     ],
     "queryLimit": 5000,
     "type": "143"
+  },
+  "headerProperties1": {
+    "groups": [
+      {
+        "entries": [
+          {
+            "caption": "Net (Approved For Invoicing)",
+            "value": "1,270.00€"
+          },
+          {
+            "caption": "Trading Unit",
+            "value": "70.00€"
+          },
+          {
+            "caption": "Goods",
+            "value": "1,200.00€"
+          }
+        ]
+      },
+      {
+        "entries": [
+          {
+            "caption": "Net (Not Approved For Invoicing)",
+            "value": "400.00€"
+          },
+          {
+            "caption": "Trading Unit",
+            "value": "0.00€"
+          },
+          {
+            "caption": "Goods",
+            "value": "400.00€"
+          }
+        ]
+      }
+    ]
   }
 }

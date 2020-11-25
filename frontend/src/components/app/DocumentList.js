@@ -8,8 +8,8 @@ import {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
-  filtersToMap,
   DLpropTypes,
+  renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
@@ -18,7 +18,6 @@ import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
-import SelectionAttributes from './SelectionAttributes';
 import GeoMap from '../maps/GeoMap';
 
 /**
@@ -33,11 +32,6 @@ export default class DocumentList extends Component {
     this.state = {
       clickOutsideLock: false,
       toggleWidth: 0,
-      // in some scenarios we don't want to reload table data
-      // after edit, as it triggers request, collapses rows and looses selection
-      // TODO: This value is not really used anywhere anymore, so it's either
-      // solved elsewhere, or doesn't work
-      rowEdited: false,
     };
   }
 
@@ -65,20 +59,15 @@ export default class DocumentList extends Component {
   };
 
   /**
-   * @method setTableRowEdited
+   * @method onTableRowEdited
    * @summary ToDo: Describe the method.
    * @todo TODO: This triggers re-fetching of quickactions. We should handle that via redux
    * or in the quickactions component somehow
    */
-  setTableRowEdited = (val) => {
+  onTableRowEdited = () => {
     const { onUpdateQuickActions } = this.props;
 
-    this.setState(
-      {
-        rowEdited: val,
-      },
-      onUpdateQuickActions
-    );
+    onUpdateQuickActions();
   };
 
   /**
@@ -122,7 +111,7 @@ export default class DocumentList extends Component {
       updateParentSelectedIds,
       modal,
       parentWindowType,
-      reduxData,
+      viewData,
       layout,
       layoutNotFound,
       page,
@@ -142,7 +131,6 @@ export default class DocumentList extends Component {
       hasIncluded,
       onRedirectToNewDocument,
       onShowIncludedViewOnSelect,
-      onClearStaticFilters,
       onSortData,
       onShowSelectedIncludedView,
       table,
@@ -150,6 +138,7 @@ export default class DocumentList extends Component {
       parentSelected,
       onUpdateQuickActions,
       setQuickActionsComponentRef,
+      filterId,
     } = this.props;
     const {
       staticFilters,
@@ -160,7 +149,8 @@ export default class DocumentList extends Component {
       locationData,
       pending,
       layoutPending,
-    } = reduxData;
+      headerProperties,
+    } = viewData;
     const { clickOutsideLock, toggleWidth } = this.state;
     const selected = table.selected;
     const modalType = modal ? modal.modalType : null;
@@ -175,7 +165,7 @@ export default class DocumentList extends Component {
     const blurWhenOpen =
       layout && layout.includedView && layout.includedView.blurWhenOpen;
 
-    if (layoutNotFound || reduxData.notFound) {
+    if (layoutNotFound || viewData.notFound) {
       return (
         <BlankPage what={counterpart.translate('view.error.windowName')} />
       );
@@ -187,6 +177,7 @@ export default class DocumentList extends Component {
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
       layout && layout.supportGeoLocations && locationData;
+    const viewGroups = !isModal && headerProperties && headerProperties.groups;
 
     return (
       <div
@@ -197,6 +188,16 @@ export default class DocumentList extends Component {
         })}
         style={styleObject}
       >
+        {!!(viewGroups && viewGroups.length) && (
+          <div className="panel panel-primary">
+            <div className="panel-groups-header">
+              <div className="optional">
+                {renderHeaderProperties(viewGroups)}
+              </div>
+            </div>
+          </div>
+        )}
+
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
             <button
@@ -242,7 +243,6 @@ export default class DocumentList extends Component {
                     initialValuesNulled,
                   }}
                   windowType={windowId}
-                  filterData={filtersToMap(layout.filters)}
                   updateDocList={onFilterChange}
                   resetInitialValues={onResetInitialFilters}
                 />
@@ -250,8 +250,12 @@ export default class DocumentList extends Component {
 
               {staticFilters && (
                 <FiltersStatic
+                  {...{
+                    filterId,
+                    windowId,
+                    viewId,
+                  }}
                   data={staticFilters}
-                  clearFilters={onClearStaticFilters}
                 />
               )}
             </div>
@@ -299,7 +303,7 @@ export default class DocumentList extends Component {
                     ? {
                         viewId: includedView.viewId,
                         viewSelectedIds: childSelected,
-                        windowType: includedView.windowType,
+                        windowType: includedView.windowId,
                       }
                     : NO_VIEW
                 }
@@ -322,13 +326,13 @@ export default class DocumentList extends Component {
 
         {layout && (
           <div className="document-list-body">
-            <div className="row table-row">
+            <div className="row table-context">
               <Table
                 entity="documentView"
                 ref={this.setTableRef}
                 readonly={true}
                 supportOpenRecord={layout.supportOpenRecord}
-                onRowEdited={this.setTableRowEdited}
+                onRowEdited={this.onTableRowEdited}
                 updateQuickActions={onUpdateQuickActions}
                 onDoubleClick={onRedirectToDocument}
                 handleChangePage={onChangePage}
@@ -372,17 +376,11 @@ export default class DocumentList extends Component {
                   <DataLayoutWrapper
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
-                    {...{ viewId }}
-                    windowType={windowId}
-                    onRowEdited={this.setTableRowEdited}
-                  >
-                    <SelectionAttributes
-                      supportAttribute={table.supportAttribute}
-                      setClickOutsideLock={this.setClickOutsideLock}
-                      selected={selected}
-                      shouldNotUpdate={inBackground}
-                    />
-                  </DataLayoutWrapper>
+                    onRowEdited={this.onTableRowEdited}
+                    supportAttribute={table.supportAttribute}
+                    setClickOutsideLock={this.setClickOutsideLock}
+                    {...{ viewId, selected, inBackground, windowId }}
+                  />
                 )}
               </Table>
               <GeoMap
@@ -416,7 +414,6 @@ DocumentList.propTypes = {
   onChangePage: PropTypes.func,
   onFilterChange: PropTypes.func,
   onRedirectToDocument: PropTypes.func,
-  onClearStaticFilters: PropTypes.func,
   onResetInitialFilters: PropTypes.func,
   onRedirectToNewDocument: PropTypes.func,
   onUpdateQuickActions: PropTypes.func,

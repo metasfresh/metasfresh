@@ -9,6 +9,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
+import de.metas.product.ResourceId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -34,6 +35,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_UOM;
 
 import javax.annotation.Nullable;
@@ -209,6 +211,23 @@ public class BusinessTestHelper
 		return product;
 	}
 
+	public ResourceId createManufacturingResource(
+			@NonNull final String name,
+			@NonNull final I_C_UOM timeUOM)
+	{
+		final I_S_Resource resource = newInstance(I_S_Resource.class);
+		resource.setName(name);
+		resource.setIsManufacturingResource(true);
+		saveRecord(resource);
+		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
+
+		final I_M_Product product = createProduct(name, timeUOM);
+		product.setS_Resource_ID(resourceId.getRepoId());
+		saveRecord(product);
+
+		return resourceId;
+	}
+
 	/**
 	 * Creates and saves a simple {@link I_C_BPartner}
 	 */
@@ -233,7 +252,9 @@ public class BusinessTestHelper
 		return bpl;
 	}
 
-	public I_C_BP_Group createBPGroup(final String name, final boolean isDefault)
+	public I_C_BP_Group createBPGroup(
+			final String name,
+			final boolean isDefault)
 	{
 		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
 		POJOWrapper.setInstanceName(bpGroupRecord, name);
@@ -245,7 +266,10 @@ public class BusinessTestHelper
 		return bpGroupRecord;
 	}
 
-	public I_C_BP_BankAccount createBpBankAccount(@NonNull final BPartnerId bPartnerId, @NonNull final CurrencyId currencyId, @Nullable String iban)
+	public I_C_BP_BankAccount createBpBankAccount(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final CurrencyId currencyId,
+			@Nullable final String iban)
 	{
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
 		bpBankAccount.setIBAN(iban);
@@ -268,7 +292,9 @@ public class BusinessTestHelper
 	/**
 	 * Creates a warehouse and one (default) locator.
 	 */
-	public I_M_Warehouse createWarehouse(final String name, final boolean isIssueWarehouse)
+	public I_M_Warehouse createWarehouse(
+			final String name,
+			final boolean isIssueWarehouse)
 	{
 		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = newInstanceOutOfTrx(org.adempiere.warehouse.model.I_M_Warehouse.class);
 		POJOWrapper.setInstanceName(warehouse, name);
@@ -284,7 +310,9 @@ public class BusinessTestHelper
 		return warehouse;
 	}
 
-	public I_M_Locator createLocator(final String name, final I_M_Warehouse warehouse)
+	public I_M_Locator createLocator(
+			final String name,
+			final I_M_Warehouse warehouse)
 	{
 		final I_M_Locator locator = newInstanceOutOfTrx(I_M_Locator.class);
 		POJOWrapper.setInstanceName(locator, name);
@@ -321,7 +349,6 @@ public class BusinessTestHelper
 	}
 
 	/**
-	 *
 	 * @deprecated please use {@link AdempiereTestHelper#createOrgWithTimeZone()} instead
 	 */
 	@Deprecated

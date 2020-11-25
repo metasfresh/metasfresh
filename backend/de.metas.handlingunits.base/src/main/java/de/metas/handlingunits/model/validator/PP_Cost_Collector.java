@@ -1,45 +1,6 @@
 package de.metas.handlingunits.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.MutableBigDecimal;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.ModelValidator;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.api.IPPCostCollectorBL;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -58,9 +19,21 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMDAO;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.ModelValidator;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
 @Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
@@ -99,7 +72,7 @@ public class PP_Cost_Collector
 	 * <li>make sure those HUs were not touched
 	 * </ul>
 	 */
-	private final void reverseCostCollector_Receipt(final I_PP_Cost_Collector cc)
+	private void reverseCostCollector_Receipt(final I_PP_Cost_Collector cc)
 	{
 		// services
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
@@ -116,20 +89,20 @@ public class PP_Cost_Collector
 
 		//
 		// Get cost collector receipt infos.
-		// We will validate the assigned top level HUs against these informations.
+		// We will validate the assigned top level HUs against this information.
 		final ProductId receiptProductId = ProductId.ofRepoId(cc.getM_Product_ID());
 		final int receiptLocatorId = cc.getM_Locator_ID();
-		final I_C_UOM receiptQtyUOM = Services.get(IUOMDAO.class).getById(cc.getC_UOM_ID());
-		final BigDecimal receiptQty;
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final Quantity receiptQty;
 		if (costCollectorType.isCoOrByProductReceipt())
 		{
 			// NOTE: because a co/by product receipt is actually a negative issue, we need to negate the CC's MovementQty, in order to get a positive value.
-			receiptQty = cc.getMovementQty().negate();
+			receiptQty = costCollectorBL.getMovementQty(cc).negate();
 		}
 		else
 		{
-			receiptQty = cc.getMovementQty();
+			receiptQty = costCollectorBL.getMovementQty(cc);
 		}
 
 		//
@@ -137,7 +110,7 @@ public class PP_Cost_Collector
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(cc);
 		huTrxBL.createHUContextProcessorExecutor(context)
 				.run(huContext -> {
-					final MutableBigDecimal huQtySum = new MutableBigDecimal();
+					Quantity huQtySum = Quantity.zero(receiptQty.getUOM());
 					for (final I_M_HU hu : hus)
 					{
 						// Make sure the HU is on the same locator where we received it
@@ -158,7 +131,7 @@ public class PP_Cost_Collector
 						for (final IHUProductStorage productStorage : huStorage.getProductStorages())
 						{
 							// Skip ZERO quantity storages => those are not relevant
-							final BigDecimal qty = productStorage.getQty(receiptQtyUOM).toBigDecimal();
+							final Quantity qty = productStorage.getQty(huQtySum.getUOM());
 							if (qty.signum() == 0)
 							{
 								continue;
@@ -177,13 +150,13 @@ public class PP_Cost_Collector
 							}
 
 							// sum up the HU qty for our received product
-							huQtySum.add(qty);
+							huQtySum = huQtySum.add(qty);
 						}
 					} // each HU
 
 					//
 					// Make sure the SUM of all HU storages for our product matches the receipt quantity of this cost collector
-					if (!huQtySum.comparesEqualTo(receiptQty))
+					if (!huQtySum.qtyAndUomCompareToEquals(receiptQty))
 					{
 						throw new HUException("Quantity mismatch between sum quantity of HUs and cost collector")
 								.appendParametersToMessage()
@@ -215,7 +188,7 @@ public class PP_Cost_Collector
 				});
 	}
 
-	private final void reverseCostCollector_Issue(@NonNull final I_PP_Cost_Collector cc)
+	private void reverseCostCollector_Issue(@NonNull final I_PP_Cost_Collector cc)
 	{
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -251,7 +224,7 @@ public class PP_Cost_Collector
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(getContextAware(cc));
 		for (final I_M_HU topLevelHU : huPPCostCollectorBL.getTopLevelHUs(cc))
 		{
-			if(huStatusBL.isStatusIssued(topLevelHU))
+			if (huStatusBL.isStatusIssued(topLevelHU))
 			{
 				huStatusBL.setHUStatus(huContext, topLevelHU, X_M_HU.HUSTATUS_Active);
 				handlingUnitsDAO.saveHU(topLevelHU);

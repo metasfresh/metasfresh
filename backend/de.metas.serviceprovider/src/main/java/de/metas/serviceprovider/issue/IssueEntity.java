@@ -29,9 +29,11 @@ import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Setter;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -69,9 +71,11 @@ public class IssueEntity
 	private IssueId parentIssueId;
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
 	private BigDecimal estimatedEffort;
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
 	private BigDecimal budgetedEffort;
 
 	@Nullable
@@ -118,6 +122,14 @@ public class IssueEntity
 	@Nullable
 	private Instant latestActivityOnIssue;
 
+	private final boolean processed;
+
+	@Nullable
+	private LocalDate deliveredDate;
+
+	@Nullable
+	private  Instant processedTimestamp;
+
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if ( this.estimatedEffort == null || this.estimatedEffort.signum() == 0 )
@@ -131,14 +143,6 @@ public class IssueEntity
 		if ( this.budgetedEffort == null || this.budgetedEffort.signum() == 0 )
 		{
 			this.budgetedEffort = budgetedEffort;
-		}
-	}
-
-	public void setRoughEstimationIfNotSet(@Nullable final BigDecimal roughEstimation)
-	{
-		if ( this.roughEstimation == null || this.roughEstimation.signum() == 0 )
-		{
-			this.roughEstimation = roughEstimation;
 		}
 	}
 

@@ -1,10 +1,8 @@
-package de.metas.edi.api.impl;
-
 /*
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,15 +20,9 @@ package de.metas.edi.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
+package de.metas.edi.api.impl;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.IQuery;
-
+import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
@@ -43,6 +35,15 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.IQuery;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public class DesadvDAO implements IDesadvDAO
 {
@@ -65,6 +66,12 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processing, false)
 				.create()
 				.firstOnly(I_EDI_Desadv.class);
+	}
+
+	@Override
+	public I_EDI_Desadv retrieveById(final @NonNull EDIDesadvId ediDesadvId)
+	{
+		return InterfaceWrapperHelper.load(ediDesadvId, I_EDI_Desadv.class);
 	}
 
 	@Override
@@ -256,5 +263,11 @@ public class DesadvDAO implements IDesadvDAO
 			Check.errorIf(true, "AD_SysConfig {} = {} can't be parsed as a number", SYS_CONFIG_DefaultMinimumPercentage, minimumPercentageAccepted_Value);
 			return null; // shall not be reached
 		}
+	}
+
+	@Override
+	public void save(@NonNull final I_EDI_Desadv ediDesadv)
+	{
+		InterfaceWrapperHelper.save(ediDesadv);
 	}
 }
