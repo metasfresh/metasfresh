@@ -128,7 +128,7 @@ ${h000.testFlag?right_pad(1)?substring(0, 1)}<#lt><#t>
 		${""?right_pad(8)?substring(0, 8)}<#lt><#t><#-- join.p100.bestBeforeDate?string("yyyyMMdd") -->
 		${join.p100.chargenNo?right_pad(35)?substring(0, 35)}<#lt><#t>
 		${join.p100.articleClass?right_pad(35)?substring(0, 35)}<#lt><#t>
-		${join.p100.differenceQTY?left_pad(3)?substring(0, 3)}<#lt><#t>
+		${join.p100.differenceQTY?left_pad(15)?substring(0, 15)}<#lt><#t>
 		${join.p100.discrepancyCode?right_pad(3)?substring(0, 3)}<#lt><#t>
 		${""?right_pad(8)?substring(0, 8)}<#lt><#t><#-- join.p100.diffDeliveryDate?string("yyyyMMdd") -->
 		${join.p100.eanTU?right_pad(14)?substring(0, 14)}<#lt><#t>
