@@ -1,21 +1,19 @@
 package de.metas.ui.web.pporder;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.eevolution.api.PPOrderPlanningStatus;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.Getter;
 import lombok.NonNull;
+import org.eevolution.api.PPOrderPlanningStatus;
+
+import javax.annotation.concurrent.Immutable;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -43,17 +41,22 @@ import lombok.NonNull;
  * Contains {@link PPOrderLinesView}'s data
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Immutable
-/* package */final class PPOrderLinesViewData
+/* package */ final class PPOrderLinesViewData
 {
+	@Getter
 	private final ITranslatableString description;
+	@Getter
 	private final PPOrderPlanningStatus planningStatus;
 
-	/** Top level records list */
+	/**
+	 * Top level records list
+	 */
 	private final ImmutableList<PPOrderLineRow> records;
-	/** All records (included ones too) indexed by DocumentId */
+	/**
+	 * All records (included ones too) indexed by DocumentId
+	 */
 	private final ImmutableMap<DocumentId, PPOrderLineRow> allRecordsById;
 
 	PPOrderLinesViewData(
@@ -68,19 +71,28 @@ import lombok.NonNull;
 		allRecordsById = buildRecordsByIdMap(this.records);
 	}
 
-	public ITranslatableString getDescription()
+	private static ImmutableMap<DocumentId, PPOrderLineRow> buildRecordsByIdMap(@NonNull final List<PPOrderLineRow> rows)
 	{
-		return description;
+		if (rows.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<DocumentId, PPOrderLineRow> rowsById = ImmutableMap.builder();
+		rows.forEach(row -> indexByIdRecursively(rowsById, row));
+		return rowsById.build();
 	}
 
-	public PPOrderPlanningStatus getPlanningStatus()
+	private static void indexByIdRecursively(
+			@NonNull final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector,
+			@NonNull final PPOrderLineRow row)
 	{
-		return planningStatus;
+		collector.put(row.getRowId().toDocumentId(), row);
+		row.getIncludedRows().forEach(includedRow -> indexByIdRecursively(collector, includedRow));
 	}
 
-	public PPOrderLineRow getById(final PPOrderLineRowId rowId)
+	public PPOrderLineRow getById(@NonNull final PPOrderLineRowId rowId)
 	{
-
 		final DocumentId documentId = rowId.toDocumentId();
 
 		final PPOrderLineRow row = allRecordsById.get(documentId);
@@ -91,22 +103,23 @@ import lombok.NonNull;
 		return row;
 	}
 
-	public Stream<PPOrderLineRow> streamByIds(final DocumentIdsSelection documentIds)
+	public Stream<PPOrderLineRow> streamByIds(@NonNull final DocumentIdsSelection documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
 		{
 			return Stream.empty();
 		}
-
-		if (documentIds.isAll())
+		else if (documentIds.isAll())
 		{
 			return records.stream();
 		}
-
-		return documentIds.stream()
-				.distinct()
-				.map(allRecordsById::get)
-				.filter(Objects::nonNull);
+		else
+		{
+			return documentIds.stream()
+					.distinct()
+					.map(allRecordsById::get)
+					.filter(Objects::nonNull);
+		}
 	}
 
 	public Stream<PPOrderLineRow> stream()
@@ -122,7 +135,7 @@ import lombok.NonNull;
 				.orElse(Stream.of());
 	}
 
-	private static Stream<PPOrderLineRow> streamRecursive(final PPOrderLineRow row)
+	private static Stream<PPOrderLineRow> streamRecursive(@NonNull final PPOrderLineRow row)
 	{
 		return row.getIncludedRows()
 				.stream()
@@ -133,24 +146,5 @@ import lombok.NonNull;
 	public long size()
 	{
 		return records.size();
-	}
-
-	private static ImmutableMap<DocumentId, PPOrderLineRow> buildRecordsByIdMap(final List<PPOrderLineRow> rows)
-	{
-		if (rows.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableMap.Builder<DocumentId, PPOrderLineRow> rowsById = ImmutableMap.builder();
-		rows.forEach(row -> indexByIdRecursively(rowsById, row));
-		return rowsById.build();
-	}
-
-	private static void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, PPOrderLineRow> collector, final PPOrderLineRow row)
-	{
-		collector.put(row.getRowId().toDocumentId(), row);
-		row.getIncludedRows()
-				.forEach(includedRow -> indexByIdRecursively(collector, includedRow));
 	}
 }
