@@ -23,6 +23,7 @@
 package de.metas.edi.esb.desadvexport.compudata;
 
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.desadvexport.AbstractEDIDesadvCommonBean;
@@ -48,7 +49,6 @@ import java.util.List;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.toDate;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 import static java.math.BigDecimal.ZERO;
 
 public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
@@ -64,14 +64,14 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	{
 		final CompuDataDesadvValidation validation = new CompuDataDesadvValidation();
 
-		validateString(exchange.getProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST, String.class), "exchange property " + CompuDataDesadvRoute.EDI_DESADV_IS_TEST + " cannot be null or empty");
-
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
 
+		final DesadvSettings settings = DesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 
-		final H000 desadvDocument = createEDIDesadvFromXMLBean(xmlDesadv, decimalFormat, exchange.getProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST, String.class));
+		final H000 desadvDocument = createEDIDesadvFromXMLBean(xmlDesadv, decimalFormat, settings.getTestIndicator());
 
 		final JavaSource source = new JavaSource(desadvDocument);
 		exchange.getIn().setBody(source, H000.class);
