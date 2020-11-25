@@ -48,11 +48,11 @@ public class AD_User_MKTG_Channels
 	{
 	}
 
-	@ModelChange(//
+	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void checkIfCanBeDeleted(@NonNull final I_AD_User_MKTG_Channels userMktgChannel)
 	{
-		int count = mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(userMktgChannel.getAD_User_ID()));
+		final int count = mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(userMktgChannel.getAD_User_ID()));
 		if (count == 1)
 		{
 			throw new AdempiereException(MSG_CAN_NOT_REMOVE_CHANNEL).markAsUserValidationError();

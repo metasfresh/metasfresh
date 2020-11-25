@@ -50,7 +50,7 @@ public class MKTG_Channel
 	{
 	}
 
-	@ModelChange(//
+	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void checkIfCanBeDeleted(@NonNull final I_MKTG_Channel mktgChannel)
 	{
