@@ -688,11 +688,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER SEQUENCE AD_USER_MKTG_CHANNELS_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 RESTART 1000000
 ;
 
--- 2020-11-23T13:38:47.769Z
--- URL zum Konzept
-ALTER TABLE AD_User_MKTG_Channels ADD COLUMN AD_User_MKTG_Channels_ID numeric(10,0)
-;
-
 -- 2020-11-23T13:40:42.788Z
 -- URL zum Konzept
 /* DDL */ CREATE TABLE public.AD_User_MKTG_Channels (AD_User_MKTG_Channels_ID NUMERIC(10) NOT NULL, CONSTRAINT AD_User_MKTG_Channels_Key PRIMARY KEY (AD_User_MKTG_Channels_ID))
@@ -1123,3 +1118,22 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_I
 /* DDL */ SELECT public.db_alter_table('AD_User_MKTG_Channels','ALTER TABLE public.AD_User_MKTG_Channels ADD COLUMN AD_Org_ID NUMERIC(10)')
 ;
 
+-- 2020-11-25T14:32:57.596Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540558,0,541553,TO_TIMESTAMP('2020-11-25 16:32:57','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y','N','AD_User_Id_Index','N',TO_TIMESTAMP('2020-11-25 16:32:57','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+;
+
+-- 2020-11-25T14:32:57.602Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540558 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2020-11-25T14:33:55.089Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,572206,541047,540558,0,TO_TIMESTAMP('2020-11-25 16:33:54','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y',10,TO_TIMESTAMP('2020-11-25 16:33:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2020-11-25T14:34:10.257Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE INDEX AD_User_Id_Index ON AD_User_MKTG_Channels (AD_User_ID) WHERE IsActive='Y'
+;
