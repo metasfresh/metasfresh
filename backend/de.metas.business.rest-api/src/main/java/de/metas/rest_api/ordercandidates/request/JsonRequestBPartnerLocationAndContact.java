@@ -42,7 +42,7 @@ import static de.metas.util.Check.isEmpty;
 		+ "Can be used multiple times in each order line candidate, for billTo-partner, shipTo-partner etc.\n" //
 		+ "Note that given the respective use-case, either `bpartner.code`, `bpartner.externalId` or `location.gln` might be `null`, but not all at once.")
 @Value
-public final class JsonRequestBPartnerLocationAndContact
+public class JsonRequestBPartnerLocationAndContact
 {
 	@ApiModelProperty(required = true)
 	JsonRequestBPartner bpartner;
