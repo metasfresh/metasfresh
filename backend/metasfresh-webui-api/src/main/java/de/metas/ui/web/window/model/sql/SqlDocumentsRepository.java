@@ -1,40 +1,7 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.PO;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.model.POCacheSourceModel;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -63,6 +30,37 @@ import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.PO;
+import org.compiere.model.POInfo;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -87,11 +85,9 @@ import lombok.NonNull;
  */
 
 /**
- *
  * IMPORTANT: please make sure this is state-less and thread-safe
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class SqlDocumentsRepository implements DocumentsRepository
 {
@@ -212,7 +208,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				if (loadLimitMax > 0 && loadCount >= loadLimitMax)
 				{
 					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}"
-							+ "\n To change this limit check {} sysconfig.",
+									+ "\n To change this limit check {} sysconfig.",
 							sql, sqlParams, loadCount, SYSCONFIG_LoadLimitMax);
 					break;
 				}
@@ -221,7 +217,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				if (!loadLimitWarnReported && loadLimitWarn > 0 && loadCount >= loadLimitWarn)
 				{
 					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}"
-							+ "\n To change this limit check {} sysconfig.",
+									+ "\n To change this limit check {} sysconfig.",
 							sql, sqlParams, loadCount, SYSCONFIG_LoadLimitWarn);
 					loadLimitWarnReported = true;
 				}
@@ -807,7 +803,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	/** @return true if PO field's values can be considered the same */
+	/**
+	 * @return true if PO field's values can be considered the same
+	 */
 	private static boolean poFieldValueEqual(final Object value1, final Object value2)
 	{
 		if (value1 == value2)
@@ -898,7 +896,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final Set<Object> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeys();
 
 		final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
-		final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeys()) : new HashSet<>();
+		final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeysAsInt()) : new HashSet<>();
 
 		//
 		// Delete removed labels
