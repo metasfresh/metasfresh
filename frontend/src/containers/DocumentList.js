@@ -28,7 +28,6 @@ import {
 } from '../actions/ViewActions';
 import {
   deleteTable,
-  updateTableSelection,
   updateGridTableData,
   deselectTableRows,
 } from '../actions/TableActions';
@@ -793,7 +792,6 @@ export default connect(
     showIncludedView,
     push,
     updateRawModal,
-    updateTableSelection,
     deselectTableRows,
     fetchLocationConfig,
     updateGridTableData,
