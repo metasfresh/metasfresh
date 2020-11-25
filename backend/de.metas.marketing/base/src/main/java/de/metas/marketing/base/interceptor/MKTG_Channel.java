@@ -22,6 +22,7 @@
 
 package de.metas.marketing.base.interceptor;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.marketing.base.api.IMKTGChannelDao;
 import de.metas.marketing.base.model.I_MKTG_Channel;
 import de.metas.user.UserId;
@@ -43,12 +44,14 @@ public class MKTG_Channel
 
 	private final IMKTGChannelDao mktgChannelDao = Services.get(IMKTGChannelDao.class);
 
+	private static final AdMessageKey MSG_CAN_NOT_DELETE = AdMessageKey.of("de.metas.marketing.base.marketingChannelRemovalError");
+
 	private MKTG_Channel()
 	{
 	}
 
 	@ModelChange(//
-			timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_CHANGE })
+			timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void checkIfCanBeDeleted(@NonNull final I_MKTG_Channel mktgChannel)
 	{
 		boolean canBeDeleted = true;
@@ -61,9 +64,9 @@ public class MKTG_Channel
 				break;
 			}
 		}
-		if (canBeDeleted == false)
+		if (!canBeDeleted)
 		{
-			throw new AdempiereException("There are users only having this channel. Can't delete").markAsUserValidationError();
+			throw new AdempiereException(MSG_CAN_NOT_DELETE).markAsUserValidationError();
 		}
 
 	}
