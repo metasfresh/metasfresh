@@ -26,11 +26,13 @@ class Element extends PureComponent {
       columnIndex,
     } = this.props;
 
+    const { widgetType } = this.props.elementLayout;
     const autoFocus = isFocused && elementIndex === 0;
     const fieldName = elementLayout.fields ? elementLayout.fields[0].field : '';
     const layoutId = `${sectionIndex}_${columnIndex}_${elementGroupIndex}_${elementsLineIndex}_${elementIndex}`;
     const element = omit(elementLayout, ['fields']);
-    const dataSource = isModal ? 'modal' : 'element';
+    let dataSource = isModal ? 'modal' : 'element';
+    dataSource = widgetType === 'InlineTab' ? 'inline-tab' : dataSource;
 
     return (
       <WidgetWrapper

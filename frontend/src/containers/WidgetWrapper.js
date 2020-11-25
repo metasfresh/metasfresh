@@ -22,6 +22,7 @@ import {
 
 import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
+import InlineTab from '../components/widget/InlineTab';
 
 /**
  * @file Class based component.
@@ -35,7 +36,11 @@ import RawWidget from '../components/widget/RawWidget';
  */
 class WidgetWrapper extends PureComponent {
   render() {
-    const { renderMaster } = this.props;
+    const { renderMaster, widgetType } = this.props;
+
+    if (widgetType === 'InlineTab') {
+      return <InlineTab />;
+    }
 
     if (renderMaster) {
       return <MasterWidget {...this.props} />;
@@ -58,6 +63,7 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
+
   const data = getData(state, isModal);
 
   let widgetData = null;
@@ -135,6 +141,7 @@ WidgetWrapper.propTypes = {
   openModal: PropTypes.func.isRequired,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
+  widgetType: PropTypes.string,
 };
 
 export default connect(

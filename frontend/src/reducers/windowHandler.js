@@ -191,14 +191,17 @@ const getProcessLayout = (state, isModal, elementIndex) =>
  * @param {object} layout
  */
 const selectWidgetData = (data, layout) => {
+  if (layout.widgetType === 'InlineTab') return [{}];
   let widgetData = null;
 
-  widgetData = layout.fields.reduce((result, item) => {
-    const values = get(data, [`${item.field}`], {});
-    result.push(values);
+  if (layout.fields) {
+    widgetData = layout.fields.reduce((result, item) => {
+      const values = get(data, [`${item.field}`], {});
+      result.push(values);
 
-    return result;
-  }, []);
+      return result;
+    }, []);
+  }
 
   if (!widgetData.length) {
     widgetData = [{}];
