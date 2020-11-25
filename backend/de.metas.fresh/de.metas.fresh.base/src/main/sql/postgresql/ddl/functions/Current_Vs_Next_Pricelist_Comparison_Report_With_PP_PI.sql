@@ -42,7 +42,11 @@ CREATE OR REPLACE FUNCTION report.Current_Vs_Next_Pricelist_Comparison_Report_Wi
             )
 AS
 $$
-WITH PriceListVersionsByValidFrom AS
+WITH plvvr AS
+         (select plv.* from Report.Fresh_PriceList_Version_Val_Rule plv ),
+     bpg AS (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID),
+     PriceListVersionsByValidFrom AS
+
          (
              SELECT t.*
              FROM ((SELECT --
@@ -51,12 +55,12 @@ WITH PriceListVersionsByValidFrom AS
                            plv.validfrom,
                            plv.name,
                            row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank
-                    FROM Report.Fresh_PriceList_Version_Val_Rule plv
+                    FROM plvvr plv
                     WHERE TRUE
                       AND plv.validfrom <= now()
                       AND plv.issotrx = p_IsSoTrx
                       AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
-                      AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
+                      AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (select bpg.c_bpartner_id from bpg))
                     ORDER BY TRUE,
                              plv.validfrom DESC,
                              plv.m_pricelist_version_id DESC
@@ -69,12 +73,12 @@ WITH PriceListVersionsByValidFrom AS
                            plv.name,
                            1001 - (row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom ASC, plv.m_pricelist_version_id ASC)) rank
 
-                    FROM Report.Fresh_PriceList_Version_Val_Rule plv
+                    FROM plvvr plv
                     WHERE TRUE
                       AND plv.validfrom > now()
                       AND plv.issotrx = p_IsSoTrx
                       AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
-                      AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
+                      AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (select bpg.c_bpartner_id from bpg))
                     ORDER BY TRUE,
                              plv.validfrom ASC,
                              plv.m_pricelist_version_id ASC
@@ -108,7 +112,7 @@ WITH PriceListVersionsByValidFrom AS
                     (SELECT bpl.c_bpartner_location_id FROM c_bpartner_location bpl WHERE bpl.c_bpartner_id = plv.c_bpartner_id ORDER BY bpl.isbilltodefault DESC LIMIT 1) c_bpartner_location_id,
                     (SELECT plv2.ad_org_id FROM m_pricelist_version plv2 WHERE plv2.m_pricelist_version_id = plv.PLV1_ID)                                                  AD_Org_ID
              FROM currentAndPreviousPLV plv
-                      INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
+                      INNER JOIN LATERAL report.fresh_PriceList_Details_Report_With_PP_PI(
                      plv.c_bpartner_id,
                      plv.PLV1_ID,
                      plv.PLV2_ID,
