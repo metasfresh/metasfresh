@@ -3,8 +3,10 @@ import configureStore from 'redux-mock-store';
 import produce from 'immer';
 import merge from 'merge';
 
-import tablesHandler, { tableState, getTableId } from '../../reducers/tables';
-import viewHandler from '../../reducers/viewHandler';
+import tablesHandler, { initialTableState, getTableId } from '../../reducers/tables';
+import { initialState as initialViewsState } from '../../reducers/viewHandler';
+import { getQuickActionsId } from '../../reducers/actionsHandler';
+
 import {
   createTableData,
   createGridTable,
@@ -13,6 +15,8 @@ import {
   updateTabTable,
   deleteTable,
   setActiveSort,
+  updateTableSelection,
+  deselectTableRows,
 } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { flattenRows } from '../../utils/documentListHelper';
@@ -34,7 +38,7 @@ const createStore = function(state = {}) {
   const res = merge.recursive(
     true,
     {
-      ...viewHandler,
+      viewHandler: initialViewsState,
       tables: { ...tablesHandler(undefined, {}) },
     },
     state
@@ -75,6 +79,36 @@ describe('TableActions general', () => {
     store.dispatch(setActiveSort(id, payload.active));
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
+
+  it('should call UPDATE_TABLE_SELECTION action with correct payload', () => {
+    const { windowId, tabId, id, rowId } = masterRowFixtures.row_data1[0];
+    const tableId = getTableId({ windowId, tabId, docId: id });
+    const keyProperty = 'rowId';
+    const payload = {
+      id: tableId,
+      selection: [rowId],
+      keyProperty,
+    }
+    const store = mockStore();
+    const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload }];
+
+    store.dispatch(updateTableSelection({ id: tableId, selection: [rowId], keyProperty }));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  it('should call DESELECT_TABLE_ROWS action with correct payload', () => {
+    const { windowId, tabId, id, rowId } = masterRowFixtures.row_data1[0];
+    const tableId = getTableId({ windowId, tabId, docId: id });
+    const payload = {
+      id: tableId,
+      selection: [],
+    }
+    const store = mockStore();
+    const expectedActions = [{ type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload }];
+
+    store.dispatch(deselectTableRows({ id: tableId, selection: [] }));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  }); 
 });
 
 describe('TableActions grid', () => {
@@ -134,7 +168,7 @@ describe('TableActions grid', () => {
       tables: {
         length: 1,
         [id]: {
-          ...tableState,
+          ...initialTableState,
           ...tableData_create,
         },
       },
@@ -197,6 +231,70 @@ describe('TableActions grid', () => {
       );
     });
   });
+
+  it(`should call UPDATE_TABLE_SELECTION, FETCH_QUICK_ACTIONS
+    and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, () => {
+    const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
+    const rowResponse = gridRowFixtures.data3_parent;
+    const { windowId, viewId , result} = rowResponse;
+    const rowId = result[0].id;
+    const { includedView } = result[0];
+    const tableId = getTableId({ windowId, viewId });
+    const tableData_create = createTableData({
+      ...parentLayoutResponse,
+      ...rowResponse,
+      keyProperty: 'id',
+    });
+    const initialState = createStore({
+      viewHandler: {
+        modals: {
+          [windowId]: {
+            layout: { ...parentLayoutResponse },
+          },
+        },
+      },
+      tables: {
+        length: 1,
+        [tableId]: {
+          ...initialTableState,
+          ...tableData_create,
+        },
+      },
+    });
+    const store = mockStore(initialState);
+
+    const params = {
+      id: tableId,
+      selection: [rowId],
+      windowId,
+      viewId,
+      isModal: true,
+    };
+    const payload1 = { id: tableId, selection: [rowId], keyProperty: 'id' };
+    const qActionsId1 = getQuickActionsId({ windowId, viewId });
+    const payload2 = { id: qActionsId1 };
+    const payload3 = {
+      id: windowId,
+      showIncludedView: true,
+      isModal: true,
+    };
+    const payload4 = {
+      id: includedView.windowId,
+      viewId: includedView.viewId,
+      viewProfileId: null,
+      parentId: windowId,      
+    };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload: payload1 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload2 },
+      { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload3 },
+      { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload4 },
+    ];
+
+    store.dispatch(updateTableSelection(params));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  }); 
 });
 
 describe('TableActions tab', () => {

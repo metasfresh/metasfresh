@@ -749,5 +749,74 @@
     "firstRow": 0,
     "pageLength": 20,
     "type": "540350"
+  },
+  "data3_parent": {
+    "windowId": "540350",
+    "viewId": "540350-BQ",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 1,
+    "result": [
+      {
+        "id": "1000002",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000002",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1000007",
+              "caption": "0006"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "0"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "1"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156448",
+              "caption": "1000022_CustomerTest_25T12_46_00_552"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005632",
+              "caption": "BOM1-MainProduct_25T12_46_00_552_1000035",
+              "description": "Test Product"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-11-25T23:59:59.000+01:00"
+          }
+        },
+        "type": "LU",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-BQ-1000002"
+        }
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540350"
   }
 }
