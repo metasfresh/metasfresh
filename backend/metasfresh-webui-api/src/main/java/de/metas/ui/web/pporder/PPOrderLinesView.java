@@ -92,13 +92,13 @@ public class PPOrderLinesView implements IView
 
 	@Builder
 	private PPOrderLinesView(
-			final ViewId parentViewId,
-			final DocumentId parentRowId,
+			@Nullable final ViewId parentViewId,
+			@Nullable final DocumentId parentRowId,
 			@NonNull final ViewId viewId,
 			@NonNull final JSONViewDataType viewType,
-			final Set<DocumentPath> referencingDocumentPaths,
+			@Nullable final Set<DocumentPath> referencingDocumentPaths,
 			@NonNull final PPOrderId ppOrderId,
-			final PPOrderLinesViewDataSupplier dataSupplier,
+			@NonNull final PPOrderLinesViewDataSupplier dataSupplier,
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.parentViewId = parentViewId; // might be null
@@ -168,7 +168,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	/**
-	 * @param may be {@code null}; in that case, the method also returns {@code null}
+	 * @param documentId may be {@code null}; in that case, the method also returns {@code null}
 	 * @return the table name for the given row
 	 */
 	@Override
@@ -291,17 +291,13 @@ public class PPOrderLinesView implements IView
 	{
 		return streamByIds(documentIds)
 				.map(ppOrderLineRow -> getModel(ppOrderLineRow, modelClass))
-				.filter(optional -> optional.isPresent())
-				.map(optional -> optional.get())
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(Collectors.toList());
 	}
 
 	/**
 	 * loads and returns the given {@code ppOrderLineRow}'s {@code PP_Order} or {@code P_Order_BOMLine}, if available.
-	 *
-	 * @param ppOrderLineRow
-	 * @param modelClass
-	 * @return
 	 */
 	private <T> Optional<T> getModel(
 			@NonNull final PPOrderLineRow ppOrderLineRow,
