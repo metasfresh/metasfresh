@@ -22,14 +22,15 @@
 
 package de.metas.handlingunits.pporder.api;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Stream;
-
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
+import org.eevolution.api.PPCostCollectorId;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 
 public interface IHUPPOrderQtyDAO extends ISingletonService
 {
@@ -56,9 +57,10 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 
 	List<I_PP_Order_Qty> retrieveOrderQtys(PPOrderId ppOrderId);
 
-	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final int costCollectorId);
+	@Nullable
+	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final PPCostCollectorId costCollectorId);
 
-	default Stream<I_PP_Order_Qty> streamOrderQtys(PPOrderId ppOrderId)
+	default Stream<I_PP_Order_Qty> streamOrderQtys(final PPOrderId ppOrderId)
 	{
 		return retrieveOrderQtys(ppOrderId).stream();
 	}

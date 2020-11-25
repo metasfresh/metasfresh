@@ -15,6 +15,8 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -46,6 +48,7 @@ public class PickingCandidateId implements RepoIdAware
 		return new PickingCandidateId(repoId);
 	}
 
+	@Nullable
 	public static PickingCandidateId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -75,7 +78,7 @@ public class PickingCandidateId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final PickingCandidateId id)
+	public static int toRepoId(@Nullable final PickingCandidateId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
