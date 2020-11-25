@@ -1,24 +1,9 @@
 package de.metas.ui.web.pporder;
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.PPOrderPlanningStatus;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
@@ -52,9 +37,20 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderPlanningStatus;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -80,16 +76,17 @@ import lombok.NonNull;
 
 class PPOrderLinesLoader
 {
-	public static final PPOrderLinesLoaderBuilder builder(final WindowId viewWindowId)
+	public static PPOrderLinesLoaderBuilder builder(final WindowId viewWindowId)
 	{
 		return new PPOrderLinesLoaderBuilder().viewWindowId(viewWindowId);
 	}
 
 	//
 	// Services
-	private final transient IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
-	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-	private final transient IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
@@ -112,9 +109,9 @@ class PPOrderLinesLoader
 		this.asiAttributesProvider = asiAttributesProvider;
 	}
 
-	public PPOrderLinesViewData retrieveData(final PPOrderId ppOrderId)
+	public PPOrderLinesViewData retrieveData(@NonNull final PPOrderId ppOrderId)
 	{
-		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
+		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId, I_PP_Order.class);
 
 		final int mainProductBOMLineId = 0;
 		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.streamOrderQtys(ppOrderId)
@@ -142,8 +139,7 @@ class PPOrderLinesLoader
 	private static boolean isReadOnly(@NonNull final I_PP_Order ppOrder)
 	{
 		final PPOrderPlanningStatus ppOrder_planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
-		final boolean readonly = PPOrderPlanningStatus.COMPLETE.equals(ppOrder_planningStatus);
-		return readonly;
+		return PPOrderPlanningStatus.COMPLETE.equals(ppOrder_planningStatus);
 	}
 
 	private List<PPOrderLineRow> createRowsForBomLines(
@@ -152,7 +148,7 @@ class PPOrderLinesLoader
 	{
 		final Comparator<PPOrderLineRow> ppOrderBomLineRowSorter = //
 				Comparator.<PPOrderLineRow>comparingInt(row -> row.isReceipt() ? 0 : 1) // receipt lines first
-						.thenComparing(row -> row.getOrderBOMLineId());  // BOM lines order
+						.thenComparing(PPOrderLineRow::getOrderBOMLineId);  // BOM lines order
 
 		final Function<? super I_PP_Order_BOMLine, ? extends PPOrderLineRow> ppOrderBomLineRowCreator = //
 				ppOrderBOMLine -> createRowForBOMLine(
@@ -161,15 +157,16 @@ class PPOrderLinesLoader
 						ppOrderQtysByBOMLineId.get(ppOrderBOMLine.getPP_Order_BOMLine_ID()));
 
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
-		final ImmutableList<PPOrderLineRow> bomLineRows = ppOrderBOMDAO.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+		return ppOrderBOMDAO.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.map(ppOrderBomLineRowCreator)
 				.sorted(ppOrderBomLineRowSorter)
 				.collect(ImmutableList.toImmutableList());
-		return bomLineRows;
 	}
 
-	private List<PPOrderLineRow> createRowsForIssueProductSourceHUs(WarehouseId warehouseId, @NonNull final List<PPOrderLineRow> bomLineRows)
+	private List<PPOrderLineRow> createRowsForIssueProductSourceHUs(
+			final WarehouseId warehouseId,
+			@NonNull final List<PPOrderLineRow> bomLineRows)
 	{
 		final ImmutableSet<ProductId> issueProductIds = bomLineRows.stream()
 				.filter(PPOrderLineRow::isIssue)
@@ -191,7 +188,7 @@ class PPOrderLinesLoader
 		return result.build();
 	}
 
-	private static final ITranslatableString extractDescription(final I_PP_Order ppOrder)
+	private static ITranslatableString extractDescription(final I_PP_Order ppOrder)
 	{
 		return TranslatableStrings.join(" ",
 				extractDocTypeName(ppOrder),
@@ -236,6 +233,7 @@ class PPOrderLinesLoader
 				.build();
 	}
 
+	@Nullable
 	private String computePackingInfo(@NonNull final I_PP_Order ppOrder)
 	{
 		final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
@@ -285,6 +283,7 @@ class PPOrderLinesLoader
 				.build();
 	}
 
+	@Nullable
 	private String computePackingInfo(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
 		final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
@@ -293,7 +292,8 @@ class PPOrderLinesLoader
 		return extractPackingInfoString(lutuConfig);
 	}
 
-	private static final String extractPackingInfoString(final I_M_HU_LUTU_Configuration lutuConfig)
+	@Nullable
+	private static String extractPackingInfoString(final I_M_HU_LUTU_Configuration lutuConfig)
 	{
 		if (lutuConfig == null)
 		{
@@ -310,10 +310,9 @@ class PPOrderLinesLoader
 			@NonNull final List<I_PP_Order_Qty> ppOrderQtys,
 			final boolean readOnly)
 	{
-		final ImmutableList<PPOrderLineRow> includedRows = ppOrderQtys.stream()
+		return ppOrderQtys.stream()
 				.map(ppOrderQty -> createForPPOrderQty(ppOrderQty, readOnly))
 				.collect(ImmutableList.toImmutableList());
-		return includedRows;
 	}
 
 	private PPOrderLineRow createForPPOrderQty(final I_PP_Order_Qty ppOrderQty, final boolean readonly)

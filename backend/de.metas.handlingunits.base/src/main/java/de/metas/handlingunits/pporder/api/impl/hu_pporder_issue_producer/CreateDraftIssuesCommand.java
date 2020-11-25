@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
@@ -322,8 +323,8 @@ public class CreateDraftIssuesCommand
 			// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
 			// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
 			// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-			final String issueMethod = targetBOMLine.getIssueMethod();
-			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+			final BOMComponentIssueMethod issueMethod = BOMComponentIssueMethod.ofNullableCode(targetBOMLine.getIssueMethod());
+			if (BOMComponentIssueMethod.IssueOnlyForReceived.equals(issueMethod))
 			{
 				return ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
 			}

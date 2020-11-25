@@ -22,17 +22,10 @@
 
 package de.metas.ui.web.pporder.process;
 
-import java.util.List;
-
-import de.metas.handlingunits.IHUStatusBL;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -51,11 +44,14 @@ import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import java.util.List;
 
 /**
  * This process opens a HU editor window within the production window
@@ -70,9 +66,6 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	private final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-	@Autowired
-	private IViewsRepository viewsRepo;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -98,7 +91,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		 * For example, if a BOM consists in several products that will, in the end, be wrapped together, the "wrap" product will have this issue method.
 		 * This means that after all the products needed for the BOM are received, they will be wrapped with a piece of wrap that is big enough to fit them all and we will issue only the needed quantity of it.
 		 */
-		final boolean isIssueOnlyWhatWasReceived = X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(singleSelectedRow.getIssueMethod());
+		final boolean isIssueOnlyWhatWasReceived = BOMComponentIssueMethod.IssueOnlyForReceived.equals(singleSelectedRow.getIssueMethod());
 
 		if (isIssueOnlyWhatWasReceived)
 		{
@@ -132,7 +125,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 
 		final List<HuId> availableHUsIDs = retrieveHuIdsToShowInEditor(ppOrderBomLineId);
 
-		final IView husToPickView = viewsRepo.createView(
+		final IView husToPickView = getViewsRepo().createView(
 				CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
 						.setParentViewId(ppOrderLineViewId)
 						.setParentRowId(ppOrderLineRow.getId())
@@ -156,13 +149,12 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 
 		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(ppOrderBomLine);
 
-		final List<HuId> availableHUsIDs = huIdsToAvailableToIssueQuery.createQuery()
+		return huIdsToAvailableToIssueQuery.createQuery()
 				.listIds()
 				.stream()
 				.map(HuId::ofRepoId)
 				.filter(this::isEligibleHuToIssue)
 				.collect(ImmutableList.toImmutableList());
-		return availableHUsIDs;
 	}
 
 	private boolean isEligibleHuToIssue(final HuId huId)
@@ -172,12 +164,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 			return false;
 		}
 
-		if (huStatusBL.isStatusIssued(huId))
-		{
-			return false;
-		}
-
-		return true;
+		return !huStatusBL.isStatusIssued(huId);
 	}
 
 	private RelatedProcessDescriptor createIssueTopLevelHusDescriptor()

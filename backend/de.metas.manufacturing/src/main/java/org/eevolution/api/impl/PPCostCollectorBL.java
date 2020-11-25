@@ -55,6 +55,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
@@ -309,7 +310,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_BOMLine.class)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_BOMLine_ID, ppOrderBOMLineId)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, BOMComponentIssueMethod.FloorStock.getCode())
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();

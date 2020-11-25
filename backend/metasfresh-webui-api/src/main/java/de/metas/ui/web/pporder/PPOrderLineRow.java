@@ -30,6 +30,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -83,7 +84,7 @@ public class PPOrderLineRow implements IViewRow
 	private final boolean topLevelHU;
 
 	@Nullable
-	private final String issueMethod;
+	private final BOMComponentIssueMethod issueMethod;
 
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10))
 	private final JSONLookupValue product;
@@ -111,7 +112,7 @@ public class PPOrderLineRow implements IViewRow
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PPOrderLineRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PPOrderLineRow.class);
 
-	public static final PPOrderLineRow cast(final IViewRow viewRecord)
+	public static PPOrderLineRow cast(final IViewRow viewRecord)
 	{
 		return (PPOrderLineRow)viewRecord;
 	}
@@ -161,7 +162,9 @@ public class PPOrderLineRow implements IViewRow
 
 		this.documentPath = computeDocumentPath();
 
-		this.issueMethod = ppOrderQty.getPP_Order_BOMLine() == null ? null : ppOrderQty.getPP_Order_BOMLine().getIssueMethod();
+		this.issueMethod = ppOrderQty.getPP_Order_BOMLine() == null
+				? null
+				: BOMComponentIssueMethod.ofNullableCode(ppOrderQty.getPP_Order_BOMLine().getIssueMethod());
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrder", builderClassName = "BuilderForPPOrder")
@@ -205,7 +208,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.qty = includedDocuments.stream()
 				.map(PPOrderLineRow::getQty)
-				.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		this.documentPath = computeDocumentPath();
 
@@ -246,7 +249,8 @@ public class PPOrderLineRow implements IViewRow
 
 		this.qtyPlan = qtyPlan;
 
-		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
+		this.attributesSupplier = createASIAttributesSupplier(
+				attributesProvider,
 				rowId.toDocumentId(),
 				ppOrderBomLine.getM_AttributeSetInstance_ID());
 
@@ -254,11 +258,11 @@ public class PPOrderLineRow implements IViewRow
 
 		this.qty = includedDocuments.stream()
 				.map(PPOrderLineRow::getQty)
-				.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		this.documentPath = computeDocumentPath();
 
-		this.issueMethod = ppOrderBomLine.getIssueMethod();
+		this.issueMethod = BOMComponentIssueMethod.ofNullableCode(ppOrderBomLine.getIssueMethod());
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
@@ -308,6 +312,7 @@ public class PPOrderLineRow implements IViewRow
 		this.issueMethod = null;
 	}
 
+	@Nullable
 	private DocumentPath computeDocumentPath()
 	{
 		if (type == PPOrderLineType.MainProduct)
@@ -333,7 +338,7 @@ public class PPOrderLineRow implements IViewRow
 	}
 
 	@Nullable
-	private static final Supplier<IViewRowAttributes> createASIAttributesSupplier(
+	private static Supplier<IViewRowAttributes> createASIAttributesSupplier(
 			@NonNull final IViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final DocumentId documentId,
 			final int asiId)
@@ -404,6 +409,7 @@ public class PPOrderLineRow implements IViewRow
 		return product;
 	}
 
+	@Nullable
 	public ProductId getProductId()
 	{
 		final JSONLookupValue product = getProduct();
@@ -437,6 +443,7 @@ public class PPOrderLineRow implements IViewRow
 		return qty;
 	}
 
+	@Nullable
 	public BigDecimal getQtyPlan()
 	{
 		return qtyPlan != null ? qtyPlan.toBigDecimal() : null;
@@ -467,7 +474,8 @@ public class PPOrderLineRow implements IViewRow
 		return huStatus != null && X_M_HU.HUSTATUS_Active.equals(huStatus.getKey());
 	}
 
-	public String getIssueMethod()
+	@Nullable
+	public BOMComponentIssueMethod getIssueMethod()
 	{
 		return issueMethod;
 	}

@@ -1,19 +1,6 @@
 package de.metas.ui.web.pporder.process;
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import de.metas.organization.ClientAndOrgId;
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -28,6 +15,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -38,6 +26,16 @@ import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -76,7 +74,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	/**
 	 * Qty CU to be issued
 	 */
-	@Param(parameterName = PARAM_QtyCU, mandatory = false)
+	@Param(parameterName = PARAM_QtyCU)
 	private BigDecimal qtyCU;
 
 	@Override
@@ -103,7 +101,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	@Override
 	protected String doIt() throws Exception
 	{
-		streamPPOrderLineRows().forEach(row -> issue(row));
+		streamPPOrderLineRows().forEach(this::issue);
 		getView().invalidateAll();
 		return MSG_OK;
 	}
@@ -193,9 +191,9 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
 
-		final String issueMethod = row.getIssueMethod();
+		final BOMComponentIssueMethod issueMethod = row.getIssueMethod();
 
-		if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+		if (BOMComponentIssueMethod.IssueOnlyForReceived.equals(issueMethod))
 		{
 			final BigDecimal qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
 
