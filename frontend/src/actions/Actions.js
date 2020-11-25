@@ -83,10 +83,9 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
     // we're only interested in included view's quick actions if it
     // actually exists
     if (includedView) {
-      let [fetchWindowId, fetchViewId, parentView, childView] = Array(5).fill(
-        null
-      );
+      let [parentView, childView] = Array(2).fill(null);
       let fetch = false;
+      const view = getView(state, windowId, isModal);
       const viewProfileId =
         includedView.windowId === windowId ? includedView.viewProfileId : null;
 
@@ -94,24 +93,24 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
       const isChild = includedView.windowId === windowId;
 
       if (isParent) {
-        fetchWindowId = includedView.windowId;
-        childView = getView(state, fetchWindowId, isModal);
-        fetchViewId = childView.viewId;
+        const childWindowId = includedView.windowId;
+        childView = getView(state, childViewId, isModal);
+        const childViewId = childView.viewId;
         const childQuickActionsId = getQuickActionsId({
-          windowId: fetchWindowId,
-          viewId: fetchViewId,
+          windowId: childWindowId,
+          viewId: childViewId,
         });
         const childQuickActions = getQuickActions(state, childQuickActionsId);
 
         // only update quick actions if they're not already requested
         fetch = childQuickActions.pending === false;
       } else if (isChild) {
-        fetchWindowId = includedView.parentId;
-        parentView = getView(state, fetchWindowId, isModal);
-        fetchViewId = parentView.viewId;
+        const parentWindowId = includedView.parentId;
+        parentView = getView(state, parentWindowId, isModal);
+        const parentViewId = parentView.viewId;
         const parentQuickActionsId = getQuickActionsId({
-          windowId: fetchWindowId,
-          viewId: fetchViewId,
+          windowId: parentWindowId,
+          viewId: parentViewId,
         });
         const parentQuickActions = getQuickActions(state, parentQuickActionsId);
 
@@ -121,8 +120,8 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
       if ((isParent || isChild) && fetch) {
         dispatch(
           fetchQuickActions({
-            windowId: fetchWindowId,
-            viewId: fetchViewId,
+            windowId,
+            viewId: view.viewId,
             viewProfileId,
             selectedIds,
             parentView,
@@ -153,42 +152,45 @@ export function fetchQuickActions({
   childView,
   parentView,
 }) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     const id = getQuickActionsId({ windowId, viewId });
+    const quickActions = getQuickActions(getState(), id);
 
-    dispatch({
-      type: FETCH_QUICK_ACTIONS,
-      payload: { id },
-    });
-
-    return quickActionsRequest({
-      windowId,
-      viewId,
-      viewProfileId,
-      selectedIds,
-      childView,
-      parentView,
-    })
-      .then((response) => {
-        const actions = response.data.actions;
-        dispatch({
-          type: FETCH_QUICK_ACTIONS_SUCCESS,
-          payload: {
-            id,
-            actions,
-          },
-        });
-
-        return Promise.resolve(actions);
-      })
-      .catch((e) => {
-        dispatch({
-          type: FETCH_QUICK_ACTIONS_FAILURE,
-          payload: { id },
-        });
-
-        return Promise.reject(e);
+    if (!quickActions.pending) {
+      dispatch({
+        type: FETCH_QUICK_ACTIONS,
+        payload: { id },
       });
+
+      return quickActionsRequest({
+        windowId,
+        viewId,
+        viewProfileId,
+        selectedIds,
+        childView,
+        parentView,
+      })
+        .then((response) => {
+          const actions = response.data.actions;
+          dispatch({
+            type: FETCH_QUICK_ACTIONS_SUCCESS,
+            payload: {
+              id,
+              actions,
+            },
+          });
+
+          return Promise.resolve(actions);
+        })
+        .catch((e) => {
+          dispatch({
+            type: FETCH_QUICK_ACTIONS_FAILURE,
+            payload: { id },
+          });
+
+          return Promise.reject(e);
+        });
+    }
   };
 }
 
