@@ -33,7 +33,12 @@ class InlineTab extends Component {
           <div className="pull-left offset-left">Inline Tab</div>
 
           {/* Content */}
-          {isOpen && <div className="inline-tab-content">Actual content</div>}
+          {isOpen && (
+            <div className="inline-tab-content">
+              <div className="inline-tab-separator" />
+              Actual content
+            </div>
+          )}
         </div>
       </div>
     );

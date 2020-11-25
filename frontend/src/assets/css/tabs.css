@@ -354,7 +354,7 @@
   .arrow-pointer {
     display: block;
     float: left;
-    margin: 6px 8px 8px 0px;
+    margin: 4px 8px 8px 0px;
     width: 8px;
     height: 8px;
     border-top: 2px solid #000;
@@ -363,6 +363,12 @@
   }
   .offset-left {
     margin-left:15px;
+  }
+  .inline-tab-separator {
+    width:100%;
+    border-top: 1px solid #C8D6D5;
+    margin: 10px 0px 10px 0px;
+    box-sizing: border-box;
   }
 }
 /** END Inline TAB **/
