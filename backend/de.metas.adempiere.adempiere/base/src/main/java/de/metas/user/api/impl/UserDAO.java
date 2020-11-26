@@ -1,5 +1,33 @@
 package de.metas.user.api.impl;
 
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.logging.LogManager;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_User_Substitute;
+import org.compiere.model.Query;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -23,36 +51,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.logging.LogManager;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 public class UserDAO implements IUserDAO
 {
@@ -258,6 +256,18 @@ public class UserDAO implements IUserDAO
 				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
 				.listIds(UserId::ofRepoId);
+	}
+
+	@Override
+	public boolean isSystemUser(@NonNull final UserId userId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
+				.andCollect(I_AD_User.COLUMNNAME_IsSystemUser, Boolean.class)
+				.create()
+				.first();
 	}
 
 	@Override

@@ -26,21 +26,21 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.marketing.base.api.IMKTGChannelDao;
 import de.metas.marketing.base.model.I_AD_User_MKTG_Channels;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 
-@Callout(I_AD_User_MKTG_Channels.class)
 @Interceptor(I_AD_User_MKTG_Channels.class)
 public class AD_User_MKTG_Channels
 {
 	public static final AD_User_MKTG_Channels INSTANCE = new AD_User_MKTG_Channels();
 
 	private final IMKTGChannelDao mktgChannelDao = Services.get(IMKTGChannelDao.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	private static final AdMessageKey MSG_CAN_NOT_REMOVE_CHANNEL = AdMessageKey.of("de.metas.marketing.base.userMarketingChannelRemovalError");
 
@@ -50,9 +50,14 @@ public class AD_User_MKTG_Channels
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void checkIfCanBeDeleted(@NonNull final I_AD_User_MKTG_Channels userMktgChannel)
+	public void checkIfCanBeDeleted(@NonNull final I_AD_User_MKTG_Channels userMktgChannels)
 	{
-		final int count = mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(userMktgChannel.getAD_User_ID()));
+		if (userDAO.isSystemUser(UserId.ofRepoId(userMktgChannels.getAD_User_ID())))
+		{
+			return;
+		}
+
+		final int count = mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(userMktgChannels.getAD_User_ID()));
 		if (count == 1)
 		{
 			throw new AdempiereException(MSG_CAN_NOT_REMOVE_CHANNEL).markAsUserValidationError();

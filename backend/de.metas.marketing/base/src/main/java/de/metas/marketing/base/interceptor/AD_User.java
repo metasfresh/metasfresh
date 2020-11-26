@@ -24,7 +24,7 @@ package de.metas.marketing.base.interceptor;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.marketing.base.api.IMKTGChannelDao;
-import de.metas.marketing.base.model.I_MKTG_Channel;
+import de.metas.marketing.base.model.I_AD_User;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -34,40 +34,41 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 
-import java.util.Set;
-
-@Interceptor(I_MKTG_Channel.class)
-public class MKTG_Channel
+@Interceptor(I_AD_User.class)
+public class AD_User
 {
-	public static final MKTG_Channel INSTANCE = new MKTG_Channel();
+	public static final AD_User INSTANCE = new AD_User();
 
 	private final IMKTGChannelDao mktgChannelDao = Services.get(IMKTGChannelDao.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	private static final AdMessageKey MSG_MUST_HAVE_CHANNEL = AdMessageKey.of("de.metas.marketing.base.marketingChannelRemovalError");
+	private static final AdMessageKey MSG_CAN_NOT_REMOVE_CHANNEL = AdMessageKey.of("de.metas.marketing.base.userMarketingChannelRemovalError");
 
-	private MKTG_Channel()
+	private AD_User()
 	{
+
 	}
 
 	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void checkIfCanBeDeleted(@NonNull final I_MKTG_Channel mktgChannel)
+			timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void checkIfCanBeSaved(@NonNull final I_AD_User user)
 	{
-		boolean canBeDeleted = true;
-		Set<UserId> usersSet = mktgChannelDao.retrieveUsersHavingChannel(mktgChannel.getMKTG_Channel_ID());
-		for (UserId userId : usersSet)
+		if (userDAO.isSystemUser(UserId.ofRepoId(user.getAD_User_ID())))
 		{
-			if (mktgChannelDao.retrieveMarketingChannelsCountForUser(userId) == 1 && !userDAO.isSystemUser(userId))
-			{
-				canBeDeleted = false;
-				break;
-			}
+			return;
 		}
-		if (!canBeDeleted)
+
+		boolean canBeSaved = true;
+		if (mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(user.getAD_User_ID())) <= 0)
 		{
-			throw new AdempiereException(MSG_MUST_HAVE_CHANNEL).markAsUserValidationError();
+			canBeSaved = false;
+		}
+
+		if (!canBeSaved)
+		{
+			throw new AdempiereException(MSG_CAN_NOT_REMOVE_CHANNEL).markAsUserValidationError();
 		}
 
 	}
+
 }

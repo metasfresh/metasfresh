@@ -34,6 +34,7 @@ public class MainInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(MKTG_Campaign_ContactPerson.INSTANCE);
 		engine.addModelValidator(MKTG_Channel.INSTANCE);
 		engine.addModelValidator(AD_User_MKTG_Channels.INSTANCE);
+		engine.addModelValidator(AD_User.INSTANCE);
 
 	}
 
@@ -41,7 +42,5 @@ public class MainInterceptor extends AbstractModuleInterceptor
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(MKTG_Campaign_ContactPerson.INSTANCE);
-		// calloutsRegistry.registerAnnotatedCallout(MKTG_Channel.INSTANCE);
-		// calloutsRegistry.registerAnnotatedCallout(AD_User_MKTG_Channels.INSTANCE);
 	}
 }

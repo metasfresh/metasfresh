@@ -22,17 +22,16 @@ package de.metas.user.api;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.service.ClientId;
-
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import org.adempiere.service.ClientId;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IUserDAO extends ISingletonService
 {
@@ -72,7 +71,9 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User getByIdInTrx(int adUserId);
 
-	/** @return user's full name or <code>?</code> if no found */
+	/**
+	 * @return user's full name or <code>?</code> if no found
+	 */
 	String retrieveUserFullname(int userRepoId);
 
 	String retrieveUserFullname(UserId userId);
@@ -83,6 +84,8 @@ public interface IUserDAO extends ISingletonService
 	 * @return all system(login) user IDs
 	 */
 	Set<UserId> retrieveSystemUserIds();
+
+	boolean isSystemUser(UserId userId);
 
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
 
