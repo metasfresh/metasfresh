@@ -25,7 +25,6 @@ package de.metas.manufacturing.generatedcomponents;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
-import de.metas.macaddress.MacAddress;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;

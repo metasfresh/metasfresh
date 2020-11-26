@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,14 +20,14 @@
  * #L%
  */
 
-package de.metas.macaddress;
+package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.util.StringUtils;
 import lombok.Data;
 import lombok.NonNull;
 
 @Data(staticConstructor = "of")
-public class MacAddress
+ /*default*/ class MacAddress
 {
 	@NonNull
 	String address;

@@ -25,19 +25,24 @@ package de.metas.manufacturing.generatedcomponents;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
-import de.metas.macaddress.MacAddress;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import static de.metas.macaddress.MacAddress.GROUP_DELIMITER;
+import static de.metas.manufacturing.generatedcomponents.MacAddress.GROUP_DELIMITER;
 
 /**
  * A MAC Address looks like this: 01:23:45:67:89:AB
@@ -45,12 +50,81 @@ import static de.metas.macaddress.MacAddress.GROUP_DELIMITER;
 @Service
 public class MacAddressGenerator implements IComponentGenerator
 {
-	public static final int NUMBER_OF_DIGITS = 12;
+	/*package*/ static final String PARAM_MAC_ADDRESS_AD_SEQUENCE_ID = "MacAddress_AD_Sequence_ID";
+	private static final int NUMBER_OF_DIGITS = 12;
+
+	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
+			AttributeConstants.RouterMAC1,
+			AttributeConstants.RouterMAC2,
+			AttributeConstants.RouterMAC3,
+			AttributeConstants.RouterMAC4,
+			AttributeConstants.RouterMAC5,
+			AttributeConstants.RouterMAC6
+	);
+
+	private transient final IDocumentNoBuilderFactory documentNoBuilder = SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class);
+
+	@Override
+	public ImmutableAttributeSet generate(final int qty, final @NonNull ComponentGeneratorParam parameters, final @NonNull ImmutableAttributeSet existingAttributes)
+	{
+		Check.errorIf(qty < 1 || qty > 6, "Qty of Mac Addresses should be between 1 and 6. Requested qty: {}", qty);
+
+		final ImmutableList<AttributeCode> attributesToGenerate = computeRemainingAttributesToGenerate(existingAttributes);
+
+		if (attributesToGenerate.isEmpty())
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		/*
+			Explanation: we have to generate 2 mac addresses, but 2 or more are already generated => nothing to do.
+		 */
+		if (qty - noOfAlreadyGenerated(attributesToGenerate) <= 0)
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(StringUtils.toIntegerOrZero(parameters.getValue(PARAM_MAC_ADDRESS_AD_SEQUENCE_ID)));
+		if (sequenceId == null)
+		{
+			throw new AdempiereException("Mandatory parameter " + PARAM_MAC_ADDRESS_AD_SEQUENCE_ID + " has invalid value.");
+		}
+
+		final ImmutableAttributeSet.Builder result = ImmutableAttributeSet.builder();
+
+		for (int i = 0; i < qty - noOfAlreadyGenerated(attributesToGenerate); i++)
+		{
+			final AttributeCode attributeCode = attributesToGenerate.get(i);
+			final MacAddress macAddress = generateNextMacAddress(sequenceId);
+			result.attributeValue(attributeCode, macAddress.getAddress());
+		}
+
+		return result.build();
+	}
+
+	private int noOfAlreadyGenerated(@NonNull final ImmutableList<AttributeCode> attributesToGenerate)
+	{
+		return getSupportedAttributes().size() - attributesToGenerate.size();
+	}
+
+	@Override
+	public ImmutableList<AttributeCode> getSupportedAttributes()
+	{
+		return supportedAttributes;
+	}
+
+	@Override
+	public ImmutableMap<String, String> getDefaultParameters()
+	{
+		return ImmutableMap.<String, String>builder()
+				.put(PARAM_MAC_ADDRESS_AD_SEQUENCE_ID, "555224")
+				.build();
+	}
 
 	@NonNull
-	public MacAddress generateNextMacAddress(@NonNull final DocSequenceId macAddressSequenceId)
+	private MacAddress generateNextMacAddress(@NonNull final DocSequenceId macAddressSequenceId)
 	{
-		final IDocumentNoBuilder sequenceGenerator = Services.get(IDocumentNoBuilderFactory.class).forSequenceId(macAddressSequenceId)
+		final IDocumentNoBuilder sequenceGenerator = documentNoBuilder.forSequenceId(macAddressSequenceId)
 				.setClientId(Env.getClientId())
 				.setFailOnError(true);
 
@@ -58,21 +132,10 @@ public class MacAddressGenerator implements IComponentGenerator
 
 		if (documentNoParts == null)
 		{
-			throw new AdempiereException("Could not retrieve next sequence number.");
+			throw new AdempiereException("Could not retrieve next sequence number. Maybe mandatory parameter " + PARAM_MAC_ADDRESS_AD_SEQUENCE_ID + " has invalid value?");
 		}
 
 		return generateNextMacAddress0(documentNoParts);
-	}
-
-	public ImmutableList<MacAddress> generateNextMacAddresses(@NonNull final DocSequenceId macAddressSequenceId, final int numberOfResults)
-	{
-		final ImmutableList.Builder<MacAddress> result = ImmutableList.builder();
-
-		for (int i = 0; i < numberOfResults; i++)
-		{
-			result.add(generateNextMacAddress(macAddressSequenceId));
-		}
-		return result.build();
 	}
 
 	@VisibleForTesting

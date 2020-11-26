@@ -22,15 +22,37 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ManufacturingComponentGeneratorService
 {
-	public ImmutableAttributeSet generate(GeneratedComponentRequest request)
+	private final ComponentGeneratorRepository componentRepository;
+	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
+
+	// TODO tbp: add CCache for productId->PP_ComponentGenerator.
+
+	public ManufacturingComponentGeneratorService(
+			@NonNull final ComponentGeneratorRepository componentRepository
+	)
 	{
-		// TODO tbp: proper implementation
-		return ImmutableAttributeSet.EMPTY;
+		this.componentRepository = componentRepository;
+	}
+
+	public ImmutableAttributeSet generate(@NonNull final GeneratedComponentRequest request)
+	{
+		final PP_ComponentGenerator generator = componentRepository.getByProductId(request.getProductId());
+		if (generator == null)
+		{
+			throw new AdempiereException("No Component Generator for product " + request.getProductId());
+		}
+		final IComponentGenerator generatorClass = javaClassBL.newInstance(generator.getJavaClassId());
+
+		return generatorClass.generate(request.getQty(), generator.getParams(), request.getAttributes());
 	}
 }

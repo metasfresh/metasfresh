@@ -22,27 +22,33 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import de.metas.product.ProductId;
-import lombok.Data;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 public interface IComponentGenerator
 {
-	// String generate(int )
+
+	ImmutableAttributeSet generate(int qty, @NonNull ComponentGeneratorParam parameters, @NonNull ImmutableAttributeSet existingAttributes);
+
+	ImmutableList<AttributeCode> getSupportedAttributes();
+
+	ImmutableMap<String, String> getDefaultParameters();
+
+	 // TODO tbp: does this make sense for MAC?
+	default ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(final @NonNull ImmutableAttributeSet existingAttributes)
+	{
+		final ImmutableList.Builder<AttributeCode> attributesLeftToGenerate = ImmutableList.builder();
+		for (final AttributeCode attr : getSupportedAttributes())
+		{
+			if (existingAttributes.hasAttribute(attr) && existingAttributes.getValueAsString(attr) == null)
+			{
+				attributesLeftToGenerate.add(attr);
+			}
+		}
+		return attributesLeftToGenerate.build();
+
+	}
 }
-
-
-//
-//
-// @Data(staticConstructor = "of")
-// class GeneratedComponentRequest
-// {
-// 	@NonNull ProductId productId;
-// 	int qty;
-// 	@NonNull List<AttributeCode> availableAttributeCodes;
-// }
-//
-// 	public ImmutableAttributeSet generate(GeneratedComponentRequest reqest)
-// 	{
-//
-// 	}
