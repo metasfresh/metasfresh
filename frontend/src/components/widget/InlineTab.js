@@ -2,8 +2,6 @@ import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import Window from '../../components/Window';
-import { createWindow } from '../../actions/WindowActions';
-import { connect } from 'react-redux';
 import { getLayout, getData } from '../../api/view';
 class InlineTab extends PureComponent {
   constructor(props) {
@@ -16,7 +14,7 @@ class InlineTab extends PureComponent {
   }
 
   toggleOpen = () => {
-    const { createWindow, windowId, id: docId, tabId, rowId } = this.props;
+    const { windowId, id: docId, tabId } = this.props;
     this.setState(
       (prevState) => {
         return { isOpen: !prevState.isOpen };
@@ -73,10 +71,10 @@ class InlineTab extends PureComponent {
                   data={data}
                   dataId={docId}
                   layout={layout}
-                  modal
+                  modal={true}
                   tabId={tabId}
                   rowId={rowId}
-                  isModal
+                  isModal={true}
                   tabsInfo={null}
                 />
               )}
@@ -94,12 +92,6 @@ InlineTab.propTypes = {
   rowId: PropTypes.string.isRequired,
   tabId: PropTypes.string.isRequired,
   fieldsByName: PropTypes.object,
-  createWindow: PropTypes.func.isRequired,
 };
 
-export default connect(
-  null,
-  {
-    createWindow,
-  }
-)(InlineTab);
+export default InlineTab;

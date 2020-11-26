@@ -78,7 +78,6 @@ const mapStateToProps = (state, props) => {
     case 'element':
       widgetData = getElementWidgetData(state, isModal, layoutId);
       fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
-
       break;
     case 'process':
       widgetData = getProcessWidgetData(state, true, layoutId);
@@ -101,7 +100,11 @@ const mapStateToProps = (state, props) => {
       break;
     }
     default:
-      widgetData = [{}];
+      if (props.widgetType === 'InlineTab') {
+        // different selector special for inline tab
+      } else {
+        widgetData = [{}];
+      }
 
       break;
   }
