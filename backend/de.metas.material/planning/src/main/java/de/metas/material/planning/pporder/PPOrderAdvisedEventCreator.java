@@ -72,12 +72,18 @@ public class PPOrderAdvisedEventCreator
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
-
-		final Quantity maxQtyPerOrderConv = uomConversionBL.convertQuantityTo(
-				maxQtyPerOrder,
-				mrpContext.getProductId(),
-				completeRequest.getQtyToSupply().getUomId());
-
+		final Quantity maxQtyPerOrderConv;
+		if (maxQtyPerOrder != null)
+		{
+			maxQtyPerOrderConv = uomConversionBL.convertQuantityTo(
+					maxQtyPerOrder,
+					mrpContext.getProductId(),
+					completeRequest.getQtyToSupply().getUomId());
+		}
+		else
+		{
+			maxQtyPerOrderConv = null;
+		}
 		final ImmutableList<MaterialRequest> partialRequests = createMaterialRequests(completeRequest, maxQtyPerOrderConv);
 
 		final ImmutableList.Builder<PPOrderAdvisedEvent> result = ImmutableList.builder();
