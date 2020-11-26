@@ -27,6 +27,27 @@ public interface I_PP_ComponentGenerator
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set AD_JavaClass.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_JavaClass_ID (int AD_JavaClass_ID);
+
+	/**
+	 * Get AD_JavaClass.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_JavaClass_ID();
+
+	ModelColumn<I_PP_ComponentGenerator, Object> COLUMN_AD_JavaClass_ID = new ModelColumn<>(I_PP_ComponentGenerator.class, "AD_JavaClass_ID", null);
+	String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *

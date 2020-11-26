@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 public class X_PP_ComponentGenerator extends org.compiere.model.PO implements I_PP_ComponentGenerator, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -578508515L;
+	private static final long serialVersionUID = -1701522303L;
 
     /** Standard Constructor */
     public X_PP_ComponentGenerator (final Properties ctx, final int PP_ComponentGenerator_ID, @Nullable final String trxName)
@@ -31,6 +31,21 @@ public class X_PP_ComponentGenerator extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_JavaClass_ID (final int AD_JavaClass_ID)
+	{
+		if (AD_JavaClass_ID < 1) 
+			set_Value (COLUMNNAME_AD_JavaClass_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_JavaClass_ID, AD_JavaClass_ID);
+	}
+
+	@Override
+	public int getAD_JavaClass_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_JavaClass_ID);
 	}
 
 	@Override
