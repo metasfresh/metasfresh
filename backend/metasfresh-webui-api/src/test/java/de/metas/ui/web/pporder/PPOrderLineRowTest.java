@@ -114,6 +114,7 @@ public class PPOrderLineRowTest
 				.packingInfoOrNull(null)
 				.ppOrderBomLine(ppOrderBomLine)
 				.qtyPlan(Quantity.of(10, uom))
+				.qtyProcessedIssuedOrReceived((Quantity.zero(uom)))
 				.type(PPOrderLineType.BOMLine_Component)
 				.processed(true)
 				.build();
@@ -151,6 +152,7 @@ public class PPOrderLineRowTest
 		final I_PP_Order_Qty ppOrderQty = newInstance(I_PP_Order_Qty.class);
 		ppOrderQty.setPP_Order_ID(1); // dummy
 		ppOrderQty.setM_HU_ID(10);
+		save(ppOrderQty);
 
 		final PPOrderLineRow result = PPOrderLineRow.builderForIssuedOrReceivedHU()
 				.attributesSupplier(() -> null)
