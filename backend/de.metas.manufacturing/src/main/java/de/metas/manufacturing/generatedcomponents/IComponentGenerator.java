@@ -37,7 +37,6 @@ public interface IComponentGenerator
 
 	ImmutableMap<String, String> getDefaultParameters();
 
-	 // TODO tbp: does this make sense for MAC?
 	default ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(final @NonNull ImmutableAttributeSet existingAttributes)
 	{
 		final ImmutableList.Builder<AttributeCode> attributesLeftToGenerate = ImmutableList.builder();
