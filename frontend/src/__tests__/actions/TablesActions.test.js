@@ -2,9 +2,10 @@ import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import produce from 'immer';
 import merge from 'merge';
+import { combineReducers } from 'redux';
 
 import tablesHandler, { initialTableState, getTableId } from '../../reducers/tables';
-import { initialState as initialViewsState } from '../../reducers/viewHandler';
+import viewHandler, { initialState as initialViewsState } from '../../reducers/viewHandler';
 import { getQuickActionsId } from '../../reducers/actionsHandler';
 
 import {
@@ -34,7 +35,7 @@ import gridRowFixtures from '../../../test_setup/fixtures/grid/row_data.json';
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
-const createStore = function(state = {}) {
+const createState = function(state = {}) {
   const res = merge.recursive(
     true,
     {
@@ -60,7 +61,7 @@ describe('TableActions general', () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const id = getTableId({ windowId: windowType, viewId });
-    const initialState = createStore({
+    const initialState = createState({
       viewHandler: {
         views: {
           [windowType]: {
@@ -117,7 +118,7 @@ describe('TableActions grid', () => {
     const layoutResponse = gridLayoutFixtures.layout1;
     const dataResponse = gridDataFixtures.data1;
     const id = getTableId({ windowId: windowType, viewId });
-    const initialState = createStore({
+    const initialState = createState({
       viewHandler: {
         views: {
           [windowType]: {
@@ -157,7 +158,7 @@ describe('TableActions grid', () => {
       headerElements: rowResponse.columnsByFieldName,
       keyProperty: 'id',
     });
-    const initialState = createStore({
+    const initialState = createState({
       viewHandler: {
         views: {
           [windowType]: {
@@ -208,7 +209,7 @@ describe('TableActions grid', () => {
       headerElements: rowResponse.columnsByFieldName,
       keyProperty: 'id',
     });
-    const initialState = createStore({
+    const initialState = createState({
       viewHandler: {
         views: {
           [windowType]: {
@@ -245,7 +246,7 @@ describe('TableActions grid', () => {
       ...rowResponse,
       keyProperty: 'id',
     });
-    const initialState = createStore({
+    const initialState = createState({
       viewHandler: {
         modals: {
           [windowId]: {
@@ -294,7 +295,98 @@ describe('TableActions grid', () => {
 
     store.dispatch(updateTableSelection(params));
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-  }); 
+  });
+
+  it(`should call DESELECT_TABLE_ROWS, FETCH_QUICK_ACTIONS
+    and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, () => {
+    const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
+    const childLayoutResponse = gridLayoutFixtures.layout2_child;
+    const parentRowResponse = gridRowFixtures.data3_parent;
+    const childRowResponse = gridRowFixtures.data3_child;
+    const { windowId, viewId, parentWindowId, parentViewId } = childRowResponse;
+    const parentRowId = parentRowResponse.result[0].id;
+    const childRowId = childRowResponse.result[0].id;
+    const parentTableId = getTableId({ windowId: parentWindowId, viewId: parentViewId });
+    const childTableId = getTableId({ windowId, viewId });
+    const c_tableData_create = createTableData({
+      ...childLayoutResponse,
+      ...childRowResponse,
+      keyProperty: 'id',
+    });
+    const p_tableData_create = createTableData({
+      ...parentLayoutResponse,
+      ...parentRowResponse,
+      keyProperty: 'id',
+    });
+    const initialStateData = createState({
+      viewHandler: {
+        modals: {
+          [windowId]: {
+            layout: { ...childLayoutResponse },
+          },
+          [parentWindowId]: {
+            layout: { ...parentLayoutResponse },
+          },
+        },
+        includedView: {
+          viewId,
+          windowId,
+          parentId: parentWindowId,
+        },
+      },
+      tables: {
+        length: 2,
+        [childTableId]: {
+          ...initialTableState,
+          ...c_tableData_create,
+          selected: [childRowId],
+        },
+        [parentTableId]: {
+          ...initialTableState,
+          ...p_tableData_create,
+          selected: [parentRowId],
+        },
+      },
+    });
+    const appReducer = combineReducers({
+      viewHandler,
+      tables: tablesHandler,
+    });
+    const reduceState = state => actions => actions.reduce(appReducer, state);
+    const initialState = reduceState(initialStateData);
+    const store = mockStore(initialState);
+
+    const params = {
+      id: parentTableId,
+      selection: [parentRowId],
+      windowId: parentWindowId,
+      viewId: parentViewId,
+      isModal: true,
+    };
+    const payload1 = { id: parentTableId, selection: [parentRowId] };
+    const qActionsId1 = getQuickActionsId({ windowId: parentWindowId, viewId: parentViewId });
+    const payload2 = { id: qActionsId1 };
+    const payload3 = {
+      id: parentWindowId,
+      showIncludedView: false,
+      isModal: true,
+    };
+    const payload4 = {
+      id: windowId,
+      viewId,
+      forceClose: true,
+    };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload: payload1 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload2 },
+      { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload3 },
+      { type: ACTION_TYPES.UNSET_INCLUDED_VIEW, payload: payload4 },
+    ];
+
+    store.dispatch(deselectTableRows(params));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
 });
 
 describe('TableActions tab', () => {
@@ -362,7 +454,7 @@ describe('TableActions tab', () => {
       initialStateTables[tableId] = initialStateData;
     });
 
-    const initialState = createStore({
+    const initialState = createState({
       viewHandler: {
         views: {
           [windowType]: {
@@ -444,7 +536,7 @@ describe('TableActions tab', () => {
       initialStateTables[tableId] = initialStateData;
     });
 
-    const initialState = createStore({
+    const initialState = createState({
       viewHandler: {
         views: {
           [windowType]: {

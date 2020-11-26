@@ -685,6 +685,125 @@
     "supportGeoLocations": false
   },
   "layout2_child": {
-    
+    "type": "pickingSlot",
+    "windowId": "pickingSlot",
+    "caption": "Picking slots",
+    "description": "",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Code",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huCode",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Product",
+        "description": "",
+        "widgetType": "Lookup",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huProduct",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Packing Instruction",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "restrictToMediaTypes": [
+          "screen"
+        ],
+        "fields": [
+          {
+            "field": "huPackingInfo",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Qty CU per TU",
+        "description": "",
+        "widgetType": "Quantity",
+        "size": null,
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huQtyCU",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "PickingSlotBarcodeFilter",
+        "caption": "Scan picking slot",
+        "inlineRenderMode": "button",
+        "barcodeScannerType": "qrCode",
+        "parametersLayoutType": "singleOverlayField",
+        "parameters": [
+          {
+            "caption": "Scan picking slot",
+            "parameterName": "Barcode",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary",
+            "barcodeScannerType": "qrCode"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 0
+        },
+        "sortNo": 0
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": true,
+    "collapsible": true,
+    "expandedDepth": 1,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
   }
 }
