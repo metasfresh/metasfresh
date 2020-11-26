@@ -3,6 +3,8 @@ import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
 import { fetchTab } from '../../actions/WindowActions';
 import { connect } from 'react-redux';
+import Window from '../../components/Window';
+import { createWindow } from '../../actions/WindowActions';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
@@ -21,14 +23,27 @@ class InlineTabWrapper extends PureComponent {
     });
   }
 
-  showAddNewForm = () => this.setState({ addNewFormVisible: true });
+  showAddNewForm = () => {
+    const {
+      createWindow,
+      inlineTab: { windowId, tabId },
+      dataId: docId,
+    } = this.props;
+    createWindow(windowId, docId, tabId, 'NEW', true, true);
+    this.setState({ addNewFormVisible: true });
+  }
 
   handleFormClose = () => this.setState({ addNewFormVisible: false });
 
   render() {
     if (!this.tabData) return false;
-    const { caption } = this.props;
+    const {
+      caption,
+      inlineTab: { tabId },
+      dataId: docId,
+    } = this.props;
     const { addNewFormVisible } = this.state;
+
     return (
       <div className="inline-tab-wrapper">
         <span>{caption}</span>
@@ -67,6 +82,16 @@ class InlineTabWrapper extends PureComponent {
                 <div className="clearfix" />
                 <div className="inline-tab-separator" />
                 Actual content
+                {/* <Window
+                  data={data}
+                  dataId={docId}
+                  layout={this.props.inlineTab}
+                  modal
+                  tabId={tabId}
+                  rowId={rowId}
+                  isModal
+                  tabsInfo={null}
+                /> */}
               </div>
             </div>
           )}
@@ -81,11 +106,13 @@ InlineTabWrapper.propTypes = {
   inlineTab: PropTypes.object.isRequired,
   dataId: PropTypes.string.isRequired,
   fetchTab: PropTypes.func.isRequired,
+  createWindow: PropTypes.func.isRequired,
 };
 
 export default connect(
   null,
   {
     fetchTab,
+    createWindow,
   }
 )(InlineTabWrapper);
