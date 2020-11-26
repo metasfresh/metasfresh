@@ -3,6 +3,7 @@ package de.metas.ui.web.pporder.process;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.PPOrderQtyId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -61,7 +62,7 @@ public class WEBUI_PP_Order_ReverseCandidate
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not available for source HU line");
 		}
 
-		if (row.getPP_Order_Qty_ID() <= 0)
+		if (row.getPpOrderQtyId() == null)
 		{
 			final String internalReason = StringUtils.formatMessage("Not an issue/receipt line");
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
@@ -80,7 +81,7 @@ public class WEBUI_PP_Order_ReverseCandidate
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int ppOrderQtyId = getSingleSelectedRow().getPP_Order_Qty_ID();
+		final PPOrderQtyId ppOrderQtyId = getSingleSelectedRow().getPpOrderQtyId();
 		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveById(ppOrderQtyId);
 
 		huPPOrderQtyBL.reverseDraftCandidate(candidate);

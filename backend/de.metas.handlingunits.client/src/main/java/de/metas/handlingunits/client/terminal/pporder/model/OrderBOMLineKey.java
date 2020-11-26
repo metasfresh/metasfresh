@@ -145,8 +145,8 @@ import de.metas.util.StringUtils;
 		Quantity qtyRequiredToDisplay = qtyRequired;
 		if (coProduct)
 		{
-			qtyDeliveredToDisplay = ppOrderBOMLineBL.adjustCoProductQty(qtyDelivered);
-			qtyRequiredToDisplay = ppOrderBOMLineBL.adjustCoProductQty(qtyRequired);
+			qtyDeliveredToDisplay = OrderBOMLineQuantities.adjustCoProductQty(qtyDelivered);
+			qtyRequiredToDisplay = OrderBOMLineQuantities.adjustCoProductQty(qtyRequired);
 		}
 		sb.append(NumberUtils.stripTrailingDecimalZeros(qtyDeliveredToDisplay.toBigDecimal()))
 				.append("/")

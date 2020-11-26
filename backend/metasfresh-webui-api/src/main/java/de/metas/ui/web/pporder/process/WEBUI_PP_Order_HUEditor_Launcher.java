@@ -37,6 +37,8 @@ import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.pporder.PPOrderLineRow;
@@ -66,6 +68,7 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 	private final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -80,8 +83,13 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 
 		if (!singleSelectedRow.isIssue())
 		{
-			final String internalReason = StringUtils.formatMessage("The selected ppOrderLineRow is not an issue row; selectedRow={}", singleSelectedRow);
-			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not an issue row");
+		}
+
+		final ProductId productId = singleSelectedRow.getProductId();
+		if (productId == null || !productBL.isStocked(productId))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a stockable product");
 		}
 
 		final PPOrderLinesView ppOrderLineView = getView();
@@ -92,7 +100,6 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		 * This means that after all the products needed for the BOM are received, they will be wrapped with a piece of wrap that is big enough to fit them all and we will issue only the needed quantity of it.
 		 */
 		final boolean isIssueOnlyWhatWasReceived = BOMComponentIssueMethod.IssueOnlyForReceived.equals(singleSelectedRow.getIssueMethod());
-
 		if (isIssueOnlyWhatWasReceived)
 		{
 			// this action shall always be available for lines with issue method IssueOnlyWhatWasReceived, no matter the pp_Order status or if the line was processed.

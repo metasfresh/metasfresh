@@ -29,6 +29,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -238,9 +239,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				.locatorId(candidate.getLocatorId())
 				.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
 				.movementDate(candidate.getMovementDate())
-				.qtyIssue(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive()))
-				.qtyScrap(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap()))
-				.qtyReject(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject()))
+				.qtyIssue(OrderBOMLineQuantities.adjustCoProductQty(candidate.getQtyToReceive()))
+				.qtyScrap(OrderBOMLineQuantities.adjustCoProductQty(candidate.getQtyScrap()))
+				.qtyReject(OrderBOMLineQuantities.adjustCoProductQty(candidate.getQtyReject()))
 				.build());
 	}
 

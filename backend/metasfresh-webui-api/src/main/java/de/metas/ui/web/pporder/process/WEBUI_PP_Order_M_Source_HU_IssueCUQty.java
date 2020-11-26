@@ -64,11 +64,11 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final Logger logger = LogManager.getLogger(WEBUI_PP_Order_M_Source_HU_IssueCUQty.class);
-	
+
 	private final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
 
 	private static final String PARAM_QtyCU = "QtyCU";
-	
+
 	private static final String PARAM_IsShowAllParams = "IsShowAllParams";
 
 	/**
@@ -93,7 +93,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			{
 				return ProcessPreconditionsResolution.accept();
 			}
-			
+
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 	}
@@ -105,7 +105,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		getView().invalidateAll();
 		return MSG_OK;
 	}
-	
+
 	private boolean isSingleSelectedRow()
 	{
 		return getSelectedRowIds().isSingleDocumentId();
@@ -127,14 +127,16 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
 				.map(I_M_Source_HU::getM_HU)
 				.collect(ImmutableList.toImmutableList());
-		
-		final BigDecimal qty = isSingleSelectedRow() ? qtyCU : computeQtyToIssue(row);
+
+		final Quantity qty = isSingleSelectedRow()
+				? Quantity.of(qtyCU, row.getUom())
+				: computeQtyToIssue(row);
 
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest
 				.builder()
 				.sourceHUs(husThatAreFlaggedAsSource)
 				.productId(row.getProductId())
-				.qtyCU(Quantity.of(qty, row.getUom()))
+				.qtyCU(qty)
 				.build();
 
 		final EmptyHUListener emptyHUListener = EmptyHUListener
@@ -176,7 +178,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		}
 	}
 
-	private BigDecimal computeQtyToIssue(final PPOrderLineRow row)
+	private Quantity computeQtyToIssue(final PPOrderLineRow row)
 	{
 		final I_PP_Order_BOMLine bomLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(row.getOrderBOMLineId());
 		final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
@@ -195,17 +197,17 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 		if (BOMComponentIssueMethod.IssueOnlyForReceived.equals(issueMethod))
 		{
-			final BigDecimal qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
+			final Quantity qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
 
 			if (qtyLeftToIssue.signum() <= 0)
 			{
-				return BigDecimal.ZERO;
+				return qtyLeftToIssue.toZero();
 			}
 
 			if (row.isProcessed())
 			{
 				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.computeQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
-				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.toBigDecimal());
+				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived);
 			}
 			else
 			{
@@ -215,9 +217,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		}
 		else
 		{
-			final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty().toBigDecimal();
-
-			return sourceHuStorageQty;
+			return productStorages.get(0).getQty();
 		}
 	}
 

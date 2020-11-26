@@ -22,7 +22,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -87,6 +89,8 @@ class PPOrderLinesLoader
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
@@ -113,33 +117,28 @@ class PPOrderLinesLoader
 	{
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId, I_PP_Order.class);
 
-		final int mainProductBOMLineId = 0;
+		final int finishedGoodProductBOMLineId = 0;
 		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.streamOrderQtys(ppOrderId)
-				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> CoalesceUtil.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), mainProductBOMLineId)));
+				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> CoalesceUtil.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), finishedGoodProductBOMLineId)));
 
-		final ImmutableList.Builder<PPOrderLineRow> records = ImmutableList.builder();
-
-		// Main product
-		final PPOrderLineRow rowForMainProduct = createRowForMainProduct(ppOrder, ppOrderQtysByBOMLineId.get(mainProductBOMLineId));
-		records.add(rowForMainProduct);
-
-		// BOM lines
+		final PPOrderLineRow finishedGoodRow = createRowForFinishedGoodProduct(ppOrder, ppOrderQtysByBOMLineId.get(finishedGoodProductBOMLineId));
 		final List<PPOrderLineRow> bomLineRows = createRowsForBomLines(ppOrder, ppOrderQtysByBOMLineId);
-		records.addAll(bomLineRows);
-
-		// Source HUs
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
 		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(warehouseId, bomLineRows);
-		records.addAll(sourceHuRowsForIssueProducts);
 
-		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
-		return new PPOrderLinesViewData(extractDescription(ppOrder), planningStatus, records.build());
+		return PPOrderLinesViewData.builder()
+				.description(extractDescription(ppOrder))
+				.planningStatus(PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus()))
+				.finishedGoodRow(finishedGoodRow)
+				.bomLineRows(bomLineRows)
+				.sourceHURows(sourceHuRowsForIssueProducts)
+				.build();
 	}
 
 	private static boolean isReadOnly(@NonNull final I_PP_Order ppOrder)
 	{
-		final PPOrderPlanningStatus ppOrder_planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
-		return PPOrderPlanningStatus.COMPLETE.equals(ppOrder_planningStatus);
+		final PPOrderPlanningStatus ppOrderPlanningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
+		return PPOrderPlanningStatus.COMPLETE.equals(ppOrderPlanningStatus);
 	}
 
 	private List<PPOrderLineRow> createRowsForBomLines(
@@ -188,18 +187,18 @@ class PPOrderLinesLoader
 		return result.build();
 	}
 
-	private static ITranslatableString extractDescription(final I_PP_Order ppOrder)
+	private ITranslatableString extractDescription(final I_PP_Order ppOrder)
 	{
 		return TranslatableStrings.join(" ",
 				extractDocTypeName(ppOrder),
 				ppOrder.getDocumentNo());
 	}
 
-	private static ITranslatableString extractDocTypeName(final I_PP_Order ppOrder)
+	private ITranslatableString extractDocTypeName(final I_PP_Order ppOrder)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID());
 		final I_C_DocType docType = docTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? docTypeDAO.getById(docTypeId)
 				: null;
 		if (docType != null)
 		{
@@ -212,7 +211,7 @@ class PPOrderLinesLoader
 		}
 	}
 
-	private PPOrderLineRow createRowForMainProduct(
+	private PPOrderLineRow createRowForFinishedGoodProduct(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final List<I_PP_Order_Qty> ppOrderQtysforMainProduct)
 	{
@@ -236,7 +235,6 @@ class PPOrderLinesLoader
 	@Nullable
 	private String computePackingInfo(@NonNull final I_PP_Order ppOrder)
 	{
-		final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL
 				.createReceiptLUTUConfigurationManager(ppOrder)
 				.getCreateLUTUConfiguration();
@@ -245,38 +243,42 @@ class PPOrderLinesLoader
 	}
 
 	private PPOrderLineRow createRowForBOMLine(
-			final I_PP_Order_BOMLine ppOrderBOMLine,
+			final I_PP_Order_BOMLine bomLine,
 			final boolean readOnly,
 			final List<I_PP_Order_Qty> ppOrderQtys)
 	{
 		final PPOrderLineType lineType;
 		final String packingInfo;
 		final Quantity qtyPlan;
-		final BOMComponentType componentType = BOMComponentType.ofCode(ppOrderBOMLine.getComponentType());
+		final Quantity qtyProcessedIssuedOrReceived;
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		final OrderBOMLineQuantities bomLineQtys = ppOrderBOMBL.getQuantities(bomLine);
 		if (componentType.isByOrCoProduct())
 		{
 			lineType = PPOrderLineType.BOMLine_ByCoProduct;
-			packingInfo = computePackingInfo(ppOrderBOMLine);
+			packingInfo = computePackingInfo(bomLine);
 
-			qtyPlan = ppOrderBOMBL.getQtyRequiredToReceive(ppOrderBOMLine);
+			qtyPlan = bomLineQtys.getQtyRequired_NegateBecauseIsCOProduct();
+			qtyProcessedIssuedOrReceived = bomLineQtys.getQtyIssuedOrReceived_NegateBecauseIsCOProduct();
 		}
 		else
 		{
 			lineType = PPOrderLineType.BOMLine_Component;
 			packingInfo = null; // we don't know the packing info for what will be issued.
 
-			qtyPlan = ppOrderBOMBL.getQtyRequiredToIssue(ppOrderBOMLine);
+			qtyPlan = bomLineQtys.getQtyRequired();
+			qtyProcessedIssuedOrReceived = bomLineQtys.getQtyIssuedOrReceived();
 		}
 
-		final ImmutableList<PPOrderLineRow> includedRows = createIncludedRowsForPPOrderQtys(
-				ppOrderQtys,
-				readOnly);
+		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		final ImmutableList<PPOrderLineRow> includedRows = createIncludedRowsForPPOrderQtys(ppOrderQtys, readOnly);
 
 		return PPOrderLineRow.builderForPPOrderBomLine()
-				.ppOrderBomLine(ppOrderBOMLine)
+				.ppOrderBomLine(bomLine)
 				.type(lineType)
 				.packingInfoOrNull(packingInfo)
 				.qtyPlan(qtyPlan)
+				.qtyProcessedIssuedOrReceived(qtyProcessedIssuedOrReceived)
 				.attributesProvider(asiAttributesProvider)
 				.processed(readOnly)
 				.includedRows(includedRows)
@@ -286,9 +288,7 @@ class PPOrderLinesLoader
 	@Nullable
 	private String computePackingInfo(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
-		final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine).getCreateLUTUConfiguration();
-
 		return extractPackingInfoString(lutuConfig);
 	}
 
@@ -344,7 +344,7 @@ class PPOrderLinesLoader
 				.rowId(rowId)
 				.type(PPOrderLineType.ofHUEditorRowType(huEditorRow.getType()))
 				.ppOrderQty(ppOrderQty)
-				.processed(readonly || ppOrderQty.isProcessed())
+				.parentRowReadonly(readonly)
 				.attributesSupplier(huEditorRow.getAttributesSupplier()
 						.map(supplier -> supplier.changeRowId(rowId.toDocumentId()))
 						.orElse(null))
@@ -363,35 +363,34 @@ class PPOrderLinesLoader
 			@NonNull final HUEditorRow huEditorRow,
 			@Nullable final HUEditorRow parentHUEditorRow)
 	{
-		final Quantity quantity;
 		if (huEditorRow.isHUStatusDestroyed())
 		{
 			// Top level HU which was already destroyed (i.e. it was already issued & processed)
 			// => get the Qty/UOM from PP_Order_Qty because on HU level, for sure it will be ZERO.
 			if (parentHUEditorRow == null)
 			{
-				quantity = Quantity.of(ppOrderQty.getQty(), IHUPPOrderQtyBL.extractUOM(ppOrderQty));
+				return Quantity.of(ppOrderQty.getQty(), IHUPPOrderQtyBL.extractUOM(ppOrderQty));
 			}
 			// Included HU which was already destroyed
 			// => we don't know the Qty
 			else
 			{
-				quantity = Quantity.zero(huEditorRow.getC_UOM());
+				return Quantity.zero(huEditorRow.getC_UOM());
 			}
 		}
 		else
 		{
-			if (huEditorRow.getQtyCU() == null && huEditorRow.getC_UOM() == null)
+			final Quantity qtyCU = huEditorRow.getQtyCUAsQuantity();
+			if (qtyCU == null)
 			{
 				final I_C_UOM uom = IHUPPOrderQtyBL.extractUOM(ppOrderQty);
-				quantity = Quantity.zero(uom);
+				return Quantity.zero(uom);
 			}
 			else
 			{
-				quantity = Quantity.of(huEditorRow.getQtyCU(), huEditorRow.getC_UOM());
+				return qtyCU;
 			}
 		}
-		return quantity;
 	}
 
 	private PPOrderLineRow createRowForSourceHU(@NonNull final HUEditorRow huEditorRow)
@@ -409,7 +408,7 @@ class PPOrderLinesLoader
 				.product(huEditorRow.getProduct())
 				.packingInfo(huEditorRow.getPackingInfo())
 				.uom(huEditorRow.getUOM())
-				.qty(huEditorRow.getQtyCU())
+				.qty(huEditorRow.getQtyCUAsQuantity())
 				.huStatus(huEditorRow.getHUStatusDisplay())
 				.topLevelHU(huEditorRow.isTopLevel())
 				.build();

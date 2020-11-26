@@ -13,6 +13,7 @@ import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
@@ -31,20 +32,19 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -377,13 +377,11 @@ public final class HUEditorRow implements IViewRow
 				.findFirst();
 	}
 
-	public boolean hasDirectChild(final DocumentId childId)
+	public boolean hasDirectChild(@NonNull final DocumentId childId)
 	{
 		return getIncludedRows()
 				.stream()
-				.filter(row -> childId.equals(row.getId()))
-				.findAny()
-				.isPresent();
+				.anyMatch(row -> childId.equals(row.getId()));
 	}
 
 	public HuId getHuId()
@@ -394,6 +392,7 @@ public final class HUEditorRow implements IViewRow
 	/**
 	 * @return the wrapped HU or {@code null} if there is none.
 	 */
+	@Nullable
 	public I_M_HU getM_HU()
 	{
 		final HuId huId = getHuId();
@@ -528,12 +527,14 @@ public final class HUEditorRow implements IViewRow
 		return product;
 	}
 
+	@Nullable
 	public ProductId getProductId()
 	{
 		final JSONLookupValue productLV = getProduct();
 		return productLV != null ? ProductId.ofRepoId(productLV.getKeyAsInt()) : null;
 	}
 
+	@Nullable
 	public String getM_Product_DisplayName()
 	{
 		final JSONLookupValue productLV = getProduct();
@@ -553,31 +554,50 @@ public final class HUEditorRow implements IViewRow
 	/**
 	 * @return the ID of the wrapped UOM or {@code -1} if there is none.
 	 */
-	public int getC_UOM_ID()
+	@Nullable
+	public UomId getUomId()
 	{
 		final JSONLookupValue uomLV = getUOM();
-		return uomLV == null ? -1 : uomLV.getKeyAsInt();
+		return uomLV == null ? null : UomId.ofRepoIdOrNull(uomLV.getKeyAsInt());
 	}
 
 	/**
 	 * @return the wrapped UOM or {@code null} if there is none.
 	 */
+	@Nullable
 	public I_C_UOM getC_UOM()
 	{
-		final int uomId = getC_UOM_ID();
-		if (uomId <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.create(Env.getCtx(), uomId, I_C_UOM.class, ITrx.TRXNAME_None);
+		final UomId uomId = getUomId();
+		return uomId != null
+				? Services.get(IUOMDAO.class).getById(uomId)
+				: null;
 	}
 
 	/**
 	 * The CU qty of this line. Generally {@code null}, unless this line represents exactly one {@link IHUProductStorage}.
 	 */
+	@Nullable
 	public BigDecimal getQtyCU()
 	{
 		return qtyCU;
+	}
+
+	@Nullable
+	public Quantity getQtyCUAsQuantity()
+	{
+		final BigDecimal qtyCU = getQtyCU();
+		if (qtyCU == null)
+		{
+			return null;
+		}
+
+		final I_C_UOM uom = getC_UOM();
+		if (uom == null)
+		{
+			return null;
+		}
+
+		return Quantity.of(qtyCU, uom);
 	}
 
 	public LookupValue toLookupValue()
@@ -869,11 +889,10 @@ public final class HUEditorRow implements IViewRow
 	@lombok.Value
 	public static class HUEditorRowHierarchy
 	{
-		@NonNull
-		private final HUEditorRow cuRow;
+		@NonNull HUEditorRow cuRow;
 		@Nullable
-		private final HUEditorRow parentRow;
+		HUEditorRow parentRow;
 		@Nullable
-		private final HUEditorRow topLevelRow;
+		HUEditorRow topLevelRow;
 	}
 }

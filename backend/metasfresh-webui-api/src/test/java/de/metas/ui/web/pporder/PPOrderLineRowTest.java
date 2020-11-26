@@ -65,6 +65,7 @@ public class PPOrderLineRowTest
 		viewRowAttributesProvider = Mockito.mock(IViewRowAttributesProvider.class);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private ProductId createProduct(final String name)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
@@ -131,7 +132,7 @@ public class PPOrderLineRowTest
 				.huId(HuId.ofRepoId(30))
 				.packingInfo("packingInfo")
 				.product(JSONLookupValue.of(35, "product"))
-				.qty(BigDecimal.TEN)
+				.qty(Quantity.of(10, uom))
 				.rowId(PPOrderLineRowId.ofSourceHU(DocumentId.of(40), HuId.ofRepoId(30)))
 				.type(PPOrderLineType.HU_TU)
 				.uom(JSONLookupValue.of(50, "uom"))
@@ -157,7 +158,7 @@ public class PPOrderLineRowTest
 				.includedRows(ImmutableList.of())
 				.packingInfo("packingInfo")
 				.ppOrderQty(ppOrderQty)
-				.processed(true)
+				.parentRowReadonly(true)
 				.product(JSONLookupValue.of(35, "product"))
 				.quantity(new Quantity(BigDecimal.TEN, uom))
 				.rowId(PPOrderLineRowId.ofIssuedOrReceivedHU(DocumentId.of(40), HuId.ofRepoId(10)))

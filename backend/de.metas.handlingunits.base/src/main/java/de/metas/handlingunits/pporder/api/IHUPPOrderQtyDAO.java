@@ -25,6 +25,7 @@ package de.metas.handlingunits.pporder.api;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
 
 public interface IHUPPOrderQtyDAO extends ISingletonService
 {
-	I_PP_Order_Qty retrieveById(int ppOrderQtyId);
+	I_PP_Order_Qty retrieveById(PPOrderQtyId id);
 
 	I_PP_Order_Qty save(CreateIssueCandidateRequest request);
 
@@ -44,15 +45,16 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 
 	void save(final I_PP_Order_Qty ppOrderQty);
 
+	default void saveAll(@NonNull final List<I_PP_Order_Qty> ppOrderQtys)
+	{
+		ppOrderQtys.forEach(this::save);
+	}
+
 	void delete(I_PP_Order_Qty ppOrderQty);
 
-	default void saveAll(final List<I_PP_Order_Qty> ppOrderQtys)
+	default Stream<I_PP_Order_Qty> streamOrderQtys(final PPOrderId ppOrderId)
 	{
-		if (ppOrderQtys.isEmpty())
-		{
-			return;
-		}
-		ppOrderQtys.forEach(this::save);
+		return retrieveOrderQtys(ppOrderId).stream();
 	}
 
 	List<I_PP_Order_Qty> retrieveOrderQtys(PPOrderId ppOrderId);
@@ -60,8 +62,5 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	@Nullable
 	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final PPCostCollectorId costCollectorId);
 
-	default Stream<I_PP_Order_Qty> streamOrderQtys(final PPOrderId ppOrderId)
-	{
-		return retrieveOrderQtys(ppOrderId).stream();
-	}
+	List<I_PP_Order_Qty> retrieveOrderQtyForFinishedGoodsReceive(PPOrderId ppOrderId);
 }

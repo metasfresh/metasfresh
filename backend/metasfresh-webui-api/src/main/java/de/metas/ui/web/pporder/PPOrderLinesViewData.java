@@ -6,6 +6,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.eevolution.api.PPOrderPlanningStatus;
@@ -43,32 +44,41 @@ import java.util.stream.Stream;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Immutable
-/* package */ final class PPOrderLinesViewData
+final class PPOrderLinesViewData
 {
 	@Getter
 	private final ITranslatableString description;
 	@Getter
 	private final PPOrderPlanningStatus planningStatus;
 
-	/**
-	 * Top level records list
-	 */
-	private final ImmutableList<PPOrderLineRow> records;
+	private final ImmutableList<PPOrderLineRow> topLevelRows;
+	@Getter
+	private final PPOrderLineRow finishedGoodRow;
+
 	/**
 	 * All records (included ones too) indexed by DocumentId
 	 */
-	private final ImmutableMap<DocumentId, PPOrderLineRow> allRecordsById;
+	private final ImmutableMap<DocumentId, PPOrderLineRow> allRowsById;
 
-	PPOrderLinesViewData(
+	@Builder
+	private PPOrderLinesViewData(
 			@NonNull final ITranslatableString description,
 			@NonNull final PPOrderPlanningStatus planningStatus,
-			@NonNull final List<PPOrderLineRow> records)
+			@NonNull final PPOrderLineRow finishedGoodRow,
+			@NonNull final List<PPOrderLineRow> bomLineRows,
+			@NonNull final List<PPOrderLineRow> sourceHURows)
 	{
 		this.description = description;
 		this.planningStatus = planningStatus;
-		this.records = ImmutableList.copyOf(records);
 
-		allRecordsById = buildRecordsByIdMap(this.records);
+		this.finishedGoodRow = finishedGoodRow;
+		this.topLevelRows = ImmutableList.<PPOrderLineRow>builder()
+				.add(finishedGoodRow)
+				.addAll(bomLineRows)
+				.addAll(sourceHURows)
+				.build();
+
+		allRowsById = buildRecordsByIdMap(this.topLevelRows);
 	}
 
 	private static ImmutableMap<DocumentId, PPOrderLineRow> buildRecordsByIdMap(@NonNull final List<PPOrderLineRow> rows)
@@ -95,7 +105,7 @@ import java.util.stream.Stream;
 	{
 		final DocumentId documentId = rowId.toDocumentId();
 
-		final PPOrderLineRow row = allRecordsById.get(documentId);
+		final PPOrderLineRow row = allRowsById.get(documentId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("No document found for rowId=" + rowId);
@@ -111,25 +121,25 @@ import java.util.stream.Stream;
 		}
 		else if (documentIds.isAll())
 		{
-			return records.stream();
+			return topLevelRows.stream();
 		}
 		else
 		{
 			return documentIds.stream()
 					.distinct()
-					.map(allRecordsById::get)
+					.map(allRowsById::get)
 					.filter(Objects::nonNull);
 		}
 	}
 
 	public Stream<PPOrderLineRow> stream()
 	{
-		return records.stream();
+		return topLevelRows.stream();
 	}
 
 	public Stream<PPOrderLineRow> streamRecursive()
 	{
-		return records.stream()
+		return topLevelRows.stream()
 				.map(PPOrderLinesViewData::streamRecursive)
 				.reduce(Stream::concat)
 				.orElse(Stream.of());
@@ -145,6 +155,6 @@ import java.util.stream.Stream;
 
 	public long size()
 	{
-		return records.size();
+		return topLevelRows.size();
 	}
 }
