@@ -9,7 +9,9 @@ import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,8 +71,10 @@ public class PPOrderAdvisedEventCreator
 
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
 
-		final Quantity maxQtyPerOrder = null;
-		final Quantity maxQtyPerOrderConv = uomConversionBL.convertQuantityTo(maxQtyPerOrder,
+		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
+
+		final Quantity maxQtyPerOrderConv = uomConversionBL.convertQuantityTo(
+				maxQtyPerOrder,
 				mrpContext.getProductId(),
 				completeRequest.getQtyToSupply().getUomId());
 
@@ -95,13 +99,30 @@ public class PPOrderAdvisedEventCreator
 		return result.build();
 	}
 
+	@Nullable
+	private Quantity extractMaxQuantityPerOrder(@NonNull final I_PP_Product_Planning productPlanning)
+	{
+		final Quantity maxQtyPerOrder;
+		if (productPlanning.getMaxManufacturedQtyPerOrder().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID() > 0)
+		{
+			maxQtyPerOrder = Quantitys.create(
+					productPlanning.getMaxManufacturedQtyPerOrder(),
+					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID()));
+		}
+		else
+		{
+			maxQtyPerOrder = null;
+		}
+		return maxQtyPerOrder;
+	}
+
 	@VisibleForTesting
 	static ImmutableList<MaterialRequest> createMaterialRequests(
 			@NonNull final MaterialRequest completeRequest,
 			@Nullable final Quantity maxQtyPerOrder)
 	{
 		final ImmutableList<MaterialRequest> partialRequests;
-		if (maxQtyPerOrder == null)
+		if (maxQtyPerOrder == null || maxQtyPerOrder.signum() <= 0)
 		{
 			partialRequests = ImmutableList.of(completeRequest);
 		}

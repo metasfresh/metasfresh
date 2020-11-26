@@ -45,7 +45,7 @@ class PPOrderAdvisedEventCreatorTest
 	}
 
 	@Test
-	void createMaterialRequests()
+	void createMaterialRequests_1()
 	{
 		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
 				MaterialRequest.builder()
@@ -57,5 +57,65 @@ class PPOrderAdvisedEventCreatorTest
 		assertThat(materialRequests)
 				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
 				.containsExactly("15", "15", "1");
+	}
+
+	@Test
+	void createMaterialRequests_2()
+	{
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+				MaterialRequest.builder()
+						.qtyToSupply(Quantitys.create("31", uomId))
+						.build(),
+				null
+		);
+
+		assertThat(materialRequests)
+				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+				.containsExactly("31");
+	}
+
+	@Test
+	void createMaterialRequests_3()
+	{
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+				MaterialRequest.builder()
+						.qtyToSupply(Quantitys.create("31", uomId))
+						.build(),
+				Quantitys.create("31", uomId)
+		);
+
+		assertThat(materialRequests)
+				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+				.containsExactly("31");
+	}
+
+	@Test
+	void createMaterialRequests_4()
+	{
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+				MaterialRequest.builder()
+						.qtyToSupply(Quantitys.create("31", uomId))
+						.build(),
+				Quantitys.create("32", uomId)
+		);
+
+		assertThat(materialRequests)
+				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+				.containsExactly("31");
+	}
+
+	@Test
+	void createMaterialRequests_5()
+	{
+		final ImmutableList<MaterialRequest> materialRequests = PPOrderAdvisedEventCreator.createMaterialRequests(
+				MaterialRequest.builder()
+						.qtyToSupply(Quantitys.create("31", uomId))
+						.build(),
+				Quantitys.createZero(uomId)
+		);
+
+		assertThat(materialRequests)
+				.extracting(l -> l.getQtyToSupply().toBigDecimal().toString())
+				.containsExactly("31");
 	}
 }
