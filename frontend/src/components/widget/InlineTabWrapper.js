@@ -7,6 +7,9 @@ import { connect } from 'react-redux';
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
     super(props);
+
+    this.state = { addNewFormVisible: false };
+
     const query = '';
     const {
       inlineTab: { windowId, tabId },
@@ -18,9 +21,14 @@ class InlineTabWrapper extends PureComponent {
     });
   }
 
+  showAddNewForm = () => this.setState({ addNewFormVisible: true });
+
+  handleFormClose = () => this.setState({ addNewFormVisible: false });
+
   render() {
     if (!this.tabData) return false;
     const { caption } = this.props;
+    const { addNewFormVisible } = this.state;
     return (
       <div className="inline-tab-wrapper">
         <span>{caption}</span>
@@ -28,6 +36,41 @@ class InlineTabWrapper extends PureComponent {
           this.tabData.map((tabItem, index) => (
             <InlineTab key={`${index}_${tabItem.rowId}`} {...tabItem} />
           ))}
+        <div className="clearfix" />
+        {/* Add content wrapper */}
+        <div>
+          {/* Button */}
+          {!addNewFormVisible && (
+            <div>
+              <button
+                className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                onClick={this.showAddNewForm}
+              >
+                + Add new
+              </button>
+              <div className="clearfix" />
+            </div>
+          )}
+          {/* Actual content */}
+          {addNewFormVisible && (
+            <div className="inline-tab-active">
+              <div className="inline-tab-content">
+                <div>
+                  <div className="inlinetab-form-header">Add new record</div>
+                  <div className="inlinetab-close">
+                    <i
+                      className="meta-icon-close-alt"
+                      onClick={this.handleFormClose}
+                    />
+                  </div>
+                </div>
+                <div className="clearfix" />
+                <div className="inline-tab-separator" />
+                Actual content
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

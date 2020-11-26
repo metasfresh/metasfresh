@@ -370,5 +370,14 @@
     margin: 10px 0px 10px 0px;
     box-sizing: border-box;
   }
+  .full-width {
+    width: 100%;
+  }
+  .inlinetab-form-header {
+    float:left;
+  }
+  .inlinetab-close {
+    float: right;
+  }
 }
 /** END Inline TAB **/
