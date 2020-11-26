@@ -64,6 +64,6 @@ class InlineTab extends PureComponent {
 }
 
 InlineTab.propTypes = {
-  inlineTab: PropTypes.string.isRequired,
+  inlineTab: PropTypes.object.isRequired,
 };
 export default InlineTab;
