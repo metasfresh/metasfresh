@@ -17,7 +17,7 @@ class InlineTab extends PureComponent {
   render() {
     const { isOpen } = this.state;
     const { fieldsByName } = this.props;
-    console.log(fieldsByName);
+
     return (
       <div>
         <div
@@ -51,7 +51,6 @@ class InlineTab extends PureComponent {
 }
 
 InlineTab.propTypes = {
-  inlineTab: PropTypes.object.isRequired,
   fieldsByName: PropTypes.object,
 };
 export default InlineTab;
