@@ -41,6 +41,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class SupplyRequiredHandlerUtils
 {
 
+	@NonNull
 	public MaterialRequest mkRequest(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
