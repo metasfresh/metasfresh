@@ -16,10 +16,8 @@ class InlineTab extends PureComponent {
 
   render() {
     const { isOpen } = this.state;
-    const {
-      inlineTab: { caption, elements },
-    } = this.props;
-
+    const { fieldsByName } = this.props;
+    console.log(fieldsByName);
     return (
       <div>
         <div
@@ -35,19 +33,8 @@ class InlineTab extends PureComponent {
           </div>
           {/* Header  */}
           <div className="pull-left offset-left">
-            {caption}
-            {/* 
-             TODO: select which exactly will be displayed and by what criteria - talk to BE team
-                   currently these are randomly picked
-             */}
-            {elements &&
-              elements.map((item, index) => {
-                if (index < 4) {
-                  return (
-                    <span key={`${index}_${item}`}> {item.caption} -- </span>
-                  );
-                }
-              })}
+            <span>{fieldsByName.Name.value}</span>&nbsp;&nbsp;
+            <span>{fieldsByName.Address.value}</span>
           </div>
 
           {/* Content */}
@@ -65,5 +52,6 @@ class InlineTab extends PureComponent {
 
 InlineTab.propTypes = {
   inlineTab: PropTypes.object.isRequired,
+  fieldsByName: PropTypes.object,
 };
 export default InlineTab;
