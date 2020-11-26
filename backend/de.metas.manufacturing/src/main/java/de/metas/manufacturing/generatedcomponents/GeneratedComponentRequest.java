@@ -27,9 +27,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeCode;
-
-import java.util.List;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 @Value
 class GeneratedComponentRequest
@@ -40,19 +38,19 @@ class GeneratedComponentRequest
 	int qty;
 
 	@NonNull
-	List<AttributeCode> availableAttributeCodes;
+	ImmutableAttributeSet attributes;
 
 	@Builder
 	public GeneratedComponentRequest(
 			@NonNull final ProductId productId,
 			final int qty,
-			@NonNull final List<AttributeCode> availableAttributeCodes
+			@NonNull final ImmutableAttributeSet attributes
 	)
 	{
 		Check.errorIf(qty < 1, "qty {} must be > 0", qty);
 
 		this.productId = productId;
 		this.qty = qty;
-		this.availableAttributeCodes = availableAttributeCodes;
+		this.attributes = attributes;
 	}
 }
