@@ -166,7 +166,6 @@ class TableCell extends PureComponent {
       listenOnKeysTrue,
       closeTableField,
       mainTable,
-      onCellChange,
       viewId,
       modalVisible,
       onClickOutside,
@@ -247,12 +246,10 @@ class TableCell extends PureComponent {
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
-            isMainTable={mainTable}
             tabId={mainTable ? null : tabId}
             noLabel={true}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
-            onChange={mainTable ? onCellChange : null}
           />
         ) : (
           <div className={classnames({ 'with-widget': tooltipWidget })}>

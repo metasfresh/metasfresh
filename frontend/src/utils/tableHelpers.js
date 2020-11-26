@@ -28,11 +28,11 @@ export const containerPropTypes = {
   autofocus: PropTypes.bool,
   rowEdited: PropTypes.bool,
   onSelectionChanged: PropTypes.func,
-  onRowEdited: PropTypes.func,
   defaultSelected: PropTypes.array,
   limitOnClickOutside: PropTypes.bool,
   supportOpenRecord: PropTypes.bool,
   onSortTable: PropTypes.func,
+  parentView: PropTypes.object,
 
   // from redux
   rows: PropTypes.array.isRequired,
@@ -87,7 +87,6 @@ export const tableRowPropTypes = {
   fieldsByName: PropTypes.object,
   indent: PropTypes.array,
   rowId: PropTypes.string,
-  onItemChange: PropTypes.func,
   supportOpenRecord: PropTypes.bool,
   changeListenOnFalse: PropTypes.func,
   tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),

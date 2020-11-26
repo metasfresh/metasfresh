@@ -50,11 +50,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 
 	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.compudata.filename";
 
-	public static final String EP_EDI_DESADV_SINGLE_CONSUMER = "direct:edi.desadv.consumer.single";
 	public static final String EP_EDI_COMPUDATA_DESADV_CONSUMER = "direct:edi.desadv.consumer.aggregate";
-
-	public static final String EDI_DESADV_IS_TEST = "edi.props.desadv.isTest";
-	public static final String EDI_DESADV_IS_AGGREGATE = "edi.props.desadv.isAggregate";
 
 	public final static QName EDIDesadvFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIDesadvFeedback(null).getName();
 	public static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
@@ -75,17 +71,10 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 
 		final String desadvFilenamePattern = Util.resolveProperty(getContext(), CompuDataDesadvRoute.EDI_DESADV_FILENAME_PATTERN);
 
-		final String isTest = Util.resolveProperty(getContext(), CompuDataDesadvRoute.EDI_DESADV_IS_TEST);
-
 		from(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST).constant(isTest)
-
-				//
-				// Aggregate route (used for pivoting feedback)
-				.setProperty(CompuDataDesadvRoute.EDI_DESADV_IS_AGGREGATE).constant(true)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(new Processor()

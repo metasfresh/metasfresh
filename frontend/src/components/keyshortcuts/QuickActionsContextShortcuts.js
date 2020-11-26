@@ -30,11 +30,6 @@ export default class QuickActionsContextShortcuts extends Component {
     },
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     return [
       <Shortcut
@@ -58,7 +53,7 @@ export default class QuickActionsContextShortcuts extends Component {
  * @prop {bool} [stopPropagation]
  */
 QuickActionsContextShortcuts.propTypes = {
-  onAction: PropTypes.func.isRequired,
+  onAction: PropTypes.func,
   onClick: PropTypes.func.isRequired,
   stopPropagation: PropTypes.bool,
 };

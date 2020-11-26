@@ -5,11 +5,8 @@ import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
 import { TableFilterContextShortcuts } from '../keyshortcuts';
-import {
-  openModal,
-  fetchTopActions,
-  deleteTopActions,
-} from '../../actions/WindowActions';
+import { openModal } from '../../actions/WindowActions';
+import { fetchTopActions, deleteTopActions } from '../../actions/Actions';
 import { addNotification } from '../../actions/AppActions';
 
 import Tooltips from '../tooltips/Tooltips';

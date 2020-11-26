@@ -254,6 +254,11 @@ describe('ViewActions thunks', () => {
       )
       .reply(200, limitedModalData);
 
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
+      .reply(200, { data: { actions: [] } });
+
     return store
       .dispatch(
         viewActions.fetchDocument({
@@ -337,6 +342,11 @@ describe('ViewActions thunks', () => {
       )
       .reply(200, limitedViewData);
 
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
+      .reply(200, { data: { actions: [] } });
+
     return store
       .dispatch(
         viewActions.fetchDocument({
@@ -414,6 +424,11 @@ describe('ViewActions thunks', () => {
       )
       .reply(200, _.cloneDeep(limitedViewData));
 
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
+      .reply(200, { data: { actions: [] } });
+
     return store
       .dispatch(
         viewActions.fetchDocument({
@@ -451,6 +466,7 @@ describe('ViewActions thunks', () => {
     const store = mockStore(state);
     const includedWindowId = rowsData.result[0].includedView.windowId;
     const includedViewId = rowsData.result[0].includedView.viewId;
+    const parentId = layoutData.windowId;
 
     const payload1 = {
       id: windowId,
@@ -461,6 +477,7 @@ describe('ViewActions thunks', () => {
       id: includedWindowId,
       viewId: includedViewId,
       viewProfileId: null,
+      parentId,
     };
 
     const expectedActions = [
@@ -475,6 +492,11 @@ describe('ViewActions thunks', () => {
           (page - 1)}&pageLength=${pageLength}`
       )
       .reply(200, rowsData);
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
+      .reply(200, { data: { actions: [] } });
 
     return store
       .dispatch(
@@ -493,7 +515,7 @@ describe('ViewActions thunks', () => {
       });
   });
 
-  it(`dispatches 'UNSET_INCLUDED_VIEW' action with viewId from the 'includedView' if it exists`, () => {
+  it(`dispatches 'SET_INCLUDED_VIEW' action with viewId from the 'includedView' when it exists`, () => {
     const layoutData = gridLayoutFixtures.layout2_parent;
     const rowsData = gridRowFixtures.data2_parent;
     const { windowId, viewId, pageLength } = rowsData;
@@ -512,6 +534,7 @@ describe('ViewActions thunks', () => {
         includedView: {
           viewId: includedViewId,
           windowType: includedWindowId,
+          parentId: windowId,
           viewProfileId: null,
         },
       },
@@ -527,6 +550,7 @@ describe('ViewActions thunks', () => {
       id: includedWindowId,
       viewId: includedViewId,
       viewProfileId: null,
+      parentId: windowId,
     };
 
     const expectedActions = [
@@ -541,6 +565,11 @@ describe('ViewActions thunks', () => {
           (page - 1)}&pageLength=${pageLength}`
       )
       .reply(200, rowsData);
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/quickActions`)
+      .reply(200, { data: { actions: [] } });
 
     return store
       .dispatch(
