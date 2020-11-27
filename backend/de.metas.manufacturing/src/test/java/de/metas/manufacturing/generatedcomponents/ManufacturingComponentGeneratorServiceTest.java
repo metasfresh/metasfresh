@@ -32,6 +32,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_PP_ComponentGenerator;
@@ -101,6 +102,7 @@ class ManufacturingComponentGeneratorServiceTest
 							.attributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, null).build())
 							.productId(passwordProductId)
 							.qty(1)
+							.clientId(ClientId.METASFRESH)
 							.build());
 
 			assertThat(actualPasswords.getAttributes()).hasSize(1);
@@ -116,6 +118,7 @@ class ManufacturingComponentGeneratorServiceTest
 							.attributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, "1234").build())
 							.productId(passwordProductId)
 							.qty(1)
+							.clientId(ClientId.METASFRESH)
 							.build());
 
 			assertThat(actualPasswords.getAttributes()).hasSize(0);

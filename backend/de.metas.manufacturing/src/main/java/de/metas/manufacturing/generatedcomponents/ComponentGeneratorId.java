@@ -22,39 +22,45 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import de.metas.product.ProductId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
 
 @Value
-public class GeneratedComponentRequest
+public class ComponentGeneratorId implements RepoIdAware
 {
-	@NonNull
-	ProductId productId;
-
-	int qty;
-
-	@NonNull
-	ImmutableAttributeSet attributes;
-
-	@NonNull ClientId clientId;
-
-	@Builder
-	public GeneratedComponentRequest(
-			@NonNull final ProductId productId,
-			final int qty,
-			@NonNull final ImmutableAttributeSet attributes,
-			@NonNull ClientId clientId)
+	@JsonCreator
+	public static ComponentGeneratorId ofRepoId(final int repoId)
 	{
-		Check.errorIf(qty < 1, "qty {} must be > 0", qty);
+		return new ComponentGeneratorId(repoId);
+	}
 
-		this.productId = productId;
-		this.qty = qty;
-		this.attributes = attributes;
-		this.clientId = clientId;
+	@Nullable
+	public static ComponentGeneratorId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new ComponentGeneratorId(repoId) : null;
+	}
+
+	int repoId;
+
+	private ComponentGeneratorId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "PP_ComponentGenerator_ID");
+	}
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final ComponentGeneratorId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 }

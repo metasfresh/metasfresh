@@ -23,6 +23,7 @@
 package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,8 +38,7 @@ public class ManufacturingComponentGeneratorService
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 
 	public ManufacturingComponentGeneratorService(
-			@NonNull final ComponentGeneratorRepository componentRepository
-	)
+			@NonNull final ComponentGeneratorRepository componentRepository)
 	{
 		this.componentRepository = componentRepository;
 	}
@@ -50,10 +50,23 @@ public class ManufacturingComponentGeneratorService
 
 	public ImmutableAttributeSet generate(@NonNull final GeneratedComponentRequest request)
 	{
-		final ComponentGenerator generator = componentRepository.getByProductId(request.getProductId()).orElseThrow(() -> new AdempiereException("No Component Generator for product " + request.getProductId()));
+		final ComponentGenerator generator = componentRepository.getByProductId(request.getProductId())
+				.orElseThrow(() -> new AdempiereException("No Component Generator for product " + request.getProductId()));
 
-		final IComponentGenerator generatorClass = javaClassBL.newInstance(generator.getJavaClassId());
+		final IComponentGenerator generatorInstance = javaClassBL.newInstance(generator.getJavaClassId());
+		return generatorInstance.generate(ComponentGeneratorContext.builder()
+				.qty(request.getQty())
+				.existingAttributes(request.getAttributes())
+				.parameters(generator.getParams())
+				.clientId(request.getClientId())
+				.build());
+	}
 
-		return generatorClass.generate(request.getQty(), request.getAttributes(), generator.getParams());
+	public void createDefaultParameters(
+			final ComponentGeneratorId generatorId,
+			final JavaClassId generatorClassId)
+	{
+		final IComponentGenerator generatorInstance = javaClassBL.newInstance(generatorClassId);
+		componentRepository.createDefaultParameters(generatorId, generatorInstance.getDefaultParameters());
 	}
 }

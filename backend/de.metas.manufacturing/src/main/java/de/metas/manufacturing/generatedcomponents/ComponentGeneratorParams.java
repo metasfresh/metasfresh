@@ -23,18 +23,42 @@
 package de.metas.manufacturing.generatedcomponents;
 
 import com.google.common.collect.ImmutableMap;
-import lombok.Data;
+import de.metas.document.sequence.DocSequenceId;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.Singular;
+import lombok.ToString;
 
-@Value
-@Data(staticConstructor = "of")
-/*package*/ class ComponentGeneratorParams
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Set;
+
+@EqualsAndHashCode
+@ToString
+class ComponentGeneratorParams
 {
-	ImmutableMap<String, String> parameters;
+	public static final ComponentGeneratorParams EMPTY = builder().build();
 
-	public String getValue(@NonNull final String paramName)
+	@Getter
+	private final Optional<DocSequenceId> sequenceId;
+
+	private final ImmutableMap<String, String> parameters;
+
+	@Builder
+	private ComponentGeneratorParams(
+			@Nullable final DocSequenceId sequenceId,
+			@NonNull @Singular final ImmutableMap<String, String> parameters)
 	{
-		return parameters.get(paramName);
+		this.sequenceId = Optional.ofNullable(sequenceId);
+		this.parameters = parameters;
+	}
+
+	public Set<String> getParameterNames() { return parameters.keySet(); }
+
+	public String getValue(@NonNull final String parameterName)
+	{
+		return parameters.get(parameterName);
 	}
 }

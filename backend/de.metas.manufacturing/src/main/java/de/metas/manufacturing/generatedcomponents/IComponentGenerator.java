@@ -22,13 +22,14 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
 
 public interface IComponentGenerator
 {
-	ImmutableAttributeSet generate(int qty, @NonNull ImmutableAttributeSet existingAttributes, @NonNull ComponentGeneratorParams parameters);
 
-	ImmutableMap<String, String> getDefaultParameters();
+	ImmutableAttributeSet generate(ComponentGeneratorContext context);
+
+	ComponentGeneratorParams getDefaultParameters();
 }

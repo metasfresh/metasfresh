@@ -54,6 +54,7 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.ComponentIssueCreateRequest;
@@ -133,6 +134,7 @@ class PPOrderIssueServiceProductCommand
 				.productId(getComponentId())
 				.qty(qtyToIssueForOneFinishedGood.intValueExact())
 				.attributes(ImmutableAttributeSet.copyOf(attributes))
+				.clientId(ClientId.ofRepoId(singleItemHU.getAD_Client_ID()))
 				.build());
 
 		if (attributesToChange.isEmpty())

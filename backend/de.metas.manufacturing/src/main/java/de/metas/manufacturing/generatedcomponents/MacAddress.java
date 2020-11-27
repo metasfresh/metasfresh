@@ -22,22 +22,21 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import de.metas.util.StringUtils;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data(staticConstructor = "of")
- /*default*/ class MacAddress
+@Value(staticConstructor = "of")
+class MacAddress
 {
+	public static final String DEFAULT_GROUP_DELIMITER = ":";
+
 	@NonNull
 	String address;
 
-	public static final String GROUP_DELIMITER = ":";
-
-	@SuppressWarnings("ConstantConditions")
-	@NonNull
-	public String withGroupDelimiter(@NonNull final String newGroupDelimiter)
+	@Override
+	@Deprecated
+	public String toString()
 	{
-		return StringUtils.replace(address, GROUP_DELIMITER, newGroupDelimiter);
+		return getAddress();
 	}
 }

@@ -22,76 +22,211 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class MacAddressGeneratorTest
 {
-	private MacAddressGenerator generator;
-
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
-
-		generator = new MacAddressGenerator();
 	}
 
-	@Test
-	void prefixHasColon()
+	@Nested
+	public class toMacAddress
 	{
-		final DocumentNoParts documentNoParts = DocumentNoParts.builder()
-				.prefix("BB:")
-				.suffix("")
-				.sequenceNumber("1")
-				.build();
+		@Test
+		void prefixHasColon()
+		{
+			final DocumentNoParts documentNoParts = DocumentNoParts.builder()
+					.prefix("BB:")
+					.suffix("")
+					.sequenceNumber("1")
+					.build();
 
-		assertThat(generator.generateNextMacAddress0(documentNoParts)).isEqualTo(MacAddress.of("BB:00:00:00:00:01"));
+			assertThat(MacAddressGenerator.toMacAddress(documentNoParts)).isEqualTo(MacAddress.of("BB:00:00:00:00:01"));
+		}
+
+		@Test
+		void prefixNoColon()
+		{
+			final DocumentNoParts documentNoParts = DocumentNoParts.builder()
+					.prefix("BB:A")
+					.suffix("")
+					.sequenceNumber("1234")
+					.build();
+
+			assertThat(MacAddressGenerator.toMacAddress(documentNoParts)).isEqualTo(MacAddress.of("BB:A0:00:00:04:D2"));
+		}
+
+		@Test
+		void dashGroupDelimiter()
+		{
+			final DocumentNoParts documentNoParts = DocumentNoParts.builder()
+					.prefix("BB-A")
+					.suffix("")
+					.sequenceNumber("1234")
+					.build();
+
+			assertThat(MacAddressGenerator.toMacAddress(documentNoParts)).isEqualTo(MacAddress.of("BB-A0-00-00-04-D2"));
+		}
+
+		@Test
+		void noPrefix()
+		{
+			final DocumentNoParts documentNoParts = DocumentNoParts.builder()
+					.prefix("")
+					.suffix("")
+					.sequenceNumber("1234321")
+					.build();
+
+			assertThat(MacAddressGenerator.toMacAddress(documentNoParts)).isEqualTo(MacAddress.of("00:00:00:12:D5:91"));
+		}
 	}
 
-	@Test
-	void prefixNoColon()
+	@Nested
+	public class generate
 	{
-		final DocumentNoParts documentNoParts = DocumentNoParts.builder()
-				.prefix("BB:A")
-				.suffix("")
-				.sequenceNumber("1234")
-				.build();
+		@BeforeEach
+		void beforeEach()
+		{
+			mkAttribute(AttributeConstants.RouterMAC1);
+			mkAttribute(AttributeConstants.RouterMAC2);
+			mkAttribute(AttributeConstants.RouterMAC3);
+			mkAttribute(AttributeConstants.RouterMAC4);
+			mkAttribute(AttributeConstants.RouterMAC5);
+			mkAttribute(AttributeConstants.RouterMAC6);
+		}
 
-		assertThat(generator.generateNextMacAddress0(documentNoParts)).isEqualTo(MacAddress.of("BB:A0:00:00:04:D2"));
-	}
+		private void mkAttribute(final AttributeCode attributeCode)
+		{
+			final I_M_Attribute po = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
+			po.setName(attributeCode.getCode());
+			po.setValue(attributeCode.getCode());
+			InterfaceWrapperHelper.save(po);
+		}
 
-	@Test
-	void dashGroupDelimiter()
-	{
-		final DocumentNoParts documentNoParts = DocumentNoParts.builder()
-				.prefix("BB-A")
-				.suffix("")
-				.sequenceNumber("1234")
-				.build();
+		private MacAddressGenerator newMacAddressGenerator(@Nullable final String prefix, final int startNo)
+		{
+			final AtomicInteger next = new AtomicInteger(startNo);
 
-		assertThat(generator.generateNextMacAddress0(documentNoParts)).isEqualTo(MacAddress.of("BB-A0-00-00-04-D2"));
-	}
+			// we won't use it but we need it as non null param
+			final IDocumentNoBuilderFactory documentNoBuilderFactory = Mockito.mock(IDocumentNoBuilderFactory.class);
+			return new MacAddressGenerator(documentNoBuilderFactory)
+			{
+				@Override
+				@NonNull DocumentNoParts getAndIncrementSequence(final @NonNull DocSequenceId macAddressSequenceId, final @NonNull ClientId clientId)
+				{
+					return DocumentNoParts.builder()
+							.prefix(prefix)
+							.sequenceNumber(String.valueOf(next.getAndIncrement()))
+							.suffix("")
+							.build();
+				}
+			};
+		}
 
-	@Test
-	void noPrefix()
-	{
-		final DocumentNoParts documentNoParts = DocumentNoParts.builder()
-				.prefix("")
-				.suffix("")
-				.sequenceNumber("1234321")
-				.build();
+		@Builder(builderMethodName = "context", builderClassName = "$contextBuilder")
+		private ComponentGeneratorContext createContext(
+				@NonNull final Integer qty,
+				@Nullable String alreadySetMAC1,
+				@Nullable String alreadySetMAC2)
+		{
+			final ImmutableAttributeSet.Builder existingAttributes = ImmutableAttributeSet.builder();
+			if (alreadySetMAC1 != null)
+			{
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC1, alreadySetMAC1);
+			}
+			if (alreadySetMAC2 != null)
+			{
+				existingAttributes.attributeValue(AttributeConstants.RouterMAC2, alreadySetMAC2);
+			}
 
-		assertThat(generator.generateNextMacAddress0(documentNoParts)).isEqualTo(MacAddress.of("00:00:00:12:D5:91"));
+			return ComponentGeneratorContext.builder()
+					.qty(qty)
+					.existingAttributes(existingAttributes.build())
+					.parameters(ComponentGeneratorParams.builder()
+							.sequenceId(DocSequenceId.ofRepoId(123456))
+							.build())
+					.clientId(ClientId.METASFRESH) // irrelevant
+					.build();
+		}
+
+		@Test
+		void prefixHasColon()
+		{
+			final MacAddressGenerator generator = newMacAddressGenerator("BB:", 1);
+			final ImmutableAttributeSet result = generator.generate(context()
+					.qty(1)
+					.alreadySetMAC1("")
+					.build());
+
+			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
+					.attributeValue(AttributeConstants.RouterMAC1, "BB:00:00:00:00:01")
+					.build());
+		}
+
+		@Test
+		void prefixNoColon()
+		{
+			final MacAddressGenerator generator = newMacAddressGenerator("BB:A", 1234);
+			final ImmutableAttributeSet result = generator.generate(context()
+					.qty(2)
+					.alreadySetMAC1("already set")
+					.alreadySetMAC2("")
+					.build());
+
+			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
+					.attributeValue(AttributeConstants.RouterMAC2, "BB:A0:00:00:04:D2")
+					.build());
+		}
+
+		@Test
+		void dashGroupDelimiter()
+		{
+			final MacAddressGenerator generator = newMacAddressGenerator("BB-A", 1234);
+			final ImmutableAttributeSet result = generator.generate(context()
+					.qty(1)
+					.alreadySetMAC1("")
+					.build());
+
+			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
+					.attributeValue(AttributeConstants.RouterMAC1, "BB-A0-00-00-04-D2")
+					.build());
+		}
+
+		@Test
+		void noPrefix()
+		{
+			final MacAddressGenerator generator = newMacAddressGenerator("", 1234321);
+			final ImmutableAttributeSet result = generator.generate(context()
+					.qty(1)
+					.alreadySetMAC1("")
+					.build());
+
+			assertThat(result).isEqualTo(ImmutableAttributeSet.builder()
+					.attributeValue(AttributeConstants.RouterMAC1, "00:00:00:12:D5:91")
+					.build());
+		}
 	}
 }

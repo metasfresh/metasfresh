@@ -25,9 +25,7 @@ package de.metas.manufacturing.generatedcomponents;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.document.sequence.DocSequenceId;
-import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
 import de.metas.util.Check;
@@ -37,21 +35,17 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-
-import static de.metas.manufacturing.generatedcomponents.ComponentGeneratorUtil.PARAM_AD_SEQUENCE_ID;
+import java.util.ArrayList;
 
 /**
  * A MAC Address looks like this: 01:23:45:67:89:AB
  */
-@Service
 public class MacAddressGenerator implements IComponentGenerator
 {
-	private static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder().build();
 	private static final int NUMBER_OF_DIGITS = 12;
 
 	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
@@ -63,80 +57,107 @@ public class MacAddressGenerator implements IComponentGenerator
 			AttributeConstants.RouterMAC6
 	);
 
-	private transient final IDocumentNoBuilderFactory documentNoBuilder = SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class);
+	private final IDocumentNoBuilderFactory documentNoBuilder;
+
+	// IMPORTANT: this ctor is required for the API to instantiate this class
+	public MacAddressGenerator()
+	{
+		this(SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class));
+	}
+
+	@VisibleForTesting
+	MacAddressGenerator(
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilder)
+	{
+		this.documentNoBuilder = documentNoBuilder;
+	}
 
 	@Override
-	public ImmutableAttributeSet generate(final int qty, final @NonNull ImmutableAttributeSet existingAttributes, final @NonNull ComponentGeneratorParams parameters)
+	public ImmutableAttributeSet generate(@NonNull final ComponentGeneratorContext context)
 	{
-		Check.errorIf(qty < 1 || qty > 6, "Qty of Mac Addresses should be between 1 and 6. Requested qty: {}", qty);
+		final int qty = context.getQty();
+		Check.errorIf(qty < 1 || qty > supportedAttributes.size(),
+				"Qty of Mac Addresses should be between 1 and {} but it was {}", supportedAttributes.size(), qty);
 
-		final ImmutableList<AttributeCode> attributesToGenerate = ComponentGeneratorUtil.computeRemainingAttributesToGenerate(existingAttributes, supportedAttributes);
+		//
+		// Count how many attributes were already generated.
+		// Identify which are the attributes which are not already generated (the free slots).
+		int countAlreadyGenerated = 0;
+		final ArrayList<AttributeCode> attributesAvailableToGenerate = new ArrayList<>();
+		final ImmutableAttributeSet existingAttributes = context.getExistingAttributes();
+		for (final AttributeCode attributeCode : supportedAttributes)
+		{
+			if (!existingAttributes.hasAttribute(attributeCode))
+			{
+				continue;
+			}
 
-		if (attributesToGenerate.isEmpty())
+			final boolean alreadyGenerated = Check.isNotBlank(existingAttributes.getValueAsString(attributeCode));
+			if (alreadyGenerated)
+			{
+				countAlreadyGenerated++;
+			}
+			else
+			{
+				attributesAvailableToGenerate.add(attributeCode);
+			}
+		}
+
+		//
+		// Compute how much we still have to generate.
+		final int countRemainingToGenerate = qty - countAlreadyGenerated;
+		if (countRemainingToGenerate <= 0)
 		{
 			return ImmutableAttributeSet.EMPTY;
 		}
-
-		/*
-			Explanation: we have to generate 2 mac addresses, but 2 or more are already generated => nothing to do.
-		 */
-		if (qty - noOfAlreadyGenerated(attributesToGenerate) <= 0)
+		if (countRemainingToGenerate > attributesAvailableToGenerate.size())
 		{
-			return ImmutableAttributeSet.EMPTY;
+			throw new AdempiereException("We still have to generate " + countRemainingToGenerate + " but only " + attributesAvailableToGenerate + " are available and not already generated");
 		}
 
-		final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(StringUtils.toIntegerOrZero(parameters.getValue(PARAM_AD_SEQUENCE_ID)));
-		if (sequenceId == null)
-		{
-			throw new AdempiereException("Mandatory parameter " + PARAM_AD_SEQUENCE_ID + " has invalid value.");
-		}
-
+		//
+		// Generate the remaining ones
 		final ImmutableAttributeSet.Builder result = ImmutableAttributeSet.builder();
-
-		for (int i = 0; i < qty - noOfAlreadyGenerated(attributesToGenerate); i++)
+		for (int i = 0; i < countRemainingToGenerate; i++)
 		{
-			final AttributeCode attributeCode = attributesToGenerate.get(i);
-			final MacAddress macAddress = generateNextMacAddress(sequenceId);
+			final AttributeCode attributeCode = attributesAvailableToGenerate.get(i);
+			final DocumentNoParts documentNoParts = getAndIncrementSequence(context.getSequenceId(), context.getClientId());
+			final MacAddress macAddress = toMacAddress(documentNoParts);
+
 			result.attributeValue(attributeCode, macAddress.getAddress());
 		}
-
 		return result.build();
 	}
 
-	private int noOfAlreadyGenerated(@NonNull final ImmutableList<AttributeCode> attributesToGenerate)
-	{
-		return supportedAttributes.size() - attributesToGenerate.size();
-	}
-
 	@Override
-	public ImmutableMap<String, String> getDefaultParameters()
+	public ComponentGeneratorParams getDefaultParameters()
 	{
-		return DEFAULT_PARAMETERS;
+		return ComponentGeneratorParams.EMPTY;
 	}
 
 	@NonNull
-	private MacAddress generateNextMacAddress(@NonNull final DocSequenceId macAddressSequenceId)
+	@VisibleForTesting
+	DocumentNoParts getAndIncrementSequence(
+			@NonNull final DocSequenceId macAddressSequenceId,
+			@NonNull final ClientId clientId)
 	{
-		final IDocumentNoBuilder sequenceGenerator = documentNoBuilder.forSequenceId(macAddressSequenceId)
-				.setClientId(Env.getClientId())
-				.setFailOnError(true);
-
-		final DocumentNoParts documentNoParts = sequenceGenerator.buildParts();
-
+		final DocumentNoParts documentNoParts = documentNoBuilder.forSequenceId(macAddressSequenceId)
+				.setClientId(clientId)
+				.setFailOnError(true)
+				.buildParts();
 		if (documentNoParts == null)
 		{
-			throw new AdempiereException("Could not retrieve next sequence number. Maybe mandatory parameter " + PARAM_AD_SEQUENCE_ID + " has invalid value?");
+			throw new AdempiereException("Could not retrieve next sequence number.");
 		}
-
-		return generateNextMacAddress0(documentNoParts);
+		return documentNoParts;
 	}
 
 	@VisibleForTesting
 	@NonNull
-	MacAddress generateNextMacAddress0(@NonNull final DocumentNoParts documentNoParts)
+	static MacAddress toMacAddress(@NonNull final DocumentNoParts documentNoParts)
 	{
-		final String GROUP_DELIMITER = detectGroupDelimiter(documentNoParts.getPrefix(), MacAddress.GROUP_DELIMITER);
-		final String prefix = StringUtils.nullToEmpty(StringUtils.replace(documentNoParts.getPrefix(), GROUP_DELIMITER, ""));
+		final String groupDelimiter = detectGroupDelimiter(documentNoParts.getPrefix());
+		final String prefix = StringUtils.nullToEmpty(StringUtils.replace(documentNoParts.getPrefix(), groupDelimiter, ""));
 		final String sequenceNo;
 
 		{
@@ -163,8 +184,8 @@ public class MacAddressGenerator implements IComponentGenerator
 			int i = initialStep;
 			while (i < result.length())
 			{
-				result.insert(i, GROUP_DELIMITER);
-				i += initialStep + GROUP_DELIMITER.length();
+				result.insert(i, groupDelimiter);
+				i += initialStep + groupDelimiter.length();
 			}
 		}
 
@@ -172,11 +193,11 @@ public class MacAddressGenerator implements IComponentGenerator
 	}
 
 	@NonNull
-	private String detectGroupDelimiter(@Nullable final String prefix, @SuppressWarnings("SameParameterValue") @NonNull final String defaultGroupDelimiter)
+	private static String detectGroupDelimiter(@Nullable final String prefix)
 	{
 		if (prefix == null)
 		{
-			return defaultGroupDelimiter;
+			return MacAddress.DEFAULT_GROUP_DELIMITER;
 		}
 
 		if (prefix.contains(":"))
@@ -189,6 +210,6 @@ public class MacAddressGenerator implements IComponentGenerator
 			return "-";
 		}
 
-		return defaultGroupDelimiter;
+		return MacAddress.DEFAULT_GROUP_DELIMITER;
 	}
 }

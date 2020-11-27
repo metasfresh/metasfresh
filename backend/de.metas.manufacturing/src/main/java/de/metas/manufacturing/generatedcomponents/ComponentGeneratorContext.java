@@ -22,20 +22,41 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.document.sequence.DocSequenceId;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.service.ClientId;
 
-@UtilityClass
-public class ComponentGeneratorUtil
+import java.util.List;
+
+@Value
+@Builder
+public class ComponentGeneratorContext
 {
-	@VisibleForTesting
-	static final String PARAM_AD_SEQUENCE_ID = "AD_Sequence_ID";
+	int qty;
+	@NonNull ImmutableAttributeSet existingAttributes;
+	@NonNull ComponentGeneratorParams parameters;
+	@NonNull ClientId clientId;
 
-	ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(@NonNull final ImmutableAttributeSet existingAttributes, @NonNull final ImmutableList<AttributeCode> supportedAttributes)
+	@NonNull
+	public DocSequenceId getSequenceId()
+	{
+		return getParameters()
+				.getSequenceId()
+				.orElseThrow(() -> new AdempiereException("Sequence shall be configured"));
+	}
+
+	public ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(@NonNull final AttributeCode... supportedAttributes)
+	{
+		return computeRemainingAttributesToGenerate(ImmutableList.copyOf(supportedAttributes));
+	}
+
+	public ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(@NonNull final List<AttributeCode> supportedAttributes)
 	{
 		final ImmutableList.Builder<AttributeCode> attributesLeftToGenerate = ImmutableList.builder();
 		for (final AttributeCode attr : supportedAttributes)
@@ -47,4 +68,5 @@ public class ComponentGeneratorUtil
 		}
 		return attributesLeftToGenerate.build();
 	}
+
 }

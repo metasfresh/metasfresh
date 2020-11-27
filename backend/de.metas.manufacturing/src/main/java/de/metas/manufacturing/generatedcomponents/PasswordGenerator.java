@@ -24,7 +24,6 @@ package de.metas.manufacturing.generatedcomponents;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -32,7 +31,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,9 +40,9 @@ import java.util.Random;
 /**
  * Borrowed from: https://mkyong.com/java/java-password-generator-example/
  */
-@Service
 public class PasswordGenerator implements IComponentGenerator
 {
+	@SuppressWarnings("SpellCheckingInspection")
 	private static final String CHAR_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
 	private static final String CHAR_UPPERCASE = CHAR_LOWERCASE.toUpperCase();
 	private static final String DIGIT = "0123456789";
@@ -60,31 +58,30 @@ public class PasswordGenerator implements IComponentGenerator
 	static final String PARAM_USE_DIGIT = "useDigit";
 	@VisibleForTesting
 	static final String PARAM_USE_PUNCTUATION = "usePunctuation";
-	@SuppressWarnings("ConstantConditions")
-	private static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
-			.put(PARAM_LENGTH, "20")
-			.put(PARAM_USE_LOWERCASE, StringUtils.ofBoolean(true))
-			.put(PARAM_USE_UPPERCASE, StringUtils.ofBoolean(true))
-			.put(PARAM_USE_DIGIT, StringUtils.ofBoolean(true))
-			.put(PARAM_USE_PUNCTUATION, StringUtils.ofBoolean(true))
+
+	private static final ComponentGeneratorParams DEFAULT_PARAMETERS = ComponentGeneratorParams.builder()
+			.parameter(PARAM_LENGTH, "20")
+			.parameter(PARAM_USE_LOWERCASE, StringUtils.ofBoolean(true))
+			.parameter(PARAM_USE_UPPERCASE, StringUtils.ofBoolean(true))
+			.parameter(PARAM_USE_DIGIT, StringUtils.ofBoolean(true))
+			.parameter(PARAM_USE_PUNCTUATION, StringUtils.ofBoolean(true))
 			.build();
 
 	private final Random random = new Random();
 
-	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(AttributeConstants.RouterPassword);
-
 	@Override
-	public ImmutableAttributeSet generate(final int qty, final @NonNull ImmutableAttributeSet existingAttributes, final @NonNull ComponentGeneratorParams parameters)
+	public ImmutableAttributeSet generate(@NonNull final ComponentGeneratorContext context)
 	{
+		final int qty = context.getQty();
 		Check.errorIf(qty != 1, "Only 1 Router Password Attribute exists, so 1 password should be generated. Requested qty: {}", qty);
 
-		final ImmutableList<AttributeCode> attributesToGenerate = ComponentGeneratorUtil.computeRemainingAttributesToGenerate(existingAttributes, supportedAttributes);
-
+		final ImmutableList<AttributeCode> attributesToGenerate = context.computeRemainingAttributesToGenerate(AttributeConstants.RouterPassword);
 		if (attributesToGenerate.isEmpty())
 		{
 			return ImmutableAttributeSet.EMPTY;
 		}
 
+		final ComponentGeneratorParams parameters = context.getParameters();
 		final String password = generatePassword(
 				StringUtils.toIntegerOrZero(parameters.getValue(PARAM_LENGTH)),
 				StringUtils.toBoolean(parameters.getValue(PARAM_USE_LOWERCASE)),
@@ -99,7 +96,7 @@ public class PasswordGenerator implements IComponentGenerator
 	}
 
 	@Override
-	public ImmutableMap<String, String> getDefaultParameters()
+	public ComponentGeneratorParams getDefaultParameters()
 	{
 		return DEFAULT_PARAMETERS;
 	}
@@ -182,7 +179,7 @@ public class PasswordGenerator implements IComponentGenerator
 	}
 
 	@NonNull
-	private String shuffleString(@NonNull final String input)
+	private static String shuffleString(@NonNull final String input)
 	{
 		final List<String> result = Arrays.asList(input.split(""));
 		Collections.shuffle(result);

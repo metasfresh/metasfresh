@@ -22,39 +22,17 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
+import de.metas.javaclasses.JavaClassId;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.service.ClientId;
 
 @Value
-public class GeneratedComponentRequest
+@Builder
+class ComponentGenerator
 {
-	@NonNull
-	ProductId productId;
-
-	int qty;
-
-	@NonNull
-	ImmutableAttributeSet attributes;
-
-	@NonNull ClientId clientId;
-
-	@Builder
-	public GeneratedComponentRequest(
-			@NonNull final ProductId productId,
-			final int qty,
-			@NonNull final ImmutableAttributeSet attributes,
-			@NonNull ClientId clientId)
-	{
-		Check.errorIf(qty < 1, "qty {} must be > 0", qty);
-
-		this.productId = productId;
-		this.qty = qty;
-		this.attributes = attributes;
-		this.clientId = clientId;
-	}
+	@NonNull ProductId componentId;
+	@NonNull JavaClassId javaClassId;
+	@NonNull ComponentGeneratorParams params;
 }

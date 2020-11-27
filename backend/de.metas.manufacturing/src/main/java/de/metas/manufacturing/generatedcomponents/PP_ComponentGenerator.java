@@ -22,12 +22,10 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.JavaClassId;
-import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_PP_ComponentGenerator;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -36,13 +34,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class PP_ComponentGenerator
 {
-	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
-	private final ComponentGeneratorRepository componentGeneratorRepository = SpringContextHolder.instance.getBean(ComponentGeneratorRepository.class);
+	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
+
+	public PP_ComponentGenerator(
+			@NonNull final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService)
+	{
+		this.manufacturingComponentGeneratorService = manufacturingComponentGeneratorService;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	void generateDefaultParams(final I_PP_ComponentGenerator po)
 	{
-		final IComponentGenerator generatorClass = javaClassBL.newInstance(JavaClassId.ofRepoId(po.getAD_JavaClass_ID()));
-		componentGeneratorRepository.generateDefaultParameters(po, generatorClass.getDefaultParameters());
+		final ComponentGeneratorId generatorId = ComponentGeneratorId.ofRepoId(po.getPP_ComponentGenerator_ID());
+		final JavaClassId generatorClassId = JavaClassId.ofRepoId(po.getAD_JavaClass_ID());
+		manufacturingComponentGeneratorService.createDefaultParameters(generatorId, generatorClassId);
 	}
 }
