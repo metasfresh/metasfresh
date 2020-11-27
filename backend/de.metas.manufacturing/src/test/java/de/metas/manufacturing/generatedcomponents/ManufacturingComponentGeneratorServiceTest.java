@@ -26,13 +26,14 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_PP_ComponentGenerator;
 import org.compiere.model.I_PP_ComponentGenerator_Param;
@@ -46,7 +47,6 @@ import static org.assertj.core.api.Assertions.*;
 
 class ManufacturingComponentGeneratorServiceTest
 {
-
 	final ProductId passwordProductId = ProductId.ofRepoId(1);
 	int passwordJavaClassId;
 	int passwordGeneratorId;
@@ -54,7 +54,7 @@ class ManufacturingComponentGeneratorServiceTest
 	final ProductId macProductId = ProductId.ofRepoId(2);
 	int macJavaClassId;
 	int macGeneratorId;
- // TODO tbp: add tests for MAC generation
+
 	final ComponentGeneratorRepository componentRepository = new ComponentGeneratorRepository();
 	final ManufacturingComponentGeneratorService generatorService = new ManufacturingComponentGeneratorService(componentRepository);
 
@@ -62,7 +62,7 @@ class ManufacturingComponentGeneratorServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		Services.registerService(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
+		SpringContextHolder.registerJUnitBean(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
 
 		{
 			mkAttribute(AttributeConstants.RouterPassword);
@@ -72,6 +72,8 @@ class ManufacturingComponentGeneratorServiceTest
 			mkAttribute(AttributeConstants.RouterMAC4);
 			mkAttribute(AttributeConstants.RouterMAC5);
 			mkAttribute(AttributeConstants.RouterMAC6);
+			mkAttribute(AttributeConstants.ATTR_LotNumberDate);
+			mkAttribute(AttributeConstants.ATTR_BestBeforeDate);
 		}
 		{
 			// password stuff
@@ -85,6 +87,45 @@ class ManufacturingComponentGeneratorServiceTest
 			generatorPo.setAD_JavaClass_ID(passwordJavaClassId);
 			InterfaceWrapperHelper.save(generatorPo);
 			passwordGeneratorId = generatorPo.getPP_ComponentGenerator_ID();
+		}
+		{
+			final I_AD_Sequence sequence = InterfaceWrapperHelper.newInstance(I_AD_Sequence.class);
+			sequence.setCurrentNext(1);
+			sequence.setPrefix("AA-BB-C");
+			sequence.setIsAutoSequence(true);
+			sequence.setIncrementNo(1);
+			sequence.setName("Mac Address Sequence");
+			InterfaceWrapperHelper.save(sequence);
+			// {
+			// 	 // TODO tbp: @anyone please help me mock this call
+			// 	// mock the DB call
+
+			//
+			// 	Mockito.spy(DB.class);
+			//
+			// 	Mockito.when(DB.executeUpdate("UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?",
+			// 								  Mockito.any(),
+			// 								  DB.OnFail.IgnoreButLog,
+			// 								  Mockito.any(),
+			// 								  Mockito.anyInt(),
+			// 								  Mockito.any())
+			// 	).then(invocation -> {
+			// 		return 1;
+			// 	});
+			// }
+
+			// MAC stuff
+			final I_AD_JavaClass po = InterfaceWrapperHelper.newInstance(I_AD_JavaClass.class);
+			po.setClassname("de.metas.manufacturing.generatedcomponents.MacAddressGenerator");
+			InterfaceWrapperHelper.save(po);
+			macJavaClassId = po.getAD_JavaClass_ID();
+
+			final I_PP_ComponentGenerator generatorPo = InterfaceWrapperHelper.newInstance(I_PP_ComponentGenerator.class);
+			generatorPo.setM_Product_ID(macProductId.getRepoId());
+			generatorPo.setAD_JavaClass_ID(macJavaClassId);
+			generatorPo.setAD_Sequence_ID(sequence.getAD_Sequence_ID());
+			InterfaceWrapperHelper.save(generatorPo);
+			macGeneratorId = generatorPo.getPP_ComponentGenerator_ID();
 		}
 	}
 
@@ -120,12 +161,52 @@ class ManufacturingComponentGeneratorServiceTest
 
 			assertThat(actualPasswords.getAttributes()).hasSize(0);
 		}
+
+		@Test
+		void extraAttributesInRequest()
+		{
+			mkPasswordParams(50, true, true, true, true);
+
+			final ImmutableAttributeSet actualPasswords = generatorService.generate(
+					GeneratedComponentRequest.builder()
+							.attributes(ImmutableAttributeSet.builder()
+												.attributeValue(AttributeConstants.RouterPassword, null)
+												.attributeValue(AttributeConstants.RouterMAC1, null)
+												.attributeValue(AttributeConstants.ATTR_LotNumberDate, null)
+												.attributeValue(AttributeConstants.ATTR_BestBeforeDate, null)
+												.build())
+							.productId(passwordProductId)
+							.qty(1)
+							.build());
+
+			assertThat(actualPasswords.getAttributes()).hasSize(1);
+		}
 	}
 
-	@Test
-	void generatePasswordWrongQty()
+	@Nested
+	class MacGeneratorTest
 	{
-		// TODO tbp: this should throw exception
+		@Test
+		void a()
+		{
+			final ImmutableAttributeSet actualMacs = generatorService.generate(
+					GeneratedComponentRequest.builder()
+							.qty(5)
+							.productId(macProductId)
+							.attributes(ImmutableAttributeSet.builder()
+												.attributeValue(AttributeConstants.RouterMAC1, null)
+												.attributeValue(AttributeConstants.RouterMAC2, null)
+												.attributeValue(AttributeConstants.RouterMAC3, null)
+												.attributeValue(AttributeConstants.RouterMAC4, null)
+												.attributeValue(AttributeConstants.RouterMAC5, null)
+												.attributeValue(AttributeConstants.RouterMAC6, null)
+												.build())
+							.build());
+
+			// Mockito stuff
+
+			assertThat(actualMacs.getAttributes()).hasSize(5);
+		}
 	}
 
 	@SuppressWarnings("ConstantConditions")
