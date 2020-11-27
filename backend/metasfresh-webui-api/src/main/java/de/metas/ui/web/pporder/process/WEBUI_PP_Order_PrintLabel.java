@@ -42,8 +42,6 @@ public class WEBUI_PP_Order_PrintLabel
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		//
-		// OK
 		return ProcessPreconditionsResolution.accept();
 	}
 
