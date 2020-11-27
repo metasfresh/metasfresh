@@ -162,7 +162,7 @@ export const getData = (state, isModal = false) => {
   return state.windowHandler[selector].data;
 };
 
-const getElementLayout = (state, isModal, layoutPath) => {
+export const getElementLayout = (state, isModal, layoutPath) => {
   const selector = isModal ? 'modal' : 'master';
   const layout = state.windowHandler[selector].layout;
   const [

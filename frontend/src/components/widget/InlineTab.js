@@ -1,13 +1,14 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import Window from '../../components/Window';
+import Table from '../../containers/Table';
 import { getLayout, getData } from '../../api/view';
+
 class InlineTab extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: false,
+      isOpen: true,
       layout: null,
       data: null,
     };
@@ -39,8 +40,19 @@ class InlineTab extends PureComponent {
   };
 
   render() {
-    const { isOpen, layout, data } = this.state;
-    const { fieldsByName, windowId, id: docId, tabId, rowId } = this.props;
+    const { widgetData, windowId, dataId, onRefreshTable } = this.props;
+    const { isOpen } = this.state;
+
+    const {
+      tabId,
+      caption,
+      description,
+      internalName,
+      queryOnActivate,
+      supportQuickInput,
+      defaultOrderBys,
+      orderBy,
+    } = widgetData;
 
     return (
       <div>
@@ -56,28 +68,31 @@ class InlineTab extends PureComponent {
             <span className="arrow-pointer" />
           </div>
           {/* Header  */}
-          <div className="pull-left offset-left">
+{/*          <div className="pull-left offset-left">
             <span>{fieldsByName.Name.value}</span>&nbsp;&nbsp;
             <span>{fieldsByName.Address.value}</span>
-          </div>
+          </div>*/}
 
           {/* Content */}
           {isOpen && (
             <div className="inline-tab-content">
               <div className="inline-tab-separator" />
-              {!layout && <span>Loading ...</span>}
-              {layout && (
-                <Window
-                  data={data}
-                  dataId={docId}
-                  layout={layout}
-                  modal={true}
-                  tabId={tabId}
-                  rowId={rowId}
-                  isModal={true}
-                  tabsInfo={null}
-                />
-              )}
+              <Table
+                {...{
+                  caption,
+                  description,
+                  tabId,
+                  windowId,
+                  internalName,
+                }}
+                entity="window"
+                key={tabId}
+                orderBy={orderBy || defaultOrderBys}
+                docId={dataId}
+                queryOnActivate={queryOnActivate}
+                supportQuickInput={supportQuickInput}
+                updateDocList={onRefreshTable}
+              />
             </div>
           )}
         </div>

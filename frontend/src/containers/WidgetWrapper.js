@@ -18,6 +18,7 @@ import {
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
+  getElementLayout,
 } from '../reducers/windowHandler';
 
 import MasterWidget from '../components/widget/MasterWidget';
@@ -99,12 +100,15 @@ const mapStateToProps = (state, props) => {
 
       break;
     }
+    case 'inline-wrapper':
+      // console.log('inline tab')
+      widgetData = getElementLayout(state, isModal, layoutId).inlineTab;
+      break;
+    case 'inline-tab':
+      console.log('inline tab field');
+      break;
     default:
-      if (props.widgetType === 'InlineTab') {
-        // different selector special for inline tab
-      } else {
-        widgetData = [{}];
-      }
+      widgetData = [{}];
 
       break;
   }

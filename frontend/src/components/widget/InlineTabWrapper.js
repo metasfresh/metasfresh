@@ -3,7 +3,6 @@ import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
 import { fetchTab } from '../../actions/WindowActions';
 import { connect } from 'react-redux';
-import Window from '../../components/Window';
 import { createWindow } from '../../actions/WindowActions';
 
 class InlineTabWrapper extends PureComponent {
@@ -12,16 +11,21 @@ class InlineTabWrapper extends PureComponent {
 
     this.state = { addNewFormVisible: false };
 
+    // this is getting table rows
+    this.updateTable();
+  }
+
+  updateTable = () => {
     const query = '';
     const {
       inlineTab: { windowId, tabId },
       dataId: docId,
       fetchTab,
-    } = props;
+    } = this.props;
     fetchTab({ tabId, windowId, docId, query }).then((tabData) => {
-      this.tabData = tabData;
+      return tabData;
     });
-  }
+  };
 
   showAddNewForm = () => {
     const {
@@ -31,26 +35,25 @@ class InlineTabWrapper extends PureComponent {
     } = this.props;
     createWindow(windowId, docId, tabId, 'NEW', true, true);
     this.setState({ addNewFormVisible: true });
-  }
+  };
 
   handleFormClose = () => this.setState({ addNewFormVisible: false });
 
   render() {
-    if (!this.tabData) return false;
     const {
-      caption,
-      inlineTab: { tabId },
-      dataId: docId,
+      widgetData,
     } = this.props;
+    const { caption } = widgetData;
     const { addNewFormVisible } = this.state;
 
     return (
       <div className="inline-tab-wrapper">
         <span>{caption}</span>
-        {this.tabData &&
+        <InlineTab {...this.props} onRefreshTable={this.updateTable} />
+{/*        {this.tabData &&
           this.tabData.map((tabItem, index) => (
             <InlineTab key={`${index}_${tabItem.rowId}`} {...tabItem} />
-          ))}
+          ))}*/}
         <div className="clearfix" />
         {/* Add content wrapper */}
         <div>
