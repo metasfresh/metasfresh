@@ -85,13 +85,13 @@ public class CandidateRepositoryWriteService
 	 * If the given {@code candidate} specifies a {@link Candidate#getSeqNo()}, then that value will be persisted, even if there is already a different value stored in the underlying {@link I_MD_Candidate} record.
 	 *
 	 * @return a candidate with
-	 *         <ul>
-	 *         <li>the {@code id} of the persisted data record</li>
-	 *         <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or the given candidate's ID (in case the given candidate didn't have a groupId)</li>
-	 *         <li>the {@code parentId} of the persisted data record or {@code null} if the persisted record didn't exist or has a parentId of zero.
-	 *         <li>the {@code seqNo}: the rules are similar to groupId, but if there was a persisted {@link I_MD_Candidate} with a different seqno, that different seqno might also be returned, depending on the {@code preserveExistingSeqNo} parameter.</li>
-	 *         <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
-	 *         </ul>
+	 * <ul>
+	 * <li>the {@code id} of the persisted data record</li>
+	 * <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or the given candidate's ID (in case the given candidate didn't have a groupId)</li>
+	 * <li>the {@code parentId} of the persisted data record or {@code null} if the persisted record didn't exist or has a parentId of zero.
+	 * <li>the {@code seqNo}: the rules are similar to groupId, but if there was a persisted {@link I_MD_Candidate} with a different seqno, that different seqno might also be returned, depending on the {@code preserveExistingSeqNo} parameter.</li>
+	 * <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
+	 * </ul>
 	 */
 	public SaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
@@ -104,6 +104,16 @@ public class CandidateRepositoryWriteService
 	public SaveResult addOrUpdatePreserveExistingSeqNo(@NonNull final Candidate candidate)
 	{
 		return addOrUpdate(candidate, true);
+	}
+
+	/**
+	 * @param candidate candidate that we know does not exist, so there is no existing candidate to update
+	 */
+	public SaveResult add(@NonNull final Candidate candidate)
+	{
+		return addOrUpdate(
+				CandidatesQuery.FALSE /*make sure we don't find anything to update*/,
+				candidate, false/*doesn't matter*/);
 	}
 
 	public SaveResult updateCandidateById(@NonNull final Candidate candidate)
@@ -224,12 +234,12 @@ public class CandidateRepositoryWriteService
 	}
 
 	private SaveResult addOrUpdate(
-			@NonNull final CandidatesQuery singleCandidateOrNullQuery,
+			@NonNull final CandidatesQuery singleCandidateQuery,
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNoAndParentId)
 	{
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
-				.mkQueryBuilder(singleCandidateOrNullQuery)
+				.mkQueryBuilder(singleCandidateQuery)
 				.create()
 				.firstOnly(I_MD_Candidate.class);
 
@@ -273,7 +283,7 @@ public class CandidateRepositoryWriteService
 		final String verb = oldCandidateRecord == null ? "created" : "updated";
 		Loggables.addLog(
 				"addOrUpdate - {} candidateId={}; type={};\nsingleCandidateOrNullQuery={};\n\npreserveExistingSeqNoAndParentId={};\n\ncandidate={}",
-				verb, savedCandidate.getId().getRepoId(), savedCandidate.getType().toString(), singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId, savedCandidate);
+				verb, savedCandidate.getId().getRepoId(), savedCandidate.getType().toString(), singleCandidateQuery, preserveExistingSeqNoAndParentId, savedCandidate);
 
 		return SaveResult
 				.builder()
@@ -394,7 +404,6 @@ public class CandidateRepositoryWriteService
 	 * Update the demand related reference columns, but don't reset them to zero, unless the respective ID is {@link IdConstants#NULL_REPO_ID}.
 	 * <p>
 	 * Note that we have them as physical columns for performance reasons.
-	 *
 	 */
 	private void updatCandidateRecordFromDemandDetail(
 			@NonNull final I_MD_Candidate candidateRecord,
@@ -603,7 +612,7 @@ public class CandidateRepositoryWriteService
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
-			transactionOrPInstanceId = queryBL
+					transactionOrPInstanceId = queryBL
 					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
 					.setJoinOr();
 			if (transactionDetail.getTransactionId() > 0)

@@ -54,13 +54,6 @@ import de.metas.util.Services;
  */
 public final class CConnection implements Serializable, Cloneable
 {
-	private static final String MSG_APPSERVER_CONNECTION_PROBLEM = "CConnection.AppserverConnectionProblem";
-
-	private static final String MSG_RABBITMQ_CONNECTION_PROBLEM = "CConnection.RabbitmqConnectionProblem";
-
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -7893119456331485444L;
 	/** Singleton Connection */
 	private static volatile CConnection s_cc = null;
@@ -404,7 +397,6 @@ public final class CConnection implements Serializable, Cloneable
 				connect = getAppsHost() + ":" + getAppsPort();
 			}
 			log.error("Caught this while trying to connect to application server {}: {}", connect, t.toString());
-			Services.get(IClientUI.class).error(Env.WINDOW_MAIN, MSG_APPSERVER_CONNECTION_PROBLEM, t.getLocalizedMessage());
 			t.printStackTrace();
 		}
 		return m_okApps;
