@@ -127,9 +127,6 @@ public class DocumentReportService
 	{
 		final StandardDocumentReportType standardDocumentReportType = computeStandardDocumentReportTypeOrNull(request);
 
-		//
-		ArchiveResult lastArchiveResult = ArchiveResult.EMPTY;
-
 		final DocumentReportAdvisor advisor;
 		DocumentReportRequest requestEffective = request;
 		if (standardDocumentReportType != null)
@@ -155,13 +152,13 @@ public class DocumentReportService
 					.getLastArchive(requestEffective.getDocumentRef())
 					.orElseThrow(() -> new AdempiereException("@NoDocPrintFormat@@NoArchive@"));
 
-			lastArchiveResult = ArchiveResult.builder()
+			final ArchiveResult lastArchive = ArchiveResult.builder()
 					.archiveRecord(lastArchiveRecord)
 					.data(archiveBL.getBinaryData(lastArchiveRecord))
 					.build();
 
 			final DocumentReportResult report = DocumentReportResult.builder()
-					.lastArchiveResult(lastArchiveResult)
+					.lastArchive(lastArchive)
 					.build();
 
 			return report;

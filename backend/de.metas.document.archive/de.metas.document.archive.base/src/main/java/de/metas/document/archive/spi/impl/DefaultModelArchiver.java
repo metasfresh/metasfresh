@@ -131,18 +131,17 @@ public class DefaultModelArchiver
 						//
 						.build());
 
-		final ArchiveResult lastArchiveResult = report.getLastArchiveResult();
+		final ArchiveResult lastArchive = report.getLastArchive();
 
 		final ArchiveResult archiveResult;
 
-		if (lastArchiveResult.isNoArchive())
+		if (lastArchive == null || lastArchive.isNoArchive())
 		{
 			archiveResult = createArchive(report);
-
 		}
 		else
 		{
-			archiveResult = lastArchiveResult;
+			archiveResult = lastArchive;
 		}
 
 		//

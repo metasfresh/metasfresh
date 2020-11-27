@@ -67,7 +67,7 @@ public class DocumentReportResult
 	PrintCopies copies = PrintCopies.ONE;
 	
 	@Nullable
-	ArchiveResult lastArchiveResult;
+	ArchiveResult lastArchive;
 
 	@Nullable
 	public String getFilename()
