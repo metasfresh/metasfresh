@@ -149,7 +149,7 @@ class ManufacturingComponentGeneratorServiceTest
 		final I_PP_ComponentGenerator_Param param = InterfaceWrapperHelper.newInstance(I_PP_ComponentGenerator_Param.class);
 		param.setPP_ComponentGenerator_ID(generatorId);
 		param.setName(name);
-		param.setValue(value);
+		param.setParamValue(value);
 		InterfaceWrapperHelper.save(param);
 	}
 

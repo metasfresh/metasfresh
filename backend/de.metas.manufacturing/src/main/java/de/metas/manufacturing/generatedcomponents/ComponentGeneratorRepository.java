@@ -23,6 +23,8 @@
 package de.metas.manufacturing.generatedcomponents;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
+import de.metas.cache.CCache;
 import de.metas.javaclasses.JavaClassId;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
@@ -45,56 +47,68 @@ public class ComponentGeneratorRepository
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	// TODO tbp: CCache this
+	private final CCache<Integer, ImmutableMap<ProductId, ComponentGenerator>> cache = CCache.<Integer, ImmutableMap<ProductId, ComponentGenerator>>builder()
+			.tableName(I_PP_ComponentGenerator.Table_Name)
+			.additionalTableNameToResetFor(I_PP_ComponentGenerator_Param.Table_Name)
+			.initialCapacity(1)
+			.build();
 
 	public Optional<ComponentGenerator> getByProductId(@NonNull final ProductId productId)
 	{
-		final I_PP_ComponentGenerator po = queryBL.createQueryBuilder(I_PP_ComponentGenerator.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_ComponentGenerator.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.first();
-
-		if (po == null)
-		{
-			return Optional.empty();
-		}
-
-		final List<I_PP_ComponentGenerator_Param> paramsPO = queryBL.createQueryBuilder(I_PP_ComponentGenerator_Param.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_ComponentGenerator_Param.COLUMNNAME_PP_ComponentGenerator_ID, po.getPP_ComponentGenerator_ID())
-				.create()
-				.list();
-
-		ImmutableMap<String, String> params = paramsPO.stream()
-				.map(param -> GuavaCollectors.entry(param.getName(), param.getValue()))
-				.collect(GuavaCollectors.toImmutableMap());
-
-		// technical detail: the AD_Sequence_ID is just a param. We added it to the header instead of lines so that we get a nice search box for the user.
-		if (po.getAD_Sequence_ID() > 0)
-		{
-			params = ImmutableMap.<String, String>builder()
-					.putAll(params)
-					.put(ComponentGeneratorUtil.PARAM_AD_SEQUENCE_ID, Integer.toString(po.getAD_Sequence_ID()))
-					.build();
-		}
-
-		return Optional.of(ComponentGenerator.builder()
-								   .javaClassId(JavaClassId.ofRepoId(po.getAD_JavaClass_ID()))
-								   .params(ComponentGeneratorParams.of(params))
-								   .build());
+		return Optional.ofNullable(cache.getOrLoad(0, this::loadAllGeneratorsAndParams).get(productId));
 	}
 
-	void generateDefaultParameters(@NonNull final I_PP_ComponentGenerator componentGenerator, @NonNull final ImmutableMap<String, String> defaultParameters)
+	/*package*/ void generateDefaultParameters(@NonNull final I_PP_ComponentGenerator componentGenerator, @NonNull final ImmutableMap<String, String> defaultParameters)
+
 	{
 		for (final Map.Entry<String, String> param : defaultParameters.entrySet())
 		{
 			final I_PP_ComponentGenerator_Param paramPo = InterfaceWrapperHelper.newInstance(I_PP_ComponentGenerator_Param.class);
 			paramPo.setPP_ComponentGenerator_ID(componentGenerator.getPP_ComponentGenerator_ID());
 			paramPo.setName(param.getKey());
-			paramPo.setValue(param.getValue());
+			paramPo.setParamValue(param.getValue());
 			InterfaceWrapperHelper.save(paramPo);
 		}
+	}
+
+	private ImmutableMap<ProductId, ComponentGenerator> loadAllGeneratorsAndParams()
+	{
+		final ImmutableMap.Builder<ProductId, ComponentGenerator> generatorsBuilder = ImmutableMap.builder();
+
+		final List<I_PP_ComponentGenerator> components = queryBL.createQueryBuilder(I_PP_ComponentGenerator.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		final ListMultimap<Integer, I_PP_ComponentGenerator_Param> paramsMap = queryBL.createQueryBuilder(I_PP_ComponentGenerator_Param.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listMultimap(I_PP_ComponentGenerator_Param.class, I_PP_ComponentGenerator_Param::getPP_ComponentGenerator_ID);
+
+		for (final I_PP_ComponentGenerator component : components)
+		{
+			final List<I_PP_ComponentGenerator_Param> paramsPO = paramsMap.get(component.getPP_ComponentGenerator_ID());
+			ImmutableMap<String, String> params = paramsPO.stream()
+					.map(param -> GuavaCollectors.entry(param.getName(), param.getParamValue()))
+					.collect(GuavaCollectors.toImmutableMap());
+
+			// technical detail: the AD_Sequence_ID is just a param. We added it to the header instead of lines so that we get a nice search box for the user.
+			if (component.getAD_Sequence_ID() > 0)
+			{
+				params = ImmutableMap.<String, String>builder()
+						.putAll(params)
+						.put(ComponentGeneratorUtil.PARAM_AD_SEQUENCE_ID, Integer.toString(component.getAD_Sequence_ID()))
+						.build();
+			}
+
+			generatorsBuilder.put(
+					ProductId.ofRepoId(component.getM_Product_ID()),
+					ComponentGenerator.builder()
+							.javaClassId(JavaClassId.ofRepoId(component.getAD_JavaClass_ID()))
+							.params(ComponentGeneratorParams.of(params))
+							.build());
+		}
+		return generatorsBuilder.build();
 	}
 }
 

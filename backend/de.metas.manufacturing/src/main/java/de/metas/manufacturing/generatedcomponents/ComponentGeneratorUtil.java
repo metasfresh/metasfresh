@@ -33,7 +33,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 public class ComponentGeneratorUtil
 {
 	@VisibleForTesting
-	final String PARAM_AD_SEQUENCE_ID = "AD_Sequence_ID";
+	static final String PARAM_AD_SEQUENCE_ID = "AD_Sequence_ID";
 
 	ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(@NonNull final ImmutableAttributeSet existingAttributes, @NonNull final ImmutableList<AttributeCode> supportedAttributes)
 	{
