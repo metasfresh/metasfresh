@@ -104,15 +104,23 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingSupplyCandidateQuery(
-			@NonNull final PPOrder ppOrder,
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	protected CandidatesQuery createPreExistingSupplyCandidateQuery(@NonNull final AbstractPPOrderEvent abstractPPOrderEvent)
 	{
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(abstractPPOrderEvent);
+		if(!ppOrderAdvisedEvent.isTryUpdateExistingCandidate())
+		{
+			return CandidatesQuery.FALSE;
+		}
+
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderAdvisedEvent.getSupplyRequiredDescriptor();
+
 		final CandidateId supplyCandidateId = CandidateId.ofRepoIdOrNull(supplyRequiredDescriptor.getSupplyCandidateId());
 		if (supplyCandidateId != null)
 		{ // the original request already contained an existing supply-candidate's ID that we need to update now.
 			return CandidatesQuery.fromId(supplyCandidateId);
 		}
+
+		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
 
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetail(demandDetail);
