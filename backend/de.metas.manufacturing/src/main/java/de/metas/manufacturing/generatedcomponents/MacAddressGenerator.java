@@ -41,8 +41,9 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+
 import static de.metas.manufacturing.generatedcomponents.ComponentGeneratorUtil.PARAM_AD_SEQUENCE_ID;
-import static de.metas.manufacturing.generatedcomponents.MacAddress.GROUP_DELIMITER;
 
 /**
  * A MAC Address looks like this: 01:23:45:67:89:AB
@@ -134,6 +135,7 @@ public class MacAddressGenerator implements IComponentGenerator
 	@NonNull
 	MacAddress generateNextMacAddress0(@NonNull final DocumentNoParts documentNoParts)
 	{
+		final String GROUP_DELIMITER = detectGroupDelimiter(documentNoParts.getPrefix(), MacAddress.GROUP_DELIMITER);
 		final String prefix = StringUtils.nullToEmpty(StringUtils.replace(documentNoParts.getPrefix(), GROUP_DELIMITER, ""));
 		final String sequenceNo;
 
@@ -167,5 +169,26 @@ public class MacAddressGenerator implements IComponentGenerator
 		}
 
 		return MacAddress.of(result.toString().toUpperCase());
+	}
+
+	@NonNull
+	private String detectGroupDelimiter(@Nullable final String prefix, @SuppressWarnings("SameParameterValue") @NonNull final String defaultGroupDelimiter)
+	{
+		if (prefix == null)
+		{
+			return defaultGroupDelimiter;
+		}
+
+		if (prefix.contains(":"))
+		{
+			return ":";
+		}
+
+		if (prefix.contains("-"))
+		{
+			return "-";
+		}
+
+		return defaultGroupDelimiter;
 	}
 }

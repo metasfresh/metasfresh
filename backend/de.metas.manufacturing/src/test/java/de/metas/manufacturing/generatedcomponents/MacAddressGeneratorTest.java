@@ -72,6 +72,18 @@ class MacAddressGeneratorTest
 	}
 
 	@Test
+	void dashGroupDelimiter()
+	{
+		final DocumentNoParts documentNoParts = DocumentNoParts.builder()
+				.prefix("BB-A")
+				.suffix("")
+				.sequenceNumber("1234")
+				.build();
+
+		assertThat(generator.generateNextMacAddress0(documentNoParts)).isEqualTo(MacAddress.of("BB-A0-00-00-04-D2"));
+	}
+
+	@Test
 	void noPrefix()
 	{
 		final DocumentNoParts documentNoParts = DocumentNoParts.builder()
