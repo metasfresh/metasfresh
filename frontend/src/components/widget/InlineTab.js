@@ -76,18 +76,17 @@ class InlineTab extends PureComponent {
           </div>
           {/* Header  */}
           <div className="pull-left offset-left">
-            <span>Name</span>&nbsp;&nbsp;
-            <span>Address</span>
+            <span>{fieldsByName.Name.value}</span>&nbsp;&nbsp;
+            <span>{fieldsByName.Address.value}</span>
           </div>
-       </div>
-       <div>
-          {/* Content */}
-          {isOpen && (
+        </div>
+
+        {/* Content */}
+        {isOpen && (
+          <div className="inline-tab-active inline-tab-offset-top">
             <div className="inline-tab-content">
-              <div className="inline-tab-separator" />
               {fieldsByName &&
                 Object.keys(fieldsByName).map((item, index) => {
-                  console.log(fieldsByName[item]);
                   return (
                     <RawWidget
                       key={index}
@@ -118,8 +117,8 @@ class InlineTab extends PureComponent {
                 updateDocList={onRefreshTable}
               /> */}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }

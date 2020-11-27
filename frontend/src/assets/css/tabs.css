@@ -342,6 +342,10 @@
   background-color: #dddddd;
 }
 
+.inline-tab-offset-top {
+  margin-top: -5px;
+}
+
 .inline-tab-active {
   background: #F6F4EF;
   width: 100%;
