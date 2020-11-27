@@ -103,7 +103,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 
 		// If the subclasses' createPreExistingSupplyCandidateQuery() method implementation did not want us to find existing Candidates,
 		// then make sure that candidateChangeService does not try to update existing candidates either.
-		// If we don't explicitly tell it not to, it xould find and update a candidate using demand- and production-detail
+		// If we don't explicitly tell it not to, it could find and update a candidate using demand- and production-detail
 		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
 
 		return candidateChangeService.onCandidateNewOrChange(

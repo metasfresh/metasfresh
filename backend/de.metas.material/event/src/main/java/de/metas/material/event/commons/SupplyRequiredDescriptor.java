@@ -59,7 +59,7 @@ public class SupplyRequiredDescriptor
 	int subscriptionProgressId;
 
 	@JsonCreator
-	@Builder(toBuilder = true)
+	@Builder
 	private SupplyRequiredDescriptor(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
