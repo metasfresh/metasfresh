@@ -46,7 +46,7 @@ public class ComponentGeneratorRepository
 	// TODO tbp: CCache this
 
 	@Nullable
-	public PP_ComponentGenerator getByProductId(@NonNull final ProductId productId)
+	public ComponentGenerator getByProductId(@NonNull final ProductId productId)
 	{
 		final I_PP_ComponentGenerator po = queryBL.createQueryBuilder(I_PP_ComponentGenerator.class)
 				.addOnlyActiveRecordsFilter()
@@ -69,7 +69,7 @@ public class ComponentGeneratorRepository
 				.map(param -> GuavaCollectors.entry(param.getName(), param.getValue()))
 				.collect(GuavaCollectors.toImmutableMap());
 
-		return PP_ComponentGenerator.builder()
+		return ComponentGenerator.builder()
 				.javaClassId(JavaClassId.ofRepoId(po.getAD_JavaClass_ID()))
 				.params(ComponentGeneratorParam.of(params))
 				.build();
@@ -78,7 +78,7 @@ public class ComponentGeneratorRepository
 
 @Value
 @Builder
-class PP_ComponentGenerator
+class ComponentGenerator
 {
 	JavaClassId javaClassId;
 	ComponentGeneratorParam params;

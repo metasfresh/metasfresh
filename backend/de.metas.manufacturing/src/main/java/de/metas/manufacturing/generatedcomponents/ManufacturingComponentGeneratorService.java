@@ -35,7 +35,7 @@ public class ManufacturingComponentGeneratorService
 	private final ComponentGeneratorRepository componentRepository;
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 
-	// TODO tbp: add CCache for productId->PP_ComponentGenerator.
+	// TODO tbp: add CCache for productId->ComponentGenerator.
 
 	public ManufacturingComponentGeneratorService(
 			@NonNull final ComponentGeneratorRepository componentRepository
@@ -46,7 +46,7 @@ public class ManufacturingComponentGeneratorService
 
 	public ImmutableAttributeSet generate(@NonNull final GeneratedComponentRequest request)
 	{
-		final PP_ComponentGenerator generator = componentRepository.getByProductId(request.getProductId());
+		final ComponentGenerator generator = componentRepository.getByProductId(request.getProductId());
 		if (generator == null)
 		{
 			throw new AdempiereException("No Component Generator for product " + request.getProductId());
