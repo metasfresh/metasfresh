@@ -46,18 +46,20 @@ public class AD_User_TabCallout extends TabCalloutAdapter
 	@Override
 	public void onSave(final ICalloutRecord calloutRecord)
 	{
+		I_AD_User user = calloutRecord.getModel(I_AD_User.class);
+
 		if (!isMarketingChannelsUseEnforced())
 		{
 			return;
 		}
 
-		if (userDAO.isSystemUser(UserId.ofRepoId(calloutRecord.getModel(I_AD_User.class).getAD_User_ID())))
+		if (userDAO.isSystemUser(UserId.ofRepoId(user.getAD_User_ID())))
 		{
 			return;
 		}
 
 		boolean canBeSaved = true;
-		if (mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(calloutRecord.getModel(I_AD_User.class).getAD_User_ID())) <= 0)
+		if (mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(user.getAD_User_ID())) <= 0)
 		{
 			canBeSaved = false;
 		}
