@@ -25,8 +25,8 @@ package de.metas.manufacturing.generatedcomponents;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
-import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +42,7 @@ class MacAddressGeneratorTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		Services.registerService(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
+		SpringContextHolder.registerJUnitBean(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
 
 		generator = new MacAddressGenerator();
 	}
