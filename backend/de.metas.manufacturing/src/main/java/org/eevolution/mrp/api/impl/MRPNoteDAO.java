@@ -23,14 +23,14 @@ package org.eevolution.mrp.api.impl;
  */
 
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -39,8 +39,8 @@ import org.eevolution.model.I_AD_Note;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPNoteDAO;
 
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
 
 public class MRPNoteDAO implements IMRPNoteDAO
 {
@@ -59,8 +59,8 @@ public class MRPNoteDAO implements IMRPNoteDAO
 
 		//
 		// Filter by AD_Client_ID
-		final int adClientId = mrpContext.getAD_Client_ID();
-		filters.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Client_ID, adClientId);
+		final ClientId clientId = mrpContext.getClientId();
+		filters.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Client_ID, clientId);
 
 		//
 		// Filter by AD_Org_ID

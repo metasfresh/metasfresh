@@ -274,6 +274,30 @@
 .meta-icon-mail:before {
   content: '\39';
 }
+.meta-icon-spinner:before {
+  content: "\26";
+}
+.meta-icon-qrcode:before {
+  content: "\40";
+}
+.meta-icon-map-marker-alt:before {
+  content: "\5e";
+}
+.meta-icon-map-marked-alt:before {
+  content: "\21";
+}
+.meta-icon-list:before {
+  content: "\7b";
+}
+.meta-icon-hourglass:before {
+  content: "\7d";
+}
+.meta-icon-barcode:before {
+  content: "\7c";
+}
+.meta-icon-issue-service:before {
+  content: "\5c";
+}
 .meta-icon-letter {
     /* TODO: replace with content */
     display: inline-block;
