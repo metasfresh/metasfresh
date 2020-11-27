@@ -31,12 +31,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_PP_ComponentGenerator;
 import org.compiere.model.I_PP_ComponentGenerator_Param;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class ComponentGeneratorRepository
@@ -45,8 +48,7 @@ public class ComponentGeneratorRepository
 
 	// TODO tbp: CCache this
 
-	@Nullable
-	public ComponentGenerator getByProductId(@NonNull final ProductId productId)
+	public Optional<ComponentGenerator> getByProductId(@NonNull final ProductId productId)
 	{
 		final I_PP_ComponentGenerator po = queryBL.createQueryBuilder(I_PP_ComponentGenerator.class)
 				.addOnlyActiveRecordsFilter()
@@ -56,7 +58,7 @@ public class ComponentGeneratorRepository
 
 		if (po == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final List<I_PP_ComponentGenerator_Param> paramsPO = queryBL.createQueryBuilder(I_PP_ComponentGenerator_Param.class)
@@ -69,10 +71,22 @@ public class ComponentGeneratorRepository
 				.map(param -> GuavaCollectors.entry(param.getName(), param.getValue()))
 				.collect(GuavaCollectors.toImmutableMap());
 
-		return ComponentGenerator.builder()
-				.javaClassId(JavaClassId.ofRepoId(po.getAD_JavaClass_ID()))
-				.params(ComponentGeneratorParams.of(params))
-				.build();
+		return Optional.of(ComponentGenerator.builder()
+								   .javaClassId(JavaClassId.ofRepoId(po.getAD_JavaClass_ID()))
+								   .params(ComponentGeneratorParams.of(params))
+								   .build());
+	}
+
+	void generateDefaultParameters(@NonNull final I_PP_ComponentGenerator componentGenerator, @NonNull final ImmutableMap<String, String> defaultParameters)
+	{
+		for (final Map.Entry<String, String> param : defaultParameters.entrySet())
+		{
+			final I_PP_ComponentGenerator_Param paramPo = InterfaceWrapperHelper.newInstance(I_PP_ComponentGenerator_Param.class);
+			paramPo.setPP_ComponentGenerator_ID(componentGenerator.getPP_ComponentGenerator_ID());
+			paramPo.setName(param.getKey());
+			paramPo.setValue(param.getValue());
+			InterfaceWrapperHelper.save(paramPo);
+		}
 	}
 }
 

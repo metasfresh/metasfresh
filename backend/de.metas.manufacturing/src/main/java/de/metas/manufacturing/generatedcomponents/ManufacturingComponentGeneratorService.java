@@ -23,6 +23,7 @@
 package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.javaclasses.IJavaClassBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,13 +43,15 @@ public class ManufacturingComponentGeneratorService
 		this.componentRepository = componentRepository;
 	}
 
+	public boolean hasGeneratorForProduct(@NonNull final ProductId productId)
+	{
+		return componentRepository.getByProductId(productId).isPresent();
+	}
+
 	public ImmutableAttributeSet generate(@NonNull final GeneratedComponentRequest request)
 	{
-		final ComponentGenerator generator = componentRepository.getByProductId(request.getProductId());
-		if (generator == null)
-		{
-			throw new AdempiereException("No Component Generator for product " + request.getProductId());
-		}
+		final ComponentGenerator generator = componentRepository.getByProductId(request.getProductId()).orElseThrow(() -> new AdempiereException("No Component Generator for product " + request.getProductId()));
+
 		final IComponentGenerator generatorClass = javaClassBL.newInstance(generator.getJavaClassId());
 
 		return generatorClass.generate(request.getQty(), request.getAttributes(), generator.getParams());
