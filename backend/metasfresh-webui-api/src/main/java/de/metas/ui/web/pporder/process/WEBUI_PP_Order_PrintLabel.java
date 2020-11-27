@@ -22,18 +22,35 @@
 
 package de.metas.ui.web.pporder.process;
 
+import java.util.List;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.PInstanceId;
+import de.metas.process.PInstanceRequest;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
-import de.metas.report.ExecuteReportStrategyUtil;
+import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
+import de.metas.report.server.ReportResult;
+import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class WEBUI_PP_Order_PrintLabel
-		extends WEBUI_PP_Order_HUEditor_ProcessBase
+		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition
 {
+	final private static AdProcessId LabelPdf_AD_Process_ID = AdProcessId.ofRepoId(584768);
+	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -50,18 +67,65 @@ public class WEBUI_PP_Order_PrintLabel
 	protected String doIt() throws Exception
 	{
 
+		// print
+		final PPOrderLineRow row = getSingleSelectedRow();
+		final ReportResult label = printLabel(row);
+
+
+		// preview
+		getResult().setReportData(
+				label.getReportContent(),
+				buildFilename(row),
+				OutputType.PDF.getContentType());
+
+		return MSG_OK;		
 		
-		final AdProcessId labelProcessId = retrieveProcessIdBySysConfig(584768);
-		final byte[] data = ExecuteReportStrategyUtil.executeJasperProcess(labelProcessId.getRepoId(), getProcessInfo(), OutputType.PDF);
+	}
+	
+	private ReportResult printLabel(@NonNull final PPOrderLineRow row)
+	{
+		final PInstanceRequest pinstanceRequest = createPInstanceRequest(row);
+		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
 
-		return ExecuteReportResult.of(OutputType.PDF, data).toString();
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Process_ID(LabelPdf_AD_Process_ID)
+				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
+				.setReportLanguage(getProcessInfo().getReportLanguage())
+				.setJRDesiredOutputType(OutputType.PDF)
+				.build();
 
+		final ReportsClient reportsClient = ReportsClient.get();
+		return reportsClient.report(jasperProcessInfo);
+	}
+	
+	private PInstanceRequest createPInstanceRequest(@NonNull final PPOrderLineRow row)
+	{
+		final List<ProcessInfoParameter> piParams = ImmutableList.of(ProcessInfoParameter.of("RECORD_ID", getPPOrderID(row)));
+
+		final PInstanceRequest pinstanceRequest = PInstanceRequest.builder()
+				.processId(LabelPdf_AD_Process_ID)
+				.processParams(piParams)
+				.build();
+		return pinstanceRequest;
 	}
 	
 	
-	private AdProcessId retrieveProcessIdBySysConfig(final int reportProcessId)
+	private int getPPOrderID(@NonNull final PPOrderLineRow row)
 	{
-		return AdProcessId.ofRepoIdOrNull(reportProcessId);
+			return row.getOrderId().getRepoId();
+	}
+	
+	private String buildFilename(@NonNull final PPOrderLineRow row)
+	{
+
+		final String huValue = row.getIssueMethod(); 
+		final String product =row.getPackingInfo();
+
+		return Joiner.on("_")
+				.skipNulls()
+				.join(huValue, product)
+				+ ".pdf";
 	}
 
 
