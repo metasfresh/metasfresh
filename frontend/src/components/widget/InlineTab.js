@@ -3,12 +3,13 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import Table from '../../containers/Table';
 import { getLayout, getData } from '../../api/view';
+import { RawWidget } from '../../components/widget/RawWidget';
 
 class InlineTab extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      isOpen: true,
+      isOpen: false,
       layout: null,
       data: null,
     };
@@ -40,19 +41,25 @@ class InlineTab extends PureComponent {
   };
 
   render() {
-    const { widgetData, windowId, dataId, onRefreshTable } = this.props;
-    const { isOpen } = this.state;
+    // const {
+    //   widgetData,
+    //   windowId,
+    //   dataId,
+    //   onRefreshTable,
+    // } = this.props;
+    const { id, rowId, tabId, windowId, fieldsByName } = this.props;
 
-    const {
-      tabId,
-      caption,
-      description,
-      internalName,
-      queryOnActivate,
-      supportQuickInput,
-      defaultOrderBys,
-      orderBy,
-    } = widgetData;
+    const { isOpen } = this.state;
+    // const {
+    //   tabId,
+    //   caption,
+    //   description,
+    //   internalName,
+    //   queryOnActivate,
+    //   supportQuickInput,
+    //   defaultOrderBys,
+    //   orderBy,
+    // } = widgetData;
 
     return (
       <div>
@@ -68,16 +75,33 @@ class InlineTab extends PureComponent {
             <span className="arrow-pointer" />
           </div>
           {/* Header  */}
-{/*          <div className="pull-left offset-left">
-            <span>{fieldsByName.Name.value}</span>&nbsp;&nbsp;
-            <span>{fieldsByName.Address.value}</span>
-          </div>*/}
-
+          <div className="pull-left offset-left">
+            <span>Name</span>&nbsp;&nbsp;
+            <span>Address</span>
+          </div>
+       </div>
+       <div>
           {/* Content */}
           {isOpen && (
             <div className="inline-tab-content">
               <div className="inline-tab-separator" />
-              <Table
+              {fieldsByName &&
+                Object.keys(fieldsByName).map((item, index) => {
+                  console.log(fieldsByName[item]);
+                  return (
+                    <RawWidget
+                      key={index}
+                      modalVisible={true}
+                      widgetData={[fieldsByName[item]]}
+                      fields={[fieldsByName[item]]}
+                      disableShortcut={() => true}
+                      allowShortcut={() => true}
+                      {...fieldsByName[item]}
+                    />
+                  );
+                })}
+
+              {/* <Table
                 {...{
                   caption,
                   description,
@@ -92,7 +116,7 @@ class InlineTab extends PureComponent {
                 queryOnActivate={queryOnActivate}
                 supportQuickInput={supportQuickInput}
                 updateDocList={onRefreshTable}
-              />
+              /> */}
             </div>
           )}
         </div>

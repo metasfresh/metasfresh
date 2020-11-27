@@ -9,7 +9,7 @@ class InlineTabWrapper extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.state = { addNewFormVisible: false };
+    this.state = { addNewFormVisible: false, tabData: null };
 
     // this is getting table rows
     this.updateTable();
@@ -23,7 +23,7 @@ class InlineTabWrapper extends PureComponent {
       fetchTab,
     } = this.props;
     fetchTab({ tabId, windowId, docId, query }).then((tabData) => {
-      return tabData;
+      this.setState({ tabData });
     });
   };
 
@@ -40,20 +40,20 @@ class InlineTabWrapper extends PureComponent {
   handleFormClose = () => this.setState({ addNewFormVisible: false });
 
   render() {
-    const {
-      widgetData,
-    } = this.props;
+    const { addNewFormVisible, tabData } = this.state;
+    const { widgetData } = this.props;
     const { caption } = widgetData;
-    const { addNewFormVisible } = this.state;
+    if (!tabData) return false;
 
     return (
       <div className="inline-tab-wrapper">
         <span>{caption}</span>
-        <InlineTab {...this.props} onRefreshTable={this.updateTable} />
-{/*        {this.tabData &&
-          this.tabData.map((tabItem, index) => (
+        {/* <InlineTab {...this.props} onRefreshTable={this.updateTable} /> */}
+
+        {tabData &&
+          tabData.map((tabItem, index) => (
             <InlineTab key={`${index}_${tabItem.rowId}`} {...tabItem} />
-          ))}*/}
+          ))}
         <div className="clearfix" />
         {/* Add content wrapper */}
         <div>
