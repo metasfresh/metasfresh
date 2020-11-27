@@ -638,6 +638,7 @@ public class CandidateRepositoryWriteService
 				detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
 				detailRecordToUpdate.setAD_PInstance_ResetStock_ID(ResetStockPInstanceId.toRepoId(transactionDetail.getResetStockPInstanceId()));
 				detailRecordToUpdate.setMD_Stock_ID(transactionDetail.getStockId());
+				detailRecordToUpdate.setMD_Candidate_RebookedFrom_ID(CandidateId.toRepoId(transactionDetail.getRebookedFromCandidateId()));
 			}
 			else
 			{

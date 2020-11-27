@@ -1,7 +1,22 @@
 package org.eevolution.model.validator;
 
-import java.sql.Timestamp;
-
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -23,24 +38,7 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.pporder.PPOrderChangedEvent;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderLineId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.Timestamp;
 
 @Interceptor(I_PP_Order.class)
 public class PP_Order
@@ -202,15 +200,17 @@ public class PP_Order
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl
 		}
 
-		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
+		// Let's not send PPOrderChangedEvents for now, because the interesting stuff is already send when the M_Transactions happen.
+		// It might later turn out that it makes sense to send just the info that a PP_Order was "Closed" though.
+		// final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
 		deleteWorkflowAndBOM(orderId);
 		createWorkflowAndBOM(ppOrderRecord);
 
-		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
-
-		materialEventService.postEventAfterNextCommit(event);
+		// final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
+		//
+		// materialEventService.postEventAfterNextCommit(event);
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)

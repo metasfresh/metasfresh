@@ -42,19 +42,16 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MDocType;
@@ -62,7 +59,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
-import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
@@ -72,7 +68,6 @@ import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
-import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -356,9 +351,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 
-		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(
-				SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
-				this);
+		// Let's not send PPOrderChangedEvents for now, because the interesting stuff is already send when the M_Transactions happen.
+		// It might later turn out that it makes sense to send just the info that a PP_Order was "Closed" though.
+		// final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(
+		//		SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
+		//		this);
 
 		//
 		// Check already closed
@@ -418,11 +415,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Call Model Validator: AFTER_CLOSE
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 
-		final PPOrderChangedEvent changeEvent = eventFactory
-				.inspectPPOrderAfterChange();
-
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(changeEvent);
+		// final PPOrderChangedEvent changeEvent = eventFactory
+		// 		.inspectPPOrderAfterChange();
+		//
+		// final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		// materialEventService.postEventAfterNextCommit(changeEvent);
 
 		return true;
 	}

@@ -1,19 +1,11 @@
 package org.adempiere.mm.attributes.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -26,13 +18,18 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -523,7 +520,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		public Builder attributeValue(
 				@NonNull final AttributeId attributeId,
 				final Object attributeValue,
-				final AttributeValueId attributeValueId)
+				@Nullable final AttributeValueId attributeValueId)
 		{
 			final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeId);
 			attributeValue(attribute, attributeValue, attributeValueId);
