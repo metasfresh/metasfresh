@@ -50,11 +50,16 @@ public class PasswordGenerator implements IComponentGenerator
 	private static final String DIGIT = "0123456789";
 	private static final String PUNCTUATION = "!@#&()–[{}]:;',?/*";
 
-	@VisibleForTesting static final String PARAM_LENGTH = "length";
-	@VisibleForTesting static final String PARAM_USE_LOWERCASE = "useLowercase";
-	@VisibleForTesting static final String PARAM_USE_UPPERCASE = "useUppercase";
-	@VisibleForTesting static final String PARAM_USE_DIGIT = "useDigit";
-	@VisibleForTesting static final String PARAM_USE_PUNCTUATION = "usePunctuation";
+	@VisibleForTesting
+	static final String PARAM_LENGTH = "length";
+	@VisibleForTesting
+	static final String PARAM_USE_LOWERCASE = "useLowercase";
+	@VisibleForTesting
+	static final String PARAM_USE_UPPERCASE = "useUppercase";
+	@VisibleForTesting
+	static final String PARAM_USE_DIGIT = "useDigit";
+	@VisibleForTesting
+	static final String PARAM_USE_PUNCTUATION = "usePunctuation";
 	@SuppressWarnings("ConstantConditions")
 	public static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
 			.put(PARAM_LENGTH, "20")
@@ -64,7 +69,7 @@ public class PasswordGenerator implements IComponentGenerator
 			.put(PARAM_USE_PUNCTUATION, StringUtils.ofBoolean(true))
 			.build();
 
-private	final Random random = new Random();
+	private final Random random = new Random();
 
 	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(AttributeConstants.RouterPassword);
 
@@ -73,7 +78,7 @@ private	final Random random = new Random();
 	{
 		Check.errorIf(qty != 1, "Only 1 Router Password Attribute exists, so 1 password should be generated. Requested qty: {}", qty);
 
-		final ImmutableList<AttributeCode> attributesToGenerate = computeRemainingAttributesToGenerate(existingAttributes);
+		final ImmutableList<AttributeCode> attributesToGenerate = ComponentGeneratorUtil.computeRemainingAttributesToGenerate(existingAttributes, supportedAttributes);
 
 		if (attributesToGenerate.isEmpty())
 		{
@@ -91,12 +96,6 @@ private	final Random random = new Random();
 		return ImmutableAttributeSet.builder()
 				.attributeValue(AttributeConstants.RouterPassword, password)
 				.build();
-	}
-
-	@Override
-	public ImmutableList<AttributeCode> getSupportedAttributes()
-	{
-		return supportedAttributes;
 	}
 
 	@Override

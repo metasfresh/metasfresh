@@ -71,7 +71,7 @@ public class MacAddressGenerator implements IComponentGenerator
 	{
 		Check.errorIf(qty < 1 || qty > 6, "Qty of Mac Addresses should be between 1 and 6. Requested qty: {}", qty);
 
-		final ImmutableList<AttributeCode> attributesToGenerate = computeRemainingAttributesToGenerate(existingAttributes);
+		final ImmutableList<AttributeCode> attributesToGenerate = ComponentGeneratorUtil.computeRemainingAttributesToGenerate(existingAttributes, supportedAttributes);
 
 		if (attributesToGenerate.isEmpty())
 		{
@@ -106,13 +106,7 @@ public class MacAddressGenerator implements IComponentGenerator
 
 	private int noOfAlreadyGenerated(@NonNull final ImmutableList<AttributeCode> attributesToGenerate)
 	{
-		return getSupportedAttributes().size() - attributesToGenerate.size();
-	}
-
-	@Override
-	public ImmutableList<AttributeCode> getSupportedAttributes()
-	{
-		return supportedAttributes;
+		return supportedAttributes.size() - attributesToGenerate.size();
 	}
 
 	@Override

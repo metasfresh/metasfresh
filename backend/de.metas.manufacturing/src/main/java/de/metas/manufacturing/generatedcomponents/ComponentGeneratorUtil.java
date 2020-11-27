@@ -22,14 +22,25 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
-public interface IComponentGenerator
+@UtilityClass
+public class ComponentGeneratorUtil
 {
-
-	ImmutableAttributeSet generate(int qty, @NonNull ImmutableAttributeSet existingAttributes, @NonNull ComponentGeneratorParams parameters);
-
-	ImmutableMap<String, String> getDefaultParameters();
+	ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(@NonNull final ImmutableAttributeSet existingAttributes, @NonNull final ImmutableList<AttributeCode> supportedAttributes)
+	{
+		final ImmutableList.Builder<AttributeCode> attributesLeftToGenerate = ImmutableList.builder();
+		for (final AttributeCode attr : supportedAttributes)
+		{
+			if (existingAttributes.hasAttribute(attr) && existingAttributes.getValueAsString(attr) == null)
+			{
+				attributesLeftToGenerate.add(attr);
+			}
+		}
+		return attributesLeftToGenerate.build();
+	}
 }
