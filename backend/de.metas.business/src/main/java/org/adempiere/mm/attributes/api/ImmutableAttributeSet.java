@@ -317,7 +317,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 	@Nullable
 	@Override
-	@Nullable
 	public Date getValueAsDate(final AttributeCode attributeCode)
 	{
 		final Object valueObj = getValue(attributeCode);
