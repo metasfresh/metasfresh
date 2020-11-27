@@ -119,6 +119,27 @@ public interface I_PP_ComponentGenerator_Param
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setParamValue (@Nullable java.lang.String ParamValue);
+
+	/**
+	 * Get Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getParamValue();
+
+	ModelColumn<I_PP_ComponentGenerator_Param, Object> COLUMN_ParamValue = new ModelColumn<>(I_PP_ComponentGenerator_Param.class, "ParamValue", null);
+	String COLUMNNAME_ParamValue = "ParamValue";
+
+	/**
 	 * Set PP_ComponentGenerator.
 	 *
 	 * <br>Type: TableDir
@@ -188,27 +209,4 @@ public interface I_PP_ComponentGenerator_Param
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setValue (@Nullable java.lang.String Value);
-
-	/**
-	 * Get Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getValue();
-
-	ModelColumn<I_PP_ComponentGenerator_Param, Object> COLUMN_Value = new ModelColumn<>(I_PP_ComponentGenerator_Param.class, "Value", null);
-	String COLUMNNAME_Value = "Value";
 }

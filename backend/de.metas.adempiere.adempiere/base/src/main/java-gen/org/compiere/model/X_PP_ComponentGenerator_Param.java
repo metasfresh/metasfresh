@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 public class X_PP_ComponentGenerator_Param extends org.compiere.model.PO implements I_PP_ComponentGenerator_Param, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 598866097L;
+	private static final long serialVersionUID = -1661195109L;
 
     /** Standard Constructor */
     public X_PP_ComponentGenerator_Param (final Properties ctx, final int PP_ComponentGenerator_Param_ID, @Nullable final String trxName)
@@ -43,6 +43,18 @@ public class X_PP_ComponentGenerator_Param extends org.compiere.model.PO impleme
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setParamValue (final java.lang.String ParamValue)
+	{
+		set_Value (COLUMNNAME_ParamValue, ParamValue);
+	}
+
+	@Override
+	public java.lang.String getParamValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_ParamValue);
 	}
 
 	@Override
@@ -85,17 +97,5 @@ public class X_PP_ComponentGenerator_Param extends org.compiere.model.PO impleme
 	public int getPP_ComponentGenerator_Param_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_ComponentGenerator_Param_ID);
-	}
-
-	@Override
-	public void setValue (final java.lang.String Value)
-	{
-		set_Value (COLUMNNAME_Value, Value);
-	}
-
-	@Override
-	public java.lang.String getValue() 
-	{
-		return get_ValueAsString(COLUMNNAME_Value);
 	}
 }
