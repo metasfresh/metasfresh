@@ -35,8 +35,6 @@ public class ManufacturingComponentGeneratorService
 	private final ComponentGeneratorRepository componentRepository;
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 
-	// TODO tbp: add CCache for productId->ComponentGenerator.
-
 	public ManufacturingComponentGeneratorService(
 			@NonNull final ComponentGeneratorRepository componentRepository
 	)
@@ -53,6 +51,6 @@ public class ManufacturingComponentGeneratorService
 		}
 		final IComponentGenerator generatorClass = javaClassBL.newInstance(generator.getJavaClassId());
 
-		return generatorClass.generate(request.getQty(), generator.getParams(), request.getAttributes());
+		return generatorClass.generate(request.getQty(), request.getAttributes(), generator.getParams());
 	}
 }

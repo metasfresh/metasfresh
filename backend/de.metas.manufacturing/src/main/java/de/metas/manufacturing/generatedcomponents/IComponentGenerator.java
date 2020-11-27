@@ -31,7 +31,7 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 public interface IComponentGenerator
 {
 
-	ImmutableAttributeSet generate(int qty, @NonNull ComponentGeneratorParam parameters, @NonNull ImmutableAttributeSet existingAttributes);
+	ImmutableAttributeSet generate(int qty, @NonNull ImmutableAttributeSet existingAttributes, @NonNull ComponentGeneratorParams parameters);
 
 	ImmutableList<AttributeCode> getSupportedAttributes();
 

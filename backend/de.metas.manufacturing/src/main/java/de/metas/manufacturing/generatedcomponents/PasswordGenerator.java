@@ -50,18 +50,26 @@ public class PasswordGenerator implements IComponentGenerator
 	private static final String DIGIT = "0123456789";
 	private static final String PUNCTUATION = "!@#&()–[{}]:;',?/*";
 
-	/*package*/ static final String PARAM_LENGTH = "length";
-	/*package*/ static final String PARAM_USE_LOWERCASE = "useLowercase";
-	/*package*/ static final String PARAM_USE_UPPERCASE = "useUppercase";
-	/*package*/ static final String PARAM_USE_DIGIT = "useDigit";
-	/*package*/ static final String PARAM_USE_PUNCTUATION = "usePunctuation";
+	@VisibleForTesting static final String PARAM_LENGTH = "length";
+	@VisibleForTesting static final String PARAM_USE_LOWERCASE = "useLowercase";
+	@VisibleForTesting static final String PARAM_USE_UPPERCASE = "useUppercase";
+	@VisibleForTesting static final String PARAM_USE_DIGIT = "useDigit";
+	@VisibleForTesting static final String PARAM_USE_PUNCTUATION = "usePunctuation";
+	@SuppressWarnings("ConstantConditions")
+	public static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
+			.put(PARAM_LENGTH, "20")
+			.put(PARAM_USE_LOWERCASE, StringUtils.ofBoolean(true))
+			.put(PARAM_USE_UPPERCASE, StringUtils.ofBoolean(true))
+			.put(PARAM_USE_DIGIT, StringUtils.ofBoolean(true))
+			.put(PARAM_USE_PUNCTUATION, StringUtils.ofBoolean(true))
+			.build();
 
-	final Random random = new Random();
+private	final Random random = new Random();
 
 	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(AttributeConstants.RouterPassword);
 
 	@Override
-	public ImmutableAttributeSet generate(final int qty, final @NonNull ComponentGeneratorParam parameters, final @NonNull ImmutableAttributeSet existingAttributes)
+	public ImmutableAttributeSet generate(final int qty, final @NonNull ImmutableAttributeSet existingAttributes, final @NonNull ComponentGeneratorParams parameters)
 	{
 		Check.errorIf(qty != 1, "Only 1 Router Password Attribute exists, so 1 password should be generated. Requested qty: {}", qty);
 
@@ -92,16 +100,9 @@ public class PasswordGenerator implements IComponentGenerator
 	}
 
 	@Override
-	@SuppressWarnings("ConstantConditions")
 	public ImmutableMap<String, String> getDefaultParameters()
 	{
-		return ImmutableMap.<String, String>builder()
-				.put(PARAM_LENGTH, "20")
-				.put(PARAM_USE_LOWERCASE, StringUtils.ofBoolean(true))
-				.put(PARAM_USE_UPPERCASE, StringUtils.ofBoolean(true))
-				.put(PARAM_USE_DIGIT, StringUtils.ofBoolean(true))
-				.put(PARAM_USE_PUNCTUATION, StringUtils.ofBoolean(true))
-				.build();
+		return DEFAULT_PARAMETERS;
 	}
 
 	@NonNull

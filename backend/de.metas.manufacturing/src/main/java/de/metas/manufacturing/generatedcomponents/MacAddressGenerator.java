@@ -31,7 +31,6 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -50,7 +49,10 @@ import static de.metas.manufacturing.generatedcomponents.MacAddress.GROUP_DELIMI
 @Service
 public class MacAddressGenerator implements IComponentGenerator
 {
-	/*package*/ static final String PARAM_MAC_ADDRESS_AD_SEQUENCE_ID = "MacAddress_AD_Sequence_ID";
+	@VisibleForTesting static final String PARAM_MAC_ADDRESS_AD_SEQUENCE_ID = "MacAddress_AD_Sequence_ID";
+	public static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
+			.put(PARAM_MAC_ADDRESS_AD_SEQUENCE_ID, "555224")
+			.build();
 	private static final int NUMBER_OF_DIGITS = 12;
 
 	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
@@ -65,7 +67,7 @@ public class MacAddressGenerator implements IComponentGenerator
 	private transient final IDocumentNoBuilderFactory documentNoBuilder = SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class);
 
 	@Override
-	public ImmutableAttributeSet generate(final int qty, final @NonNull ComponentGeneratorParam parameters, final @NonNull ImmutableAttributeSet existingAttributes)
+	public ImmutableAttributeSet generate(final int qty, final @NonNull ImmutableAttributeSet existingAttributes, final @NonNull ComponentGeneratorParams parameters)
 	{
 		Check.errorIf(qty < 1 || qty > 6, "Qty of Mac Addresses should be between 1 and 6. Requested qty: {}", qty);
 
@@ -116,9 +118,7 @@ public class MacAddressGenerator implements IComponentGenerator
 	@Override
 	public ImmutableMap<String, String> getDefaultParameters()
 	{
-		return ImmutableMap.<String, String>builder()
-				.put(PARAM_MAC_ADDRESS_AD_SEQUENCE_ID, "555224")
-				.build();
+		return DEFAULT_PARAMETERS;
 	}
 
 	@NonNull

@@ -29,7 +29,7 @@ import lombok.Value;
 
 @Value
 @Data(staticConstructor = "of")
-public class ComponentGeneratorParam
+/*package*/ class ComponentGeneratorParams
 {
 	ImmutableMap<String, String> parameters;
 

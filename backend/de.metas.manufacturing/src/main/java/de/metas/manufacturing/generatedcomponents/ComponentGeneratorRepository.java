@@ -71,7 +71,7 @@ public class ComponentGeneratorRepository
 
 		return ComponentGenerator.builder()
 				.javaClassId(JavaClassId.ofRepoId(po.getAD_JavaClass_ID()))
-				.params(ComponentGeneratorParam.of(params))
+				.params(ComponentGeneratorParams.of(params))
 				.build();
 	}
 }
@@ -80,6 +80,6 @@ public class ComponentGeneratorRepository
 @Builder
 class ComponentGenerator
 {
-	JavaClassId javaClassId;
-	ComponentGeneratorParam params;
+	@NonNull JavaClassId javaClassId;
+	@NonNull ComponentGeneratorParams params;
 }
