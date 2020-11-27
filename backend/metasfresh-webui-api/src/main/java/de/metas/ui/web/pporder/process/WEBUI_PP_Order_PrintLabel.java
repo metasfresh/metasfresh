@@ -27,6 +27,8 @@ import java.util.List;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
@@ -48,7 +50,10 @@ public class WEBUI_PP_Order_PrintLabel
 		implements IProcessPrecondition
 {
 	final private static AdProcessId LabelPdf_AD_Process_ID = AdProcessId.ofRepoId(584768);
+	protected static final AdMessageKey MSG_MustBe_TopLevel_HU = AdMessageKey.of("WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU");
+	
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	final private IMsgBL msgBL = Services.get(IMsgBL.class);
 	
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -56,6 +61,11 @@ public class WEBUI_PP_Order_PrintLabel
 		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		
+		if (!getSingleSelectedRow().isTopLevelHU())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_MustBe_TopLevel_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -101,7 +111,7 @@ public class WEBUI_PP_Order_PrintLabel
 	
 	private PInstanceRequest createPInstanceRequest(@NonNull final PPOrderLineRow row)
 	{
-		final List<ProcessInfoParameter> piParams = ImmutableList.of(ProcessInfoParameter.of("RECORD_ID", getPPOrderID(row)));
+		final List<ProcessInfoParameter> piParams = ImmutableList.of(ProcessInfoParameter.of("RECORD_ID", getHUID(row)));
 
 		final PInstanceRequest pinstanceRequest = PInstanceRequest.builder()
 				.processId(LabelPdf_AD_Process_ID)
@@ -111,9 +121,9 @@ public class WEBUI_PP_Order_PrintLabel
 	}
 	
 	
-	private int getPPOrderID(@NonNull final PPOrderLineRow row)
+	private int getHUID(@NonNull final PPOrderLineRow row)
 	{
-			return row.getOrderId().getRepoId();
+			return row.getHuId().getRepoId();
 	}
 	
 	private String buildFilename(@NonNull final PPOrderLineRow row)
