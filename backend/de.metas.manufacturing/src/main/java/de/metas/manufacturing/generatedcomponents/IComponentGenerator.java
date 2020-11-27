@@ -28,7 +28,6 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 public interface IComponentGenerator
 {
-
 	ImmutableAttributeSet generate(int qty, @NonNull ImmutableAttributeSet existingAttributes, @NonNull ComponentGeneratorParams parameters);
 
 	ImmutableMap<String, String> getDefaultParameters();

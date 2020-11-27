@@ -22,6 +22,7 @@
 
 package de.metas.manufacturing.generatedcomponents;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -31,6 +32,9 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 @UtilityClass
 public class ComponentGeneratorUtil
 {
+	@VisibleForTesting
+	final String PARAM_AD_SEQUENCE_ID = "AD_Sequence_ID";
+
 	ImmutableList<AttributeCode> computeRemainingAttributesToGenerate(@NonNull final ImmutableAttributeSet existingAttributes, @NonNull final ImmutableList<AttributeCode> supportedAttributes)
 	{
 		final ImmutableList.Builder<AttributeCode> attributesLeftToGenerate = ImmutableList.builder();

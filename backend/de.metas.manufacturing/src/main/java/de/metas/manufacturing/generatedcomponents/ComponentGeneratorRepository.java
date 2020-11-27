@@ -36,7 +36,6 @@ import org.compiere.model.I_PP_ComponentGenerator;
 import org.compiere.model.I_PP_ComponentGenerator_Param;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,9 +66,18 @@ public class ComponentGeneratorRepository
 				.create()
 				.list();
 
-		final ImmutableMap<String, String> params = paramsPO.stream()
+		ImmutableMap<String, String> params = paramsPO.stream()
 				.map(param -> GuavaCollectors.entry(param.getName(), param.getValue()))
 				.collect(GuavaCollectors.toImmutableMap());
+
+		// technical detail: the AD_Sequence_ID is just a param. We added it to the header instead of lines so that we get a nice search box for the user.
+		if (po.getAD_Sequence_ID() > 0)
+		{
+			params = ImmutableMap.<String, String>builder()
+					.putAll(params)
+					.put(ComponentGeneratorUtil.PARAM_AD_SEQUENCE_ID, Integer.toString(po.getAD_Sequence_ID()))
+					.build();
+		}
 
 		return Optional.of(ComponentGenerator.builder()
 								   .javaClassId(JavaClassId.ofRepoId(po.getAD_JavaClass_ID()))

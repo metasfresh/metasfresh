@@ -61,7 +61,7 @@ public class PasswordGenerator implements IComponentGenerator
 	@VisibleForTesting
 	static final String PARAM_USE_PUNCTUATION = "usePunctuation";
 	@SuppressWarnings("ConstantConditions")
-	public static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
+	private static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
 			.put(PARAM_LENGTH, "20")
 			.put(PARAM_USE_LOWERCASE, StringUtils.ofBoolean(true))
 			.put(PARAM_USE_UPPERCASE, StringUtils.ofBoolean(true))

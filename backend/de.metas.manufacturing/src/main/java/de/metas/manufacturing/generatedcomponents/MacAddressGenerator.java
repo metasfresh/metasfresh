@@ -41,6 +41,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import static de.metas.manufacturing.generatedcomponents.ComponentGeneratorUtil.PARAM_AD_SEQUENCE_ID;
 import static de.metas.manufacturing.generatedcomponents.MacAddress.GROUP_DELIMITER;
 
 /**
@@ -49,10 +50,7 @@ import static de.metas.manufacturing.generatedcomponents.MacAddress.GROUP_DELIMI
 @Service
 public class MacAddressGenerator implements IComponentGenerator
 {
-	@VisibleForTesting static final String PARAM_MAC_ADDRESS_AD_SEQUENCE_ID = "MacAddress_AD_Sequence_ID";
-	public static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
-			.put(PARAM_MAC_ADDRESS_AD_SEQUENCE_ID, "555224")
-			.build();
+	private static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder().build();
 	private static final int NUMBER_OF_DIGITS = 12;
 
 	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
@@ -86,10 +84,10 @@ public class MacAddressGenerator implements IComponentGenerator
 			return ImmutableAttributeSet.EMPTY;
 		}
 
-		final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(StringUtils.toIntegerOrZero(parameters.getValue(PARAM_MAC_ADDRESS_AD_SEQUENCE_ID)));
+		final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(StringUtils.toIntegerOrZero(parameters.getValue(PARAM_AD_SEQUENCE_ID)));
 		if (sequenceId == null)
 		{
-			throw new AdempiereException("Mandatory parameter " + PARAM_MAC_ADDRESS_AD_SEQUENCE_ID + " has invalid value.");
+			throw new AdempiereException("Mandatory parameter " + PARAM_AD_SEQUENCE_ID + " has invalid value.");
 		}
 
 		final ImmutableAttributeSet.Builder result = ImmutableAttributeSet.builder();
@@ -126,7 +124,7 @@ public class MacAddressGenerator implements IComponentGenerator
 
 		if (documentNoParts == null)
 		{
-			throw new AdempiereException("Could not retrieve next sequence number. Maybe mandatory parameter " + PARAM_MAC_ADDRESS_AD_SEQUENCE_ID + " has invalid value?");
+			throw new AdempiereException("Could not retrieve next sequence number. Maybe mandatory parameter " + PARAM_AD_SEQUENCE_ID + " has invalid value?");
 		}
 
 		return generateNextMacAddress0(documentNoParts);
