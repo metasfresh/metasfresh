@@ -1,163 +1,3 @@
--- 2020-11-26T09:13:58.660Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='BestellungArt', PrintName='BestellungArt',Updated=TO_TIMESTAMP('2020-11-26 06:13:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='de_DE'
-;
-
--- 2020-11-26T09:14:00.893Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'de_DE') 
-;
-
--- 2020-11-26T09:14:01.354Z
--- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(578555,'de_DE') 
-;
-
--- 2020-11-26T09:14:01.587Z
--- URL zum Konzept
-UPDATE AD_Column SET ColumnName=NULL, Name='BestellungArt', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE AD_Element_ID=578555
-;
-
--- 2020-11-26T09:14:01.919Z
--- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName=NULL, Name='BestellungArt', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE AD_Element_ID=578555 AND IsCentrallyMaintained='Y'
-;
-
--- 2020-11-26T09:14:02.326Z
--- URL zum Konzept
-UPDATE AD_Field SET Name='BestellungArt', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=578555) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 578555)
-;
-
--- 2020-11-26T09:14:02.634Z
--- URL zum Konzept
-UPDATE AD_PrintFormatItem pi SET PrintName='BestellungArt', Name='BestellungArt' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=578555)
-;
-
--- 2020-11-26T09:14:02.882Z
--- URL zum Konzept
-UPDATE AD_Tab SET Name='BestellungArt', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.', CommitWarning = NULL WHERE AD_Element_ID = 578555
-;
-
--- 2020-11-26T09:14:03.108Z
--- URL zum Konzept
-UPDATE AD_WINDOW SET Name='BestellungArt', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE AD_Element_ID = 578555
-;
-
--- 2020-11-26T09:14:03.556Z
--- URL zum Konzept
-UPDATE AD_Menu SET   Name = 'BestellungArt', Description = 'Bestellungen eingeben und verwalten', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578555
-;
-
--- 2020-11-26T09:14:23.687Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='Bestellung', PrintName='Bestellung',Updated=TO_TIMESTAMP('2020-11-26 06:14:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='de_DE'
-;
-
--- 2020-11-26T09:14:23.934Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'de_DE') 
-;
-
--- 2020-11-26T09:14:24.978Z
--- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(578555,'de_DE') 
-;
-
--- 2020-11-26T09:14:25.202Z
--- URL zum Konzept
-UPDATE AD_Column SET ColumnName=NULL, Name='Bestellung', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE AD_Element_ID=578555
-;
-
--- 2020-11-26T09:14:25.425Z
--- URL zum Konzept
-UPDATE AD_Process_Para SET ColumnName=NULL, Name='Bestellung', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE AD_Element_ID=578555 AND IsCentrallyMaintained='Y'
-;
-
--- 2020-11-26T09:14:25.674Z
--- URL zum Konzept
-UPDATE AD_Field SET Name='Bestellung', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=578555) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 578555)
-;
-
--- 2020-11-26T09:14:25.981Z
--- URL zum Konzept
-UPDATE AD_PrintFormatItem pi SET PrintName='Bestellung', Name='Bestellung' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=578555)
-;
-
--- 2020-11-26T09:14:26.287Z
--- URL zum Konzept
-UPDATE AD_Tab SET Name='Bestellung', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.', CommitWarning = NULL WHERE AD_Element_ID = 578555
-;
-
--- 2020-11-26T09:14:26.595Z
--- URL zum Konzept
-UPDATE AD_WINDOW SET Name='Bestellung', Description='Bestellungen eingeben und verwalten', Help='Das Bestellungsfensten ermöglicht es Ihnen, Bestellungen ainzugeben und zu verwalten. Aus einer Bestellung können sie Lieferdokumente un Rechnungen erzeugen.' WHERE AD_Element_ID = 578555
-;
-
--- 2020-11-26T09:14:26.819Z
--- URL zum Konzept
-UPDATE AD_Menu SET   Name = 'Bestellung', Description = 'Bestellungen eingeben und verwalten', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578555
-;
-
--- 2020-11-26T09:15:21.105Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='Purchase OrderArt', PrintName='Purchase OrderArt',Updated=TO_TIMESTAMP('2020-11-26 06:15:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='en_US'
-;
-
--- 2020-11-26T09:15:21.384Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'en_US') 
-;
-
--- 2020-11-26T09:15:31.955Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='Purchase Order', PrintName='Purchase Order',Updated=TO_TIMESTAMP('2020-11-26 06:15:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='en_US'
-;
-
--- 2020-11-26T09:15:32.237Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'en_US') 
-;
-
--- 2020-11-26T09:15:53.619Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='BestellungArt', PrintName='BestellungArt',Updated=TO_TIMESTAMP('2020-11-26 06:15:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='nl_NL'
-;
-
--- 2020-11-26T09:15:53.846Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'nl_NL') 
-;
-
--- 2020-11-26T09:16:04.197Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='Bestellung', PrintName='Bestellung',Updated=TO_TIMESTAMP('2020-11-26 06:16:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='nl_NL'
-;
-
--- 2020-11-26T09:16:04.422Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'nl_NL') 
-;
-
--- 2020-11-26T09:16:25.412Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='BestellungArt', PrintName='BestellungArt',Updated=TO_TIMESTAMP('2020-11-26 06:16:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='de_CH'
-;
-
--- 2020-11-26T09:16:25.697Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'de_CH') 
-;
-
--- 2020-11-26T09:16:39.892Z
--- URL zum Konzept
-UPDATE AD_Element_Trl SET Name='Bestellung', PrintName='Bestellung',Updated=TO_TIMESTAMP('2020-11-26 06:16:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578555 AND AD_Language='de_CH'
-;
-
--- 2020-11-26T09:16:40.115Z
--- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578555,'de_CH') 
-;
-
 -- 2020-11-26T14:52:53.211Z
 -- URL zum Konzept
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,578581,0,'LeadTime',TO_TIMESTAMP('2020-11-26 11:52:50','YYYY-MM-DD HH24:MI:SS'),100,'This column indicates the replenish time in days for a product','D','Y','LeadTime','LeadTime',TO_TIMESTAMP('2020-11-26 11:52:50','YYYY-MM-DD HH24:MI:SS'),100)
@@ -488,15 +328,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626772
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626772)
 ;
 
--- 2020-11-26T17:05:50.302Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570180,626773,0,180,TO_TIMESTAMP('2020-11-26 14:05:47','YYYY-MM-DD HH24:MI:SS'),100,50,'D','Y','N','N','N','N','N','N','N','Storage Type',TO_TIMESTAMP('2020-11-26 14:05:47','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:05:50.513Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626773 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:05:50.727Z
 -- URL zum Konzept
@@ -511,16 +342,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626773
 -- 2020-11-26T17:05:51.148Z
 -- URL zum Konzept
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626773)
-;
-
--- 2020-11-26T17:05:53.873Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570182,626774,0,180,TO_TIMESTAMP('2020-11-26 14:05:51','YYYY-MM-DD HH24:MI:SS'),100,50,'D','Y','N','N','N','N','N','N','N','Consumable Type',TO_TIMESTAMP('2020-11-26 14:05:51','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:05:54.087Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626774 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
 -- 2020-11-26T17:05:54.294Z
@@ -538,15 +359,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626774
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626774)
 ;
 
--- 2020-11-26T17:05:57.486Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570183,626775,0,180,TO_TIMESTAMP('2020-11-26 14:05:55','YYYY-MM-DD HH24:MI:SS'),100,50,'D','Y','N','N','N','N','N','N','N','Typ',TO_TIMESTAMP('2020-11-26 14:05:55','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:05:57.702Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626775 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:05:57.909Z
 -- URL zum Konzept
@@ -561,16 +373,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626775
 -- 2020-11-26T17:05:58.346Z
 -- URL zum Konzept
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626775)
-;
-
--- 2020-11-26T17:06:01.072Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570184,626776,0,180,TO_TIMESTAMP('2020-11-26 14:05:58','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','MHD aufgetaut',TO_TIMESTAMP('2020-11-26 14:05:58','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:01.283Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626776 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
 -- 2020-11-26T17:06:01.493Z
@@ -588,15 +390,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626776
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626776)
 ;
 
--- 2020-11-26T17:06:05.178Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570232,626777,0,180,TO_TIMESTAMP('2020-11-26 14:06:02','YYYY-MM-DD HH24:MI:SS'),100,100,'D','Y','N','N','N','N','N','N','N','Lagertemperatur',TO_TIMESTAMP('2020-11-26 14:06:02','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:05.387Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626777 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:06:05.596Z
 -- URL zum Konzept
@@ -615,13 +408,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626777
 
 -- 2020-11-26T17:06:09.321Z
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570297,626778,0,180,TO_TIMESTAMP('2020-11-26 14:06:06','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Anzahl pro Produktion',TO_TIMESTAMP('2020-11-26 14:06:06','YYYY-MM-DD HH24:MI:SS'),100)
-;
 
--- 2020-11-26T17:06:09.547Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626778 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:06:09.754Z
 -- URL zum Konzept
@@ -663,15 +450,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626779
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626779)
 ;
 
--- 2020-11-26T17:06:16.742Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570891,626780,0,180,TO_TIMESTAMP('2020-11-26 14:06:14','YYYY-MM-DD HH24:MI:SS'),100,1,'D','Y','N','N','N','N','N','N','N','Show EG',TO_TIMESTAMP('2020-11-26 14:06:14','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:17.037Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626780 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:06:17.250Z
 -- URL zum Konzept
@@ -688,15 +466,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626780
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626780)
 ;
 
--- 2020-11-26T17:06:20.958Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570893,626781,0,180,TO_TIMESTAMP('2020-11-26 14:06:18','YYYY-MM-DD HH24:MI:SS'),100,5000,'D','Y','N','N','N','N','N','N','N','Storage Details',TO_TIMESTAMP('2020-11-26 14:06:18','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:21.195Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626781 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:06:21.404Z
 -- URL zum Konzept
@@ -713,15 +482,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626781
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626781)
 ;
 
--- 2020-11-26T17:06:24.559Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,571023,626782,0,180,TO_TIMESTAMP('2020-11-26 14:06:22','YYYY-MM-DD HH24:MI:SS'),100,500,'D','Y','N','N','N','N','N','N','N','Inhalt pro Box',TO_TIMESTAMP('2020-11-26 14:06:22','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:24.764Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626782 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:06:24.973Z
 -- URL zum Konzept
@@ -738,15 +498,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626782
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626782)
 ;
 
--- 2020-11-26T17:06:28.575Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,571078,626783,0,180,TO_TIMESTAMP('2020-11-26 14:06:25','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Imputed Unit UOM',TO_TIMESTAMP('2020-11-26 14:06:25','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:28.793Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626783 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:06:28.997Z
 -- URL zum Konzept
@@ -763,15 +514,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626783
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626783)
 ;
 
--- 2020-11-26T17:06:32.222Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,571079,626784,0,180,TO_TIMESTAMP('2020-11-26 14:06:29','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Internal Package UOM',TO_TIMESTAMP('2020-11-26 14:06:29','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:32.436Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626784 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- 2020-11-26T17:06:32.644Z
 -- URL zum Konzept
@@ -786,16 +528,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=626784
 -- 2020-11-26T17:06:33.066Z
 -- URL zum Konzept
 /* DDL */ select AD_Element_Link_Create_Missing_Field(626784)
-;
-
--- 2020-11-26T17:06:35.820Z
--- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,571142,626785,0,180,TO_TIMESTAMP('2020-11-26 14:06:33','YYYY-MM-DD HH24:MI:SS'),100,2,'D','Y','N','N','N','N','N','N','N','Keystone Status',TO_TIMESTAMP('2020-11-26 14:06:33','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2020-11-26T17:06:36.028Z
--- URL zum Konzept
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=626785 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
 -- 2020-11-26T17:06:36.238Z
@@ -852,4 +584,3 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- URL zum Konzept
 UPDATE AD_UI_Element SET SeqNo=175,Updated=TO_TIMESTAMP('2020-11-26 14:24:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=575574
 ;
-
