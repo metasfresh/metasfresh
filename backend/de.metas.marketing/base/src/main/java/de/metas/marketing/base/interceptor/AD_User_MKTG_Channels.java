@@ -32,7 +32,9 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 
 @Interceptor(I_AD_User_MKTG_Channels.class)
 public class AD_User_MKTG_Channels
@@ -41,8 +43,10 @@ public class AD_User_MKTG_Channels
 
 	private final IMKTGChannelDao mktgChannelDao = Services.get(IMKTGChannelDao.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final AdMessageKey MSG_CAN_NOT_REMOVE_CHANNEL = AdMessageKey.of("de.metas.marketing.base.userMarketingChannelRemovalError");
+	private static final String SYS_CONFIG_MARKETING_CHANNELS_ENFORCED = "de.metas.marketing.EnforceUserHasMarketingChannels";
 
 	private AD_User_MKTG_Channels()
 	{
@@ -52,6 +56,11 @@ public class AD_User_MKTG_Channels
 			timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void checkIfCanBeDeleted(@NonNull final I_AD_User_MKTG_Channels userMktgChannels)
 	{
+		if (!isMarketingChannelsUseEnforced())
+		{
+			return;
+		}
+
 		if (userDAO.isSystemUser(UserId.ofRepoId(userMktgChannels.getAD_User_ID())))
 		{
 			return;
@@ -62,5 +71,10 @@ public class AD_User_MKTG_Channels
 		{
 			throw new AdempiereException(MSG_CAN_NOT_REMOVE_CHANNEL).markAsUserValidationError();
 		}
+	}
+
+	private boolean isMarketingChannelsUseEnforced()
+	{
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_MARKETING_CHANNELS_ENFORCED, false, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
 	}
 }
