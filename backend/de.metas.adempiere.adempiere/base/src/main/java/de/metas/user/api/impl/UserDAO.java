@@ -265,11 +265,9 @@ public class UserDAO implements IUserDAO
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
 				.create()
-				.listDistinct(I_AD_User.COLUMNNAME_IsSystemUser, Boolean.class)
-				.stream()
-				.findFirst()
-				.orElse(false);
+				.anyMatch();
 	}
 
 	@Override

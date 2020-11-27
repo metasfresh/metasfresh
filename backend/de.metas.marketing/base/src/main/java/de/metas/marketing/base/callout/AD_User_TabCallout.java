@@ -32,7 +32,6 @@ import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_User;
-import org.compiere.util.Env;
 
 public class AD_User_TabCallout extends TabCalloutAdapter
 {
@@ -46,9 +45,9 @@ public class AD_User_TabCallout extends TabCalloutAdapter
 	@Override
 	public void onSave(final ICalloutRecord calloutRecord)
 	{
-		I_AD_User user = calloutRecord.getModel(I_AD_User.class);
+		final I_AD_User user = calloutRecord.getModel(I_AD_User.class);
 
-		if (!isMarketingChannelsUseEnforced())
+		if (!isMarketingChannelsUseEnforced(user.getAD_Client_ID(), user.getAD_Org_ID()))
 		{
 			return;
 		}
@@ -70,8 +69,8 @@ public class AD_User_TabCallout extends TabCalloutAdapter
 		}
 	}
 
-	private boolean isMarketingChannelsUseEnforced()
+	private boolean isMarketingChannelsUseEnforced(int clientID, int orgID)
 	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_MARKETING_CHANNELS_ENFORCED, false, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_MARKETING_CHANNELS_ENFORCED, false, clientID, orgID);
 	}
 }

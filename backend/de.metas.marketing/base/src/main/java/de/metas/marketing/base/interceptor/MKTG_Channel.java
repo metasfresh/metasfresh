@@ -34,7 +34,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 
 import java.util.Set;
 
@@ -58,15 +57,11 @@ public class MKTG_Channel
 			timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void checkIfCanBeDeleted(@NonNull final I_MKTG_Channel mktgChannel)
 	{
-		if (!isMarketingChannelsUseEnforced())
-		{
-			return;
-		}
-
 		boolean canBeDeleted = true;
 		Set<UserId> usersSet = mktgChannelDao.retrieveUsersHavingChannel(mktgChannel.getMKTG_Channel_ID());
-		for (UserId userId : usersSet)
+		for (final UserId userId : usersSet)
 		{
+
 			if (mktgChannelDao.retrieveMarketingChannelsCountForUser(userId) == 1 && !userDAO.isSystemUser(userId))
 			{
 				canBeDeleted = false;
@@ -77,11 +72,14 @@ public class MKTG_Channel
 		{
 			throw new AdempiereException(MSG_MUST_HAVE_CHANNEL).markAsUserValidationError();
 		}
+		else {
+
+		}
 
 	}
 
-	private boolean isMarketingChannelsUseEnforced()
+	private boolean isMarketingChannelsUseEnforced(int clientID, int orgID)
 	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_MARKETING_CHANNELS_ENFORCED, false, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_MARKETING_CHANNELS_ENFORCED, false, clientID, orgID);
 	}
 }
