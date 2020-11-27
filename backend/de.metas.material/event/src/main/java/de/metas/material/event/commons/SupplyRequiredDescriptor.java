@@ -41,7 +41,7 @@ public class SupplyRequiredDescriptor
 	int demandCandidateId;
 
 	/**
-	 * The MD_Candidate_ID of the "unspecific" supply-record that was already optimistically created.
+	 * The MD_Candidate_ID of the still "unspecific" supply-record that was already optimistically created.
 	 * It shall be updated by the response to this descriptor.
 	 */
 	int supplyCandidateId;
@@ -59,7 +59,7 @@ public class SupplyRequiredDescriptor
 	int subscriptionProgressId;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	private SupplyRequiredDescriptor(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,

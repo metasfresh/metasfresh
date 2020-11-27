@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent.PPOrderAdvisedEventBuilder;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
@@ -77,19 +78,30 @@ public class PPOrderAdvisedEventCreator
 		final ImmutableList<MaterialRequest> partialRequests = createMaterialRequests(completeRequest, maxQtyPerOrderConv);
 
 		final ImmutableList.Builder<PPOrderAdvisedEvent> result = ImmutableList.builder();
+		boolean firstRequest = true;
 		for (final MaterialRequest request : partialRequests)
 		{
 			final PPOrder ppOrder = ppOrderPojoSupplier.supplyPPOrderPojoWithLines(request);
 
-			final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
+			final PPOrderAdvisedEventBuilder eventBuilder = PPOrderAdvisedEvent.builder()
 					.supplyRequiredDescriptor(supplyRequiredDescriptor)
 					.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
 					.ppOrder(ppOrder)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan())
-					.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible())
-					.build();
+					.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible());
+
+			if (firstRequest)
+			{
+				eventBuilder.tryUpdateExistingCandidate(true);
+				firstRequest = false;
+			}
+			else
+			{ // all further events need to get their respective new supply candidates, rather that updating ("overwriting") the existing one.
+				eventBuilder.tryUpdateExistingCandidate(false);
+			}
+
+			result.add(eventBuilder.build());
 			Loggables.addLog("Created PPOrderAdvisedEvent with quantity={}", request.getQtyToSupply());
-			result.add(event);
 		}
 
 		return result.build();
