@@ -36,6 +36,8 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.manufacturing.generatedcomponents.GeneratedComponentRequest;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -46,6 +48,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
@@ -74,6 +77,7 @@ class PPOrderIssueServiceProductCommand
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
 
 	// Params
 	private final PPOrderIssueServiceProductRequest request;
@@ -86,9 +90,12 @@ class PPOrderIssueServiceProductCommand
 	private I_PP_Order_BOMLine _bomLineRecord = null; // lazy
 	private Quantity _qtyToIssueForOneFinishedGood = null; // lazy
 
-	public PPOrderIssueServiceProductCommand(
+	@Builder
+	private PPOrderIssueServiceProductCommand(
+			@NonNull final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService,
 			@NonNull final PPOrderIssueServiceProductRequest request)
 	{
+		this.manufacturingComponentGeneratorService = manufacturingComponentGeneratorService;
 		this.request = request;
 		this.date = SystemTime.asZonedDateTime();
 	}
@@ -122,10 +129,11 @@ class PPOrderIssueServiceProductCommand
 
 		final IAttributeStorage attributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(singleItemHU);
 
-		final ImmutableAttributeSet attributesToChange = callGeneratedProductsService(
-				getComponentId(),
-				qtyToIssueForOneFinishedGood.intValueExact(),
-				ImmutableAttributeSet.copyOf(attributes));
+		final ImmutableAttributeSet attributesToChange = manufacturingComponentGeneratorService.generate(GeneratedComponentRequest.builder()
+				.productId(getComponentId())
+				.qty(qtyToIssueForOneFinishedGood.intValueExact())
+				.attributes(ImmutableAttributeSet.copyOf(attributes))
+				.build());
 
 		if (attributesToChange.isEmpty())
 		{
@@ -145,34 +153,6 @@ class PPOrderIssueServiceProductCommand
 				.locatorId(LocatorId.ofRepoId(bomLineRecord.getM_Warehouse_ID(), bomLineRecord.getM_Locator_ID()))
 				.movementDate(date)
 				.build());
-	}
-
-	private static ImmutableAttributeSet callGeneratedProductsService(
-			@NonNull final ProductId componentId,
-			final int qty,
-			@NonNull ImmutableAttributeSet currentAttributes)
-	{
-		// TODO really call GeneratedProductsService
-
-		if (componentId.getRepoId() == 540484)
-		{
-			return ImmutableAttributeSet.builder()
-					.attributeValue(AttributeCode.ofString("RouterMAC1"), "mac1" + ZonedDateTime.now())
-					.attributeValue(AttributeCode.ofString("RouterMAC2"), "mac2" + ZonedDateTime.now())
-					.attributeValue(AttributeCode.ofString("RouterMAC3"), "mac3" + ZonedDateTime.now())
-					.attributeValue(AttributeCode.ofString("RouterMAC4"), "mac4" + ZonedDateTime.now())
-					.build();
-		}
-		else if (componentId.getRepoId() == 540483)
-		{
-			return ImmutableAttributeSet.builder()
-					.attributeValue(AttributeCode.ofString("RouterPassword"), "password-" + ZonedDateTime.now())
-					.build();
-		}
-		else
-		{
-			throw new UnsupportedOperationException();
-		}
 	}
 
 	private I_PP_Order getPPOrderRecord()

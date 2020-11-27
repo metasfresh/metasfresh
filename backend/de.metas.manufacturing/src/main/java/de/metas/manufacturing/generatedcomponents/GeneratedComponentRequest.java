@@ -30,7 +30,7 @@ import lombok.Value;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 @Value
-class GeneratedComponentRequest
+public class GeneratedComponentRequest
 {
 	@NonNull
 	ProductId productId;

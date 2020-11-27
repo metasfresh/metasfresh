@@ -17,6 +17,7 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -26,6 +27,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderPlanningStatus;
@@ -103,8 +105,11 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public void issueServiceProduct(final PPOrderIssueServiceProductRequest request)
 	{
-		final PPOrderIssueServiceProductCommand command = new PPOrderIssueServiceProductCommand(request);
-		command.execute();
+		PPOrderIssueServiceProductCommand.builder()
+				.manufacturingComponentGeneratorService(SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class))
+				.request(request)
+				.build()
+				.execute();
 	}
 
 	@Override
