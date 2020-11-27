@@ -27,7 +27,6 @@ import java.util.List;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
@@ -94,6 +93,7 @@ public class WEBUI_PP_Order_PrintLabel
 				.setReportLanguage(getProcessInfo().getReportLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
+		
 
 		final ReportsClient reportsClient = ReportsClient.get();
 		return reportsClient.report(jasperProcessInfo);
