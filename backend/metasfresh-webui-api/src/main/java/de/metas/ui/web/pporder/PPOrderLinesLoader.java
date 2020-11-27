@@ -91,6 +91,7 @@ class PPOrderLinesLoader
 	private final IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
@@ -263,14 +264,17 @@ class PPOrderLinesLoader
 		}
 		else
 		{
-			lineType = PPOrderLineType.BOMLine_Component;
+			final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+			lineType = productBL.isStocked(productId)
+					? PPOrderLineType.BOMLine_Component
+					: PPOrderLineType.BOMLine_Component_Service;
+
 			packingInfo = null; // we don't know the packing info for what will be issued.
 
 			qtyPlan = bomLineQtys.getQtyRequired();
 			qtyProcessedIssuedOrReceived = bomLineQtys.getQtyIssuedOrReceived();
 		}
 
-		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
 		final ImmutableList<PPOrderLineRow> includedRows = createIncludedRowsForPPOrderQtys(ppOrderQtys, readOnly);
 
 		return PPOrderLineRow.builderForPPOrderBomLine()
