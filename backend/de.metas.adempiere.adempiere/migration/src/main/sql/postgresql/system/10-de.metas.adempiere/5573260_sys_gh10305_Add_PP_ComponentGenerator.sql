@@ -1,4 +1,4 @@
-k-- 2020-11-25T12:31:59.539Z
+-- 2020-11-25T12:31:59.539Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy) VALUES ('7',0,0,0,541554,'N',TO_TIMESTAMP('2020-11-25 14:31:59','YYYY-MM-DD HH24:MI:SS'),100,'D','N','Y','N','N','Y','N','Y','N','N','N',0,'PP_ComponentGenerator','NP','L','PP_ComponentGenerator','DTI',TO_TIMESTAMP('2020-11-25 14:31:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
