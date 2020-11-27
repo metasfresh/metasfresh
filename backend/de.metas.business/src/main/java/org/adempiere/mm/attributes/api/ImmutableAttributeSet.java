@@ -228,7 +228,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public I_M_Attribute getAttributeByIdIfExists(final AttributeId attributeId)
+	public I_M_Attribute getAttributeByIdIfExists(final @NonNull AttributeId attributeId)
 	{
 		return attributesById.get(attributeId);
 	}
@@ -259,7 +259,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
+	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		final Object valueObj = getValue(attributeCode);
 		return invokeWithAttributeKey(attributeCode, () -> toBigDecimal(valueObj));
@@ -315,8 +315,8 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 	}
 
-	@Override
 	@Nullable
+	@Override
 	public Date getValueAsDate(final AttributeCode attributeCode)
 	{
 		final Object valueObj = getValue(attributeCode);
@@ -549,7 +549,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return this;
 		}
 
-		public Builder attributeValue(@NonNull final AttributeCode attributeCode, final Object attributeValue)
+		public Builder attributeValue(@NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue)
 		{
 			final I_M_Attribute attribute = attributesRepo().retrieveAttributeByValue(attributeCode);
 			final AttributeValueId attributeValueId = null;

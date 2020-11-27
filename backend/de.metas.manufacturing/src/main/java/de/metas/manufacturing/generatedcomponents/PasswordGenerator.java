@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,10 +20,18 @@
  * #L%
  */
 
-package de.metas.password;
+package de.metas.manufacturing.generatedcomponents;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -35,16 +43,70 @@ import java.util.Random;
  * Borrowed from: https://mkyong.com/java/java-password-generator-example/
  */
 @Service
-public class PasswordGenerator
+public class PasswordGenerator implements IComponentGenerator
 {
 	private static final String CHAR_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
 	private static final String CHAR_UPPERCASE = CHAR_LOWERCASE.toUpperCase();
 	private static final String DIGIT = "0123456789";
 	private static final String PUNCTUATION = "!@#&()–[{}]:;',?/*";
 
-	final Random random = new Random();
+	@VisibleForTesting
+	static final String PARAM_LENGTH = "length";
+	@VisibleForTesting
+	static final String PARAM_USE_LOWERCASE = "useLowercase";
+	@VisibleForTesting
+	static final String PARAM_USE_UPPERCASE = "useUppercase";
+	@VisibleForTesting
+	static final String PARAM_USE_DIGIT = "useDigit";
+	@VisibleForTesting
+	static final String PARAM_USE_PUNCTUATION = "usePunctuation";
+	@SuppressWarnings("ConstantConditions")
+	private static final ImmutableMap<String, String> DEFAULT_PARAMETERS = ImmutableMap.<String, String>builder()
+			.put(PARAM_LENGTH, "20")
+			.put(PARAM_USE_LOWERCASE, StringUtils.ofBoolean(true))
+			.put(PARAM_USE_UPPERCASE, StringUtils.ofBoolean(true))
+			.put(PARAM_USE_DIGIT, StringUtils.ofBoolean(true))
+			.put(PARAM_USE_PUNCTUATION, StringUtils.ofBoolean(true))
+			.build();
 
-	public String generatePassword(
+	private final Random random = new Random();
+
+	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(AttributeConstants.RouterPassword);
+
+	@Override
+	public ImmutableAttributeSet generate(final int qty, final @NonNull ImmutableAttributeSet existingAttributes, final @NonNull ComponentGeneratorParams parameters)
+	{
+		Check.errorIf(qty != 1, "Only 1 Router Password Attribute exists, so 1 password should be generated. Requested qty: {}", qty);
+
+		final ImmutableList<AttributeCode> attributesToGenerate = ComponentGeneratorUtil.computeRemainingAttributesToGenerate(existingAttributes, supportedAttributes);
+
+		if (attributesToGenerate.isEmpty())
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		final String password = generatePassword(
+				StringUtils.toIntegerOrZero(parameters.getValue(PARAM_LENGTH)),
+				StringUtils.toBoolean(parameters.getValue(PARAM_USE_LOWERCASE)),
+				StringUtils.toBoolean(parameters.getValue(PARAM_USE_UPPERCASE)),
+				StringUtils.toBoolean(parameters.getValue(PARAM_USE_DIGIT)),
+				StringUtils.toBoolean(parameters.getValue(PARAM_USE_PUNCTUATION))
+		);
+
+		return ImmutableAttributeSet.builder()
+				.attributeValue(AttributeConstants.RouterPassword, password)
+				.build();
+	}
+
+	@Override
+	public ImmutableMap<String, String> getDefaultParameters()
+	{
+		return DEFAULT_PARAMETERS;
+	}
+
+	@NonNull
+	@VisibleForTesting
+	String generatePassword(
 			final int passwordLength,
 			final boolean useLowercase,
 			final boolean useUppercase,
@@ -102,7 +164,7 @@ public class PasswordGenerator
 	}
 
 	@NonNull
-	private String generateRandomString(final String input, final int size)
+	private String generateRandomString(@NonNull final String input, final int size)
 	{
 		if (size < 1)
 		{
@@ -119,7 +181,8 @@ public class PasswordGenerator
 		return result.toString();
 	}
 
-	public String shuffleString(final String input)
+	@NonNull
+	private String shuffleString(@NonNull final String input)
 	{
 		final List<String> result = Arrays.asList(input.split(""));
 		Collections.shuffle(result);

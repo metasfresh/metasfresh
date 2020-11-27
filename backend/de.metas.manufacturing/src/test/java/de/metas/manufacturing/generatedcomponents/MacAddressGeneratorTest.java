@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.macaddress;
+package de.metas.manufacturing.generatedcomponents;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
-import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +42,7 @@ class MacAddressGeneratorTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		Services.registerService(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
+		SpringContextHolder.registerJUnitBean(IDocumentNoBuilderFactory.class, new DocumentNoBuilderFactory(Optional.empty()));
 
 		generator = new MacAddressGenerator();
 	}
@@ -69,6 +69,18 @@ class MacAddressGeneratorTest
 				.build();
 
 		assertThat(generator.generateNextMacAddress0(documentNoParts)).isEqualTo(MacAddress.of("BB:A0:00:00:04:D2"));
+	}
+
+	@Test
+	void dashGroupDelimiter()
+	{
+		final DocumentNoParts documentNoParts = DocumentNoParts.builder()
+				.prefix("BB-A")
+				.suffix("")
+				.sequenceNumber("1234")
+				.build();
+
+		assertThat(generator.generateNextMacAddress0(documentNoParts)).isEqualTo(MacAddress.of("BB-A0-00-00-04-D2"));
 	}
 
 	@Test

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.manufacturing
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,24 +20,21 @@
  * #L%
  */
 
-package de.metas.macaddress;
+package de.metas.manufacturing.generatedcomponents;
 
-import de.metas.util.StringUtils;
+import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
+@Value
 @Data(staticConstructor = "of")
-public class MacAddress
+/*package*/ class ComponentGeneratorParams
 {
-	@NonNull
-	String address;
+	ImmutableMap<String, String> parameters;
 
-	public static final String GROUP_DELIMITER = ":";
-
-	@SuppressWarnings("ConstantConditions")
-	@NonNull
-	public String withGroupDelimiter(@NonNull final String newGroupDelimiter)
+	public String getValue(@NonNull final String paramName)
 	{
-		return StringUtils.replace(address, GROUP_DELIMITER, newGroupDelimiter);
+		return parameters.get(paramName);
 	}
 }
