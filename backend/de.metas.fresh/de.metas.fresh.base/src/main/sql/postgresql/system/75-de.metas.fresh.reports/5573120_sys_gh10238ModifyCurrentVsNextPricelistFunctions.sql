@@ -2,10 +2,10 @@ DROP FUNCTION IF EXISTS report.Current_Vs_Next_Pricelist_Comparison_Report(p_C_B
 ;
 
 CREATE OR REPLACE FUNCTION report.Current_Vs_Next_Pricelist_Comparison_Report(p_C_BPartner_ID              numeric = NULL,
-                                                                                  p_C_BP_Group_ID              numeric = NULL,
-                                                                                  p_IsSoTrx                    text = 'Y',
-                                                                                  p_AD_Language                TEXT = 'en_US',
-                                                                                  p_show_product_price_pi_flag text = 'Y')
+                                                                              p_C_BP_Group_ID              numeric = NULL,
+                                                                              p_IsSoTrx                    text = 'Y',
+                                                                              p_AD_Language                TEXT = 'en_US',
+                                                                              p_show_product_price_pi_flag text = 'Y')
     RETURNS TABLE
             (
                 bp_value                   text,
@@ -50,7 +50,7 @@ WITH PriceListVersionsByValidFrom AS
                            plv.m_pricelist_version_id,
                            plv.validfrom,
                            plv.name,
-                           1 as rank
+                           row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank
                     FROM Report.Fresh_PriceList_Version_Val_Rule plv
                     WHERE TRUE
                       AND plv.validfrom <= now()
@@ -60,14 +60,15 @@ WITH PriceListVersionsByValidFrom AS
                     ORDER BY TRUE,
                              plv.validfrom DESC,
                              plv.m_pricelist_version_id DESC
-                    LIMIT 1)
+                   )
                    UNION ALL
                    (SELECT --
                            plv.c_bpartner_id,
                            plv.m_pricelist_version_id,
                            plv.validfrom,
                            plv.name,
-                           2 as rank
+                           1001 - (row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom ASC, plv.m_pricelist_version_id ASC)) rank
+
                     FROM Report.Fresh_PriceList_Version_Val_Rule plv
                     WHERE TRUE
                       AND plv.validfrom > now()
@@ -77,22 +78,23 @@ WITH PriceListVersionsByValidFrom AS
                     ORDER BY TRUE,
                              plv.validfrom ASC,
                              plv.m_pricelist_version_id ASC
-                    LIMIT 1)
+                   )
                   ) t
 
-             WHERE t.rank <= 2
+             WHERE t.rank = 1
+                OR t.rank = 1000
          ),
      currentAndPreviousPLV AS
          (
              -- implementation detail: all these sub-selects would be better implemented with a pivot. Unfortunately i cant understand how pivots work.
              SELECT DISTINCT --
                              plvv.c_bpartner_id,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV1_ID,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV2_ID,
-                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV1,
-                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2,
-                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV1,
-                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV2
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)   PLV1_ID,
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1000 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV2_ID,
+                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                validFromPLV1,
+                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1000 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                     namePLV1,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1000 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV2
              FROM PriceListVersionsByValidFrom plvv
              ORDER BY plvv.c_bpartner_id
          ),
@@ -195,16 +197,14 @@ FROM report.Current_Vs_Next_Pricelist_Comparison_Report(2156515)
 ;
  */
 
-
-
 DROP FUNCTION IF EXISTS report.Current_Vs_Next_Pricelist_Comparison_Report_With_PP_PI(p_C_BPartner_ID numeric, p_C_BP_Group_ID numeric, p_IsSoTrx text, p_AD_Language text, p_show_product_price_pi_flag text)
 ;
 
 CREATE OR REPLACE FUNCTION report.Current_Vs_Next_Pricelist_Comparison_Report_With_PP_PI(p_C_BPartner_ID              numeric = NULL,
-                                                                              p_C_BP_Group_ID              numeric = NULL,
-                                                                              p_IsSoTrx                    text = 'Y',
-                                                                              p_AD_Language                TEXT = 'en_US',
-                                                                              p_show_product_price_pi_flag text = 'Y')
+                                                                                         p_C_BP_Group_ID              numeric = NULL,
+                                                                                         p_IsSoTrx                    text = 'Y',
+                                                                                         p_AD_Language                TEXT = 'en_US',
+                                                                                         p_show_product_price_pi_flag text = 'Y')
     RETURNS TABLE
             (
                 bp_value                   text,
@@ -249,7 +249,7 @@ WITH PriceListVersionsByValidFrom AS
                            plv.m_pricelist_version_id,
                            plv.validfrom,
                            plv.name,
-                           1 as rank
+                           row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom DESC, plv.m_pricelist_version_id DESC) rank
                     FROM Report.Fresh_PriceList_Version_Val_Rule plv
                     WHERE TRUE
                       AND plv.validfrom <= now()
@@ -259,14 +259,15 @@ WITH PriceListVersionsByValidFrom AS
                     ORDER BY TRUE,
                              plv.validfrom DESC,
                              plv.m_pricelist_version_id DESC
-                    LIMIT 1)
+                   )
                    UNION ALL
                    (SELECT --
                            plv.c_bpartner_id,
                            plv.m_pricelist_version_id,
                            plv.validfrom,
                            plv.name,
-                           2 as rank
+                           1001 - (row_number() OVER (PARTITION BY plv.c_bpartner_id ORDER BY plv.validfrom ASC, plv.m_pricelist_version_id ASC)) rank
+
                     FROM Report.Fresh_PriceList_Version_Val_Rule plv
                     WHERE TRUE
                       AND plv.validfrom > now()
@@ -276,22 +277,23 @@ WITH PriceListVersionsByValidFrom AS
                     ORDER BY TRUE,
                              plv.validfrom ASC,
                              plv.m_pricelist_version_id ASC
-                    LIMIT 1)
+                   )
                   ) t
 
-             WHERE t.rank <= 2
+             WHERE t.rank = 1
+                OR t.rank = 1000
          ),
      currentAndPreviousPLV AS
          (
              -- implementation detail: all these sub-selects would be better implemented with a pivot. Unfortunately i cant understand how pivots work.
              SELECT DISTINCT --
                              plvv.c_bpartner_id,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV1_ID,
-                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV2_ID,
-                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV1,
-                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2,
-                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV1,
-                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 2 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV2
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)   PLV1_ID,
+                             (SELECT plvv2.m_pricelist_version_id FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1000 AND plvv2.c_bpartner_id = plvv.c_bpartner_id) PLV2_ID,
+                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                validFromPLV1,
+                             (SELECT plvv2.validfrom FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1000 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)              validFromPLV2,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                     namePLV1,
+                             (SELECT plvv2.name FROM PriceListVersionsByValidFrom plvv2 WHERE plvv2.rank = 1000 AND plvv2.c_bpartner_id = plvv.c_bpartner_id)                   namePLV2
              FROM PriceListVersionsByValidFrom plvv
              ORDER BY plvv.c_bpartner_id
          ),
@@ -305,7 +307,7 @@ WITH PriceListVersionsByValidFrom AS
                     (SELECT bpl.c_bpartner_location_id FROM c_bpartner_location bpl WHERE bpl.c_bpartner_id = plv.c_bpartner_id ORDER BY bpl.isbilltodefault DESC LIMIT 1) c_bpartner_location_id,
                     (SELECT plv2.ad_org_id FROM m_pricelist_version plv2 WHERE plv2.m_pricelist_version_id = plv.PLV1_ID)                                                  AD_Org_ID
              FROM currentAndPreviousPLV plv
-                      INNER JOIN LATERAL report.fresh_PriceList_Details_Report_With_PP_PI(
+                      INNER JOIN LATERAL report.fresh_PriceList_Details_Report(
                      plv.c_bpartner_id,
                      plv.PLV1_ID,
                      plv.PLV2_ID,
