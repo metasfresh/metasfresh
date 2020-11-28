@@ -25,7 +25,7 @@ UPDATE AD_Process SET ShowHelp='N',Updated=TO_TIMESTAMP('2020-11-27 21:08:37','Y
 
 -- 2020-11-27T19:51:32.341Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545011,0,TO_TIMESTAMP('2020-11-27 21:51:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Must be Top Level HU','I',TO_TIMESTAMP('2020-11-27 21:51:32','YYYY-MM-DD HH24:MI:SS'),100,'WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545011,0,TO_TIMESTAMP('2020-11-27 21:51:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Muss Top Level HU ','I',TO_TIMESTAMP('2020-11-27 21:51:32','YYYY-MM-DD HH24:MI:SS'),100,'WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU')
 ;
 
 -- 2020-11-27T19:51:32.349Z
@@ -47,4 +47,11 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-11-27 21:5
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Muss Top Level HU ',Updated=TO_TIMESTAMP('2020-11-27 21:52:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545011
 ;
+
+
+
+
+update AD_Process_trl
+set istranslated='Y',name = 'Etikett drucken'
+where AD_Process_id=584767 and ad_language in ('de_DE', 'de_CH');
 
