@@ -110,6 +110,7 @@ final class PackageableRowsRepository
 				.onlyFromSalesOrder(true)
 				.salesOrderId(filterVO.getSalesOrderId())
 				.customerId(filterVO.getCustomerId())
+				.warehouseId(filterVO.getWarehouseId())
 				.warehouseTypeId(filterVO.getWarehouseTypeId())
 				.deliveryDate(filterVO.getDeliveryDate())
 				.preparationDate(filterVO.getPreparationDate())
