@@ -1,10 +1,8 @@
-package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.util;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.util;
 
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
@@ -988,7 +988,7 @@ public final class StringUtils
 	 * @param in input {@link String}
 	 * @return {@param in} if != null, empty string otherwise
 	 */
-	public static String nullToEmpty(final String in)
+	@Nullable public static String nullToEmpty(@Nullable final String in)
 	{
 		return in != null ? in : "";
 	}

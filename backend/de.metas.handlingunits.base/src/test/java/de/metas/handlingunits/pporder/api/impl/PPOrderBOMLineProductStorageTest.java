@@ -22,42 +22,35 @@ package de.metas.handlingunits.pporder.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
+import de.metas.handlingunits.storage.ProductStorageExpectation;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
+import de.metas.quantity.Quantity;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.storage.ProductStorageExpectation;
-import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
-import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests {@link PPOrderBOMBL#computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine, I_C_UOM)}.
  * 
  * @author tsa
- * @task refactored from http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
+ * Task refactored from http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
  */
 public class PPOrderBOMLineProductStorageTest
 {
 	private MRPTestHelper helper;
 
-	//
-	// Master data
-	private I_C_UOM uomMm;
-	private I_C_UOM uomEa;
-	private I_M_Product pABAliceSalad;
-	private I_M_Product pFolie;
 	private I_PP_Order ppOrder;
 	private I_PP_Order_BOMLine ppOrderBOMLine;
 
@@ -74,10 +67,12 @@ public class PPOrderBOMLineProductStorageTest
 
 	private void createMasterData()
 	{
-		uomMm = helper.createUOM("mm", 2);
-		uomEa = helper.createUOM("each", 0);
-		pABAliceSalad = helper.createProduct("P000787_AB Alicesalat 250g", uomEa); // finished good
-		pFolie = helper.createProduct("P000529_Folie AB Alicesalat (1000 lm)", uomMm); // component
+		//
+		// Master data
+		final I_C_UOM uomMm = helper.createUOM("mm", 2);
+		final I_C_UOM uomEa = helper.createUOM("each", 0);
+		final I_M_Product pABAliceSalad = helper.createProduct("P000787_AB Alicesalat 250g", uomEa); // finished good
+		final I_M_Product pFolie = helper.createProduct("P000529_Folie AB Alicesalat (1000 lm)", uomMm); // component
 
 		// Finished good
 		ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
@@ -96,10 +91,6 @@ public class PPOrderBOMLineProductStorageTest
 
 	/**
 	 * Setup standard "P000787_AB Alicesalat 250g" test case.
-	 *
-	 * @param finishedGood_QtyOrdered
-	 * @param finishedGood_QtyReceived
-	 * @param component_QtyIssued
 	 */
 	private void setup_StandardTestCase_ABAliceSalad(
 			final BigDecimal finishedGood_QtyOrdered, final BigDecimal finishedGood_QtyReceived, final BigDecimal component_QtyIssued
@@ -110,7 +101,7 @@ public class PPOrderBOMLineProductStorageTest
 		ppOrder.setQtyDelivered(finishedGood_QtyReceived); // i.e. Qty Receipt
 
 		// Component
-		ppOrderBOMLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
+		ppOrderBOMLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 		ppOrderBOMLine.setIsQtyPercentage(false);
 		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
 		ppOrderBOMLine.setQtyBatch(null);
@@ -120,7 +111,7 @@ public class PPOrderBOMLineProductStorageTest
 	}
 
 	/**
-	 * Tests the standard case, when IssueMethod is NOT {@link X_PP_Order_BOMLine#ISSUEMETHOD_IssueOnlyForReceived}.
+	 * Tests the standard case, when IssueMethod is NOT {@link BOMComponentIssueMethod#IssueOnlyForReceived}.
 	 */
 	@Test
 	public void test_Standard()
@@ -136,14 +127,8 @@ public class PPOrderBOMLineProductStorageTest
 				new BigDecimal("500"), // under issued
 				new BigDecimal("70000") // over issued
 		);
-		final List<String> issueMethods = Arrays.asList(
-				X_PP_Order_BOMLine.ISSUEMETHOD_Backflush //
-				, X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock //
-				, X_PP_Order_BOMLine.ISSUEMETHOD_Issue //
-				, X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived // include this one too because at this level shall not matter!
-		);
 
-		for (final String issueMethod : issueMethods)
+		for (final BOMComponentIssueMethod issueMethod : BOMComponentIssueMethod.values())
 		{
 			for (final BigDecimal finishedGood_QtyReceived : finishedGood_QtyReceiveds)
 			{
@@ -153,7 +138,7 @@ public class PPOrderBOMLineProductStorageTest
 							finishedGood_QtyOrdered, // finishedGood_QtyOrdered
 							finishedGood_QtyReceived,
 							component_QtyIssued);
-					ppOrderBOMLine.setIssueMethod(issueMethod);
+					ppOrderBOMLine.setIssueMethod(issueMethod.getCode());
 
 					// Validate
 					// NOTE: we assume infinite capacity because we don't want to enforce how many items we can allocate on this storage

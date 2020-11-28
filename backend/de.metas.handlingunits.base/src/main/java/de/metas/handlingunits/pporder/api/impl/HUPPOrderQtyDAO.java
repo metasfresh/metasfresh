@@ -22,12 +22,21 @@
 
 package de.metas.handlingunits.pporder.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.PPOrderQtyId;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,33 +44,20 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPCostCollectorId;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
-import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
-import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 {
 	@Override
-	public I_PP_Order_Qty retrieveById(final int ppOrderQtyId)
+	public I_PP_Order_Qty retrieveById(@NonNull final PPOrderQtyId id)
 	{
-		Preconditions.checkArgument(ppOrderQtyId > 0, "ppOrderQtyId > 0");
-
-		return InterfaceWrapperHelper.load(ppOrderQtyId, I_PP_Order_Qty.class);
+		return InterfaceWrapperHelper.load(id, I_PP_Order_Qty.class);
 	}
 
 	@Override
@@ -137,7 +133,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Cached(cacheName = I_PP_Order_Qty.Table_Name + "#by#PP_Order_ID", expireMinutes = 10)
-	List<I_PP_Order_Qty> retrieveOrderQtys(@CacheCtx final Properties ctx, @NonNull final PPOrderId ppOrderId, @CacheTrx final String trxName)
+	ImmutableList<I_PP_Order_Qty> retrieveOrderQtys(@CacheCtx final Properties ctx, @NonNull final PPOrderId ppOrderId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Qty.class, ctx, trxName)
@@ -148,17 +144,26 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Override
-	public I_PP_Order_Qty retrieveOrderQtyForCostCollector(@NonNull final PPOrderId ppOrderId, final int costCollectorId)
+	public I_PP_Order_Qty retrieveOrderQtyForCostCollector(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final PPCostCollectorId costCollectorId)
 	{
-		Preconditions.checkArgument(costCollectorId > 0, "costCollectorId shall be > 0");
-
 		return retrieveOrderQtys(ppOrderId)
 				.stream()
-				.filter(cand -> cand.getPP_Cost_Collector_ID() == costCollectorId)
+				.filter(cand -> cand.getPP_Cost_Collector_ID() == costCollectorId.getRepoId())
 				// .peek(cand -> Check.assume(cand.isProcessed(), "Candidate was expected to be processed: {}", cand))
 				.reduce((cand1, cand2) -> {
 					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
 				})
 				.orElse(null);
+	}
+
+	@Override
+	public List<I_PP_Order_Qty> retrieveOrderQtyForFinishedGoodsReceive(@NonNull final PPOrderId ppOrderId)
+	{
+		return retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(cand -> cand.getPP_Order_BOMLine_ID() <= 0)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

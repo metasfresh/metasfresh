@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.PPOrderQtyId;
+import de.metas.handlingunits.pporder.api.PPOrderQtyStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -25,16 +27,17 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -63,6 +66,7 @@ import java.util.function.Supplier;
 @ToString
 public class PPOrderLineRow implements IViewRow
 {
+	@Getter
 	private final DocumentPath documentPath;
 
 	@Getter
@@ -71,19 +75,34 @@ public class PPOrderLineRow implements IViewRow
 	@Nullable
 	private final Supplier<? extends IViewRowAttributes> attributesSupplier;
 
-	private final List<PPOrderLineRow> includedDocuments;
+	@Getter
+	private final ImmutableList<PPOrderLineRow> includedRows;
 
+	@Getter
 	private final boolean processed;
-	private final PPOrderId ppOrderId;
-	private final PPOrderBOMLineId ppOrderBOMLineId;
-	private final int ppOrderQtyId;
+	@Getter
+	@Nullable
+	private final PPOrderQtyStatus issueOrReceiveCandidateStatus;
+	@Getter
+	@Nullable
+	private final PPOrderId orderId;
+	@Getter
+	@Nullable
+	private final PPOrderBOMLineId orderBOMLineId;
+	@Getter
+	@Nullable
+	private final PPOrderQtyId ppOrderQtyId;
 
+	@Getter
 	private final HuId huId;
+	@Getter
 	private final boolean sourceHU;
+	@Getter
 	private final boolean topLevelHU;
 
+	@Getter
 	@Nullable
-	private final String issueMethod;
+	private final BOMComponentIssueMethod issueMethod;
 
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10))
 	private final JSONLookupValue product;
@@ -92,16 +111,21 @@ public class PPOrderLineRow implements IViewRow
 	private final String code;
 
 	@ViewColumn(captionKey = "Type", widgetType = DocumentFieldWidgetType.Text, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30))
+	@Getter
 	private final PPOrderLineType type;
 
 	@ViewColumn(captionKey = "PackingInfo", widgetType = DocumentFieldWidgetType.Text, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40))
+	@Getter
 	private final String packingInfo;
 
 	@ViewColumn(captionKey = "QtyPlan", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50))
+	@Getter
+	@Nullable
 	private final Quantity qtyPlan;
 
 	@ViewColumn(captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60))
-	private final BigDecimal qty;
+	@Getter
+	private final Quantity qty;
 
 	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70))
 	private final JSONLookupValue uom;
@@ -111,7 +135,7 @@ public class PPOrderLineRow implements IViewRow
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PPOrderLineRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PPOrderLineRow.class);
 
-	public static final PPOrderLineRow cast(final IViewRow viewRecord)
+	public static PPOrderLineRow cast(final IViewRow viewRecord)
 	{
 		return (PPOrderLineRow)viewRecord;
 	}
@@ -121,7 +145,7 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final PPOrderLineRowId rowId,
 			@NonNull final PPOrderLineType type,
 			@NonNull final I_PP_Order_Qty ppOrderQty,
-			@NonNull final Boolean processed,
+			final boolean parentRowReadonly,
 			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
 			@Nullable final String code, // can be null if type=HU_Storage
 			@Nullable final JSONLookupValue product,
@@ -134,12 +158,13 @@ public class PPOrderLineRow implements IViewRow
 		this.rowId = rowId;
 		this.type = type;
 
-		this.ppOrderId = PPOrderId.ofRepoId(ppOrderQty.getPP_Order_ID());
-		this.ppOrderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ppOrderQty.getPP_Order_BOMLine_ID());
+		this.orderId = PPOrderId.ofRepoId(ppOrderQty.getPP_Order_ID());
+		this.orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ppOrderQty.getPP_Order_BOMLine_ID());
 		this.huId = HuId.ofRepoId(ppOrderQty.getM_HU_ID());
-		this.ppOrderQtyId = ppOrderQty.getPP_Order_Qty_ID();
+		this.ppOrderQtyId = PPOrderQtyId.ofRepoId(ppOrderQty.getPP_Order_Qty_ID());
 
-		this.processed = processed;
+		this.issueOrReceiveCandidateStatus = PPOrderQtyStatus.ofProcessedFlag(ppOrderQty.isProcessed());
+		this.processed = parentRowReadonly || PPOrderQtyStatus.isProcessed(issueOrReceiveCandidateStatus);
 
 		// Values
 		this.product = product;
@@ -155,13 +180,15 @@ public class PPOrderLineRow implements IViewRow
 
 		this.attributesSupplier = attributesSupplier;
 
-		this.includedDocuments = includedRows;
+		this.includedRows = ImmutableList.copyOf(includedRows);
 
-		this.qty = quantity.toBigDecimal();
+		this.qty = quantity;
 
 		this.documentPath = computeDocumentPath();
 
-		this.issueMethod = ppOrderQty.getPP_Order_BOMLine() == null ? null : ppOrderQty.getPP_Order_BOMLine().getIssueMethod();
+		this.issueMethod = ppOrderQty.getPP_Order_BOMLine() == null
+				? null
+				: BOMComponentIssueMethod.ofNullableCode(ppOrderQty.getPP_Order_BOMLine().getIssueMethod());
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrder", builderClassName = "BuilderForPPOrder")
@@ -175,12 +202,13 @@ public class PPOrderLineRow implements IViewRow
 		this.rowId = PPOrderLineRowId.ofPPOrderId(ppOrder.getPP_Order_ID());
 		this.type = PPOrderLineType.MainProduct;
 
-		this.ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
-		this.ppOrderBOMLineId = null;
+		this.orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		this.orderBOMLineId = null;
 		this.huId = null;
-		this.ppOrderQtyId = -1;
+		this.ppOrderQtyId = null;
 
 		this.processed = processed;
+		this.issueOrReceiveCandidateStatus = null;
 
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		this.product = JSONLookupValueTool.createProductLookupValue(Services.get(IProductDAO.class).getById(productId));
@@ -201,11 +229,12 @@ public class PPOrderLineRow implements IViewRow
 				rowId.toDocumentId(),
 				ppOrder.getM_AttributeSetInstance_ID());
 
-		this.includedDocuments = includedRows;
+		this.includedRows = ImmutableList.copyOf(includedRows);
 
-		this.qty = includedDocuments.stream()
+		this.qty = includedRows.stream()
 				.map(PPOrderLineRow::getQty)
-				.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
+				.reduce(Quantity::add)
+				.orElseGet(qtyPlan::toZero);
 
 		this.documentPath = computeDocumentPath();
 
@@ -220,6 +249,7 @@ public class PPOrderLineRow implements IViewRow
 			@Nullable final String packingInfoOrNull,
 			@NonNull final Boolean processed,
 			@NonNull final Quantity qtyPlan,
+			@NonNull final Quantity qtyProcessedIssuedOrReceived,
 			@NonNull final IViewRowAttributesProvider attributesProvider,
 			@NonNull final List<PPOrderLineRow> includedRows)
 	{
@@ -227,12 +257,13 @@ public class PPOrderLineRow implements IViewRow
 
 		this.type = type;
 
-		this.ppOrderId = PPOrderId.ofRepoId(ppOrderBomLine.getPP_Order_ID());
-		this.ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBomLine.getPP_Order_BOMLine_ID());
+		this.orderId = PPOrderId.ofRepoId(ppOrderBomLine.getPP_Order_ID());
+		this.orderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.huId = null;
-		this.ppOrderQtyId = -1;
+		this.ppOrderQtyId = null;
 
 		this.processed = processed;
+		this.issueOrReceiveCandidateStatus = null;
 
 		this.product = JSONLookupValueTool.createProductLookupValue(ppOrderBomLine.getM_Product());
 		this.uom = JSONLookupValueTool.createUOMLookupValue(qtyPlan.getUOM());
@@ -246,19 +277,24 @@ public class PPOrderLineRow implements IViewRow
 
 		this.qtyPlan = qtyPlan;
 
-		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
+		this.attributesSupplier = createASIAttributesSupplier(
+				attributesProvider,
 				rowId.toDocumentId(),
 				ppOrderBomLine.getM_AttributeSetInstance_ID());
 
-		this.includedDocuments = includedRows;
+		this.includedRows = ImmutableList.copyOf(includedRows);
 
-		this.qty = includedDocuments.stream()
+		final Quantity qtyDraftIssuedOrReceived = includedRows.stream()
+				.filter(row -> PPOrderQtyStatus.isDraft(row.getIssueOrReceiveCandidateStatus()))
 				.map(PPOrderLineRow::getQty)
-				.reduce(BigDecimal.ZERO, (qtySum, includedQty) -> qtySum.add(includedQty));
+				.reduce(Quantity::add)
+				.orElseGet(qtyPlan::toZero);
+
+		this.qty = qtyProcessedIssuedOrReceived.add(qtyDraftIssuedOrReceived);
 
 		this.documentPath = computeDocumentPath();
 
-		this.issueMethod = ppOrderBomLine.getIssueMethod();
+		this.issueMethod = BOMComponentIssueMethod.ofNullableCode(ppOrderBomLine.getIssueMethod());
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
@@ -271,19 +307,20 @@ public class PPOrderLineRow implements IViewRow
 			@NonNull final JSONLookupValue product,
 			@NonNull final String packingInfo,
 			@NonNull final JSONLookupValue uom,
-			@NonNull final BigDecimal qty,
+			@NonNull final Quantity qty,
 			@NonNull final Boolean topLevelHU,
 			@NonNull final JSONLookupValue huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
 
-		this.ppOrderId = null;
-		this.ppOrderBOMLineId = null;
+		this.orderId = null;
+		this.orderBOMLineId = null;
 		this.huId = huId;
-		this.ppOrderQtyId = -1;
+		this.ppOrderQtyId = null;
 
 		this.processed = true;
+		this.issueOrReceiveCandidateStatus = null;
 
 		// Values
 		this.product = product;
@@ -299,7 +336,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.attributesSupplier = attributesSupplier;
 
-		this.includedDocuments = ImmutableList.of();
+		this.includedRows = ImmutableList.of();
 
 		this.qty = qty;
 
@@ -308,15 +345,16 @@ public class PPOrderLineRow implements IViewRow
 		this.issueMethod = null;
 	}
 
+	@Nullable
 	private DocumentPath computeDocumentPath()
 	{
 		if (type == PPOrderLineType.MainProduct)
 		{
-			return DocumentPath.rootDocumentPath(PPOrderConstants.AD_WINDOW_ID_PP_Order, DocumentId.of(ppOrderId));
+			return DocumentPath.rootDocumentPath(PPOrderConstants.AD_WINDOW_ID_PP_Order, DocumentId.of(orderId));
 		}
 		else if (type.isBOMLine())
 		{
-			return DocumentPath.includedDocumentPath(PPOrderConstants.AD_WINDOW_ID_PP_Order, DocumentId.of(ppOrderId), PPOrderConstants.TABID_ID_PP_Order_BOMLine, DocumentId.of(ppOrderBOMLineId));
+			return DocumentPath.includedDocumentPath(PPOrderConstants.AD_WINDOW_ID_PP_Order, DocumentId.of(orderId), PPOrderConstants.TABID_ID_PP_Order_BOMLine, DocumentId.of(orderBOMLineId));
 		}
 		else if (type.isHUOrHUStorage())
 		{
@@ -333,7 +371,7 @@ public class PPOrderLineRow implements IViewRow
 	}
 
 	@Nullable
-	private static final Supplier<IViewRowAttributes> createASIAttributesSupplier(
+	private static Supplier<IViewRowAttributes> createASIAttributesSupplier(
 			@NonNull final IViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final DocumentId documentId,
 			final int asiId)
@@ -346,21 +384,6 @@ public class PPOrderLineRow implements IViewRow
 		{
 			return null;
 		}
-	}
-
-	public PPOrderId getOrderId()
-	{
-		return ppOrderId;
-	}
-
-	public PPOrderBOMLineId getOrderBOMLineId()
-	{
-		return ppOrderBOMLineId;
-	}
-
-	public int getPP_Order_Qty_ID()
-	{
-		return ppOrderQtyId;
 	}
 
 	@Override
@@ -381,65 +404,29 @@ public class PPOrderLineRow implements IViewRow
 		return values.get(this);
 	}
 
-	@Override
-	public boolean isProcessed()
-	{
-		return processed;
-	}
-
-	@Override
-	public PPOrderLineType getType()
-	{
-		return type;
-	}
-
-	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return documentPath;
-	}
-
-	public JSONLookupValue getProduct()
-	{
-		return product;
-	}
-
+	@Nullable
 	public ProductId getProductId()
 	{
-		final JSONLookupValue product = getProduct();
 		return product != null ? ProductId.ofRepoIdOrNull(product.getKeyAsInt()) : null;
-
 	}
 
-	private int getUomId()
+	@Nullable
+	private UomId getUomId()
 	{
-		return uom == null ? -1 : uom.getKeyAsInt();
+		return uom == null ? null : UomId.ofRepoIdOrNull(uom.getKeyAsInt());
 	}
 
+	@Nullable
 	public I_C_UOM getUom()
 	{
-		final int uomId = getUomId();
-		return Services.get(IUOMDAO.class).getById(uomId);
-	}
+		final UomId uomId = getUomId();
+		if (uomId == null)
+		{
+			return null;
+		}
 
-	public HuId getHuId()
-	{
-		return huId;
-	}
-
-	public String getPackingInfo()
-	{
-		return packingInfo;
-	}
-
-	public BigDecimal getQty()
-	{
-		return qty;
-	}
-
-	public BigDecimal getQtyPlan()
-	{
-		return qtyPlan != null ? qtyPlan.toBigDecimal() : null;
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		return uomDAO.getById(uomId);
 	}
 
 	public boolean isReceipt()
@@ -452,30 +439,9 @@ public class PPOrderLineRow implements IViewRow
 		return getType().canIssue();
 	}
 
-	public boolean isSourceHU()
-	{
-		return sourceHU;
-	}
-
-	public boolean isTopLevelHU()
-	{
-		return topLevelHU;
-	}
-
 	public boolean isHUStatusActive()
 	{
 		return huStatus != null && X_M_HU.HUSTATUS_Active.equals(huStatus.getKey());
-	}
-
-	public String getIssueMethod()
-	{
-		return issueMethod;
-	}
-
-	@Override
-	public List<PPOrderLineRow> getIncludedRows()
-	{
-		return includedDocuments;
 	}
 
 	@Override

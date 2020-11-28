@@ -22,11 +22,8 @@
 
 package de.metas.ui.web.pporder.process;
 
-import java.util.List;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
@@ -51,10 +48,10 @@ public class WEBUI_PP_Order_PrintLabel
 {
 	final private static AdProcessId LabelPdf_AD_Process_ID = AdProcessId.ofRepoId(584768);
 	protected static final AdMessageKey MSG_MustBe_TopLevel_HU = AdMessageKey.of("WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU");
-	
+
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	final private IMsgBL msgBL = Services.get(IMsgBL.class);
-	
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -62,7 +59,7 @@ public class WEBUI_PP_Order_PrintLabel
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		
+
 		if (!getSingleSelectedRow().isTopLevelHU())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_MustBe_TopLevel_HU));
@@ -73,13 +70,12 @@ public class WEBUI_PP_Order_PrintLabel
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 
 		// print
 		final PPOrderLineRow row = getSingleSelectedRow();
 		final ReportResult label = printLabel(row);
-
 
 		// preview
 		getResult().setReportData(
@@ -87,10 +83,10 @@ public class WEBUI_PP_Order_PrintLabel
 				buildFilename(row),
 				OutputType.PDF.getContentType());
 
-		return MSG_OK;		
-		
+		return MSG_OK;
+
 	}
-	
+
 	private ReportResult printLabel(@NonNull final PPOrderLineRow row)
 	{
 		final PInstanceRequest pinstanceRequest = createPInstanceRequest(row);
@@ -103,40 +99,29 @@ public class WEBUI_PP_Order_PrintLabel
 				.setReportLanguage(getProcessInfo().getReportLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
-		
 
 		final ReportsClient reportsClient = ReportsClient.get();
 		return reportsClient.report(jasperProcessInfo);
 	}
-	
-	private PInstanceRequest createPInstanceRequest(@NonNull final PPOrderLineRow row)
-	{
-		final List<ProcessInfoParameter> piParams = ImmutableList.of(ProcessInfoParameter.of("RECORD_ID", getHUID(row)));
 
-		final PInstanceRequest pinstanceRequest = PInstanceRequest.builder()
+	private static PInstanceRequest createPInstanceRequest(@NonNull final PPOrderLineRow row)
+	{
+		return PInstanceRequest.builder()
 				.processId(LabelPdf_AD_Process_ID)
-				.processParams(piParams)
+				.processParams(ImmutableList.of(
+						ProcessInfoParameter.of("RECORD_ID", row.getHuId())))
 				.build();
-		return pinstanceRequest;
 	}
-	
-	
-	private int getHUID(@NonNull final PPOrderLineRow row)
-	{
-			return row.getHuId().getRepoId();
-	}
-	
-	private String buildFilename(@NonNull final PPOrderLineRow row)
-	{
 
-		final String huValue = row.getIssueMethod(); 
-		final String product =row.getPackingInfo();
+	private static String buildFilename(@NonNull final PPOrderLineRow row)
+	{
+		final String huValue = String.valueOf(row.getHuId().getRepoId());
+		final String product = row.getPackingInfo();
 
 		return Joiner.on("_")
 				.skipNulls()
 				.join(huValue, product)
 				+ ".pdf";
 	}
-
 
 }

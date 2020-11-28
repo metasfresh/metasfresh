@@ -1,19 +1,13 @@
 package org.adempiere.mm.attributes.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -26,13 +20,16 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -84,6 +81,16 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		});
 
 		return builder.build();
+	}
+
+	public static ImmutableAttributeSet copyOf(@NonNull final IAttributeSet attributeSet)
+	{
+		if (attributeSet instanceof ImmutableAttributeSet)
+		{
+			return (ImmutableAttributeSet)attributeSet;
+		}
+
+		return createSubSet(attributeSet, attribute -> true);
 	}
 
 	public static ImmutableAttributeSet createSubSet(
@@ -156,7 +163,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 		else if (obj instanceof ImmutableAttributeSet)
 		{
-			ImmutableAttributeSet other = (ImmutableAttributeSet)obj;
+			final ImmutableAttributeSet other = (ImmutableAttributeSet)obj;
 			return Objects.equals(valuesByAttributeCode, other.valuesByAttributeCode);
 		}
 		else
@@ -171,12 +178,17 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
-	public Collection<I_M_Attribute> getAttributes()
+	public ImmutableCollection<I_M_Attribute> getAttributes()
 	{
 		return attributesByCode.values();
 	}
 
-	public Set<AttributeId> getAttributeIds()
+	public ImmutableSet<AttributeCode> getAttributeCodes()
+	{
+		return attributesByCode.keySet();
+	}
+
+	public ImmutableSet<AttributeId> getAttributeIds()
 	{
 		return attributesById.keySet();
 	}
@@ -212,11 +224,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	@Override
 	public I_M_Attribute getAttributeByIdIfExists(final int attributeId)
 	{
-		return getAttributeByIdIfExists(AttributeId.ofRepoIdOrNull(attributeId));
+		return getAttributeByIdIfExists(AttributeId.ofRepoId(attributeId));
 	}
 
 	@Override
-	public I_M_Attribute getAttributeByIdIfExists(final AttributeId attributeId)
+	public I_M_Attribute getAttributeByIdIfExists(final @NonNull AttributeId attributeId)
 	{
 		return attributesById.get(attributeId);
 	}
@@ -239,11 +251,15 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	{
 		assertAttributeExists(attributeId);
 		final I_M_Attribute attribute = getAttributeByIdIfExists(attributeId);
+		if (attribute == null)
+		{
+			throw new AdempiereException("Attribute does not exist: " + attributeId);
+		}
 		return getValue(attribute);
 	}
 
 	@Override
-	public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
+	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		final Object valueObj = getValue(attributeCode);
 		return invokeWithAttributeKey(attributeCode, () -> toBigDecimal(valueObj));
@@ -254,6 +270,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return invokeWithAttributeId(attributeId, () -> toBigDecimal(getValue(attributeId)));
 	}
 
+	@Nullable
 	private static BigDecimal toBigDecimal(final Object valueObj)
 	{
 		if (valueObj == null)
@@ -298,6 +315,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		}
 	}
 
+	@Nullable
 	@Override
 	public Date getValueAsDate(final AttributeCode attributeCode)
 	{
@@ -333,7 +351,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			{
 				throw AdempiereException.wrapIfNeeded(ex)
 						.setParameter("valueObj", valueObj)
-						.setParameter("valueObj.class", valueObj != null ? valueObj.getClass() : null)
+						.setParameter("valueObj.class", valueObj.getClass())
 						.appendParametersToMessage();
 			}
 		}
@@ -393,6 +411,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	}
 
 	@Override
+	@Nullable
 	public String getValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		final Object valueObj = getValue(attributeCode);
@@ -530,7 +549,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return this;
 		}
 
-		public Builder attributeValue(@NonNull final AttributeCode attributeCode, final Object attributeValue)
+		public Builder attributeValue(@NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue)
 		{
 			final I_M_Attribute attribute = attributesRepo().retrieveAttributeByValue(attributeCode);
 			final AttributeValueId attributeValueId = null;
@@ -550,7 +569,7 @@ public final class ImmutableAttributeSet implements IAttributeSet
 
 		public Builder attributeValues(@NonNull final AttributeListValue... attributeValues)
 		{
-			for (AttributeListValue attributeValue : attributeValues)
+			for (final AttributeListValue attributeValue : attributeValues)
 			{
 				attributeValue(attributeValue);
 			}
