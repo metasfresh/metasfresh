@@ -1,0 +1,24 @@
+{
+  "name": "Simple Customer",
+  "isVendor": false,
+  "isCustomer": true,
+  "bank": "Raiffeisen",
+  "customerPricingSystem": "Testpreisliste Kunden",
+  "customerDiscountSchema": "DiscountSchema 1561534895332",
+  "paymentTerm": "30 days net",
+  "de_DE__paymentTerm": "30 Tage netto",
+  "bPartnerLocations": [
+    {
+      "name": "Address1",
+      "city": "Cologne",
+      "country": "Deutschland"
+    }
+  ],
+  "contacts": [
+    {
+      "isDefaultContact": true,
+      "firstName": "Default",
+      "lastName": "Contact"
+    }
+  ]
+}

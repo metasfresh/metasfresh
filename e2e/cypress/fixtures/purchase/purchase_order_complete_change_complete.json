@@ -1,0 +1,17 @@
+{
+"productForPackingMaterial":  "ProductPackingMaterial",
+"packingInstructionsName": "ProductPackingInstructions",
+"productName1": "ProductTest",
+"productCategoryName": "ProductCategoryName",
+"discountSchemaName": "DiscountSchemaTest",
+"priceSystemName": "PriceSystem",
+"priceListName": "PriceList",
+"priceListVersionName": "PriceListVersion",
+"vendorName": "Vendor",
+
+"initialPoQty": 5,
+"newPoQtyEntered": 45,
+"newPoQtyEnteredTU": 4,
+"newPoPrice": 4.0
+
+}

@@ -1,0 +1,10 @@
+{
+    "name": "TestAttributeSet",
+    "mandatoryType": "Optional",
+    "attributeUse": [
+        {
+          "m_attribute_id": "ListAttributeName_TestAttribute1",
+          "value": "TestAttributeValue1"
+        }
+    ]
+}

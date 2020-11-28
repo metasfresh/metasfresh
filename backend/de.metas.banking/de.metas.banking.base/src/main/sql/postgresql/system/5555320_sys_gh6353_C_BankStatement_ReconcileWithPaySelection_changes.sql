@@ -1,0 +1,5 @@
+-- 2020-03-25T09:20:38.029Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=540489,Updated=TO_TIMESTAMP('2020-03-25 11:20:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541760
+;
+

@@ -1,0 +1,11 @@
+{
+  "printFormatName": "Serial letter printformat",
+  "marketingPlatformName": "Serial letter marketing platform",
+  "boilerPlateName": "Serial_letter_text_snippet",
+  "marketingCampaignName": "Serial letter marketing campaign",
+  "marketingContactName": "Serial letter marketing contact",
+  "boilerPlateSubject": "Subject",
+  "boilerPlateTextSnippet": "TextSnippet",
+  "printFormatLetter": "Letter",
+  "printFormatSerialLetter": "Serial Letter"
+}

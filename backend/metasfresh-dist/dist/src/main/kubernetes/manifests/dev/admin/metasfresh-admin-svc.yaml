@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-admin
+  labels:
+    de.metas.service: metasfresh-admin
+spec:
+  ports:
+  - name: metasfresh-admin
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+    nodePort: 30060
+  selector:
+    de.metas.service: metasfresh-admin
+  sessionAffinity: None
+# use nodeport such that we can also use metasfresh-admin as part of the developement environment
+# see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: NodePort

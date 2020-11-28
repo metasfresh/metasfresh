@@ -1,0 +1,5 @@
+-- 2017-04-03T21:15:11.528
+-- URL zum Konzept
+UPDATE AD_SysConfig SET Value='N',Updated=TO_TIMESTAMP('2017-04-03 21:15:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541079
+;
+

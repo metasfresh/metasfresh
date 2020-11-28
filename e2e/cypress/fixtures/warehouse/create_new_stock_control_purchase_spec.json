@@ -1,0 +1,9 @@
+{
+     "productName1" : "StockControlPurchase1",
+     "productName2" : "StockControlPurchase2",
+     "productName3" : "StockControlPurchase3",
+     "productCategoryName" : "ProductCategory",
+     "priceListName" : "PriceList",
+     "priceSystemName" : "PriceSystem",
+     "priceListVersionName" : "PriceListVersion"
+}

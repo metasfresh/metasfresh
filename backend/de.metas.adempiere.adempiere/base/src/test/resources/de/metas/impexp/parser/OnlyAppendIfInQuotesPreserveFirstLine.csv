@@ -1,0 +1,16 @@
+Buchungsdatum;Valuta;Buchungstext;Details;Detail;Belastung;Gutschrift;Saldo CHF
+Umsatztotal;;;;;4420;2210;
+11.01.1111;11.01.1111;aaaaaaaaaaaaaaaaaaa;"aaaaaaa
+aaaaaaaaaaaaaaaa
+aaaaaaaaaaaaa
+aaaaa aaaaaaaaaaaaaaaaaaaa aaaa";;2210;;
+22.02.2222;22.02.2222;bbbbbbbbb bbbbbbbbb; "bbbbbbbb
+bbbbbbbbbbbbbbbbb b
+bbbb
+bbbbbbbbb
+bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+bbbbbbbbbbbbbbbbbbbbbbbbbbbb
+bbbbbbbbbbb.bb bb
+bbbbbbbbbbbbbbbbbbbb";;;2210;
+33.03.3333;33.03.3333;cccccccccccccc;"cccccccccccccccccc
+cccccc c cccccccc  cc";;2210;;

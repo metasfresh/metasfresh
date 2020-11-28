@@ -1,0 +1,16 @@
+{
+    "comment_1": "The fixture's  is more of a dictionary with inventory related terms",
+
+    "singleHUInventoryDocTypeName": "Inventory",
+    "de_DE__singleHUInventoryDocTypeName": "Inventur",
+
+    "aggregatedHUsInventoryDocTypeName": "Inventory with aggregated HUs",
+    "de_DE__aggregatedHUsInventoryDocTypeName": "Inventur mit aggregierten Materialangaben",
+
+    "disposalDocTypeName": "Disposal",
+    "de_DE__disposalDocTypeName": "Entsorgung",
+
+    "warehouseName_comment": "Note that there is no trl for warehouse names",
+    "warehouseName": "Hauptlager"
+}
+

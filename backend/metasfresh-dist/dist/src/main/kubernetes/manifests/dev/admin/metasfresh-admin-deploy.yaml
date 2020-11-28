@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metasfresh-admin
+  labels:
+    de.metas.service: metasfresh-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+       de.metas.service: metasfresh-admin
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.service: metasfresh-admin
+    spec:
+      containers:
+      - name: metasfresh-admin
+        image: docker.metasfresh.com/metasfresh/metasfresh-admin:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+        resources:
+          requests:
+            memory: 256Mi

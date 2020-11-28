@@ -1,0 +1,635 @@
+exports[`Aggregated inventory test > Create a new aggreagted-HUs inventory doc #0`] =
+{
+  "fieldsByName": {
+    "AD_Client_ID": {
+      "displayed": true,
+      "field": "AD_Client_ID",
+      "lookupValuesStale": true,
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "AD_Client_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": {
+        "caption": "metasfresh",
+        "key": "1000000"
+      },
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "AD_OrgTrx_ID": {
+      "displayed": false,
+      "field": "AD_OrgTrx_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "AD_OrgTrx_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "AD_Org_ID": {
+      "displayed": true,
+      "field": "AD_Org_ID",
+      "lookupValuesStale": true,
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "AD_Org_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": {
+        "caption": "metasfresh AG",
+        "key": "1000000"
+      },
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "ApprovalAmt": {
+      "displayed": true,
+      "field": "ApprovalAmt",
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "ApprovalAmt",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": "0.00",
+      "viewEditorRenderMode": "never",
+      "widgetType": "Amount"
+    },
+    "C_Activity_ID": {
+      "displayed": true,
+      "field": "C_Activity_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "C_Activity_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "C_Campaign_ID": {
+      "displayed": false,
+      "field": "C_Campaign_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "C_Campaign_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "C_DocType_ID": {
+      "displayed": true,
+      "field": "C_DocType_ID",
+      "lookupValuesStale": true,
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "C_DocType_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": {
+        "caption": "Inventur",
+        "key": "1000023"
+      },
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "C_Project_ID": {
+      "displayed": false,
+      "field": "C_Project_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "C_Project_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "Description": {
+      "displayed": true,
+      "field": "Description",
+      "mandatory": false,
+      "readonly": false,
+      "validStatus": {
+        "fieldName": "Description",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "always",
+      "widgetType": "Text"
+    },
+    "DocAction": {
+      "displayed": true,
+      "field": "DocAction",
+      "lookupValuesStale": true,
+      "mandatory": true,
+      "readonly": false,
+      "validStatus": {
+        "fieldName": "DocAction",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": {
+        "caption": "Close",
+        "description": "Finally close this transaction. It cannot be re-activated.",
+        "key": "CL"
+      },
+      "viewEditorRenderMode": "always",
+      "widgetType": "Button"
+    },
+    "DocStatus": {
+      "displayed": true,
+      "field": "DocStatus",
+      "lookupValuesStale": true,
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "DocStatus",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": {
+        "caption": "Completed",
+        "key": "CO"
+      },
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "DocumentNo": {
+      "displayed": true,
+      "field": "DocumentNo",
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "DocumentNo",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": "REPLACED_WITH_CONST",
+      "viewEditorRenderMode": "never",
+      "widgetType": "Text"
+    },
+    "ID": {
+      "field": "ID",
+      "value": "REPLACED_WITH_CONST",
+      "widgetType": "Integer"
+    },
+    "IsApproved": {
+      "displayed": true,
+      "field": "IsApproved",
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "IsApproved",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": true,
+      "viewEditorRenderMode": "never",
+      "widgetType": "YesNo"
+    },
+    "M_PerpetualInv_ID": {
+      "displayed": true,
+      "field": "M_PerpetualInv_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "M_PerpetualInv_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "M_Warehouse_ID": {
+      "displayed": true,
+      "field": "M_Warehouse_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "M_Warehouse_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": {
+        "caption": "Hauptlager_StdWarehouse",
+        "key": "540008"
+      },
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "MovementDate": {
+      "displayed": true,
+      "field": "MovementDate",
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "MovementDate",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": "REPLACED_WITH_CONST",
+      "viewEditorRenderMode": "never",
+      "widgetType": "Date"
+    },
+    "Posted": {
+      "displayed": "WE_DONT_CARE_IN_THIS_SPEC",
+      "field": "Posted",
+      "lookupValuesStale": true,
+      "mandatory": true,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "Posted",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": {
+        "caption": "Not Posted",
+        "key": "N"
+      },
+      "viewEditorRenderMode": "never",
+      "widgetType": "Button"
+    },
+    "User1_ID": {
+      "displayed": false,
+      "field": "User1_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "User1_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "User2_ID": {
+      "displayed": false,
+      "field": "User2_ID",
+      "lookupValuesStale": true,
+      "mandatory": false,
+      "readonly": true,
+      "validStatus": {
+        "fieldName": "User2_ID",
+        "initialValue": true,
+        "valid": true
+      },
+      "value": null,
+      "viewEditorRenderMode": "never",
+      "widgetType": "List"
+    },
+    "V$DocumentSummary": "REPLACED_WITH_CONST"
+  },
+  "id": "REPLACED_WITH_CONST",
+  "includedTabsInfo": {
+    "AD_Tab-256": {
+      "allowCreateNew": false,
+      "allowCreateNewReason": "ParentDocumentProcessed",
+      "allowDelete": false,
+      "allowDeleteReason": "ParentDocumentProcessed",
+      "tabid": "AD_Tab-256"
+    }
+  },
+  "saveStatus": {
+    "deleted": false,
+    "error": false,
+    "hasChanges": false,
+    "reason": "just loaded",
+    "saved": true
+  },
+  "standardActions": [
+    "new",
+    "advancedEdit",
+    "email",
+    "letter",
+    "print",
+    "delete"
+  ],
+  "validStatus": {
+    "valid": true
+  },
+  "websocketEndpoint": "REPLACED_WITH_CONST",
+  "windowId": "168"
+};
+
+exports[`Aggregated inventory test > Create a new aggreagted-HUs inventory doc #1`] =
+[
+  {
+    "fieldsByName": {
+      "AD_Client_ID": {
+        "displayed": true,
+        "field": "AD_Client_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "AD_Client_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": {
+          "caption": "metasfresh",
+          "key": "1000000"
+        },
+        "viewEditorRenderMode": "never",
+        "widgetType": "List"
+      },
+      "AD_Org_ID": {
+        "displayed": true,
+        "field": "AD_Org_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "AD_Org_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": {
+          "caption": "metasfresh AG",
+          "key": "1000000"
+        },
+        "viewEditorRenderMode": "never",
+        "widgetType": "List"
+      },
+      "AssignedTo": {
+        "displayed": true,
+        "field": "AssignedTo",
+        "mandatory": false,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "AssignedTo",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": null,
+        "viewEditorRenderMode": "never",
+        "widgetType": "Text"
+      },
+      "C_UOM_ID": {
+        "displayed": true,
+        "field": "C_UOM_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "C_UOM_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": {
+          "caption": "Each",
+          "key": "100"
+        },
+        "viewEditorRenderMode": "never",
+        "widgetType": "Lookup"
+      },
+      "Description": {
+        "displayed": true,
+        "field": "Description",
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "Description",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "Text"
+      },
+      "HUAggregationType": {
+        "displayed": true,
+        "field": "HUAggregationType",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "HUAggregationType",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": {
+          "caption": "Single HU",
+          "description": "Each inventory line has only one HU",
+          "key": "S"
+        },
+        "viewEditorRenderMode": "never",
+        "widgetType": "List"
+      },
+      "ID": {
+        "field": "ID",
+        "value": "REPLACED_WITH_CONST",
+        "widgetType": "Integer"
+      },
+      "InventoryType": {
+        "displayed": true,
+        "field": "InventoryType",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "InventoryType",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": {
+          "caption": "Inventory Difference",
+          "key": "D"
+        },
+        "viewEditorRenderMode": "never",
+        "widgetType": "List"
+      },
+      "IsCounted": {
+        "displayed": true,
+        "field": "IsCounted",
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "IsCounted",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": true,
+        "viewEditorRenderMode": "never",
+        "widgetType": "YesNo"
+      },
+      "Line": {
+        "displayed": true,
+        "field": "Line",
+        "mandatory": false,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "Line",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": 10,
+        "viewEditorRenderMode": "never",
+        "widgetType": "Integer"
+      },
+      "M_AttributeSetInstance_ID": {
+        "displayed": true,
+        "field": "M_AttributeSetInstance_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "M_AttributeSetInstance_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": {
+          "caption": "---",
+          "key": "0"
+        },
+        "viewEditorRenderMode": "never",
+        "widgetType": "ProductAttributes"
+      },
+      "M_HU_ID": {
+        "displayed": true,
+        "field": "M_HU_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "M_HU_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": "REPLACED_WITH_CONST",
+        "viewEditorRenderMode": "never",
+        "widgetType": "Lookup"
+      },
+      "M_HU_PI_Item_Product_ID": {
+        "displayed": true,
+        "field": "M_HU_PI_Item_Product_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "M_HU_PI_Item_Product_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": null,
+        "viewEditorRenderMode": "never",
+        "widgetType": "Lookup"
+      },
+      "M_Locator_ID": {
+        "displayed": true,
+        "field": "M_Locator_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "M_Locator_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": {
+          "caption": "Hauptlager_StdWarehouse_Hauptlager_0_0_0",
+          "key": "540007"
+        },
+        "viewEditorRenderMode": "never",
+        "widgetType": "Lookup"
+      },
+      "M_Product_ID": {
+        "displayed": true,
+        "field": "M_Product_ID",
+        "lookupValuesStale": true,
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "M_Product_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": "REPLACED_WITH_CONST",
+        "viewEditorRenderMode": "never",
+        "widgetType": "Lookup"
+      },
+      "QtyBook": {
+        "displayed": true,
+        "field": "QtyBook",
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "QtyBook",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": "0",
+        "viewEditorRenderMode": "never",
+        "widgetType": "Quantity"
+      },
+      "QtyCount": {
+        "displayed": true,
+        "field": "QtyCount",
+        "mandatory": true,
+        "readonly": true,
+        "validStatus": {
+          "fieldName": "QtyCount",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": "20",
+        "viewEditorRenderMode": "never",
+        "widgetType": "Quantity"
+      }
+    },
+    "id": "REPLACED_WITH_CONST",
+    "rowId": "REPLACED_WITH_CONST",
+    "saveStatus": {
+      "deleted": false,
+      "error": false,
+      "hasChanges": false,
+      "reason": "just loaded",
+      "saved": true
+    },
+    "standardActions": [
+      "new",
+      "advancedEdit",
+      "email",
+      "letter",
+      "delete"
+    ],
+    "tabId": "AD_Tab-256",
+    "tabid": "AD_Tab-256",
+    "validStatus": {
+      "valid": true
+    },
+    "websocketEndpoint": "REPLACED_WITH_CONST",
+    "windowId": "168"
+  }
+];

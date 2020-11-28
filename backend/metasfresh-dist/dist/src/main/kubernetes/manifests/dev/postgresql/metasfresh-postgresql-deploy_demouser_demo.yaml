@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "metasfresh-postgresql-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-postgresql
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-postgresql-mf15-dev"
+  namespace: "default"
+spec:
+  selector:
+    matchLabels:
+        de.metas.deployment.type: metasfresh-postgresql
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+        de.metas.deployment.name: "metasfresh-postgresql-mf15-dev"
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-postgresql
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+        de.metas.deployment.name: "metasfresh-postgresql-mf15-dev"
+    spec:
+      containers:
+#
+# metasfresh-db
+      - name: db
+        image: dockerhub.metasfresh.com/postgres:9.5
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 5432
+        args: ["-cconfig_file=/etc/postgresql/postgresql.conf"]
+        resources: {}
+        volumeMounts:
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
+        - mountPath: /var/lib/postgresql/data
+          name: postgresql-data
+        - mountPath: /etc/postgresql
+          name: postgresql-config
+
+      initContainers:
+        - name: init-postgres
+          image: docker.metasfresh.com/metasfresh/metasfresh-db-init-pg-9-5:master_LATEST
+          imagePullPolicy: Always
+          env:
+          - name: DEBUG_PRINT_BASH_CMDS
+            value: "n"
+          - name: URL_SEED_DUMP
+            value: "https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump"
+          # apply the latest master build's migration scripts
+          - name: URL_MIGRATION_SCRIPTS_PACKAGE
+            value: "https://repo.metasfresh.com/service/local/artifact/maven/redirect?g=de.metas.dist&a=metasfresh-dist-dist&v=LATEST&r=mvn-master&p=tar.gz&c=sql-only"
+          volumeMounts:
+          # - name: host-localtime
+          #   mountPath: /etc/localtime
+          #   readOnly: true
+          # - name: host-timezone
+          #   mountPath: /etc/timezone
+          #   readOnly: true
+          - mountPath: /var/lib/postgresql/data
+            name: postgresql-data
+      volumes:
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone
+      - name: postgresql-data
+        emptyDir: {}
+      - name: postgresql-config
+        configMap:
+          # I created this configmap via
+          # kubectl create configmap metasfresh-postgresql-config --from-file=postgresql.conf
+          name: metasfresh-postgresql-config
+

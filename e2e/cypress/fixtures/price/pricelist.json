@@ -1,0 +1,8 @@
+{
+    "name": "Test Preisliste DEU EUR",
+    "country": "Deutschland",
+    "currency": "EUR",
+    "description": "Test Preisliste Description",
+    "priceSystem": "Test Preissystem",
+    "pricePrecision": 2
+}

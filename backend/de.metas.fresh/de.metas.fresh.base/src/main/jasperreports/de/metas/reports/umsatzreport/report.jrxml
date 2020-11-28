@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.948717100000002"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="IsSOTrx" class="java.lang.String"/>
+	<parameter name="C_Period_ID" class="java.math.BigDecimal"/>
+	<parameter name="M_AttributeSetInstance_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal"/>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT * FROM report.umsatzreport_report(
+	$P{C_Period_ID},
+	$P{IsSOTrx},
+	$P{M_AttributeSetInstance_ID},
+	$P{AD_Org_ID}
+)]]>
+	</queryString>
+	<field name="name" class="java.lang.String"/>
+	<field name="periodend" class="java.sql.Date"/>
+	<field name="lastyearperiodend" class="java.sql.Date"/>
+	<field name="year" class="java.lang.String"/>
+	<field name="lastyear" class="java.lang.String"/>
+	<field name="sameperiodsum" class="java.math.BigDecimal"/>
+	<field name="sameperiodlastyearsum" class="java.math.BigDecimal"/>
+	<field name="perioddifference" class="java.math.BigDecimal"/>
+	<field name="perioddiffpercentage" class="java.math.BigDecimal"/>
+	<field name="sameyearsum" class="java.math.BigDecimal"/>
+	<field name="lastyearsum" class="java.math.BigDecimal"/>
+	<field name="yeardifference" class="java.math.BigDecimal"/>
+	<field name="yeardiffpercentage" class="java.math.BigDecimal"/>
+	<field name="attributesetinstance" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="unionorder" class="java.lang.Integer"/>
+	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="sameperiodlastyeartotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameperiodlastyearsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="perioddifferencetotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{perioddifference}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
+	<variable name="perioddiffpercentagetotal" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[!$V{perioddifferencetotal}.equals(new BigDecimal(0)) &&
+        !$V{sameperiodlastyeartotal}.equals(new BigDecimal(0))?
+    $V{perioddifferencetotal}.divide( $V{sameperiodlastyeartotal}, 2, RoundingMode.HALF_UP )
+        .scaleByPowerOfTen( 2 ):
+    null]]></variableExpression>
+	</variable>
+	<variable name="sameyeartotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{sameyearsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="lastyeartotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{lastyearsum}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="yeardifferencetotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{yeardifference}]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<variable name="yeardiffpercentagetotal" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[!$V{yeardifferencetotal}.equals(new BigDecimal(0)) &&
+        !$V{lastyeartotal}.equals(new BigDecimal(0))?
+    $V{yeardifferencetotal}.divide( $V{lastyeartotal}, 2, RoundingMode.HALF_UP )
+        .scaleByPowerOfTen( 2 ):
+    null]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="73" splitType="Stretch">
+			<textField>
+				<reportElement x="37" y="20" width="100" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="53" width="170" height="10" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="63" width="100" height="10" uuid="57ce5783-0241-4a23-9207-b7b7cd151c5f">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="206" y="53" width="40" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{periodend}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="247" y="53" width="40" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lastyearperiodend}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="288" y="53" width="45" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="334" y="53" width="35" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="428" y="53" width="58" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cumulated} + " " + $F{lastyear}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="370" y="53" width="58" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cumulated} +" " + $F{year}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="535" y="53" width="40" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM.yyyy">
+				<reportElement x="487" y="53" width="47" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="433" y="20" width="100" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{periodend}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="535" y="63" width="40" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{yeardiffpercentagetotal}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="247" y="63" width="40" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sameperiodlastyeartotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="487" y="63" width="47" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{yeardifferencetotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="370" y="63" width="58" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sameyeartotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="428" y="63" width="58" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{lastyeartotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="334" y="63" width="35" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{perioddiffpercentagetotal}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="288" y="63" width="45" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{perioddifferencetotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="206" y="63" width="40" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16">
+					<printWhenExpression><![CDATA[new Boolean (!$V{PAGE_NUMBER}.equals(1))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sameperiodtotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="30" width="38" height="10" uuid="4594c38a-a235-4c6f-b0fc-58753c57728d"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{attributes}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="75" y="30" width="196" height="10" uuid="fc22c106-5cd9-4984-b0c2-39db1c5def5c"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attributesetinstance} != null ? $F{attributesetinstance} : $R{all}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 1)
+&& ($F{sameperiodsum}.signum() !=0
+|| $F{sameperiodlastyearsum}.signum() !=0)]]></printWhenExpression>
+			<textField>
+				<reportElement x="37" y="0" width="170" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="206" y="0" width="40" height="10" uuid="283307ea-42f1-443b-874f-de97d438a639"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="247" y="0" width="40" height="10" uuid="2f5a972c-5049-411f-a83c-38a23af84895"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameperiodlastyearsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="288" y="0" width="45" height="10" uuid="0f6c1f56-578c-45e9-b557-199fb3c8b0fc"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="334" y="0" width="35" height="10" uuid="acfa1c37-3f32-46f6-818a-2fd76d61d4a0"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddiffpercentage}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="535" y="0" width="40" height="10" uuid="acfa1c37-3f32-46f6-818a-2fd76d61d4a0"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{yeardiffpercentage}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="370" y="0" width="58" height="10" uuid="283307ea-42f1-443b-874f-de97d438a639"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameyearsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="487" y="0" width="47" height="10" uuid="0f6c1f56-578c-45e9-b557-199fb3c8b0fc"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{yeardifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="428" y="0" width="58" height="10" uuid="2f5a972c-5049-411f-a83c-38a23af84895"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lastyearsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50">
+			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 2)]]></printWhenExpression>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="206" y="12" width="40" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameperiodsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="334" y="12" width="35" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddiffpercentage}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="370" y="12" width="58" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameyearsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="247" y="12" width="40" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sameperiodlastyearsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="12" width="100" height="10" uuid="57ce5783-0241-4a23-9207-b7b7cd151c5f"/>
+				<textElement>
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="288" y="12" width="45" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{perioddifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="428" y="12" width="58" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lastyearsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="535" y="12" width="40" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{yeardiffpercentage}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="487" y="12" width="47" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="7" isBold="true" isItalic="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{yeardifference}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="34" splitType="Stretch">
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="370" y="0" width="58" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sameyeartotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="487" y="0" width="47" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{yeardifferencetotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="206" y="0" width="40" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sameperiodtotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="334" y="0" width="35" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{perioddiffpercentagetotal}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="428" y="0" width="58" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{lastyeartotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="0" width="100" height="10" uuid="57ce5783-0241-4a23-9207-b7b7cd151c5f"/>
+				<textElement>
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="247" y="0" width="40" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{sameperiodlastyeartotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="288" y="0" width="45" height="10" uuid="9f978343-f230-4e83-a79d-8c5089b5f11c"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{perioddifferencetotal}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="535" y="0" width="40" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{yeardiffpercentagetotal}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="1"/>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

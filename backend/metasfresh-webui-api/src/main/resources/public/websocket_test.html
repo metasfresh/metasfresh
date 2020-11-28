@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>metasfresh-webui-rest-api WebSocket test</title>
+    <script src="sockjs-0.3.4.js"></script>
+    <script src="stomp.js"></script>
+    <script type="text/javascript">
+	
+        var stompClient = null;
+        var stompSubscription = null;
+
+        function setConnected(connected) {
+            document.getElementById('connect').disabled = connected;
+            document.getElementById('disconnect').disabled = !connected;
+            document.getElementById('socksjs_url').disabled = connected;
+            document.getElementById('topic').disabled = connected;
+            clearResponsesLog();
+        }
+        
+        function clearResponsesLog()
+        {
+			document.getElementById('response').innerHTML = '';
+		}
+
+        function connect()
+        {
+        	var socksjs_url = document.getElementById('socksjs_url').value;
+            var topic = document.getElementById('topic').value;
+            
+            var socket = new SockJS(socksjs_url);
+			stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                setConnected(true);
+                console.log('Connected to ' + socksjs_url + ': ' + frame);
+                stompSubscription = stompClient.subscribe(topic, function(result) {
+                	showResult(result);
+                });
+                
+                console.log('Subscribed to ' + topic + ': ' + stompSubscription);
+            });
+        }
+
+        function disconnect()
+        {
+        	if(stompSubscription != null)
+        	{
+        		stompSubscription.unsubscribe();
+        		stompSubscription = null;
+        	}
+        	
+            stompClient.disconnect();
+            setConnected(false);
+            console.log("Disconnected");
+        }
+
+        function showResult(message) {
+            var response = document.getElementById('response');
+            var p = document.createElement('pre');
+            p.style.wordWrap = 'break-word';
+            p.appendChild(document.createTextNode(message));
+            response.appendChild(p);
+        }
+    </script>
+    <style>
+    	pre { border: 1px solid gray; }
+    </style>
+</head>
+<body>
+<noscript><h2>Enable Java script and reload this page</h2></noscript>
+<h1>metasfresh-webui-rest-api WebSocket test</h1>
+<div>
+    <div>
+        <button id="connect" onclick="connect();">Connect</button>
+        <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button>
+        <button id="clearResponsesLog" onclick="clearResponsesLog();">Clear log</button>
+        <br/><br/>
+    </div>
+    <div>
+    	<label>SocksJS URL: </label><input type="text" id="socksjs_url" value="/stomp"/> (e.g. /stomp, http://localhost:8080/stomp etc)<br/> 
+    	<label>Topic: </label><input type="text" id="topic" /><br/> 
+        <p id="response"></p>
+    </div>
+</div>
+</body>
+</html>

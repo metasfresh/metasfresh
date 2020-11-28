@@ -1,0 +1,15 @@
+{
+  "salesInvoiceTargetDocumentType": "Sales Invoice",
+  "salesInvoiceTotalAmount": 0,
+  "productQty": 20,
+  "paymentDocumentType": "Zahlungseingang",
+  "paymentTotalAmount": 0,
+  "priceSystemName": "PriceSystem",
+  "priceListName": "PriceList",
+  "priceListVersionName": "PriceListVersion",
+  "productCategoryName": "ProductCategory",
+  "productName": "Product",
+  "productType": "Service",
+  "discountSchemaName": "DiscountSchema",
+  "bPartnerName": "BPartner"
+}

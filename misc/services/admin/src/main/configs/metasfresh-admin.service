@@ -1,0 +1,16 @@
+#
+# systemd service file for metasfresh-admin
+# to install it, copy it to /etc/systemd/system and chmod it to 0644
+# 
+[Unit]
+Description=metasfresh-admin
+After=syslog.target
+
+[Service]
+User=metasfresh
+ExecStart=/opt/metasfresh/metasfresh-admin/metasfresh-admin.jar
+SuccessExitStatus=143
+PIDFile=/opt/metasfresh/metasfresh-admin/metasfresh-admin/metasfresh-admin.service.pid
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,34 @@
+{
+
+ "priceSystemName" : "PriceSystem",
+ "priceListName" : "PriceList",
+ "priceListVersionName" : "PriceListVersion",
+
+
+ "attributeName1" : "Attribute1",
+ "attributeName2" : "Attribute2",
+ "attributeName3" : "Attribute3",
+ "attributeValue1" : "AttributeValue1",
+ "attributeValue2" : "AttributeValue2",
+ "attributeSetName1" : "AttributeSet1",
+ "attributeSetName2" : "AttributeSet2",
+
+
+ "productCategoryName1" : "ProductCategory1",
+ "productCategoryName2" : "ProductCategory2",
+
+
+ "productForPacking1" : "ProductPackingMaterial1",
+ "productForPacking2" : "ProductPackingMaterial2",
+ "packingInstructionsName1" : "ProductPackingInstructions1",
+ "packingInstructionsName2" : "ProductPackingInstructions2",
+
+
+ "productName1" : "Product1",
+ "productName2" : "Product2",
+ "productName3" : "Product3",
+
+
+ "standardPrice" : 123.456,
+ "taxCategory" : "Regular Tax Rate 19% (Germany)"
+}

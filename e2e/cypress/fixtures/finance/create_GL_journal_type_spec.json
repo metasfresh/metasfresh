@@ -1,0 +1,10 @@
+{
+    "description": "test",
+    "category": "Standard",
+    "postingType1": "Statistical",
+    "currency": "CHF",
+    "docType": "Journal",
+    "postingType2": "Budget",
+    "postingType3": "Ist (Jahr Ende)",
+    "postingType4": "Statistical"
+}

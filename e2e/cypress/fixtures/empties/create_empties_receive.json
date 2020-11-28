@@ -1,0 +1,12 @@
+{
+    "businessPartnerName" : "Test Lieferant 1",
+    "productQuantity" : 222,
+    "documentType" : "Leergutrücknahme",
+
+    "priceSystemName" : "PriceSystem",
+    "priceListName" : "PriceList",
+    "priceListVersionName" : "PriceListVersion",
+
+    "productCategory" : "ProductCategory",
+    "productName" : "Product"
+}

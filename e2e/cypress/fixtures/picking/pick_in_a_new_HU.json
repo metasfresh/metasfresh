@@ -1,0 +1,19 @@
+{
+  "priceSystemName": "PriceSystem",
+  "priceListName": "PriceList",
+  "priceListVersionName": "PriceListVersion",
+  "discountSchemaName": "DiscountSchema",
+
+  "productForPackingMaterial": "ProductPackingMaterial",
+  "packingInstructionsName": "ProductPackingInstructions",
+
+  "productCategoryName": "ProductCategoryName",
+  "productName": "Product",
+
+  "bPartnerName": "BPartner",
+
+  "productQty": 100,
+  "soProductQuantity": 20,
+  "expectedProductQtyAfterPicking": 80,
+  "locatorId": "Hauptlager_StdWarehouse_Hauptlager_0_0_0"
+}

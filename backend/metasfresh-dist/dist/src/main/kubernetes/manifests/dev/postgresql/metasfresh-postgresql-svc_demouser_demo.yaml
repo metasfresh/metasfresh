@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "metasfresh-postgresql-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-postgresql
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+  namespace: default
+spec:
+  ports:
+  - name: db
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+    nodePort: 30040
+  selector:
+    de.metas.deployment.name: "metasfresh-postgresql-mf15-dev"
+  sessionAffinity: None
+# use nodeport such that we can also use postgresql as part of the developement environment
+# see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: NodePort

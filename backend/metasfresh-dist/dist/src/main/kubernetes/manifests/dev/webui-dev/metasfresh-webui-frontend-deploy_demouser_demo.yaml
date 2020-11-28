@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "metasfresh-webui-frontend-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-webui-frontend
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-webui-frontend-mf15-dev"
+  namespace: "default"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      de.metas.deployment.type: metasfresh-webui-frontend
+      de.metas.deployment.user: "mf15"
+      de.metas.deployment.stage: "dev"
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-webui-frontend
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+    spec:
+      containers:
+      - env:
+        # Set the base URL for the webui-api server as seen from the client web browser.
+        # Note that the webui-frontend itself does *not* need to be able to access the API;
+        # It merely communicates this URL to your web browser which accesses the API directly. 
+        - name: WEBUI_API_CLIENT_PROTOCOL
+          value: "http"
+        - name: WEBUI_API_CLIENT_HOST
+          value: "localhost"
+        - name: WEBUI_API_CLIENT_PORT
+          value: '8080'
+
+         # Set the base URL for the webui-api server as seen from the frontend http server.
+         # I found the IP 10.0.2.202 using ipconfig on my host machine/desktop; yours might be different
+        - name: WEBUI_API_PROXYPASS_PROTOCOL
+          value: "http"
+        - name: WEBUI_API_PROXYPASS_HOST
+          value: "10.0.2.202"
+        - name: WEBUI_API_PROXYPASS_PORT
+          value: '8080'  
+
+        # Set the base URL for the msv3-server as seen from the frontend http server.
+        # I found the IP 10.0.2.202 using ipconfig on my host machine/desktop; yours might be different
+        - name: MSV3_API_PROXYPASS_PROTOCOL
+          value: "http"
+        - name: MSV3_API_PROXYPASS_HOST
+          value: "10.0.2.202"
+        - name: MSV3_API_PROXYPASS_PORT
+          value: '8080' 
+
+        - name: DEBUG_CAT_NGINX_CONF_FILE
+          value: 'y' # the default, is 'n'; everything besides 'n' makes the startup script cat the nginx config file
+
+        name: webui
+        image: docker.metasfresh.com/metasfresh/metasfresh-webui-dev:master_LATEST
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources: {}
+        volumeMounts:
+        # - mountPath: /etc/localtime
+        #   name: host-localtime
+        #   readOnly: true
+        # - mountPath: /etc/timezone
+        #   name: host-timezone
+        #   readOnly: true
+      restartPolicy: Always
+      volumes:
+      # - name: host-localtime
+      #   hostPath:
+      #     path: /etc/localtime
+      # - name: host-timezone
+      #   hostPath:
+      #     path: /etc/timezone

@@ -1,0 +1,8 @@
+module.exports = {
+  FRONTEND_URL: 'http://localhost:3000',
+  API_URL: 'http://localhost:8080/rest/api',
+  WS_URL: 'http://localhost:8080/stomp',
+  PLUGIN_API_URL: 'http://localhost:9192/',
+  username: 'metasfresh',
+  password: '<your-pw>',
+};

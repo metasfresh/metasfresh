@@ -1,0 +1,19 @@
+{
+  "loggedIn": true,
+  "username": "dev",
+  "fullname": "branchtest Support",
+  "email": "dev",
+  "rolename": "WebUI",
+  "language": {
+    "key": "en_US",
+    "caption": "English"
+  },
+  "locale": {
+    "numberDecimalSeparator": ".",
+    "numberGroupingSeparator": ","
+  },
+  "timeZone": "Europe/Berlin",
+  "websocketEndpoint": "/userSession/1",
+  "userProfileWindowId": "0",
+  "userProfileId": 1
+}

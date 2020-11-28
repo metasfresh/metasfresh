@@ -1,0 +1,49 @@
+{
+  "general_comment1": "A sortof lazy ad-hoc dictionary for language specific terms that are used in many different places, and are not provided by the APIs messages endpoint",
+
+  "docActionComplete": "Complete",
+  "de_DE__docActionComplete": "Fertigstellen",
+
+  "docActionVoid": "Void",
+  "de_DE__docActionVoid": "Löschen",
+
+  "docActionReactivate": "Re-activate",
+  "de_DE__docActionReactivate": "Reaktivieren",
+
+  "docActionReverse": "Reverse - Correct",
+  "de_DE__docActionReverse": "Storno",
+
+
+
+  "docStatusCompleted": "Completed",
+  "de_DE__docStatusCompleted": "Fertiggestellt",
+
+  "docStatusInProgress": "In Progress",
+  "de_DE__docStatusInProgress": "In Verarbeitung",
+
+  "docStatusDrafted": "Drafted",
+  "de_DE__docStatusDrafted": "Entwurf",
+
+  "docStatusReversed": "Reversed",
+  "de_DE__docStatusReversed": "Rückgängig",
+
+  "docStatusVoided": "Voided",
+  "de_DE__docStatusVoided": "Voided",
+
+
+  "defaultTaxCategory_comment": "used in tax tests and also in places where we just need to set some tax rate",
+  "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",
+  "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)",
+
+  "c_uom_EA": "Each",
+  "de_DE__c_uom_EA": "Stück",
+
+  "c_uom_KGM": "Kilogram",
+  "de_DE__c_uom_KGM": "Kilogramm",
+
+  "c_country_CH": "Switzerland",
+  "de_DE__c_country_CH": "Schweiz",
+
+  "S_Resource_MFG_Type_Plant": "Plant",
+  "de_DE__S_Resource_MFG_Type_Plant": "Produktionsstätte"
+}

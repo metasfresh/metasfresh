@@ -1,0 +1,20 @@
+{
+  "name": "ListAttributeName",
+  "description": "TestAttribute1",
+  "value": "TestAttribute1",
+  "attributeValueType": "List",
+  "isInstanceAttribute": true,
+  "isPricingRelevant": true,
+  "isStorageRelevant": true,
+  "isAttrDocumentRelevant": true,
+  "attributeValues": [
+    {
+      "name": "Attribute1",
+      "value": "Attribute1"
+    },
+    {
+      "name": "Attribute2",
+      "value": "Attribute2"
+    }
+  ]
+}

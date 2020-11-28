@@ -1,0 +1,19 @@
+{
+    "mainProductName" : "BOM1-MainProduct",
+    "productCategoryName" : "ProductCategoryName",
+    "customerName" : "CustomerTest",
+    "priceSystemName" : "PriceSystem",
+    "warehouseName" : "Warehouse",
+
+    "plantName" : "MFG Resource",
+    "priceListName" : "PriceList",
+
+    "componentProductName" : "BOM1-ComponentProduct",
+
+    "secondComponentProductName" : "BOM2-ComponentProduct",
+
+    "firstBomName" : "BOM1",
+    "secondBomName" : "BOM2",
+
+    "poReference": "material-dispo"
+}

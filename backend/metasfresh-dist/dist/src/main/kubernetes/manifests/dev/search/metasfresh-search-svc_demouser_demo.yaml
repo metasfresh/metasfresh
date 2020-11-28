@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "metasfresh-search-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-search
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+spec:
+  ports:
+  - name: elasticsearch-rest
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+    nodePort: 30070
+  - name: elasticsearch
+    port: 9300
+    protocol: TCP
+    targetPort: 9300
+    nodePort: 30071
+  selector:
+    de.metas.deployment.type: metasfresh-search
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+  sessionAffinity: None
+# use nodeport such that we can also use metasfresh-search as part of the developement environment
+# see https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: NodePort

@@ -1,0 +1,8 @@
+{
+   "customer1Name" : "Customer1",
+   "customer2Name" : "Customer2",
+   "salesOrder1Name" : "SalesOrder1",
+   "bPartnerRelationName" : "BPartnerRelation",
+   "priceListName" : "Testpreisliste Kunden",
+   "discountSchemaName" : "DiscountSchemaTest"
+}

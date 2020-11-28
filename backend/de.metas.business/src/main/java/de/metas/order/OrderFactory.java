@@ -1,0 +1,327 @@
+package de.metas.order;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+import org.slf4j.MDC.MDCCloseable;
+
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.lang.SOTrx;
+import de.metas.logging.TableRecordMDC;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2017 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/**
+ * Factory class used to create(and complete) sales or purchase orders.
+ * <p>
+ * This is a general purpose class to be used by other more specific factories.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ */
+public class OrderFactory
+{
+	public static final OrderFactory newPurchaseOrder()
+	{
+		return new OrderFactory()
+				.soTrx(SOTrx.PURCHASE);
+	}
+
+	public static final OrderFactory newSalesOrder()
+	{
+		return new OrderFactory()
+				.soTrx(SOTrx.SALES);
+	}
+
+	private final I_C_Order order;
+	private boolean built = false;
+
+	private final List<OrderLineBuilder> orderLineBuilders = new ArrayList<>();
+
+	private OrderFactory()
+	{
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setDocStatus(DocStatus.Drafted.getCode());
+		order.setDocAction(IDocument.ACTION_Complete);
+	}
+
+	public org.compiere.model.I_C_Order createAndComplete()
+	{
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			createDraft();
+
+			Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+			return order;
+		}
+	}
+
+	public I_C_Order createDraft()
+	{
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			if (orderLineBuilders.isEmpty())
+			{
+				throw new AdempiereException("no lines");
+			}
+
+			createDraftOrderHeader();
+
+			orderLineBuilders.forEach(OrderLineBuilder::build);
+
+			return order;
+		}
+	}
+
+	public I_C_Order createDraftOrderHeader()
+	{
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			assertNotBuilt();
+			built = true;
+
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
+			if (order.getC_DocTypeTarget_ID() <= 0)
+			{
+				orderBL.setDocTypeTargetId(order);
+			}
+
+			if (order.getBill_BPartner_ID() <= 0)
+			{
+				orderBL.setBillLocation(order);
+			}
+			save(order);
+
+			return order;
+		}
+	}
+
+	private void assertNotBuilt()
+	{
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			if (built)
+			{
+				throw new AdempiereException("Already built: " + this);
+			}
+		}
+	}
+
+	/* package */I_C_Order getC_Order()
+	{
+		return order;
+	}
+
+	public OrderLineBuilder newOrderLine()
+	{
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			final OrderLineBuilder orderLineBuilder = new OrderLineBuilder(this);
+			orderLineBuilders.add(orderLineBuilder);
+			return orderLineBuilder;
+		}
+	}
+
+	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final UomId uomId)
+	{
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			return orderLineBuilders.stream()
+					.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
+					.findFirst();
+		}
+	}
+
+	private OrderFactory soTrx(@NonNull final SOTrx soTrx)
+	{
+		order.setIsSOTrx(soTrx.toBoolean());
+		return this;
+	}
+
+	public OrderFactory deliveryRule(final String deliveryRule)
+	{
+		assertNotBuilt();
+		order.setDeliveryRule(deliveryRule);
+		return this;
+	}
+
+	public OrderFactory deliveryViaRule(final String deliveryViaRule)
+	{
+		assertNotBuilt();
+		order.setDeliveryViaRule(deliveryViaRule);
+		return this;
+	}
+
+	public OrderFactory shipperId(final int shipperId)
+	{
+		assertNotBuilt();
+		order.setM_Shipper_ID(shipperId);
+		return this;
+	}
+
+	public OrderFactory freightCostRule(final String freightCostRule)
+	{
+		assertNotBuilt();
+		order.setFreightCostRule(freightCostRule);
+		return this;
+	}
+
+	public OrderFactory paymentRule(final String paymentRule)
+	{
+		assertNotBuilt();
+		order.setPaymentRule(paymentRule);
+		return this;
+	}
+
+	public OrderFactory paymentTermId(final int paymentTermId)
+	{
+		assertNotBuilt();
+		order.setC_PaymentTerm_ID(paymentTermId);
+		return this;
+	}
+
+	public OrderFactory invoiceRule(final String invoiceRule)
+	{
+		assertNotBuilt();
+		order.setInvoiceRule(invoiceRule);
+		return this;
+	}
+
+	public OrderFactory docType(final int docTypeTargetId)
+	{
+		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		{
+			assertNotBuilt();
+
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
+			orderBL.setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
+
+			return this;
+		}
+	}
+
+	public OrderFactory warehouseId(final int warehouseId)
+	{
+		assertNotBuilt();
+		order.setM_Warehouse_ID(warehouseId);
+		return this;
+	}
+
+	public OrderFactory orgId(final int orgId)
+	{
+		assertNotBuilt();
+		order.setAD_Org_ID(orgId);
+		return this;
+	}
+
+	public OrderFactory dateOrdered(final LocalDate dateOrdered)
+	{
+		assertNotBuilt();
+		order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
+		return this;
+	}
+
+	public OrderFactory datePromised(final ZonedDateTime datePromised)
+	{
+		assertNotBuilt();
+		order.setDatePromised(TimeUtil.asTimestamp(datePromised));
+		return this;
+	}
+
+	public OrderFactory shipBPartner(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId, final int contactId)
+	{
+		assertNotBuilt();
+		order.setC_BPartner_ID(bpartnerId.getRepoId());
+		order.setC_BPartner_Location_ID(bpartnerLocationId);
+		order.setAD_User_ID(contactId);
+		return this;
+	}
+
+	public OrderFactory shipBPartner(final BPartnerId bpartnerId)
+	{
+		final int bpartnerLocationId = -1;
+		final int contactId = -1;
+		shipBPartner(bpartnerId, bpartnerLocationId, contactId);
+		return this;
+	}
+
+	public OrderFactory billBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
+	{
+		assertNotBuilt();
+		order.setBill_BPartner_ID(bpartnerId);
+		order.setBill_Location_ID(bpartnerLocationId);
+		order.setBill_User_ID(contactId);
+		return this;
+	}
+
+	public OrderFactory dropShipBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
+	{
+		assertNotBuilt();
+		order.setDropShip_BPartner_ID(bpartnerId);
+		order.setDropShip_Location_ID(bpartnerLocationId);
+		order.setDropShip_User_ID(contactId);
+		return this;
+	}
+
+	public OrderFactory handOverBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
+	{
+		assertNotBuilt();
+		order.setHandOver_Partner_ID(bpartnerId);
+		order.setHandOver_Location_ID(bpartnerLocationId);
+		order.setHandOver_User_ID(contactId);
+		order.setIsUseHandOver_Location(bpartnerLocationId > 0);
+		return this;
+	}
+
+	public OrderFactory pricingSystemId(final int pricingSystemId)
+	{
+		assertNotBuilt();
+		order.setM_PricingSystem_ID(pricingSystemId);
+		return this;
+	}
+
+	public OrderFactory poReference(final String poReference)
+	{
+		assertNotBuilt();
+		order.setPOReference(poReference);
+		return this;
+	}
+}

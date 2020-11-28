@@ -1,0 +1,10 @@
+{
+  "name": "Test TaxRate",
+  "isDefault": false,
+  "validFrom": "01/01/2019",
+  "requiresTaxCertificate": false,
+  "rate": 10,
+  "country": "Germany - Deutschland",
+  "countryTo": "Germany - Deutschland",
+  "isToEULocation": true
+}

@@ -1,0 +1,58 @@
+{
+  "data1": {
+    "windowId": "143",
+    "viewId": "143-F",
+    "headerProperties": {
+      "entries": []
+    },
+    "size": 1,
+    "orderBy": [
+      {
+        "fieldName": "DateOrdered",
+        "ascending": false
+      },
+      {
+        "fieldName": "C_Order_ID",
+        "ascending": false
+      }
+    ],
+    "queryLimit": 5000,
+    "type": "143"
+  },
+  "headerProperties1": {
+    "groups": [
+      {
+        "entries": [
+          {
+            "caption": "Net (Approved For Invoicing)",
+            "value": "1,270.00€"
+          },
+          {
+            "caption": "Trading Unit",
+            "value": "70.00€"
+          },
+          {
+            "caption": "Goods",
+            "value": "1,200.00€"
+          }
+        ]
+      },
+      {
+        "entries": [
+          {
+            "caption": "Net (Not Approved For Invoicing)",
+            "value": "400.00€"
+          },
+          {
+            "caption": "Trading Unit",
+            "value": "0.00€"
+          },
+          {
+            "caption": "Goods",
+            "value": "400.00€"
+          }
+        ]
+      }
+    ]
+  }
+}

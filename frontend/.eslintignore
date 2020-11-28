@@ -1,0 +1,30 @@
+node_modules
+npm-debug.log*
+.DS_Store
+dist
+.idea
+/config.js
+/config.js.template.*
+/plugins.js
+/static
+.vscode
+.history
+
+# Dynamic storybook configuration file
+.storybook
+
+# Coverage report
+.nyc_output
+coverage
+
+package-lock.json
+
+snapshots.js
+
+plugins
+docker
+ansible
+test_setup 
+src/__tests__
+cypress.json
+yarn-error.log

@@ -1,0 +1,10 @@
+{
+    "boilerPlateName1": "TestBoilerPlate",
+    "subject1": "TestSubject1",
+    "textSnippet1": "This is a text snippet1",
+    "changedText": "changed text snippet1",
+    "boilerPlateName2": "TestBoilerPlate2",
+    "subject2": "TestSubject2",
+    "textSnippet2": "This is a text snippet2",
+    "jasperProcess": "Information Ausschreibung"
+}

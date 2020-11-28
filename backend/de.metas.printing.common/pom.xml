@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.printing</groupId>
+	<artifactId>de.metas.printing.common</artifactId>
+	
+	<description>Printing related code that this used by both metasfresh and the ESB</description>
+
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>de.metas.printing.api</module>
+		<module>de.metas.printing.esb.base</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<!-- check our projects against the java1.6-API
+					 see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
+			<!-- 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>animal-sniffer-maven-plugin</artifactId>
+				<version>1.11</version>
+				<executions>
+					<execution>
+						<id>check_against-java1.6-API</id>
+						<phase>test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<signature>
+								<groupId>org.codehaus.mojo.signature</groupId>
+								<artifactId>java16</artifactId>
+								<version>1.1</version>
+							</signature>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			-->
+		</plugins>
+		
+		
+	</build>
+	
+</project>

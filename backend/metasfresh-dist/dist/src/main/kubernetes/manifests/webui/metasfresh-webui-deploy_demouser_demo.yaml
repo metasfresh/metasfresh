@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "metasfresh-webui-mf15-dev"
+  labels:
+    de.metas.deployment.type: metasfresh-webui
+    de.metas.deployment.user: "mf15"
+    de.metas.deployment.stage: "dev"
+    de.metas.deployment.name: "metasfresh-webui-mf15-dev"
+  namespace: "default"
+# can be created with kubectl create namespace demo"
+#  namespace: "demo"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        de.metas.deployment.type: metasfresh-webui
+        de.metas.deployment.user: "mf15"
+        de.metas.deployment.stage: "dev"
+    spec:
+      containers:
+# webui
+      - env:
+        - name: WEBUI_API_PROTOCOL
+          value: "https"
+        - name: WEBUI_API_HOST
+          value: "demouser-demo.metasfresh.com"
+        - name: WEBUI_API_PORT
+        # our ingress controller is made available via nodeport 32130
+          value: '32130'
+        #  value: '443'         
+        name: webui
+        image: docker.metasfresh.com/metasfresh/metasfresh-webui-dev:master_LATEST
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      restartPolicy: Always
+      initContainers:
+        - name: init-wait-for-api
+          image: busybox
+          command: ['sh', '-c', 'until nslookup metasfresh-core-stack-mf15-dev; do echo waiting for metasfresh-core-stack-mf15-dev; sleep 2; done;']
+      volumes:
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone

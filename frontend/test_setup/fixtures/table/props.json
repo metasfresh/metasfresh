@@ -1,0 +1,42 @@
+ {
+  "props1": {
+    "entity": "documentView",
+    "readonly": true,
+    "supportOpenRecord": true,
+    "mainTable": true,
+    "sort": null,
+    "tabIndex": 0,
+    "disableOnClickOutside": false,
+    "limitOnClickOutside": false,
+    "queryLimitHit": false,
+    "openIncludedViewOnSelect": null,
+    "blurOnIncludedView": null,
+    "focusOnFieldName": null,
+    "toggleState": "grid",
+    "spinnerVisible": false,
+    "orderBy": [
+      {
+        "fieldName": "DateOrdered",
+        "ascending": false
+      },
+      {
+        "fieldName": "C_Order_ID",
+        "ascending": false
+      }
+    ],
+    "rowEdited": false,
+    "size": 143,
+    "pageLength": 20,
+    "isIncluded": false,
+    "autofocus": true,
+    "open": true,
+    "page": 1,
+    "inBackground": false,
+    "disablePaginationShortcuts": false, 
+    "isModal": false,
+    "hasIncluded": null,
+    "windowId": "143",
+    "viewId": "143-B",
+    "rowRefs": {}
+  }
+}

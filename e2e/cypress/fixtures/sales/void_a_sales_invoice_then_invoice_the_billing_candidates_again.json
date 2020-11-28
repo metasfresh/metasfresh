@@ -1,0 +1,10 @@
+{
+  "businessPartnerName": "Test Lieferant 1",
+  "productName": "Convenience Salat 250g",
+  "originalQuantity": 200,
+  "shipmentNotificationInboxText": "Lieferung [number] für Partner ${businessPartnerName} wurde erstellt.",
+  "shipmentNotificationModalText": "Created: 1 WorkPackage Queue",
+  "shipmentQuantityTypeOption": "Quantity to deliver",
+  "generateInvoicesNotificationModalText": "Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.",
+  "salesInvoiceDocumentType": "Sales Invoice"
+}

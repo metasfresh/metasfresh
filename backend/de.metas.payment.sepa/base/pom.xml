@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<groupId>de.metas.payment.sepa</groupId>
+		<artifactId>de.metas.payment.sepa</artifactId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>de.metas.payment.sepa.base</artifactId>
+	<packaging>jar</packaging>
+
+	<description>SEPA Payments - Core</description>
+
+	<properties>
+		<migration-sql-basedir></migration-sql-basedir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.payment.sepa</groupId>
+			<artifactId>de.metas.payment.sepa.schema.pain_001_01_03_ch_02</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.sepa</groupId>
+			<artifactId>de.metas.payment.sepa.schema.pain_008_003_02</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<!-- payment.esr contains e.g. IBPBankAccountBL which is also used in payment.sepa -->
+		<dependency>
+			<groupId>de.metas.payment.esr</groupId>
+			<artifactId>de.metas.payment.esr</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.document</groupId>
+			<artifactId>de.metas.document.refid</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+</project>

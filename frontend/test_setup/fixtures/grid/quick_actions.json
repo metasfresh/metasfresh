@@ -1,0 +1,35 @@
+{
+  "actions": [
+    {
+      "processId": "ADP_541010",
+      "caption": "Extend contract",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions",
+        "SingleDocumentActionsMenu",
+        "ViewActionsMenu"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "Only one item shall be selected",
+      "evaluateDuration": "175.7 μs",
+      "internalName": "Extend_contract"
+    },
+    {
+      "processId": "ADP_540911",
+      "caption": "Fact Account Repost",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions",
+        "ViewActionsMenu"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "No items selected",
+      "evaluateDuration": "331.8 μs",
+      "internalName": "WEBUI_Fact_Acct_Repost_ViewRows"
+    }
+  ]
+}

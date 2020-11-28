@@ -1,0 +1,1094 @@
+{
+  "Base64@0.2.1": {
+    "licenses": "WTFPL",
+    "repository": "https://github.com/davidchambers/Base64.js",
+    "publisher": "David Chambers",
+    "email": "dc@davidchambers.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/Base64/LICENSE"
+  },
+  "abbrev@1.0.9": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/abbrev-js",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/abbrev/LICENSE"
+  },
+  "after@0.8.1": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/Raynos/after",
+    "publisher": "Raynos",
+    "email": "raynos2@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/after/LICENCE"
+  },
+  "amdefine@1.0.1": {
+    "licenses": "BSD-3-Clause OR MIT",
+    "repository": "https://github.com/jrburke/amdefine",
+    "publisher": "James Burke",
+    "email": "jrburke@gmail.com",
+    "url": "http://github.com/jrburke",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/amdefine/LICENSE"
+  },
+  "anymatch@1.3.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/es128/anymatch",
+    "publisher": "Elan Shanker",
+    "url": "http://github.com/es128",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/anymatch/LICENSE"
+  },
+  "aproba@1.0.4": {
+    "licenses": "ISC",
+    "repository": "https://github.com/iarna/aproba",
+    "publisher": "Rebecca Turner",
+    "email": "me@re-becca.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/aproba/LICENSE"
+  },
+  "are-we-there-yet@1.1.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/iarna/are-we-there-yet",
+    "publisher": "Rebecca Turner",
+    "url": "http://re-becca.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/are-we-there-yet/LICENSE"
+  },
+  "arraybuffer.slice@0.0.6": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/rase-/arraybuffer.slice"
+  },
+  "aws-sign2@0.6.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/mikeal/aws-sign",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "url": "http://www.futurealoof.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/aws-sign2/LICENSE"
+  },
+  "babel-plugin-transform-regenerator@6.16.1": {
+    "licenses": "BSD",
+    "repository": "https://github.com/babel/babel/tree/master/packages/babel-plugin-transform-regenerator",
+    "publisher": "Ben Newman",
+    "email": "bn@cs.stanford.edu",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/babel-plugin-transform-regenerator/LICENSE"
+  },
+  "base64id@0.1.0": {
+    "licenses": "UNKNOWN",
+    "repository": "https://github.com/faeldt/base64id",
+    "publisher": "Kristian Faeldt",
+    "email": "faeldt_kristian@cyberagent.co.jp"
+  },
+  "bcrypt-pbkdf@1.0.0": {
+    "licenses": "BSD-4-Clause"
+  },
+  "better-assert@1.0.2": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/visionmedia/better-assert",
+    "publisher": "TJ Holowaychuk",
+    "email": "tj@vision-media.ca"
+  },
+  "blob@0.0.4": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/rase-/blob"
+  },
+  "block-stream@0.0.9": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/block-stream",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/block-stream/LICENSE"
+  },
+  "boom@2.10.1": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/hapijs/boom",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/boom/LICENSE"
+  },
+  "bser@1.0.2": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/facebook/watchman",
+    "publisher": "Wez Furlong",
+    "email": "wez@fb.com",
+    "url": "http://wezfurlong.org"
+  },
+  "callsite@1.0.0": {
+    "licenses": "MIT*",
+    "publisher": "TJ Holowaychuk",
+    "email": "tj@vision-media.ca"
+  },
+  "caniuse-db@1.0.30000587": {
+    "licenses": "CC-BY-4.0",
+    "repository": "https://github.com/Fyrd/caniuse",
+    "publisher": "Alexis Deveria",
+    "email": "adeveria@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/caniuse-db/LICENSE"
+  },
+  "caseless@0.11.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/mikeal/caseless",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/caseless/LICENSE"
+  },
+  "cli-width@1.1.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/knownasilya/cli-width",
+    "publisher": "Ilya Radchenko",
+    "email": "ilya@burstcreations.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/cli-width/LICENSE"
+  },
+  "cliui@2.1.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/bcoe/cliui",
+    "publisher": "Ben Coe",
+    "email": "ben@npmjs.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/cliui/LICENSE.txt"
+  },
+  "component-bind@1.0.0": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/component/bind"
+  },
+  "component-emitter@1.1.2": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/component/emitter"
+  },
+  "component-inherit@0.0.3": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/component/inherit"
+  },
+  "console-control-strings@1.1.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/iarna/console-control-strings",
+    "publisher": "Rebecca Turner",
+    "email": "me@re-becca.org",
+    "url": "http://re-becca.org/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/console-control-strings/LICENSE"
+  },
+  "cryptiles@2.0.5": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/hapijs/cryptiles",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/cryptiles/LICENSE"
+  },
+  "debug@0.7.4": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/visionmedia/debug",
+    "publisher": "TJ Holowaychuk",
+    "email": "tj@vision-media.ca"
+  },
+  "disposables@1.0.1": {
+    "licenses": "Apache License, Version 2.0",
+    "repository": "https://github.com/gaearon/disposables",
+    "publisher": "Cloud Programmability Team",
+    "url": "https://github.com/Reactive-Extensions/RxJS/blob/master/authors.txt",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/disposables/LICENSE"
+  },
+  "doctrine@0.7.2": {
+    "licenses": "BSD",
+    "repository": "https://github.com/eslint/doctrine",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/doctrine/LICENSE.esprima"
+  },
+  "escope@3.6.0": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/estools/escope",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/escope/LICENSE.BSD"
+  },
+  "espree@2.2.5": {
+    "licenses": "BSD",
+    "repository": "https://github.com/eslint/espree",
+    "publisher": "Nicholas C. Zakas",
+    "email": "nicholas+npm@nczconsulting.com"
+  },
+  "esprima-fb@15001.1.0-dev-harmony-fb": {
+    "licenses": "BSD",
+    "repository": "https://github.com/facebook/esprima",
+    "publisher": "Ariya Hidayat",
+    "email": "ariya.hidayat@gmail.com"
+  },
+  "esprima-fb@15001.1001.0-dev-harmony-fb": {
+    "licenses": "BSD",
+    "repository": "https://github.com/facebook/esprima",
+    "publisher": "Ariya Hidayat",
+    "email": "ariya.hidayat@gmail.com"
+  },
+  "esprima@2.7.3": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/jquery/esprima",
+    "publisher": "Ariya Hidayat",
+    "email": "ariya.hidayat@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/js-yaml/node_modules/esprima/LICENSE.BSD"
+  },
+  "esprima@3.1.1": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/jquery/esprima",
+    "publisher": "Ariya Hidayat",
+    "email": "ariya.hidayat@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/commoner/node_modules/esprima/LICENSE.BSD"
+  },
+  "esrecurse@4.1.0": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/estools/esrecurse"
+  },
+  "estraverse@4.1.1": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/estools/estraverse",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/esrecurse/node_modules/estraverse/LICENSE.BSD"
+  },
+  "estraverse@4.2.0": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/estools/estraverse",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/estraverse/LICENSE.BSD"
+  },
+  "esutils@1.1.6": {
+    "licenses": "BSD",
+    "repository": "https://github.com/Constellation/esutils",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/doctrine/node_modules/esutils/LICENSE.BSD"
+  },
+  "esutils@2.0.2": {
+    "licenses": "BSD",
+    "repository": "https://github.com/estools/esutils",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/esutils/LICENSE.BSD"
+  },
+  "extsprintf@1.0.2": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/davepacheco/node-extsprintf",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/extsprintf/LICENSE"
+  },
+  "fb-watchman@1.9.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/facebook/watchman",
+    "publisher": "Wez Furlong",
+    "email": "wez@fb.com",
+    "url": "http://wezfurlong.org"
+  },
+  "fbjs@0.8.6": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/facebook/fbjs",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fbjs/LICENSE"
+  },
+  "forever-agent@0.6.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/mikeal/forever-agent",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "url": "http://www.futurealoof.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/forever-agent/LICENSE"
+  },
+  "fs.realpath@1.0.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/fs.realpath",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fs.realpath/LICENSE"
+  },
+  "fstream-ignore@1.0.5": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/fstream-ignore",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/fstream-ignore/LICENSE"
+  },
+  "fstream@1.0.10": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/fstream",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/fstream/LICENSE"
+  },
+  "gauge@2.6.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/iarna/gauge",
+    "publisher": "Rebecca Turner",
+    "email": "me@re-becca.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/gauge/LICENSE"
+  },
+  "glob-parent@2.0.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/es128/glob-parent",
+    "publisher": "Elan Shanker",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/glob-parent/LICENSE"
+  },
+  "glob@5.0.15": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-glob",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/glob/LICENSE"
+  },
+  "glob@6.0.4": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-glob",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/jspm/node_modules/glob/LICENSE"
+  },
+  "glob@7.0.5": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-glob",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/glob/LICENSE"
+  },
+  "glob@7.1.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-glob",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/globby/node_modules/glob/LICENSE"
+  },
+  "graceful-fs@4.1.11": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-graceful-fs",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/graceful-fs/LICENSE"
+  },
+  "graceful-fs@4.1.4": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-graceful-fs",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/graceful-fs/LICENSE"
+  },
+  "har-validator@2.0.6": {
+    "licenses": "ISC",
+    "repository": "https://github.com/ahmadnassri/har-validator",
+    "publisher": "Ahmad Nassri",
+    "email": "ahmad@ahmadnassri.com",
+    "url": "https://www.ahmadnassri.com/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/har-validator/LICENSE"
+  },
+  "has-unicode@2.0.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/iarna/has-unicode",
+    "publisher": "Rebecca Turner",
+    "email": "me@re-becca.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/has-unicode/LICENSE"
+  },
+  "hawk@3.1.3": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/hueniverse/hawk",
+    "publisher": "Eran Hammer",
+    "email": "eran@hammer.io",
+    "url": "http://hueniverse.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/hawk/LICENSE"
+  },
+  "hoek@2.16.3": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/hapijs/hoek",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/hoek/LICENSE"
+  },
+  "hoist-non-react-statics@1.2.0": {
+    "licenses": "BSD",
+    "repository": "https://github.com/mridgway/hoist-non-react-statics",
+    "publisher": "Michael Ridgway",
+    "email": "mridgway@yahoo-inc.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/hoist-non-react-statics/LICENSE.md"
+  },
+  "http-browserify@1.7.0": {
+    "licenses": "MIT/X11",
+    "repository": "https://github.com/substack/http-browserify",
+    "publisher": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/http-browserify/LICENSE"
+  },
+  "icss-replace-symbols@1.0.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/css-modules/icss-replace-symbols",
+    "publisher": "Glen Maddern"
+  },
+  "ieee754@1.1.8": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/feross/ieee754",
+    "publisher": "Feross Aboukhadijeh",
+    "email": "feross@feross.org",
+    "url": "http://feross.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/ieee754/LICENSE"
+  },
+  "indexof@0.0.1": {
+    "licenses": "MIT*"
+  },
+  "inflight@1.0.5": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/inflight",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/inflight/LICENSE"
+  },
+  "inflight@1.0.6": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/inflight",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/inflight/LICENSE"
+  },
+  "inherits@2.0.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/inherits",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/util/node_modules/inherits/LICENSE"
+  },
+  "inherits@2.0.3": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/inherits",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/inherits/LICENSE"
+  },
+  "ini@1.3.4": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/ini",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/ini/LICENSE"
+  },
+  "invariant@2.2.2": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/zertosh/invariant",
+    "publisher": "Andres Suarez",
+    "email": "zertosh@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/invariant/LICENSE"
+  },
+  "is-integer@1.0.6": {
+    "licenses": "WTFPL",
+    "repository": "https://github.com/parshap/js-is-integer",
+    "publisher": "Parsha Pourkhomami",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/is-integer/LICENSE"
+  },
+  "isexe@1.1.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/isexe",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/isexe/LICENSE"
+  },
+  "js-base64@2.1.9": {
+    "licenses": "BSD",
+    "repository": "https://github.com/dankogai/js-base64",
+    "publisher": "Dan Kogai",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/js-base64/LICENSE.md"
+  },
+  "jsbn@0.1.0": {
+    "licenses": "BSD",
+    "repository": "https://github.com/andyperlitch/jsbn",
+    "publisher": "Tom Wu",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/jsbn/LICENSE"
+  },
+  "json-schema@0.2.2": {
+    "licenses": [
+      "AFLv2.1",
+      "BSD"
+    ],
+    "repository": "https://github.com/kriszyp/json-schema",
+    "publisher": "Kris Zyp"
+  },
+  "json-schema@0.2.3": {
+    "licenses": [
+      "AFLv2.1",
+      "BSD"
+    ],
+    "repository": "https://github.com/kriszyp/json-schema",
+    "publisher": "Kris Zyp"
+  },
+  "json-stringify-safe@5.0.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/json-stringify-safe",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/json-stringify-safe/LICENSE"
+  },
+  "jsonify@0.0.0": {
+    "licenses": "Public Domain",
+    "repository": "https://github.com/substack/jsonify",
+    "publisher": "Douglas Crockford",
+    "url": "http://crockford.com/"
+  },
+  "jspm@0.17.0-beta.32": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/jspm/jspm",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/jspm/LICENSE"
+  },
+  "makeerror@1.0.11": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/daaku/nodejs-makeerror",
+    "publisher": "Naitik Shah",
+    "email": "n@daaku.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/makeerror/license"
+  },
+  "minimatch@2.0.10": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/minimatch",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/minimatch/LICENSE"
+  },
+  "minimatch@3.0.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/minimatch",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/minimatch/LICENSE"
+  },
+  "minimatch@3.0.3": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/minimatch",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/readdirp/node_modules/minimatch/LICENSE"
+  },
+  "ms@0.7.1": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/guille/ms.js",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/send/node_modules/ms/LICENSE"
+  },
+  "mute-stream@0.0.5": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/mute-stream",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/mute-stream/LICENSE"
+  },
+  "node-pre-gyp@0.6.29": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/mapbox/node-pre-gyp",
+    "publisher": "Dane Springmeyer",
+    "email": "dane@mapbox.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/node-pre-gyp/LICENSE"
+  },
+  "nopt@3.0.6": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/nopt",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/nopt/LICENSE"
+  },
+  "npmlog@3.1.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/npmlog",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/npmlog/LICENSE"
+  },
+  "oauth-sign@0.8.2": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/mikeal/oauth-sign",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "url": "http://www.futurealoof.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/oauth-sign/LICENSE"
+  },
+  "object-component@0.0.3": {
+    "licenses": "MIT*"
+  },
+  "once@1.3.3": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/once",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/end-of-stream/node_modules/once/LICENSE"
+  },
+  "once@1.4.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/once",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/once/LICENSE"
+  },
+  "optimist@0.3.7": {
+    "licenses": "MIT/X11",
+    "repository": "https://github.com/substack/node-optimist",
+    "publisher": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/directory-encoder/node_modules/optimist/LICENSE"
+  },
+  "optimist@0.6.1": {
+    "licenses": "MIT/X11",
+    "repository": "https://github.com/substack/node-optimist",
+    "publisher": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/optimist/LICENSE"
+  },
+  "options@0.0.6": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/einaros/options.js",
+    "publisher": "Einar Otto Stangvik",
+    "email": "einaros@gmail.com",
+    "url": "http://2x.io"
+  },
+  "osenv@0.1.3": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/osenv",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/osenv/LICENSE"
+  },
+  "path-is-inside@1.0.2": {
+    "licenses": "(WTFPL OR MIT)",
+    "repository": "https://github.com/domenic/path-is-inside",
+    "publisher": "Domenic Denicola",
+    "email": "d@domenic.me",
+    "url": "https://domenic.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/path-is-inside/LICENSE.txt"
+  },
+  "pkg-resolve@0.1.14": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/sebastian-software/pkg-resolve",
+    "publisher": "Sebastian Werner",
+    "email": "s.werner@sebastian-software.de",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/pkg-resolve/license"
+  },
+  "postcss-advanced-variables@1.2.2": {
+    "licenses": "CC0-1.0",
+    "repository": "https://github.com/jonathantneal/postcss-advanced-variables",
+    "publisher": "Jonathan Neal",
+    "email": "jonathantneal@hotmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/postcss-advanced-variables/LICENSE.md"
+  },
+  "postcss-modules-extract-imports@1.0.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/css-modules/postcss-modules-extract-imports",
+    "publisher": "Glen Maddern"
+  },
+  "postcss-modules-scope@1.0.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/geelen/postcss-modules-scope",
+    "publisher": "Glen Maddern"
+  },
+  "postcss-modules-values@1.2.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/css-modules/postcss-modules-constants",
+    "publisher": "Glen Maddern"
+  },
+  "postcss-nesting@2.3.1": {
+    "licenses": "CC0-1.0",
+    "repository": "https://github.com/jonathantneal/postcss-nesting",
+    "publisher": "Jonathan Neal",
+    "email": "jonathantneal@hotmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/postcss-nesting/LICENSE.md"
+  },
+  "postcss-partial-import@1.3.0": {
+    "licenses": "CC0-1.0",
+    "repository": "https://github.com/jonathantneal/postcss-partial-import",
+    "publisher": "Jonathan Neal",
+    "email": "jonathantneal@hotmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/postcss-partial-import/LICENSE.md"
+  },
+  "precss@1.4.0": {
+    "licenses": "CC0-1.0",
+    "repository": "https://github.com/jonathantneal/precss",
+    "publisher": "Jonathan Neal",
+    "email": "jonathantneal@hotmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/precss/LICENSE.md"
+  },
+  "qs@6.2.0": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/ljharb/qs",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/express/node_modules/qs/LICENSE"
+  },
+  "qs@6.3.0": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/ljharb/qs",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/qs/LICENSE"
+  },
+  "rc@1.1.6": {
+    "licenses": "(BSD-2-Clause OR MIT OR Apache-2.0)",
+    "repository": "https://github.com/dominictarr/rc",
+    "publisher": "Dominic Tarr",
+    "email": "dominic.tarr@gmail.com",
+    "url": "dominictarr.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/rc/LICENSE.MIT"
+  },
+  "react-addons-css-transition-group@15.3.2": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/facebook/react",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/react-addons-css-transition-group/LICENSE"
+  },
+  "react-addons-update@15.3.2": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/facebook/react",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/react-addons-update/LICENSE"
+  },
+  "react-bootstrap-daterangepicker@3.2.2": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/skratchdot/react-bootstrap-daterangepicker",
+    "publisher": "skratchdot",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/react-bootstrap-daterangepicker/LICENSE.md"
+  },
+  "react-dom@15.3.2": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/facebook/react",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/react-dom/LICENSE"
+  },
+  "react@15.3.2": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/facebook/react",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/react/LICENSE"
+  },
+  "regenerator@0.8.35": {
+    "licenses": "BSD",
+    "repository": "https://github.com/facebook/regenerator",
+    "publisher": "Ben Newman",
+    "email": "bn@cs.stanford.edu",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/regenerator/LICENSE"
+  },
+  "regenerator@0.8.40": {
+    "licenses": "BSD",
+    "repository": "https://github.com/facebook/regenerator",
+    "publisher": "Ben Newman",
+    "email": "bn@cs.stanford.edu",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/babel-eslint/node_modules/regenerator/LICENSE"
+  },
+  "regjsparser@0.1.5": {
+    "licenses": "BSD",
+    "repository": "https://github.com/jviereck/regjsparser",
+    "publisher": "'Julian Viereck'",
+    "email": "julian.viereck@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/regjsparser/LICENSE.BSD"
+  },
+  "request@2.73.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/request/request",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/request/LICENSE"
+  },
+  "request@2.79.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/request/request",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/request/LICENSE"
+  },
+  "rgb@0.1.0": {
+    "licenses": "MIT (http://mootools.net/license.txt)",
+    "repository": "https://github.com/kamicane/rgb",
+    "publisher": "Valerio Proietti",
+    "email": "@kamicane",
+    "url": "http://mad4milk.net"
+  },
+  "rimraf@2.5.3": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/rimraf",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/rimraf/LICENSE"
+  },
+  "rimraf@2.5.4": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/rimraf",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/rimraf/LICENSE"
+  },
+  "ripemd160@0.2.0": {
+    "licenses": "UNKNOWN",
+    "repository": "https://github.com/cryptocoinjs/ripemd160"
+  },
+  "rx-lite@3.1.2": {
+    "licenses": "Apache License, Version 2.0",
+    "repository": "https://github.com/Reactive-Extensions/RxJS",
+    "publisher": "Cloud Programmability Team",
+    "url": "https://github.com/Reactive-Extensions/RxJS/blob/master/authors.txt"
+  },
+  "sax@1.2.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/sax-js",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/sax/LICENSE"
+  },
+  "semver@4.3.6": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/node-semver",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/traceur/node_modules/semver/LICENSE"
+  },
+  "semver@5.2.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/node-semver",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/semver/LICENSE"
+  },
+  "semver@5.3.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/node-semver",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/semver/LICENSE"
+  },
+  "set-blocking@2.0.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/yargs/set-blocking",
+    "publisher": "Ben Coe",
+    "email": "ben@npmjs.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/set-blocking/LICENSE.txt"
+  },
+  "setprototypeof@1.0.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/wesleytodd/setprototypeof",
+    "publisher": "Wes Todd",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/setprototypeof/LICENSE"
+  },
+  "shelljs@0.5.3": {
+    "licenses": "BSD*",
+    "repository": "https://github.com/arturadib/shelljs",
+    "publisher": "Artur Adib",
+    "email": "arturadib@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/shelljs/LICENSE"
+  },
+  "signal-exit@3.0.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/tapjs/signal-exit",
+    "publisher": "Ben Coe",
+    "email": "ben@npmjs.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/signal-exit/LICENSE.txt"
+  },
+  "sntp@1.0.9": {
+    "licenses": "BSD",
+    "repository": "https://github.com/hueniverse/sntp",
+    "publisher": "Eran Hammer",
+    "email": "eran@hammer.io",
+    "url": "http://hueniverse.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/sntp/LICENSE"
+  },
+  "source-map@0.1.32": {
+    "licenses": "BSD",
+    "repository": "https://github.com/mozilla/source-map",
+    "publisher": "Nick Fitzgerald",
+    "email": "nfitzgerald@mozilla.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/source-map-support/node_modules/source-map/LICENSE"
+  },
+  "source-map@0.1.43": {
+    "licenses": "BSD",
+    "repository": "https://github.com/mozilla/source-map",
+    "publisher": "Nick Fitzgerald",
+    "email": "nfitzgerald@mozilla.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/directory-encoder/node_modules/source-map/LICENSE"
+  },
+  "source-map@0.4.4": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/mozilla/source-map",
+    "publisher": "Nick Fitzgerald",
+    "email": "nfitzgerald@mozilla.com"
+  },
+  "source-map@0.5.6": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/mozilla/source-map",
+    "publisher": "Nick Fitzgerald",
+    "email": "nfitzgerald@mozilla.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/source-map/LICENSE"
+  },
+  "sprintf-js@1.0.3": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/alexei/sprintf.js",
+    "publisher": "Alexandru Marasteanu",
+    "email": "hello@alexei.ro",
+    "url": "http://alexei.ro/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/sprintf-js/LICENSE"
+  },
+  "stompjs@2.3.3": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/jmesnil/stomp-websocket",
+    "publisher": "Jeff Mesnil",
+    "email": "jmesnil@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/stompjs/LICENSE.txt"
+  },
+  "stream-cache@0.0.2": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/felixge/node-stream-cache",
+    "publisher": "Felix Geisendörfer",
+    "email": "felix@debuggable.com",
+    "url": "http://debuggable.com/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/stream-cache/License"
+  },
+  "string-hash@1.1.0": {
+    "licenses": "UNKNOWN",
+    "repository": "https://github.com/darkskyapp/string-hash",
+    "publisher": "The Dark Sky Company",
+    "email": "devsupport@darkskyapp.com"
+  },
+  "tar-pack@3.1.4": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/ForbesLindesay/tar-pack",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/tar-pack/LICENSE"
+  },
+  "tar@2.2.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-tar",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/tar/LICENSE"
+  },
+  "tmpl@1.0.4": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/daaku/nodejs-tmpl",
+    "publisher": "Naitik Shah",
+    "email": "n@daaku.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/tmpl/license"
+  },
+  "tough-cookie@2.2.2": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/SalesforceEng/tough-cookie",
+    "publisher": "Jeremy Stashewsky",
+    "email": "jstashewsky@salesforce.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/tough-cookie/LICENSE"
+  },
+  "tough-cookie@2.3.2": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/salesforce/tough-cookie",
+    "publisher": "Jeremy Stashewsky",
+    "email": "jstashewsky@salesforce.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/tough-cookie/LICENSE"
+  },
+  "traceur@0.0.105": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/google/traceur-compiler",
+    "publisher": "Traceur Authors"
+  },
+  "tunnel-agent@0.4.3": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/mikeal/tunnel-agent",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "url": "http://www.futurealoof.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/tunnel-agent/LICENSE"
+  },
+  "tweetnacl@0.13.3": {
+    "licenses": "Public domain",
+    "repository": "https://github.com/dchest/tweetnacl-js",
+    "publisher": "TweetNaCl-js contributors"
+  },
+  "tweetnacl@0.14.3": {
+    "licenses": "SEE LICENSE IN COPYING.txt",
+    "repository": "https://github.com/dchest/tweetnacl-js",
+    "publisher": "TweetNaCl-js contributors",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/tweetnacl/COPYING.txt"
+  },
+  "ua-parser-js@0.7.12": {
+    "licenses": "(GPL-2.0 OR MIT)",
+    "repository": "https://github.com/faisalman/ua-parser-js",
+    "publisher": "Faisal Salman",
+    "email": "fyzlman@gmail.com",
+    "url": "http://faisalman.com"
+  },
+  "uglify-js@2.3.6": {
+    "licenses": "BSD*",
+    "repository": "https://github.com/mishoo/UglifyJS2",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/directory-encoder/node_modules/uglify-js/LICENSE"
+  },
+  "uglify-js@2.7.4": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/mishoo/UglifyJS2",
+    "publisher": "Mihai Bazon",
+    "email": "mihai.bazon@gmail.com",
+    "url": "http://lisperator.net/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/uglify-js/LICENSE"
+  },
+  "uid-number@0.0.6": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/uid-number",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/uid-number/LICENSE"
+  },
+  "verror@1.3.6": {
+    "licenses": "MIT*",
+    "repository": "https://github.com/davepacheco/node-verror",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/verror/LICENSE"
+  },
+  "walker@1.0.7": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/daaku/nodejs-walker",
+    "publisher": "Naitik Shah",
+    "email": "n@daaku.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/walker/LICENSE"
+  },
+  "warning@2.1.0": {
+    "licenses": "BSD-2-Clause",
+    "repository": "https://github.com/r3dm/warning",
+    "publisher": "Berkeley Martinez",
+    "email": "berkeley@r3dm.com",
+    "url": "http://r3dm.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/warning/LICENSE.md"
+  },
+  "watch@0.10.0": {
+    "licenses": "Apache*",
+    "repository": "https://github.com/mikeal/watch",
+    "publisher": "Mikeal Rogers",
+    "email": "mikeal.rogers@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/watch/LICENSE"
+  },
+  "websocket@1.0.23": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/theturtle32/WebSocket-Node",
+    "publisher": "Brian McKelvey",
+    "email": "brian@worlize.com",
+    "url": "https://www.worlize.com/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/websocket/LICENSE"
+  },
+  "which@1.2.12": {
+    "licenses": "ISC",
+    "repository": "https://github.com/isaacs/node-which",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/which/LICENSE"
+  },
+  "wide-align@1.1.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/iarna/wide-align",
+    "publisher": "Rebecca Turner",
+    "email": "me@re-becca.org",
+    "url": "http://re-becca.org/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/fsevents/node_modules/wide-align/LICENSE"
+  },
+  "wordwrap@0.0.2": {
+    "licenses": "MIT/X11",
+    "repository": "https://github.com/substack/node-wordwrap",
+    "publisher": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net"
+  },
+  "wrappy@1.0.2": {
+    "licenses": "ISC",
+    "repository": "https://github.com/npm/wrappy",
+    "publisher": "Isaac Z. Schlueter",
+    "email": "i@izs.me",
+    "url": "http://blog.izs.me/",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/wrappy/LICENSE"
+  },
+  "xml-escape@1.0.0": {
+    "licenses": "MIT License",
+    "repository": "https://github.com/miketheprogrammer/xml-escape",
+    "publisher": "Michael Hernandez - michael.hernandez1988@gmail.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/xml-escape/LICENSE"
+  },
+  "xmldom@0.1.22": {
+    "licenses": "LGPL",
+    "repository": "https://github.com/jindw/xmldom",
+    "publisher": "jindw",
+    "email": "jindw@xidea.org",
+    "url": "http://www.xidea.org",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/xmldom/LICENSE"
+  },
+  "y18n@3.2.1": {
+    "licenses": "ISC",
+    "repository": "https://github.com/yargs/y18n",
+    "publisher": "Ben Coe",
+    "email": "ben@npmjs.com",
+    "licenseFile": "/Applications/MAMP/htdocs/metas/node_modules/y18n/LICENSE"
+  }
+}

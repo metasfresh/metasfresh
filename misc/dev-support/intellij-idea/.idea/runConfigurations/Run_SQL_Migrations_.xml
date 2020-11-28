@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run SQL Migrations " type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="de.metas.migration.cli.workspace_migrate.Main" />
+    <module name="de.metas.migration.cli" />
+    <option name="VM_PARAMETERS" value="-Ddb.url=jdbc:postgresql://localhost:5432/metasfresh" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="de.metas.migration.cli.workspace_migrate.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,12 @@
+{
+  "productName": "Convenience Salat 250g",
+  "productQty": 10,
+  "locatorId": "Hauptlager_StdWarehouse_Hauptlager_0_0_0",
+
+  "businessPartnerName": "Test Lieferant 1",
+
+  "shipmentQuantityTypeOption": "Picked quantity",
+  "shipmentNotificationModalText": "Created: 1 WorkPackage Queue;",
+
+  "warehouseName": "Troubled Quality Warehouse"
+}

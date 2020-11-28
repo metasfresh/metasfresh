@@ -1,0 +1,4 @@
+-- 2020-03-19T11:20:31.376Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_SysConfig SET Value='Y',Updated=TO_TIMESTAMP('2020-03-19 13:20:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541239
+;
