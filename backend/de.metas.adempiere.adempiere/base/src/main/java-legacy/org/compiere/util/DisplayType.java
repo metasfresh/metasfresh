@@ -34,6 +34,8 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 
+import javax.annotation.Nullable;
+
 /**
  *	System Display Types.
  *  <pre>
@@ -745,7 +747,8 @@ public final class DisplayType
 	/**
 	 * Delegates to {@link StringUtils#toBoolean(Object, Boolean)}.
 	 */
-	public static final Boolean toBoolean(final Object value, final Boolean defaultValue)
+	@Nullable
+	public static Boolean toBoolean(final Object value, @Nullable final Boolean defaultValue)
 	{
 		return StringUtils.toBoolean(value, defaultValue);
 	}

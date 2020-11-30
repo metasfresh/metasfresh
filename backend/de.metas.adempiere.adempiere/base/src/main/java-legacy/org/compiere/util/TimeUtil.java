@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
@@ -325,8 +309,7 @@ public class TimeUtil
 				timeCal.get(Calendar.MINUTE),
 				timeCal.get(Calendar.SECOND));
 		cal.set(Calendar.MILLISECOND, 0);
-		final Timestamp retValue = new Timestamp(cal.getTimeInMillis());
-		return retValue;
+		return new Timestamp(cal.getTimeInMillis());
 	}    // getDayTime
 
 	/**
@@ -539,10 +522,6 @@ public class TimeUtil
 
 	/**
 	 * If is the dates are form the same year, returns true
-	 *
-	 * @param one
-	 * @param two
-	 * @return
 	 */
 	static public boolean isSameYear(final Timestamp one, final Timestamp two)
 	{
@@ -595,7 +574,7 @@ public class TimeUtil
 		return (date2.getTime() - date1.getTime()) / MILLI_TO_HOUR;
 	}
 
-	public static int getDaysBetween(@NonNull Instant start, @NonNull Instant end)
+	public static int getDaysBetween(@NonNull final Instant start, @NonNull final Instant end)
 	{
 		// Thanks to http://mattgreencroft.blogspot.com/2014/12/java-8-time-choosing-right-object.html
 		final LocalDate d1 = LocalDateTime.ofInstant(start, de.metas.common.util.time.SystemTime.zoneId()).toLocalDate();
@@ -781,7 +760,6 @@ public class TimeUtil
 	 * Similar to {@link #addDays(Date, int)}, but the given {@code day} may not be {@code null},
 	 * and the return value has the same hours, minutes, records and milliseconds as the given day (i.e. it's not 00:00).
 	 *
-	 * @param day
 	 * @param offset day offset
 	 * @return day + offset
 	 */
@@ -817,10 +795,6 @@ public class TimeUtil
 
 	/**
 	 * Like {@link #addMinutes(Date, int)}, but takes and returns a {@link Timestamp} and not a {@link Date}.
-	 *
-	 * @param dateTime
-	 * @param offset
-	 * @return
 	 */
 	public static Timestamp addMinutes(final Timestamp dateTime, final int offset)
 	{
@@ -888,8 +862,8 @@ public class TimeUtil
 			return formatElapsed(0);
 		}
 
-		final long startTime = start != null ? start.getTime() : System.currentTimeMillis();
-		final long endTime = end != null ? end.getTime() : System.currentTimeMillis();
+		final long startTime = start.getTime();
+		final long endTime = end.getTime();
 		return formatElapsed(endTime - startTime);
 	}
 
@@ -907,7 +881,7 @@ public class TimeUtil
 		return formatElapsed(endTime - startTime);
 	}
 
-	public static String formatElapsed(long elapsedMillis)
+	public static String formatElapsed(final long elapsedMillis)
 	{
 		return formatElapsed(Duration.ofMillis(elapsedMillis));
 	}
@@ -924,7 +898,7 @@ public class TimeUtil
 	}
 
 	// copy-paste of com.google.common.base.Stopwatch.chooseUnit(long)
-	private static TimeUnit chooseUnit(long nanos)
+	private static TimeUnit chooseUnit(final long nanos)
 	{
 		if (DAYS.convert(nanos, NANOSECONDS) > 0)
 		{
@@ -954,7 +928,7 @@ public class TimeUtil
 	}
 
 	// copy-paste of com.google.common.base.Stopwatch.abbreviate(TimeUnit)
-	private static String abbreviate(TimeUnit unit)
+	private static String abbreviate(final TimeUnit unit)
 	{
 		switch (unit)
 		{
@@ -1015,9 +989,6 @@ public class TimeUtil
 	 * <p>
 	 * If <code>dateFrom</code> or <code>dateTo</code> are <code>null</code> it will be considered as infinity.
 	 *
-	 * @param date
-	 * @param dateFrom
-	 * @param dateTo
 	 * @return true if date is between given dates (inclusively)
 	 */
 	public static boolean isBetween(final Date date, final Date dateFrom, final Date dateTo)
@@ -1062,6 +1033,7 @@ public class TimeUtil
 	 * @param ts2 p2
 	 * @return max time
 	 */
+	@Nullable
 	public static <T extends Date> T max(
 			@Nullable final T ts1,
 			@Nullable final T ts2)
@@ -1089,10 +1061,9 @@ public class TimeUtil
 	 * <p>
 	 * If both dates are null then null will be returned.
 	 *
-	 * @param date1
-	 * @param date2
 	 * @return minimum date or null
 	 */
+	@Nullable
 	public static <T extends Date> T min(
 			@Nullable final T date1,
 			@Nullable final T date2)
@@ -1119,7 +1090,10 @@ public class TimeUtil
 		}
 	}
 
-	public static final ZonedDateTime min(final ZonedDateTime date1, final ZonedDateTime date2)
+	@Nullable
+	public static ZonedDateTime min(
+			@Nullable final ZonedDateTime date1,
+			@Nullable final ZonedDateTime date2)
 	{
 		if (date1 == date2)
 		{
@@ -1269,7 +1243,8 @@ public class TimeUtil
 		return cal.getTimeInMillis();
 	}    // trunc
 
-	public static final Timestamp truncToDay(final Date dayTime)
+	@Nullable
+	public static Timestamp truncToDay(@Nullable final Date dayTime)
 	{
 		return dayTime == null ? null : trunc(dayTime, TRUNC_DAY);
 	}
@@ -1277,11 +1252,6 @@ public class TimeUtil
 	/**
 	 * Returns the day border by combining the date part from dateTime and time part form timeSlot. If timeSlot is null, then first milli of the day will be used (if end == false) or last milli of the
 	 * day (if end == true).
-	 *
-	 * @param dateTime
-	 * @param timeSlot
-	 * @param end
-	 * @return
 	 */
 	public static Timestamp getDayBorder(final Timestamp dateTime, final Timestamp timeSlot, final boolean end)
 	{
@@ -1317,6 +1287,7 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1343,9 +1314,7 @@ public class TimeUtil
 
 	public static boolean isDateOrTimeObject(@Nullable final Object value)
 	{
-		return value != null
-				? isDateOrTimeClass(value.getClass())
-				: false;
+		return value != null && isDateOrTimeClass(value.getClass());
 	}
 
 	public static boolean isDateOrTimeClass(@NonNull final Class<?> clazz)
@@ -1371,7 +1340,8 @@ public class TimeUtil
 	/**
 	 * @return date as timestamp or null if the date is null
 	 */
-	public static Timestamp asTimestamp(final Date date)
+	@Nullable
+	public static Timestamp asTimestamp(@Nullable final Date date)
 	{
 		if (date instanceof Timestamp)
 		{
@@ -1383,6 +1353,7 @@ public class TimeUtil
 	/**
 	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
 	 */
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
 		return instant != null ? Timestamp.from(instant) : null;
@@ -1392,12 +1363,14 @@ public class TimeUtil
 	 * NOTE: please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
 	 * Will be deprecated in future but atm we cannot because there are a lot of cases when we have to use it.
 	 */
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
 		final ZoneId timezone = null;
 		return asTimestamp(localDate, timezone);
 	}
 
+	@Nullable
 	public static Timestamp asTimestamp(
 			@Nullable final LocalDate localDate,
 			@Nullable final ZoneId timezone)
@@ -1441,6 +1414,7 @@ public class TimeUtil
 		return Timestamp.from(instant);
 	}
 
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final LocalDateTime localDateTime)
 	{
 		if (localDateTime == null)
@@ -1504,7 +1478,6 @@ public class TimeUtil
 	/**
 	 * Extract the year from a given date.
 	 *
-	 * @param date
 	 * @return the year as int
 	 */
 	static public int getYearFromTimestamp(final Date date)
@@ -1512,16 +1485,13 @@ public class TimeUtil
 		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 
-		final int year = calendar.get(Calendar.YEAR);
-		return year;
+		return calendar.get(Calendar.YEAR);
 	}
 
 	public static String formatDate(final Timestamp date, final String pattern)
 	{
 		final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-		final String s = sdf.format(date);
-
-		return s;
+		return sdf.format(date);
 	}
 
 	/**
@@ -1556,8 +1526,6 @@ public class TimeUtil
 	/**
 	 * Truncates given dates by using the <code>trunc</code> method and then compares them.
 	 *
-	 * @param date1
-	 * @param date2
 	 * @param trunc see TRUNC_* constants
 	 * @return true if the dates are equal after truncating them by <code>trunc</code> method.
 	 */
@@ -1585,7 +1553,8 @@ public class TimeUtil
 	/**
 	 * @return copy of given timestamp or null if the given timestamp was null
 	 */
-	public static final Timestamp copyOf(final Timestamp timestamp)
+	@Nullable
+	public static Timestamp copyOf(@Nullable final Timestamp timestamp)
 	{
 		return timestamp == null ? null : new Timestamp(timestamp.getTime());
 	}
@@ -1595,9 +1564,6 @@ public class TimeUtil
 	 * <p>
 	 * The logic for calculating the week number is based on the ISO week date conventions.
 	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
-	 *
-	 * @param date
-	 * @return
 	 */
 	public static int getWeekNumber(final Date date)
 	{
@@ -1615,17 +1581,13 @@ public class TimeUtil
 		// It is the first week with a majority (4 or more) of its days in January.
 		cal.setMinimalDaysInFirstWeek(4);
 
-		final int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
-		return weekOfYear;
+		return cal.get(Calendar.WEEK_OF_YEAR);
 	}
 
 	/**
 	 * Get the day of the week for the given date.
 	 * First day of the week is considered Monday, due to ISO 8601.
 	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
-	 *
-	 * @param date
-	 * @return
 	 */
 	public static int getDayOfWeek(final Date date)
 	{
@@ -1642,11 +1604,13 @@ public class TimeUtil
 	}
 
 	@Deprecated
-	public static LocalDate asLocalDate(final LocalDate localDate)
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final LocalDate localDate)
 	{
 		return localDate;
 	}
 
+	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
 		return ts != null
@@ -1654,7 +1618,8 @@ public class TimeUtil
 				: null;
 	}
 
-	public static LocalDate asLocalDate(final Object obj)
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1674,6 +1639,7 @@ public class TimeUtil
 		}
 	}
 
+	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
 		return timestamp != null
@@ -1681,6 +1647,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
 	{
 		return zonedDateTime != null
@@ -1688,7 +1655,8 @@ public class TimeUtil
 				: null;
 	}
 
-	public static LocalTime asLocalTime(final Object obj)
+	@Nullable
+	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1713,7 +1681,8 @@ public class TimeUtil
 		return localDateTime;
 	}
 
-	public static LocalDateTime asLocalDateTime(final Object obj)
+	@Nullable
+	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1751,6 +1720,7 @@ public class TimeUtil
 	 * @deprecated favor using {@link #asZonedDateTime(Object, ZoneId)}
 	 */
 	@Deprecated
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final LocalDate localDate)
 	{
 		return localDate != null
@@ -1758,6 +1728,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1768,6 +1739,7 @@ public class TimeUtil
 		return asZonedDateTime(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1784,7 +1756,8 @@ public class TimeUtil
 		}
 	}
 
-	public static Date asDate(final Object obj)
+	@Nullable
+	public static Date asDate(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1808,23 +1781,28 @@ public class TimeUtil
 	 * @deprecated your method argument is already an {@link Instant}; you don't need to call this method.
 	 */
 	@Deprecated
+	@Nullable
 	public static Instant asInstant(@Nullable final Instant instant)
 	{
 		return instant;
 	}
 
+	@Nullable
 	public static Instant asInstant(@Nullable final Object obj)
 	{
 		return asInstant(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
+	@Nullable
 	public static Instant asInstant(@Nullable final Timestamp timestamp)
 	{
 		return timestamp != null ? timestamp.toInstant() : null;
 	}
 
+	@Nullable
 	public static Instant asInstant(
-			@Nullable final Object obj, @NonNull final ZoneId zoneId)
+			@Nullable final Object obj,
+			@NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1869,12 +1847,12 @@ public class TimeUtil
 		}
 		else if (obj instanceof Integer)
 		{
-			final int millis = ((Integer)obj).intValue();
+			final int millis = (Integer)obj;
 			return Instant.ofEpochMilli(millis);
 		}
 		else if (obj instanceof Long)
 		{
-			final long millis = ((Long)obj).longValue();
+			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
 		}
 		else
@@ -1883,6 +1861,7 @@ public class TimeUtil
 		}
 	}
 
+	@Nullable
 	public static Duration max(
 			@Nullable final Duration duration1,
 			@Nullable final Duration duration2)
@@ -1905,6 +1884,7 @@ public class TimeUtil
 		}
 	}
 
+	@Nullable
 	public static Instant max(
 			@Nullable final Instant instant1,
 			@Nullable final Instant instant2)
@@ -1952,7 +1932,7 @@ public class TimeUtil
 	 */
 	public static String serializeInstant(@NonNull final Instant instant)
 	{
-		return Long.toString(instant.getEpochSecond()) + "." + Long.toString(instant.getNano());
+		return instant.getEpochSecond() + "." + Long.toString(instant.getNano());
 	}
 
 	/**
@@ -1976,7 +1956,7 @@ public class TimeUtil
 		{
 			seconds = Long.parseLong(split[0]);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			throw new AdempiereException("The 'seconds' part of the given instant string can't be parsed as long", e).appendParametersToMessage().setParameter("instant-string", instant);
 		}
@@ -1985,7 +1965,7 @@ public class TimeUtil
 		{
 			nanos = Long.parseLong(split[1]);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			throw new AdempiereException("The 'nanos' part of the given instant string can't be parsed as long", e).appendParametersToMessage().setParameter("instant-string", instant);
 		}

@@ -266,6 +266,7 @@ public class ManufacturingOrderAPIServiceTest
 			orderBOMLine.setM_Product_ID(bomLine_componentId.getRepoId());
 			orderBOMLine.setQtyRequiered(new BigDecimal(bomLine_qtyRequired));
 			orderBOMLine.setC_UOM_ID(uomId.getRepoId());
+			orderBOMLine.setM_Warehouse_ID(locatorId.getWarehouseId().getRepoId());
 			orderBOMLine.setM_Locator_ID(locatorId.getRepoId());
 			saveRecord(orderBOMLine);
 		}

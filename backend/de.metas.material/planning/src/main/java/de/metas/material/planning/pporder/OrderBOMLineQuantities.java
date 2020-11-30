@@ -30,36 +30,24 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 
 @Value
 public class OrderBOMLineQuantities
 {
-	@NonNull
-	private Quantity qtyRequired;
-	@NonNull
-	private Quantity qtyRequiredBeforeClose;
-	@NonNull
-	private final Quantity qtyIssuedOrReceived;
-	@NonNull
-	private final Quantity qtyIssuedOrReceivedActual;
-	@NonNull
-	private final Quantity qtyReject;
-	@NonNull
-	private final Quantity qtyScrap;
+	@NonNull Quantity qtyRequired;
+	@NonNull Quantity qtyRequiredBeforeClose;
+	@NonNull Quantity qtyIssuedOrReceived;
+	@NonNull Quantity qtyIssuedOrReceivedActual;
+	@NonNull Quantity qtyReject;
+	@NonNull Quantity qtyScrap;
 
-	@NonNull
-	private final Quantity qtyUsageVariance;
-	@NonNull
-	private final Quantity qtyPost;
-	@NonNull
-	private final Quantity qtyReserved;
+	@NonNull Quantity qtyUsageVariance;
+	@NonNull Quantity qtyPost;
+	@NonNull Quantity qtyReserved;
 
-	@NonNull
-	private final UomId uomId;
+	@NonNull UomId uomId;
 
 	@Builder(toBuilder = true)
 	private OrderBOMLineQuantities(
@@ -204,4 +192,26 @@ public class OrderBOMLineQuantities
 
 		return builder.build();
 	}
+
+	public static Quantity adjustCoProductQty(final Quantity qty)
+	{
+		return qty.negate();
+	}
+
+	/**
+	 * @return qtyRequired negated, so we assume a positive value will be returned
+	 */
+	public Quantity getQtyRequired_NegateBecauseIsCOProduct()
+	{
+		return adjustCoProductQty(getQtyRequired());
+	}
+
+	/**
+	 * @return co product already received (and processed) quantity, so we assume a positive value will be returned
+	 */
+	public Quantity getQtyIssuedOrReceived_NegateBecauseIsCOProduct()
+	{
+		return adjustCoProductQty(getQtyIssuedOrReceived());
+	}
+
 }
