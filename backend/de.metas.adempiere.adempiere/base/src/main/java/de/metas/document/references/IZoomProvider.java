@@ -35,9 +35,9 @@ package de.metas.document.references;
  * #L%
  */
 
-import java.util.List;
-
 import org.adempiere.ad.element.api.AdWindowId;
+
+import java.util.List;
 
 /**
  *
@@ -49,10 +49,6 @@ public interface IZoomProvider
 	 *
 	 * @param source the source we need zoom targets for
 	 * @param targetAD_Window_ID optional target window ID; if specified, only those {@link ZoomInfo}s will be returned which have this targetAD_Window_ID.
-	 * @param checkRecordsCount
-	 *            Set to <code>true</code> if we also need the records count.
-	 *            In this case those ZoomInfos with ZERO records would be skipped.
-	 *            WARNING, this might be an expensive operation.
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
 	List<ZoomInfoCandidate> retrieveZoomInfos(IZoomSource source, final AdWindowId targetAD_Window_ID);

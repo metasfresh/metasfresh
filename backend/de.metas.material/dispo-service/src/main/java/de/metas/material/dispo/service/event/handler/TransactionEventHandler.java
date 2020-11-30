@@ -127,14 +127,14 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 		else if (event.getPpOrderId() > 0)
 		{
-			final List<Candidate> candidateForPPorder = createCandidateForPPorder(event);
+			final List<Candidate> candidateForPPorder = createCandidatesForPPOrder(event);
 			firePickRequiredEventIfFeasible(candidateForPPorder.get(0), event);
 
 			candidates.addAll(candidateForPPorder);
 		}
 		else if (event.getDdOrderLineId() > 0)
 		{
-			final List<Candidate> candidateForDDorder = createCandidateForDDorder(event);
+			final List<Candidate> candidateForDDorder = createCandidateForDDOrder(event);
 			firePickRequiredEventIfFeasible(candidateForDDorder.get(0), event);
 
 			candidates.addAll(candidateForDDorder);
@@ -194,6 +194,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		postMaterialEventService.postEventAfterNextCommit(pickingRequestedEvent);
 	}
 
+	@NonNull
 	private Flag extractPickDirectlyIfFeasible(@NonNull final Candidate candidate)
 	{
 		final Flag pickDirectlyIfFeasible;
@@ -210,8 +211,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 						.getPickDirectlyIfFeasible();
 				break;
 			default:
-				pickDirectlyIfFeasible = null;
-				Check.fail("Unsupported business case {}; candidate={}",
+				throw Check.fail("Unsupported business case {}; candidate={}",
 						candidate.getBusinessCase(), candidate);
 		}
 		return pickDirectlyIfFeasible;
@@ -344,7 +344,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return candidates;
 	}
 
-	private List<Candidate> createCandidateForPPorder(@NonNull final AbstractTransactionEvent event)
+	private List<Candidate> createCandidatesForPPOrder(@NonNull final AbstractTransactionEvent event)
 	{
 		final List<Candidate> candidates;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
@@ -397,7 +397,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return candidates;
 	}
 
-	private List<Candidate> createCandidateForDDorder(@NonNull final AbstractTransactionEvent event)
+	private List<Candidate> createCandidateForDDOrder(@NonNull final AbstractTransactionEvent event)
 	{
 		final List<Candidate> candidates;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
@@ -457,10 +457,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.withMaterialDescriptorQuery(materialDescriptorQuery)
 				.withMatchExactStorageAttributesKey(true);
 
-		final Candidate existingCandidate = CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> candidateRepository.retrieveLatestMatchOrNull(queryWithAttributesKey),
 				() -> candidateRepository.retrieveLatestMatchOrNull(queryWithoutAttributesKey));
-		return existingCandidate;
 	}
 
 	private AdempiereException createExceptionForUnexpectedEvent(@NonNull final AbstractTransactionEvent event)
@@ -472,7 +471,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 	private TransactionDetail createTransactionDetail(@NonNull final AbstractTransactionEvent event)
 	{
-		final TransactionDetail transactionDetailOfEvent = TransactionDetail.builder()
+		return TransactionDetail.builder()
 				.complete(true)
 				.quantity(getQuantityDelta(event)) // quantity and storageAttributesKey won't be used in the query, but in the following insert or update
 				.storageAttributesKey(event.getMaterialDescriptor().getStorageAttributesKey())
@@ -481,14 +480,14 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.transactionDate(event.getMaterialDescriptor().getDate())
 				.complete(true)
 				.build();
-		return transactionDetailOfEvent;
 	}
 
 	/**
 	 * For {@link TransactionCreatedEvent} we always return a positive quantity; for {@link TransactionDeletedEvent} always a negative one;
 	 * That because basically in material dispo, we operate with positive quantities, also if the candidate's type is demand, stock-down etc.
 	 */
-	private final BigDecimal getQuantityDelta(@NonNull final AbstractTransactionEvent event)
+	@NonNull
+	private BigDecimal getQuantityDelta(@NonNull final AbstractTransactionEvent event)
 	{
 		if (event instanceof TransactionCreatedEvent)
 		{
@@ -499,8 +498,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			return event.getQuantityDelta().abs().negate();
 		}
 
-		fail("Unexpected subclass of AbstractTransactionEvent; event={}", event);
-		return null;
+		throw fail("Unexpected subclass of AbstractTransactionEvent; event={}", event);
 	}
 
 	private List<Candidate> prepareUnrelatedCandidate(@NonNull final AbstractTransactionEvent event)
@@ -539,7 +537,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	/**
 	 *
 	 * Returns a list with one or two candidates.
-	 * The list's first item always contains the given {@code changedTransactionDetail}.
+	 * The list's first candidate always contains the given {@code changedTransactionDetail}.
 	 * <p>
 	 * If the given {@code changedTransactionDetail}'s attributes match the given candidate's attributes, then the returned list has one item.
 	 * Otherwise it has two items with the first item containing *only* the changedTransactionDetail and the second item being the given {@code candidate}, but without the given {@code changedTransactionDetail}.
@@ -589,10 +587,10 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.toBuilder()
 					.id(null)
 					.parentId(null) // important to make sure a supply new candidate gets a stock record
-					.type(computeCounterCandiateType(candidate))
+					.type(computeCounterCandidateType(candidate))
 					.materialDescriptor(newMaterialDescriptor)
 					.clearTransactionDetails()
-					.transactionDetail(changedTransactionDetail)
+					.transactionDetail(changedTransactionDetail.withRebookedFromCandidateId(candidate.getId())) // help users by referencing the candidate from which we subtract quantities
 					.build();
 
 			// subtract the transaction's Qty from the candidate;
@@ -607,7 +605,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		}
 	}
 
-	private CandidateType computeCounterCandiateType(@NonNull final Candidate candidate)
+	private CandidateType computeCounterCandidateType(@NonNull final Candidate candidate)
 	{
 		switch (candidate.getType())
 		{
@@ -627,12 +625,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 	private Instant extractMinTransactionDate(@NonNull final TreeSet<TransactionDetail> transactionDetailsSet)
 	{
-		final Instant firstTransactionDate = transactionDetailsSet
+		return transactionDetailsSet
 				.stream()
 				.min(Comparator.comparing(TransactionDetail::getTransactionDate))
 				.get() // we know there is at least changedTransactionDetail, so we can call get() witch confidence
 				.getTransactionDate();
-		return firstTransactionDate;
 	}
 
 	private TreeSet<TransactionDetail> extractAllTransactionDetails(
