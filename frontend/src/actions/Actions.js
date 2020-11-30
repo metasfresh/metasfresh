@@ -118,7 +118,7 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
       }
 
       if ((isParent || isChild) && fetch) {
-        dispatch(
+        return dispatch(
           fetchQuickActions({
             windowId,
             viewId: view.viewId,
@@ -153,10 +153,27 @@ export function fetchQuickActions({
   parentView,
 }) {
   return (dispatch, getState) => {
-    const id = getQuickActionsId({ windowId, viewId });
+    let id = null;
+
+    if (childView) {
+      id = getQuickActionsId({
+        windowId: childView.windowId,
+        viewId: childView.viewId,
+      });
+    } else if (parentView) {
+      id = getQuickActionsId({
+        windowId: parentView.windowId,
+        viewId: parentView.viewId,
+      });
+    } else {
+      id = getQuickActionsId({ windowId, viewId });
+    }
+
     const quickActions = getQuickActions(getState(), id);
 
-    if (!quickActions.pending) {
+    // we're checking if child/parent actions are not already fetching
+    // in fetchIncludedQuickActions
+    if (!quickActions.pending || childView || parentView) {
       dispatch({
         type: FETCH_QUICK_ACTIONS,
         payload: { id },
