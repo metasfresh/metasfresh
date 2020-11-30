@@ -207,8 +207,4 @@ describe('QuickActions', () => {
         );     
       });
   });
-
-  it(`fetch included child's quick actions`, () => {
-
-  }); 
 });

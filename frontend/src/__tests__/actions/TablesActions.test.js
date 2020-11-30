@@ -352,6 +352,7 @@ describe('TableActions grid', () => {
       viewHandler,
       tables: tablesHandler,
     });
+    // this way we can update the mocked state according to changes in actions
     const reduceState = state => actions => actions.reduce(appReducer, state);
     const initialState = reduceState(initialStateData);
     const store = mockStore(initialState);
