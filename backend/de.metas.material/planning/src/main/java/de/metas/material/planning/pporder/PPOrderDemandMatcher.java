@@ -44,7 +44,7 @@ public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
 		final boolean manufactured = StringUtils.toBoolean(productPlanning.getIsManufactured());
-		final boolean pickingOrder = productPlanning.isPickingOrder(); // basically, picking orders are different beast. no
+		final boolean pickingOrder = productPlanning.isPickingOrder(); // basically, picking orders are different beast.
 		if (manufactured && !pickingOrder)
 		{
 			return true;
