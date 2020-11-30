@@ -68,8 +68,9 @@ public class C_Order
 			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
 	public void updateSalesPartnerFromCustomer(@NonNull final I_C_Order orderRecord, @NonNull final ModelChangeType type)
 	{
-		// if on a new C_Order record both SalesPartnerCode and the BPartner-IDs were set at the same time,
-		// then don't override the sales partner from the BPartners' mater data, but assume that the sales partner shall remain the way it is.
+		// If on a new C_Order record both SalesPartnerCode and the BPartner-IDs were set at the same time,
+		// then don't override the sales-partner-id from the BPartners' mater data, but assume that the sales-partner-id shall remain the way it was set on the new record.
+		// This implies that the master data might be updated on thid C_Order's after-new modelinterceptor method
 		final boolean currentPartnerCodeShallPrevail = type.isNew() && Check.isNotBlank(orderRecord.getSalesPartnerCode());
 		if (!currentPartnerCodeShallPrevail)
 		{
