@@ -107,7 +107,11 @@ public class C_Order
 		documentSalesRepDescriptor.syncToRecord();
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
+	/**
+	 * Note: also update bpartner-master data if a new order was created from C_OLCands, thus the {@code AFTER_NEW}.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
 	public void updateSalesPartnerInCustomerMaterdata(@NonNull final I_C_Order orderRecord)
 	{
 		if (!orderRecord.isSOTrx())
