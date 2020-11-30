@@ -557,12 +557,19 @@ export function updateTableSelection({
     });
 
     if (viewId) {
-      // update quick actions
-      dispatch(getTableActions({ tableId: id, windowId, viewId, isModal }));
-      // show included view
-      dispatch(
-        handleToggleIncludedView({ windowId, tableId: id, selection, isModal })
-      );
+      return Promise.all([
+        // update quick actions
+        dispatch(getTableActions({ tableId: id, windowId, viewId, isModal })),
+        // show included view
+        dispatch(
+          handleToggleIncludedView({
+            windowId,
+            tableId: id,
+            selection,
+            isModal,
+          })
+        ),
+      ]);
     }
 
     return Promise.resolve(selection);
@@ -593,11 +600,20 @@ export function deselectTableRows({
     });
 
     if (viewId) {
-      dispatch(getTableActions({ tableId: id, windowId, viewId, isModal }));
-      dispatch(
-        handleToggleIncludedView({ windowId, tableId: id, selection, isModal })
-      );
+      return Promise.all([
+        dispatch(getTableActions({ tableId: id, windowId, viewId, isModal })),
+        dispatch(
+          handleToggleIncludedView({
+            windowId,
+            tableId: id,
+            selection,
+            isModal,
+          })
+        ),
+      ]);
     }
+
+    return Promise.resolve(true);
   };
 }
 
@@ -661,5 +677,7 @@ function handleToggleIncludedView({ windowId, tableId, selection, isModal }) {
         })
       );
     }
+
+    return Promise.resolve(openIncludedViewOnSelect);
   };
 }

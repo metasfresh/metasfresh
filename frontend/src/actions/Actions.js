@@ -26,6 +26,7 @@ import { getView } from '../reducers/viewHandler';
  */
 export function getTableActions({ tableId, windowId, viewId, isModal }) {
   return (dispatch, getState) => {
+    const actionPromises = [];
     const state = getState();
     const table = getTable(state, tableId);
     const selectedIds = table.selected;
@@ -44,23 +45,25 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
     }
 
     if (fetchActions) {
-      dispatch(
+      actionPromises.push(dispatch(
         fetchQuickActions({
           windowId,
           viewId,
           viewProfileId,
           selectedIds,
         })
-      );
+      ));;
     }
 
-    dispatch(
+    actionPromises.push(dispatch(
       fetchIncludedQuickActions({
         windowId,
         selectedIds,
         isModal,
       })
-    );
+    ));
+
+    return Promise.all(actionPromises);
   };
 }
 
@@ -130,6 +133,8 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
         );
       }
     }
+
+    return Promise.resolve(false);
   };
 }
 
