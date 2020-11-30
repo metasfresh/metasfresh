@@ -3,6 +3,7 @@ import configureStore from 'redux-mock-store';
 import produce from 'immer';
 import merge from 'merge';
 import { combineReducers } from 'redux';
+import nock from 'nock';
 
 import tablesHandler, { initialTableState, getTableId } from '../../reducers/tables';
 import viewHandler, { initialState as initialViewsState } from '../../reducers/viewHandler';
@@ -92,9 +93,11 @@ describe('TableActions general', () => {
     }
     const store = mockStore();
     const expectedActions = [{ type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload }];
+    const params = { id: tableId, selection: [rowId], keyProperty };
 
-    store.dispatch(updateTableSelection({ id: tableId, selection: [rowId], keyProperty }));
-    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    return store.dispatch(updateTableSelection(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
   });
 
   it('should call DESELECT_TABLE_ROWS action with correct payload', () => {
@@ -106,13 +109,27 @@ describe('TableActions general', () => {
     }
     const store = mockStore();
     const expectedActions = [{ type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload }];
+    const params = { id: tableId, selection: [] };
 
-    store.dispatch(deselectTableRows({ id: tableId, selection: [] }));
-    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    return store.dispatch(deselectTableRows(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
   }); 
 });
 
 describe('TableActions grid', () => {
+  beforeAll(() => {
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .persist()
+      .get(uri => uri.includes('quickActions'))
+      .reply(200, { data: { actions: [] } });
+  });
+
+  afterAll(() => {
+    nock.cleanAll();
+  });
+
   it(`dispatches 'CREATE_TABLE' action when creating a new view`, () => {
     const { windowType, viewId } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
@@ -293,8 +310,9 @@ describe('TableActions grid', () => {
       { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload4 },
     ];
 
-    store.dispatch(updateTableSelection(params));
-    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    return store.dispatch(updateTableSelection(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
   });
 
   it(`should call DESELECT_TABLE_ROWS, FETCH_QUICK_ACTIONS
@@ -385,8 +403,9 @@ describe('TableActions grid', () => {
       { type: ACTION_TYPES.UNSET_INCLUDED_VIEW, payload: payload4 },
     ];
 
-    store.dispatch(deselectTableRows(params));
-    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    return store.dispatch(deselectTableRows(params)).then(
+      expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions))
+    );
   });
 });
 
