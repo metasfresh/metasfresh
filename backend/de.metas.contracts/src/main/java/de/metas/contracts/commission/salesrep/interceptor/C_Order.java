@@ -1,11 +1,17 @@
 package de.metas.contracts.commission.salesrep.interceptor;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -14,13 +20,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
-import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
-import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -62,8 +63,21 @@ public class C_Order
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
+	public void updateSalesPartnerFromCustomer(@NonNull final I_C_Order orderRecord, @NonNull final ModelChangeType type)
+	{
+		// if on a new C_Order record both SalesPartnerCode and the BPartner-IDs were set at the same time,
+		// then don't override the sales partner from the BPartners' mater data, but assume that the sales partner shall remain the way it is.
+		final boolean currentPartnerCodeShallPrevail = type.isNew() && Check.isNotBlank(orderRecord.getSalesPartnerCode());
+		if (!currentPartnerCodeShallPrevail)
+		{
+			updateSalesPartnerFromCustomer(orderRecord);
+		}
+	}
+
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
 	public void updateSalesPartnerFromCustomer(@NonNull final I_C_Order orderRecord)
 	{
 		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(orderRecord);

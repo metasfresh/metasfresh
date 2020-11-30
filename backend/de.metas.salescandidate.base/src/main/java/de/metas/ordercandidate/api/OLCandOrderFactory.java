@@ -223,8 +223,6 @@ class OLCandOrderFactory
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
 
-		order.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(candidateOfGroup.getSalesRepId()));
-
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)
 		{
@@ -232,7 +230,6 @@ class OLCandOrderFactory
 		}
 
 		final BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
-
 		if (salesRepId != null)
 		{
 			order.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
@@ -240,7 +237,6 @@ class OLCandOrderFactory
 			final I_C_BPartner salesPartner = bpartnerDAO.getById(salesRepId);
 
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
-
 		}
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment
