@@ -76,6 +76,8 @@ public class Candidate
 
 	/**
 	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
+	 * We have this for historic reasons.
+	 * On the longer run, stock-candidates will be merged into "normal" candidates and we won't need the parent-id anymore.
 	 */
 	CandidateId parentId;
 

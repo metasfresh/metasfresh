@@ -1,5 +1,13 @@
 package org.eevolution.model.validator;
 
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.event.pporder.PPOrderDeletedEvent;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
@@ -8,16 +16,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order;
-
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderChangedEvent;
-import de.metas.material.event.pporder.PPOrderCreatedEvent;
-import de.metas.material.event.pporder.PPOrderDeletedEvent;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import lombok.NonNull;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
@@ -93,10 +91,12 @@ public class PP_Order_PostMaterialEvent
 			@NonNull final I_PP_Order ppOrderRecord,
 			@NonNull final DocTimingType type)
 	{
-		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
-				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
-				.inspectPPOrderAfterChange();
-
-		materialEventService.postEventAfterNextCommit(changeEvent);
+		// Let's not send PPOrderChangedEvents for now, because the interesting stuff is already send when the M_Transactions happen.
+		// It might later turn out that it makes sense to send just the info that a PP_Order was "Closed" though.
+		// final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
+		// 		.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
+		// 		.inspectPPOrderAfterChange();
+		//
+		// materialEventService.postEventAfterNextCommit(changeEvent);
 	}
 }
