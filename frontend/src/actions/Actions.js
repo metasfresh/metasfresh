@@ -45,23 +45,27 @@ export function getTableActions({ tableId, windowId, viewId, isModal }) {
     }
 
     if (fetchActions) {
-      actionPromises.push(dispatch(
-        fetchQuickActions({
-          windowId,
-          viewId,
-          viewProfileId,
-          selectedIds,
-        })
-      ));;
+      actionPromises.push(
+        dispatch(
+          fetchQuickActions({
+            windowId,
+            viewId,
+            viewProfileId,
+            selectedIds,
+          })
+        )
+      );
     }
 
-    actionPromises.push(dispatch(
-      fetchIncludedQuickActions({
-        windowId,
-        selectedIds,
-        isModal,
-      })
-    ));
+    actionPromises.push(
+      dispatch(
+        fetchIncludedQuickActions({
+          windowId,
+          selectedIds,
+          isModal,
+        })
+      )
+    );
 
     return Promise.all(actionPromises);
   };
