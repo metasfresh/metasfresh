@@ -1,39 +1,18 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE;
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.assumeNotNull;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.StringJoiner;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Objects;
-
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.SyncAdvise;
@@ -85,6 +64,30 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBElement;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.StringJoiner;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE;
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.assumeNotNull;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -117,10 +120,14 @@ public class XmlToOLCandsService
 	private static final String UOM_CODE = "MJ";  // minute; HUR would be hour
 
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
+	private final BpartnerRestController bpartnerRestController;
 
-	public XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
+	public XmlToOLCandsService(
+			@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint,
+			@NonNull final BpartnerRestController bpartnerRestController)
 	{
 		this.orderCandidatesRestEndpoint = orderCandidatesRestEndpoint;
+		this.bpartnerRestController = bpartnerRestController;
 	}
 
 	public JsonAttachment createOLCands(@NonNull final CreateOLCandsRequest createOLCandsRequest)
@@ -293,7 +300,9 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	/** Contains context-infos from high-up in the call-hierarchy */
+	/**
+	 * Contains context-infos from high-up in the call-hierarchy
+	 */
 	@Value
 	@Builder
 	private static class HighLevelContext
@@ -369,6 +378,15 @@ public class XmlToOLCandsService
 		{
 			result = requestIdToUse.substring("EA_".length());
 		}
+
+		else if (requestIdToUse.startsWith("GEMEINDE_")) // "Gemeinde"
+		{
+			result = requestIdToUse.substring("GEMEINDE_".length());
+		}
+		else if (requestIdToUse.startsWith("GM_")) // also "Gemeinde"
+		{
+			result = requestIdToUse.substring("GM_".length());
+		}
 		else
 		{
 			throw new XmlInvalidRequestIdException(requestIdToUse);
@@ -399,10 +417,13 @@ public class XmlToOLCandsService
 		{
 			case KV:
 			case KT:
+				// the bpartner already exists in metasfresh
 				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
 				break;
 			case EA:
-				addPatientInvoiceRecipients(
+				// The bill-receiver (patient) might or might not yet exist.
+				// We extract all the infos, so the sales order-candidate-API could create it on the fly
+				addPatientInvoiceRecipient(
 						requestBuilder,
 						body,
 						context);
@@ -477,7 +498,7 @@ public class XmlToOLCandsService
 		return body.getTiersPayant().getGuarantor();
 	}
 
-	private void addPatientInvoiceRecipients(
+	private void addPatientInvoiceRecipient(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final BodyType body,
 			@NonNull final HighLevelContext context)
@@ -507,27 +528,12 @@ public class XmlToOLCandsService
 				null/* gln */,
 				person.getPostal());
 
-		final PostalAddressType guarantorPostal;
-		final String guarantorName;
-		if (guarantor.getCompany() != null)
-		{
-			guarantorPostal = guarantor.getCompany().getPostal();
-			guarantorName = guarantor.getCompany().getCompanyname();
-		}
-		else if (guarantor.getPerson() != null)
-		{
-			guarantorPostal = guarantor.getPerson().getPostal();
-			guarantorName = createFullPersonName(guarantor.getPerson());
-		}
-		else
-		{
-			throw new MissingPropertyException("guarantor/company or guarantor/person", guarantor);
-		}
+		final NameAndPostal nameAndPostal = extractGuarantorNameAndPostal(guarantor);
 
 		final JsonRequestLocation guarantorLocation = createJsonBPartnerLocation(
 				patientExternalId,
 				null/* gln */,
-				guarantorPostal);
+				nameAndPostal.getPostal());
 		if (Objects.equals(patientLocation, guarantorLocation))
 		{
 			patientLocation.setName(patientName);
@@ -545,8 +551,8 @@ public class XmlToOLCandsService
 					.bpartner(bPartner);
 
 			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
-			guarantorLocation.setName(guarantorName);
-			guarantorLocation.setBpartnerName(guarantorName);
+			guarantorLocation.setName(nameAndPostal.getName());
+			guarantorLocation.setBpartnerName(nameAndPostal.getName());
 			guarantorLocation.setExternalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"));
 			guarantorLocation.setShipTo(false);
 			guarantorLocation.setShipToDefault(false);
@@ -564,6 +570,107 @@ public class XmlToOLCandsService
 		}
 		bPartnerInfo.location(patientLocation);
 		requestBuilder.bpartner(bPartnerInfo.build());
+	}
+
+	private JsonRequestBPartnerLocationAndContact addMunicipalityInvoiceRecipient(
+			@NonNull final BodyType body,
+			@NonNull final HighLevelContext context)
+	{
+		final GuarantorAddressType guarantor = getGuarantor(body); // the guarantor is the municipality who gets the invoice
+
+		final NameAndPostal guarantorNameAndPostal = extractGuarantorNameAndPostal(guarantor);
+
+		final String zipCode = guarantorNameAndPostal.getPostal().getZip().getValue();
+
+		final String bpartnerCode = "GM-" + zipCode;
+		final JsonExternalId guarantorExternalId = JsonExternalId.of(bpartnerCode);
+		final JsonExternalId locationExternalId = JsonExternalId.of(guarantorExternalId.getValue() + "_GUARANTOR");
+
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setCode(bpartnerCode);
+		bPartner.setGlobalId(guarantorExternalId.getValue());
+		bPartner.setExternalId(guarantorExternalId);
+		bPartner.setName(guarantorNameAndPostal.getName());
+		bPartner.setLanguage("de_CH");
+
+		final JsonRequestLocation guarantorLocation = createJsonBPartnerLocation(
+				guarantorExternalId,
+				null/* gln */,
+				guarantorNameAndPostal.getPostal());
+
+		guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+		guarantorLocation.setName(guarantorNameAndPostal.getName());
+		guarantorLocation.setBpartnerName(guarantorNameAndPostal.getName());
+		guarantorLocation.setExternalId(locationExternalId);
+		guarantorLocation.setShipTo(true);
+		guarantorLocation.setShipToDefault(true);
+		guarantorLocation.setBillTo(true);
+		guarantorLocation.setBillToDefault(true);
+
+		final JsonRequestBPartnerUpsert partnerUpsert = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(context.getDebitorSyncAdvise())
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+						.bpartnerIdentifier("val-" + bpartnerCode) // the
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.orgCode("0") // if a bpartner is created, then with Org=*
+								.bpartner(bPartner)
+								.locations(JsonRequestLocationUpsert.builder()
+										.requestItem(JsonRequestLocationUpsertItem.builder()
+												.locationIdentifier("ext-" + locationExternalId.getValue())
+												.location(guarantorLocation)
+												.build())
+										.build())
+								.build())
+						.build())
+				.build();
+		bpartnerRestController.createOrUpdateBPartner(partnerUpsert);
+
+		// now prepare the JSON to put into the order line candidate request
+		final JsonRequestBPartner lookupOnlyBPartner = new JsonRequestBPartner();
+		lookupOnlyBPartner.setExternalId(guarantorExternalId);
+		final JsonRequestLocation lookupOnlyLocation = new JsonRequestLocation();
+		lookupOnlyLocation.setExternalId(locationExternalId);
+
+		return JsonRequestBPartnerLocationAndContact
+				.builder()
+				.syncAdvise(SyncAdvise.READ_ONLY) // there should be nothing to do since we just did it
+				.bpartner(lookupOnlyBPartner)
+				.location(lookupOnlyLocation)
+				.build();
+	}
+
+	@NonNull
+	private NameAndPostal extractGuarantorNameAndPostal(@NonNull final GuarantorAddressType guarantor)
+	{
+		final PostalAddressType guarantorPostal;
+		final String guarantorName;
+		if (guarantor.getCompany() != null)
+		{
+			guarantorPostal = guarantor.getCompany().getPostal();
+			guarantorName = guarantor.getCompany().getCompanyname();
+		}
+		else if (guarantor.getPerson() != null)
+		{
+			guarantorPostal = guarantor.getPerson().getPostal();
+			guarantorName = createFullPersonName(guarantor.getPerson());
+		}
+		else
+		{
+			throw new MissingPropertyException("guarantor/company or guarantor/person", guarantor);
+		}
+
+		final NameAndPostal nameAndPostal = new NameAndPostal(guarantorName, guarantorPostal);
+		return nameAndPostal;
+	}
+
+	@Value
+	private static class NameAndPostal
+	{
+		@NonNull
+		String name;
+
+		@NonNull
+		PostalAddressType postal;
 	}
 
 	private String createFullPersonName(@NonNull final PersonType person)
