@@ -1,5 +1,7 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_UOM
  *  @author metasfresh (generated) 
@@ -8,11 +10,10 @@ package org.compiere.model;
 public interface I_C_UOM 
 {
 
-    /** TableName=C_UOM */
-    public static final String Table_Name = "C_UOM";
+	String Table_Name = "C_UOM";
 
-    /** AD_Table_ID=146 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=146 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +24,9 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +36,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +46,9 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set UOM.
@@ -59,7 +58,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
 	 * Get UOM.
@@ -69,12 +68,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "C_UOM_ID", null);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	ModelColumn<I_C_UOM, Object> COLUMN_C_UOM_ID = new ModelColumn<>(I_C_UOM.class, "C_UOM_ID", null);
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Kostenrechnungsgenauigkeit.
@@ -84,7 +81,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setCostingPrecision (int CostingPrecision);
+	void setCostingPrecision (int CostingPrecision);
 
 	/**
 	 * Get Kostenrechnungsgenauigkeit.
@@ -94,12 +91,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCostingPrecision();
+	int getCostingPrecision();
 
-    /** Column definition for CostingPrecision */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_CostingPrecision = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "CostingPrecision", null);
-    /** Column name CostingPrecision */
-    public static final String COLUMNNAME_CostingPrecision = "CostingPrecision";
+	ModelColumn<I_C_UOM, Object> COLUMN_CostingPrecision = new ModelColumn<>(I_C_UOM.class, "CostingPrecision", null);
+	String COLUMNNAME_CostingPrecision = "CostingPrecision";
 
 	/**
 	 * Get Created.
@@ -109,12 +104,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_UOM, Object> COLUMN_Created = new ModelColumn<>(I_C_UOM.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -124,10 +117,9 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -136,7 +128,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -145,12 +137,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_UOM, Object> COLUMN_Description = new ModelColumn<>(I_C_UOM.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Imputed Unit.
@@ -159,7 +149,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setHF134_IsImputedUnit (boolean HF134_IsImputedUnit);
+	void setHF134_IsImputedUnit (boolean HF134_IsImputedUnit);
 
 	/**
 	 * Get Imputed Unit.
@@ -168,12 +158,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isHF134_IsImputedUnit();
+	boolean isHF134_IsImputedUnit();
 
-    /** Column definition for HF134_IsImputedUnit */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_HF134_IsImputedUnit = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "HF134_IsImputedUnit", null);
-    /** Column name HF134_IsImputedUnit */
-    public static final String COLUMNNAME_HF134_IsImputedUnit = "HF134_IsImputedUnit";
+	ModelColumn<I_C_UOM, Object> COLUMN_HF134_IsImputedUnit = new ModelColumn<>(I_C_UOM.class, "HF134_IsImputedUnit", null);
+	String COLUMNNAME_HF134_IsImputedUnit = "HF134_IsImputedUnit";
 
 	/**
 	 * Set Active.
@@ -183,7 +171,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -193,12 +181,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_UOM, Object> COLUMN_IsActive = new ModelColumn<>(I_C_UOM.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Default.
@@ -208,7 +194,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDefault (boolean IsDefault);
+	void setIsDefault (boolean IsDefault);
 
 	/**
 	 * Get Default.
@@ -218,12 +204,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDefault();
+	boolean isDefault();
 
-    /** Column definition for IsDefault */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "IsDefault", null);
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
+	ModelColumn<I_C_UOM, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_UOM.class, "IsDefault", null);
+	String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
 	 * Set Name.
@@ -232,7 +216,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -241,12 +225,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_UOM, Object> COLUMN_Name = new ModelColumn<>(I_C_UOM.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Standardgenauigkeit.
@@ -256,7 +238,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStdPrecision (int StdPrecision);
+	void setStdPrecision (int StdPrecision);
 
 	/**
 	 * Get Standardgenauigkeit.
@@ -266,12 +248,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getStdPrecision();
+	int getStdPrecision();
 
-    /** Column definition for StdPrecision */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_StdPrecision = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "StdPrecision", null);
-    /** Column name StdPrecision */
-    public static final String COLUMNNAME_StdPrecision = "StdPrecision";
+	ModelColumn<I_C_UOM, Object> COLUMN_StdPrecision = new ModelColumn<>(I_C_UOM.class, "StdPrecision", null);
+	String COLUMNNAME_StdPrecision = "StdPrecision";
 
 	/**
 	 * Set Symbol.
@@ -281,7 +261,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUOMSymbol (java.lang.String UOMSymbol);
+	void setUOMSymbol (@Nullable java.lang.String UOMSymbol);
 
 	/**
 	 * Get Symbol.
@@ -291,12 +271,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUOMSymbol();
+	@Nullable java.lang.String getUOMSymbol();
 
-    /** Column definition for UOMSymbol */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_UOMSymbol = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "UOMSymbol", null);
-    /** Column name UOMSymbol */
-    public static final String COLUMNNAME_UOMSymbol = "UOMSymbol";
+	ModelColumn<I_C_UOM, Object> COLUMN_UOMSymbol = new ModelColumn<>(I_C_UOM.class, "UOMSymbol", null);
+	String COLUMNNAME_UOMSymbol = "UOMSymbol";
 
 	/**
 	 * Set Einheiten-Typ.
@@ -306,7 +284,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUOMType (java.lang.String UOMType);
+	void setUOMType (@Nullable java.lang.String UOMType);
 
 	/**
 	 * Get Einheiten-Typ.
@@ -316,12 +294,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUOMType();
+	@Nullable java.lang.String getUOMType();
 
-    /** Column definition for UOMType */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_UOMType = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "UOMType", null);
-    /** Column name UOMType */
-    public static final String COLUMNNAME_UOMType = "UOMType";
+	ModelColumn<I_C_UOM, Object> COLUMN_UOMType = new ModelColumn<>(I_C_UOM.class, "UOMType", null);
+	String COLUMNNAME_UOMType = "UOMType";
 
 	/**
 	 * Get Updated.
@@ -331,12 +307,10 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_UOM, Object> COLUMN_Updated = new ModelColumn<>(I_C_UOM.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -346,10 +320,9 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Kodierung der Mengeneinheit.
@@ -359,7 +332,7 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setX12DE355 (java.lang.String X12DE355);
+	void setX12DE355 (java.lang.String X12DE355);
 
 	/**
 	 * Get Kodierung der Mengeneinheit.
@@ -369,10 +342,8 @@ public interface I_C_UOM
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getX12DE355();
+	java.lang.String getX12DE355();
 
-    /** Column definition for X12DE355 */
-    public static final org.adempiere.model.ModelColumn<I_C_UOM, Object> COLUMN_X12DE355 = new org.adempiere.model.ModelColumn<I_C_UOM, Object>(I_C_UOM.class, "X12DE355", null);
-    /** Column name X12DE355 */
-    public static final String COLUMNNAME_X12DE355 = "X12DE355";
+	ModelColumn<I_C_UOM, Object> COLUMN_X12DE355 = new ModelColumn<>(I_C_UOM.class, "X12DE355", null);
+	String COLUMNNAME_X12DE355 = "X12DE355";
 }

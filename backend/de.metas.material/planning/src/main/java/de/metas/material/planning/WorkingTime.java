@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
 
+import de.metas.quantity.Quantity;
 import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,21 +34,21 @@ import lombok.Value;
  */
 
 @Value
-public final class WorkingTime
+public class WorkingTime
 {
-	private final Duration duration;
-	private final int cycles;
+	Duration duration;
+	int cycles;
 
-	private final TemporalUnit activityTimeUnit;
-	private final Duration durationPerOneUnit;
-	private final int unitsPerCycle;
-	private final BigDecimal qty;
+	TemporalUnit activityTimeUnit;
+	Duration durationPerOneUnit;
+	int unitsPerCycle;
+	@NonNull Quantity qty;
 
 	@Builder
 	public WorkingTime(
 			@NonNull final Duration durationPerOneUnit,
 			final int unitsPerCycle,
-			@NonNull final BigDecimal qty,
+			@NonNull final Quantity qty,
 			@NonNull final TemporalUnit activityTimeUnit)
 	{
 		this.durationPerOneUnit = durationPerOneUnit;
@@ -55,7 +56,7 @@ public final class WorkingTime
 		this.qty = qty;
 		this.activityTimeUnit = activityTimeUnit;
 
-		this.cycles = calculateCycles(unitsPerCycle, qty);
+		this.cycles = calculateCycles(unitsPerCycle, qty.toBigDecimal());
 		this.duration = durationPerOneUnit.multipliedBy(cycles);
 
 	}

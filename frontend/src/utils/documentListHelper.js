@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import deepUnfreeze from 'deep-unfreeze';
@@ -9,6 +8,7 @@ import { toInteger } from 'lodash';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId, getSelection } from '../reducers/tables';
+import { getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -54,9 +54,8 @@ const DLpropTypes = {
   push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
   updateTableSelection: PropTypes.func.isRequired,
-  deselectTableItems: PropTypes.func.isRequired,
+  deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
-  clearAllFilters: PropTypes.func.isRequired,
 };
 
 /**
@@ -124,7 +123,7 @@ const DLmapStateToProps = (state, props) => {
       viewId: parentDefaultViewId,
     });
   }
-
+  const filterId = getEntityRelatedId({ windowId, viewId });
   return {
     page,
     sort,
@@ -142,7 +141,8 @@ const DLmapStateToProps = (state, props) => {
     parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
-    filters: state.filters,
+    filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
+    filterId,
   };
 };
 
@@ -156,17 +156,6 @@ if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
   GEO_PANEL_STATES.splice(1, 1);
 }
 
-const filtersToMap = function(filtersArray) {
-  let filtersMap = iMap();
-
-  if (filtersArray && filtersArray.length) {
-    filtersArray.forEach((filter) => {
-      filtersMap = filtersMap.set(filter.filterId, filter);
-    });
-  }
-  return filtersMap;
-};
-
 /**
  * Check if current selection still exists in the provided data (used when
  * updates happen)
@@ -179,6 +168,10 @@ const doesSelectionExist = function({
   keyProperty = 'id',
 } = {}) {
   if (selected && selected[0] === 'all') {
+    return true;
+  }
+  // if selection is empty and data exist, selection is valid
+  if (selected && !selected.length && data) {
     return true;
   }
 
@@ -209,7 +202,6 @@ export {
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
   getSortingQuery,
-  filtersToMap,
   doesSelectionExist,
 };
 

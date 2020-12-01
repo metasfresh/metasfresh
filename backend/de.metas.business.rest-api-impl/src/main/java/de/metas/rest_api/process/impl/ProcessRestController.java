@@ -148,12 +148,12 @@ public class ProcessRestController
 		{
 			throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
 		}
-		else if (Check.isNotBlank(processExecutionResult.getJsonResult()))
+		else if (Check.isNotBlank(processExecutionResult.getStringResult()))
 		{
 			return ResponseEntity
 					.ok()
-					.contentType(MediaType.APPLICATION_JSON_UTF8)
-					.body(processExecutionResult.getJsonResult());
+					.contentType(MediaType.valueOf(processExecutionResult.getStringResultContentType()))
+					.body(processExecutionResult.getStringResult());
 		}
 		else if (Check.isNotBlank(processExecutionResult.getReportFilename()))
 		{

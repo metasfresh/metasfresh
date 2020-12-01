@@ -513,8 +513,6 @@ public class MLookupFactory
 	/**************************************************************************
 	 * Get Lookup SQL for direct Table Lookup
 	 *
-	 * @param ctx context for access
-	 * @param ColumnName column name
 	 * @return SELECT Key, NULL, Name, IsActive from Table (fully qualified)
 	 */
 	// NOTE: never make this method public because in case the lookup is cloned from a cached version we need to set the context and other relevant fields anyway

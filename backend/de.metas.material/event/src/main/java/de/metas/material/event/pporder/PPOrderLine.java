@@ -45,6 +45,7 @@ import java.time.Instant;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -60,7 +61,7 @@ public class PPOrderLine
 	int ppOrderLineId;
 
 	/**
-	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.<br>
+	 * Specifies whether this line is about a receipt (co-product or by-product) or about an issue.
 	 */
 	boolean receipt;
 
@@ -71,8 +72,10 @@ public class PPOrderLine
 	@Nullable
 	MinMaxDescriptor minMaxDescriptor;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyRequired;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyDelivered;
 
 	@JsonCreator

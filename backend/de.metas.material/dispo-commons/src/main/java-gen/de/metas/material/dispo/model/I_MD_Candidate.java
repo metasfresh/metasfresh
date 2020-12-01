@@ -180,8 +180,31 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set ATP reserved for customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReservedForCustomer (boolean IsReservedForCustomer);
+
+	/**
+	 * Get ATP reserved for customer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReservedForCustomer();
+
+    /** Column definition for IsReservedForCustomer */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_IsReservedForCustomer = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "IsReservedForCustomer", null);
+    /** Column name IsReservedForCustomer */
+    public static final String COLUMNNAME_IsReservedForCustomer = "IsReservedForCustomer";
+
+	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -190,8 +213,8 @@ public interface I_MD_Candidate
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -209,7 +232,7 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Untertyp.
+	 * Set Business case.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -218,7 +241,7 @@ public interface I_MD_Candidate
 	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase);
 
 	/**
-	 * Get Untertyp.
+	 * Get Business case.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

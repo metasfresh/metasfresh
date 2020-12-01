@@ -7,7 +7,9 @@ import {
   headerPropertiesRequest,
 } from '../api';
 import { getTableId } from '../reducers/tables';
+import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
+import { formatFilters, populateFiltersCaptions } from '../utils/filterHelpers';
 
 import {
   ADD_VIEW_LOCATION_DATA,
@@ -34,6 +36,7 @@ import {
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
+import { createFilter, deleteFilter } from './FiltersActions';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
 
 /**
@@ -322,7 +325,6 @@ export function fetchDocument({
     })
       .then((response) => {
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
-
         const tableId = getTableId({ windowId, viewId });
         const tableData = { windowId, viewId, ...response.data };
 
@@ -336,6 +338,29 @@ export function fetchDocument({
 
         const state = getState();
         const view = getView(state, windowId, isModal);
+
+        const filterId = getEntityRelatedId({ windowId, viewId });
+        const activeFiltersCaptions = populateFiltersCaptions({
+          filterData: view.layout.filters,
+          filtersActive: response.data.filters,
+        });
+        const filtersActive = formatFilters({
+          filtersData: view.layout.filters,
+          filtersActive: response.data.filters,
+        });
+
+        dispatch(
+          createFilter({
+            filterId,
+            data: {
+              filterData: view.layout.filters, // set the proper layout for the filters
+              filtersActive,
+              activeFiltersCaptions,
+            },
+          })
+        );
+
+        // set the Layout for the view
         const openIncludedViewOnSelect =
           view.layout &&
           view.layout.includedView &&
@@ -473,6 +498,10 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         const tableId = getTableId({ windowId, viewId });
 
         dispatch(deleteTable(tableId));
+
+        // remove the old filter from the store
+        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+        dispatch(deleteFilter(entityRelatedId));
 
         return Promise.resolve(response.data);
       })

@@ -9,6 +9,93 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.157
+## Features
+* metasfresh
+  * [#10106](https://github.com/metasfresh/metasfresh/issues/10106) Add Raw Material Origin and NetWeight into Product
+
+## Fixes
+* metasfresh
+  * [#10132](https://github.com/metasfresh/metasfresh/issues/10132) Fix never ending migration script 5569290_sys_gh10046_setPoReferenceToShipmentSchedule
+  * [#10135](https://github.com/metasfresh/metasfresh/issues/10135) WebUI Front End: Removing labels is annoying and not smooth
+  * [#10139](https://github.com/metasfresh/metasfresh/issues/10139) "Add new" button not displayed after adding a new entry was unsuccessful/aborted
+  * [#10142](https://github.com/metasfresh/metasfresh/issues/10142) Labels component is not respecting read-only property
+  * [#10145](https://github.com/metasfresh/metasfresh/issues/10145) Phone Call Schedule: After action 'create sales order' was called, the action is not available anymore
+
+# metasfresh 5.156
+## Features
+* metasfresh
+  * [#9886](https://github.com/metasfresh/metasfresh/issues/9886) Filter: Invoice disposition by "reference" = delivery note number entered in the order
+  * [#9938](https://github.com/metasfresh/metasfresh/issues/9938) Display the field AD_Tab in the Table-Process tab of the Process window (WebUI)
+  * [#9958](https://github.com/metasfresh/metasfresh/issues/9958) Fix ProductPlanning creation and Org
+  * [#9966](https://github.com/metasfresh/metasfresh/issues/9966) Add support for CSV-Response in postgREST-Processes
+  * [#10001](https://github.com/metasfresh/metasfresh/issues/10001) Add M_Warehouse in C_Invoice and use it for tax calculation
+  * [#10022](https://github.com/metasfresh/metasfresh/issues/10022) Automatically set `HU.BestBeforeDate` and `HU.LotNr` attributes during Manfacturing
+  * [#10034](https://github.com/metasfresh/metasfresh/issues/10034) Add possibility to open documents created from processes in new tabs
+  * [#10059](https://github.com/metasfresh/metasfresh/issues/10059) Invoice and Order: Only allow doctypes with the same org as the document or *
+  * [#10074](https://github.com/metasfresh/metasfresh/issues/10074) Create metasfresh window for 'Purchase Invoice Candidates'
+  * [#10076](https://github.com/metasfresh/metasfresh/issues/10076) Rename parameter Label at "Gutschrift erstellen"
+  * [#10079](https://github.com/metasfresh/metasfresh/issues/10079) Add window 'Counter Document' and 'Missing/Incomplete Counter Document' to WebUI role
+  * [#10083](https://github.com/metasfresh/metasfresh/issues/10083) Make it easier to work with API export status from metasfresh
+  * [#10088](https://github.com/metasfresh/metasfresh/issues/10088) Filter out closed shipment schedules from picking terminal window
+  * [#10097](https://github.com/metasfresh/metasfresh/issues/10097) Include sequence number in exports for shipment-candidate, receipt-candidate and production-order
+  * [#10098](https://github.com/metasfresh/metasfresh/issues/10098) Assign Material receipt to the project
+  * [#10108](https://github.com/metasfresh/metasfresh/issues/10108) Introduce AD_UI_Section.UIStyle
+  * [#10114](https://github.com/metasfresh/metasfresh/pull/10114) Add special auto-vacuum settings for different tables
+  * [#10122](https://github.com/metasfresh/metasfresh/issues/10122) Picking Tray Cleaning: add QtyTU parameter to "Take out and add to LU" process
+
+## Fixes
+* metasfresh
+  * [#10045](https://github.com/metasfresh/metasfresh/issues/10045) Packing instructions are no longer displayed when ordering
+  * [#10068](https://github.com/metasfresh/metasfresh/issues/10068) Reactivate sales order fix
+  * [#10084](https://github.com/metasfresh/metasfresh/issues/10084) DatePromised and PreparationDate shall be copied From Offer when creating a sales order
+  * [#10116](https://github.com/metasfresh/metasfresh/issues/10116) Created two entries through double click
+  * [#10121](https://github.com/metasfresh/metasfresh/pull/10121) Update lombok to 1.18.14 from 1.18.10
+  * [#10125](https://github.com/metasfresh/metasfresh/issues/10125) Fix editing fields in data entry tabs
+
+# metasfresh 5.155
+## Features
+* metasfresh
+  * [#9914](https://github.com/metasfresh/metasfresh/issues/9914) Create a data wrapper for the widgets
+  * [#9931](https://github.com/metasfresh/metasfresh/issues/9931) XML <-> metasfresh inventory import
+  * [#9976](https://github.com/metasfresh/metasfresh/issues/9976) Add number of exported shipment schedule items to REST-API
+  * [#10003](https://github.com/metasfresh/metasfresh/issues/10003) Increase `AD_Process.JsonPath` column size
+  * [#10009](https://github.com/metasfresh/metasfresh/issues/10009) Out-of-stock correction via camel
+  * [#10010](https://github.com/metasfresh/metasfresh/issues/10010) Reference between organisation master data and business partner
+  * [#10015](https://github.com/metasfresh/metasfresh/pull/10015) Manufacturing issue/receipt import audit
+  * [#10017](https://github.com/metasfresh/metasfresh/issues/10017) Export `Order.deliveryInfo` via camel
+  * [#10020](https://github.com/metasfresh/metasfresh/pull/10020) Camel: write error file
+  * [#10027](https://github.com/metasfresh/metasfresh/issues/10027) Drop column `R_Request.StartDate`
+  * [#10038](https://github.com/metasfresh/metasfresh/issues/10038) Open newly created documents in a new tab
+  * [#10046](https://github.com/metasfresh/metasfresh/issues/10046) Change columnsql of `FilteredItemsWithSameHeaderAggregationKey` column
+  * [#10050](https://github.com/metasfresh/metasfresh/pull/10050) Replace `Purchase Order` tab `OrderByClause` with `AD_Field.SortNo`
+  * [#10057](https://github.com/metasfresh/metasfresh/issues/10057) Service provider platform enhancements
+
+## Fixes
+* metasfresh
+  * [#10030](https://github.com/metasfresh/metasfresh/issues/10030) Do not add duplicate filters to a view
+  * [#10037](https://github.com/metasfresh/metasfresh/pull/10037) HU matching fixes
+  * [#10041](https://github.com/metasfresh/metasfresh/issues/10041) Don't crash the app when widget exists in layout but not data
+  * [#10051](https://github.com/metasfresh/metasfresh/issues/10051) Invoice DocType is taken from login Org instead of the invoice candidates' one
+
+# metasfresh 5.154
+## Features
+* metasfresh
+  * [#9971](https://github.com/metasfresh/metasfresh/issues/9971) Allow 'Issue'ing of 'By-Product' and 'Co-Product' created HUs in manufacturing
+  * [#9982](https://github.com/metasfresh/metasfresh/issues/9982) Create shipments REST-API adjustments
+  * [#9984](https://github.com/metasfresh/metasfresh/pull/9984) Store the data in the redux store instead of local state
+
+## Fixes
+* metasfresh
+  * [#9975](https://github.com/metasfresh/metasfresh/issues/9975) Browser Back stops at Dashboard
+  * [#9980](https://github.com/metasfresh/metasfresh/issues/9980) Order indicator vanished after switching detail view back to grid view
+  * [#9988](https://github.com/metasfresh/metasfresh/issues/9988) Avoid duplicate records in AD_TreeBar
+  * [#9993](https://github.com/metasfresh/metasfresh/issues/9993) Use a nonce in Convert methods
+  * [#9999](https://github.com/metasfresh/metasfresh/issues/9999) Documents cannot be voided
+  * [#10000](https://github.com/metasfresh/metasfresh/pull/10000) Add missing prompt from the state
+  * [#10005](https://github.com/metasfresh/metasfresh/issues/10005) Allocating entries in Allocate Payments overlay only works once
+  * [#10007](https://github.com/metasfresh/metasfresh/pull/10007) Fixes for Dashboard breadcrumbs path
+
 # metasfresh 5.153
 ## Features
 * metasfresh

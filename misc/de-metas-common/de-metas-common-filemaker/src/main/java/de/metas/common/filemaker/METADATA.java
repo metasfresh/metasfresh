@@ -22,20 +22,19 @@
 
 package de.metas.common.filemaker;
 
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.common.filemaker.ROW.ROWBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+
+import java.util.List;
+import java.util.Map;
 
 @Value
 public class METADATA
@@ -87,7 +86,7 @@ public class METADATA
 		final Integer fieldIndex = fieldName2FieldIndex.get(fieldName);
 		if (fieldIndex == null)
 		{
-			throw new IllegalArgumentException("Unknow field `" + fieldName + "` in " + this);
+			throw new IllegalArgumentException("A field with name `" + fieldName + "` is not included in the current file; metadata=" + this);
 		}
 
 		return fieldIndex;

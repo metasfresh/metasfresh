@@ -2,6 +2,7 @@ package org.eevolution.api;
 
 import java.time.Duration;
 
+import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -16,9 +17,13 @@ public interface IPPCostCollectorBL extends ISingletonService
 {
 	I_PP_Cost_Collector getById(PPCostCollectorId costCollectorId);
 
+	PPCostCollectorQuantities getQuantities(I_PP_Cost_Collector cc);
+
+	void setQuantities(@NonNull I_PP_Cost_Collector cc, @NonNull PPCostCollectorQuantities from);
+
 	Quantity getMovementQty(I_PP_Cost_Collector cc);
 
-	I_C_UOM getStockingUOM(I_PP_Cost_Collector cc);
+	Quantity getMovementQtyInStockingUOM(I_PP_Cost_Collector cc);
 
 	Duration getTotalDurationReported(I_PP_Cost_Collector cc);
 

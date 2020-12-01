@@ -1,6 +1,8 @@
 export * from './actions/TableTypes';
 export * from './actions/ViewTypes';
 export * from './actions/ListTypes';
+export * from './actions/TabTypes';
+export * from './actions/FilterTypes';
 
 /**
  * @constant
@@ -81,24 +83,6 @@ export const INIT_LAYOUT_SUCCESS = 'INIT_LAYOUT_SUCCESS';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const SORT_TAB = 'SORT_TAB';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const ACTIVATE_TAB = 'ACTIVATE_TAB';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UNSELECT_TAB = 'UNSELECT_TAB';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const UPDATE_DATA_PROPERTY = 'UPDATE_DATA_PROPERTY';
 
 /**
@@ -130,12 +114,6 @@ export const UPDATE_DATA_VALID_STATUS = 'UPDATE_DATA_VALID_STATUS';
  * @type {string} ToDo: Description for the constant.
  */
 export const UPDATE_DATA_SAVE_STATUS = 'UPDATE_DATA_SAVE_STATUS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_DATA_INCLUDED_TABS_INFO = 'UPDATE_DATA_INCLUDED_TABS_INFO';
 
 // END OF SCOPED ACTIONS
 

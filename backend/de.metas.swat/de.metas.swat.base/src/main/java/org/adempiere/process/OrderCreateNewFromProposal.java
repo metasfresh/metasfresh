@@ -71,6 +71,9 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		childCRS.setBase(true);
 		childCRS.copyRecord(sourceOrder, get_TrxName());
 
+
+		newOrder.setDatePromised(sourceOrder.getDatePromised());
+		newOrder.setPreparationDate(sourceOrder.getPreparationDate());
 		newOrder.setDocStatus(DocStatus.Drafted.getCode());
 		newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 		InterfaceWrapperHelper.save(newOrder);
@@ -96,7 +99,9 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		getResult().setRecordToOpen(
 				TableRecordReference.of(newOrder),
 				orderWindowId.get().getRepoId(), // adWindowId
-				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument);
+				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument,
+				ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB
+		);
 
 		return newOrder.getDocumentNo();
 	}

@@ -116,7 +116,9 @@ describe('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`)
+        .get(
+          `/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`
+        )
         .reply(200, dataFixtures.breadcrumbs1);
 
       nock(config.API_URL)
@@ -165,10 +167,11 @@ describe('DocList', () => {
         .get(`/documentView/${windowId}/${viewId}?firstRow=0&pageLength=20`)
         .reply(200, rowFixtures.rowData1);
 
-
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${includedWindowId}/${includedViewId}?firstRow=0&pageLength=20`)
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}?firstRow=0&pageLength=20`
+        )
         .reply(200, rowFixtures.includedViewData1);
 
       const wrapper = mount(
@@ -181,18 +184,20 @@ describe('DocList', () => {
 
       await waitFor(() =>
         expect(Object.keys(store.getState().viewHandler.views).length).toBe(2)
-      )
+      );
 
       wrapper.update();
 
       await waitFor(() =>
-        expect(store.getState().viewHandler.views[includedWindowId].layoutPending).toBeFalsy()
-      )
+        expect(
+          store.getState().viewHandler.views[includedWindowId].layoutPending
+        ).toBeFalsy()
+      );
 
       await waitForExpect(() => {
         const html = wrapper.html();
-          expect(html).toContain('document-list-has-included');
-          expect(html).toContain('document-list-is-included');
+        expect(html).toContain('document-list-has-included');
+        expect(html).toContain('document-list-is-included');
       }, 4000);
 
       done();
@@ -204,7 +209,7 @@ describe('DocList', () => {
      * to wait for all of them to finish, so that jest won't complain and throw errors. But
      * with the current architecture it's really hard to implement and would require changes
      * in the QuickActions component anyway.
-    */
+     */
     it.skip('renders without errors and loads quick actions', async (done) => {
       const initialState = createInitialState();
       const store = createStore(
@@ -226,7 +231,9 @@ describe('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`)
+        .get(
+          `/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`
+        )
         .reply(200, dataFixtures.breadcrumbs1);
 
       nock(config.API_URL)
@@ -287,17 +294,27 @@ describe('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${windowId}/${viewId}/quickActions?selectedIds=${data.result[0].id}`)
+        .get(
+          `/documentView/${windowId}/${viewId}/quickActions?selectedIds=${
+            data.result[0].id
+          }`
+        )
         .reply(200, quickActionsData.parent_quickactions2);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${includedWindowId}/${includedViewId}/quickActions?selectedIds=${includedData.result[0].id}`)
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/quickActions?selectedIds=${
+            includedData.result[0].id
+          }`
+        )
         .reply(200, quickActionsData.included_quickactions);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${includedWindowId}/${includedViewId}?firstRow=0&pageLength=20`)
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}?firstRow=0&pageLength=20`
+        )
         .reply(200, rowFixtures.includedViewData1);
 
       const wrapper = mount(
@@ -310,24 +327,31 @@ describe('DocList', () => {
 
       await waitFor(() =>
         expect(Object.keys(store.getState().viewHandler.views).length).toBe(2)
-      )
+      );
 
       wrapper.update();
 
       await waitFor(() =>
-        expect(store.getState().viewHandler.views[includedWindowId].layoutPending).toBeFalsy()
-      )
+        expect(
+          store.getState().viewHandler.views[includedWindowId].layoutPending
+        ).toBeFalsy()
+      );
 
       await waitForExpect(() => {
         const html = wrapper.html();
-          expect(html).toContain('document-list-has-included');
-          expect(html).toContain('document-list-is-included');
+        expect(html).toContain('document-list-has-included');
+        expect(html).toContain('document-list-is-included');
       }, 4000);
 
+      
       await waitFor(() => {
-        expect(store.getState().windowHandler.quickActions[`${includedWindowId}-${includedViewId}`]).toBeTruthy()
-        expect(store.getState().windowHandler.indicator).toEqual('saved')
-      })
+        expect(
+          store.getState().windowHandler.quickActions[
+            `${includedWindowId}-${includedViewId}`
+          ]
+        ).toBeTruthy();
+        expect(store.getState().windowHandler.indicator).toEqual('saved');
+      });
 
       done();
     }, 10000);

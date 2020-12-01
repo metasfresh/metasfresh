@@ -3,6 +3,7 @@ import counterpart from 'counterpart';
 import { push, replace } from 'react-router-redux';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
+import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
@@ -45,8 +46,11 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
+  UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
+import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 import {
   getData,
@@ -57,7 +61,9 @@ import {
   getTabRequest,
   startProcess,
   formatParentUrl,
+  getTabLayoutRequest,
 } from '../api';
+
 import { getTableId } from '../reducers/tables';
 import {
   addNotification,
@@ -80,8 +86,6 @@ import {
   updateTableSelection,
   updateTableRowProperty,
 } from './TableActions';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 /*
  * Action creator called when quick actions are successfully fetched
@@ -225,6 +229,20 @@ export function unselectTab(scope) {
   return {
     type: UNSELECT_TAB,
     scope,
+  };
+}
+
+/**
+ * @method setUpdatedTabLayout
+ * @summary Action creator to update tab's layout data in the store
+ *
+ * @param {string} tabId
+ * @param {object} layoutData
+ */
+function setUpdatedTabLayout(tabId, layoutData) {
+  return {
+    type: UPDATE_TAB_LAYOUT,
+    payload: { tabId, layoutData },
   };
 }
 
@@ -397,8 +415,6 @@ export function updateModal(rowId, dataId) {
   };
 }
 
-// INDICATOR ACTIONS
-
 export function indicatorState(state) {
   return {
     type: CHANGE_INDICATOR_STATE,
@@ -425,6 +441,27 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       })
       .catch((error) => {
         //show error message ?
+        return Promise.reject(error);
+      });
+  };
+}
+
+/*
+ * @method updateTabLayout
+ * @summary Action creator for fetching and updating single tab's layout
+ *
+ * @param {number} windowId
+ * @param {string} tabId
+ */
+export function updateTabLayout(windowId, tabId) {
+  return (dispatch) => {
+    return getTabLayoutRequest(windowId, tabId)
+      .then(({ data }) => {
+        dispatch(setUpdatedTabLayout(tabId, data));
+
+        return Promise.resolve(tabId);
+      })
+      .catch((error) => {
         return Promise.reject(error);
       });
   };
@@ -753,8 +790,9 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
 }
 
 /*
- *  Wrapper for patch request of widget elements
- *  when responses should merge store
+ * Wrapper for patch request of widget elements
+ * when responses should merge store
+ * @todo TODO: This should return a promise
  */
 export function patch(
   entity,
@@ -859,7 +897,6 @@ export function fireUpdateData({
   rowId,
   isModal,
   fetchAdvancedFields,
-  doNotFetchIncludedTabs,
 }) {
   return (dispatch) => {
     getData({
@@ -869,7 +906,6 @@ export function fireUpdateData({
       tabId: tabId,
       rowId: rowId,
       fetchAdvancedFields: fetchAdvancedFields,
-      doNotFetchIncludedTabs: doNotFetchIncludedTabs,
     }).then((response) => {
       dispatch(
         mapDataToState(
@@ -1081,7 +1117,13 @@ export function createProcess({
 }) {
   let pid = null;
 
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    // creation of processes can be done only if there isn't any pending process https://github.com/metasfresh/metasfresh/issues/10116
+    const { processStatus } = getState().appHandler;
+    if (processStatus === 'pending') {
+      return false;
+    }
+
     await dispatch(setProcessPending());
 
     let response;
@@ -1171,23 +1213,28 @@ export function handleProcessResponse(response, type, id) {
       let keepProcessModal = false;
 
       if (action) {
+        const { windowId, viewId, documentId, targetTab } = action;
+        let urlPath;
+
         switch (action.type) {
           case 'displayQRCode':
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
           case 'openView': {
-            const { windowId, viewId } = action;
-
             await dispatch(closeModal());
-
-            if (!action.modalOverlay) {
-              window.open(`/window/${windowId}/?viewId=${viewId}`);
-
+            urlPath = `/window/${windowId}/?viewId=${viewId}`;
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+              return;
+            }
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
               return;
             }
 
-            await dispatch(openRawModal(windowId, viewId, action.profileId));
-
+            if (targetTab === 'SAME_TAB_OVERLAY') {
+              await dispatch(openRawModal(windowId, viewId, action.profileId));
+            }
             break;
           }
           case 'openReport':
@@ -1196,8 +1243,19 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openDocument':
             await dispatch(closeModal());
+            urlPath = `/window/${windowId}/${documentId}`;
 
-            if (action.modal) {
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+              return false;
+            }
+
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
+              return false;
+            }
+
+            if (action.modal || targetTab === 'SAME_TAB_OVERLAY') {
               // Do not close process modal,
               // since it will be re-used with document view
               keepProcessModal = true;

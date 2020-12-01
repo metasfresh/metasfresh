@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -140,8 +142,9 @@ public class ManufacturingOrderKey extends TerminalKey
 		//
 		// Qty Delivered / Qty Ordered
 		{
-			final BigDecimal qtyDelivered = NumberUtils.stripTrailingDecimalZeros(order.getQtyDelivered().setScale(2, RoundingMode.HALF_UP));
-			final BigDecimal qtyOrdered = NumberUtils.stripTrailingDecimalZeros(order.getQtyOrdered().setScale(2, RoundingMode.HALF_UP));
+			final PPOrderQuantities qtys = Services.get(IPPOrderBOMBL.class).getQuantities(order);
+			final BigDecimal qtyDelivered = NumberUtils.stripTrailingDecimalZeros(qtys.getQtyReceived().toBigDecimal().setScale(2, RoundingMode.HALF_UP));
+			final BigDecimal qtyOrdered = NumberUtils.stripTrailingDecimalZeros(qtys.getQtyRequiredToProduce().toBigDecimal().setScale(2, RoundingMode.HALF_UP));
 
 			sb.append("<br>");
 			sb.append(qtyDelivered);

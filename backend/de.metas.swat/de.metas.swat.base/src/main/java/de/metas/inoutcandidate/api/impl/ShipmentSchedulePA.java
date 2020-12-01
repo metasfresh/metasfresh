@@ -37,6 +37,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
 
@@ -236,12 +237,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
 				.map(shipmentSchedule -> extractOrderAndLineId(shipmentSchedule))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<OrderAndLineId, I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).getOrderLinesByIds(orderLineIds);
+		final Map<OrderAndLineId, I_C_OrderLine> orderLines = orderDAO.getOrderLinesByIds(orderLineIds);
+
+		final ImmutableSet<OrderId> orderIds = orderLineIds.stream().map(OrderAndLineId::getOrderId).collect(ImmutableSet.toImmutableSet());
+
+		final Map<OrderId, I_C_Order> orderId2record = Maps.uniqueIndex(orderDAO.getByIds(orderIds, I_C_Order.class), order -> OrderId.ofRepoId(order.getC_Order_ID()));
 
 		final List<OlAndSched> result = new ArrayList<>();
 
@@ -249,18 +256,22 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			final OrderAndLineId orderLineId = extractOrderAndLineId(schedule);
 			final I_C_OrderLine orderLine;
+			final I_C_Order order;
 			if (orderLineId == null)
 			{
 				orderLine = null;
+				order = null;
 			}
 			else
 			{
 				orderLine = orderLines.get(orderLineId);
+				order = orderId2record.get(orderLineId.getOrderId());
 			}
 
 			final OlAndSched olAndSched = OlAndSched.builder()
 					.shipmentSchedule(schedule)
 					.orderLineOrNull(orderLine)
+					.orderOrNull(order)
 					.build();
 			result.add(olAndSched);
 		}
@@ -591,5 +602,17 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return queryBuilder
 				.create()
 				.listImmutable(I_M_ShipmentSchedule.class);
+	}
+
+
+	@Override
+	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 }

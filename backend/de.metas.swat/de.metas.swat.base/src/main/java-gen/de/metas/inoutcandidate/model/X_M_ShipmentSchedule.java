@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1131484261L;
+	private static final long serialVersionUID = -107876146L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -935,17 +935,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public void setPOReference (java.lang.String POReference)
-	{
-		throw new IllegalArgumentException ("POReference is virtual column");	}
-
-	@Override
-	public java.lang.String getPOReference() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_POReference);
-	}
-
-	@Override
 	public void setPreparationDate (java.sql.Timestamp PreparationDate)
 	{
 		set_Value (COLUMNNAME_PreparationDate, PreparationDate);
@@ -1280,4 +1269,29 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Status);
 	}
+
+	@Override
+	public void setPOReference (java.lang.String POReference)
+	{
+		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference)
+	{
+		set_Value (COLUMNNAME_NrOfOLCandsWithSamePOReference, Integer.valueOf(NrOfOLCandsWithSamePOReference));
+	}
+
+	@Override
+	public int getNrOfOLCandsWithSamePOReference()
+	{
+		return get_ValueAsInt(COLUMNNAME_NrOfOLCandsWithSamePOReference);
+	}
+
 }

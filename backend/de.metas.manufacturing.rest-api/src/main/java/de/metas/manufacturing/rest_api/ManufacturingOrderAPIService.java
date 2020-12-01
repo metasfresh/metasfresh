@@ -1,12 +1,6 @@
 package de.metas.manufacturing.rest_api;
 
-import java.time.Instant;
-
-import org.adempiere.ad.dao.QueryLimit;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
@@ -15,6 +9,10 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.product.ProductRepository;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -41,22 +39,28 @@ import lombok.NonNull;
 @Service
 class ManufacturingOrderAPIService
 {
-	private final ManufacturingOrderAuditRepository orderAuditRepo;
+	private final ManufacturingOrderExportAuditRepository orderExportAuditRepo;
+	private final ManufacturingOrderReportAuditRepository orderReportAuditRepo;
 	private final ProductRepository productRepo;
 	private final ObjectMapper jsonObjectMapper;
 	private final HUReservationService huReservationService;
+	private final ExportSequenceNumberProvider exportSequenceNumberProvider;
 
 	@Builder
 	public ManufacturingOrderAPIService(
-			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
+			@NonNull final ManufacturingOrderExportAuditRepository orderExportAuditRepo,
+			@NonNull final ManufacturingOrderReportAuditRepository orderReportAuditRepo,
 			@NonNull final ProductRepository productRepo,
 			@NonNull final ObjectMapper jsonObjectMapper,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ExportSequenceNumberProvider exportSequenceNumberProvider)
 	{
-		this.orderAuditRepo = orderAuditRepo;
+		this.orderExportAuditRepo = orderExportAuditRepo;
+		this.orderReportAuditRepo = orderReportAuditRepo;
 		this.productRepo = productRepo;
 		this.jsonObjectMapper = jsonObjectMapper;
 		this.huReservationService = huReservationService;
+		this.exportSequenceNumberProvider = exportSequenceNumberProvider;
 	}
 
 	public JsonResponseManufacturingOrdersBulk exportOrders(
@@ -65,8 +69,9 @@ class ManufacturingOrderAPIService
 			@NonNull final String adLanguage)
 	{
 		final ManufacturingOrdersExportCommand command = ManufacturingOrdersExportCommand.builder()
-				.orderAuditRepo(orderAuditRepo)
+				.orderAuditRepo(orderExportAuditRepo)
 				.productRepo(productRepo)
+				.exportSequenceNumberProvider(exportSequenceNumberProvider)
 				//
 				.canBeExportedFrom(canBeExportedFrom)
 				.limit(limit)
@@ -80,7 +85,7 @@ class ManufacturingOrderAPIService
 	public void setExportStatus(@NonNull final JsonRequestSetOrdersExportStatusBulk request)
 	{
 		final ManufacturingOrdersSetExportStatusCommand command = ManufacturingOrdersSetExportStatusCommand.builder()
-				.orderAuditRepo(orderAuditRepo)
+				.orderAuditRepo(orderExportAuditRepo)
 				.jsonObjectMapper(jsonObjectMapper)
 				//
 				.request(request)
@@ -94,6 +99,8 @@ class ManufacturingOrderAPIService
 	{
 		final ManufacturingOrderReportProcessCommand command = ManufacturingOrderReportProcessCommand.builder()
 				.huReservationService(huReservationService)
+				.auditRepository(orderReportAuditRepo)
+				.jsonObjectMapper(jsonObjectMapper)
 				//
 				.request(request)
 				//

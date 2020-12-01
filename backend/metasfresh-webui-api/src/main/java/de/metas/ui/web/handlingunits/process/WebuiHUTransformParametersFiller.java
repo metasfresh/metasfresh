@@ -1,28 +1,14 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
-import org.compiere.model.I_AD_Process_Para;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.printing.esb.base.util.Check;
@@ -47,6 +33,19 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import org.compiere.model.I_AD_Process_Para;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -81,23 +80,27 @@ public class WebuiHUTransformParametersFiller
 	private final transient IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUStatusBL statusBL = Services.get(IHUStatusBL.class);
 
 	// Context
 	private final HUEditorView _view;
 	private final HUEditorRow _selectedRow;
 	private final ActionType _actionType;
 	private final boolean _checkExistingHUsInsideView;
+	private final boolean _isMoveToDifferentWarehouseEnabled;
 
 	@Builder
 	private WebuiHUTransformParametersFiller(@NonNull final HUEditorView view,
 			@NonNull final HUEditorRow selectedRow,
 			@Nullable final ActionType actionType,
-			final boolean checkExistingHUsInsideView)
+			final boolean checkExistingHUsInsideView,
+			final boolean isMoveToDifferentWarehouseEnabled)
 	{
 		this._view = view;
 		this._selectedRow = selectedRow;
 		this._actionType = actionType;
 		this._checkExistingHUsInsideView = checkExistingHUsInsideView;
+		this._isMoveToDifferentWarehouseEnabled = isMoveToDifferentWarehouseEnabled;
 	}
 
 	private HUEditorView getView()
@@ -145,6 +148,10 @@ public class WebuiHUTransformParametersFiller
 		else if (WEBUI_M_HU_Transform.PARAM_HUPlanningReceiptOwnerPM_LU.equals(parameterName))
 		{
 			return getSelectedRow().isHUPlanningReceiptOwnerPM(); // should work, because otherwise the param is not even shown.
+		}
+		else if (WEBUI_M_HU_Transform.PARAM_SHOW_WAREHOUSE_ID.equals(parameterName))
+		{
+			return getShowWarehouseFlag();
 		}
 
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
@@ -455,5 +462,38 @@ public class WebuiHUTransformParametersFiller
 				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU));
 
 		return luPIItems;
+	}
+
+	public boolean getShowWarehouseFlag()
+	{
+		final ActionType currentActionType = getActionType();
+
+		if (currentActionType == null)
+		{
+			return false;
+		}
+
+		final boolean isMoveToWarehouseAllowed = _isMoveToDifferentWarehouseEnabled && statusBL.isStatusActive(getSelectedRow().getM_HU());
+
+		if (!isMoveToWarehouseAllowed)
+		{
+			return false;
+		}
+
+		final boolean showWarehouse;
+
+		switch (currentActionType)
+		{
+			case CU_To_NewCU:
+			case CU_To_NewTUs:
+			case TU_To_NewLUs:
+			case TU_To_NewTUs:
+				showWarehouse = true;
+				break;
+			default:
+				showWarehouse = false;
+		}
+
+		return showWarehouse;
 	}
 }

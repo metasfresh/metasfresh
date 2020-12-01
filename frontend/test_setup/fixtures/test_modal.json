@@ -139,5 +139,136 @@
       }
     ],
     "pinstanceId": "3396778"
+  },
+  "data": {
+    "Action": {
+      "field": "Action",
+      "value": "",
+      "readonly": false,
+      "mandatory": true,
+      "displayed": true,
+      "widgetType": "List",
+      "validStatus": {
+        "valid": false,
+        "initialValue": true,
+        "reason": "Mandatory field Action not filled",
+        "fieldName": "Action"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "M_HU_PI_Item_Product_ID": {
+      "field": "M_HU_PI_Item_Product_ID",
+      "value": "",
+      "readonly": false,
+      "mandatory": false,
+      "displayed": false,
+      "widgetType": "List",
+      "validStatus": {
+        "valid": false,
+        "initialValue": true,
+        "reason": "not validated yet"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "M_HU_PI_Item_ID": {
+      "field": "M_HU_PI_Item_ID",
+      "value": "",
+      "readonly": false,
+      "mandatory": false,
+      "displayed": false,
+      "widgetType": "List",
+      "validStatus": {
+        "valid": false,
+        "initialValue": true,
+        "reason": "not validated yet"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "M_LU_HU_ID": {
+      "field": "M_LU_HU_ID",
+      "value": "",
+      "readonly": false,
+      "mandatory": false,
+      "displayed": false,
+      "widgetType": "Lookup",
+      "validStatus": {
+        "valid": false,
+        "initialValue": true,
+        "reason": "not validated yet"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "M_TU_HU_ID": {
+      "field": "M_TU_HU_ID",
+      "value": "",
+      "readonly": false,
+      "mandatory": false,
+      "displayed": false,
+      "widgetType": "Lookup",
+      "validStatus": {
+        "valid": false,
+        "initialValue": true,
+        "reason": "not validated yet"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "QtyCU": {
+      "field": "QtyCU",
+      "value": "0",
+      "readonly": false,
+      "mandatory": false,
+      "displayed": false,
+      "widgetType": "Quantity",
+      "validStatus": {
+        "valid": true,
+        "initialValue": false,
+        "fieldName": "QtyCU"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "QtyTU": {
+      "field": "QtyTU",
+      "value": 1,
+      "readonly": false,
+      "mandatory": false,
+      "displayed": false,
+      "widgetType": "Integer",
+      "validStatus": {
+        "valid": true,
+        "initialValue": false,
+        "fieldName": "QtyTU"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "HUPlanningReceiptOwnerPM_LU": {
+      "field": "HUPlanningReceiptOwnerPM_LU",
+      "value": false,
+      "readonly": false,
+      "mandatory": false,
+      "mandatory-reason": "mandatory-initial",
+      "displayed": false,
+      "widgetType": "YesNo",
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "HUPlanningReceiptOwnerPM_LU"
+      },
+      "viewEditorRenderMode": "always"
+    },
+    "HUPlanningReceiptOwnerPM_TU": {
+      "field": "HUPlanningReceiptOwnerPM_TU",
+      "value": false,
+      "readonly": false,
+      "mandatory": false,
+      "mandatory-reason": "mandatory-initial",
+      "displayed": false,
+      "widgetType": "YesNo",
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "HUPlanningReceiptOwnerPM_TU"
+      },
+      "viewEditorRenderMode": "always"
+    }
   }
 }

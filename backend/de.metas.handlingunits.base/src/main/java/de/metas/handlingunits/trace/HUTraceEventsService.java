@@ -34,6 +34,7 @@ import org.eevolution.api.CostCollectorType;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -272,7 +273,6 @@ public class HUTraceEventsService
 	 * </ul>
 	 *
 	 * @param trxHeader needed because we use its {@code updated} timestamp for our eventTime.
-	 * @param trxLines
 	 *
 	 * @return a map with two lists that contains all events which were created and given to the repository.<br>
 	 *         The events that were actually inserted are in the list with the {@code true} key.
@@ -431,11 +431,8 @@ public class HUTraceEventsService
 
 	/**
 	 * Creates two trace records for the given {@code hu} which is moved from one parent to another parent (source or target parent might also be null).
-	 *
-	 * @param hu
-	 * @param parentHUItemOld
 	 */
-	public void createAndAddForHuParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
+	public void createAndAddForHuParentChanged(@NonNull final I_M_HU hu, @Nullable final I_M_HU_Item parentHUItemOld)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		if (!huStatusBL.isPhysicalHU(hu))

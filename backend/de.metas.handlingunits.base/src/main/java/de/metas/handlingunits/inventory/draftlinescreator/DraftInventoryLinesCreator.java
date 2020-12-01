@@ -1,25 +1,31 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Set;
-
-import org.adempiere.warehouse.LocatorId;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
+import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.NonFinal;
+import org.adempiere.warehouse.LocatorId;
+import org.slf4j.Logger;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Set;
 
 /*
  * #%L
@@ -47,10 +53,11 @@ import lombok.experimental.NonFinal;
  * Creates or updates inventory lines for
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class DraftInventoryLinesCreator
 {
+	private final static transient Logger logger = LogManager.getLogger(DraftInventoryLinesCreator.class);
+
 	@NonNull
 	private final InventoryLinesCreationCtx inventoryLinesCreationCtx;
 
@@ -67,10 +74,19 @@ public class DraftInventoryLinesCreator
 		this.inventoryLinesCreationCtx = inventoryLinesCreationCtx;
 	}
 
-	/** Create/Update new lines using the instance's {@link HUsForInventoryStrategy} */
+	/**
+	 * Create/Update new lines using the instance's {@link HUsForInventoryStrategy}
+	 */
 	public void execute()
 	{
 		final HUsForInventoryStrategy strategy = inventoryLinesCreationCtx.getStrategy();
+
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+		final InventoryRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryRepo();
+
+		final InventoryId inventoryId = inventoryLinesCreationCtx.getInventoryId();
+		final Inventory inventory = inventoryLineRepository.getById(inventoryId);
+		final ImmutableSet<HuId> preAddedHuIds = inventory.getHuIds(); // needed in case we want to add further lines when some already pre-exist
 
 		final Iterator<HuForInventoryLine> hus = strategy.streamHus().iterator();
 		while (hus.hasNext())
@@ -80,21 +96,31 @@ public class DraftInventoryLinesCreator
 
 			if (strategy.getMaxLocatorsAllowed() > 0 && strategy.getMaxLocatorsAllowed() < seenLocatorIds.size())
 			{
+				loggable.addLog("Strategy {} has maxLocatorsAllowed={}; -> not adding further HUs",
+						strategy.getClass().getSimpleName(), strategy.getMaxLocatorsAllowed());
 				break;
 			}
-
-			createOrUpdateInventoryLine(hu);
+			if (!preAddedHuIds.contains(hu.getHuId()))
+			{
+				createOrUpdateInventoryLine(hu);
+			}
+			else
+			{
+				loggable.addLog("M_HU_ID={} is already assinged to M_Inventory_ID={}; -> not trying to add it again",
+						HuId.toRepoId(hu.getHuId()),InventoryId.toRepoId(inventoryId));
+			}
 			countInventoryLines++;
 		}
 
-		final InventoryRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryRepo();
-		final InventoryId inventoryId = inventoryLinesCreationCtx.getInventoryId();
 		createdOrUpdatedLines
 				.values()
 				.forEach(line -> inventoryLineRepository.saveInventoryLine(line, inventoryId));
 
 	}
 
+	/**
+	 * Stores the result in {@link #createdOrUpdatedLines}
+	 */
 	private void createOrUpdateInventoryLine(@NonNull final HuForInventoryLine huForInventoryLine)
 	{
 		final InventoryLineBuilder inventoryLineBuilder;
@@ -112,7 +138,7 @@ public class DraftInventoryLinesCreator
 		else
 		{
 			final ImmutableMap<InventoryLineAggregationKey, InventoryLine> //
-			preExistingInventoryLines = inventoryLinesCreationCtx.getPreExistingInventoryLines();
+					preExistingInventoryLines = inventoryLinesCreationCtx.getPreExistingInventoryLines();
 
 			if (preExistingInventoryLines.containsKey(aggregationKey))
 			{
@@ -143,7 +169,7 @@ public class DraftInventoryLinesCreator
 		createdOrUpdatedLines.put(aggregationKey, inventoryLineBuilder.build());
 	}
 
-	private static InventoryLineHU toInventoryLineHU(final HuForInventoryLine huForInventoryLine)
+	public static InventoryLineHU toInventoryLineHU(final HuForInventoryLine huForInventoryLine)
 	{
 		final Quantity quantityBooked = huForInventoryLine.getQuantityBooked();
 		final Quantity quantityCount = CoalesceUtil.coalesce(huForInventoryLine.getQuantityCount(), quantityBooked);

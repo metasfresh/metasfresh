@@ -301,18 +301,4 @@ public class WaschprobeStandardMasterData
 
 		return iol;
 	}
-
-	public I_PP_Cost_Collector createPP_CostCollector_Issue(final I_PP_Order ppOrder,
-			final I_M_Product issuedProduct,
-			final BigDecimal issuedQty)
-	{
-		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
-		cc.setPP_Order(ppOrder);
-		cc.setCostCollectorType(CostCollectorType.ComponentIssue.getCode());
-		cc.setMovementQty(issuedQty);
-
-		InterfaceWrapperHelper.save(cc);
-
-		return cc;
-	}
 }

@@ -199,10 +199,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	public static final String DOCTYPE_MatMatchPO = "MXP";
 	/** GL Journal */
 	public static final String DOCTYPE_GLJournal = "GLJ";
-	/** Purchase Order */
-	public static final String DOCTYPE_POrder = "POO";
-	/** Sales Order */
-	public static final String DOCTYPE_SOrder = "SOO";
+	// /** Purchase Order */
+	// public static final String DOCTYPE_POrder = "POO";
+	// /** Sales Order */
+	// public static final String DOCTYPE_SOrder = "SOO";
 	/** Project Issue */
 	public static final String DOCTYPE_ProjectIssue = "PJI";
 	/** Purchase Requisition */
@@ -933,7 +933,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Makes sure the document is convertible from it's currency to accounting currency.
 	 */
-	private final void checkConvertible(final AcctSchema acctSchema)
+	protected void checkConvertible(final AcctSchema acctSchema)
 	{
 		// No Currency in document
 		final CurrencyId docCurrencyId = getCurrencyId();

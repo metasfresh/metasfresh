@@ -1,5 +1,8 @@
 package org.eevolution.model.validator;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.uom.UomId;
+import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 
@@ -44,6 +47,8 @@ import de.metas.util.Services;
 @Interceptor(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
 {
+	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
+
 	@Init
 	public void init()
 	{
@@ -76,15 +81,16 @@ public class PP_Cost_Collector
 			{
 				throw new FillMandatoryException(I_PP_Cost_Collector.COLUMNNAME_PP_Order_BOMLine_ID);
 			}
+
+			final UomId bomLineUOMId = orderBOMBL.getBOMLineUOMId(orderBOMLineId);
+
 			// If no UOM, use the UOM from BOMLine
 			if (cc.getC_UOM_ID() <= 0)
 			{
-				final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-				final I_PP_Order_BOMLine orderBOMLine = orderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
-				cc.setC_UOM_ID(orderBOMLine.getC_UOM_ID());
+				cc.setC_UOM_ID(bomLineUOMId.getRepoId());
 			}
 			// If Cost Collector UOM differs from BOM Line UOM then throw exception because this conversion is not supported yet
-			if (cc.getC_UOM_ID() != cc.getPP_Order_BOMLine().getC_UOM_ID())
+			if (cc.getC_UOM_ID() != bomLineUOMId.getRepoId())
 			{
 				throw new LiberoException("@PP_Cost_Collector_ID@ @C_UOM_ID@ <> @PP_Order_BOMLine_ID@ @C_UOM_ID@");
 			}

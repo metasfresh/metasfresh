@@ -1,21 +1,5 @@
 package de.metas.acct.doc;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.MAccount;
-import org.compiere.model.PO;
-import org.compiere.util.TrxRunnable2;
-import org.springframework.stereotype.Service;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -66,6 +50,20 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MAccount;
+import org.compiere.model.PO;
+import org.compiere.util.TrxRunnable2;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Optional;
 
 /*
  * #%L
@@ -135,7 +133,9 @@ public class AcctDocRequiredServicesFacade
 		factAcctListenersService.fireAfterPost(po);
 	}
 
-	public void fireDocumentChanged(final String documentTableName, final int documentRecordId)
+	public void fireDocumentChanged(
+			final String documentTableName,
+			final int documentRecordId)
 	{
 		modelCacheInvalidationService.invalidate(
 				CacheInvalidateMultiRequest.fromTableNameAndRecordId(documentTableName, documentRecordId),
@@ -158,7 +158,9 @@ public class AcctDocRequiredServicesFacade
 		return getSysConfigBooleanValue(sysConfigName, defaultValue);
 	}
 
-	public boolean getSysConfigBooleanValue(@NonNull final String sysConfigName, final boolean defaultValue)
+	public boolean getSysConfigBooleanValue(
+			@NonNull final String sysConfigName,
+			final boolean defaultValue)
 	{
 		return sysConfigBL.getBooleanValue(sysConfigName, defaultValue);
 	}
@@ -168,6 +170,7 @@ public class AcctDocRequiredServicesFacade
 		return msgBL.getTranslatableMsgText(adMessage);
 	}
 
+	@NonNull
 	public MAccount getAccountById(@NonNull final AccountId accountId)
 	{
 		return accountDAO.getById(accountId);
@@ -200,7 +203,9 @@ public class AcctDocRequiredServicesFacade
 		return bankAccountService.getById(bpBankAccountId);
 	}
 
-	public BankAccountAcct getBankAccountAcct(final BankAccountId bankAccountId, final AcctSchemaId acctSchemaId)
+	public BankAccountAcct getBankAccountAcct(
+			final BankAccountId bankAccountId,
+			final AcctSchemaId acctSchemaId)
 	{
 		return bankAccountService.getBankAccountAcct(bankAccountId, acctSchemaId);
 	}
@@ -245,30 +250,42 @@ public class AcctDocRequiredServicesFacade
 		return productBL.getStockUOMId(productId);
 	}
 
-	public Optional<AccountId> getProductAcct(@NonNull final AcctSchemaId acctSchemaId, @NonNull final ProductId productId, @NonNull final ProductAcctType acctType)
+	public Optional<AccountId> getProductAcct(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final ProductId productId,
+			@NonNull final ProductAcctType acctType)
 	{
 		return productAcctDAO.getProductAccount(acctSchemaId, productId, acctType);
 	}
 
-	public Optional<AccountId> getProductDefaultAcct(@NonNull final AcctSchemaId acctSchemaId, @NonNull final ProductAcctType acctType)
+	public Optional<AccountId> getProductDefaultAcct(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final ProductAcctType acctType)
 	{
 		final ProductCategoryId defaultProductCategoryId = productBL.getDefaultProductCategoryId();
 		return productAcctDAO.getProductCategoryAccount(acctSchemaId, defaultProductCategoryId, acctType);
 	}
 
-	public Optional<MAccount> getTaxAccount(@NonNull final AcctSchemaId acctSchemaId, @Nullable final TaxId taxId, @NonNull final TaxAcctType taxAcctType)
+	public Optional<MAccount> getTaxAccount(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@Nullable final TaxId taxId,
+			@NonNull final TaxAcctType taxAcctType)
 	{
 		return taxId != null
 				? taxAcctBL.getAccountIfExists(taxId, acctSchemaId, taxAcctType)
 				: Optional.empty();
 	}
 
-	public CostingMethod getCostingMethod(@NonNull final ProductId productId, @NonNull final AcctSchema as)
+	public CostingMethod getCostingMethod(
+			@NonNull final ProductId productId,
+			@NonNull final AcctSchema as)
 	{
 		return productCostingBL.getCostingMethod(productId, as);
 	}
 
-	public CostingLevel getCostingLevel(@NonNull final ProductId productId, @NonNull final AcctSchema as)
+	public CostingLevel getCostingLevel(
+			@NonNull final ProductId productId,
+			@NonNull final AcctSchema as)
 	{
 		return productCostingBL.getCostingLevel(productId, as);
 	}
@@ -288,7 +305,9 @@ public class AcctDocRequiredServicesFacade
 		return costingService.createReversalCostDetails(request);
 	}
 
-	public Optional<CostPrice> getCurrentCostPrice(@NonNull final CostSegment costSegment, @NonNull final CostingMethod costingMethod)
+	public Optional<CostPrice> getCurrentCostPrice(
+			@NonNull final CostSegment costSegment,
+			@NonNull final CostingMethod costingMethod)
 	{
 		return costingService.getCurrentCostPrice(costSegment, costingMethod);
 	}

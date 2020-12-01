@@ -25,7 +25,7 @@ import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.manufacturing.order.exportaudit.ExportTransactionId;
+import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -61,14 +61,14 @@ final class ManufacturingOrdersSetExportStatusCommand
 	private static final Logger logger = LogManager.getLogger(ManufacturingOrdersSetExportStatusCommand.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final ManufacturingOrderAuditRepository orderAuditRepo;
+	private final ManufacturingOrderExportAuditRepository orderAuditRepo;
 	private final ObjectMapper jsonObjectMapper;
 
 	private @NonNull JsonRequestSetOrdersExportStatusBulk request;
 
 	@Builder
 	private ManufacturingOrdersSetExportStatusCommand(
-			@NonNull final ManufacturingOrderAuditRepository orderAuditRepo,
+			@NonNull final ManufacturingOrderExportAuditRepository orderAuditRepo,
 			@NonNull final ObjectMapper jsonObjectMapper,
 			//
 			@NonNull final JsonRequestSetOrdersExportStatusBulk request)
@@ -94,7 +94,7 @@ final class ManufacturingOrdersSetExportStatusCommand
 			return;
 		}
 
-		final ExportTransactionId transactionKey = ExportTransactionId.ofString(request.getTransactionKey());
+		final APITransactionId transactionKey = APITransactionId.ofString(request.getTransactionKey());
 		final ManufacturingOrderExportAudit audit = orderAuditRepo.getByTransactionId(transactionKey);
 		if (audit == null)
 		{

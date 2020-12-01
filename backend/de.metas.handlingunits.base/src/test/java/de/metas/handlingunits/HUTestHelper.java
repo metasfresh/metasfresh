@@ -174,7 +174,9 @@ import lombok.NonNull;
  */
 public class HUTestHelper
 {
-	/** Creates a new instance <b>and also calls {@link AdempiereTestHelper#init()}</b> */
+	/**
+	 * Creates a new instance <b>and also calls {@link AdempiereTestHelper#init()}</b>
+	 */
 	public static HUTestHelper newInstanceOutOfTrx()
 	{
 		return new HUTestHelper()
@@ -322,7 +324,7 @@ public class HUTestHelper
 	// #653
 	public I_M_Attribute attr_LotNumber;
 
-	private I_M_Attribute attr_BestBeforeDate;
+	public I_M_Attribute attr_BestBeforeDate;
 
 	/**
 	 * Mandatory in receipts
@@ -503,10 +505,10 @@ public class HUTestHelper
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
 	 *
 	 * <pre>
-	&#64;RunWith(SpringRunner.class)
-	&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
+	 * &#64;RunWith(SpringRunner.class)
+	 * &#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
 	 * </pre>
-	 *
+	 * <p>
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
@@ -537,6 +539,7 @@ public class HUTestHelper
 	 *
 	 * @return trxName
 	 */
+	@Nullable
 	protected String createAndStartTransaction()
 	{
 		final String trxNamePrefix = "HUTest";
@@ -546,8 +549,7 @@ public class HUTestHelper
 	protected final String createAndStartTransaction(final String trxNamePrefix)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final String trxName = trxManager.createTrxName(trxNamePrefix);
-		return trxName;
+		return trxManager.createTrxName(trxNamePrefix);
 	}
 
 	protected IMutableHUContext createInitialHUContext(final IContextAware contextProvider)
@@ -953,9 +955,6 @@ public class HUTestHelper
 
 	/**
 	 * Creates a link between given warehouse and empties warehouse
-	 *
-	 * @param warehouse
-	 * @see IHandlingUnitsBL#getEmptiesWarehouse(Properties, org.compiere.model.I_M_Warehouse, String)
 	 */
 	public void addEmptiesNetworkLine(final org.compiere.model.I_M_Warehouse warehouse)
 	{
@@ -982,7 +981,7 @@ public class HUTestHelper
 		return createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 	}
 
-	public IMutableHUContext createMutableHUContextForProcessing(final String trxName)
+	public IMutableHUContext createMutableHUContextForProcessing(@Nullable final String trxName)
 	{
 		final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return Services.get(IHandlingUnitsBL.class).createMutableHUContextForProcessing(contextProvider);
@@ -990,8 +989,6 @@ public class HUTestHelper
 
 	/**
 	 * Creates an {@link IMutableHUContext} based on {@link #getContextProvider()}.
-	 *
-	 * @return
 	 */
 	public IMutableHUContext createMutableHUContext()
 	{
@@ -1171,7 +1168,9 @@ public class HUTestHelper
 		return piItem;
 	}
 
-	/** @deprecated please use {@link #assignProduct(I_M_HU_PI_Item, ProductId, BigDecimal, I_C_UOM)} instead. */
+	/**
+	 * @deprecated please use {@link #assignProduct(I_M_HU_PI_Item, ProductId, BigDecimal, I_C_UOM)} instead.
+	 */
 	@Deprecated
 	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom)
 	{
@@ -1460,11 +1459,7 @@ public class HUTestHelper
 	}
 
 	/**
-	 *
-	 * @param huContextEffective
 	 * @param loadingUnitPIItem the PI item with type = HU that link's the LU's PI with the TU's PI. This methods passes it to the {@link ILUTUProducerAllocationDestination}.
-	 * @param tuPIItemProduct
-	 * @param totalQtyCU
 	 */
 	@Builder(builderMethodName = "newLUs", builderClassName = "LUsBuilder")
 	private List<I_M_HU> createLUs(
@@ -1594,7 +1589,7 @@ public class HUTestHelper
 	 * <p>
 	 * Note: this method performs the load using an {@link IHUContext} that was created with {@link #createMutableHUContextOutOfTransaction()}.
 	 *
-	 * @param producer used as the loader's {@link IAllocationDestination}
+	 * @param producer    used as the loader's {@link IAllocationDestination}
 	 * @param cuProductId
 	 * @param loadCuQty
 	 * @param loadCuUOM
@@ -1661,7 +1656,7 @@ public class HUTestHelper
 	/**
 	 * Creates LUs with TUs and loads the products from the given {@code mtrx} into them.<br>
 	 * <b>Important:</b> only works if the given {@code huPI} has exactly one HU PI-item for the TU.
-	 *
+	 * <p>
 	 * This method contains the code that used to be in {@link IHUTrxBL} {@code transferIncomingToHUs()}.<br>
 	 * When it was there, that method was used only by test cases and also doesn't make a lot of sense for production.
 	 *
@@ -1752,14 +1747,13 @@ public class HUTestHelper
 	 * {@link I_M_HU_Trx_Hdr} to document from which source items (of <code>sourceHU</code>) to which destination items (of the new HU) the qtys were moved. That trx-hdr has a one line for every
 	 * {@link de.metas.handlingunits.model.I_M_HU_Item} of the source HU and one line for
 	 *
-	 * @param sourceHUs the HUs from which the given product and qty shall be taken
-	 * @param qty the qty of <code>product</code> that shall be included in the new HU(s)
-	 * @param product the product the shall be taken out of the <code>sourceHUs</code>
+	 * @param sourceHUs       the HUs from which the given product and qty shall be taken
+	 * @param qty             the qty of <code>product</code> that shall be included in the new HU(s)
+	 * @param product         the product the shall be taken out of the <code>sourceHUs</code>
 	 * @param destinationHuPI the definition of the new HU that shall be created with the given product and qty
 	 * @return the newly created HUs that are "split off" the source HU
-	 *
 	 * @deprecated uses {@link HUProducerDestination}; deprecated for the same reasons as {@link #transferIncomingToHUs(I_M_Transaction, I_M_HU_PI)}.
-	 *             Please consider calling {@link #transferMaterialToNewHUs(List, LUTUProducerDestination, BigDecimal, I_M_Product, I_C_UOM, I_M_HU_PI)}.
+	 * Please consider calling {@link #transferMaterialToNewHUs(List, LUTUProducerDestination, BigDecimal, I_M_Product, I_C_UOM)}.
 	 */
 	@Deprecated
 	public List<I_M_HU> transferMaterialToNewHUs(final List<I_M_HU> sourceHUs, final BigDecimal qty, final I_M_Product product, final I_M_HU_PI destinationHuPI)
@@ -1786,13 +1780,8 @@ public class HUTestHelper
 	 * given source HUs need to be sufficient for the products and qtys of the transaction document. If the given source HUs contain more material than required for the transaction document, then the
 	 * rest is "left back" in the source HU(s).
 	 *
-	 * The method also creates a {@link I_M_HU_Trx_Hdr} which references the given transactionDoc. That trx-hdr has a one line for every {@link de.metas.handlingunits.model.I_M_HU_Item} of every
-	 * source HU and one line for every {@link org.compiere.model.I_M_TransactionAllocation} of the given transaction doc.
-	 *
-	 *
-	 * @param outgoingTrxDoc
+	 * @param outgoingTrx
 	 * @param sourceHUs
-	 *
 	 */
 	public void transferHUsToOutgoing(final I_M_Transaction outgoingTrx, final List<I_M_HU> sourceHUs)
 	{
@@ -1817,12 +1806,11 @@ public class HUTestHelper
 	 * This method creates one or many HU(s) and distributes the products and Qtys of the given transaction document (e.g. material receipt) among those instances' material-HU-items. The method also
 	 * creates a {@link de.metas.handlingunits.model.I_M_HU_Trx_Hdr} which references the given transactionDoc.
 	 *
-	 * @param incomingTrxDoc the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
+	 * @param mtrx the material transaction (inventory, receipt etc) that document the "origin" of the products to be added to the new HU
 	 * @param huPI
 	 * @return the newly created HUs that were created from the transaction doc.
-	 *
 	 * @deprecated this method only uses {@link HUProducerDestination} which will only create a simple plain HU. In almost every scenario that's not what you want test-wise.
-	 *             Please remove the deprecation flag and update the doc if and when a good class of testcases come up which justify having the method in this helper..
+	 * Please remove the deprecation flag and update the doc if and when a good class of testcases come up which justify having the method in this helper..
 	 */
 	@Deprecated
 	public List<I_M_HU> transferIncomingToHUs(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
@@ -1853,14 +1841,11 @@ public class HUTestHelper
 	}
 
 	/**
-	 *
 	 * @param sourceHUs
 	 * @param destinationHUs
 	 * @param product
 	 * @param qty
 	 * @param uom
-	 *
-	 *
 	 */
 	public void transferMaterialToExistingHUs(final List<I_M_HU> sourceHUs, final List<I_M_HU> destinationHUs, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
 	{
@@ -1900,17 +1885,6 @@ public class HUTestHelper
 	}
 
 	/**
-	 * @param huToSplit
-	 * @param documentLine
-	 * @param cuProductId
-	 * @param cuQty
-	 * @param cuUOM
-	 * @param cuPerTU
-	 * @param tuPerLU
-	 * @param maxLUToAllocate
-	 * @param tuPIItem
-	 * @param luPIItem
-	 *
 	 * @return HUs which were split
 	 */
 	public List<I_M_HU> splitHUs(

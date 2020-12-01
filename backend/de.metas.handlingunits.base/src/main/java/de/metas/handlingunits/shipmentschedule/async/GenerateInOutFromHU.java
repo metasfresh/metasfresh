@@ -60,7 +60,6 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	/**
 	 * Create and enqueue a workpackage for given handling units. Created workpackage will be marked as ready for processing.
 	 *
-	 * @param ctx
 	 * @param hus handling units to enqueue
 	 * @return created workpackage.
 	 */

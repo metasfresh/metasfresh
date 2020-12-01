@@ -25,6 +25,7 @@ import org.eevolution.model.X_PP_Order;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -46,25 +47,32 @@ public class PP_Order
 {
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 
 	public PP_Order(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
-			@NonNull final PostMaterialEventService materialEventService)
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
 	}
 
 	@Init
 	public void registerCallouts()
 	{
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Order());
+		final IProgramaticCalloutProvider calloutsRegistry = Services.get(IProgramaticCalloutProvider.class);
+		calloutsRegistry.registerAnnotatedCallout(new org.eevolution.callout.PP_Order(documentNoBuilderFactory));
 
-		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Order.Table_Name, org.eevolution.callout.PP_Order_TabCallout.class);
+		final ITabCalloutFactory tabCalloutRegistry = Services.get(ITabCalloutFactory.class);
+		tabCalloutRegistry.registerTabCalloutForTable(I_PP_Order.Table_Name, org.eevolution.callout.PP_Order_TabCallout.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_PP_Order ppOrder, final ModelChangeType changeType)
+	public void beforeSave(
+			final I_PP_Order ppOrder,
+			final ModelChangeType changeType)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
@@ -188,7 +196,7 @@ public class PP_Order
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		
+
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
 		{
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl

@@ -64,6 +64,8 @@ public class ShipmentSchedule
 	@Nullable
 	private final LocalDateTime dateOrdered;
 
+	private int numberOfItemsForSameShipment;
+
 	@NonNull
 	private final ProductId productId;
 
@@ -74,7 +76,7 @@ public class ShipmentSchedule
 	private final Quantity orderedQuantity;
 
 	@NonNull
-	private final Quantity deliveredQty;
+	private final Quantity deliveredQuantity;
 
 	@Nullable
 	private final AttributeSetInstanceId attributeSetInstanceId;

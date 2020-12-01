@@ -70,18 +70,14 @@ import javax.annotation.Nullable;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
-	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap>builder()
+	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap> builder()
 			.tableName(I_C_Currency.Table_Name)
 			.build();
 
-	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap>builder()
+	private final CCache<Integer, CurrencyConversionTypesMap> conversionTypesCache = CCache.<Integer, CurrencyConversionTypesMap> builder()
 			.tableName(I_C_ConversionType.Table_Name)
 			.tableName(I_C_ConversionType_Default.Table_Name)
 			.build();
-
-	// private final CCache<ConversionTypeMethod, CurrencyConversionTypeId> conversionTypeIdsByType = CCache.<ConversionTypeMethod, CurrencyConversionTypeId> builder()
-	// .tableName(I_C_ConversionType.Table_Name)
-	// .build();
 
 	@Override
 	public Currency getById(@NonNull final CurrencyId currencyId)
@@ -210,6 +206,11 @@ public class CurrencyDAO implements ICurrencyDAO
 		return getConversionTypesMap().getByMethod(method).getId();
 	}
 
+	@Override
+	public @NonNull ConversionTypeMethod getConversionTypeMethodById(@NonNull final CurrencyConversionTypeId id)
+	{
+		return getConversionTypesMap().getById(id).getMethod();
+	}
 	/**
 	 * @return query which is finding the best matching {@link I_C_Conversion_Rate} for given parameters.
 	 */

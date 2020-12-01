@@ -40,6 +40,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -528,10 +529,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean isTopLevel(final I_M_HU hu)
+	public boolean isTopLevel(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
 		return handlingUnitsRepo.retrieveParentItem(hu) == null;
 	}
 
@@ -732,6 +731,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
 
+	@Override
+	public QtyTU getTUsCount(@NonNull final I_M_HU tuOrAggregatedTU)
+	{
+		// NOTE: we assume the HU is an TU
+
+		final I_M_HU_Item parentItem = handlingUnitsRepo.retrieveParentItem(tuOrAggregatedTU);
+		if (parentItem != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType()))
+		{
+			return QtyTU.ofBigDecimal(parentItem.getQty());
+		}
+		else
+		{
+			return QtyTU.ONE;
+		}
+	}
+
 	@Nullable
 	@Override
 	public I_M_HU_PI getPI(final I_M_HU hu)
@@ -771,7 +786,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
+	public @NonNull I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		return handlingUnitsRepo.getIncludedPI(piItem);
 	}

@@ -85,7 +85,7 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 */
 	Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(I_C_Invoice_Candidate candidate);
 
-	IQueryBuilder<I_M_ReceiptSchedule> createQueryForShipmentScheduleSelection(Properties ctx, IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter);
+	IQueryBuilder<I_M_ReceiptSchedule> createQueryForReceiptScheduleSelection(Properties ctx, IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter);
 
 	boolean existsExportedReceiptScheduleForOrder(@NonNull OrderId orderId);
 

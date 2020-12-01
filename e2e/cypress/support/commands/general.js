@@ -472,20 +472,24 @@ Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWi
   cy.waitForSaveIndicator();
 });
 
-Cypress.Commands.add('selectLeftTable', function() {
+Cypress.Commands.add('selectLeftTable', function(isModal = false) {
   cy.log('Select left table');
   cy.waitForSaveIndicator();
-  cy.get('.modal-content-wrapper .document-list-included').within(el => {
-    el = el[0];
+
+  const parentWrapperPath = isModal ? '.modal-content-wrapper' : '.document-lists-wrapper';
+
+  cy.get(`${parentWrapperPath} .document-list-has-included`).within(el => {
     return cy.wrap(el);
   });
 });
 
-Cypress.Commands.add('selectRightTable', function() {
+Cypress.Commands.add('selectRightTable', function(isModal = false) {
   cy.log('Select right table');
   cy.waitForSaveIndicator();
-  cy.get('.modal-content-wrapper .document-list-included').within(el => {
-    el = el[1];
+
+  const parentWrapperPath = isModal ? '.modal-content-wrapper' : '.document-lists-wrapper';
+
+  cy.get(`${parentWrapperPath} .document-list-is-included`).within(el => {
     return cy.wrap(el);
   });
 });

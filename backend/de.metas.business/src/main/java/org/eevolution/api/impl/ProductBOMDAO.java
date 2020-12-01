@@ -1,20 +1,16 @@
 package org.eevolution.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.TreeSet;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -29,17 +25,17 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.TreeSet;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ProductBOMDAO implements IProductBOMDAO
 {
@@ -47,32 +43,27 @@ public class ProductBOMDAO implements IProductBOMDAO
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
 	@Override
-	public List<I_PP_Product_BOMLine> retrieveLines(final I_PP_Product_BOM productBOM)
+	public ImmutableList<I_PP_Product_BOMLine> retrieveLines(final I_PP_Product_BOM productBOM)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(productBOM);
 		final String trxName = InterfaceWrapperHelper.getTrxName(productBOM);
-		final int productBOM_ID = productBOM.getPP_Product_BOM_ID();
-		return retrieveLines(ctx, productBOM_ID, trxName);
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(productBOM.getPP_Product_BOM_ID());
+		return retrieveLines(ctx, bomId, trxName);
 	}
 
 	@Cached(cacheName = I_PP_Product_BOMLine.Table_Name + "#by#" + I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID)
-	List<I_PP_Product_BOMLine> retrieveLines(
+	ImmutableList<I_PP_Product_BOMLine> retrieveLines(
 			@CacheCtx final Properties ctx,
-			final int productBOM_ID,
+			final ProductBOMId bomId,
 			@CacheTrx final String trxName)
 	{
-		final IQueryBuilder<I_PP_Product_BOMLine> queryBuilder = queryBL
-				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName);
-
-		final ICompositeQueryFilter<I_PP_Product_BOMLine> filters = queryBuilder.getCompositeFilter();
-		filters.addOnlyActiveRecordsFilter();
-		filters.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOM_ID);
-
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Product_BOMLine.COLUMNNAME_Line)
-				.addColumn(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOMLine_ID);
-
-		return queryBuilder.create().list();
+		return queryBL.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomId)
+				.orderBy(I_PP_Product_BOMLine.COLUMNNAME_Line)
+				.orderBy(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOMLine_ID)
+				.create()
+				.listImmutable(I_PP_Product_BOMLine.class);
 	}	// getLines
 
 	@Override
@@ -165,7 +156,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	public I_PP_Product_BOMLine getBOMLineById(int productBOMLineId)
+	public I_PP_Product_BOMLine getBOMLineById(final int productBOMLineId)
 	{
 		Check.assumeGreaterThanZero(productBOMLineId, "productBOMLineId");
 		return loadOutOfTrx(productBOMLineId, I_PP_Product_BOMLine.class);
@@ -227,7 +218,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 
 			final TreeSet<Integer> productIdsSortedSet = new TreeSet<>(productIds);
 			final String sqlProductIdsArray = toSqlArrayString(productIdsSortedSet);
-			sqlParams = ImmutableList.<Object> of(sqlProductIdsArray);
+			sqlParams = ImmutableList.of(sqlProductIdsArray);
 		}
 
 		@Override

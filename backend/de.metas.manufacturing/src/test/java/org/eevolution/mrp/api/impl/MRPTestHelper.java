@@ -1,56 +1,17 @@
 package org.eevolution.mrp.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
-import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.engine.impl.PlainDocumentBL;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.logging.LogManager;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.planning.DurationUnitCodeUtils;
-import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.impl.MRPContext;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -61,7 +22,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
@@ -95,7 +55,6 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.expectations.MRPExpectation;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.PPProductPlanningBuilder;
@@ -103,17 +62,56 @@ import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assume;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+/*
+ * #%L
+ * de.metas.adempiere.libero.libero
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.logging.LogManager;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.planning.DurationUnitCodeUtils;
+import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.impl.MRPContext;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.product.ResourceId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 public class MRPTestHelper
 {
@@ -145,7 +143,6 @@ public class MRPTestHelper
 
 	//
 	// Services
-	private PlainMRPDAO mrpDAO;
 	public IQueryBL queryBL;
 	public PlainDocumentBL docActionBL;
 
@@ -196,7 +193,6 @@ public class MRPTestHelper
 		}
 
 		// POJOWrapper.setDefaultStrictValues(true);
-		this.mrpDAO = (PlainMRPDAO)Services.get(IMRPDAO.class);
 		this.queryBL = Services.get(IQueryBL.class);
 		this.docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 
@@ -320,7 +316,10 @@ public class MRPTestHelper
 				PlainEventBusFactory.newInstance());
 		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
 
-		return new org.eevolution.model.LiberoValidator(ppOrderConverter, postMaterialEventService);
+		return new org.eevolution.model.LiberoValidator(
+				ppOrderConverter,
+				postMaterialEventService,
+				new DocumentNoBuilderFactory(Optional.empty()));
 	}
 
 	public Timestamp getToday()
@@ -328,7 +327,10 @@ public class MRPTestHelper
 		return TimeUtil.asTimestamp(_today);
 	}
 
-	public void setToday(int year, int month, int day)
+	public void setToday(
+			int year,
+			int month,
+			int day)
 	{
 		this._today = LocalDate.of(year, month, day)
 				.atStartOfDay()
@@ -391,7 +393,10 @@ public class MRPTestHelper
 		return resourceType;
 	}
 
-	public I_S_Resource createResource(String name, String manufacturingResourceType, final I_S_ResourceType resourceType)
+	public I_S_Resource createResource(
+			String name,
+			String manufacturingResourceType,
+			final I_S_ResourceType resourceType)
 	{
 		final I_S_Resource resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class, contextProvider);
 		resource.setIsManufacturingResource(true);
@@ -406,13 +411,18 @@ public class MRPTestHelper
 		return resource;
 	}
 
-	public I_M_Warehouse createWarehouse(final String name, final I_AD_Org org)
+	public I_M_Warehouse createWarehouse(
+			final String name,
+			final I_AD_Org org)
 	{
 		final I_S_Resource plant = null;
 		return createWarehouse(name, org, plant);
 	}
 
-	public I_M_Warehouse createWarehouse(final String name, final I_AD_Org org, final I_S_Resource plant)
+	public I_M_Warehouse createWarehouse(
+			final String name,
+			final I_AD_Org org,
+			final I_S_Resource plant)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class, contextProvider);
 		warehouse.setAD_Org_ID(org.getAD_Org_ID());
@@ -435,7 +445,9 @@ public class MRPTestHelper
 		return createUOM(name, 2);
 	}
 
-	public I_C_UOM createUOM(final String name, final int stdPrecision)
+	public I_C_UOM createUOM(
+			final String name,
+			final int stdPrecision)
 	{
 		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class, contextProvider);
 		uom.setName(name);
@@ -458,7 +470,9 @@ public class MRPTestHelper
 		return createProduct(name, uomEach);
 	}
 
-	public I_M_Product createProduct(final String name, final I_C_UOM uom)
+	public I_M_Product createProduct(
+			final String name,
+			final I_C_UOM uom)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class, contextProvider);
 		product.setValue(name);
@@ -493,7 +507,8 @@ public class MRPTestHelper
 	 * @see #createMRPDemand(I_M_Product, BigDecimal, Date, I_S_Resource, I_M_Warehouse, I_C_BPartner)
 	 */
 	public I_PP_MRP createMRPDemand(
-			final I_M_Product product, final BigDecimal qty,
+			final I_M_Product product,
+			final BigDecimal qty,
 			final Date date,
 			final I_S_Resource plant,
 			final I_M_Warehouse warehouse)
@@ -504,7 +519,7 @@ public class MRPTestHelper
 
 	/**
 	 * Creates a dummy MRP firm demand.
-	 *
+	 * <p>
 	 * NOTE:
 	 * <ul>
 	 * <li>DocStatus will be Completed
@@ -519,7 +534,8 @@ public class MRPTestHelper
 	 * @return demand MRP record
 	 */
 	public I_PP_MRP createMRPDemand(
-			final I_M_Product product, final BigDecimal qty,
+			final I_M_Product product,
+			final BigDecimal qty,
 			final Date date,
 			final I_S_Resource plant,
 			final I_M_Warehouse warehouse,
@@ -709,7 +725,6 @@ public class MRPTestHelper
 	}
 
 	/**
-	 *
 	 * @param documentClass
 	 * @return completed documents
 	 */
@@ -732,32 +747,6 @@ public class MRPTestHelper
 		return documentModelsCompleted;
 	}
 
-	/**
-	 * Simulate receiving from an manufacturing order
-	 *
-	 * @param ppOrder
-	 * @param qtyToReceive
-	 */
-	public void receiveFromPPOrder(final I_PP_Order ppOrder, final BigDecimal qtyToReceive)
-	{
-		//
-		// Receive from MO: i.e. increase QtyDelivered
-		final BigDecimal qtyDeliveredOld = ppOrder.getQtyDelivered();
-		final BigDecimal qtyDelivered = qtyDeliveredOld.add(qtyToReceive);
-		ppOrder.setQtyDelivered(qtyDelivered);
-		InterfaceWrapperHelper.save(ppOrder);
-
-		//
-		// Add received qty to QtyOnHand
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
-
-		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-
-		mrpDAO.addQtyOnHand(warehouse, product, qtyToReceive);
-	}
-
 	public I_DD_Order retrieveSingleForwardDDOrder(final I_PP_Order ppOrder)
 	{
 		return Services.get(IDDOrderDAO.class)
@@ -772,7 +761,10 @@ public class MRPTestHelper
 		Assume.assumeFalse("Skip this test because MRP_POQ_Disabled", LiberoConstants.isMRP_POQ_Disabled());
 	}
 
-	public I_PP_Order createPP_Order(final I_PP_Product_BOM productBOM, final String qtyOrderedStr, final I_C_UOM uom)
+	public I_PP_Order createPP_Order(
+			final I_PP_Product_BOM productBOM,
+			final String qtyOrderedStr,
+			final I_C_UOM uom)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, contextProvider);
 		ppOrder.setAD_Org_ID(this.adOrg01.getAD_Org_ID());

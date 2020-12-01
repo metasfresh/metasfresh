@@ -22,19 +22,6 @@
 
 package de.metas.uom.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.temporal.TemporalUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.uom.IUOMDAO;
@@ -46,12 +33,24 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+
+import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class UOMDAO implements IUOMDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<X12DE355, Optional<UomId>> uomIdsByX12DE355 = CCache.<X12DE355, Optional<UomId>> builder()
+	private final CCache<X12DE355, Optional<UomId>> uomIdsByX12DE355 = CCache.<X12DE355, Optional<UomId>>builder()
 			.tableName(I_C_UOM.Table_Name)
 			.build();
 
@@ -114,7 +113,6 @@ public class UOMDAO implements IUOMDAO
 				.orderByDescending(I_C_UOM.COLUMNNAME_IsDefault)
 				.create()
 				.firstId(UomId::ofRepoIdOrNull);
-
 		return Optional.ofNullable(uomId);
 	}
 
@@ -126,7 +124,7 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public I_C_UOM getByX12DE355(@NonNull final X12DE355 x12de355)
+	public @NonNull I_C_UOM getByX12DE355(@NonNull final X12DE355 x12de355)
 	{
 		return getByX12DE355IfExists(x12de355)
 				.orElseThrow(() -> new AdempiereException("No UOM found for X12DE355=" + x12de355));
@@ -153,6 +151,24 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
+	public UomId getUomIdByTemporalUnit(@NonNull final TemporalUnit temporalUnit)
+	{
+		final X12DE355 x12de355 = X12DE355.ofTemporalUnit(temporalUnit);
+		try
+		{
+			return getUomIdByX12DE355(x12de355);
+		}
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("temporalUnit", temporalUnit)
+					.setParameter("x12de355", x12de355)
+					.setParameter("Suggestion", "Create an UOM for that X12DE355 code or activate it if already exists.")
+					.appendParametersToMessage();
+		}
+	}
+
+	@Override
 	public UOMPrecision getStandardPrecision(final UomId uomId)
 	{
 		if (uomId == null)
@@ -173,7 +189,7 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
-	public UOMType getUOMTypeById(@NonNull final UomId uomId)
+	public @NonNull UOMType getUOMTypeById(@NonNull final UomId uomId)
 	{
 		final I_C_UOM uom = getById(uomId);
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
