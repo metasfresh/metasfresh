@@ -1,16 +1,5 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import org.springframework.context.annotation.Conditional;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
@@ -23,6 +12,16 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 import lombok.NonNull;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -141,6 +140,43 @@ public class HealthcareChInvoice440RestController
 		return importInvoiceXML(xmlInvoiceFile, HealthCareInvoiceDocSubType.KT, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
 	}
 
+	@PostMapping(path = "importInvoiceXML/v440/GM")
+	@ApiOperation(value = "Upload a forum-datenaustausch.ch municipality invoice-XML (\"Gemeinde\") into metasfresh")
+	public ResponseEntity<JsonAttachment> importMunicipalityInvoiceXML(
+
+			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
+
+			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
+
+			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
+
+			@ApiParam(defaultValue = "DONT_UPDATE") //
+			@RequestParam(required = false) final SyncAdvise.IfExists ifProductsExist,
+
+			@ApiParam(defaultValue = "CREATE") //
+			@RequestParam(required = false) final SyncAdvise.IfNotExists ifProductsNotExist)
+	{
+		final SyncAdvise debitorSyncAdvise = SyncAdvise.builder()
+				.ifExists(IfExists.UPDATE_MERGE)
+				.ifNotExists(IfNotExists.CREATE)
+				.build();
+
+		// wrt to the biller-bpartner's org, we use the same advise as with the biller itself
+		final SyncAdvise billerSyncAdvise = SyncAdvise.builder()
+				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
+				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
+				.build();
+
+		final SyncAdvise productSyncAdvise = SyncAdvise.builder()
+				.ifExists(coalesce(ifProductsExist, IfExists.DONT_UPDATE))
+				.ifNotExists(coalesce(ifProductsNotExist, IfNotExists.CREATE))
+				.build();
+
+		return importInvoiceXML(xmlInvoiceFile, HealthCareInvoiceDocSubType.GM, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
+	}
+
 	@PostMapping(path = "importInvoiceXML/v440/EA")
 	@ApiOperation(value = "Upload a forum-datenaustausch.ch patient invoice-XML (\"Eigenanteil\") into metasfresh")
 	public ResponseEntity<JsonAttachment> importPatientInvoiceXML(
@@ -188,7 +224,6 @@ public class HealthcareChInvoice440RestController
 			@NonNull final SyncAdvise debitorSyncAdvise,
 			@NonNull final SyncAdvise productSyncAdvise)
 	{
-
 		final CreateOLCandsRequest createOLCandsRequest = CreateOLCandsRequest.builder()
 				.xmlInvoiceFile(xmlInvoiceFile)
 				.targetDocType(targetDocType)

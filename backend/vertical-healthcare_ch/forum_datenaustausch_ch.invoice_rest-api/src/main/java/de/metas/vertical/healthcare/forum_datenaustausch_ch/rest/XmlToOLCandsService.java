@@ -407,6 +407,11 @@ public class XmlToOLCandsService
 						body,
 						context);
 				break;
+			case GM:
+				// The bill-receiver (municipality)  might or might not yet exist.
+				// We need it to be at org=* which can't be done by sales order-candidate-API
+				requestBuilder.bpartner(addMunicipalityInvoiceRecipient(body, context));
+				break;
 			default:
 				throw new AdempiereException("Unsupported targetDocType=" + context.getTargetDocType());
 		}
