@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
 
 import java.util.Set;
@@ -44,7 +43,6 @@ public class MKTG_Channel
 
 	private final IMKTGChannelDao mktgChannelDao = Services.get(IMKTGChannelDao.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final AdMessageKey MSG_MUST_HAVE_CHANNEL = AdMessageKey.of("de.metas.marketing.base.marketingChannelRemovalError");
 
