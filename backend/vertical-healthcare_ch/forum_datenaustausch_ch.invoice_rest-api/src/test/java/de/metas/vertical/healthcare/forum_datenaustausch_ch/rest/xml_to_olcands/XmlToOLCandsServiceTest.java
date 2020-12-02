@@ -1,5 +1,28 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
+/*
+ * #%L
+ * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
+
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -26,32 +49,13 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.assertThat;
 
-/*
- * #%L
- * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class XmlToOLCandsServiceTest
 {
 	@Mock
-	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
+	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint; // needed by mockito
+
+	@Mock
+	BpartnerRestController bpartnerRestController; // needed by mockito
 
 	@InjectMocks
 	XmlToOLCandsService xmlToOLCandsService;
