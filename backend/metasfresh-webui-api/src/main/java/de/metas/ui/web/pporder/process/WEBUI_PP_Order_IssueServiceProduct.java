@@ -48,20 +48,10 @@ public class WEBUI_PP_Order_IssueServiceProduct
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final PPOrderLinesView ppOrderView = getView();
-		if (!(ppOrderView.isStatusPlanning() || ppOrderView.isStatusReview()))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not planning or in review");
-		}
-
 		final PPOrderLineRow ppOrderLineRow = getSingleSelectedRow();
 		if (!ppOrderLineRow.isIssue())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not an issue line");
-		}
-		if (ppOrderLineRow.isProcessed())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("already processed");
 		}
 
 		final ProductId productId = ppOrderLineRow.getProductId();
