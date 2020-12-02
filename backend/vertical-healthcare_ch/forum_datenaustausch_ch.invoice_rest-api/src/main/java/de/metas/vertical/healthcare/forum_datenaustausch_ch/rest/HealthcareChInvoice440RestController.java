@@ -102,7 +102,7 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/KT")
-	@ApiOperation(value = "Upload a forum-datenaustausch.ch state invoice-XML (\"Kanton\") into metasfresh")
+	@ApiOperation(value = "Upload a forum-datenaustausch.ch state invoice-XML (\"Kanton\") into metasfresh.")
 	public ResponseEntity<JsonAttachment> importDistrictInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
@@ -141,15 +141,17 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/GM")
-	@ApiOperation(value = "Upload a forum-datenaustausch.ch municipality invoice-XML (\"Gemeinde\") into metasfresh")
+	@ApiOperation(value = "Upload a forum-datenaustausch.ch municipality invoice-XML (\"Gemeinde\") into metasfresh.\n"
+			+ "The municipality - which is the invoice recipient - is looked up by the bpartner's value (a.k.a. \"code\") = `GM-<municipality-zip-code>`\n"
+			+ "If it does not yet exist, it is created with Organisation=* (any)")
 	public ResponseEntity<JsonAttachment> importMunicipalityInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@ApiParam(defaultValue = "DONT_UPDATE", value = "This is applied only to the biller; the invoice recipient (municipality) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (patient) is always created or updated on the fly.") //
+			@ApiParam(defaultValue = "CREATE", value = "This is applied only to the biller; the invoice recipient (municipality) is always created or updated on the fly.") //
 			@RequestParam(required = false) final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
 			@ApiParam(defaultValue = "DONT_UPDATE") //
@@ -178,7 +180,9 @@ public class HealthcareChInvoice440RestController
 	}
 
 	@PostMapping(path = "importInvoiceXML/v440/EA")
-	@ApiOperation(value = "Upload a forum-datenaustausch.ch patient invoice-XML (\"Eigenanteil\") into metasfresh")
+	@ApiOperation(value = "Upload a forum-datenaustausch.ch patient invoice-XML (\"Eigenanteil\") into metasfresh.\n"
+			+ "The patient - which is the invoice recipient - is looked up by the bpartner's external-ID = `org:EAN-<biller-EAN>_bp:SSN-<patient-SSN>`\n"
+			+ "If it does not yet exist, it is created within the biller's own organisation")
 	public ResponseEntity<JsonAttachment> importPatientInvoiceXML(
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
