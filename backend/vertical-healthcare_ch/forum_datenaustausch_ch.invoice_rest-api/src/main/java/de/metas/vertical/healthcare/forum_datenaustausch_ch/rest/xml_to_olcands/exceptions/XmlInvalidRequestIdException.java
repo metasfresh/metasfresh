@@ -35,7 +35,7 @@ public class XmlInvalidRequestIdException extends RuntimeException
 
 	public XmlInvalidRequestIdException(@Nullable final String invalidRequestId)
 	{
-		super("Invalid invoice request_id=" + invalidRequestId + "; it has to start with EA_, KV_ or KT_");
+		super("Invalid invoice request_id=" + invalidRequestId + "; it has to start with EA_, GM_, KV_ or KT_");
 		this.invalidRequestId = invalidRequestId;
 	}
 }
