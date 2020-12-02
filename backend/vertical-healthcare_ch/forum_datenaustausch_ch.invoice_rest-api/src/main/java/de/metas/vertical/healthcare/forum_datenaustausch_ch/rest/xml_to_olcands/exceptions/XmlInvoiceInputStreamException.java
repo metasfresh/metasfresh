@@ -1,14 +1,8 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
-
 /*
  * #%L
  * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,12 +20,16 @@ import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
  * #L%
  */
 
-public class InvalidXMLException extends AdempiereException implements ExceptionWithOwnHeaderMessage
-{
-	private static final long serialVersionUID = 6370799498905180084L;
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions;
 
-	public InvalidXMLException(String msg)
+import lombok.NonNull;
+
+public class XmlInvoiceInputStreamException extends RuntimeException
+{
+	private static final long serialVersionUID = 8216181888558013882L;
+
+	public XmlInvoiceInputStreamException(@NonNull final Throwable cause)
 	{
-		super(msg);
+		super("An error occurred while trying access the XML invoice input stream", cause);
 	}
 }
