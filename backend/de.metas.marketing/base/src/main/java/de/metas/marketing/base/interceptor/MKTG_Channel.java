@@ -71,10 +71,5 @@ public class MKTG_Channel
 		{
 			throw new AdempiereException(MSG_MUST_HAVE_CHANNEL).markAsUserValidationError();
 		}
-		else
-		{
-
-		}
-
 	}
 }
