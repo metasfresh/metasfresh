@@ -378,12 +378,7 @@ public class XmlToOLCandsService
 		{
 			result = requestIdToUse.substring("EA_".length());
 		}
-
-		else if (requestIdToUse.startsWith("GEMEINDE_")) // "Gemeinde"
-		{
-			result = requestIdToUse.substring("GEMEINDE_".length());
-		}
-		else if (requestIdToUse.startsWith("GM_")) // also "Gemeinde"
+		else if (requestIdToUse.startsWith("GM_")) // "Gemeinde"
 		{
 			result = requestIdToUse.substring("GM_".length());
 		}
