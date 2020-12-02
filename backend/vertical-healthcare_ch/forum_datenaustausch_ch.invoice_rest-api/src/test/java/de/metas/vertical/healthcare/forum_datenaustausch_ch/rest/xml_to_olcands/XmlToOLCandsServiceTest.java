@@ -22,6 +22,7 @@
 
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
 
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -51,7 +52,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class XmlToOLCandsServiceTest
 {
 	@Mock
-	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
+	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint; // needed by mockito
+
+	@Mock
+	BpartnerRestController bpartnerRestController; // needed by mockito
 
 	@InjectMocks
 	XmlToOLCandsService xmlToOLCandsService;
