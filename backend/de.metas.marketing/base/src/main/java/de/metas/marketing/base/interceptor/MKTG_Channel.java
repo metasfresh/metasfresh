@@ -59,7 +59,7 @@ public class MKTG_Channel
 		for (final UserId userId : usersSet)
 		{
 
-			if (mktgChannelDao.retrieveMarketingChannelsCountForUser(userId) > 0 && !userDAO.isSystemUser(userId))
+			if (mktgChannelDao.retrieveMarketingChannelsCountForUser(userId) > 0)
 			{
 				canBeDeleted = false;
 				break;
