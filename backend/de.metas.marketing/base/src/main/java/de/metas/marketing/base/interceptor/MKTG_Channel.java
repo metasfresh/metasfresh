@@ -47,7 +47,6 @@ public class MKTG_Channel
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final AdMessageKey MSG_MUST_HAVE_CHANNEL = AdMessageKey.of("de.metas.marketing.base.marketingChannelRemovalError");
-	private static final String SYS_CONFIG_MARKETING_CHANNELS_ENFORCED = "de.metas.marketing.EnforceUserHasMarketingChannels";
 
 	private MKTG_Channel()
 	{
@@ -62,7 +61,7 @@ public class MKTG_Channel
 		for (final UserId userId : usersSet)
 		{
 
-			if (mktgChannelDao.retrieveMarketingChannelsCountForUser(userId) == 1 && !userDAO.isSystemUser(userId))
+			if (mktgChannelDao.retrieveMarketingChannelsCountForUser(userId) > 0 && !userDAO.isSystemUser(userId))
 			{
 				canBeDeleted = false;
 				break;
@@ -72,14 +71,10 @@ public class MKTG_Channel
 		{
 			throw new AdempiereException(MSG_MUST_HAVE_CHANNEL).markAsUserValidationError();
 		}
-		else {
+		else
+		{
 
 		}
 
-	}
-
-	private boolean isMarketingChannelsUseEnforced(int clientID, int orgID)
-	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_MARKETING_CHANNELS_ENFORCED, false, clientID, orgID);
 	}
 }
