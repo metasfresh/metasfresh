@@ -90,6 +90,7 @@ class MasterWidget extends PureComponent {
       isAdvanced = false,
       viewId,
       updatePropertyValue,
+      disconnected,
     } = this.props;
 
     value = formatValueByWidgetType({ widgetType, value });
@@ -119,6 +120,7 @@ class MasterWidget extends PureComponent {
         isModal,
         entity,
         tableId,
+        disconnected,
       });
 
     ret = patch(
@@ -161,6 +163,7 @@ class MasterWidget extends PureComponent {
       dataId,
       windowId,
       widgetData,
+      disconnected,
     } = this.props;
 
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
@@ -194,6 +197,7 @@ class MasterWidget extends PureComponent {
         isModal,
         entity,
         tableId,
+        disconnected,
       });
     });
   };
@@ -310,6 +314,7 @@ MasterWidget.propTypes = {
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
+  disconnected: PropTypes.string,
 };
 
 export default MasterWidget;

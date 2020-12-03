@@ -111,7 +111,7 @@ Section.propTypes = {
   requestElementGroupFocus: PropTypes.func.isRequired,
   isSectionCollapsed: PropTypes.bool,
   toggleSectionCollapsed: PropTypes.func.isRequired,
-  disconnected: PropTypes.bool,
+  disconnected: PropTypes.string,
 };
 
 export default Section;

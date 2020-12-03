@@ -92,7 +92,7 @@ class InlineTab extends PureComponent {
                   rowId={rowId}
                   isModal={true}
                   tabsInfo={null}
-                  disconnected={true}
+                  disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
                 />
               )}
             </div>

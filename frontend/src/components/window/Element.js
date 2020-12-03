@@ -85,7 +85,7 @@ Element.propTypes = {
   tabIndex: PropTypes.number,
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
-  disconnected: PropTypes.bool,
+  disconnected: PropTypes.string,
 };
 
 export default Element;

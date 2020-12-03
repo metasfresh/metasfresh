@@ -166,7 +166,7 @@ WidgetWrapper.propTypes = {
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
-  disconnected: PropTypes.bool,
+  disconnected: PropTypes.string,
 };
 
 export default connect(

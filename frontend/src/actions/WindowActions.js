@@ -1001,6 +1001,7 @@ export function updatePropertyValue({
   isModal,
   entity,
   tableId,
+  disconnected,
 }) {
   return (dispatch) => {
     if (rowId) {
@@ -1011,7 +1012,10 @@ export function updatePropertyValue({
           },
         },
       };
-
+      // - for `inlineTab` we will update the corresponding branch in the store
+      if (disconnected === 'inlineTab') {
+        // update
+      }
       dispatch(updateTableRowProperty({ tableId, rowId, change }));
     } else if (!tabId || !rowId) {
       // modal's data is in `tables`

@@ -84,7 +84,7 @@ ElementsLine.propTypes = {
   isFullScreen: PropTypes.bool,
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
-  disconnected: PropTypes.bool,
+  disconnected: PropTypes.string,
 };
 
 export default ElementsLine;

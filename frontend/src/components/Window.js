@@ -492,7 +492,7 @@ Window.propTypes = {
   rowId: PropTypes.string,
   isAdvanced: PropTypes.bool,
   onRefreshTab: PropTypes.func,
-  disconnected: PropTypes.bool,
+  disconnected: PropTypes.string, // flag used to indicate rendering outside the pre-existing structure, this will contain the branch from the redux store where data resides
 };
 
 Window.defaultProps = {
