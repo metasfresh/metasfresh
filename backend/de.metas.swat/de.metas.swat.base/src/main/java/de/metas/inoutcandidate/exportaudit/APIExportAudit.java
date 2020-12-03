@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @param <T> type of the audit items
  */
 @Data
@@ -75,7 +74,7 @@ public class APIExportAudit<T extends APIExportAuditItem>
 		this.items = new HashMap<>(items);
 	}
 
-	public T getItemById(@NonNull final RepoIdAware id )
+	public T getItemById(@NonNull final RepoIdAware id)
 	{
 		return items.get(id);
 	}

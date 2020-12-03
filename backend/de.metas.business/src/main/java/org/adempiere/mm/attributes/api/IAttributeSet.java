@@ -58,7 +58,7 @@ public interface IAttributeSet
 	 */
 	boolean hasAttribute(AttributeCode attributeCode);
 
-	default boolean hasAttribute(@NonNull String attributeKey)
+	default boolean hasAttribute(@NonNull final String attributeKey)
 	{
 		return hasAttribute(AttributeCode.ofString(attributeKey));
 	}
@@ -165,7 +165,7 @@ public interface IAttributeSet
 	 */
 	int getValueAsInt(AttributeCode attributeCode);
 
-	default int getValueAsInt(@NonNull String attributeKey)
+	default int getValueAsInt(@NonNull final String attributeKey)
 	{
 		return getValueAsInt(AttributeCode.ofString(attributeKey));
 	}
@@ -179,7 +179,7 @@ public interface IAttributeSet
 	Date getValueAsDate(AttributeCode attributeCode);
 
 	@Nullable
-	default Date getValueAsDate(@NonNull String attributeKey)
+	default Date getValueAsDate(@NonNull final String attributeKey)
 	{
 		return getValueAsDate(AttributeCode.ofString(attributeKey));
 	}
@@ -190,21 +190,24 @@ public interface IAttributeSet
 		return getValueAsDate(attribute.getValue());
 	}
 
-	default LocalDateTime getValueAsLocalDateTime(final AttributeCode attributeCode)
+	@Nullable default LocalDateTime getValueAsLocalDateTime(final AttributeCode attributeCode)
 	{
 		return TimeUtil.asLocalDateTime(getValueAsDate(attributeCode));
 	}
 
+	@Nullable
 	default LocalDateTime getValueAsLocalDateTime(final @NonNull String attributeKey)
 	{
 		return TimeUtil.asLocalDateTime(getValueAsDate(attributeKey));
 	}
 
+	@Nullable
 	default LocalDate getValueAsLocalDate(final AttributeCode attributeCode)
 	{
 		return TimeUtil.asLocalDate(getValueAsDate(attributeCode));
 	}
 
+	@Nullable
 	default LocalDate getValueAsLocalDate(final @NonNull String attributeKey)
 	{
 		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
@@ -238,7 +241,7 @@ public interface IAttributeSet
 	 */
 	void setValue(AttributeCode attributeCode, Object value);
 
-	default void setValue(@NonNull String attribute, Object value)
+	default void setValue(@NonNull final String attribute, final Object value)
 	{
 		setValue(AttributeCode.ofString(attribute), value);
 	}

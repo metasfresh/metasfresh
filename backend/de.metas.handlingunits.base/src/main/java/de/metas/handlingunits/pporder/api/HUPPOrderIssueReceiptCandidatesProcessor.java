@@ -1,35 +1,9 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Supplier;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.ComponentIssueCreateRequest;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.ReceiptCostCollectorCandidate;
-import org.slf4j.Logger;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUStatusBL;
@@ -54,6 +28,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -69,6 +44,30 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.ComponentIssueCreateRequest;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -110,7 +109,7 @@ import lombok.ToString;
  */
 public class HUPPOrderIssueReceiptCandidatesProcessor
 {
-	public static final HUPPOrderIssueReceiptCandidatesProcessor newInstance()
+	public static HUPPOrderIssueReceiptCandidatesProcessor newInstance()
 	{
 		return new HUPPOrderIssueReceiptCandidatesProcessor();
 	}
@@ -152,6 +151,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		return result;
 	}
 
+	@Nullable
 	private I_PP_Cost_Collector processCandidate(final I_PP_Order_Qty candidate)
 	{
 		if (candidate.isProcessed())
@@ -179,7 +179,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				|| BOMComponentType.ofCode(ppOrderBOMLine.getComponentType()).isReceipt(); // by/co product receipt
 	}
 
-	private final void markProcessedAndSave(@NonNull final I_PP_Order_Qty candidate, @NonNull final I_PP_Cost_Collector cc)
+	private void markProcessedAndSave(@NonNull final I_PP_Order_Qty candidate, @NonNull final I_PP_Cost_Collector cc)
 	{
 		Preconditions.checkArgument(!candidate.isProcessed(), "candidate was already processed: %s", candidate);
 		candidate.setPP_Cost_Collector(cc);
@@ -224,6 +224,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		return cc;
 	}
 
+	@Nullable
 	private I_PP_Cost_Collector processIssueCandidate(final I_PP_Order_Qty candidate)
 	{
 		// NOTE: we assume the candidate was not processed yet
@@ -316,10 +317,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 	}
 
-	private HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
+	private void setCandidatesToProcess(final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
 	{
 		this.candidatesToProcessSupplier = candidatesToProcessSupplier;
-		return this;
 	}
 
 	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final List<I_PP_Order_Qty> candidatesToProcess)
@@ -373,7 +373,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		// Status
 		private final Map<PPOrderBOMLineId, IssueCandidate> candidatesByOrderBOMLineId = new HashMap<>();
 
-		public IssueCandidatesBuilder movementDate(ZonedDateTime movementDate)
+		public IssueCandidatesBuilder movementDate(final ZonedDateTime movementDate)
 		{
 			this.movementDate = movementDate;
 			return this;
@@ -443,6 +443,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 		}
 
+		@Nullable
 		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransactionCandidate huTransaction)
 		{
 			final Object referencedModel = huTransaction.getReferencedModel();
@@ -491,8 +492,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			// Actually process the candidate and generate the CC
 			final IssueCandidate candidate = candidates.get(0);
-			final I_PP_Cost_Collector cc = createCostCollector(candidate, snapshotId);
-			return cc;
+			return createCostCollector(candidate, snapshotId);
 		}
 
 		private List<IssueCandidate> getCandidatesToProcess()
@@ -523,7 +523,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			final Quantity qtyToIssue = candidate.getQtyToIssue();
 			final ZonedDateTime movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
-			final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrderBOMLine.getM_Locator_ID());
+			final LocatorId locatorId = LocatorId.ofRepoId(ppOrderBOMLine.getM_Warehouse_ID(), ppOrderBOMLine.getM_Locator_ID());
 
 			//
 			// Create the cost collector & process it.
@@ -552,7 +552,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			ppOrderProductAttributeBL.addPPOrderProductAttributes(cc);
 
 			//
-			// Link this cost collector and its manufacturing order to the material trackings, if any
+			// Link this cost collector and its manufacturing order to the material tracking, if any
 			final ImmutableSet<MaterialTrackingWithQuantity> materialTrackings = candidate.getMaterialTrackings();
 			for (final MaterialTrackingWithQuantity materialTracking : materialTrackings)
 			{
@@ -598,8 +598,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 
 		/**
-		 * @param productId
-		 * @param qtyToIssueToAdd
 		 * @param huToAssign HU to be assigned to generated cost collector
 		 */
 		public void addQtyToIssue(@NonNull final ProductId productId, @NonNull final Quantity qtyToIssueToAdd, @NonNull final I_M_HU huToAssign)

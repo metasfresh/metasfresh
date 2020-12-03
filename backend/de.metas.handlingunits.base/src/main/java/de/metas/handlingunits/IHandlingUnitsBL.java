@@ -87,7 +87,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	IHUStorageFactory getStorageFactory();
 
 	/**
-	 * @param contextProvider
 	 * @return mutable HU context for <code>contextProvider</code>
 	 */
 	IMutableHUContext createMutableHUContext(IContextAware contextProvider);
@@ -97,7 +96,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * <p>
 	 * Compared with {@link #createMutableHUContext(IContextAware)} this method optimizes the HU Context for HU generation/processing (i.e. enable caching etc etc).
 	 *
-	 * @param contextProvider
 	 * @return mutable HU context for <code>contextProvider</code>
 	 */
 	IMutableHUContext createMutableHUContextForProcessing(IContextAware contextProvider);
@@ -173,7 +171,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * <li>a VHU linked to an material HU Item IS PURE virtual
 	 * </ul>
 	 *
-	 * @param huItem
 	 * @return true if this item is part of a pure virtual HU.
 	 */
 	boolean isPureVirtual(I_M_HU_Item huItem);
@@ -181,7 +178,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * A pure virtual HU will have {@link IHandlingUnitsBL#isPureVirtual(I_M_HU_Item)} true for all of the HU's items.
 	 *
-	 * @param hu
 	 * @return true if the HU is considered a "pure virtual" HU
 	 */
 	boolean isPureVirtual(I_M_HU hu);
@@ -191,7 +187,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * <b>NOTE: for a full description of everything this method does, consult the javadoc of {@link #destroyIfEmptyStorage(IHUContext, I_M_HU)}.</b>
 	 *
-	 * @param hu
 	 * @return true if given HU was fully destroyed now or it was already destroyed
 	 * @see #destroyIfEmptyStorage(IHUContext, I_M_HU)
 	 */
@@ -210,8 +205,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * <li>if HU's parent remains empty after this HU is destroyed, it will destroy the parent also (recursively to the top).
 	 * </ul>
 	 *
-	 * @param huContext
-	 * @param hu
 	 * @return true if given HU was fully destroyed now or it was already destroyed
 	 */
 	boolean destroyIfEmptyStorage(IHUContext huContext, I_M_HU hu);
@@ -222,8 +215,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * <b>Important:</b> HU items that were created prior to https://github.com/metasfresh/metasfresh/issues/460 might have an empty
 	 * {@link I_M_HU_Item#COLUMN_ItemType}. So unless you know what you do, please use this method rather than {@link I_M_HU_Item#getItemType()}, because otherwise you might stumble over an old/pre-existing item and get wrong results.
 	 *
-	 * @param huItem
-	 * @return HU Item Type
 	 * @see I_M_HU_PI_Item#getItemType()
 	 */
 	String getItemType(I_M_HU_Item huItem);
@@ -293,7 +284,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Asserts given HU is a Loading Unit(LU).
 	 *
-	 * @param hu
 	 * @throws HUException in case given LU is not a loading unit
 	 */
 	void assertLoadingUnit(I_M_HU hu);
@@ -301,7 +291,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Determines if the handling unit is strictly a transport unit (a.k.a. trade unit, type {@link X_M_HU_PI_Version#HU_UNITTYPE_TransportUnit} ).
 	 *
-	 * @param hu
 	 * @return true if transport unit (TU)
 	 */
 	boolean isTransportUnit(I_M_HU hu);
@@ -309,7 +298,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Determines if the handling unit is a transport unit (a.k.a. trade unit, type {@link X_M_HU_PI_Version#HU_UNITTYPE_TransportUnit} ) or is a virtual Handling Unit which can be stored on a LU.
 	 *
-	 * @param hu
 	 * @return true if transport unit (TU) or virtual handling unit
 	 */
 	boolean isTransportUnitOrVirtual(I_M_HU hu);
@@ -431,9 +419,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI version.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	I_M_HU_PI_Version getEffectivePIVersion(I_M_HU hu);
 

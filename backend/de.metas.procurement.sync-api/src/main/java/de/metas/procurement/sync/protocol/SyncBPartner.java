@@ -63,8 +63,6 @@ public class SyncBPartner extends AbstractSyncModel
 
 	/**
 	 * WARNING: don't use it directly
-	 *
-	 * @param users
 	 */
 	public void setUsers(List<SyncUser> users)
 	{
@@ -88,8 +86,6 @@ public class SyncBPartner extends AbstractSyncModel
 
 	/**
 	 * WARNING: don't use it directly
-	 *
-	 * @param contracts
 	 */
 	public void setContracts(List<SyncContract> contracts)
 	{

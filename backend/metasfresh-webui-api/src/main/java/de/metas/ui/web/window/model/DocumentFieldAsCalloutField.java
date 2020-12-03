@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model;
 
 import java.util.Properties;
 
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
@@ -44,25 +45,12 @@ import lombok.NonNull;
 
 public final class DocumentFieldAsCalloutField implements ICalloutField, IProcessDefaultParameter
 {
-	/* package */static IDocumentField unwrap(final ICalloutField calloutField)
-	{
-		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
-		return documentFieldAsCalloutField.documentField;
-	}
-
-	public static Document unwrapDocument(final ICalloutField calloutField)
-	{
-		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
-		return documentFieldAsCalloutField.getDocument();
-	}
-
 	private static final Logger logger = LogManager.getLogger(DocumentFieldAsCalloutField.class);
 
 	private final IDocumentField documentField;
 
 	/* package */ DocumentFieldAsCalloutField(final IDocumentField documentField)
 	{
-		super();
 		this.documentField = documentField;
 	}
 
@@ -228,4 +216,9 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 		return getDocument().asCalloutRecord();
 	}
 
+	@Override
+	public boolean isLookupValuesContainingId(@NonNull final RepoIdAware id)
+	{
+		return documentField.getLookupValueById(id) != null;
+	}
 }

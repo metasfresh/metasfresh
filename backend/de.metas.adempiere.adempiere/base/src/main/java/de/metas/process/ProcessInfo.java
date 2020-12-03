@@ -220,7 +220,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Parameters
 	 */
-	private ImmutableList<ProcessInfoParameter> parameters = null; // lazy loaded
+	@Nullable private ImmutableList<ProcessInfoParameter> parameters; // lazy loaded
 	private final ImmutableList<ProcessInfoParameter> parametersOverride;
 
 	//
@@ -313,6 +313,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return new instance or null
 	 */
+	@Nullable
 	public JavaProcess newProcessClassInstanceOrNull()
 	{
 		final String classname = getClassName();
@@ -331,10 +332,7 @@ public final class ProcessInfo implements Serializable
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
 			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
-			if (processClassInstance instanceof JavaProcess)
-			{
-				processClassInstance.init(this);
-			}
+			processClassInstance.init(this);
 
 			return processClassInstance;
 		}
@@ -368,6 +366,7 @@ public final class ProcessInfo implements Serializable
 		return adWorkflowId;
 	}
 
+	@Nullable
 	public String getTableNameOrNull()
 	{
 		if (adTableId <= 0)
@@ -392,6 +391,7 @@ public final class ProcessInfo implements Serializable
 		return recordId;
 	}
 
+	@Nullable
 	public TableRecordReference getRecordRefOrNull()
 	{
 		if (adTableId <= 0 || recordId < 0)
@@ -409,10 +409,10 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID using ITrx#TRXNAME_ThreadInherited.
 	 *
-	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
+	@NonNull
 	public <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
 		return getRecord(modelClass, ITrx.TRXNAME_ThreadInherited);
@@ -421,12 +421,12 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
-	 * @param modelClass
 	 * @param trxName    transaction to be used when loading the record
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
-	public <ModelType> ModelType getRecord(final Class<ModelType> modelClass, final String trxName)
+	@NonNull
+	public <ModelType> ModelType getRecord(@NonNull final Class<ModelType> modelClass, final String trxName)
 	{
 		Check.assumeNotNull(modelClass, "modelClass not null");
 
@@ -692,6 +692,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * @return AD_Language used to reports; could BE <code>null</code>
 	 */
+	@Nullable
 	public String getReportAD_Language()
 	{
 		return reportLanguage == null ? null : reportLanguage.getAD_Language();
@@ -756,7 +757,7 @@ public final class ProcessInfo implements Serializable
 
 		private OutputType jrDesiredOutputType = null;
 
-		private List<ProcessInfoParameter> parameters = null;
+		private ArrayList<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
 
 		@Getter
@@ -907,7 +908,7 @@ public final class ProcessInfo implements Serializable
 			return setClientId(ClientId.ofRepoIdOrNull(adClientId));
 		}
 
-		public ProcessInfoBuilder setClientId(final ClientId adClientId)
+		public ProcessInfoBuilder setClientId(@Nullable final ClientId adClientId)
 		{
 			this._adClientId = adClientId;
 			return this;
@@ -1041,7 +1042,7 @@ public final class ProcessInfo implements Serializable
 			return _adPInstance;
 		}
 
-		public ProcessInfoBuilder setPInstanceId(final PInstanceId pinstanceId)
+		public ProcessInfoBuilder setPInstanceId(@Nullable final PInstanceId pinstanceId)
 		{
 			this.pInstanceId = pinstanceId;
 			return this;
@@ -1123,7 +1124,7 @@ public final class ProcessInfo implements Serializable
 			return setAD_Process_ID(AdProcessId.ofRepoIdOrNull(adProcessId));
 		}
 
-		public ProcessInfoBuilder setAD_Process_ID(final AdProcessId adProcessId)
+		public ProcessInfoBuilder setAD_Process_ID(@Nullable final AdProcessId adProcessId)
 		{
 			this.adProcessId = adProcessId;
 			return this;
@@ -1369,7 +1370,7 @@ public final class ProcessInfo implements Serializable
 		 *
 		 * @param reportLanguage optional report language
 		 */
-		public ProcessInfoBuilder setReportLanguage(final Language reportLanguage)
+		public ProcessInfoBuilder setReportLanguage(@Nullable final Language reportLanguage)
 		{
 			this.reportLanguage = reportLanguage;
 			return this;
@@ -1380,9 +1381,9 @@ public final class ProcessInfo implements Serializable
 		 *
 		 * @param adLanguage optional report language
 		 */
-		public ProcessInfoBuilder setReportLanguage(final String adLanguage)
+		public ProcessInfoBuilder setReportLanguage(@Nullable final String adLanguage)
 		{
-			this.reportLanguage = Check.isEmpty(adLanguage, true) ? null : Language.getLanguage(adLanguage);
+			this.reportLanguage = Check.isBlank(adLanguage) ? null : Language.getLanguage(adLanguage);
 			return this;
 		}
 

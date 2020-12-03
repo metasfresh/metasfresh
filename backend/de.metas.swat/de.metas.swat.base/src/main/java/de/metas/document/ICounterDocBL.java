@@ -1,10 +1,9 @@
 package de.metas.document;
 
-import org.adempiere.ad.modelvalidator.IModelInterceptor;
-
 import de.metas.document.engine.IDocument;
 import de.metas.document.spi.ICounterDocHandler;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.modelvalidator.IModelInterceptor;
 
 /*
  * #%L
@@ -37,8 +36,6 @@ import de.metas.util.ISingletonService;
 public interface ICounterDocBL extends ISingletonService
 {
 	/**
-	 *
-	 * @param document
 	 * @return <code>true</code> iff the given document is a {@link IDocument}, an {@link ICounterDocHandler} is registered for the given <code>document</code> and if that handler's
 	 *         {@link ICounterDocHandler#isCreateCounterDocument(IDocument)} method returns <code>true</code>.
 	 */
@@ -56,10 +53,6 @@ public interface ICounterDocBL extends ISingletonService
 	/**
 	 * Intended to be called from an {@link org.adempiere.ad.modelvalidator.AbstractModuleInterceptor}.<br>
 	 * Registers the given handler for the given table and returns a model interceptor that is supposed to be registered with the system.
-	 *
-	 * @param handler
-	 * @param tableName
-	 * @return
 	 */
 	IModelInterceptor registerHandler(ICounterDocHandler handler, String tableName);
 

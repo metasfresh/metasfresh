@@ -24,7 +24,6 @@ package de.metas.material.planning.pporder.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.costing.ICostElementRepository;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -37,7 +36,6 @@ import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -79,6 +77,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	@Override
+	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
+	{
+		return orderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
+	}
 
 	@Override
 	public PPOrderQuantities getQuantities(
@@ -432,9 +436,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public Quantity getQtyRequiredToReceive(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		PPOrderUtil.assertReceipt(orderBOMLine);
-
-		final Quantity qtyRequired = getQuantities(orderBOMLine).getQtyRequired();
-		return adjustCoProductQty(qtyRequired);
+		return getQuantities(orderBOMLine).getQtyRequired_NegateBecauseIsCOProduct();
 	}
 
 	@Override
@@ -443,7 +445,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, orderBOMLine);
 
-		final Quantity qtyRequiredPositive = adjustCoProductQty(getQuantities(orderBOMLine).getQtyRequired());
+		final Quantity qtyRequiredPositive = getQuantities(orderBOMLine).getQtyRequired_NegateBecauseIsCOProduct();
 		return Percent.of(BigDecimal.ONE, qtyRequiredPositive.toBigDecimal(), 4);
 	}
 
@@ -453,19 +455,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		PPOrderUtil.assertReceipt(orderBOMLine);
 
 		final Quantity qtyToIssue = getQtyToIssue(orderBOMLine);
-		return adjustCoProductQty(qtyToIssue);
-	}
-
-	@Override
-	public final BigDecimal adjustCoProductQty(final BigDecimal qty)
-	{
-		return qty.negate();
-	}
-
-	@Override
-	public final Quantity adjustCoProductQty(final Quantity qty)
-	{
-		return qty.negate();
+		return OrderBOMLineQuantities.adjustCoProductQty(qtyToIssue);
 	}
 
 	private static void addDescription(

@@ -1,26 +1,7 @@
 package de.metas.ui.web.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.PPOrderPlanningStatus;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -46,6 +27,22 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -92,13 +89,13 @@ public class PPOrderLinesView implements IView
 
 	@Builder
 	private PPOrderLinesView(
-			final ViewId parentViewId,
-			final DocumentId parentRowId,
+			@Nullable final ViewId parentViewId,
+			@Nullable final DocumentId parentRowId,
 			@NonNull final ViewId viewId,
 			@NonNull final JSONViewDataType viewType,
-			final Set<DocumentPath> referencingDocumentPaths,
+			@Nullable final Set<DocumentPath> referencingDocumentPaths,
 			@NonNull final PPOrderId ppOrderId,
-			final PPOrderLinesViewDataSupplier dataSupplier,
+			@NonNull final PPOrderLinesViewDataSupplier dataSupplier,
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.parentViewId = parentViewId; // might be null
@@ -168,7 +165,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	/**
-	 * @param may be {@code null}; in that case, the method also returns {@code null}
+	 * @param documentId may be {@code null}; in that case, the method also returns {@code null}
 	 * @return the table name for the given row
 	 */
 	@Override
@@ -291,17 +288,13 @@ public class PPOrderLinesView implements IView
 	{
 		return streamByIds(documentIds)
 				.map(ppOrderLineRow -> getModel(ppOrderLineRow, modelClass))
-				.filter(optional -> optional.isPresent())
-				.map(optional -> optional.get())
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(Collectors.toList());
 	}
 
 	/**
 	 * loads and returns the given {@code ppOrderLineRow}'s {@code PP_Order} or {@code P_Order_BOMLine}, if available.
-	 *
-	 * @param ppOrderLineRow
-	 * @param modelClass
-	 * @return
 	 */
 	private <T> Optional<T> getModel(
 			@NonNull final PPOrderLineRow ppOrderLineRow,
@@ -381,5 +374,4 @@ public class PPOrderLinesView implements IView
 	{
 		return dataSupplier.getData();
 	}
-
 }

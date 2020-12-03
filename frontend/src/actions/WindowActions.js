@@ -15,17 +15,11 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_QUICK_ACTIONS,
-  DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  FETCHED_QUICK_ACTIONS,
-  FETCH_TOP_ACTIONS,
-  FETCH_TOP_ACTIONS_FAILURE,
-  FETCH_TOP_ACTIONS_SUCCESS,
   NO_CONNECTION,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
@@ -47,6 +41,9 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
@@ -56,7 +53,6 @@ import {
   getData,
   patchRequest,
   getLayout,
-  topActionsRequest,
   getProcessData,
   getTabRequest,
   startProcess,
@@ -73,7 +69,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { setIncludedView } from './ViewActions';
+import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -86,39 +82,6 @@ import {
   updateTableSelection,
   updateTableRowProperty,
 } from './TableActions';
-
-/*
- * Action creator called when quick actions are successfully fetched
- */
-export function fetchedQuickActions(windowId, id, data) {
-  return {
-    type: FETCHED_QUICK_ACTIONS,
-    payload: {
-      data,
-      windowId,
-      id,
-    },
-  };
-}
-
-/*
- * Action creator to delete quick actions from the store
- */
-export function deleteQuickActions(windowId, id) {
-  return {
-    type: DELETE_QUICK_ACTIONS,
-    payload: {
-      windowId,
-      id,
-    },
-  };
-}
-
-export function deleteTopActions() {
-  return {
-    type: DELETE_TOP_ACTIONS,
-  };
-}
 
 export function toggleOverlay(data) {
   return {
@@ -459,7 +422,7 @@ export function updateTabLayout(windowId, tabId) {
       .then(({ data }) => {
         dispatch(setUpdatedTabLayout(tabId, data));
 
-        return Promise.resolve(tabId);
+        return Promise.reject(tabId);
       })
       .catch((error) => {
         return Promise.reject(error);
@@ -688,31 +651,6 @@ export function fetchChangeLog(windowId, docId, tabId, rowId) {
         })
       );
     });
-  };
-}
-
-export function fetchTopActions(windowType, docId, tabId) {
-  return (dispatch) => {
-    dispatch({
-      type: FETCH_TOP_ACTIONS,
-    });
-
-    return topActionsRequest(windowType, docId, tabId)
-      .then((response) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_SUCCESS,
-          payload: response.data.actions,
-        });
-
-        return Promise.resolve(response.data.actions);
-      })
-      .catch((e) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_FAILURE,
-        });
-
-        return Promise.reject(e);
-      });
   };
 }
 
@@ -1107,7 +1045,7 @@ export function createProcess({
   processType,
   rowId,
   tabId,
-  type,
+  parentId,
   viewId,
   selectedTab,
   childViewId,
@@ -1134,7 +1072,7 @@ export function createProcess({
         processId: processType,
         rowId,
         tabId,
-        type,
+        parentId,
         viewId,
         selectedTab,
         childViewId,
@@ -1161,7 +1099,9 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
-          await dispatch(handleProcessResponse(response, processType, pid));
+          await dispatch(
+            handleProcessResponse(response, processType, pid, parentId)
+          );
         } catch (error) {
           await dispatch(closeModal());
           await dispatch(setProcessSaved());
@@ -1199,7 +1139,7 @@ export function createProcess({
   };
 }
 
-export function handleProcessResponse(response, type, id) {
+export function handleProcessResponse(response, type, id, parentId) {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -1285,13 +1225,14 @@ export function handleProcessResponse(response, type, id) {
                 windowId: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
+                parentId,
               })
             );
 
             break;
           case 'closeIncludedView':
             await dispatch(
-              setIncludedView({
+              unsetIncludedView({
                 windowId: action.windowId,
                 viewId: action.viewId,
               })
@@ -1306,7 +1247,14 @@ export function handleProcessResponse(response, type, id) {
             const { windowId, viewId, rowIds } = action;
             const tableId = getTableId({ windowId, viewId });
 
-            dispatch(updateTableSelection(tableId, rowIds));
+            dispatch(
+              updateTableSelection({
+                id: tableId,
+                selection: rowIds,
+                windowId,
+                viewId,
+              })
+            );
 
             break;
           }
@@ -1323,5 +1271,39 @@ export function handleProcessResponse(response, type, id) {
         await dispatch(closeProcessModal());
       }
     }
+  };
+}
+
+/**
+ * @method setPrintingOptions
+ * @summary - action. It updates the store with the printing options fetched from /rest/api/window/{windowId}/{documentId}/printingOptions
+ * @param {object} data
+ */
+export function setPrintingOptions(data) {
+  return {
+    type: SET_PRINTING_OPTIONS,
+    payload: data,
+  };
+}
+
+/**
+ * @method resetPrintingOptions
+ * @summary - action. It reets the printing options in the store
+ */
+export function resetPrintingOptions() {
+  return {
+    type: RESET_PRINTING_OPTIONS,
+  };
+}
+
+/**
+ * @method togglePrintingOption
+ * @summary - action. It toggles in the store the printing option truth value
+ * @param {object} data
+ */
+export function togglePrintingOption(target) {
+  return {
+    type: TOGGLE_PRINTING_OPTION,
+    payload: target,
   };
 }

@@ -1,21 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
@@ -41,6 +27,17 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -96,6 +93,7 @@ public class CreateDraftIssuesCommand
 
 	//
 	// Status
+	@Nullable
 	private Quantity remainingQtyToIssue;
 
 	@Builder
@@ -156,6 +154,7 @@ public class CreateDraftIssuesCommand
 		return candidates;
 	}
 
+	@Nullable
 	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU hu)
@@ -199,9 +198,6 @@ public class CreateDraftIssuesCommand
 
 	/**
 	 * If not a top level HU, take it out first
-	 *
-	 * @param huContext
-	 * @param hu
 	 */
 	private void removeHuFromParentIfAny(
 			@NonNull final IHUContext huContext,
@@ -230,6 +226,7 @@ public class CreateDraftIssuesCommand
 		}
 	}
 
+	@Nullable
 	private IHUProductStorage retrieveProductStorage(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU hu)
@@ -251,10 +248,11 @@ public class CreateDraftIssuesCommand
 					.setParameter("HU", hu)
 					.setParameter("ProductStorages", productStorages);
 		}
-		final IHUProductStorage productStorage = productStorages.get(0);
-		return productStorage;
+
+		return productStorages.get(0);
 	}
 
+	@Nullable
 	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
@@ -300,7 +298,9 @@ public class CreateDraftIssuesCommand
 				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
 	}
 
-	/** @return how much quantity to take "from" and issue it to given BOM line */
+	/**
+	 * @return how much quantity to take "from" and issue it to given BOM line
+	 */
 	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
 	{
 		//
@@ -322,8 +322,8 @@ public class CreateDraftIssuesCommand
 			// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
 			// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
 			// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-			final String issueMethod = targetBOMLine.getIssueMethod();
-			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+			final BOMComponentIssueMethod issueMethod = BOMComponentIssueMethod.ofNullableCode(targetBOMLine.getIssueMethod());
+			if (BOMComponentIssueMethod.IssueOnlyForReceived.equals(issueMethod))
 			{
 				return ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
 			}

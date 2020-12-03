@@ -1,20 +1,25 @@
 package de.metas.material.planning.pporder;
 
-import java.util.List;
-
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent.PPOrderAdvisedEventBuilder;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.event.MaterialRequest;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -44,6 +49,7 @@ public class PPOrderAdvisedEventCreator
 	private final PPOrderDemandMatcher ppOrderDemandMatcher;
 
 	private final PPOrderPojoSupplier ppOrderPojoSupplier;
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public PPOrderAdvisedEventCreator(
 			@NonNull final PPOrderDemandMatcher ppOrderDemandMatcher,
@@ -53,7 +59,8 @@ public class PPOrderAdvisedEventCreator
 		this.ppOrderPojoSupplier = ppOrderPojoSupplier;
 	}
 
-	public List<PPOrderAdvisedEvent> createPPOrderAdvisedEvents(
+	@NonNull
+	public ImmutableList<PPOrderAdvisedEvent> createPPOrderAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMutableMRPContext mrpContext)
 	{
@@ -62,21 +69,107 @@ public class PPOrderAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
-		final IMaterialRequest request = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
-
-		final PPOrder ppOrder = ppOrderPojoSupplier.supplyPPOrderPojoWithLines(request);
-
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
-		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
-				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
-				.ppOrder(ppOrder)
-				.directlyCreatePPOrder(productPlanning.isCreatePlan())
-				.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible())
-				.build();
-		Loggables.addLog("Created PPOrderAdvisedEvent");
+		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext);
 
-		return ImmutableList.of(event);
+		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
+		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(mrpContext, completeRequest, maxQtyPerOrder);
+		final ImmutableList<MaterialRequest> partialRequests = createMaterialRequests(completeRequest, maxQtyPerOrderConv);
+
+		final ImmutableList.Builder<PPOrderAdvisedEvent> result = ImmutableList.builder();
+		boolean firstRequest = true;
+		for (final MaterialRequest request : partialRequests)
+		{
+			final PPOrder ppOrder = ppOrderPojoSupplier.supplyPPOrderPojoWithLines(request);
+
+			final PPOrderAdvisedEventBuilder eventBuilder = PPOrderAdvisedEvent.builder()
+					.supplyRequiredDescriptor(supplyRequiredDescriptor)
+					.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor())
+					.ppOrder(ppOrder)
+					.directlyCreatePPOrder(productPlanning.isCreatePlan())
+					.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible());
+
+			if (firstRequest)
+			{
+				eventBuilder.tryUpdateExistingCandidate(true);
+				firstRequest = false;
+			}
+			else
+			{ // all further events need to get their respective new supply candidates, rather that updating ("overwriting") the existing one.
+				eventBuilder.tryUpdateExistingCandidate(false);
+			}
+
+			result.add(eventBuilder.build());
+			Loggables.addLog("Created PPOrderAdvisedEvent with quantity={}", request.getQtyToSupply());
+		}
+
+		return result.build();
+	}
+
+	@Nullable
+	private Quantity extractMaxQuantityPerOrder(@NonNull final I_PP_Product_Planning productPlanning)
+	{
+		final Quantity maxQtyPerOrder;
+		if (productPlanning.getMaxManufacturedQtyPerOrder().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID() > 0)
+		{
+			maxQtyPerOrder = Quantitys.create(
+					productPlanning.getMaxManufacturedQtyPerOrder(),
+					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrder_UOM_ID()));
+		}
+		else
+		{
+			maxQtyPerOrder = null;
+		}
+		return maxQtyPerOrder;
+	}
+
+	@Nullable
+	private Quantity convertQtyToRequestUOM(
+			@NonNull final IMutableMRPContext mrpContext,
+			@NonNull final MaterialRequest completeRequest,
+			@Nullable final Quantity maxQtyPerOrder)
+	{
+		final Quantity maxQtyPerOrderConv;
+		if (maxQtyPerOrder != null)
+		{
+			maxQtyPerOrderConv = uomConversionBL.convertQuantityTo(
+					maxQtyPerOrder,
+					mrpContext.getProductId(),
+					completeRequest.getQtyToSupply().getUomId());
+		}
+		else
+		{
+			maxQtyPerOrderConv = null;
+		}
+		return maxQtyPerOrderConv;
+	}
+
+	@VisibleForTesting
+	@NonNull
+	static ImmutableList<MaterialRequest> createMaterialRequests(
+			@NonNull final MaterialRequest completeRequest,
+			@Nullable final Quantity maxQtyPerOrder)
+	{
+		final ImmutableList<MaterialRequest> partialRequests;
+		if (maxQtyPerOrder == null || maxQtyPerOrder.signum() <= 0)
+		{
+			partialRequests = ImmutableList.of(completeRequest);
+		}
+		else
+		{
+			final ImmutableList.Builder<MaterialRequest> partialRequestsBuilder = ImmutableList.builder();
+
+			Quantity remainingQty = completeRequest.getQtyToSupply();
+			while (remainingQty.signum() > 0)
+			{
+				final Quantity partialRequestQty = remainingQty.min(maxQtyPerOrder);
+				partialRequestsBuilder.add(completeRequest.withQtyToSupply(partialRequestQty));
+
+				remainingQty = remainingQty.subtract(maxQtyPerOrder);
+			}
+			partialRequests = partialRequestsBuilder.build();
+		}
+		return partialRequests;
 	}
 }

@@ -10,18 +10,14 @@ import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 /*
@@ -49,16 +45,14 @@ import java.util.Optional;
 @Service
 public class InvoiceService
 {
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
-		final Optional<I_AD_Archive> lastArchive = getLastArchive(invoiceId);
-		return lastArchive.isPresent() ? Optional.of(archiveBL.getBinaryData(lastArchive.get())) : Optional.empty();
+		return getLastArchive(invoiceId).map(archiveBL::getBinaryData);
 	}
 
 	public boolean hasArchive(@NonNull final InvoiceId invoiceId)
@@ -68,25 +62,13 @@ public class InvoiceService
 
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(invoiceId);
-
-		if (invoiceRecord == null)
-		{
-			return Optional.empty();
-		}
-
-		final List<I_AD_Archive> lastArchive = archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(invoiceRecord), 1);
-		if (Check.isEmpty(lastArchive))
-		{
-			return Optional.empty();
-		}
-		return Optional.of(lastArchive.get(0));
+		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
 	}
 
 	@NonNull
 	public Optional<JsonReverseInvoiceResponse> reverseInvoice(@NonNull final InvoiceId invoiceId)
 	{
-		final I_C_Invoice documentRecord = Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+		final I_C_Invoice documentRecord = invoiceDAO.getByIdInTrx(invoiceId);
 		if (documentRecord == null)
 		{
 			return Optional.empty();

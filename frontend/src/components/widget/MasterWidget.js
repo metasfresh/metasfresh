@@ -85,7 +85,6 @@ class MasterWidget extends PureComponent {
       patch,
       rowId,
       tabId,
-      onChange,
       relativeDocId,
       isAdvanced = false,
       viewId,
@@ -134,7 +133,6 @@ class MasterWidget extends PureComponent {
       isEdit
     );
     this.setState({ edited: false });
-    onChange && onChange(ret); //callback
 
     return ret;
   };
@@ -217,17 +215,23 @@ class MasterWidget extends PureComponent {
    * @param {*} field
    */
   handleZoomInto = (field) => {
-    const { dataId, windowId, tabId, rowId } = this.props;
+    const { dataId, windowId, tabId, rowId, entity } = this.props;
+    const fallBackEntity = entity ? entity : 'window';
 
-    getZoomIntoWindow('window', windowId, dataId, tabId, rowId, field).then(
-      (res) => {
-        const url = `/window/${res.data.documentPath.windowId}/${
-          res.data.documentPath.documentId
-        }`;
+    getZoomIntoWindow(
+      fallBackEntity,
+      windowId,
+      dataId,
+      tabId,
+      rowId,
+      field
+    ).then((res) => {
+      const url = `/${fallBackEntity}/${res.data.documentPath.windowId}/${
+        res.data.documentPath.documentId
+      }`;
 
-        res && res.data && window.open(url, '_blank');
-      }
-    );
+      res && res.data && window.open(url, '_blank');
+    });
   };
 
   /**
@@ -297,7 +301,6 @@ MasterWidget.propTypes = {
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
   patch: PropTypes.func,
-  onChange: PropTypes.func,
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
   entity: PropTypes.string,

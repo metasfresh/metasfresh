@@ -23,15 +23,11 @@ package org.eevolution.mrp.api.impl;
  */
 
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -41,6 +37,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
@@ -63,10 +60,14 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.MRPFirmType;
 
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /* package */class MRPQueryBuilder implements IMRPQueryBuilder
 {
@@ -516,7 +517,7 @@ import lombok.NonNull;
 		}
 		else if (_mrpContext != null)
 		{
-			return _mrpContext.getAD_Client_ID();
+			return ClientId.toRepoId(_mrpContext.getClientId());
 		}
 
 		return -1;
@@ -632,7 +633,7 @@ import lombok.NonNull;
 		}
 		else if (_mrpContext != null)
 		{
-			return _mrpContext.getM_Product_ID();
+			return ProductId.toRepoId(_mrpContext.getProductId());
 		}
 
 		return -1;

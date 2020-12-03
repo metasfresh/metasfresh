@@ -1,15 +1,15 @@
 package de.metas.ui.web.pporder.process;
 
-import org.eevolution.model.X_PP_Order_BOMLine;
-
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.PPOrderQtyId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.eevolution.api.BOMComponentIssueMethod;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ import de.metas.util.StringUtils;
  * Reverse(and deletes) a draft manufacturing order issue/receipt candidate.
  * 
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh-webui-api/issues/356
+ * Task https://github.com/metasfresh/metasfresh-webui-api/issues/356
  */
 public class WEBUI_PP_Order_ReverseCandidate
 		extends WEBUI_PP_Order_Template
@@ -62,14 +62,14 @@ public class WEBUI_PP_Order_ReverseCandidate
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not available for source HU line");
 		}
 
-		if (row.getPP_Order_Qty_ID() <= 0)
+		if (row.getPpOrderQtyId() == null)
 		{
 			final String internalReason = StringUtils.formatMessage("Not an issue/receipt line");
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
 
 		}
 
-		if (row.isProcessed() && !(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(row.getIssueMethod())))
+		if (row.isProcessed() && !(BOMComponentIssueMethod.IssueOnlyForReceived.equals(row.getIssueMethod())))
 		{
 			final String internalReason = StringUtils.formatMessage("Only not processed");
 			return ProcessPreconditionsResolution.rejectWithInternalReason(internalReason);
@@ -81,7 +81,7 @@ public class WEBUI_PP_Order_ReverseCandidate
 	@Override
 	protected String doIt() throws Exception
 	{
-		final int ppOrderQtyId = getSingleSelectedRow().getPP_Order_Qty_ID();
+		final PPOrderQtyId ppOrderQtyId = getSingleSelectedRow().getPpOrderQtyId();
 		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.retrieveById(ppOrderQtyId);
 
 		huPPOrderQtyBL.reverseDraftCandidate(candidate);

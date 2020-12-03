@@ -29,6 +29,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPCostCollectorId;
 
 import java.util.List;
 import java.util.Set;
@@ -197,7 +198,9 @@ public class PP_Cost_Collector
 		// Delete issue candidate
 		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
-		final I_PP_Order_Qty issueCandidate = huPPOrderQtyDAO.retrieveOrderQtyForCostCollector(ppOrderId, cc.getPP_Cost_Collector_ID());
+		final I_PP_Order_Qty issueCandidate = huPPOrderQtyDAO.retrieveOrderQtyForCostCollector(
+				ppOrderId,
+				PPCostCollectorId.ofRepoId(cc.getPP_Cost_Collector_ID()));
 		if (issueCandidate != null)
 		{
 			final I_M_HU huToVerify = issueCandidate.getM_HU();

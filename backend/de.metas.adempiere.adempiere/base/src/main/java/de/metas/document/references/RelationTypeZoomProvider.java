@@ -1,11 +1,16 @@
 package de.metas.document.references;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.function.IntSupplier;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.Priority;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -26,18 +31,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.Priority;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.IntSupplier;
 
 /*
  * #%L
@@ -80,7 +77,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 	private final Priority zoomInfoPriority = Priority.MEDIUM;
 
-	private RelationTypeZoomProvider(final Builder builder)
+	private RelationTypeZoomProvider(@NonNull final Builder builder)
 	{
 		directed = builder.isDirected();
 		zoomInfoId = builder.getZoomInfoId();
@@ -138,10 +135,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 			display = referenceTarget.getRoleDisplayName(adWindowId);
 		}
-
 		else
 		{
-
 			final IPair<ZoomProviderDestination, ZoomProviderDestination> sourceAndTarget = findSourceAndTargetEffective(zoomOrigin);
 
 			final ZoomProviderDestination source = sourceAndTarget.getLeft();
@@ -151,7 +146,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 			if (!source.matchesAsSource(zoomOrigin))
 			{
-				logger.trace("Skip {} because {} is not matching source={}", this, zoomOrigin, source);
+				logger.debug("Skip {} because {} is not matching source={}", this, zoomOrigin, source);
 				return ImmutableList.of();
 			}
 
@@ -395,12 +390,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	/**
 	 * Retrieve destinations for the zoom origin given as parameter.
 	 * NOTE: This is not suitable for TableRecordIdTarget relation types, only for the default kind!
-	 *
-	 * @param ctx
-	 * @param zoomOriginPO
-	 * @param clazz
-	 * @param trxName
-	 * @return
 	 */
 	public <T> List<T> retrieveDestinations(final Properties ctx, final PO zoomOriginPO, final Class<T> clazz, final String trxName)
 	{

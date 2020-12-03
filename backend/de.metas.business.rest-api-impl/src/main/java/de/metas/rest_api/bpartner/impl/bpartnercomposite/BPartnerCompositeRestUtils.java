@@ -2,6 +2,11 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
 import java.util.function.Predicate;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgQuery;
+import de.metas.rest_api.exception.MissingResourceException;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.bpartner.composite.BPartnerContact;
@@ -11,6 +16,11 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+
+import static de.metas.util.Check.isNotBlank;
 
 /*
  * #%L
@@ -37,13 +47,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class BPartnerCompositeRestUtils
 {
-
-	public Predicate<BPartnerLocation> createLocationFilterFor(@NonNull final IdentifierString locationIdentifier)
+	public static Predicate<BPartnerLocation> createLocationFilterFor(@NonNull final IdentifierString locationIdentifier)
 	{
 		return l -> matches(locationIdentifier, l);
 	}
 
-	public boolean matches(
+	public static boolean matches(
 			@NonNull final IdentifierString locationIdentifier,
 			@NonNull final BPartnerLocation location)
 	{
@@ -64,7 +73,7 @@ public class BPartnerCompositeRestUtils
 		}
 	}
 
-	public Predicate<BPartnerContact> createContactFilterFor(@NonNull final IdentifierString contactIdentifier)
+	public static Predicate<BPartnerContact> createContactFilterFor(@NonNull final IdentifierString contactIdentifier)
 	{
 		return c -> matches(contactIdentifier, c);
 	}
@@ -88,5 +97,23 @@ public class BPartnerCompositeRestUtils
 			default:
 				throw new AdempiereException("Unexpected type; contactIdentifier=" + contactIdentifier);
 		}
+	}
+
+	public static OrgId retrieveOrgIdOrDefault(@Nullable final String orgCode)
+	{
+		final OrgId orgId;
+		if (isNotBlank(orgCode))
+		{
+			orgId = Services.get(IOrgDAO.class)
+					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
+					.orElseThrow(() -> MissingResourceException.builder()
+							.resourceName("organisation")
+							.resourceIdentifier(orgCode).build());
+		}
+		else
+		{
+			orgId = Env.getOrgId();
+		}
+		return orgId;
 	}
 }

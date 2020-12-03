@@ -21,7 +21,6 @@ const DLpropTypes = {
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
   queryViewId: PropTypes.string,
-  updateParentSelectedIds: PropTypes.func,
   page: PropTypes.number,
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,

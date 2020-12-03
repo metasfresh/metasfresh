@@ -89,6 +89,12 @@ public class InOutBL implements IInOutBL
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Override
+	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	{
+		return inOutDAO.getById(inoutId);
+	}
+
+	@Override
 	public List<I_M_InOutLine> getLines(@NonNull final I_M_InOut inout)
 	{
 		return inOutDAO.retrieveLines(inout);

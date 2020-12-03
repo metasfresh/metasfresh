@@ -74,8 +74,8 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 		final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
 				+ "<EDI_Message>"
 				+ "   <EDI_Imp_C_OLCands>"
-				+ "      <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered></EDI_Imp_C_OLCand>"
-				+ "      <EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered></EDI_Imp_C_OLCand>"
+				+ "      <EDI_Imp_C_OLCand><QtyEntered>10</QtyEntered><DatePromised>2020-11-27T00:00:01</DatePromised></EDI_Imp_C_OLCand>"
+				+ "      <EDI_Imp_C_OLCand><QtyEntered>20</QtyEntered><DatePromised>2020-11-27T00:00:01</DatePromised></EDI_Imp_C_OLCand>"
 				+ "   </EDI_Imp_C_OLCands>"
 				+ "</EDI_Message>";
 
@@ -96,6 +96,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
 						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
 						+ "    <QtyEntered>10</QtyEntered>"
+						+ "    <DatePromised>2020-11-27T23:59:00</DatePromised>"
 						+ "</EDI_Imp_C_OLCand>");
 
 		final var string2 = metasfreshOutputEndpoint.getExchanges().get(1).getIn().getBody(String.class);
@@ -108,6 +109,7 @@ class EcosioOrdersRouteTest extends CamelTestSupport
 						+ "    <AD_InputDataSource_ID>540215</AD_InputDataSource_ID>"
 						+ "    <AD_User_EnteredBy_ID>199</AD_User_EnteredBy_ID>"
 						+ "    <QtyEntered>20</QtyEntered>"
+						+ "    <DatePromised>2020-11-27T23:59:00</DatePromised>"
 						+ "</EDI_Imp_C_OLCand>");
 	}
 }
