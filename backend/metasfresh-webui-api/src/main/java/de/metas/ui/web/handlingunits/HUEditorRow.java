@@ -144,6 +144,14 @@ public final class HUEditorRow implements IViewRow
 			})
 	private final String serialNo;
 
+	public static final String FIELDNAME_ServiceContract = "ServiceContract";
+	@ViewColumn(fieldName = FIELDNAME_ServiceContract, widgetType = DocumentFieldWidgetType.Text, sorting = false,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
+	private final String serviceContract;
+
 	public static final String FIELDNAME_IsOwnPalette = I_M_HU.COLUMNNAME_HUPlanningReceiptOwnerPM;
 	@ViewColumn(fieldName = FIELDNAME_IsOwnPalette, widgetType = DocumentFieldWidgetType.YesNo, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25)
@@ -280,6 +288,8 @@ public final class HUEditorRow implements IViewRow
 		{
 			serialNo = null;
 		}
+
+		serviceContract = null;
 	}
 
 	@Override
