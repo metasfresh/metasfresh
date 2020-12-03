@@ -269,6 +269,7 @@
                             </sources>
 
                             <packageName>${jaxb.packageName}</packageName>
+                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -283,6 +284,7 @@
 
                             <packageName>${jaxb.order.packageName}</packageName>
                             <clearOutputDir>false</clearOutputDir>
+                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -297,6 +299,7 @@
 
                             <packageName>${jaxb.invoice.packageName}</packageName>
                             <clearOutputDir>false</clearOutputDir>
+                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -311,6 +314,7 @@
 
                             <packageName>${jaxb.desadv.packageName}</packageName>
                             <clearOutputDir>false</clearOutputDir>
+                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
