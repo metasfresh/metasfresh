@@ -60,11 +60,11 @@ public class ImportConfigRepository
 		final BPGroupId patientBPGroupId = BPGroupId.ofRepoIdOrNull(configRecord.getImportedPartientBP_Group_ID());
 		if (patientBPGroupId != null)
 		{
-			final I_C_BP_Group municipalityBPartnerGroup = Check.assumeNotNull(
+			final I_C_BP_Group patientBPartnerGroup = Check.assumeNotNull(
 					groupDAO.getById(patientBPGroupId),
 					"Unable to load BP_Group referenced by HC_Forum_Datenaustausch_Config.ImportedPartientBP_Group_ID={}. HC_Forum_Datenaustausch_Config={}",
 					patientBPGroupId.getRepoId(), configRecord);
-			builder.partientBPartnerGroupName(municipalityBPartnerGroup.getName());
+			builder.partientBPartnerGroupName(patientBPartnerGroup.getName());
 		}
 
 		final BPGroupId municipalityBPGroupId = BPGroupId.ofRepoIdOrNull(configRecord.getImportedMunicipalityBP_Group_ID());
