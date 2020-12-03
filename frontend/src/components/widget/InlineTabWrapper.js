@@ -114,7 +114,7 @@ InlineTabWrapper.propTypes = {
   dataId: PropTypes.string.isRequired,
   fetchTab: PropTypes.func.isRequired,
   createWindow: PropTypes.func.isRequired,
-  widgetData: PropTypes.object,
+  widgetData: PropTypes.array,
 };
 
 export default connect(
