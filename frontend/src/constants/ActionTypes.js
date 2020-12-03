@@ -440,3 +440,9 @@ export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';
  * @type {string} set inline tab layout and data
  */
 export const SET_INLINE_TAB_LAYOUT_AND_DATA = 'SET_INLINE_TAB_LAYOUT_AND_DATA';
+
+/**
+ * @constant
+ * @type {string} set inline tab wrapper data
+ */
+export const SET_INLINE_TAB_WRAPPER_DATA = 'SET_INLINE_TAB_WRAPPER_DATA';

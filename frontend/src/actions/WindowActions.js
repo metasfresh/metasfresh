@@ -51,6 +51,7 @@ import {
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
   SET_INLINE_TAB_LAYOUT_AND_DATA,
+  SET_INLINE_TAB_WRAPPER_DATA,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
@@ -1371,5 +1372,15 @@ export function setInlineTabLayoutAndData({ inlineTabId, data }) {
   return {
     type: SET_INLINE_TAB_LAYOUT_AND_DATA,
     payload: { inlineTabId, data },
+  };
+}
+
+/*
+ * Action creator called to set the inlineTabWrapper branch in the redux store with the data payload
+ */
+export function setInlineTabWrapperData({ inlineTabWrapperId, data }) {
+  return {
+    type: SET_INLINE_TAB_WRAPPER_DATA,
+    payload: { inlineTabWrapperId, data },
   };
 }
