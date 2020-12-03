@@ -147,7 +147,7 @@ public class CreateDraftIssuesCommand
 
 		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() != 0)
 		{
-			throw new AdempiereException("Cannot issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
+			throw new AdempiereException("Could not issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
 		}
 
 		return candidates;
@@ -196,9 +196,6 @@ public class CreateDraftIssuesCommand
 
 	/**
 	 * If not a top level HU, take it out first
-	 *
-	 * @param huContext
-	 * @param hu
 	 */
 	private void removeHuFromParentIfAny(
 			@NonNull final IHUContext huContext,

@@ -23,6 +23,7 @@ import de.metas.error.IErrorManager;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -256,12 +257,21 @@ class ManufacturingOrderReportProcessCommand
 					.setParameter("issue", issue);
 		}
 
-		final List<I_M_HU> hus = resolveHUs(productId, issue.getHandlingUnits());
+		final List<I_M_HU> possibleSourceHUs = resolveHUs(productId, issue.getHandlingUnits());
+
+		// e.g. if we have one 1000PCE-HU, but we need to issue just 10PCE, then we need to split those 10PCE from the big HU
+		final List<I_M_HU> husToIssue = HUTransformService.newInstance()
+				.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
+						.sourceHUs(possibleSourceHUs)
+						.productId(productId)
+						.qtyCU(qtyToIssue)
+						.onlyFromUnreservedHUs(true)
+						.build());
 
 		final List<I_PP_Order_Qty> processedIssueCandidates = huPPOrderBL.createIssueProducer(orderId)
 				.fixedQtyToIssue(qtyToIssue)
 				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
-				.createIssues(hus);
+				.createIssues(husToIssue);
 
 		return JsonResponseIssueToManufacturingOrder.builder()
 				.requestId(issue.getRequestId())
