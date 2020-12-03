@@ -101,139 +101,6 @@ describe('DocList', () => {
       initSessionClient: jest.fn(),
     };
 
-    it('renders without errors', async (done) => {
-      const initialState = createInitialState();
-      const store = createStore(
-        rootReducer,
-        initialState,
-        applyMiddleware(...middleware)
-      );
-      const windowId = props.windowId;
-      const viewId = props.query.viewId;
-      const data = rowFixtures.rowData1;
-      const includedData = rowFixtures.includedViewData1;
-      const includedWindowId = includedData.windowId;
-      const includedViewId = includedData.viewId;
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/login/availableLanguages`)
-        .reply(200, {});
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`
-        )
-        .reply(200, dataFixtures.breadcrumbs1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/geolocation/config')
-        .reply(200, []);
-
-      // included view
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/geolocation/config')
-        .reply(200, []);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .post(`/documentView/${windowId}`)
-        .reply(200, dataFixtures.data1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${windowId}/layout?viewType=grid`)
-        .reply(200, layoutFixtures.layout1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${includedWindowId}/layout?viewType=includedView`)
-        .reply(200, layoutFixtures.includedViewLayout1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/userSession')
-        .reply(200, userSessionData);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/notifications/websocketEndpoint`)
-        .reply(200, `/notifications/${userSessionData.userProfileId}`);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/notifications/all?limit=20')
-        .reply(200, notificationsData.data1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${windowId}/${viewId}?firstRow=0&pageLength=20`)
-        .reply(200, rowFixtures.rowData1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}?firstRow=0&pageLength=20`
-        )
-        .reply(200, rowFixtures.includedViewData1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${windowId}/${viewId}/quickActions?selectedIds=${
-            data.result[0].id
-          }`
-        )
-        .reply(200, quickActionsData.parent_quickactions1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}/quickActions?selectedIds=${
-            includedData.result[0].id
-          }`
-        )
-        .reply(200, quickActionsData.included_quickactions);
-
-      const wrapper = mount(
-        <Provider store={store}>
-          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-            <CustomRouter history={history} auth={auth} />
-          </ShortcutProvider>
-        </Provider>
-      );
-
-      await waitFor(() =>
-        expect(Object.keys(store.getState().viewHandler.views).length).toBe(2)
-      );
-
-      wrapper.update();
-
-      await waitFor(() =>
-        expect(
-          store.getState().viewHandler.views[includedWindowId].layoutPending
-        ).toBeFalsy()
-      );
-
-      await waitForExpect(() => {
-        const html = wrapper.html();
-        expect(html).toContain('document-list-has-included');
-        expect(html).toContain('document-list-is-included');
-      }, 4000);
-
-      done();
-    }, 10000);
-
-    /*
-     * Unskip this test once the quickactions are refactored. This is due to the fact, that
-     * right now we're doing multiple calls for quick actions one after another and we have
-     * to wait for all of them to finish, so that jest won't complain and throw errors. But
-     * with the current architecture it's really hard to implement and would require changes
-     * in the QuickActions component anyway.
-     */
     it('renders without errors and loads quick actions', async (done) => {
       const initialState = createInitialState();
       const store = createStore(
@@ -309,8 +176,8 @@ describe('DocList', () => {
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(
-          `/documentView/${windowId}/${viewId}/quickActions?selectedIds=${
-            data.result[0].id
+          `/documentView/${windowId}/${viewId}/quickActions?childViewId=${includedViewId}&childViewSelectedIds=${
+            includedData.result[0].id}&selectedIds=${data.result[0].id
           }`
         )
         .reply(200, quickActionsData.parent_quickactions2);
@@ -318,8 +185,8 @@ describe('DocList', () => {
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(
-          `/documentView/${includedWindowId}/${includedViewId}/quickActions?selectedIds=${
-            includedData.result[0].id
+          `/documentView/${includedWindowId}/${includedViewId}/quickActions?parentViewId=${viewId}&parentViewSelectedIds=${
+            data.result[0].id}&selectedIds=${includedData.result[0].id
           }`
         )
         .reply(200, quickActionsData.included_quickactions);
