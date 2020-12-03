@@ -3,7 +3,7 @@ import { reduce, cloneDeep, get, find } from 'lodash';
 import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
 
-import { getTableActions } from '../actions/Actions';
+import { fetchQuickActions } from '../actions/Actions';
 import { showIncludedView } from '../actions/ViewActions';
 
 import { getView } from '../reducers/viewHandler';
@@ -558,8 +558,6 @@ export function updateTableSelection({
 
     if (viewId) {
       return Promise.all([
-        // update quick actions
-        dispatch(getTableActions({ tableId: id, windowId, viewId, isModal })),
         // show included view
         dispatch(
           handleToggleIncludedView({
@@ -569,6 +567,8 @@ export function updateTableSelection({
             isModal,
           })
         ),
+        // update quick actions
+        dispatch(fetchQuickActions({ windowId, viewId, isModal })),
       ]);
     }
 
@@ -601,7 +601,6 @@ export function deselectTableRows({
 
     if (viewId) {
       return Promise.all([
-        dispatch(getTableActions({ tableId: id, windowId, viewId, isModal })),
         dispatch(
           handleToggleIncludedView({
             windowId,
@@ -610,10 +609,11 @@ export function deselectTableRows({
             isModal,
           })
         ),
+        dispatch(fetchQuickActions({ windowId, viewId, isModal })),
       ]);
     }
 
-    return Promise.resolve(true);
+    return Promise.resolve(selection);
   };
 }
 
