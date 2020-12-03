@@ -333,6 +333,7 @@ class Window extends PureComponent {
       data,
       isModal,
       isAdvanced,
+      disconnected,
     } = this.props;
     const { fullScreen } = this.state;
 
@@ -361,6 +362,7 @@ class Window extends PureComponent {
           requestElementGroupFocus={this.requestElementGroupFocus}
           isSectionCollapsed={isSectionCollapsed}
           toggleSectionCollapsed={this.toggleSectionCollapsed}
+          disconnected={disconnected}
         />
       );
     });
@@ -490,6 +492,7 @@ Window.propTypes = {
   rowId: PropTypes.string,
   isAdvanced: PropTypes.bool,
   onRefreshTab: PropTypes.func,
+  disconnected: PropTypes.bool,
 };
 
 Window.defaultProps = {

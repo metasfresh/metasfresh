@@ -24,6 +24,7 @@ class Element extends PureComponent {
       elementGroupIndex,
       sectionIndex,
       columnIndex,
+      disconnected,
     } = this.props;
 
     const { widgetType } = this.props.elementLayout;
@@ -58,6 +59,7 @@ class Element extends PureComponent {
         fullScreen={isFullScreen}
         fieldName={fieldName}
         onBlurWidget={onBlurWidget}
+        disconnected={disconnected}
         {...element}
       />
     );
@@ -83,6 +85,7 @@ Element.propTypes = {
   tabIndex: PropTypes.number,
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
+  disconnected: PropTypes.bool,
 };
 
 export default Element;

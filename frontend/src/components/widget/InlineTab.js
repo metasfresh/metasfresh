@@ -1,9 +1,10 @@
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import Table from '../../containers/Table';
+import { connect } from 'react-redux';
+import Window from '../../components/Window';
 import { getLayout, getData } from '../../api/view';
-import { RawWidget } from '../../components/widget/RawWidget';
+import { setInlineTabLayoutAndData } from '../../actions/WindowActions';
 
 class InlineTab extends PureComponent {
   constructor(props) {
@@ -16,7 +17,14 @@ class InlineTab extends PureComponent {
   }
 
   toggleOpen = () => {
-    const { windowId, id: docId, tabId } = this.props;
+    const {
+      windowId,
+      id: docId,
+      tabId,
+      setInlineTabLayoutAndData,
+      rowId,
+    } = this.props;
+
     this.setState(
       (prevState) => {
         return { isOpen: !prevState.isOpen };
@@ -29,38 +37,27 @@ class InlineTab extends PureComponent {
                 entity: 'window',
                 docType: windowId,
                 docId,
+                tabId,
                 fetchAdvancedFields: false,
-              }).then(({ fieldsByName }) =>
-                this.setState({ layout: layoutData, data: fieldsByName })
-              );
+              }).then(({ data: respFields }) => {
+                const { result } = respFields;
+                const wantedData = result.filter(
+                  (item) => item.rowId === rowId
+                );
+                setInlineTabLayoutAndData({
+                  inlineTabId: `${windowId}_${tabId}_${rowId}`,
+                  data: { layout: layoutData, data: wantedData[0] },
+                });
+              });
             }
           );
-        !this.state.isOpen && this.setState({ layout: null });
       }
     );
   };
 
   render() {
-    // const {
-    //   widgetData,
-    //   windowId,
-    //   dataId,
-    //   onRefreshTable,
-    // } = this.props;
-    const { id, rowId, tabId, windowId, fieldsByName } = this.props;
-
+    const { id: docId, rowId, tabId, layout, data, fieldsByName } = this.props;
     const { isOpen } = this.state;
-    // const {
-    //   tabId,
-    //   caption,
-    //   description,
-    //   internalName,
-    //   queryOnActivate,
-    //   supportQuickInput,
-    //   defaultOrderBys,
-    //   orderBy,
-    // } = widgetData;
-
     return (
       <div>
         <div
@@ -85,37 +82,19 @@ class InlineTab extends PureComponent {
         {isOpen && (
           <div className="inline-tab-active inline-tab-offset-top">
             <div className="inline-tab-content">
-              {fieldsByName &&
-                Object.keys(fieldsByName).map((item, index) => {
-                  return (
-                    <RawWidget
-                      key={index}
-                      modalVisible={true}
-                      widgetData={[fieldsByName[item]]}
-                      fields={[fieldsByName[item]]}
-                      disableShortcut={() => true}
-                      allowShortcut={() => true}
-                      {...fieldsByName[item]}
-                    />
-                  );
-                })}
-
-              {/* <Table
-                {...{
-                  caption,
-                  description,
-                  tabId,
-                  windowId,
-                  internalName,
-                }}
-                entity="window"
-                key={tabId}
-                orderBy={orderBy || defaultOrderBys}
-                docId={dataId}
-                queryOnActivate={queryOnActivate}
-                supportQuickInput={supportQuickInput}
-                updateDocList={onRefreshTable}
-              /> */}
+              {layout && data && (
+                <Window
+                  data={data}
+                  dataId={docId}
+                  layout={layout}
+                  modal={true}
+                  tabId={tabId}
+                  rowId={rowId}
+                  isModal={true}
+                  tabsInfo={null}
+                  disconnected={true}
+                />
+              )}
             </div>
           </div>
         )}
@@ -130,6 +109,28 @@ InlineTab.propTypes = {
   rowId: PropTypes.string.isRequired,
   tabId: PropTypes.string.isRequired,
   fieldsByName: PropTypes.object,
+  layout: PropTypes.any,
+  data: PropTypes.any,
+  setInlineTabLayoutAndData: PropTypes.func.isRequired,
 };
 
-export default InlineTab;
+const mapStateToProps = (state, props) => {
+  const { windowId, tabId, rowId } = props;
+  const {
+    windowHandler: { inlineTab },
+  } = state;
+  const selector = `${windowId}_${tabId}_${rowId}`;
+  const layout = inlineTab[selector] ? inlineTab[selector].layout : null;
+  const data = inlineTab[selector] ? inlineTab[selector].data : null;
+  return {
+    layout,
+    data,
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  {
+    setInlineTabLayoutAndData,
+  }
+)(InlineTab);

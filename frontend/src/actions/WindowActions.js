@@ -50,6 +50,7 @@ import {
   SET_PRINTING_OPTIONS,
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
+  SET_INLINE_TAB_LAYOUT_AND_DATA,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
@@ -1360,5 +1361,15 @@ export function togglePrintingOption(target) {
   return {
     type: TOGGLE_PRINTING_OPTION,
     payload: target,
+  };
+}
+
+/*
+ * Action creator called to set the inlineTab branch in the redux store with the data payload
+ */
+export function setInlineTabLayoutAndData({ inlineTabId, data }) {
+  return {
+    type: SET_INLINE_TAB_LAYOUT_AND_DATA,
+    payload: { inlineTabId, data },
   };
 }

@@ -52,7 +52,11 @@ class InlineTabWrapper extends PureComponent {
 
         {tabData &&
           tabData.map((tabItem, index) => (
-            <InlineTab key={`${index}_${tabItem.rowId}`} {...tabItem} />
+            <InlineTab
+              key={`${index}_${tabItem.rowId}`}
+              parent={this.props}
+              {...tabItem}
+            />
           ))}
         <div className="clearfix" />
         {/* Add content wrapper */}
@@ -110,6 +114,7 @@ InlineTabWrapper.propTypes = {
   dataId: PropTypes.string.isRequired,
   fetchTab: PropTypes.func.isRequired,
   createWindow: PropTypes.func.isRequired,
+  widgetData: PropTypes.object,
 };
 
 export default connect(

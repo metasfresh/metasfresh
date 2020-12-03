@@ -434,3 +434,9 @@ export const RESET_PRINTING_OPTIONS = 'RESET_PRINTING_OPTIONS';
  * @type {string} toggles specific printing option
  */
 export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';
+
+/**
+ * @constant
+ * @type {string} set inline tab layout and data
+ */
+export const SET_INLINE_TAB_LAYOUT_AND_DATA = 'SET_INLINE_TAB_LAYOUT_AND_DATA';

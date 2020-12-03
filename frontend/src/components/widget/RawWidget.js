@@ -254,8 +254,11 @@ export class RawWidget extends PureComponent {
    */
   handleChange = (e) => {
     const { handleChange, filterWidget, fields } = this.props;
-    const widgetField = getWidgetField({ filterWidget, fields });
+    // console.log('filterWidget=', filterWidget);
+    // console.log('fields = ', fields);
 
+    const widgetField = getWidgetField({ filterWidget, fields });
+    // console.log('widgetField to patch =>', filterWidget);
     if (handleChange) {
       this.updateTypedCharacters(e.target.value);
       handleChange(widgetField, e.target.value);
@@ -412,9 +415,11 @@ export class RawWidget extends PureComponent {
     }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
-    const widgetField = filterWidget
-      ? fields[0].parameterName
-      : fields[0].field;
+    let widgetField = filterWidget ? fields[0].parameterName : fields[0].field;
+    if (!widgetField && this.props.widgetType === 'Switch') {
+      widgetField = fields[0].fields[0].field;
+    }
+
     const readonly = widgetData[0].readonly;
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {

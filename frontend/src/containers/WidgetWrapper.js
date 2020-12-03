@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { isEmpty } from 'lodash';
 
 import {
   openModal,
@@ -18,7 +19,8 @@ import {
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
-  getElementLayout,
+  getInlineTabLayout,
+  getInlineTabWidgetFields,
 } from '../reducers/windowHandler';
 
 import MasterWidget from '../components/widget/MasterWidget';
@@ -77,8 +79,26 @@ const mapStateToProps = (state, props) => {
       break;
     case 'modal':
     case 'element':
-      widgetData = getElementWidgetData(state, isModal, layoutId);
-      fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
+      if (props.disconnected) {
+        if (!isEmpty(state.windowHandler.inlineTab)) {
+          const { rowId, tabId, windowId } = props;
+          const inlineTabId = `${windowId}_${tabId}_${rowId}`;
+          fieldsCopy = [
+            getInlineTabLayout({
+              state,
+              inlineTabId: `${windowId}_${tabId}_${rowId}`,
+              layoutId,
+            }),
+          ];
+          fieldsCopy[0] = fieldsCopy[0].fields[0];
+          widgetData = [
+            getInlineTabWidgetFields({ state, inlineTabId })[props.fieldName],
+          ];
+        }
+      } else {
+        widgetData = getElementWidgetData(state, isModal, layoutId);
+        fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
+      }
       break;
     case 'process':
       widgetData = getProcessWidgetData(state, true, layoutId);
@@ -100,13 +120,10 @@ const mapStateToProps = (state, props) => {
 
       break;
     }
-    case 'inline-wrapper':
-      // console.log('inline tab')
-      widgetData = getElementLayout(state, isModal, layoutId).inlineTab;
-      break;
-    case 'inline-tab':
-      console.log('inline tab field');
-      break;
+    // case 'inline-tab':
+    //   console.log('inline tab field');
+    //   widgetData = getInlineTabLayout(state, isModal, layoutId);
+    //   break;
     default:
       widgetData = [{}];
 
@@ -149,6 +166,7 @@ WidgetWrapper.propTypes = {
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
+  disconnected: PropTypes.bool,
 };
 
 export default connect(

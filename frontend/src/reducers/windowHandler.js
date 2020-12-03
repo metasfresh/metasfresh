@@ -52,6 +52,7 @@ import {
   SET_PRINTING_OPTIONS,
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
+  SET_INLINE_TAB_LAYOUT_AND_DATA,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -101,6 +102,11 @@ export const initialState = {
   printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
   modal: initialModalState,
+  inlineTab: {},
+  // {
+  //   layout: {"windowId":"123","type":"123","tabId":"AD_Tab-222","tabid":"AD_Tab-222","internalName":"C_BPartner_Location","caption":"Adresse","sections":[{"columns":[{"elementGroups":[{"type":"primary","internalName":"X_AD_UI_ElementGroup[AD_UI_ElementGroup_ID=1000034, Name=default, trxName=<<ThreadInherited>>]","elementsLine":[{"elements":[{"caption":"Abw. Firmenname","description":"","widgetType":"Text","maxLength":255,"viewEditorRenderMode":"never","fields":[{"field":"BPartnerName","caption":"Abw. Firmenname","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Name","description":"","widgetType":"Text","maxLength":60,"size":"L","viewEditorRenderMode":"never","fields":[{"field":"Name","caption":"Name","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Anschrift","description":"Adresse oder Anschrift","widgetType":"Address","viewEditorRenderMode":"never","fields":[{"field":"C_Location_ID","caption":"Anschrift","emptyText":"leer","clearValueText":"leer","source":"lookup","lookupSearchStringMinLength":-1,"lookupSearchStartDelayMillis":500}]}]},{"elements":[{"caption":"Adresse","description":"Anschrift","widgetType":"LongText","maxLength":360,"viewEditorRenderMode":"never","fields":[{"field":"Address","caption":"Adresse","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"GLN","description":"","widgetType":"Text","maxLength":20,"viewEditorRenderMode":"never","fields":[{"field":"GLN","caption":"GLN","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Aktiv","description":"Der Eintrag ist im System aktiv","widgetType":"Switch","viewEditorRenderMode":"never","fields":[{"field":"IsActive","caption":"Aktiv","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Lieferadresse","description":"Liefer-Adresse für den Geschäftspartner","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"IsShipTo","caption":"Lieferadresse","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Lieferstandard","description":"","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"IsShipToDefault","caption":"Lieferstandard","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Rechnungsadresse","description":"Rechnungs-Adresse für diesen Geschäftspartner","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"IsBillTo","caption":"Rechnungsadresse","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Rechnungsstandard","description":"","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"IsBillToDefault","caption":"Rechnungsstandard","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Abladeort","description":"","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"IsHandOverLocation","caption":"Abladeort","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"EDI-Supplier-Addresse","description":"Erstattungs-Adresse für den Lieferanten","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"IsRemitTo","caption":"EDI-Supplier-Addresse","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Replikations Standardwert","description":"","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"IsReplicationLookupDefault","caption":"Replikations Standardwert","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Besuchsadresse","description":"","widgetType":"YesNo","viewEditorRenderMode":"never","fields":[{"field":"VisitorsAddress","caption":"Besuchsadresse","emptyText":"leer","clearValueText":"leer"}]}]},{"elements":[{"caption":"Sektion","description":"Organisatorische Einheit des Mandanten","widgetType":"Lookup","size":"M","viewEditorRenderMode":"never","fields":[{"field":"AD_Org_ID","caption":"Sektion","emptyText":"leer","clearValueText":"leer","source":"lookup","lookupSearchStringMinLength":-1,"lookupSearchStartDelayMillis":500,"supportZoomInto":true}]}]},{"elements":[{"caption":"Mandant","description":"Mandant für diese Installation.","widgetType":"List","size":"M","viewEditorRenderMode":"never","fields":[{"field":"AD_Client_ID","caption":"Mandant","emptyText":"leer","clearValueText":"leer","source":"list","lookupSearchStringMinLength":-1,"lookupSearchStartDelayMillis":500,"supportZoomInto":true}]}]}]}]}],"closableMode":"ALWAYS_OPEN"}]},
+  //   data: [{"windowId":"123","id":"2155894","tabId":"AD_Tab-222","tabid":"AD_Tab-222","rowId":"2202690","fieldsByName":{"ID":{"field":"ID","value":2202690,"widgetType":"Integer"},"AD_Client_ID":{"field":"AD_Client_ID","value":{"key":"1000000","caption":"metasfresh"},"readonly":true,"mandatory":true,"displayed":true,"lookupValuesStale":true,"widgetType":"List","validStatus":{"valid":true,"initialValue":true,"fieldName":"AD_Client_ID"},"viewEditorRenderMode":"never"},"AD_Org_ID":{"field":"AD_Org_ID","value":{"key":"1000000","caption":"metasfresh AG"},"readonly":true,"mandatory":true,"displayed":true,"lookupValuesStale":true,"widgetType":"Lookup","validStatus":{"valid":true,"initialValue":true,"fieldName":"AD_Org_ID"},"viewEditorRenderMode":"never"},"Name":{"field":"Name","value":"Am Nossbacher Weg 2","readonly":false,"mandatory":true,"displayed":true,"widgetType":"Text","validStatus":{"valid":true,"initialValue":true,"fieldName":"Name"},"viewEditorRenderMode":"always"},"GLN":{"field":"GLN","value":null,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"Text","validStatus":{"valid":true,"initialValue":true,"fieldName":"GLN"},"viewEditorRenderMode":"always"},"IsActive":{"field":"IsActive","value":true,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"Switch","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsActive"},"viewEditorRenderMode":"always"},"C_Location_ID":{"field":"C_Location_ID","value":{"key":"2189861","caption":"Bonn_Deutschland"},"readonly":false,"mandatory":true,"displayed":true,"lookupValuesStale":true,"widgetType":"Address","validStatus":{"valid":true,"initialValue":true,"fieldName":"C_Location_ID"},"viewEditorRenderMode":"always"},"Address":{"field":"Address","value":"Am Nossbacher Weg 2\nDEU-53179 Bonn","readonly":true,"mandatory":false,"displayed":true,"widgetType":"LongText","validStatus":{"valid":true,"initialValue":true,"fieldName":"Address"},"viewEditorRenderMode":"never"},"IsShipTo":{"field":"IsShipTo","value":true,"readonly":true,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsShipTo"},"viewEditorRenderMode":"never"},"IsShipToDefault":{"field":"IsShipToDefault","value":true,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsShipToDefault"},"viewEditorRenderMode":"always"},"IsBillTo":{"field":"IsBillTo","value":true,"readonly":true,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsBillTo"},"viewEditorRenderMode":"never"},"IsBillToDefault":{"field":"IsBillToDefault","value":true,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsBillToDefault"},"viewEditorRenderMode":"always"},"IsHandOverLocation":{"field":"IsHandOverLocation","value":true,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsHandOverLocation"},"viewEditorRenderMode":"always"},"IsRemitTo":{"field":"IsRemitTo","value":true,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsRemitTo"},"viewEditorRenderMode":"always"},"IsReplicationLookupDefault":{"field":"IsReplicationLookupDefault","value":false,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsReplicationLookupDefault"},"viewEditorRenderMode":"always"},"VisitorsAddress":{"field":"VisitorsAddress","value":false,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"VisitorsAddress"},"viewEditorRenderMode":"always"},"BPartnerName":{"field":"BPartnerName","value":null,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"Text","validStatus":{"valid":true,"initialValue":true,"fieldName":"BPartnerName"},"viewEditorRenderMode":"always"}},"validStatus":{"valid":true},"saveStatus":{"deleted":false,"saved":true,"hasChanges":false,"error":false,"reason":"just loaded"},"standardActions":["new","advancedEdit","email","letter","delete","comments"],"websocketEndpoint":"/document/123/2155894"},{"windowId":"123","id":"2155894","tabId":"AD_Tab-222","tabid":"AD_Tab-222","rowId":"2205176","fieldsByName":{"ID":{"field":"ID","value":2205176,"widgetType":"Integer"},"AD_Client_ID":{"field":"AD_Client_ID","value":{"key":"1000000","caption":"metasfresh"},"readonly":true,"mandatory":true,"displayed":true,"lookupValuesStale":true,"widgetType":"List","validStatus":{"valid":true,"initialValue":true,"fieldName":"AD_Client_ID"},"viewEditorRenderMode":"never"},"AD_Org_ID":{"field":"AD_Org_ID","value":{"key":"1000000","caption":"metasfresh AG"},"readonly":true,"mandatory":true,"displayed":true,"lookupValuesStale":true,"widgetType":"Lookup","validStatus":{"valid":true,"initialValue":true,"fieldName":"AD_Org_ID"},"viewEditorRenderMode":"never"},"Name":{"field":"Name","value":".","readonly":false,"mandatory":true,"displayed":true,"widgetType":"Text","validStatus":{"valid":true,"initialValue":true,"fieldName":"Name"},"viewEditorRenderMode":"always"},"GLN":{"field":"GLN","value":null,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"Text","validStatus":{"valid":true,"initialValue":true,"fieldName":"GLN"},"viewEditorRenderMode":"always"},"IsActive":{"field":"IsActive","value":true,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"Switch","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsActive"},"viewEditorRenderMode":"always"},"C_Location_ID":{"field":"C_Location_ID","value":null,"readonly":false,"mandatory":true,"displayed":true,"lookupValuesStale":true,"widgetType":"Address","validStatus":{"valid":false,"initialValue":true,"reason":"Mandatory field C_Location_ID not filled","fieldName":"C_Location_ID"},"viewEditorRenderMode":"always"},"Address":{"field":"Address","value":null,"readonly":true,"mandatory":false,"displayed":true,"widgetType":"LongText","validStatus":{"valid":false,"initialValue":true,"reason":"not validated yet"},"viewEditorRenderMode":"never"},"IsShipTo":{"field":"IsShipTo","value":true,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsShipTo"},"viewEditorRenderMode":"always"},"IsShipToDefault":{"field":"IsShipToDefault","value":false,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsShipToDefault"},"viewEditorRenderMode":"always"},"IsBillTo":{"field":"IsBillTo","value":true,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsBillTo"},"viewEditorRenderMode":"always"},"IsBillToDefault":{"field":"IsBillToDefault","value":false,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsBillToDefault"},"viewEditorRenderMode":"always"},"IsHandOverLocation":{"field":"IsHandOverLocation","value":true,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsHandOverLocation"},"viewEditorRenderMode":"always"},"IsRemitTo":{"field":"IsRemitTo","value":false,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsRemitTo"},"viewEditorRenderMode":"always"},"IsReplicationLookupDefault":{"field":"IsReplicationLookupDefault","value":false,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"IsReplicationLookupDefault"},"viewEditorRenderMode":"always"},"VisitorsAddress":{"field":"VisitorsAddress","value":false,"readonly":false,"mandatory":true,"displayed":true,"widgetType":"YesNo","validStatus":{"valid":true,"initialValue":true,"fieldName":"VisitorsAddress"},"viewEditorRenderMode":"always"},"BPartnerName":{"field":"BPartnerName","value":null,"readonly":false,"mandatory":false,"displayed":true,"widgetType":"Text","validStatus":{"valid":false,"initialValue":true,"reason":"not validated yet"},"viewEditorRenderMode":"always"}},"validStatus":{"valid":false,"initialValue":true,"reason":"Mandatory field C_Location_ID not filled","fieldName":"C_Location_ID"},"saveStatus":{"deleted":false,"saved":false,"hasChanges":true,"error":false,"reason":"Mandatory field C_Location_ID not filled"},"standardActions":["new","advancedEdit","email","letter","delete","comments"],"websocketEndpoint":"/document/123/2155894"}],
+  // },
   overlay: {
     visible: false,
     data: null,
@@ -122,7 +128,6 @@ export const initialState = {
 
   // this only feeds data to details view now
   master: initialMasterState,
-
   quickActions: {},
   indicator: 'saved',
   allowShortcut: true,
@@ -178,6 +183,33 @@ export const getElementLayout = (state, isModal, layoutPath) => {
   ].elementsLine[elLineIdx].elements[elIdx];
 };
 
+export const getInlineTabLayout = ({
+  state,
+  inlineTabId,
+  layoutId: layoutPath,
+}) => {
+  const layout = state.windowHandler.inlineTab[inlineTabId].layout;
+  const [
+    sectionIdx,
+    columnIdx,
+    elGroupIdx,
+    elLineIdx,
+    elIdx,
+  ] = layoutPath.split('_');
+  // console.log('Section:', sectionIdx);
+  // console.log('Column:', columnIdx);
+  // console.log('elGroupIndex:', elGroupIdx)
+  // console.log('ellineIdx:', elLineIdx);
+  // console.log('elIds:', elIdx)
+  // console.log('layoutContent:', layout)
+  // console.log('layoutPath:', layoutPath);
+  // console.log('LAYOUT_IN_SELECTOR:', layout.sections[sectionIdx].columns[columnIdx].elementGroups[elGroupIdx].elementsLine[elLineIdx].elements[elIdx])
+
+  return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
+    elGroupIdx
+  ].elementsLine[elLineIdx].elements[elIdx];
+};
+
 const getProcessLayout = (state, isModal, elementIndex) =>
   state.windowHandler.modal.layout.elements[elementIndex];
 
@@ -222,6 +254,19 @@ export const getElementWidgetData = createCachedSelector(
   getElementLayout,
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getInlineTabWidgetFields
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getInlineTabWidgetFields = ({ state, inlineTabId }) => {
+  const data = state.windowHandler.inlineTab[`${inlineTabId}`].data;
+
+  return data.fieldsByName;
+};
 
 /**
  * @method getElementWidgetFields
@@ -786,6 +831,15 @@ export default function windowHandler(state = initialState, action) {
         printingOptions: {
           ...state.printingOptions,
           options: newPrintingOptions,
+        },
+      };
+    }
+    case SET_INLINE_TAB_LAYOUT_AND_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${action.payload.inlineTabId}`]: action.payload.data,
         },
       };
     }

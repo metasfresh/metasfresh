@@ -91,6 +91,7 @@ class MasterWidget extends PureComponent {
       viewId,
       updatePropertyValue,
     } = this.props;
+
     value = formatValueByWidgetType({ widgetType, value });
 
     let entity = viewId ? 'documentView' : this.props.entity;
