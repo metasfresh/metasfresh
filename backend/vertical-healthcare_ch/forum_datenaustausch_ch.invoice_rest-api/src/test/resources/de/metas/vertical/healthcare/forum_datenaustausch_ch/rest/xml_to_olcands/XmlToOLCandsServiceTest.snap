@@ -1,4 +1,4 @@
-de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest_KV=[ {
+de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest_KV=[ {
   "requests" : [ {
     "org" : {
       "code" : "EAN-2011234567890",
@@ -5568,7 +5568,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
 } ]
 
 
-de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest_KV_2=[ {
+de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest_KV_2=[ {
   "requests" : [ {
     "org" : {
       "code" : "EAN-2011234567890",
