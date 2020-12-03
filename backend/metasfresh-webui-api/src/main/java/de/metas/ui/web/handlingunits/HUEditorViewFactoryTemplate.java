@@ -492,6 +492,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 	private boolean isAlwaysUseSameLayout()
 	{
+		//When the Factory is ServiceHUEditorViewFactory always need to execute the customizeViewLayout method, is not configuration dependent
+		if (this instanceof ServiceHUEditorViewFactory) {
+			return false;
+		}
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_AlwaysUseSameLayout, false);
 	}
 
