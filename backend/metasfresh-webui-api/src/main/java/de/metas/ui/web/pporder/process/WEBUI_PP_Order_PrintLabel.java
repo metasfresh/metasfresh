@@ -24,6 +24,7 @@ package de.metas.ui.web.pporder.process;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
@@ -38,9 +39,7 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
-import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 public class WEBUI_PP_Order_PrintLabel
 		extends WEBUI_PP_Order_Template
@@ -55,15 +54,15 @@ public class WEBUI_PP_Order_PrintLabel
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedRowIds().isSingleDocumentId())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
-		if (!getSingleSelectedRow().isTopLevelHU())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_MustBe_TopLevel_HU));
-		}
+//		if (!getSelectedRowIds().isSingleDocumentId())
+//		{
+//			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+//		}
+//
+//		if (!getSingleSelectedRow().isTopLevelHU())
+//		{
+//			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_MustBe_TopLevel_HU));
+//		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -73,23 +72,24 @@ public class WEBUI_PP_Order_PrintLabel
 	protected String doIt()
 	{
 
+		
 		// print
-		final PPOrderLineRow row = getSingleSelectedRow();
-		final ReportResult label = printLabel(row);
+//		final PPOrderLineRow row = getSingleSelectedRow();
+		final ReportResult label = printLabel();
 
 		// preview
 		getResult().setReportData(
 				label.getReportContent(),
-				buildFilename(row),
+				buildFilename(),
 				OutputType.PDF.getContentType());
 
 		return MSG_OK;
 
 	}
 
-	private ReportResult printLabel(@NonNull final PPOrderLineRow row)
+	private ReportResult printLabel()
 	{
-		final PInstanceRequest pinstanceRequest = createPInstanceRequest(row);
+		final PInstanceRequest pinstanceRequest = createPInstanceRequest();
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
@@ -104,23 +104,24 @@ public class WEBUI_PP_Order_PrintLabel
 		return reportsClient.report(jasperProcessInfo);
 	}
 
-	private static PInstanceRequest createPInstanceRequest(@NonNull final PPOrderLineRow row)
+	private PInstanceRequest createPInstanceRequest()
 	{
+		
 		return PInstanceRequest.builder()
 				.processId(LabelPdf_AD_Process_ID)
 				.processParams(ImmutableList.of(
-						ProcessInfoParameter.of("RECORD_ID", row.getHuId())))
+						ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId())))
 				.build();
 	}
 
-	private static String buildFilename(@NonNull final PPOrderLineRow row)
+	private String buildFilename()
 	{
-		final String huValue = String.valueOf(row.getHuId().getRepoId());
-		final String product = row.getPackingInfo();
+		final String instance = String.valueOf(getPinstanceId().getRepoId());
+		final String title = getProcessInfo().getTitle();
 
 		return Joiner.on("_")
 				.skipNulls()
-				.join(huValue, product)
+				.join(instance, title)
 				+ ".pdf";
 	}
 
