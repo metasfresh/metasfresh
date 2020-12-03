@@ -1,20 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
@@ -41,6 +27,17 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.X_PP_Order_BOMLine;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -259,35 +256,44 @@ public class CreateDraftIssuesCommand
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
 	{
-		final ProductId productId = productStorage.getProductId();
-		final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
-
-		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
-				.switchToSourceIfMorePrecise();
-		if (qtyToIssue.isZero())
+		try
 		{
-			return null;
+			final ProductId productId = productStorage.getProductId();
+			final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
+
+			final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
+					.switchToSourceIfMorePrecise();
+			if (qtyToIssue.isZero())
+			{
+				return null;
+			}
+
+			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
+					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+					//
+					.date(movementDate)
+					//
+					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.productId(productId)
+					//
+					.qtyToIssue(qtyToIssue)
+					//
+					.pickingCandidateId(pickingCandidateId)
+					//
+					.build());
+
+			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
+
+			return candidate;
 		}
-
-		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-				.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-				//
-				.date(movementDate)
-				//
-				.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-				.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-				.productId(productId)
-				//
-				.qtyToIssue(qtyToIssue)
-				//
-				.pickingCandidateId(pickingCandidateId)
-				//
-				.build());
-
-		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
-
-		return candidate;
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte)
+					.appendParametersToMessage()
+					.setParameter("M_HU", hu);
+		}
 	}
 
 	private I_PP_Order_BOMLine getTargetOrderBOMLine(@NonNull final ProductId productId)
@@ -300,7 +306,9 @@ public class CreateDraftIssuesCommand
 				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
 	}
 
-	/** @return how much quantity to take "from" and issue it to given BOM line */
+	/**
+	 * @return how much quantity to take "from" and issue it to given BOM line
+	 */
 	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
 	{
 		//
