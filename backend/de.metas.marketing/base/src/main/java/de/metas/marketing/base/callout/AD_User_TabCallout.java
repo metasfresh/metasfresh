@@ -20,27 +20,21 @@
  * #L%
  */
 
-package de.metas.marketing.base.interceptor;
+package de.metas.marketing.base.callout;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.marketing.base.api.IMKTGChannelDao;
-import de.metas.marketing.base.model.I_AD_User_MKTG_Channels;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.ui.spi.TabCalloutAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.ModelValidator;
 
-@Interceptor(I_AD_User_MKTG_Channels.class)
-public class AD_User_MKTG_Channels
+public class AD_User_TabCallout extends TabCalloutAdapter
 {
-	public static final AD_User_MKTG_Channels INSTANCE = new AD_User_MKTG_Channels();
-
 	private final IMKTGChannelDao mktgChannelDao = Services.get(IMKTGChannelDao.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -48,15 +42,10 @@ public class AD_User_MKTG_Channels
 	private static final AdMessageKey MSG_CAN_NOT_REMOVE_CHANNEL = AdMessageKey.of("de.metas.marketing.base.userMarketingChannelRemovalError");
 	private static final String SYS_CONFIG_MARKETING_CHANNELS_ENFORCED = "de.metas.marketing.EnforceUserHasMarketingChannels";
 
-	private AD_User_MKTG_Channels()
+	@Override
+	public void onSave(final ICalloutRecord calloutRecord)
 	{
-	}
-
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void checkIfCanBeDeleted(@NonNull final I_AD_User_MKTG_Channels userMktgChannels)
-	{
-		final I_AD_User user = userDAO.getById(userMktgChannels.getAD_User_ID());
+		final I_AD_User user = calloutRecord.getModel(I_AD_User.class);
 
 		if (!isMarketingChannelsUseEnforced(user.getAD_Client_ID(), user.getAD_Org_ID()))
 		{
@@ -68,8 +57,13 @@ public class AD_User_MKTG_Channels
 			return;
 		}
 
-		final int count = mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(userMktgChannels.getAD_User_ID()));
-		if (count == 1)
+		boolean canBeSaved = true;
+		if (mktgChannelDao.retrieveMarketingChannelsCountForUser(UserId.ofRepoId(user.getAD_User_ID())) <= 0)
+		{
+			canBeSaved = false;
+		}
+
+		if (!canBeSaved)
 		{
 			throw new AdempiereException(MSG_CAN_NOT_REMOVE_CHANNEL).markAsUserValidationError();
 		}
