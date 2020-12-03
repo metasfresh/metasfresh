@@ -241,7 +241,7 @@ class ManufacturingOrderReportProcessCommand
 		final ProductId productId = productBL.getProductIdByValue(productNo);
 		if (productId == null)
 		{
-			throw new AdempiereException("No product found for `" + productNo + "`")
+			throw new AdempiereException("No product found for productNo=" + productNo)
 					.appendParametersToMessage()
 					.setParameter("issue", issue);
 		}
@@ -484,7 +484,7 @@ class ManufacturingOrderReportProcessCommand
 
 		if (huId == null)
 		{
-			throw new AdempiereException("No HU found for " + request);
+			throw new AdempiereException("No HU found for M_Product_ID=" + productId.getRepoId() + " and request=" + request);
 		}
 
 		return huId;
