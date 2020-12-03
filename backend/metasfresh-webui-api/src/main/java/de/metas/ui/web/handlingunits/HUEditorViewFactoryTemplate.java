@@ -490,7 +490,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 	}
 
-	private boolean isAlwaysUseSameLayout()
+	protected boolean isAlwaysUseSameLayout()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_AlwaysUseSameLayout, false);
 	}

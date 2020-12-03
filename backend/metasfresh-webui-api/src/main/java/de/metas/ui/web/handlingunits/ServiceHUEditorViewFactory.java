@@ -75,4 +75,13 @@ public class ServiceHUEditorViewFactory extends HUEditorViewFactoryTemplate
 						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_ServiceContract),
 						ViewColumnHelper.ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
 	}
+
+	/**
+	 * This view is not configuration dependent always should be false to execute the customizeViewLayout method
+	 * @return
+	 */
+	protected boolean isAlwaysUseSameLayout()
+	{
+		return false;
+	}
 }
