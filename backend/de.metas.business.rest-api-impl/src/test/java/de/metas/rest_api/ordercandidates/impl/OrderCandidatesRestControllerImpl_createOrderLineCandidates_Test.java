@@ -1101,7 +1101,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				.countryId(countryId_DE)
 				.shipTo(false)
 				.billTo(true)
-				.billToDefault(false)
+				.billToDefault(false) // we will expect this to be updated to true by the json-request
 				.shipToDefault(false)
 				.build();
 		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
@@ -1117,7 +1117,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				.countryId(countryId_DE)
 				.shipTo(false)
 				.billTo(true)
-				.billToDefault(false)
+				.billToDefault(true) //  we will expect this to be updated to false when "billToId-1-2" is updated to true
 				.shipToDefault(false)
 				.build();
 		testMasterdata.prepareBPartnerLocation().bpartnerId(bpartnerId)
@@ -1156,12 +1156,16 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(result.getBody().getResult()).hasSize(1);
 
 		final JsonOLCand jsonOLCand = result.getBody().getResult().get(0);
+
+		//bpartner's location
 		assertThat(jsonOLCand.getBpartner().getLocation())
 				.extracting("externalId.value", "billTo", "billToDefault", "shipTo")
 				.containsExactly("billToId-1-2", true, true, false);
+		//billBPartner's location
 		assertThat(jsonOLCand.getBillBPartner().getLocation())
 				.extracting("externalId.value", "billTo", "billToDefault", "shipTo")
 				.containsExactly("billToId-1-2", true, true, false);
+		//dropShipBPartner's location
 		assertThat(jsonOLCand.getDropShipBPartner().getLocation())
 				.extracting("externalId.value", "billTo", "billToDefault", "shipTo")
 				.containsExactly("shipToId-1-2", false, false, true);

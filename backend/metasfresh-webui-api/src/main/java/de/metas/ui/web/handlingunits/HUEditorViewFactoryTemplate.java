@@ -151,6 +151,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	 */
 	private DocumentEntityDescriptor getHUEntityDescriptor()
 	{
+		if (this instanceof ServiceHUEditorViewFactory)
+		{
+			return documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_SERVICE_HU_Window_ID);
+		}
 		return documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_HU_Window_ID);
 	}
 
@@ -166,7 +170,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlWhereClause.append(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null"); // top level
 
 			// Consider window tab's where clause if any
-			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toAdWindowId());
+			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(huEntityDescriptor.getWindowId().toAdWindowId());
 			if (!Check.isEmpty(huTab.getWhereClause(), true))
 			{
 				sqlWhereClause.append("\n AND (").append(huTab.getWhereClause()).append(")");
@@ -486,7 +490,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 	}
 
-	private boolean isAlwaysUseSameLayout()
+	protected boolean isAlwaysUseSameLayout()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_AlwaysUseSameLayout, false);
 	}

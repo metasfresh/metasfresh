@@ -1,6 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
-import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.material.event.commons.AttributeKeyPartType;
 import de.metas.material.event.commons.AttributesKey;
@@ -129,7 +129,7 @@ public final class AttributesKeys
 	 */
 	public static Optional<AttributesKey> createAttributesKeyFromASIAllAttributes(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createAttributesKeyFromASI(attributeSetInstanceId, Predicates.alwaysTrue());
+		return createAttributesKeyFromASI(attributeSetInstanceId, i_m_attributeInstance -> true);
 	}
 
 	/**
@@ -159,7 +159,7 @@ public final class AttributesKeys
 		final ImmutableSet<AttributesKeyPart> parts = attributesRepo().retrieveAttributeInstances(attributeSetInstanceId)
 				.stream()
 				.filter(additionalFilter)
-				.map(ai -> createAttributesKeyPart(ai))
+				.map(AttributesKeys::createAttributesKeyPart)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -193,7 +193,7 @@ public final class AttributesKeys
 			{
 				return null;
 			}
-			final BigDecimal valueBD = isNull ? null : ai.getValueNumber();
+			final BigDecimal valueBD = ai.getValueNumber();
 			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
@@ -271,5 +271,14 @@ public final class AttributesKeys
 					.appendParametersToMessage()
 					.setParameter("attributesKey", attributesKey);
 		}
+	}
+
+	public static AttributesKey pruneEmptyParts(@NonNull final AttributesKey attributesKey)
+	{
+		final ImmutableList<AttributesKeyPart> notBlankParts = attributesKey.getParts().stream()
+				.filter(p -> Check.isNotBlank(p.getValue()))
+				.collect(ImmutableList.toImmutableList());
+
+		return AttributesKey.ofParts(notBlankParts);
 	}
 }

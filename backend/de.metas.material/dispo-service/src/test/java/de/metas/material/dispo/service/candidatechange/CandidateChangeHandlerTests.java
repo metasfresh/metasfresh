@@ -165,7 +165,7 @@ public class CandidateChangeHandlerTests
 			}
 
 			@Override
-			public Candidate onCandidateNewOrChange(Candidate candidate)
+			public Candidate onCandidateNewOrChange(Candidate candidate, OnNewOrChangeAdvise advise)
 			{
 				throw new UnsupportedOperationException();
 			}

@@ -57,6 +57,7 @@ public interface IView
 
 	JSONViewDataType getViewType();
 
+	@Nullable
 	default ViewProfileId getProfileId()
 	{
 		return ViewProfileId.NULL;
@@ -73,7 +74,8 @@ public interface IView
 	}
 
 	Set<DocumentPath> getReferencingDocumentPaths();
-	
+
+	@Nullable
 	default DocumentReferenceId getDocumentReferenceId()
 	{
 		return null;
@@ -84,8 +86,10 @@ public interface IView
 	 *
 	 * @return table name for the given row; might also return {@code null}.
 	 */
+	@Nullable
 	String getTableNameOrNull(@Nullable DocumentId documentId);
 
+	@Nullable
 	default String getTableNameOrNull()
 	{
 		return getTableNameOrNull(null);
@@ -93,7 +97,6 @@ public interface IView
 
 	/**
 	 * @return In case this is an included view, this method will return the parent's viewId. Else null will be returned.
-	 * @see #isIncludedView()
 	 */
 	ViewId getParentViewId();
 
@@ -136,8 +139,6 @@ public interface IView
 	 * Invalidate given row by ID.
 	 *
 	 * If there is no custom implementation then this method will invoke {@link #invalidateAll()}.
-	 *
-	 * @param rowId
 	 */
 	default void invalidateRowById(final DocumentId rowId)
 	{
@@ -162,7 +163,7 @@ public interface IView
 
 	/**
 	 * Gets the stick filters.
-	 * Sticky filters are those filters which cannot be changed by user and which shall be preserved between filterings.
+	 * Sticky filters are those filters which cannot be changed by user and which shall be preserved between filtering.
 	 * Sticky filters shall never be exported to frontend.
 	 */
 	DocumentFilterList getStickyFilters();
@@ -176,6 +177,7 @@ public interface IView
 
 	DocumentQueryOrderByList getDefaultOrderBys();
 
+	@Nullable
 	default TableRecordReference getTableRecordReferenceOrNull(@NonNull final DocumentId rowId)
 	{
 		final int recordId = rowId.toIntOr(-1);
@@ -193,6 +195,7 @@ public interface IView
 		return TableRecordReference.of(tableName, recordId);
 	}
 
+	@Nullable
 	SqlViewRowsWhereClause getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
 	default boolean hasAttributesSupport()

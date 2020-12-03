@@ -1,65 +1,30 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import de.metas.document.engine.IDocument;
-import de.metas.process.ProcessInfo;
-import de.metas.ui.web.process.ProcessId;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
-import de.metas.util.lang.RepoIdAware;
-import org.adempiere.ad.callout.api.ICalloutExecutor;
-import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.ui.spi.ExceptionHandledTabCallout;
-import org.adempiere.ad.ui.spi.ITabCallout;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.process.ProcessInfo;
+import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
@@ -75,7 +40,38 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -287,7 +283,9 @@ public final class Document
 		return includedDocuments.build();
 	}
 
-	/** copy constructor */
+	/**
+	 * copy constructor
+	 */
 	private Document(final Document from, @Nullable final Document parentDocumentCopy, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		documentPath = from.documentPath;
@@ -315,7 +313,7 @@ public final class Document
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown copy mode: " + copyMode);
-			// break;
+				// break;
 		}
 
 		if (from._parentDocument != null)
@@ -495,7 +493,7 @@ public final class Document
 	 * Set field's initial value
 	 *
 	 * @param documentField
-	 * @param mode initialization mode
+	 * @param mode               initialization mode
 	 * @param fieldValueSupplier initial value supplier
 	 */
 	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final DocumentValuesSupplier fieldValueSupplier)
@@ -726,8 +724,8 @@ public final class Document
 				{
 					// FIXME: figure out how we can get rid of this hardcoded corner case! ... not sure if is needed
 					logger.warn("Development hint: Converting default value empty string to null. Please check how can we avoid this case"
-							+ "\n FieldDescriptor: {}" //
-							+ "\n Document: {}" //
+									+ "\n FieldDescriptor: {}" //
+									+ "\n Document: {}" //
 							, fieldDescriptor, this);
 					return null;
 				}
@@ -795,7 +793,8 @@ public final class Document
 		return new Document(this, parentDocumentCopy, copyMode, changesCollector);
 	}
 
-	/* package */public Document copy(final Document parentDocumentCopy, final CopyMode copyMode)
+	/* package */
+	public Document copy(final Document parentDocumentCopy, final CopyMode copyMode)
 	{
 		return new Document(this, parentDocumentCopy, copyMode, parentDocumentCopy.changesCollector);
 	}
@@ -896,7 +895,9 @@ public final class Document
 		return changesCollector;
 	}
 
-	/** @return parent document or null */
+	/**
+	 * @return parent document or null
+	 */
 	public Document getParentDocument()
 	{
 		return _parentDocument;
@@ -920,7 +921,7 @@ public final class Document
 
 	/**
 	 * Sets a {@link DocumentEvaluatee} which will be used as a parent evaluatee for {@link #asEvaluatee()}.
-	 *
+	 * <p>
 	 * NOTE: this shadow evaluatee is not persisted and is discarded on {@link #copy(Document, CopyMode)}.
 	 *
 	 * @param shadowParentDocumentEvaluatee
@@ -963,7 +964,7 @@ public final class Document
 	public Collection<IDocumentFieldView> getFieldViews()
 	{
 		final Collection<IDocumentField> documentFields = fieldsByName.values();
-		return ImmutableList.<IDocumentFieldView> copyOf(documentFields);
+		return ImmutableList.<IDocumentFieldView>copyOf(documentFields);
 	}
 
 	public Set<String> getFieldNames()
@@ -1219,7 +1220,7 @@ public final class Document
 		// TODO: trigger the document workflow instead!
 		final String docAction = docActionField.getValueAs(StringLookupValue.class).getIdAsString();
 		final ButtonFieldActionDescriptor buttonActionDescriptor = docActionField.getDescriptor().getButtonActionDescriptor();
-		if(buttonActionDescriptor != null)
+		if (buttonActionDescriptor != null)
 		{
 			final IDocument workflowDocument = documentBL.getDocument(this);
 			final ProcessId workflowStarterProcessId = buttonActionDescriptor.getProcessId();
@@ -1553,7 +1554,6 @@ public final class Document
 	{
 		return getField(fieldName).getLookupValueById(id);
 	}
-
 
 	public Optional<Document> getIncludedDocument(final DetailId detailId, final DocumentId rowId)
 	{
@@ -2164,7 +2164,7 @@ public final class Document
 
 			final DocumentEntityDescriptor entityDescriptor = getEntityDescriptor();
 			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
-			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
+			document.documentCallout = documentCallout;
 
 			//
 			// Initialize document fields

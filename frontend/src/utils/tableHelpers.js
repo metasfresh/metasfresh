@@ -195,6 +195,8 @@ export function getIconClassName(huType) {
       return 'meta-icon-receipt';
     case 'PP_Order_Issue':
       return 'meta-icon-issue';
+    case 'PP_Order_Issue_Service':
+      return 'meta-icon-issue-service';
     case 'M_Picking_Slot':
       // https://github.com/metasfresh/metasfresh/issues/2298
       return 'meta-icon-beschaffung';

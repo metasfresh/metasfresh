@@ -29,6 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -51,7 +52,7 @@ public class ProductBOMLineBuilder
 	private BigDecimal _qtyBOM;
 
 	// we need some issue method to avoid NPE when creating the lightweight PPOrdeRLine pojo;
-	private String _issueMethod = X_PP_Order_BOMLine.ISSUEMETHOD_Issue;
+	private BOMComponentIssueMethod _issueMethod = BOMComponentIssueMethod.Issue;
 
 	private BigDecimal _scrap;
 	private BigDecimal _qtyBatch;
@@ -87,7 +88,7 @@ public class ProductBOMLineBuilder
 
 		bomLine.setIsCritical(false);
 		bomLine.setComponentType(_componentType != null ? _componentType.getCode() : null);
-		bomLine.setIssueMethod(_issueMethod);
+		bomLine.setIssueMethod(BOMComponentIssueMethod.toCodeOrNull(_issueMethod));
 
 		bomLine.setIsQtyPercentage(_isQtyPercentage);
 		bomLine.setQtyBOM(_qtyBOM); // used when QtyPercentage=false
@@ -213,12 +214,9 @@ public class ProductBOMLineBuilder
 	}
 
 	/**
-	 * The default is {@link X_PP_Product_BOMLine#ISSUEMETHOD_Issue}.
-	 *
-	 * @param issueMethod
-	 * @return
+	 * The default is {@link BOMComponentIssueMethod#Issue}.
 	 */
-	public ProductBOMLineBuilder setIssueMethod(final String issueMethod)
+	public ProductBOMLineBuilder setIssueMethod(final BOMComponentIssueMethod issueMethod)
 	{
 		this._issueMethod = issueMethod;
 		return this;

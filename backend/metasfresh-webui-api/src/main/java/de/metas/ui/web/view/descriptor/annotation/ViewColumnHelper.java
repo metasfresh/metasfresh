@@ -186,7 +186,7 @@ public final class ViewColumnHelper
 	private static ClassViewDescriptor createClassViewDescriptor(@NonNull final Class<?> dataType)
 	{
 		@SuppressWarnings("unchecked")
-		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotations(ViewColumn.class));
+		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
 
 		final ImmutableList<ClassViewColumnDescriptor> columns = fields.stream()
 				.map(field -> createClassViewColumnDescriptor(field))
