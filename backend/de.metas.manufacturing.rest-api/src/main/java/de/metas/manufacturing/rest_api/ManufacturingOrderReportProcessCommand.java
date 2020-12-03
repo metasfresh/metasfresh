@@ -1,32 +1,11 @@
 package de.metas.manufacturing.rest_api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Trace;
-import org.eevolution.api.PPCostCollectorId;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.common.manufacturing.JsonRequestHULookup;
 import de.metas.common.manufacturing.JsonRequestIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
@@ -70,6 +49,24 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Trace;
+import org.eevolution.api.PPCostCollectorId;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -236,7 +233,7 @@ class ManufacturingOrderReportProcessCommand
 				.build());
 	}
 
-	private JsonResponseIssueToManufacturingOrder processIssue(final JsonRequestIssueToManufacturingOrder issue)
+	private JsonResponseIssueToManufacturingOrder processIssue(@NonNull final JsonRequestIssueToManufacturingOrder issue)
 	{
 		final PPOrderId orderId = extractPPOrderId(issue);
 
@@ -244,7 +241,9 @@ class ManufacturingOrderReportProcessCommand
 		final ProductId productId = productBL.getProductIdByValue(productNo);
 		if (productId == null)
 		{
-			throw new AdempiereException("No product found for `" + productNo + "`");
+			throw new AdempiereException("No product found for productNo=" + productNo)
+					.appendParametersToMessage()
+					.setParameter("issue", issue);
 		}
 
 		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
@@ -252,10 +251,12 @@ class ManufacturingOrderReportProcessCommand
 
 		if (issue.getHandlingUnits().isEmpty())
 		{
-			throw new AdempiereException("No HUs specified in " + issue);
+			throw new AdempiereException("No HUs specified in issue")
+					.appendParametersToMessage()
+					.setParameter("issue", issue);
 		}
 
-		final List<I_M_HU> hus = resolveHUs(issue.getHandlingUnits());
+		final List<I_M_HU> hus = resolveHUs(productId, issue.getHandlingUnits());
 
 		final List<I_PP_Order_Qty> processedIssueCandidates = huPPOrderBL.createIssueProducer(orderId)
 				.fixedQtyToIssue(qtyToIssue)
@@ -441,26 +442,31 @@ class ManufacturingOrderReportProcessCommand
 		return id != null ? PPOrderId.ofRepoIdOrNull(id.getValue()) : null;
 	}
 
-	private List<I_M_HU> resolveHUs(@NonNull final Collection<JsonRequestHULookup> requests)
+	private List<I_M_HU> resolveHUs(
+			@NonNull final ProductId productId,
+			@NonNull final Collection<JsonRequestHULookup> requests)
 	{
 		final ImmutableSet<HuId> huIds = requests.stream()
-				.map(this::resolveHUId)
+				.map(request -> resolveHUId(productId, request))
 				.collect(ImmutableSet.toImmutableSet());
 
 		final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
 		if (hus.isEmpty())
 		{
-			throw new AdempiereException("No HUs found for " + requests);
+			throw new AdempiereException("No HUs found for M_Product_ID=" + productId.getRepoId() + " and requests=" + requests);
 		}
 
 		return hus;
 	}
 
 	@NonNull
-	private HuId resolveHUId(@NonNull final JsonRequestHULookup request)
+	private HuId resolveHUId(
+			@NonNull final ProductId productId,
+			@NonNull final JsonRequestHULookup request)
 	{
 		final IHUQueryBuilder queryBuilder = handlingUnitsBL.createHUQueryBuilder()
-				.setHUStatus(X_M_HU.HUSTATUS_Active);
+				.setHUStatus(X_M_HU.HUSTATUS_Active)
+				.addOnlyWithProductId(productId);
 
 		if (!Check.isBlank(request.getLotNumber()))
 		{
@@ -478,7 +484,7 @@ class ManufacturingOrderReportProcessCommand
 
 		if (huId == null)
 		{
-			throw new AdempiereException("No HU found for " + request);
+			throw new AdempiereException("No HU found for M_Product_ID=" + productId.getRepoId() + " and request=" + request);
 		}
 
 		return huId;
