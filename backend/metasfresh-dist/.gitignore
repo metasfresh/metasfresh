@@ -31,3 +31,6 @@ private
 # JRebel files
 **/src/main/resources/rebel.xml
 **/jrebel-classpath-*.jar
+
+# temp files created when locally making a postgres-DB image
+/dist/src/main/docker/db/postgresql_data_dir/data/

@@ -25,7 +25,9 @@ package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Objects;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
@@ -63,6 +65,8 @@ import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvoiceUnmarshalException;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthcareCHHelper;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfig;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
@@ -110,13 +114,16 @@ public class XmlToOLCandsService
 {
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
 	private final BpartnerRestController bpartnerRestController;
+	private final ImportConfigRepository importConfigRepository;
 
 	public XmlToOLCandsService(
 			@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint,
-			@NonNull final BpartnerRestController bpartnerRestController)
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final ImportConfigRepository importConfigRepository)
 	{
 		this.orderCandidatesRestEndpoint = orderCandidatesRestEndpoint;
 		this.bpartnerRestController = bpartnerRestController;
+		this.importConfigRepository = importConfigRepository;
 	}
 
 	public JsonAttachment createOLCands(@NonNull final CreateOLCandsRequest createOLCandsRequest)
@@ -456,11 +463,18 @@ public class XmlToOLCandsService
 		final PersonType person = patient.getPerson();
 		final String patientName = createFullPersonName(person);
 
+		final BPartnerQuery bPartnerQuery = BPartnerQuery.builder()
+				.externalId(ExternalId.of(patientExternalId.getValue()))
+				.failIfNotExists(false)
+				.build();
+		final ImportConfig importConfig = importConfigRepository.getForQueryOrNull(bPartnerQuery);
+
 		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
 		bPartner.setGlobalId(patient.getSsn());
 		bPartner.setExternalId(patientExternalId);
 		bPartner.setName(patientName);
-		bPartner.setLanguage("de_CH");
+		bPartner.setGroup(importConfig.getPartientBPartnerGroupName());
+		bPartner.setLanguage(importConfig.getLanguageCode());
 		bPartnerInfo.bpartner(bPartner);
 
 		final JsonRequestLocation patientLocation = createJsonBPartnerLocation(
@@ -526,12 +540,19 @@ public class XmlToOLCandsService
 		final JsonExternalId guarantorExternalId = JsonExternalId.of(bpartnerCode);
 		final JsonExternalId locationExternalId = JsonExternalId.of(guarantorExternalId.getValue() + "_GUARANTOR");
 
+		final BPartnerQuery bPartnerQuery = BPartnerQuery.builder()
+				.bpartnerValue(bpartnerCode).onlyOrgId(OrgId.ANY)
+				.failIfNotExists(false)
+				.build();
+		final ImportConfig importConfig = importConfigRepository.getForQueryOrNull(bPartnerQuery);
+
 		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
 		bPartner.setCode(bpartnerCode);
-		bPartner.setGlobalId(guarantorExternalId.getValue());
 		bPartner.setExternalId(guarantorExternalId);
+		bPartner.setCompanyName(guarantorNameAndPostal.getName());
 		bPartner.setName(guarantorNameAndPostal.getName());
-		bPartner.setLanguage("de_CH");
+		bPartner.setGroup(importConfig.getMunicipalityBPartnerGroupName());
+		bPartner.setLanguage(importConfig.getLanguageCode());
 
 		final JsonRequestLocation guarantorLocation = createJsonBPartnerLocation(
 				guarantorExternalId,
@@ -860,7 +881,6 @@ public class XmlToOLCandsService
 
 		return result.build();
 	}
-
 
 	private String createExternalHeaderId(@NonNull final JsonOLCandCreateRequestBuilder requestBuilder)
 	{
