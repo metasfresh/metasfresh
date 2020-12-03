@@ -50,9 +50,10 @@ export default class Attributes extends Component {
       entity,
     } = this.props;
 
-    const templateId = widgetData.value.key
-      ? parseInt(widgetData.value.key, 10) // assume 'value' is a key/caption lookup value
-      : parseInt(widgetData.value, 10); // assume 'value' is string or int
+    const templateId =
+      widgetData.value && widgetData.value.key
+        ? parseInt(widgetData.value.key, 10) // assume 'value' is a key/caption lookup value
+        : parseInt(widgetData.value, 10); // assume 'value' is string or int
 
     let source;
     if (entity === 'window') {

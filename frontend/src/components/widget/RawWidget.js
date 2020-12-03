@@ -254,11 +254,9 @@ export class RawWidget extends PureComponent {
    */
   handleChange = (e) => {
     const { handleChange, filterWidget, fields } = this.props;
-    // console.log('filterWidget=', filterWidget);
-    // console.log('fields = ', fields);
 
     const widgetField = getWidgetField({ filterWidget, fields });
-    // console.log('widgetField to patch =>', filterWidget);
+
     if (handleChange) {
       this.updateTypedCharacters(e.target.value);
       handleChange(widgetField, e.target.value);
