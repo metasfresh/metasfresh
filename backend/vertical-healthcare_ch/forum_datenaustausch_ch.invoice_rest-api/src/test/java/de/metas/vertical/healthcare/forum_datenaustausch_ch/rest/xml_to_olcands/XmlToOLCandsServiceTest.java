@@ -29,6 +29,7 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.util.JSONObjectMapper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
@@ -56,6 +57,9 @@ public class XmlToOLCandsServiceTest
 
 	@Mock
 	BpartnerRestController bpartnerRestController; // needed by mockito
+
+	@Mock
+	ImportConfigRepository importConfigRepository; // needed by mockito
 
 	@InjectMocks
 	XmlToOLCandsService xmlToOLCandsService;
