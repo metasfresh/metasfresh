@@ -28,7 +28,7 @@ import lombok.Value;
 @Value(staticConstructor = "of")
 class MacAddress
 {
-	public static final String DEFAULT_GROUP_DELIMITER = ":";
+	public static final String DEFAULT_GROUP_SEPARATOR = ":";
 
 	@NonNull
 	String address;
