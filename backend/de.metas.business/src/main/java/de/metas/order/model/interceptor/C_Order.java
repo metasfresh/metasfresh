@@ -217,7 +217,7 @@ public class C_Order
 	{
 		final List<I_C_Order> referencingOrders = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class, order)
-				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Ref_Proposal_ID, order.getRef_Proposal_ID())
+				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Ref_Proposal_ID, order.getC_Order_ID())
 				.create()
 				.list(I_C_Order.class);
 
