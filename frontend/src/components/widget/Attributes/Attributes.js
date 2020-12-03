@@ -296,7 +296,7 @@ export default class Attributes extends Component {
 
     const { dropdown, data, layout } = this.state;
     const { value } = widgetData;
-    const label = value.caption;
+    const label = value ? value.caption : '';
     const attrId = data && data.ID ? data.ID.value : -1;
 
     return (
