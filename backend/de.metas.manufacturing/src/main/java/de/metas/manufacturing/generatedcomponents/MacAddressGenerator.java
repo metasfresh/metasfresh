@@ -77,7 +77,7 @@ public class MacAddressGenerator implements IComponentGenerator
 	{
 		final int qty = context.getQty();
 		Check.errorIf(qty < 1 || qty > supportedAttributes.size(),
-				"Qty of Mac Addresses should be between 1 and {} but it was {}", supportedAttributes.size(), qty);
+					  "Qty of Mac Addresses should be between 1 and {} but it was {}", supportedAttributes.size(), qty);
 
 		//
 		// Count how many attributes were already generated.
@@ -156,8 +156,8 @@ public class MacAddressGenerator implements IComponentGenerator
 	@NonNull
 	static MacAddress toMacAddress(@NonNull final DocumentNoParts documentNoParts)
 	{
-		final String groupDelimiter = detectGroupDelimiter(documentNoParts.getPrefix());
-		final String prefix = StringUtils.nullToEmpty(StringUtils.replace(documentNoParts.getPrefix(), groupDelimiter, ""));
+		final String groupSeparator = detectGroupSeparator(documentNoParts.getPrefix());
+		final String prefix = StringUtils.nullToEmpty(StringUtils.replace(documentNoParts.getPrefix(), groupSeparator, ""));
 		final String sequenceNo;
 
 		{
@@ -178,26 +178,18 @@ public class MacAddressGenerator implements IComponentGenerator
 			sequenceNo = Strings.padStart(sequenceNumberHexa, neededDigits, '0');
 		}
 
-		final StringBuilder result = new StringBuilder(prefix + sequenceNo);
-		{
-			final int initialStep = 2;
-			int i = initialStep;
-			while (i < result.length())
-			{
-				result.insert(i, groupDelimiter);
-				i += initialStep + groupDelimiter.length();
-			}
-		}
+		final String result = StringUtils.insertSeparatorEveryNCharacters(prefix + sequenceNo, groupSeparator, 2);
 
-		return MacAddress.of(result.toString().toUpperCase());
+		return MacAddress.of(result.toUpperCase());
 	}
 
+
 	@NonNull
-	private static String detectGroupDelimiter(@Nullable final String prefix)
+	private static String detectGroupSeparator(@Nullable final String prefix)
 	{
 		if (prefix == null)
 		{
-			return MacAddress.DEFAULT_GROUP_DELIMITER;
+			return MacAddress.DEFAULT_GROUP_SEPARATOR;
 		}
 
 		if (prefix.contains(":"))
@@ -210,6 +202,6 @@ public class MacAddressGenerator implements IComponentGenerator
 			return "-";
 		}
 
-		return MacAddress.DEFAULT_GROUP_DELIMITER;
+		return MacAddress.DEFAULT_GROUP_SEPARATOR;
 	}
 }

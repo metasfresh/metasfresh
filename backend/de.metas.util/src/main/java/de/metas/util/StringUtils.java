@@ -217,10 +217,10 @@ public final class StringUtils
 	 * @param value,        may be null
 	 * @param defaultValue, may be null
 	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li><code>defaultValue</code> if value is null or other
-	 *         </ul>
+	 * <li>true if value is boolean true, "true" or "Y"
+	 * <li>false if value is boolean false, "false" or "N"
+	 * <li><code>defaultValue</code> if value is null or other
+	 * </ul>
 	 */
 	@Nullable
 	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
@@ -264,10 +264,10 @@ public final class StringUtils
 	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
 	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li>false if value is null or other
-	 *         </ul>
+	 * <li>true if value is boolean true, "true" or "Y"
+	 * <li>false if value is boolean false, "false" or "N"
+	 * <li>false if value is null or other
+	 * </ul>
 	 */
 	public static boolean toBoolean(final Object value)
 	{
@@ -279,10 +279,10 @@ public final class StringUtils
 	 * Converts given boolean value to ADempiere's string representation of it
 	 *
 	 * @return <ul>
-	 *         <li><code>null</code> if value is null
-	 *         <li>"Y" if value is true
-	 *         <li>"N" if value is false
-	 *         </ul>
+	 * <li><code>null</code> if value is null
+	 * <li>"Y" if value is true
+	 * <li>"N" if value is false
+	 * </ul>
 	 */
 	@Nullable
 	public static String ofBoolean(@Nullable final Boolean value)
@@ -677,7 +677,7 @@ public final class StringUtils
 	}
 
 	/**
-	 * @param value       note: <code>null</code> is threaded like ""
+	 * @param value note: <code>null</code> is threaded like ""
 	 */
 	public static String lpadZero(final String value, final int size, final String description)
 	{
@@ -982,14 +982,51 @@ public final class StringUtils
 			}
 		}
 		return new String(data);
-	}	// initCap
+	}    // initCap
 
 	/**
 	 * @param in input {@link String}
 	 * @return {@param in} if != null, empty string otherwise
 	 */
-	@Nullable public static String nullToEmpty(@Nullable final String in)
+	@Nullable
+	public static String nullToEmpty(@Nullable final String in)
 	{
 		return in != null ? in : "";
+	}
+
+	/**
+	 * Example:
+	 * <pre>
+	 * - string = `87whdhA7008S` (length 14)
+	 * - groupSeparator = "--"
+	 * - groupSize = 4
+	 *
+	 * Results into `87wh--dhA7--008S` of length 18.
+	 * </pre>
+	 *
+	 * @param string         the input string
+	 * @param groupSeparator the separator string
+	 * @param groupSize      the size of each character group, after which a groupSeparator is inserted
+	 * @return the input string containing the groupSeparator
+	 */
+	@NonNull
+	public static String insertSeparatorEveryNCharacters(
+			@NonNull final String string,
+			@NonNull final String groupSeparator,
+			final int groupSize)
+	{
+		if (groupSize < 1)
+		{
+			return string;
+		}
+
+		final StringBuilder result = new StringBuilder(string);
+		int insertPosition = groupSize;
+		while (insertPosition < result.length())
+		{
+			result.insert(insertPosition, groupSeparator);
+			insertPosition += groupSize + groupSeparator.length();
+		}
+		return result.toString();
 	}
 }

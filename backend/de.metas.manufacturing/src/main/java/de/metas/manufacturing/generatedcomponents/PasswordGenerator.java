@@ -46,10 +46,10 @@ public class PasswordGenerator implements IComponentGenerator
 	private static final String CHAR_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
 	private static final String CHAR_UPPERCASE = CHAR_LOWERCASE.toUpperCase();
 	private static final String DIGIT = "0123456789";
-	private static final String PUNCTUATION = "!@#&()–[{}]:;',?/*";
+	private static final String PUNCTUATION = "+.,?!()=";
 
 	@VisibleForTesting
-	static final String PARAM_LENGTH = "length";
+	static final String PARAM_TOTAL_LENGTH = "totalLength";
 	@VisibleForTesting
 	static final String PARAM_USE_LOWERCASE = "useLowercase";
 	@VisibleForTesting
@@ -58,13 +58,19 @@ public class PasswordGenerator implements IComponentGenerator
 	static final String PARAM_USE_DIGIT = "useDigit";
 	@VisibleForTesting
 	static final String PARAM_USE_PUNCTUATION = "usePunctuation";
+	@VisibleForTesting
+	static final String PARAM_GROUP_SEPARATOR = "groupSeparator";
+	@VisibleForTesting
+	static final String PARAM_GROUP_SIZE = "groupSize";
 
 	private static final ComponentGeneratorParams DEFAULT_PARAMETERS = ComponentGeneratorParams.builder()
-			.parameter(PARAM_LENGTH, "20")
+			.parameter(PARAM_TOTAL_LENGTH, "14")
 			.parameter(PARAM_USE_LOWERCASE, StringUtils.ofBoolean(true))
 			.parameter(PARAM_USE_UPPERCASE, StringUtils.ofBoolean(true))
 			.parameter(PARAM_USE_DIGIT, StringUtils.ofBoolean(true))
 			.parameter(PARAM_USE_PUNCTUATION, StringUtils.ofBoolean(true))
+			.parameter(PARAM_GROUP_SEPARATOR, "-")
+			.parameter(PARAM_GROUP_SIZE, "4")
 			.build();
 
 	private final Random random = new Random();
@@ -83,12 +89,13 @@ public class PasswordGenerator implements IComponentGenerator
 
 		final ComponentGeneratorParams parameters = context.getParameters();
 		final String password = generatePassword(
-				StringUtils.toIntegerOrZero(parameters.getValue(PARAM_LENGTH)),
+				StringUtils.toIntegerOrZero(parameters.getValue(PARAM_TOTAL_LENGTH)),
 				StringUtils.toBoolean(parameters.getValue(PARAM_USE_LOWERCASE)),
 				StringUtils.toBoolean(parameters.getValue(PARAM_USE_UPPERCASE)),
 				StringUtils.toBoolean(parameters.getValue(PARAM_USE_DIGIT)),
-				StringUtils.toBoolean(parameters.getValue(PARAM_USE_PUNCTUATION))
-		);
+				StringUtils.toBoolean(parameters.getValue(PARAM_USE_PUNCTUATION)),
+				parameters.getValue(PARAM_GROUP_SEPARATOR),
+				StringUtils.toIntegerOrZero(parameters.getValue(PARAM_GROUP_SIZE)));
 
 		return ImmutableAttributeSet.builder()
 				.attributeValue(AttributeConstants.RouterPassword, password)
@@ -104,20 +111,22 @@ public class PasswordGenerator implements IComponentGenerator
 	@NonNull
 	@VisibleForTesting
 	String generatePassword(
-			final int passwordLength,
+			final int totalLength,
 			final boolean useLowercase,
 			final boolean useUppercase,
 			final boolean useDigit,
-			final boolean usePunctuation
+			final boolean usePunctuation,
+			final String groupSeparator,
+			final int groupSize
 	)
 	{
-		if ((passwordLength < 1))
+		if ((totalLength < 1))
 		{
 			throw new AdempiereException("Password length must be > 0");
 		}
 
 		String FILL_CHARACTERS = "";
-		final StringBuilder result = new StringBuilder(passwordLength);
+		final StringBuilder result = new StringBuilder(totalLength);
 
 		if (useLowercase)
 		{
@@ -154,10 +163,12 @@ public class PasswordGenerator implements IComponentGenerator
 
 		{
 			// remaining until length: random
-			result.append(generateRandomString(FILL_CHARACTERS, passwordLength - result.length()));
+			result.append(generateRandomString(FILL_CHARACTERS, totalLength - result.length()));
 		}
 
-		return shuffleString(result.substring(0, passwordLength));
+		final String shuffledString = shuffleString(result.toString());
+
+		return StringUtils.insertSeparatorEveryNCharacters(shuffledString, groupSeparator, groupSize).substring(0, totalLength);
 	}
 
 	@NonNull
