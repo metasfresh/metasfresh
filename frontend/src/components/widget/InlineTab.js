@@ -3,17 +3,13 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Window from '../../components/Window';
-import { getLayout, getData } from '../../api/view';
-import { setInlineTabLayoutAndData } from '../../actions/WindowActions';
+
+import { getInlineTabLayoutAndData } from '../../actions/WindowActions';
 
 class InlineTab extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = {
-      isOpen: false,
-      layout: null,
-      data: null,
-    };
+    this.state = { isOpen: false };
   }
 
   toggleOpen = () => {
@@ -21,8 +17,8 @@ class InlineTab extends PureComponent {
       windowId,
       id: docId,
       tabId,
-      setInlineTabLayoutAndData,
       rowId,
+      getInlineTabLayoutAndData,
     } = this.props;
 
     this.setState(
@@ -31,26 +27,12 @@ class InlineTab extends PureComponent {
       },
       () => {
         this.state.isOpen &&
-          getLayout('window', windowId, tabId, null, null, false).then(
-            ({ data: layoutData }) => {
-              getData({
-                entity: 'window',
-                docType: windowId,
-                docId,
-                tabId,
-                fetchAdvancedFields: false,
-              }).then(({ data: respFields }) => {
-                const { result } = respFields;
-                const wantedData = result.filter(
-                  (item) => item.rowId === rowId
-                );
-                setInlineTabLayoutAndData({
-                  inlineTabId: `${windowId}_${tabId}_${rowId}`,
-                  data: { layout: layoutData, data: wantedData[0] },
-                });
-              });
-            }
-          );
+          getInlineTabLayoutAndData({
+            windowId,
+            tabId,
+            docId,
+            rowId,
+          });
       }
     );
   };
@@ -111,7 +93,7 @@ InlineTab.propTypes = {
   fieldsByName: PropTypes.object,
   layout: PropTypes.any,
   data: PropTypes.any,
-  setInlineTabLayoutAndData: PropTypes.func.isRequired,
+  getInlineTabLayoutAndData: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
@@ -131,6 +113,6 @@ const mapStateToProps = (state, props) => {
 export default connect(
   mapStateToProps,
   {
-    setInlineTabLayoutAndData,
+    getInlineTabLayoutAndData,
   }
 )(InlineTab);

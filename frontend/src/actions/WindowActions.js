@@ -452,10 +452,44 @@ export function fetchTab({ tabId, windowId, docId, query }) {
 }
 
 /*
+ * @method getInlineTabLayoutAndData
+ * @summary Action creator for fetching and updating the layout and data for the `inlineTab`
+ *
+ * @param {string} windowId
+ * @param {string} tabId
+ * @param {string} docId
+ * @param {string} rowId
+ */
+export function getInlineTabLayoutAndData({ windowId, tabId, docId, rowId }) {
+  return (dispatch) => {
+    getLayout('window', windowId, tabId, null, null, false).then(
+      ({ data: layoutData }) => {
+        getData({
+          entity: 'window',
+          docType: windowId,
+          docId,
+          tabId,
+          fetchAdvancedFields: false,
+        }).then(({ data: respFields }) => {
+          const { result } = respFields;
+          const wantedData = result.filter((item) => item.rowId === rowId);
+          dispatch(
+            setInlineTabLayoutAndData({
+              inlineTabId: `${windowId}_${tabId}_${rowId}`,
+              data: { layout: layoutData, data: wantedData[0] },
+            })
+          );
+        });
+      }
+    );
+  };
+}
+
+/*
  * @method updateTabLayout
  * @summary Action creator for fetching and updating single tab's layout
  *
- * @param {number} windowId
+ * @param {string} windowId
  * @param {string} tabId
  */
 export function updateTabLayout(windowId, tabId) {
@@ -1012,7 +1046,7 @@ export function updatePropertyValue({
           },
         },
       };
-      // - for `inlineTab` we will update the corresponding branch in the store
+      // - for `inlineTab` type we will update the corresponding branch in the store
       if (disconnected === 'inlineTab') {
         // update
       }
