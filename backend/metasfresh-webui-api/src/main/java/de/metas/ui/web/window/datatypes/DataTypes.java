@@ -1,23 +1,5 @@
 package de.metas.ui.web.window.datatypes;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -29,9 +11,26 @@ import de.metas.ui.web.window.datatypes.json.JSONRange;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -95,10 +94,10 @@ public final class DataTypes
 	/**
 	 * Converts given value to target class.
 	 *
-	 * @param fieldName field name, needed only for logging purposes
-	 * @param value value to be converted
-	 * @param widgetType widget type (optional)
-	 * @param targetType target type
+	 * @param fieldName        field name, needed only for logging purposes
+	 * @param value            value to be converted
+	 * @param widgetType       widget type (optional)
+	 * @param targetType       target type
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
@@ -311,8 +310,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 			return lookupValue.getIdAsInt();
 		}
@@ -410,8 +408,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 
 			if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -539,8 +536,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 
 			if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -559,30 +555,45 @@ public final class DataTypes
 		else if (value instanceof String)
 		{
 			final String valueStr = (String)value;
-			if (valueStr.isEmpty())
-			{
-				return null;
-			}
-
-			if (lookupDataSource != null)
-			{
-				final LookupValue lookupValue = lookupDataSource.findById(valueStr);
-				// TODO: what if lookupValue was not found, i.e. is null?
-				return toStringLookupValue(lookupValue);
-			}
-			else
-			{
-				throw new ValueConversionException()
-						.setFromValue(value)
-						.setTargetType(IntegerLookupValue.class)
-						.setLookupDataSource(lookupDataSource);
-			}
+			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
+		}
+		else if (value instanceof Boolean)
+		{
+			// corner case: happens for Posted field which is generated as Boolean but is defined as List of "_Posted Status".
+			// approach: convert the boolean to Y or N string. We assume our list contains entries for Y and N.
+			final Boolean valueBoolean = (Boolean)value;
+			final String valueStr = StringUtils.ofBoolean(valueBoolean);
+			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
 		}
 		else
 		{
 			throw new ValueConversionException()
 					.setFromValue(value)
-					.setTargetType(IntegerLookupValue.class)
+					.setTargetType(StringLookupValue.class)
+					.setLookupDataSource(lookupDataSource);
+		}
+	}
+
+	private static StringLookupValue convertToStringLookupValue_fromString(
+			@Nullable final String valueStr,
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
+	{
+		if (valueStr == null || valueStr.isEmpty())
+		{
+			return null;
+		}
+
+		if (lookupDataSource != null)
+		{
+			final LookupValue lookupValue = lookupDataSource.findById(valueStr);
+			// TODO: what if lookupValue was not found, i.e. is null?
+			return toStringLookupValue(lookupValue);
+		}
+		else
+		{
+			throw new ValueConversionException()
+					.setFromValue(valueStr)
+					.setTargetType(StringLookupValue.class)
 					.setLookupDataSource(lookupDataSource);
 		}
 	}
@@ -625,8 +636,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final LookupValuesList lookupValuesList = JSONLookupValuesList.lookupValuesListFromJsonMap(map);
 			if (lookupValuesList.isEmpty())
 			{
@@ -664,8 +674,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, String> map = (Map<String, String>)value;
+			@SuppressWarnings("unchecked") final Map<String, String> map = (Map<String, String>)value;
 			return JSONRange.dateRangeFromJSONMap(map);
 		}
 		else
