@@ -84,6 +84,7 @@ class MasterWidget extends PureComponent {
       windowId,
       patch,
       rowId,
+      dataId: docId,
       tabId,
       onChange,
       relativeDocId,
@@ -104,6 +105,20 @@ class MasterWidget extends PureComponent {
       viewId,
     });
 
+    const updateOptions = {
+      windowId,
+      docId,
+      property,
+      value,
+      tabId,
+      rowId: currRowId,
+      isModal,
+      entity,
+      tableId,
+      disconnected,
+      action: 'patch',
+    };
+
     // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
     // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
@@ -112,16 +127,9 @@ class MasterWidget extends PureComponent {
     widgetType !== 'Button' &&
       !dataId &&
       (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
-      updatePropertyValue({
-        property,
-        value,
-        tabId,
-        rowId: currRowId,
-        isModal,
-        entity,
-        tableId,
-        disconnected,
-      });
+      updatePropertyValue(updateOptions);
+
+    disconnected === 'inlineTab' && updatePropertyValue(updateOptions);
 
     ret = patch(
       entity,
@@ -190,6 +198,8 @@ class MasterWidget extends PureComponent {
       });
 
       updatePropertyValue({
+        windowId,
+        docId: dataId,
         property,
         value: val,
         tabId,
@@ -198,6 +208,7 @@ class MasterWidget extends PureComponent {
         entity,
         tableId,
         disconnected,
+        action: 'change',
       });
     });
   };

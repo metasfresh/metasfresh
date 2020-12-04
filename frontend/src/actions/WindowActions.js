@@ -1028,6 +1028,8 @@ function updateStatus(responseData) {
  * in MasterWidget
  */
 export function updatePropertyValue({
+  windowId,
+  docId,
   property,
   value,
   tabId,
@@ -1036,6 +1038,7 @@ export function updatePropertyValue({
   entity,
   tableId,
   disconnected,
+  action,
 }) {
   return (dispatch) => {
     if (rowId) {
@@ -1048,7 +1051,11 @@ export function updatePropertyValue({
       };
       // - for `inlineTab` type we will update the corresponding branch in the store
       if (disconnected === 'inlineTab') {
-        // update
+        action === 'patch' &&
+          dispatch(
+            getInlineTabLayoutAndData({ windowId, docId, tabId, rowId })
+          );
+        return false;
       }
       dispatch(updateTableRowProperty({ tableId, rowId, change }));
     } else if (!tabId || !rowId) {
