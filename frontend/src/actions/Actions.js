@@ -56,7 +56,6 @@ export function fetchQuickActions({
         );
 
         actionPromises = [].concat(requests);
-
       }
     } else {
       const tableId = getTableId({ windowId, viewId });
@@ -70,7 +69,7 @@ export function fetchQuickActions({
             selectedIds: table.selected,
             viewProfileId,
           })
-        )
+        ),
       ];
     }
 
