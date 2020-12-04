@@ -453,3 +453,9 @@ export const SET_INLINE_TAB_WRAPPER_DATA = 'SET_INLINE_TAB_WRAPPER_DATA';
  */
 export const UPDATE_INLINE_TAB_WRAPPER_FIELDS =
   'UPDATE_INLINE_TAB_WRAPPER_FIELDS';
+
+/**
+ * @constant
+ * @type {string} update inline tab item fields
+ */
+export const UPDATE_INLINE_TAB_ITEM_FIELDS = 'UPDATE_INLINE_TAB_ITEM_FIELDS';

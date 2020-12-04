@@ -55,6 +55,7 @@ import {
   SET_INLINE_TAB_LAYOUT_AND_DATA,
   SET_INLINE_TAB_WRAPPER_DATA,
   UPDATE_INLINE_TAB_WRAPPER_FIELDS,
+  UPDATE_INLINE_TAB_ITEM_FIELDS,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -879,6 +880,30 @@ export default function windowHandler(state = initialState, action) {
         inlineTab: {
           ...state.inlineTab,
           wrapperData: wrapperDataClone,
+        },
+      };
+    }
+
+    case UPDATE_INLINE_TAB_ITEM_FIELDS: {
+      const { inlineTabId, fieldsByName } = action.payload;
+
+      const targetTabData = { ...state.inlineTab[`${inlineTabId}`].data };
+
+      Object.keys(fieldsByName).map((fieldItem) => {
+        targetTabData.fieldsByName[fieldItem] = {
+          ...targetTabData.fieldsByName[fieldItem],
+          ...fieldsByName[fieldItem],
+        };
+      });
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${inlineTabId}`]: {
+            ...state.inlineTab[`${inlineTabId}`],
+            data: targetTabData,
+          },
         },
       };
     }

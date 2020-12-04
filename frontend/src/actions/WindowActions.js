@@ -53,6 +53,7 @@ import {
   SET_INLINE_TAB_LAYOUT_AND_DATA,
   SET_INLINE_TAB_WRAPPER_DATA,
   UPDATE_INLINE_TAB_WRAPPER_FIELDS,
+  UPDATE_INLINE_TAB_ITEM_FIELDS,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
@@ -453,10 +454,26 @@ export function fetchTab({ tabId, windowId, docId, query }) {
 }
 
 /*
+ * @method updateInlineTabItemFields
+ * @summary Action creator for updating the fields for the `InlineTab` Item
+ *
+ * @param {string} inlineTabId
+ * @param {string} rowId
+ * @param {object} fieldsByName
+ */
+export function updateInlineTabItemFields({ inlineTabId, fieldsByName }) {
+  return {
+    type: UPDATE_INLINE_TAB_ITEM_FIELDS,
+    payload: { inlineTabId, fieldsByName },
+  };
+}
+
+/*
  * @method updateInlineTabWrapperFields
  * @summary Action creator for updating the fields for the `InlineTab` Wrapper
  *
  * @param {string} inlineTabWrapperId
+ * @param {string} rowId
  * @param {object} fieldsByName
  */
 export function updateInlineTabWrapperFields({
@@ -1103,7 +1120,10 @@ export function updatePropertyValue({
               })
             );
             dispatch(
-              getInlineTabLayoutAndData({ windowId, docId, tabId, rowId })
+              updateInlineTabItemFields({
+                inlineTabId: `${windowId}_${tabId}_${rowId}`,
+                fieldsByName: response[0].fieldsByName,
+              })
             );
           });
         }
