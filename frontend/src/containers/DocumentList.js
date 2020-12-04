@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
-import { get } from 'lodash';
+import { get, debounce } from 'lodash';
 import deepUnfreeze from 'deep-unfreeze';
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { locationSearchRequest, getViewRowsByIds } from '../api';
@@ -74,6 +74,8 @@ class DocumentListContainer extends Component {
 
     this.fetchLayoutAndData();
     this.renderedSuccessfuly = false;
+
+    this.debouncedRefresh = debounce(this.browseView, 500, { maxWait: 10000 });
   }
 
   UNSAFE_componentWillMount() {
@@ -252,7 +254,7 @@ class DocumentListContainer extends Component {
       }
 
       if (fullyChanged === true) {
-        this.browseView();
+        this.debouncedRefresh();
       }
     });
   };
