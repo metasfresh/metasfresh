@@ -155,7 +155,9 @@ class OLCandOrderFactory
 		//
 		// use values from orderDefaults when the order candidate doesn't have such values
 		order.setC_DocTypeTarget_ID(DocTypeId.toRepoId(orderDefaults.getDocTypeTargetId()));
-		order.setM_Warehouse_ID(WarehouseId.toRepoId(orderDefaults.getWarehouseId()));
+		final WarehouseId warehouseId = candidateOfGroup.getWarehouseId();
+		//TODO get correct default warehouse
+		order.setM_Warehouse_ID(WarehouseId.toRepoId(warehouseId == null ? orderDefaults.getWarehouseId() : warehouseId) );
 
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
@@ -320,6 +322,7 @@ class OLCandOrderFactory
 			currentOrderLine = newOrderLine(candidate);
 		}
 
+		currentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
 		currentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
 		currentOrderLine.setProductDescription(candidate.getProductDescription()); // 08626: Propagate ProductDescription to C_OrderLine
 		currentOrderLine.setLine(candidate.getLine());

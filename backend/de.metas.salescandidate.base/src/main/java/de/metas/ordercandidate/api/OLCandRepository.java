@@ -185,6 +185,11 @@ public class OLCandRepository
 			olCandPO.setM_Warehouse_Dest_ID(request.getWarehouseDestId().getRepoId());
 		}
 
+		if (request.getWarehouseDestId() != null)
+		{
+			olCandPO.setM_Warehouse_Dest_ID(request.getWarehouseDestId().getRepoId());
+		}
+
 		olCandPO.setAD_User_EnteredBy_ID(Env.getAD_User_ID());
 
 		olCandPO.setAD_InputDataSource_ID(request.getDataSourceId().getRepoId());
