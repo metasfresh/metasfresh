@@ -52,6 +52,7 @@ import {
   TOGGLE_PRINTING_OPTION,
   SET_INLINE_TAB_LAYOUT_AND_DATA,
   SET_INLINE_TAB_WRAPPER_DATA,
+  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
@@ -448,6 +449,46 @@ export function fetchTab({ tabId, windowId, docId, query }) {
         //show error message ?
         return Promise.reject(error);
       });
+  };
+}
+
+/*
+ * @method updateInlineTabWrapperFields
+ * @summary Action creator for updating the fields for the `InlineTab` Wrapper
+ *
+ * @param {string} inlineTabWrapperId
+ * @param {object} fieldsByName
+ */
+export function updateInlineTabWrapperFields({
+  inlineTabWrapperId,
+  rowId,
+  fieldsByName,
+}) {
+  return {
+    type: UPDATE_INLINE_TAB_WRAPPER_FIELDS,
+    payload: { inlineTabWrapperId, rowId, fieldsByName },
+  };
+}
+
+/*
+ * @method fetchInlineTabWrapperData
+ * @summary Action creator for fetching the data for the `InlineTab` Wrapper (note: wrapper not the inline tab item!)
+ *
+ * @param {string} windowId
+ * @param {string} tabId
+ * @param {string} docId
+ * @param {string} query
+ */
+export function fetchInlineTabWrapperData({ windowId, tabId, docId, query }) {
+  return (dispatch) => {
+    dispatch(fetchTab({ tabId, windowId, docId, query })).then((tabData) => {
+      dispatch(
+        setInlineTabWrapperData({
+          inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+          data: tabData,
+        })
+      );
+    });
   };
 }
 
@@ -1039,6 +1080,7 @@ export function updatePropertyValue({
   tableId,
   disconnected,
   action,
+  ret,
 }) {
   return (dispatch) => {
     if (rowId) {
@@ -1049,14 +1091,25 @@ export function updatePropertyValue({
           },
         },
       };
-      // - for `inlineTab` type we will update the corresponding branch in the store
+      // - for the `inlineTab` type we will update the corresponding branch in the store
       if (disconnected === 'inlineTab') {
-        action === 'patch' &&
-          dispatch(
-            getInlineTabLayoutAndData({ windowId, docId, tabId, rowId })
-          );
+        if (action === 'patch') {
+          ret.then((response) => {
+            dispatch(
+              updateInlineTabWrapperFields({
+                inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+                rowId,
+                fieldsByName: response[0].fieldsByName,
+              })
+            );
+            dispatch(
+              getInlineTabLayoutAndData({ windowId, docId, tabId, rowId })
+            );
+          });
+        }
         return false;
       }
+
       dispatch(updateTableRowProperty({ tableId, rowId, change }));
     } else if (!tabId || !rowId) {
       // modal's data is in `tables`

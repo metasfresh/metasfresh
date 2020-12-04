@@ -54,6 +54,7 @@ import {
   TOGGLE_PRINTING_OPTION,
   SET_INLINE_TAB_LAYOUT_AND_DATA,
   SET_INLINE_TAB_WRAPPER_DATA,
+  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -857,6 +858,27 @@ export default function windowHandler(state = initialState, action) {
             ...state.inlineTab.wrapperData,
             [`${action.payload.inlineTabWrapperId}`]: action.payload.data,
           },
+        },
+      };
+    }
+    case UPDATE_INLINE_TAB_WRAPPER_FIELDS: {
+      let indexWD;
+      const { inlineTabWrapperId, rowId, fieldsByName } = action.payload;
+      state.inlineTab.wrapperData[inlineTabWrapperId].forEach((item, i) => {
+        if (item.rowId === rowId) indexWD = i;
+      });
+
+      const wrapperDataClone = { ...state.inlineTab.wrapperData };
+      wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName = {
+        ...wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName,
+        ...fieldsByName,
+      };
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          wrapperData: wrapperDataClone,
         },
       };
     }

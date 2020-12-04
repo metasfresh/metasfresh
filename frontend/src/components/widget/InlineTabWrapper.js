@@ -1,11 +1,10 @@
 import React, { PureComponent } from 'react';
 import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
-import { fetchTab } from '../../actions/WindowActions';
 import { connect } from 'react-redux';
 import {
   createWindow,
-  setInlineTabWrapperData,
+  fetchInlineTabWrapperData,
 } from '../../actions/WindowActions';
 
 class InlineTabWrapper extends PureComponent {
@@ -21,15 +20,9 @@ class InlineTabWrapper extends PureComponent {
     const {
       inlineTab: { windowId, tabId },
       dataId: docId,
-      fetchTab,
-      setInlineTabWrapperData,
+      fetchInlineTabWrapperData,
     } = this.props;
-    fetchTab({ tabId, windowId, docId, query }).then((tabData) => {
-      setInlineTabWrapperData({
-        inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
-        data: tabData,
-      });
-    });
+    fetchInlineTabWrapperData({ tabId, windowId, docId, query });
   };
 
   showAddNewForm = () => {
@@ -116,10 +109,9 @@ InlineTabWrapper.propTypes = {
   caption: PropTypes.string.isRequired,
   inlineTab: PropTypes.object.isRequired,
   dataId: PropTypes.string.isRequired,
-  fetchTab: PropTypes.func.isRequired,
   createWindow: PropTypes.func.isRequired,
   widgetData: PropTypes.array,
-  setInlineTabWrapperData: PropTypes.func.isRequired,
+  fetchInlineTabWrapperData: PropTypes.func.isRequired,
   tabData: PropTypes.array,
 };
 
@@ -144,8 +136,7 @@ const mapStateToProps = (state, props) => {
 export default connect(
   mapStateToProps,
   {
-    fetchTab,
+    fetchInlineTabWrapperData,
     createWindow,
-    setInlineTabWrapperData,
   }
 )(InlineTabWrapper);

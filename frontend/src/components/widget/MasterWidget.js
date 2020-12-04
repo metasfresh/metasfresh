@@ -129,8 +129,6 @@ class MasterWidget extends PureComponent {
       (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
       updatePropertyValue(updateOptions);
 
-    disconnected === 'inlineTab' && updatePropertyValue(updateOptions);
-
     ret = patch(
       entity,
       windowId,
@@ -146,6 +144,9 @@ class MasterWidget extends PureComponent {
     );
     this.setState({ edited: false });
     onChange && onChange(ret); //callback
+
+    disconnected === 'inlineTab' &&
+      updatePropertyValue({ ...updateOptions, ret });
 
     return ret;
   };

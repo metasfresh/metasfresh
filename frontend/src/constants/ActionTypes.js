@@ -446,3 +446,10 @@ export const SET_INLINE_TAB_LAYOUT_AND_DATA = 'SET_INLINE_TAB_LAYOUT_AND_DATA';
  * @type {string} set inline tab wrapper data
  */
 export const SET_INLINE_TAB_WRAPPER_DATA = 'SET_INLINE_TAB_WRAPPER_DATA';
+
+/**
+ * @constant
+ * @type {string} update inline tab wrapper fields
+ */
+export const UPDATE_INLINE_TAB_WRAPPER_FIELDS =
+  'UPDATE_INLINE_TAB_WRAPPER_FIELDS';
