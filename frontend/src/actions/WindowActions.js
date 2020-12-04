@@ -630,14 +630,15 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 /*
  * Main method to generate window
  */
-export function createWindow(
-  windowType,
-  documentId = 'NEW',
+export function createWindow({
+  windowId: windowType,
+  docId,
   tabId,
   rowId,
-  isModal = false,
-  isAdvanced
-) {
+  isModal,
+  isAdvanced,
+}) {
+  let documentId = docId || 'NEW';
   return (dispatch) => {
     if (documentId.toLowerCase() === 'new') {
       documentId = 'NEW';

@@ -31,7 +31,14 @@ class InlineTabWrapper extends PureComponent {
       inlineTab: { windowId, tabId },
       dataId: docId,
     } = this.props;
-    createWindow(windowId, docId, tabId, 'NEW', true, true);
+    createWindow({
+      windowId,
+      docId,
+      tabId,
+      rowId: 'NEW',
+      isModal: true,
+      isAdvanced: true,
+    });
     this.setState({ addNewFormVisible: true });
   };
 

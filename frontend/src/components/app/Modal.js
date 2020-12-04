@@ -194,7 +194,14 @@ class Modal extends Component {
       case 'window':
         try {
           await dispatch(
-            createWindow(windowId, dataId, tabId, rowId, true, isAdvanced)
+            createWindow({
+              windowId,
+              docId: dataId,
+              tabId,
+              rowId,
+              isModal: true,
+              isAdvanced,
+            })
           );
         } catch (error) {
           this.handleClose();
