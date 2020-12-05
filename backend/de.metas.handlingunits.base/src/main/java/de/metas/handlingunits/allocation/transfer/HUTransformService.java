@@ -25,6 +25,7 @@ package de.metas.handlingunits.allocation.transfer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -73,7 +74,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -235,7 +235,7 @@ public class HUTransformService
 			@NonNull final Quantity qtyCU,
 			final boolean keepCUsUnderSameParent)
 	{
-		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; (source-)cuOrAggregateHU={}", qtyCU, cuOrAggregateHU);
+		Check.assume(qtyCU.signum() > 0, "Parameter qtyCU={} needs to be >0; (source-)cuOrAggregateHU={}", qtyCU, cuOrAggregateHU);
 
 		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuOrAggregateHU, qtyCU.getUOM())) >= 0;
 		final boolean huIsCU = !handlingUnitsBL.isAggregateHU(cuOrAggregateHU);
@@ -272,7 +272,7 @@ public class HUTransformService
 			}
 		}
 
-		// we split even if cuOrAggregateHU's qty is equalt to qtyCU, because we want a CU without packaging; not an aggregated TU
+		// we split even if cuOrAggregateHU's qty is equal to qtyCU, because we want a CU without packaging; not an aggregated TU
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuOrAggregateHU);
 		HUSplitBuilderCoreEngine.builder()
