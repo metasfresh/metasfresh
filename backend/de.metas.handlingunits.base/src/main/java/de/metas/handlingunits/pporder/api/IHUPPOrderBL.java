@@ -1,12 +1,5 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.eevolution.api.PPOrderPlanningStatus;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -16,6 +9,12 @@ import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Provides specific business logic for interconnection between manufacturing order and handling units module.
@@ -41,6 +40,9 @@ public interface IHUPPOrderBL extends ISingletonService
 	 */
 	IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager(I_PP_Order_BOMLine ppOrderBOMLine);
 
+	/**
+	 * @return the created allocation source, based on ppOrder
+	 */
 	IAllocationSource createAllocationSourceForPPOrder(de.metas.handlingunits.model.I_PP_Order ppOrder);
 
 	HUPPOrderIssueProducer createIssueProducer(PPOrderId ppOrderId);

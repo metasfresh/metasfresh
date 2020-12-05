@@ -148,7 +148,7 @@ public class CreateDraftIssuesCommand
 
 		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() != 0)
 		{
-			throw new AdempiereException("Cannot issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
+			throw new AdempiereException("Could not issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
 		}
 
 		return candidates;
@@ -257,35 +257,44 @@ public class CreateDraftIssuesCommand
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
 	{
-		final ProductId productId = productStorage.getProductId();
-		final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
-
-		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
-				.switchToSourceIfMorePrecise();
-		if (qtyToIssue.isZero())
+		try
 		{
-			return null;
+			final ProductId productId = productStorage.getProductId();
+			final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
+
+			final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
+					.switchToSourceIfMorePrecise();
+			if (qtyToIssue.isZero())
+			{
+				return null;
+			}
+
+			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
+					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+					//
+					.date(movementDate)
+					//
+					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.productId(productId)
+					//
+					.qtyToIssue(qtyToIssue)
+					//
+					.pickingCandidateId(pickingCandidateId)
+					//
+					.build());
+
+			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
+
+			return candidate;
 		}
-
-		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-				.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-				//
-				.date(movementDate)
-				//
-				.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-				.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-				.productId(productId)
-				//
-				.qtyToIssue(qtyToIssue)
-				//
-				.pickingCandidateId(pickingCandidateId)
-				//
-				.build());
-
-		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
-
-		return candidate;
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte)
+					.appendParametersToMessage()
+					.setParameter("M_HU", hu);
+		}
 	}
 
 	private I_PP_Order_BOMLine getTargetOrderBOMLine(@NonNull final ProductId productId)
