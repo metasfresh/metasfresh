@@ -1532,9 +1532,9 @@ export function setInlineTabWrapperData({ inlineTabWrapperId, data }) {
 /*
  * Action creator called to set the inlineTab AddNew form related data in the store
  */
-export function setInlineTabAddNew({ visible, inlineTabId }) {
+export function setInlineTabAddNew({ visible, windowId, tabId, rowId }) {
   return {
     type: SET_INLINE_TAB_ADD_NEW,
-    payload: { visible, inlineTabId },
+    payload: { visible, windowId, tabId, rowId },
   };
 }

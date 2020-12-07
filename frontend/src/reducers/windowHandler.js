@@ -911,14 +911,16 @@ export default function windowHandler(state = initialState, action) {
     }
 
     case SET_INLINE_TAB_ADD_NEW: {
-      const { visible, inlineTabId } = action.payload;
+      const { visible, windowId, tabId, rowId } = action.payload;
       return {
         ...state,
         inlineTab: {
           ...state.inlineTab,
           addNew: {
             visible,
-            inlineTabId,
+            windowId,
+            tabId,
+            rowId,
           },
         },
       };

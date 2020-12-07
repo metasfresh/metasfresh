@@ -7,6 +7,7 @@ import {
   fetchInlineTabWrapperData,
   setInlineTabAddNew,
 } from '../../actions/WindowActions';
+import Window from '../../components/Window';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
@@ -47,7 +48,15 @@ class InlineTabWrapper extends PureComponent {
   };
 
   render() {
-    const { widgetData, tabData, addNewFormVisible } = this.props;
+    const {
+      widgetData,
+      tabData,
+      addNewFormVisible,
+      addNewData,
+      rowId,
+      inlineTab: { tabId },
+      dataId,
+    } = this.props;
     const { caption } = widgetData;
     if (!tabData) return false;
 
@@ -79,7 +88,7 @@ class InlineTabWrapper extends PureComponent {
             </div>
           )}
           {/* Actual content */}
-          {addNewFormVisible && (
+          {addNewFormVisible && rowId && addNewData && (
             <div className="inline-tab-active">
               <div className="inline-tab-content">
                 <div>
@@ -94,16 +103,17 @@ class InlineTabWrapper extends PureComponent {
                 <div className="clearfix" />
                 <div className="inline-tab-separator" />
                 Actual content
-                {/* <Window
-                  data={data}
-                  dataId={docId}
-                  layout={this.props.inlineTab}
-                  modal
+                <Window
+                  data={addNewData.data}
+                  dataId={dataId}
+                  layout={addNewData.layout}
+                  modal={true}
                   tabId={tabId}
                   rowId={rowId}
-                  isModal
+                  isModal={true}
                   tabsInfo={null}
-                /> */}
+                  disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
+                />
               </div>
             </div>
           )}
@@ -121,6 +131,8 @@ InlineTabWrapper.propTypes = {
   widgetData: PropTypes.array,
   fetchInlineTabWrapperData: PropTypes.func.isRequired,
   tabData: PropTypes.array,
+  rowId: PropTypes.any,
+  addNewData: PropTypes.any,
   addNewFormVisible: PropTypes.bool,
   setInlineTabAddNew: PropTypes.func.isRequired,
 };
@@ -139,12 +151,15 @@ const mapStateToProps = (state, props) => {
     ? inlineTab.wrapperData[selector]
     : null;
   const {
-    addNew: { visible: addNewFormVisible },
+    addNew: { visible: addNewFormVisible, rowId },
   } = inlineTab;
+  const addNewData = inlineTab[`${windowId}_${tabId}_${rowId}`];
 
   return {
     tabData,
     addNewFormVisible,
+    addNewData,
+    rowId,
   };
 };
 
