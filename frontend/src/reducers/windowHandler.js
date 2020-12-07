@@ -826,13 +826,16 @@ export default function windowHandler(state = initialState, action) {
     }
     case UPDATE_INLINE_TAB_WRAPPER_FIELDS: {
       let indexWD;
-      const { inlineTabWrapperId, rowId, fieldsByName } = action.payload;
+      const { inlineTabWrapperId, rowId, response } = action.payload;
+      const { fieldsByName, saveStatus, validStatus } = response;
       state.inlineTab.wrapperData[inlineTabWrapperId].forEach((item, i) => {
         if (item.rowId === rowId) indexWD = i;
       });
 
       const wrapperDataClone = { ...state.inlineTab.wrapperData };
       if (wrapperDataClone[inlineTabWrapperId][indexWD]) {
+        wrapperDataClone[inlineTabWrapperId][indexWD].saveStatus = saveStatus;
+        wrapperDataClone[inlineTabWrapperId][indexWD].validStatus = validStatus;
         wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName = {
           ...wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName,
           ...fieldsByName,

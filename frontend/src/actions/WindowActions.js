@@ -440,11 +440,11 @@ export function updateInlineTabItemFields({ inlineTabId, fieldsByName }) {
 export function updateInlineTabWrapperFields({
   inlineTabWrapperId,
   rowId,
-  fieldsByName,
+  response,
 }) {
   return {
     type: UPDATE_INLINE_TAB_WRAPPER_FIELDS,
-    payload: { inlineTabWrapperId, rowId, fieldsByName },
+    payload: { inlineTabWrapperId, rowId, response },
   };
 }
 
@@ -1077,7 +1077,7 @@ export function updatePropertyValue({
               updateInlineTabWrapperFields({
                 inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
                 rowId,
-                fieldsByName: response[0].fieldsByName,
+                response: response[0],
               })
             );
             dispatch(
