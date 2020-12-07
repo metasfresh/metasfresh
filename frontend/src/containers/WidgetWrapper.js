@@ -83,7 +83,6 @@ const mapStateToProps = (state, props) => {
         if (!isEmpty(state.windowHandler.inlineTab)) {
           const { rowId, tabId, windowId } = props;
           const inlineTabId = `${windowId}_${tabId}_${rowId}`;
-          console.log('InlineTabId:', inlineTabId);
           fieldsCopy = [
             getInlineTabLayout({
               state,
