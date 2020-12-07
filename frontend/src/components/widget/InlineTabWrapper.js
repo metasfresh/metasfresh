@@ -45,6 +45,7 @@ class InlineTabWrapper extends PureComponent {
   handleFormClose = () => {
     const { setInlineTabAddNew } = this.props;
     setInlineTabAddNew({ visible: false });
+    this.updateTable();
   };
 
   render() {
@@ -82,7 +83,7 @@ class InlineTabWrapper extends PureComponent {
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                 onClick={this.showAddNewForm}
               >
-                + Add new
+                Add new
               </button>
               <div className="clearfix" />
             </div>

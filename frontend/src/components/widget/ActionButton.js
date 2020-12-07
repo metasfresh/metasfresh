@@ -393,6 +393,7 @@ ActionButton.propTypes = {
   docId: PropTypes.any,
   activeTab: PropTypes.string,
   processStatus: PropTypes.string,
+  readonly: PropTypes.boolean,
 };
 
 const mapStateToProps = ({ windowHandler, appHandler }) => ({
