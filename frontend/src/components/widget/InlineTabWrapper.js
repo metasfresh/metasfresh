@@ -7,7 +7,7 @@ import {
   fetchInlineTabWrapperData,
   setInlineTabAddNew,
 } from '../../actions/WindowActions';
-import Window from '../../components/Window';
+import SectionGroup from '../SectionGroup';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
@@ -104,7 +104,7 @@ class InlineTabWrapper extends PureComponent {
                 <div className="clearfix" />
                 <div className="inline-tab-separator" />
                 {/* Actual content */}
-                <Window
+                <SectionGroup
                   data={addNewData.data}
                   dataId={dataId}
                   layout={addNewData.layout}

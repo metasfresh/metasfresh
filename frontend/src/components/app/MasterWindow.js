@@ -7,7 +7,7 @@ import { getTableId } from '../../reducers/tables';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
-import Window from '../Window';
+import SectionGroup from '../SectionGroup';
 import Overlay from '../app/Overlay';
 import { introHints, introSteps } from '../intro/intro';
 
@@ -339,7 +339,7 @@ export default class MasterWindow extends PureComponent {
         {dataId === 'notfound' ? (
           <BlankPage what="Document" />
         ) : (
-          <Window
+          <SectionGroup
             key="window"
             data={master.data}
             layout={master.layout}

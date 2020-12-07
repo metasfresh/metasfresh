@@ -2,8 +2,7 @@ import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Window from '../../components/Window';
-
+import SectionGroup from '../SectionGroup';
 import { getInlineTabLayoutAndData } from '../../actions/WindowActions';
 
 class InlineTab extends PureComponent {
@@ -75,7 +74,7 @@ class InlineTab extends PureComponent {
           <div className="inline-tab-active inline-tab-offset-top">
             <div className="inline-tab-content">
               {layout && data && (
-                <Window
+                <SectionGroup
                   data={data}
                   dataId={docId}
                   layout={layout}
