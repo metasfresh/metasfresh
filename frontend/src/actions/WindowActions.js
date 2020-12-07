@@ -15,17 +15,11 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_QUICK_ACTIONS,
-  DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  FETCHED_QUICK_ACTIONS,
-  FETCH_TOP_ACTIONS,
-  FETCH_TOP_ACTIONS_FAILURE,
-  FETCH_TOP_ACTIONS_SUCCESS,
   NO_CONNECTION,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
@@ -64,7 +58,6 @@ import {
   getData,
   patchRequest,
   getLayout,
-  topActionsRequest,
   getProcessData,
   getTabRequest,
   startProcess,
@@ -81,7 +74,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { setIncludedView } from './ViewActions';
+import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -94,39 +87,6 @@ import {
   updateTableSelection,
   updateTableRowProperty,
 } from './TableActions';
-
-/*
- * Action creator called when quick actions are successfully fetched
- */
-export function fetchedQuickActions(windowId, id, data) {
-  return {
-    type: FETCHED_QUICK_ACTIONS,
-    payload: {
-      data,
-      windowId,
-      id,
-    },
-  };
-}
-
-/*
- * Action creator to delete quick actions from the store
- */
-export function deleteQuickActions(windowId, id) {
-  return {
-    type: DELETE_QUICK_ACTIONS,
-    payload: {
-      windowId,
-      id,
-    },
-  };
-}
-
-export function deleteTopActions() {
-  return {
-    type: DELETE_TOP_ACTIONS,
-  };
-}
 
 export function toggleOverlay(data) {
   return {
@@ -814,31 +774,6 @@ export function fetchChangeLog(windowId, docId, tabId, rowId) {
   };
 }
 
-export function fetchTopActions(windowType, docId, tabId) {
-  return (dispatch) => {
-    dispatch({
-      type: FETCH_TOP_ACTIONS,
-    });
-
-    return topActionsRequest(windowType, docId, tabId)
-      .then((response) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_SUCCESS,
-          payload: response.data.actions,
-        });
-
-        return Promise.resolve(response.data.actions);
-      })
-      .catch((e) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_FAILURE,
-        });
-
-        return Promise.reject(e);
-      });
-  };
-}
-
 /**
  * this is 'generic' window action that allows calling APIs that do follow a specific pattern
  * in their path like /rest/api/documentView/{windowId}/{viewId}/{target}
@@ -1256,7 +1191,7 @@ export function createProcess({
   processType,
   rowId,
   tabId,
-  type,
+  parentId,
   viewId,
   selectedTab,
   childViewId,
@@ -1283,7 +1218,7 @@ export function createProcess({
         processId: processType,
         rowId,
         tabId,
-        type,
+        parentId,
         viewId,
         selectedTab,
         childViewId,
@@ -1310,7 +1245,9 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
-          await dispatch(handleProcessResponse(response, processType, pid));
+          await dispatch(
+            handleProcessResponse(response, processType, pid, parentId)
+          );
         } catch (error) {
           await dispatch(closeModal());
           await dispatch(setProcessSaved());
@@ -1348,7 +1285,7 @@ export function createProcess({
   };
 }
 
-export function handleProcessResponse(response, type, id) {
+export function handleProcessResponse(response, type, id, parentId) {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -1434,13 +1371,14 @@ export function handleProcessResponse(response, type, id) {
                 windowId: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
+                parentId,
               })
             );
 
             break;
           case 'closeIncludedView':
             await dispatch(
-              setIncludedView({
+              unsetIncludedView({
                 windowId: action.windowId,
                 viewId: action.viewId,
               })
@@ -1455,7 +1393,14 @@ export function handleProcessResponse(response, type, id) {
             const { windowId, viewId, rowIds } = action;
             const tableId = getTableId({ windowId, viewId });
 
-            dispatch(updateTableSelection(tableId, rowIds));
+            dispatch(
+              updateTableSelection({
+                id: tableId,
+                selection: rowIds,
+                windowId,
+                viewId,
+              })
+            );
 
             break;
           }

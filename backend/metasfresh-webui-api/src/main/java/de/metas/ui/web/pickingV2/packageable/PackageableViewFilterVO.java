@@ -1,14 +1,14 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import java.time.LocalDate;
-
-import org.adempiere.warehouse.WarehouseTypeId;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseTypeId;
+
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -41,6 +41,7 @@ public class PackageableViewFilterVO
 	public static final String FILTER_ID = "defaultFilter";
 	public static final String PARAM_C_Order_ID = "C_Order_ID";
 	public static final String PARAM_Customer_ID = "C_BPartner_ID";
+	public static final String PARAM_M_Warehouse_ID = "M_Warehouse_ID";
 	public static final String PARAM_M_Warehouse_Type_ID = "M_Warehouse_Type_ID";
 	public static final String PARAM_DeliveryDate = "DeliveryDate";
 	public static final String PARAM_PreparationDate = "PreparationDate";
@@ -49,6 +50,7 @@ public class PackageableViewFilterVO
 	OrderId salesOrderId;
 	BPartnerId customerId;
 	WarehouseTypeId warehouseTypeId;
+	WarehouseId warehouseId;
 	LocalDate deliveryDate;
 	LocalDate preparationDate;
 	ShipperId shipperId;

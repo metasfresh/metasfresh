@@ -21,7 +21,6 @@ const DLpropTypes = {
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
   queryViewId: PropTypes.string,
-  updateParentSelectedIds: PropTypes.func,
   page: PropTypes.number,
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,
@@ -53,7 +52,6 @@ const DLpropTypes = {
   setListId: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
-  updateTableSelection: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
 };

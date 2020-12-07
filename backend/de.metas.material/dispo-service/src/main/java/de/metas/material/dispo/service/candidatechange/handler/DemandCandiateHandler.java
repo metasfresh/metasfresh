@@ -20,6 +20,7 @@ import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -92,8 +93,17 @@ public class DemandCandiateHandler implements CandidateHandler
 	 * Persists (updates or creates) the given demand candidate and also its <b>child</b> stock candidate.
 	 */
 	@Override
-	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	public Candidate onCandidateNewOrChange(
+			@NonNull final Candidate candidate,
+			@NonNull final OnNewOrChangeAdvise advise)
 	{
+		if (!advise.isAttemptUpdate())
+		{
+			throw new AdempiereException("This handler does not how to deal with isAttemptUpdate=false").appendParametersToMessage()
+					.setParameter("handler", candidate)
+					.setParameter("candidate", candidate);
+		}
+
 		assertCorrectCandidateType(candidate);
 
 		final SaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
@@ -187,7 +197,7 @@ public class DemandCandiateHandler implements CandidateHandler
 					.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
 					.quantity(requiredQty)
 					.build();
-			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate);
+			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DEFAULT);
 
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());

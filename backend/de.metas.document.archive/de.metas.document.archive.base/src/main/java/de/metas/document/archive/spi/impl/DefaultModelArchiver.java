@@ -1,7 +1,27 @@
 package de.metas.document.archive.spi.impl;
 
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.ArchiveRequest;
+import org.adempiere.archive.api.ArchiveResult;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.archive.api.IDocOutboundDAO;
@@ -19,23 +39,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.ArchiveRequest;
-import org.adempiere.archive.api.ArchiveResult;
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -128,22 +131,17 @@ public class DefaultModelArchiver
 						//
 						.build());
 
-		final boolean wasReturnedFromArchive = false; // TODO: impl
+		final ArchiveResult lastArchive = report.getLastArchive();
+
 		final ArchiveResult archiveResult;
-		if (!wasReturnedFromArchive)
+
+		if (lastArchive == null || lastArchive.isNoArchive())
 		{
 			archiveResult = createArchive(report);
 		}
 		else
 		{
-			final org.compiere.model.I_AD_Archive lastArchive = archiveBL
-					.getLastArchive(recordRef)
-					.orElseThrow(() -> new AdempiereException("@NoDocPrintFormat@@NoArchive@"));
-
-			archiveResult = ArchiveResult.builder()
-					.archiveRecord(lastArchive)
-					.data(archiveBL.getBinaryData(lastArchive))
-					.build();
+			archiveResult = lastArchive;
 		}
 
 		//

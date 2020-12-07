@@ -3,12 +3,14 @@ import onClickOutside from 'react-onclickoutside';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
+
 import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
-
-import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
+import { getTableId } from '../../reducers/tables';
+
+import Prompt from '../app/Prompt';
 import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import Table from './Table';
@@ -201,14 +203,14 @@ class TableWrapper extends PureComponent {
 
   handleClickOutside = (event) => {
     const {
-      showIncludedView,
-      viewId,
-      windowId,
       inBackground,
       allowOutsideClick,
       limitOnClickOutside,
       onDeselectAll,
       isModal,
+      parentView,
+      deselectTableRows,
+      selected,
     } = this.props;
     const parentNode = event.target.parentNode;
     const closeIncluded =
@@ -241,17 +243,24 @@ class TableWrapper extends PureComponent {
         return;
       }
 
-      onDeselectAll();
+      if (selected.length) {
+        onDeselectAll();
 
-      const identifier = isModal ? viewId : windowId;
+        if (parentView) {
+          const {
+            windowId: parentWindowId,
+            viewId: parentViewId,
+          } = this.props.parentView;
 
-      showIncludedView({
-        id: identifier,
-        showIncludedView: false,
-        windowId,
-        viewId,
-        isModal,
-      });
+          deselectTableRows({
+            id: getTableId({ windowId: parentWindowId, viewId: parentViewId }),
+            selection: [],
+            windowId: parentWindowId,
+            viewId: parentViewId,
+            isModal,
+          });
+        }
+      }
     }
   };
 

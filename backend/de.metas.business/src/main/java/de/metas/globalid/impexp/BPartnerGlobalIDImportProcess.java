@@ -1,28 +1,8 @@
-package de.metas.globalid.impexp;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_I_BPartner_GlobalID;
-import org.compiere.model.X_I_BPartner_GlobalID;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,6 +19,27 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.globalid.impexp;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_I_BPartner_GlobalID;
+import org.compiere.model.X_I_BPartner_GlobalID;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I_I_BPartner_GlobalID>
 {
@@ -84,8 +85,8 @@ public class BPartnerGlobalIDImportProcess extends SimpleImportProcessTemplate<I
 	 * @param isInsertOnly ignored. This import is only for updates.
 	 */
 	@Override
-	protected ImportRecordResult importRecord(IMutable<Object> state,
-			I_I_BPartner_GlobalID importRecord,
+	protected ImportRecordResult importRecord(@NonNull IMutable<Object> state,
+			@NonNull I_I_BPartner_GlobalID importRecord,
 			final boolean isInsertOnly)
 	{
 		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);

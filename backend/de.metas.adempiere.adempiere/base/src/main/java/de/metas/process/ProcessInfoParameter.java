@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package de.metas.process;
 
 import java.io.Serializable;
@@ -25,6 +9,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.Check;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
@@ -55,6 +40,16 @@ public final class ProcessInfoParameter implements Serializable
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
+
+	public static ProcessInfoParameter of(@NonNull final String parameterName, @Nullable final RepoIdAware id)
+	{
+		final Integer parameterValue = id != null ? id.getRepoId() : null;
+		final Integer parameterValueTo = null;
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
 
 	public static ProcessInfoParameter of(final String parameterName, final String parameterValue)
 	{
@@ -105,10 +100,10 @@ public final class ProcessInfoParameter implements Serializable
 
 	public ProcessInfoParameter(
 			final String parameterName,
-			final Object parameter,
-			final Object parameter_To,
-			final String info,
-			final String info_To)
+			@Nullable final Object parameter,
+			@Nullable final Object parameter_To,
+			@Nullable final String info,
+			@Nullable final String info_To)
 	{
 		m_ParameterName = parameterName;
 		m_Parameter = parameter;
@@ -118,16 +113,16 @@ public final class ProcessInfoParameter implements Serializable
 	}
 
 	private final String m_ParameterName;
-	private final Object m_Parameter;
-	private final Object m_Parameter_To;
-	private final String m_Info;
-	private final String m_Info_To;
+	@Nullable private final Object m_Parameter;
+	@Nullable private final Object m_Parameter_To;
+	@Nullable private final String m_Info;
+	@Nullable private final String m_Info_To;
 
 	@Override
 	public String toString()
 	{
 		// From .. To
-		if (m_Parameter_To != null || m_Info_To.length() > 0)
+		if (m_Parameter_To != null || !Check.isEmpty(m_Info_To))
 		{
 			return "ProcessInfoParameter[" + m_ParameterName + "=" + m_Parameter
 					+ (m_Parameter == null ? "" : "{" + m_Parameter.getClass().getName() + "}")
@@ -150,37 +145,44 @@ public final class ProcessInfoParameter implements Serializable
 		return m_ParameterName;
 	}
 
+	@Nullable
 	public String getInfo()
 	{
 		return m_Info;
 	}
 
+	@Nullable
 	public String getInfo_To()
 	{
 		return m_Info_To;
 	}
 
+	@Nullable
 	public Object getParameter()
 	{
 		return m_Parameter;
 	}
 
+	@Nullable
 	public Object getParameter_To()
 	{
 		return m_Parameter_To;
 	}
 
+	@Nullable
 	public String getParameterAsString()
 	{
 		return toString(m_Parameter);
 	}
 
+	@Nullable
 	public String getParameter_ToAsString()
 	{
 		return toString(m_Parameter_To);
 	}
 
-	private static String toString(final Object value)
+	@Nullable
+	private static String toString(@Nullable final Object value)
 	{
 		if (value == null)
 		{
@@ -221,7 +223,7 @@ public final class ProcessInfoParameter implements Serializable
 		return toInt(m_Parameter_To, defaultValueWhenNull);
 	}
 
-	private static int toInt(final Object value, final int defaultValueWhenNull)
+	private static int toInt(@Nullable final Object value, final int defaultValueWhenNull)
 	{
 		if (value == null)
 		{
@@ -260,52 +262,62 @@ public final class ProcessInfoParameter implements Serializable
 		return toBoolean(m_Parameter_To, defaultValue);
 	}
 
-	private static Boolean toBoolean(final Object value, final Boolean defaultValue)
+	@Nullable
+	private static Boolean toBoolean(final Object value, @Nullable final Boolean defaultValue)
 	{
 		return DisplayType.toBoolean(value, defaultValue);
 	}
 
+	@Nullable
 	public Timestamp getParameterAsTimestamp()
 	{
 		return TimeUtil.asTimestamp(m_Parameter);
 	}
 
+	@Nullable
 	public Timestamp getParameter_ToAsTimestamp()
 	{
 		return TimeUtil.asTimestamp(m_Parameter_To);
 	}
 
+	@Nullable
 	public LocalDate getParameterAsLocalDate()
 	{
 		return TimeUtil.asLocalDate(m_Parameter);
 	}
 
+	@Nullable
 	public LocalDate getParameter_ToAsLocalDate()
 	{
 		return TimeUtil.asLocalDate(m_Parameter_To);
 	}
 
+	@Nullable
 	public ZonedDateTime getParameterAsZonedDateTime()
 	{
 		return TimeUtil.asZonedDateTime(m_Parameter);
 	}
 
+	@Nullable
 	public ZonedDateTime getParameter_ToAsZonedDateTime()
 	{
 		return TimeUtil.asZonedDateTime(m_Parameter_To);
 	}
 
+	@Nullable
 	public BigDecimal getParameterAsBigDecimal()
 	{
 		return toBigDecimal(m_Parameter);
 	}
 
+	@Nullable
 	public BigDecimal getParameter_ToAsBigDecimal()
 	{
 		return toBigDecimal(m_Parameter_To);
 	}
 
-	private static BigDecimal toBigDecimal(final Object value)
+	@Nullable
+	private static BigDecimal toBigDecimal(@Nullable final Object value)
 	{
 		if (value == null)
 		{
@@ -321,8 +333,7 @@ public final class ProcessInfoParameter implements Serializable
 		}
 		else
 		{
-			final BigDecimal bd = new BigDecimal(value.toString());
-			return bd;
+			return new BigDecimal(value.toString());
 		}
 	}
 }   // ProcessInfoParameter

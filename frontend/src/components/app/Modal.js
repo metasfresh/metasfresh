@@ -55,10 +55,10 @@ class Modal extends Component {
     };
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     this.mounted = true;
 
-    await this.init();
+    this.init();
 
     // Dirty solution, but use only if you need to
     // there is no way to affect body
@@ -80,12 +80,12 @@ class Modal extends Component {
     this.removeEventListeners();
   }
 
-  async componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps) {
     const { windowId, viewId, indicator } = this.props;
     const { waitingFetch } = this.state;
 
     if (prevProps.windowId !== windowId || prevProps.viewId !== viewId) {
-      await this.init();
+      this.init();
     }
 
     // Case when we have to trigger pending start request
@@ -220,7 +220,7 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId,
-            type: parentWindowId,
+            parentId: parentWindowId,
             ids: viewId
               ? modalViewDocumentIds
               : dataId

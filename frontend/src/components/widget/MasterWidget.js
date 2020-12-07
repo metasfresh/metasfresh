@@ -86,7 +86,6 @@ class MasterWidget extends PureComponent {
       rowId,
       dataId: docId,
       tabId,
-      onChange,
       relativeDocId,
       isAdvanced = false,
       viewId,
@@ -143,7 +142,6 @@ class MasterWidget extends PureComponent {
       isEdit
     );
     this.setState({ edited: false });
-    onChange && onChange(ret); //callback
 
     disconnected === 'inlineTab' &&
       updatePropertyValue({ ...updateOptions, ret });
@@ -320,7 +318,6 @@ MasterWidget.propTypes = {
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
   patch: PropTypes.func,
-  onChange: PropTypes.func,
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
   entity: PropTypes.string,
