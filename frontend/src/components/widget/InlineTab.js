@@ -38,15 +38,25 @@ class InlineTab extends PureComponent {
   };
 
   render() {
-    const { id: docId, rowId, tabId, layout, data, fieldsByName } = this.props;
+    const {
+      id: docId,
+      rowId,
+      tabId,
+      layout,
+      data,
+      fieldsByName,
+      validStatus: { valid },
+    } = this.props;
     const { isOpen } = this.state;
+
     return (
       <div>
         <div
           className={classnames(
             { 'inline-tab': !isOpen },
             { 'inline-tab-active': isOpen },
-            { 'form-control-label': true }
+            { 'form-control-label': true },
+            { 'row-not-saved': !valid }
           )}
           onClick={this.toggleOpen}
         >
@@ -93,6 +103,7 @@ InlineTab.propTypes = {
   fieldsByName: PropTypes.object,
   layout: PropTypes.any,
   data: PropTypes.any,
+  validStatus: PropTypes.object.isRequired,
   getInlineTabLayoutAndData: PropTypes.func.isRequired,
 };
 
