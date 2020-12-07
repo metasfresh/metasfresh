@@ -178,7 +178,7 @@ public final class JsonOLCandCreateRequest
 	String poReference;
 
 	@ApiModelProperty(required = false, //
-			value = "Translates to `C_OLCand.M_Warehouse_ID`.")
+			value = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")
 	String warehouseCode;
 
 	@ApiModelProperty(required = false, //
