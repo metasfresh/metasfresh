@@ -5,13 +5,12 @@ import { connect } from 'react-redux';
 import {
   createWindow,
   fetchInlineTabWrapperData,
+  setInlineTabAddNew,
 } from '../../actions/WindowActions';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
     super(props);
-
-    this.state = { addNewFormVisible: false };
     this.updateTable(); // this is getting table rows
   }
 
@@ -37,16 +36,18 @@ class InlineTabWrapper extends PureComponent {
       tabId,
       rowId: 'NEW',
       isModal: true,
-      isAdvanced: true,
+      isAdvanced: false,
+      disconnected: 'inlineTab',
     });
-    this.setState({ addNewFormVisible: true });
   };
 
-  handleFormClose = () => this.setState({ addNewFormVisible: false });
+  handleFormClose = () => {
+    const { setInlineTabAddNew } = this.props;
+    setInlineTabAddNew({ visible: false });
+  };
 
   render() {
-    const { addNewFormVisible } = this.state;
-    const { widgetData, tabData } = this.props;
+    const { widgetData, tabData, addNewFormVisible } = this.props;
     const { caption } = widgetData;
     if (!tabData) return false;
 
@@ -120,6 +121,8 @@ InlineTabWrapper.propTypes = {
   widgetData: PropTypes.array,
   fetchInlineTabWrapperData: PropTypes.func.isRequired,
   tabData: PropTypes.array,
+  addNewFormVisible: PropTypes.bool,
+  setInlineTabAddNew: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
@@ -135,8 +138,13 @@ const mapStateToProps = (state, props) => {
   const tabData = inlineTab.wrapperData[selector]
     ? inlineTab.wrapperData[selector]
     : null;
+  const {
+    addNew: { visible: addNewFormVisible },
+  } = inlineTab;
+
   return {
     tabData,
+    addNewFormVisible,
   };
 };
 
@@ -145,5 +153,6 @@ export default connect(
   {
     fetchInlineTabWrapperData,
     createWindow,
+    setInlineTabAddNew,
   }
 )(InlineTabWrapper);

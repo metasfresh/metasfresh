@@ -56,6 +56,7 @@ import {
   SET_INLINE_TAB_WRAPPER_DATA,
   UPDATE_INLINE_TAB_WRAPPER_FIELDS,
   UPDATE_INLINE_TAB_ITEM_FIELDS,
+  SET_INLINE_TAB_ADD_NEW,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -112,6 +113,7 @@ export const initialState = {
   modal: initialModalState,
   inlineTab: {
     wrapperData: {},
+    addNew: { visible: false, inlineTabId: null },
   },
 
   overlay: {
@@ -907,6 +909,21 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     }
+
+    case SET_INLINE_TAB_ADD_NEW: {
+      const { visible, inlineTabId } = action.payload;
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          addNew: {
+            visible,
+            inlineTabId,
+          },
+        },
+      };
+    }
+
     default:
       return state;
   }

@@ -54,6 +54,7 @@ import {
   SET_INLINE_TAB_WRAPPER_DATA,
   UPDATE_INLINE_TAB_WRAPPER_FIELDS,
   UPDATE_INLINE_TAB_ITEM_FIELDS,
+  SET_INLINE_TAB_ADD_NEW,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
@@ -637,7 +638,9 @@ export function createWindow({
   rowId,
   isModal,
   isAdvanced,
+  disconnected,
 }) {
+  let disconnectedData = null;
   let documentId = docId || 'NEW';
   return (dispatch) => {
     if (documentId.toLowerCase() === 'new') {
@@ -713,6 +716,9 @@ export function createWindow({
           );
           dispatch(updateStatus(response.data));
           dispatch(updateModal(data.rowId));
+          if (disconnected === 'inlineTab') {
+            disconnectedData = response.data[0];
+          }
         }
       } else {
         dispatch(getWindowBreadcrumb(windowType));
@@ -738,6 +744,25 @@ export function createWindow({
               };
               dispatch(updateTabTable(tableId, tableData));
             });
+          }
+          if (disconnectedData && disconnected === 'inlineTab') {
+            const inlineTabTargetId = `${disconnectedData.windowId}_${
+              disconnectedData.tabId
+            }_${disconnectedData.rowId}`;
+            dispatch(
+              setInlineTabLayoutAndData({
+                inlineTabId: inlineTabTargetId,
+                data: { layout: data, data: disconnectedData },
+              })
+            );
+            dispatch(
+              setInlineTabAddNew({
+                visible: true,
+                windowId: disconnectedData.windowId,
+                tabId: disconnectedData.tabId,
+                rowId: disconnectedData.rowId,
+              })
+            );
           }
 
           dispatch(initLayoutSuccess(data, getScope(isModal)));
@@ -1501,5 +1526,15 @@ export function setInlineTabWrapperData({ inlineTabWrapperId, data }) {
   return {
     type: SET_INLINE_TAB_WRAPPER_DATA,
     payload: { inlineTabWrapperId, data },
+  };
+}
+
+/*
+ * Action creator called to set the inlineTab AddNew form related data in the store
+ */
+export function setInlineTabAddNew({ visible, inlineTabId }) {
+  return {
+    type: SET_INLINE_TAB_ADD_NEW,
+    payload: { visible, inlineTabId },
   };
 }
