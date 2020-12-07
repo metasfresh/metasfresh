@@ -102,7 +102,7 @@ class InlineTabWrapper extends PureComponent {
                 </div>
                 <div className="clearfix" />
                 <div className="inline-tab-separator" />
-                Actual content
+                {/* Actual content */}
                 <Window
                   data={addNewData.data}
                   dataId={dataId}

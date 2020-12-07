@@ -872,10 +872,12 @@ export default function windowHandler(state = initialState, action) {
       });
 
       const wrapperDataClone = { ...state.inlineTab.wrapperData };
-      wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName = {
-        ...wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName,
-        ...fieldsByName,
-      };
+      if (wrapperDataClone[inlineTabWrapperId][indexWD]) {
+        wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName = {
+          ...wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName,
+          ...fieldsByName,
+        };
+      }
 
       return {
         ...state,
