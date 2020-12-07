@@ -54,9 +54,8 @@ const reducer = produce((draftState, action) => {
         delete draftState[id];
       } else {
         draftState[id] = {
+          ...initialSingleActionsState,
           actions,
-          pending: false,
-          error: false,
         };
       }
 
@@ -75,6 +74,9 @@ const reducer = produce((draftState, action) => {
       const current = original(draftState[id]);
 
       if (draftState[id]) {
+        // we don't want to delete a pending request, because
+        // on success a new entry in the actions list will be created. So instead
+        // we store this information and remove it when needed
         if (current.pending) {
           draftState[id] = {
             ...draftState[id],

@@ -27,6 +27,7 @@ import de.metas.error.AdIssueId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -118,6 +119,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class ManufacturingOrderAPIServiceTest
 {
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	// Services under test:
 	private ManufacturingOrderExportAuditRepository orderExportAuditRepo;
 	private ManufacturingOrderReportAuditRepository orderReportAuditRepo;
@@ -699,9 +701,14 @@ public class ManufacturingOrderAPIServiceTest
 							.build());
 		}
 
+		/**
+		 * Creates make two issues with are server from he same HU.
+		 * Verifies that the issuable quantity are split off the HU and the remainder of that HU is still active in the end.
+		 */
 		@Test
 		public void issue()
 		{
+			// given
 			final ProductId productId = BusinessTestHelper.createProductId("product", uomEach);
 			final ProductId componentId = BusinessTestHelper.createProductId("component1", uomEach);
 
@@ -728,41 +735,77 @@ public class ManufacturingOrderAPIServiceTest
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.date(de.metas.common.util.time.SystemTime.asZonedDateTime())
 							.qtyToIssueInStockUOM(new BigDecimal("2"))
-							.productNo("product")
+							.productNo("component1")
+							.handlingUnit(JsonRequestHULookup.builder()
+									.lotNumber("lot1")
+									.bestBeforeDate(LocalDate.parse("2022-02-02"))
+									.build())
+							.build())
+					.issue(JsonRequestIssueToManufacturingOrder.builder()
+							.requestId("req2")
+							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
+							.date(SystemTime.asZonedDateTime())
+							.qtyToIssueInStockUOM(new BigDecimal("3"))
+							.productNo("component1")
 							.handlingUnit(JsonRequestHULookup.builder()
 									.lotNumber("lot1")
 									.bestBeforeDate(LocalDate.parse("2022-02-02"))
 									.build())
 							.build())
 					.build();
+
+			// when
 			final JsonResponseManufacturingOrdersReport result = apiService.report(request);
 
-			//
-			// Check result
+			// then
 			assertThat(result.getReceipts()).isEmpty();
+			assertThat(result.getIssues()).hasSize(2);
+
+			final JsonResponseIssueToManufacturingOrderDetail orderDetail1 = result.getIssues().get(0).getDetails().get(0);
+			final JsonResponseIssueToManufacturingOrderDetail orderDetail2 = result.getIssues().get(1).getDetails().get(0);
+
 			assertThat(result.getIssues())
 					.containsExactly(
 							JsonResponseIssueToManufacturingOrder.builder()
 									.requestId("req1")
 									.detail(JsonResponseIssueToManufacturingOrderDetail.builder()
-											.costCollectorId(result.getIssues().get(0).getDetails().get(0).getCostCollectorId()) // could not check
-											.huId(JsonMetasfreshId.of(vhuId.getRepoId()))
+											// could not check  costCollectorId and huId
+											.costCollectorId(orderDetail1.getCostCollectorId())
+											.huId(JsonMetasfreshId.of(orderDetail1.getHuId().getValue()))
 											.qty(JsonQuantity.builder()
 													.qty(new BigDecimal("2"))
 													.uomCode("PCE")
 													.build())
 											.build())
+									.build(),
+							JsonResponseIssueToManufacturingOrder.builder()
+									.requestId("req2")
+									.detail(JsonResponseIssueToManufacturingOrderDetail.builder()
+											// could not check  costCollectorId and huId
+											.costCollectorId(orderDetail2.getCostCollectorId())
+											.huId(JsonMetasfreshId.of(orderDetail2.getHuId().getValue()))
+											.qty(JsonQuantity.builder()
+													.qty(new BigDecimal("3"))
+													.uomCode("PCE")
+													.build())
+											.build())
 									.build());
 
-			//
-			// Check HU
+			// Check remaining HU
 			{
 				final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
 				final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(vhu);
-				assertThat(huStorage.getQty(componentId, uomEach)).isEqualByComparingTo("38");
+				assertThat(huStorage.getQty(componentId, uomEach)).isEqualByComparingTo("35");
+				assertThat(huStatusBL.isStatusActive(vhu)).isTrue(); // the remainder of the vhu shall still be available
 			}
+			// Check issued partial HUs
+			{
+				final I_M_HU vhu1 = handlingUnitsBL.getById(HuId.ofRepoId(orderDetail1.getHuId().getValue()));
+				assertThat(huStatusBL.isStatusDestroyed(vhu1)).isTrue();
 
-			//
+				final I_M_HU vhu2 = handlingUnitsBL.getById(HuId.ofRepoId(orderDetail2.getHuId().getValue()));
+				assertThat(huStatusBL.isStatusDestroyed(vhu2)).isTrue();
+			}
 			// Check audit
 			final APITransactionId transactionId = APITransactionId.ofString(result.getTransactionKey());
 			final ManufacturingOrderReportAudit audit = orderReportAuditRepo.getByTransactionId(transactionId);
@@ -778,6 +821,13 @@ public class ManufacturingOrderAPIServiceTest
 									.costCollectorId(audit.getItems().get(0).getCostCollectorId()) // cannot check
 									.jsonRequest(toJsonString(request.getIssues().get(0)))
 									.jsonResponse(toJsonString(result.getIssues().get(0)))
+									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS)
+									.build())
+							.item(ManufacturingOrderReportAuditItem.builder()
+									.orderId(orderId)
+									.costCollectorId(audit.getItems().get(1).getCostCollectorId()) // cannot check
+									.jsonRequest(toJsonString(request.getIssues().get(1)))
+									.jsonResponse(toJsonString(result.getIssues().get(1)))
 									.importStatus(ManufacturingOrderReportAuditItem.ImportStatus.SUCCESS)
 									.build())
 							.build());
@@ -875,7 +925,7 @@ public class ManufacturingOrderAPIServiceTest
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.date(de.metas.common.util.time.SystemTime.asZonedDateTime())
 							.qtyToIssueInStockUOM(new BigDecimal("2"))
-							.productNo("product")
+							.productNo("component1")
 							.handlingUnit(JsonRequestHULookup.builder().lotNumber("lot1").bestBeforeDate(LocalDate.parse("2022-02-02")).build())
 							.build())
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
@@ -883,7 +933,7 @@ public class ManufacturingOrderAPIServiceTest
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
 							.date(de.metas.common.util.time.SystemTime.asZonedDateTime())
 							.qtyToIssueInStockUOM(new BigDecimal("3"))
-							.productNo("product")
+							.productNo("component1")
 							.handlingUnit(JsonRequestHULookup.builder().lotNumber("missing-lot").bestBeforeDate(LocalDate.parse("2022-02-02")).build())
 							.build())
 					.build();

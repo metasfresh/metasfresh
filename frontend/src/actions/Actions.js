@@ -11,131 +11,166 @@ import {
 } from '../constants/ActionTypes';
 
 import { getQuickActionsId, getQuickActions } from '../reducers/actionsHandler';
-import { getTable } from '../reducers/tables';
+import { getTable, getTableId } from '../reducers/tables';
 import { getView } from '../reducers/viewHandler';
 
 /*
- * @method getTableActions
+ * @method fetchQuickActions
  * @summary Action creator that calls the quick actions fetch internally for
  * when we're updating the table selection 
  
- * @param {string} tableId
  * @param {number} windowId
  * @param {string} viewId
  * @param {boolean} isModal
+ * @param {string} viewProfileId
  */
-export function getTableActions({ tableId, windowId, viewId, isModal }) {
+export function fetchQuickActions({
+  windowId,
+  viewId,
+  isModal,
+  viewProfileId = null,
+}) {
   return (dispatch, getState) => {
-    const state = getState();
-    const table = getTable(state, tableId);
-    const selectedIds = table.selected;
-    const { includedView } = state.viewHandler;
-    const viewProfileId =
-      includedView.windowId === windowId ? includedView.viewProfileId : null;
-    let fetchActions = true;
-
-    if (viewId) {
-      const quickActionsId = getQuickActionsId({
-        windowId,
-        viewId,
-      });
-      const quickActions = getQuickActions(state, quickActionsId);
-      fetchActions = quickActions.pending === false;
-    }
-
-    if (fetchActions) {
-      dispatch(
-        fetchQuickActions({
-          windowId,
-          viewId,
-          viewProfileId,
-          selectedIds,
-        })
-      );
-    }
-
-    dispatch(
-      fetchIncludedQuickActions({
-        windowId,
-        selectedIds,
-        isModal,
-      })
-    );
-  };
-}
-
-/*
- * @method fetchIncludedQuickActions
- * @summary Action creator that calls the quick actions fetch internally for parent/child
- * quick actions, when a table selection has changed
- *
- * @param {string} windowId
- * @param {array} selectedIds
- * @param {boolean} isModal
- */
-export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
-  return (dispatch, getState) => {
+    let actionPromises = null;
     const state = getState();
     const includedView = state.viewHandler.includedView.windowId
       ? state.viewHandler.includedView
       : null;
 
-    // we're only interested in included view's quick actions if it
-    // actually exists
     if (includedView) {
-      let [fetchWindowId, fetchViewId, parentView, childView] = Array(5).fill(
-        null
-      );
-      let fetch = false;
-      const viewProfileId =
-        includedView.windowId === windowId ? includedView.viewProfileId : null;
+      viewProfileId = viewProfileId || includedView.viewProfileId;
 
       const isParent = includedView.parentId === windowId;
       const isChild = includedView.windowId === windowId;
 
-      if (isParent) {
-        fetchWindowId = includedView.windowId;
-        childView = getView(state, fetchWindowId, isModal);
-        fetchViewId = childView.viewId;
-        const childQuickActionsId = getQuickActionsId({
-          windowId: fetchWindowId,
-          viewId: fetchViewId,
-        });
-        const childQuickActions = getQuickActions(state, childQuickActionsId);
-
-        // only update quick actions if they're not already requested
-        fetch = childQuickActions.pending === false;
-      } else if (isChild) {
-        fetchWindowId = includedView.parentId;
-        parentView = getView(state, fetchWindowId, isModal);
-        fetchViewId = parentView.viewId;
-        const parentQuickActionsId = getQuickActionsId({
-          windowId: fetchWindowId,
-          viewId: fetchViewId,
-        });
-        const parentQuickActions = getQuickActions(state, parentQuickActionsId);
-
-        fetch = parentQuickActions.pending === false;
-      }
-
-      if ((isParent || isChild) && fetch) {
-        dispatch(
-          fetchQuickActions({
-            windowId: fetchWindowId,
-            viewId: fetchViewId,
+      if (isParent || isChild) {
+        const requests = dispatch(
+          getQuickActionRequests({
+            windowId,
+            viewId,
+            includedView,
             viewProfileId,
-            selectedIds,
-            parentView,
-            childView,
+            isModal,
+            isParent,
           })
         );
+
+        actionPromises = [].concat(requests);
       }
+    } else {
+      const tableId = getTableId({ windowId, viewId });
+      const table = getTable(state, tableId);
+
+      actionPromises = [
+        dispatch(
+          requestQuickActions({
+            windowId,
+            viewId,
+            selectedIds: table.selected,
+            viewProfileId,
+          })
+        ),
+      ];
     }
+
+    return Promise.all(actionPromises);
+  };
+}
+
+/*
+ * @method fetchIncludedQuickActions
+ * @summary Action creator that calls the creates the requests for included quick actions
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {boolean} isParent
+ * @param {object} includedView
+ * @param {string} viewProfileId
+ * @param {boolean} isModal
+ */
+function getQuickActionRequests({
+  windowId,
+  viewId,
+  isParent,
+  includedView,
+  viewProfileId,
+  isModal,
+}) {
+  return (dispatch, getState) => {
+    const requestPromises = [];
+    const state = getState();
+    let [parentWindowId, parentViewId, childWindowId, childViewId] = Array(
+      2
+    ).fill(null);
+
+    if (isParent) {
+      parentWindowId = windowId;
+      parentViewId = viewId;
+      childWindowId = includedView.windowId;
+      childViewId = includedView.viewId;
+    } else {
+      parentWindowId = includedView.parentId;
+      childWindowId = windowId;
+      childViewId = viewId;
+      parentViewId = getView(state, parentWindowId, isModal).viewId;
+    }
+
+    const parentTableId = getTableId({
+      windowId: parentWindowId,
+      viewId: parentViewId,
+    });
+    const parentTable = getTable(state, parentTableId);
+    const parentView = {
+      windowId: parentWindowId,
+      viewId: parentViewId,
+      selected: parentTable.selected,
+    };
+
+    const childTableId = getTableId({
+      windowId: childWindowId,
+      viewId: childViewId,
+    });
+    const childTable = getTable(state, childTableId);
+    const childView = {
+      windowId: childWindowId,
+      viewId: childViewId,
+      selected: childTable.selected,
+    };
+
+    // construct parent request
+    requestPromises.push(
+      dispatch(
+        requestQuickActions({
+          windowId: parentWindowId,
+          viewId: parentViewId,
+          viewProfileId,
+          selectedIds: parentTable.selected,
+          parentView: null,
+          childView,
+        })
+      )
+    );
+
+    // construct child request
+    requestPromises.push(
+      dispatch(
+        requestQuickActions({
+          windowId: childWindowId,
+          viewId: childViewId,
+          viewProfileId,
+          selectedIds: childTable.selected,
+          parentView,
+          childView: null,
+        })
+      )
+    );
+
+    return requestPromises;
   };
 }
 
 /**
- * @method fetchQuickActions
+ * @method requestQuickActions
  * @summary Fetches the quick actions
  *
  * @param {number} windowId
@@ -145,7 +180,7 @@ export function fetchIncludedQuickActions({ windowId, selectedIds, isModal }) {
  * @param {object} childView
  * @param {object} parentView
  */
-export function fetchQuickActions({
+export function requestQuickActions({
   windowId,
   viewId,
   viewProfileId,
@@ -153,42 +188,48 @@ export function fetchQuickActions({
   childView,
   parentView,
 }) {
-  return (dispatch) => {
+  return (dispatch, getState) => {
     const id = getQuickActionsId({ windowId, viewId });
+    const quickActions = getQuickActions(getState(), id);
 
-    dispatch({
-      type: FETCH_QUICK_ACTIONS,
-      payload: { id },
-    });
-
-    return quickActionsRequest({
-      windowId,
-      viewId,
-      viewProfileId,
-      selectedIds,
-      childView,
-      parentView,
-    })
-      .then((response) => {
-        const actions = response.data.actions;
-        dispatch({
-          type: FETCH_QUICK_ACTIONS_SUCCESS,
-          payload: {
-            id,
-            actions,
-          },
-        });
-
-        return Promise.resolve(actions);
-      })
-      .catch((e) => {
-        dispatch({
-          type: FETCH_QUICK_ACTIONS_FAILURE,
-          payload: { id },
-        });
-
-        return Promise.reject(e);
+    // don't fetch quick actions if there's already a pending request
+    if (!quickActions.pending) {
+      dispatch({
+        type: FETCH_QUICK_ACTIONS,
+        payload: { id },
       });
+
+      return quickActionsRequest({
+        windowId,
+        viewId,
+        viewProfileId,
+        selectedIds,
+        childView,
+        parentView,
+      })
+        .then((response) => {
+          const actions = response.data.actions;
+          dispatch({
+            type: FETCH_QUICK_ACTIONS_SUCCESS,
+            payload: {
+              id,
+              actions,
+            },
+          });
+
+          return Promise.resolve(actions);
+        })
+        .catch((e) => {
+          dispatch({
+            type: FETCH_QUICK_ACTIONS_FAILURE,
+            payload: { id },
+          });
+
+          return Promise.reject(e);
+        });
+    }
+
+    return Promise.resolve(null);
   };
 }
 
