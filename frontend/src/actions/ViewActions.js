@@ -64,12 +64,17 @@ export function deleteView(id, isModal) {
 
 /**
  * @method fetchDocumentPending
- * @summary
+ * @summary request data for the document and set the pending flag to true
+ *
+ * @param {string} id - viewId
+ * @param {boolean} isModal
+ * @param {boolean} websocketRefresh - in case of data fetches caused by
+ * ws we won't set the pending flag to true
  */
-function fetchDocumentPending(id, isModal) {
+function fetchDocumentPending(id, isModal, websocketRefresh) {
   return {
     type: FETCH_DOCUMENT_PENDING,
-    payload: { id, isModal },
+    payload: { id, isModal, websocketRefresh },
   };
 }
 
@@ -317,7 +322,7 @@ export function fetchDocument({
   websocketRefresh = false,
 }) {
   return (dispatch, getState) => {
-    dispatch(fetchDocumentPending(windowId, isModal));
+    dispatch(fetchDocumentPending(windowId, isModal, websocketRefresh));
 
     return browseViewRequest({
       windowId,
@@ -422,7 +427,7 @@ export function fetchDocument({
         }
 
         // get quickactions
-        if (viewId && shouldFetchQuickActions && !websocketRefresh) {
+        if (viewId && shouldFetchQuickActions) {
           dispatch(
             fetchQuickActions({
               windowId,
