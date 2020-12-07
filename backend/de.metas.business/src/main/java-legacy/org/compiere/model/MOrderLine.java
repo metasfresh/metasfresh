@@ -805,8 +805,7 @@ public class MOrderLine extends X_C_OrderLine
 		else
 		{
 			// Set Price if Actual = 0
-			if (getPriceActual().signum() == 0
-					&& getPriceList().signum() == 0)
+			if (getPriceList().signum() == 0)
 			{
 				setPrice();
 			}
