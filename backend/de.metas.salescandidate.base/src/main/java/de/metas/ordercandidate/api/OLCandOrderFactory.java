@@ -155,9 +155,8 @@ class OLCandOrderFactory
 		//
 		// use values from orderDefaults when the order candidate doesn't have such values
 		order.setC_DocTypeTarget_ID(DocTypeId.toRepoId(orderDefaults.getDocTypeTargetId()));
-		final WarehouseId warehouseId = candidateOfGroup.getWarehouseId();
 
-		order.setM_Warehouse_ID(WarehouseId.toRepoId(CoalesceUtil.coalesce(warehouseId, orderDefaults.getWarehouseId())) );
+		order.setM_Warehouse_ID(WarehouseId.toRepoId(CoalesceUtil.coalesce(candidateOfGroup.getWarehouseId(), orderDefaults.getWarehouseId())) );
 
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
