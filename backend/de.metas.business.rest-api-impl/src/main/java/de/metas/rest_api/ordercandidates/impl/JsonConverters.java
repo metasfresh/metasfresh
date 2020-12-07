@@ -110,6 +110,10 @@ public class JsonConverters
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
+		final WarehouseId warehouseId = !Check.isEmpty(request.getWarehouseCode())
+				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseCode())
+				: null;
+
 		final InputDataSourceId dataSourceId = retrieveDataSourceId(request, orgId, masterdataProvider);
 
 		final InputDataSourceId dataDestId = retrieveDataDestId(request, orgId, masterdataProvider);
@@ -179,6 +183,7 @@ public class JsonConverters
 				.discount(Percent.ofNullable(request.getDiscount()))
 				//
 				.warehouseDestId(warehouseDestId)
+				.warehouseId(warehouseId)
 
 				.shipperId(shipperId)
 

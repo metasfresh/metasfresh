@@ -178,6 +178,10 @@ public final class JsonOLCandCreateRequest
 	String poReference;
 
 	@ApiModelProperty(required = false, //
+			value = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")
+	String warehouseCode;
+
+	@ApiModelProperty(required = false, //
 			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
 	String warehouseDestCode;
 
@@ -251,6 +255,7 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("currencyCode") final @Nullable String currencyCode,
 			@JsonProperty("discount") final @Nullable BigDecimal discount,
 			@JsonProperty("poReference") final @NonNull String poReference,
+			@JsonProperty("warehouseCode") final @Nullable String warehouseCode,
 			@JsonProperty("warehouseDestCode") final @Nullable String warehouseDestCode,
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
@@ -284,6 +289,7 @@ public final class JsonOLCandCreateRequest
 		this.discount = discount;
 		this.poReference = poReference;
 		this.warehouseDestCode = warehouseDestCode;
+		this.warehouseCode = warehouseCode;
 		this.invoiceDocType = invoiceDocType;
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;

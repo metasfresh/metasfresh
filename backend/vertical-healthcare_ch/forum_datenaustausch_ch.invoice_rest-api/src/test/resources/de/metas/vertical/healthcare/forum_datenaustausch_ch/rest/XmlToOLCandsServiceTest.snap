@@ -258,6 +258,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -523,6 +524,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -788,6 +790,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1053,6 +1056,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1318,6 +1322,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1583,6 +1588,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -1848,6 +1854,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -2113,6 +2120,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -2378,6 +2386,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -2643,6 +2652,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -2908,6 +2918,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -3173,6 +3184,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -3438,6 +3450,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -3703,6 +3716,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -3968,6 +3982,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -4233,6 +4248,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -4498,6 +4514,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -4763,6 +4780,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -5028,6 +5046,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -5293,6 +5312,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -5558,6 +5578,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -5828,6 +5849,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -6093,6 +6115,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -6358,6 +6381,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -6623,6 +6647,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -6888,6 +6913,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -7153,6 +7179,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -7418,6 +7445,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -7683,6 +7711,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -7948,6 +7977,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -8213,6 +8243,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -8478,6 +8509,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -8743,6 +8775,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -9008,6 +9041,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -9273,6 +9307,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -9538,6 +9573,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -9803,6 +9839,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -10068,6 +10105,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -10333,6 +10371,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -10598,6 +10637,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -10863,6 +10903,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
@@ -11128,6 +11169,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "currencyCode" : "CHF",
     "discount" : 0,
     "poReference" : "2009_01:001",
+    "warehouseCode" : null,
     "warehouseDestCode" : null,
     "invoiceDocType" : {
       "docBaseType" : "ARI",
