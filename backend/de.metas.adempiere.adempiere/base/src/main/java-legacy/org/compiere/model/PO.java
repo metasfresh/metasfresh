@@ -730,7 +730,7 @@ public abstract class PO
 	 * @return
 	 *         <ul>
 	 *         <li>string value
-	 *         <li>empty string in case the underlying value is null
+	 *         <li>null in case the underlying value is null
 	 *         <li>"Y"/"N" in case the underlying value is {@link Boolean}
 	 *         </ul>
 	 */
