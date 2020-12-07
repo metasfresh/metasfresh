@@ -6,10 +6,10 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Flatrate_Term
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent 
+public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flatrate_Term, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -87,7 +87,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Verarbeitung zum Laufzeitende.
 		@return Verarbeitung zum Laufzeitende	  */
 	@Override
-	public int getAD_PInstance_EndOfTerm_ID () 
+	public int getAD_PInstance_EndOfTerm_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_EndOfTerm_ID);
 		if (ii == null)
@@ -110,7 +110,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Betreuer.
-		@param AD_User_InCharge_ID 
+		@param AD_User_InCharge_ID
 		Person, die bei einem fachlichen Problem vom System informiert wird.
 	  */
 	@Override
@@ -130,7 +130,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Person, die bei einem fachlichen Problem vom System informiert wird.
 	  */
 	@Override
-	public int getAD_User_InCharge_ID () 
+	public int getAD_User_InCharge_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
 		if (ii == null)
@@ -153,7 +153,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Rechnungspartner.
-		@param Bill_BPartner_ID 
+		@param Bill_BPartner_ID
 		Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
@@ -173,7 +173,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_BPartner_ID () 
+	public int getBill_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
 		if (ii == null)
@@ -196,7 +196,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Rechnungsstandort.
-		@param Bill_Location_ID 
+		@param Bill_Location_ID
 		Standort des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
@@ -216,7 +216,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Standort des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_Location_ID () 
+	public int getBill_Location_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_Location_ID);
 		if (ii == null)
@@ -239,7 +239,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Rechnungskontakt.
-		@param Bill_User_ID 
+		@param Bill_User_ID
 		Ansprechpartner des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
@@ -259,7 +259,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Ansprechpartner des Geschäftspartners für die Rechnungsstellung
 	  */
 	@Override
-	public int getBill_User_ID () 
+	public int getBill_User_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
 		if (ii == null)
@@ -270,7 +270,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Währung.
-		@param C_Currency_ID 
+		@param C_Currency_ID
 		Die Währung für diesen Eintrag
 	  */
 	@Override
@@ -290,7 +290,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Die Währung für diesen Eintrag
 	  */
 	@Override
-	public int getC_Currency_ID () 
+	public int getC_Currency_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
@@ -330,7 +330,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Vertragsbedingungen.
 		@return Vertragsbedingungen	  */
 	@Override
-	public int getC_Flatrate_Conditions_ID () 
+	public int getC_Flatrate_Conditions_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_ID);
 		if (ii == null)
@@ -370,7 +370,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Datenerfassung.
 		@return Datenerfassung	  */
 	@Override
-	public int getC_Flatrate_Data_ID () 
+	public int getC_Flatrate_Data_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Data_ID);
 		if (ii == null)
@@ -398,7 +398,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Pauschale - Vertragsperiode.
 		@return Pauschale - Vertragsperiode	  */
 	@Override
-	public int getC_Flatrate_Term_ID () 
+	public int getC_Flatrate_Term_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
 		if (ii == null)
@@ -438,7 +438,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Nachfolgende Vertragsperiode.
 		@return Nachfolgende Vertragsperiode	  */
 	@Override
-	public int getC_FlatrateTerm_Next_ID () 
+	public int getC_FlatrateTerm_Next_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_FlatrateTerm_Next_ID);
 		if (ii == null)
@@ -461,7 +461,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Vertragsverlängerung/-übergang.
-		@param C_Flatrate_Transition_ID 
+		@param C_Flatrate_Transition_ID
 		Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
 	  */
 	@Override
@@ -473,7 +473,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
 	  */
 	@Override
-	public int getC_Flatrate_Transition_ID () 
+	public int getC_Flatrate_Transition_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Transition_ID);
 		if (ii == null)
@@ -494,12 +494,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Ändern oder Kündigen.
 		@return Ändern oder Kündigen	  */
 	@Override
-	public java.lang.String getChangeOrCancelTerm () 
+	public java.lang.String getChangeOrCancelTerm ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ChangeOrCancelTerm);
 	}
 
-	/** 
+	/**
 	 * ContractStatus AD_Reference_ID=540000
 	 * Reference name: SubscriptionStatus
 	 */
@@ -530,7 +530,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Vertrags-Status.
 		@return Vertrags-Status	  */
 	@Override
-	public java.lang.String getContractStatus () 
+	public java.lang.String getContractStatus ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ContractStatus);
 	}
@@ -548,7 +548,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Änderungs-Auftragszeile.
-		@param C_OrderLine_TermChange_ID 
+		@param C_OrderLine_TermChange_ID
 		Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
 	  */
 	@Override
@@ -568,7 +568,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
 	  */
 	@Override
-	public int getC_OrderLine_TermChange_ID () 
+	public int getC_OrderLine_TermChange_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_TermChange_ID);
 		if (ii == null)
@@ -591,7 +591,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Vertrags-Auftragszeile.
-		@param C_OrderLine_Term_ID 
+		@param C_OrderLine_Term_ID
 		Auftragszeile, mit der der Vertrag abgeschlossen wurde
 	  */
 	@Override
@@ -611,7 +611,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Auftragszeile, mit der der Vertrag abgeschlossen wurde
 	  */
 	@Override
-	public int getC_OrderLine_Term_ID () 
+	public int getC_OrderLine_Term_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_Term_ID);
 		if (ii == null)
@@ -634,7 +634,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Änderungs-Auftrag.
-		@param C_Order_TermChange_ID 
+		@param C_Order_TermChange_ID
 		Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
 	  */
 	@Override
@@ -646,7 +646,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
 	  */
 	@Override
-	public int getC_Order_TermChange_ID () 
+	public int getC_Order_TermChange_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_TermChange_ID);
 		if (ii == null)
@@ -659,14 +659,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_Order_Term_ID (int C_Order_Term_ID)
 	{
-		if (C_Order_Term_ID < 1) 
+		if (C_Order_Term_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Order_Term_ID, Integer.valueOf(C_Order_Term_ID));
 	}
 
 	@Override
-	public int getC_Order_Term_ID() 
+	public int getC_Order_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_Term_ID);
 	}
@@ -684,7 +684,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Steuerkategorie.
-		@param C_TaxCategory_ID 
+		@param C_TaxCategory_ID
 		Steuerkategorie
 	  */
 	@Override
@@ -704,7 +704,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Steuerkategorie
 	  */
 	@Override
-	public int getC_TaxCategory_ID () 
+	public int getC_TaxCategory_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
 		if (ii == null)
@@ -715,7 +715,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Maßeinheit.
-		@param C_UOM_ID 
+		@param C_UOM_ID
 		Maßeinheit
 	  */
 	@Override
@@ -735,7 +735,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Maßeinheit
 	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
@@ -756,12 +756,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Vertrag Datum.
 		@return Vertrag Datum	  */
 	@Override
-	public java.sql.Timestamp getDateContracted () 
+	public java.sql.Timestamp getDateContracted ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateContracted);
 	}
 
-//	/** 
+//	/**
 //	 * DeliveryRule AD_Reference_ID=151
 //	 * Reference name: C_Order DeliveryRule
 //	 */
@@ -781,7 +781,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 //	/** MitNaechsterAbolieferung = S */
 //	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
-		@param DeliveryRule 
+		@param DeliveryRule
 		Definiert die zeitliche Steuerung von Lieferungen
 	  */
 	@Override
@@ -795,12 +795,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Definiert die zeitliche Steuerung von Lieferungen
 	  */
 	@Override
-	public java.lang.String getDeliveryRule () 
+	public java.lang.String getDeliveryRule ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DeliveryRule);
 	}
 
-	/** 
+	/**
 	 * DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
 	 */
@@ -812,7 +812,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
 	/** Set Lieferung.
-		@param DeliveryViaRule 
+		@param DeliveryViaRule
 		Wie der Auftrag geliefert wird
 	  */
 	@Override
@@ -826,12 +826,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Wie der Auftrag geliefert wird
 	  */
 	@Override
-	public java.lang.String getDeliveryViaRule () 
+	public java.lang.String getDeliveryViaRule ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule);
 	}
 
-	/** 
+	/**
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
 	 */
@@ -867,7 +867,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
-		@param DocAction 
+		@param DocAction
 		Der zukünftige Status des Belegs
 	  */
 	@Override
@@ -881,12 +881,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Der zukünftige Status des Belegs
 	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** 
+	/**
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
@@ -916,7 +916,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
-		@param DocStatus 
+		@param DocStatus
 		Derzeitiger Status des Belegs
 	  */
 	@Override
@@ -930,13 +930,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Derzeitiger Status des Belegs
 	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
 	/** Set Nr..
-		@param DocumentNo 
+		@param DocumentNo
 		Document sequence number of the document
 	  */
 	@Override
@@ -949,7 +949,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Document sequence number of the document
 	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
@@ -967,7 +967,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Streckengeschäft-Kunde.
-		@param DropShip_BPartner_ID 
+		@param DropShip_BPartner_ID
 		Business Partner to ship to
 	  */
 	@Override
@@ -987,7 +987,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Business Partner to ship to
 	  */
 	@Override
-	public int getDropShip_BPartner_ID () 
+	public int getDropShip_BPartner_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_ID);
 		if (ii == null)
@@ -1010,7 +1010,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Streckengeschäft-Ort.
-		@param DropShip_Location_ID 
+		@param DropShip_Location_ID
 		Business Partner Location for shipping to
 	  */
 	@Override
@@ -1030,7 +1030,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Business Partner Location for shipping to
 	  */
 	@Override
-	public int getDropShip_Location_ID () 
+	public int getDropShip_Location_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_Location_ID);
 		if (ii == null)
@@ -1053,7 +1053,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Streckengeschäft-Ansprechpartner.
-		@param DropShip_User_ID 
+		@param DropShip_User_ID
 		Business Partner Contact for drop shipment
 	  */
 	@Override
@@ -1073,7 +1073,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Business Partner Contact for drop shipment
 	  */
 	@Override
-	public int getDropShip_User_ID () 
+	public int getDropShip_User_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_User_ID);
 		if (ii == null)
@@ -1084,7 +1084,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Enddatum.
-		@param EndDate 
+		@param EndDate
 		Last effective date (inclusive)
 	  */
 	@Override
@@ -1097,7 +1097,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Last effective date (inclusive)
 	  */
 	@Override
-	public java.sql.Timestamp getEndDate () 
+	public java.sql.Timestamp getEndDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EndDate);
 	}
@@ -1113,13 +1113,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Vertrag jetzt verlängern.
 		@return Vertrag jetzt verlängern	  */
 	@Override
-	public java.lang.String getExtendTerm () 
+	public java.lang.String getExtendTerm ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExtendTerm);
 	}
 
 	/** Set Vertrag autom. verlängern.
-		@param IsAutoRenew 
+		@param IsAutoRenew
 		Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
 	  */
 	@Override
@@ -1132,15 +1132,15 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Wenn dieser Haken gesetzt ist, werden laufende Verträge automatisch verlängert
 	  */
 	@Override
-	public boolean isAutoRenew () 
+	public boolean isAutoRenew ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsAutoRenew);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1157,22 +1157,22 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Rechnungskandidat schließen.
 		@return Rechnungskandidat schließen	  */
 	@Override
-	public boolean isCloseInvoiceCandidate () 
+	public boolean isCloseInvoiceCandidate ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsCloseInvoiceCandidate);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Gegenüberstellung mit erbr. Leist..
-		@param IsClosingWithActualSum 
+		@param IsClosingWithActualSum
 		Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
 	  */
 	@Override
@@ -1184,22 +1184,22 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
 	  */
 	@Override
-	public boolean isClosingWithActualSum () 
+	public boolean isClosingWithActualSum ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsClosingWithActualSum);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Abschlusskorrektur vorsehen.
-		@param IsClosingWithCorrectionSum 
+		@param IsClosingWithCorrectionSum
 		Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
 	  */
 	@Override
@@ -1211,15 +1211,15 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
 	  */
 	@Override
-	public boolean isClosingWithCorrectionSum () 
+	public boolean isClosingWithCorrectionSum ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsClosingWithCorrectionSum);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1236,23 +1236,23 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Planspiel.
 		@return Planspiel	  */
 	@Override
-	public boolean isSimulation () 
+	public boolean isSimulation ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsSimulation);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Preis inklusive Steuern.
-		@param IsTaxIncluded 
-		Tax is included in the price 
+		@param IsTaxIncluded
+		Tax is included in the price
 	  */
 	@Override
 	public void setIsTaxIncluded (boolean IsTaxIncluded)
@@ -1261,25 +1261,25 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Get Preis inklusive Steuern.
-		@return Tax is included in the price 
+		@return Tax is included in the price
 	  */
 	@Override
-	public boolean isTaxIncluded () 
+	public boolean isTaxIncluded ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsTaxIncluded);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Vertrag Nr..
-		@param MasterDocumentNo 
+		@param MasterDocumentNo
 		Document sequence number of the document
 	  */
 	@Override
@@ -1292,7 +1292,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Document sequence number of the document
 	  */
 	@Override
-	public java.lang.String getMasterDocumentNo () 
+	public java.lang.String getMasterDocumentNo ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MasterDocumentNo);
 	}
@@ -1308,7 +1308,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Master End Date.
 		@return Master End Date	  */
 	@Override
-	public java.sql.Timestamp getMasterEndDate () 
+	public java.sql.Timestamp getMasterEndDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_MasterEndDate);
 	}
@@ -1324,9 +1324,41 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Master Start Date.
 		@return Master Start Date	  */
 	@Override
-	public java.sql.Timestamp getMasterStartDate () 
+	public java.sql.Timestamp getMasterStartDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_MasterStartDate);
+	}
+
+	/** Set Master End Date.
+	 @param ContractEndDate Contract End Date	  */
+	@Override
+	public void setContractEndDate (java.sql.Timestamp ContractEndDate)
+	{
+		set_Value (COLUMNNAME_ContractEndDate, ContractEndDate);
+	}
+
+	/** Get Contract End Date.
+	 @return Contract End Date	  */
+	@Override
+	public java.sql.Timestamp getContractEndDate ()
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractEndDate);
+	}
+
+	/** Set Contract Start Date.
+	 @param ContractStartDate Contract Start Date	  */
+	@Override
+	public void setContractStartDate (java.sql.Timestamp ContractStartDate)
+	{
+		set_Value (COLUMNNAME_ContractStartDate, ContractStartDate);
+	}
+
+	/** Get Contract Start Date.
+	 @return Contract Start Date	  */
+	@Override
+	public java.sql.Timestamp getContractStartDate ()
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractStartDate);
 	}
 
 	@Override
@@ -1342,7 +1374,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Merkmale.
-		@param M_AttributeSetInstance_ID 
+		@param M_AttributeSetInstance_ID
 		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
@@ -1362,7 +1394,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
-	public int getM_AttributeSetInstance_ID () 
+	public int getM_AttributeSetInstance_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
 		if (ii == null)
@@ -1385,7 +1417,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Preissystem.
-		@param M_PricingSystem_ID 
+		@param M_PricingSystem_ID
 		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	  */
 	@Override
@@ -1405,7 +1437,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	  */
 	@Override
-	public int getM_PricingSystem_ID () 
+	public int getM_PricingSystem_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
@@ -1416,7 +1448,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Produkt.
-		@param M_Product_ID 
+		@param M_Product_ID
 		Produkt, Leistung, Artikel
 	  */
 	@Override
@@ -1436,7 +1468,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Produkt, Leistung, Artikel
 	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
 		if (ii == null)
@@ -1447,7 +1479,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Notiz.
-		@param Note 
+		@param Note
 		Optional weitere Information für ein Dokument
 	  */
 	@Override
@@ -1460,13 +1492,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Optional weitere Information für ein Dokument
 	  */
 	@Override
-	public java.lang.String getNote () 
+	public java.lang.String getNote ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Note);
 	}
 
 	/** Set Kündigungs/Benachrichtigungsfrist.
-		@param NoticeDate 
+		@param NoticeDate
 		Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
 	  */
 	@Override
@@ -1479,13 +1511,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Datum vor Ende der Vertragslaufzeit, an dem der laufende Vertrag automatisch verlängert oder aber der Betreuer informiert wird.
 	  */
 	@Override
-	public java.sql.Timestamp getNoticeDate () 
+	public java.sql.Timestamp getNoticeDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_NoticeDate);
 	}
 
 	/** Set Planmenge pro Maßeinheit.
-		@param PlannedQtyPerUnit 
+		@param PlannedQtyPerUnit
 		Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
 	  */
 	@Override
@@ -1498,7 +1530,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Geplante Menge der zu erbringenden Leistung (z.B. zu liefernde Teile), pro pauschal abzurechnender Einheit (z.B. Pflegetag).
 	  */
 	@Override
-	public java.math.BigDecimal getPlannedQtyPerUnit () 
+	public java.math.BigDecimal getPlannedQtyPerUnit ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQtyPerUnit);
 		if (bd == null)
@@ -1509,7 +1541,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Abschlusskorrektur vorbereiten.
-		@param PrepareClosing 
+		@param PrepareClosing
 		Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
 	  */
 	@Override
@@ -1522,13 +1554,13 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Prozess zum erstellen eines Abrechnungs-Korrektur-Datensatzes und/oder eines Abrechnungs-Verrechnungs-Datensatzes
 	  */
 	@Override
-	public java.lang.String getPrepareClosing () 
+	public java.lang.String getPrepareClosing ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PrepareClosing);
 	}
 
 	/** Set Einzelpreis.
-		@param PriceActual 
+		@param PriceActual
 		Effektiver Preis
 	  */
 	@Override
@@ -1541,7 +1573,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Effektiver Preis
 	  */
 	@Override
-	public java.math.BigDecimal getPriceActual () 
+	public java.math.BigDecimal getPriceActual ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
@@ -1552,8 +1584,8 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -1562,18 +1594,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1590,22 +1622,22 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Process Now.
 		@return Process Now	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
+		if (oo != null)
 		{
 			 if (oo instanceof Boolean)
 			{
 				return ((Boolean)oo).booleanValue();
-			} 
+			}
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
 	/** Set Anfangsdatum.
-		@param StartDate 
+		@param StartDate
 		First effective day (inclusive)
 	  */
 	@Override
@@ -1618,7 +1650,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return First effective day (inclusive)
 	  */
 	@Override
-	public java.sql.Timestamp getStartDate () 
+	public java.sql.Timestamp getStartDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_StartDate);
 	}
@@ -1634,7 +1666,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Termination Date.
 		@return Termination Date	  */
 	@Override
-	public java.sql.Timestamp getTerminationDate () 
+	public java.sql.Timestamp getTerminationDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_TerminationDate);
 	}
@@ -1650,12 +1682,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Termination Memo.
 		@return Termination Memo	  */
 	@Override
-	public java.lang.String getTerminationMemo () 
+	public java.lang.String getTerminationMemo ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TerminationMemo);
 	}
 
-	/** 
+	/**
 	 * TerminationReason AD_Reference_ID=540761
 	 * Reference name: Contracts_TerminationaReason
 	 */
@@ -1714,12 +1746,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Termination Reason.
 		@return Termination Reason	  */
 	@Override
-	public java.lang.String getTerminationReason () 
+	public java.lang.String getTerminationReason ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TerminationReason);
 	}
 
-	/** 
+	/**
 	 * Type_Conditions AD_Reference_ID=540271
 	 * Reference name: Type_Conditions
 	 */
@@ -1750,12 +1782,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Get Vertragsart.
 		@return Vertragsart	  */
 	@Override
-	public java.lang.String getType_Conditions () 
+	public java.lang.String getType_Conditions ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Type_Conditions);
 	}
 
-	/** 
+	/**
 	 * Type_Flatrate AD_Reference_ID=540264
 	 * Reference name: Type_Flatrate
 	 */
@@ -1765,7 +1797,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Corridor_Percent = LIPE */
 	public static final String TYPE_FLATRATE_Corridor_Percent = "LIPE";
 	/** Set Verrechnungsart.
-		@param Type_Flatrate 
+		@param Type_Flatrate
 		Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
 	  */
 	@Override
@@ -1778,12 +1810,12 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
 	  */
 	@Override
-	public java.lang.String getType_Flatrate () 
+	public java.lang.String getType_Flatrate ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Type_Flatrate);
 	}
 
-	/** 
+	/**
 	 * UOMType AD_Reference_ID=540262
 	 * Reference name: UOM Type Flatrate
 	 */
@@ -1793,7 +1825,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/** Abrechnungsgenauigkeit = TD */
 	public static final String UOMTYPE_Abrechnungsgenauigkeit = "TD";
 	/** Set Einheiten-Typ.
-		@param UOMType 
+		@param UOMType
 		Dient der Zusammenfassung ähnlicher Maßeinheiten
 	  */
 	@Override
@@ -1806,7 +1838,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		@return Dient der Zusammenfassung ähnlicher Maßeinheiten
 	  */
 	@Override
-	public java.lang.String getUOMType () 
+	public java.lang.String getUOMType ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UOMType);
 	}

@@ -1141,6 +1141,53 @@ public interface I_C_Flatrate_Term
     String COLUMNNAME_MasterStartDate = "MasterStartDate";
 
 	/**
+	 * Set Contract End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setContractEndDate (java.sql.Timestamp ContractEndDate);
+
+	/**
+	 * Get Contract End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getContractEndDate();
+
+	/** Column definition for MasterEndDate */
+	org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractEndDate = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Term.class, "ContractEndDate", null);
+	/** Column name ContractEndDate */
+	String COLUMNNAME_ContractEndDate = "ContractEndDate";
+
+	/**
+	 * Set Contract Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setContractStartDate (java.sql.Timestamp MasterStartDate);
+
+	/**
+	 * Get Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getContractStartDate();
+
+	/** Column definition for MasterStartDate */
+	org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ContractStartDate = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Term.class, "MasterStartDate", null);
+	/** Column name MasterStartDate */
+	String COLUMNNAME_ContractStartDate = "ContractStartDate";
+
+
+	/**
 	 * Set Merkmale.
 	 * Merkmals Ausprägungen zum Produkt
 	 *
