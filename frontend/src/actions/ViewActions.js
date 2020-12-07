@@ -333,7 +333,6 @@ export function fetchDocument({
           dispatch(deleteFilter(entityRelatedId));
         }
 
-
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
 
         const tableId = getTableId({ windowId, viewId });
