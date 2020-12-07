@@ -8,7 +8,7 @@ import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 
 import PrintingOptions from '../../../components/app/PrintingOptions';
-import testModal from '../../../../test_setup/fixtures/test_modal.json';
+import testModal from '../../../../test_setup/fixtures/modal/test_modal.json';
 import printingOptions from '../../../../test_setup/fixtures/window/printingOptions.json';
 import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../test_setup/fixtures/keymap.json';

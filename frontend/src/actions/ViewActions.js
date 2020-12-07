@@ -33,7 +33,7 @@ import {
   UPDATE_VIEW_DATA_SUCCESS,
 } from '../constants/ActionTypes';
 
-import { getTableId, getTable } from '../reducers/tables';
+import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
@@ -366,7 +366,6 @@ export function fetchDocument({
           })
         );
 
-        const table = getTable(state, tableId);
         let shouldFetchQuickActions = true;
         let viewProfileId = null;
 
@@ -408,8 +407,10 @@ export function fetchDocument({
             })
           );
 
-          // modals without included views shouldn't fetch quick actions on init
-          if (isModal && !(includedWindowId && includedViewId)) {
+          // don't fetch quick actions for parent view as we don't have
+          // the included view in the store yet. They will be fetched with the
+          // included view.
+          if (includedWindowId) {
             shouldFetchQuickActions = false;
           }
         }
@@ -420,7 +421,7 @@ export function fetchDocument({
             fetchQuickActions({
               windowId,
               viewId,
-              selectedIds: table.selected,
+              isModal,
               viewProfileId,
             })
           );

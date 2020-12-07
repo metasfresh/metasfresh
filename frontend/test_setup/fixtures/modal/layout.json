@@ -1,0 +1,175 @@
+{
+  "layout1": {
+    "layoutType": "panel",
+    "caption": "Transform",
+    "description": "",
+    "elements": [
+      {
+        "caption": "Action",
+        "description": "Zeigt die durchzuführende Aktion an",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "Action",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500
+          }
+        ]
+      },
+      {
+        "caption": "Packing Instruction",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "M_HU_PI_Item_Product_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Packing Instruction Item",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "M_HU_PI_Item_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "LU",
+        "description": "Loading Unit",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "M_LU_HU_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "TU",
+        "description": "Trading Unit",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "M_TU_HU_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Qty CU per TU",
+        "description": "Number of CUs per package (usually TU)",
+        "widgetType": "Quantity",
+        "fields": [
+          {
+            "field": "QtyCU",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Number of TUs",
+        "description": "",
+        "widgetType": "Integer",
+        "fields": [
+          {
+            "field": "QtyTU",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Set Own Palette",
+        "description": "If true, then the packing material's owner is \"us\" (the guys who ordered it). If false, then the packing material's owner is the PO's partner.",
+        "widgetType": "YesNo",
+        "fields": [
+          {
+            "field": "HUPlanningReceiptOwnerPM_LU",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Eigene TU",
+        "description": "If true, then the packing material's owner is \"us\" (the guys who ordered it). If false, then the packing material's owner is the PO's partner.",
+        "widgetType": "YesNo",
+        "fields": [
+          {
+            "field": "HUPlanningReceiptOwnerPM_TU",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Move to warehouse",
+        "description": "",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "MoveToWarehouseId",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Show warehouse ID",
+        "description": "",
+        "widgetType": "YesNo",
+        "fields": [
+          {
+            "field": "ShowWarehouseID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ]
+  }
+}
