@@ -116,6 +116,20 @@ public class C_Invoice_DiscountAllocation_Process extends JavaProcess
 	{
 		final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(invoice, true);
 
+		if (invoiceOpenAmt.signum() == 0)
+		{
+			addLog("Skip C_Invoice_ID " + invoice.getC_Invoice_ID() + ": " + "Has OpenAmt=0 but IsPaid=F.");
+			return false;
+		}
+
+		// skip the invoice if there is nothing allocated yet! We only want to complete *partial* allocations
+		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
+		if (allocatedAmt == null || allocatedAmt.signum() == 0)
+		{
+			addLog("Skip C_Invoice_ID " + invoice.getC_Invoice_ID() + ": " + "Has allocatedAmt=0.");
+			return false;
+		}
+
 		if (invoiceOpenAmt.abs().compareTo(p_OpenAmt.abs()) > 0)
 		{
 			return false;
