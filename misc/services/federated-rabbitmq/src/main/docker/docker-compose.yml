@@ -5,10 +5,8 @@ services:
   metasfresh_rabbitmq:
     # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
     image: rabbitmq:3.8.9-management
-    container_name: 'metasfresh_rabbitmq'
+    #container_name: 'metasfresh_rabbitmq' - not having ir right now, because it's not supported by test containers
     environment:
-      # will leave this if we need to create a cluster in the future
-      RABBITMQ_ERLANG_COOKIE: dockerClusterCookie
       # default virtual host
       RABBITMQ_DEFAULT_VHOST: /
     # expose some rabbitmq ports
@@ -24,10 +22,8 @@ services:
   procurement_webui_rabbitmq:
     # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
     image: rabbitmq:3.8.9-management
-    container_name: 'procurement_webui_rabbitmq'
+    #container_name: 'procurement_webui_rabbitmq' - not having ir right now, because it's not supported by test containers
     environment:
-      # will leave this if we need to create a cluster in the future
-      RABBITMQ_ERLANG_COOKIE: dockerClusterCookie
       # default virtual host
       RABBITMQ_DEFAULT_VHOST: /
     # expose some rabbitmq ports
