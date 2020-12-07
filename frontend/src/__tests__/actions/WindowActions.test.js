@@ -17,7 +17,7 @@ import { getScope, parseToDisplay } from '../../utils/documentListHelper';
 import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
 import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
 import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
-import actionsFixtures from '../../../test_setup/fixtures/window/actions.json';
+import actionsFixtures from '../../../test_setup/fixtures/process/actions.json';
 import printingOptions from '../../../test_setup/fixtures/window/printingOptions.json';
 import { setProcessSaved, setProcessPending } from '../../actions/AppActions';
 import {
@@ -249,16 +249,43 @@ describe('WindowActions thunks', () => {
   });
 
   describe('process', () => {
+    it.todo('create process flow');
+
+    it('opens view in the modal from a process', () => {
+      const { pid, processType, parentId } = actionsFixtures.processData1;
+      const { action } = actionsFixtures.processResponse1;
+      const { windowId, viewId } = action;
+      const state = createStore();
+      const store = mockStore(state);
+
+      const expectedActions = [
+        { type: ACTION_TYPES.CLOSE_MODAL },
+        { type: ACTION_TYPES.OPEN_RAW_MODAL, windowId, viewId },
+        { type: ACTION_TYPES.SET_PROCESS_STATE_SAVED },
+        { type: ACTION_TYPES.CLOSE_PROCESS_MODAL },
+      ];
+
+      return store
+        .dispatch(handleProcessResponse({ data: { action } }, processType, pid, parentId ))
+        .then(() => {
+          expect(store.getActions()).toEqual(
+            expect.arrayContaining(expectedActions)
+          );
+        });
+    });
+
     it('sets included view in the store from a process', () => {
-      const fixtures = actionsFixtures.processResponse;
-      const { type, id, response } = fixtures;
+      const { pid, processType, parentId } = actionsFixtures.processData2;
+      const { action } = actionsFixtures.processResponse2;
+      const { windowId, viewId, profileId } = action;
       const state = createStore();
       const store = mockStore(state);
 
       const includedViewPayload = {
-        id: response.action.windowId,
-        viewId: response.action.viewId,
-        viewProfileId: null,
+        id: windowId,
+        viewId: viewId,
+        viewProfileId: profileId,
+        parentId,
       };
 
       const expectedActions = [
@@ -268,7 +295,7 @@ describe('WindowActions thunks', () => {
       ];
 
       return store
-        .dispatch(handleProcessResponse({ data: response }, type, id))
+        .dispatch(handleProcessResponse({ data: { action } }, processType, pid, parentId ))
         .then(() => {
           expect(store.getActions()).toEqual(
             expect.arrayContaining(expectedActions)

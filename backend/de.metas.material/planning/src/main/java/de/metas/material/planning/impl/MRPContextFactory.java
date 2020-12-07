@@ -1,13 +1,5 @@
 package de.metas.material.planning.impl;
 
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
@@ -17,6 +9,14 @@ import de.metas.material.planning.exception.MrpException;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.stereotype.Service;
 
 @Service
 public class MRPContextFactory implements IMRPContextFactory
@@ -49,7 +49,7 @@ public class MRPContextFactory implements IMRPContextFactory
 		mrpContextNew.setDate(context.getDate());
 		mrpContextNew.setAllowCleanup(context.isAllowCleanup());
 
-		mrpContextNew.setAD_Client_ID(context.getAD_Client_ID());
+		mrpContextNew.setAD_Client_ID(ClientId.toRepoId(context.getClientId()));
 		mrpContextNew.setAD_Org(context.getAD_Org());
 		mrpContextNew.setM_Product(context.getM_Product());
 		// mrpContextNew.setProductPlanning(context.getProductPlanning()); // needs to be copied, see below

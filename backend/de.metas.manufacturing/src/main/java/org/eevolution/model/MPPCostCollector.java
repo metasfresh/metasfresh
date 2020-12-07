@@ -95,9 +95,6 @@ import java.util.Properties;
  */
 public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 5529730708956719853L;
 
 	// Services

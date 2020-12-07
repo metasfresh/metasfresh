@@ -1,23 +1,6 @@
 package de.metas.ui.web.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
@@ -26,6 +9,21 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -67,6 +65,7 @@ public class PPOrderLineRowTest
 		viewRowAttributesProvider = Mockito.mock(IViewRowAttributesProvider.class);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private ProductId createProduct(final String name)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
@@ -105,7 +104,7 @@ public class PPOrderLineRowTest
 		save(ppOrder);
 
 		final I_PP_Order_BOMLine ppOrderBomLine = newInstance(I_PP_Order_BOMLine.class);
-		ppOrderBomLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
+		ppOrderBomLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 		ppOrderBomLine.setPP_Order(ppOrder);
 		save(ppOrderBomLine);
 
@@ -115,6 +114,7 @@ public class PPOrderLineRowTest
 				.packingInfoOrNull(null)
 				.ppOrderBomLine(ppOrderBomLine)
 				.qtyPlan(Quantity.of(10, uom))
+				.qtyProcessedIssuedOrReceived((Quantity.zero(uom)))
 				.type(PPOrderLineType.BOMLine_Component)
 				.processed(true)
 				.build();
@@ -122,7 +122,7 @@ public class PPOrderLineRowTest
 		assertThat(result.getType()).isEqualTo(PPOrderLineType.BOMLine_Component);
 		assertThat(result.isTopLevelHU()).isFalse();
 		assertThat(result.isHUStatusActive()).isFalse();
-		assertThat(result.getIssueMethod()).isEqualTo(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
+		assertThat(result.getIssueMethod()).isEqualTo(BOMComponentIssueMethod.IssueOnlyForReceived);
 	}
 
 	@Test
@@ -133,7 +133,7 @@ public class PPOrderLineRowTest
 				.huId(HuId.ofRepoId(30))
 				.packingInfo("packingInfo")
 				.product(JSONLookupValue.of(35, "product"))
-				.qty(BigDecimal.TEN)
+				.qty(Quantity.of(10, uom))
 				.rowId(PPOrderLineRowId.ofSourceHU(DocumentId.of(40), HuId.ofRepoId(30)))
 				.type(PPOrderLineType.HU_TU)
 				.uom(JSONLookupValue.of(50, "uom"))
@@ -152,6 +152,7 @@ public class PPOrderLineRowTest
 		final I_PP_Order_Qty ppOrderQty = newInstance(I_PP_Order_Qty.class);
 		ppOrderQty.setPP_Order_ID(1); // dummy
 		ppOrderQty.setM_HU_ID(10);
+		save(ppOrderQty);
 
 		final PPOrderLineRow result = PPOrderLineRow.builderForIssuedOrReceivedHU()
 				.attributesSupplier(() -> null)
@@ -159,7 +160,7 @@ public class PPOrderLineRowTest
 				.includedRows(ImmutableList.of())
 				.packingInfo("packingInfo")
 				.ppOrderQty(ppOrderQty)
-				.processed(true)
+				.parentRowReadonly(true)
 				.product(JSONLookupValue.of(35, "product"))
 				.quantity(new Quantity(BigDecimal.TEN, uom))
 				.rowId(PPOrderLineRowId.ofIssuedOrReceivedHU(DocumentId.of(40), HuId.ofRepoId(10)))

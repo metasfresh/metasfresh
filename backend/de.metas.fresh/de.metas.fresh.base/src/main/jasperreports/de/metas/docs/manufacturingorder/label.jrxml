@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-09-13T13:30:35 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="156" pageHeight="284" columnWidth="156" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/cu_manufacturing/report" uuid="76f10556-26bf-42e7-b375-0391b4cedd84">
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="m_hu_id" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+	</parameter>
+	<parameter name="pp_order_id" class="java.math.BigDecimal"/>
+	<queryString>
+		<![CDATA[SELECT * FROM report.cu_label( $P{m_hu_id}, $P{pp_order_id})]]>
+	</queryString>
+	<field name="p_name" class="java.lang.String"/>
+	<field name="p_name_trl" class="java.lang.String"/>
+	<field name="qty" class="java.math.BigDecimal"/>
+	<field name="p_value" class="java.lang.String"/>
+	<field name="p_description" class="java.lang.String"/>
+	<field name="ingredient" class="java.lang.String"/>
+	<field name="ingredient_trl" class="java.lang.String"/>
+	<field name="best_before" class="java.lang.String"/>
+	<field name="temperature" class="java.lang.String"/>
+	<field name="org_address" class="java.lang.String"/>
+	<field name="lot_nr" class="java.lang.String"/>
+	<field name="isbio" class="java.lang.String"/>
+	<field name="upc" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="284" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="70" width="140" height="12" uuid="e66e65da-d363-4774-a4bd-bfdd3a8fc1f1"/>
+				<textElement>
+					<font size="9" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{p_value} + $F{p_value}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="8" y="5" width="140" height="34" uuid="b6519ef1-11d8-4327-8dc4-4df64a2edc60">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom">
+					<font size="13" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="58" width="140" height="12" uuid="7e2b7596-5cb4-4564-b08d-e42b987b7f32"/>
+				<textElement>
+					<font size="9" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty} + " Kg"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="82" width="140" height="7" uuid="40f7a3f9-5a8a-4afb-9a63-735a4ec66a5a"/>
+				<textElement>
+					<font size="5" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_description}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="93" width="140" height="46" uuid="efb42090-528b-4071-81c2-0441bf21a2cf"/>
+				<textElement>
+					<font size="8" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ingredient} +" " + $F{ingredient}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="143" width="140" height="46" uuid="353017bb-a37b-4354-a848-c3eb81a145e3">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="8" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ingredient_fr} +" " + $F{ingredient_trl}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="192" width="80" height="8" uuid="da6df427-aa40-450a-b8b4-f361b9006336"/>
+				<textElement>
+					<font size="6" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{best_before}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="201" width="80" height="8" uuid="cd17e7bc-5d1e-4503-bba5-fcce8c945b5a"/>
+				<textElement>
+					<font size="6" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{best_before_fr}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="88" y="192" width="60" height="17" uuid="8e331d2b-0aa7-4aa3-b080-0267de138dc6"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="9" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{best_before}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="210" width="100" height="8" uuid="9656f03b-a678-44db-a8e1-f5ea4e56d072"/>
+				<textElement>
+					<font size="6" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{temperature} +" / "+ "conserver à: " + $F{temperature}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="219" width="100" height="8" uuid="805585ae-8622-4337-90ac-02981ddf845c"/>
+				<textElement>
+					<font size="6" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{manufacturer} + " / " + $R{manufacturer_fr} + " / " + $R{manufacturer_it}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="228" width="100" height="8" uuid="4126d0cd-d110-4420-84ec-4afe4fcd8e6c"/>
+				<textElement>
+					<font size="6" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="115" y="192" width="10" height="71" isPrintWhenDetailOverflows="true" uuid="91ebce25-a8dd-4be8-805a-617a8684eb9e">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement rotation="Left">
+					<font size="6" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lot_nr}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="50" width="140" height="8" uuid="37b9c391-4a48-4aba-b062-58011ae3cdbe"/>
+				<textElement>
+					<font size="6" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{isbio}.equals("N") ? "" : $R{bio}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="8" y="40" width="140" height="10" uuid="fa7e671c-1e54-47d7-b5c6-db7b7621261b"/>
+				<textElement>
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name_trl}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="8" y="243" width="92" height="27" uuid="79c7b69b-f78d-4c95-bd44-070092e0bf73">
+					<printWhenExpression><![CDATA[Boolean.valueOf($F{upc}.length()>0)]]></printWhenExpression>
+				</reportElement>
+				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" checksumMode="ignore">
+					<jr:codeExpression><![CDATA[$F{upc}]]></jr:codeExpression>
+				</jr:EAN13>
+			</componentElement>
+		</band>
+	</detail>
+</jasperReport>

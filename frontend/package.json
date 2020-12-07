@@ -188,7 +188,6 @@
     "redux-test-utils": "0.3.0",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
-    "simple-promise-queue": "0.1.7",
     "sockjs-client": "1.4.0",
     "throttle-debounce": "2.1.0",
     "timer-machine": "1.1.0",

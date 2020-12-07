@@ -219,6 +219,7 @@ public class ProcessPickingCandidatesCommand_PickingOrder_Test
 			pickingOrderBOMLine_chocolate.setComponentType(BOMComponentType.Component.getCode());
 			pickingOrderBOMLine_chocolate.setM_Product_ID(componentProductId.getRepoId());
 			pickingOrderBOMLine_chocolate.setC_UOM_ID(componentQtyToIssue.getUomId().getRepoId());
+			pickingOrderBOMLine_chocolate.setM_Warehouse_ID(shipFromLocatorId.getWarehouseId().getRepoId());
 			pickingOrderBOMLine_chocolate.setM_Locator_ID(shipFromLocatorId.getRepoId());
 			saveRecord(pickingOrderBOMLine_chocolate);
 			pickingOrderBOMLineId_chocolate = PPOrderBOMLineId.ofRepoId(pickingOrderBOMLine_chocolate.getPP_Order_BOMLine_ID());

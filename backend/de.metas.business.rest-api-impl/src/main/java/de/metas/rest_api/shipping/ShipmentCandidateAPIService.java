@@ -511,7 +511,7 @@ class ShipmentCandidateAPIService
 					overallStatus = ExportedAndError;
 
 					final AdIssueId specificAdIssueId = createADIssue(jsonResultItem.getError());
-					builder.issueId(CoalesceUtil.coalesce(specificAdIssueId));
+					builder.issueId(specificAdIssueId);
 					break;
 				default:
 					throw new AdempiereException("jsonResultItem has unexpected outcome=" + jsonResultItem.getOutcome())

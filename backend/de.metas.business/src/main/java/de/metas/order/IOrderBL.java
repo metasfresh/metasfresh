@@ -69,9 +69,6 @@ public interface IOrderBL extends ISingletonService
 	 * <li>the date being taken from order/order's <code>DatePromised</code>, falling back to <code>DateOrdered</code>, if <code>DatePromised</code> is <code>null</code></li>
 	 * </ul>
 	 * Note: if the given order is <code>null</code>, then the method returns <code>null</code>; also note that there is sort of a sibling method in IOrderLineBL.
-	 *
-	 * @param order
-	 * @return
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 

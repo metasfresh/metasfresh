@@ -12,6 +12,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert.JsonRequestContactUpsertBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
@@ -27,6 +28,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.exception.InvalidEntityException;
 import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
@@ -78,6 +80,7 @@ final class BPartnerEndpointAdapter
 		this.bpartnerRestController = bpartnerRestController;
 	}
 
+	@Nullable
 	public BPartnerInfo getCreateBPartnerInfoInTrx(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final boolean billTo,
@@ -86,6 +89,7 @@ final class BPartnerEndpointAdapter
 		return getCreateBPartnerInfo0(jsonBPartnerInfo, billTo, orgCode);
 	}
 
+	@Nullable
 	private BPartnerInfo getCreateBPartnerInfo0(
 			@Nullable final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			final boolean billTo,
@@ -115,17 +119,22 @@ final class BPartnerEndpointAdapter
 			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo)
 	{
+		final SyncAdvise outerSyncAdvise = jsonBPartnerInfo.getSyncAdvise();
+
 		// location
 		final JsonRequestLocationUpsertBuilder jsonRequestLocationUpsert = JsonRequestLocationUpsert.builder();
 		if (jsonBPartnerInfo.getLocation() != null)
 		{
 			final JsonRequestLocation location = jsonBPartnerInfo.getLocation();
-			jsonRequestLocationUpsert.requestItem(JsonRequestLocationUpsertItem
-					.builder()
-					.locationIdentifier(constructLocationIdentifier(location, jsonBPartnerInfo.getBpartnerLookupAdvise()))
-					.location(location)
-					.build())
-					.syncAdvise(jsonBPartnerInfo.getSyncAdvise())
+			final SyncAdvise innerSyncAdvice = location.getSyncAdvise();
+
+			jsonRequestLocationUpsert
+					.requestItem(JsonRequestLocationUpsertItem
+							.builder()
+							.locationIdentifier(constructLocationIdentifier(location, jsonBPartnerInfo.getBpartnerLookupAdvise()))
+							.location(location)
+							.build())
+					.syncAdvise(innerSyncAdvice) // Apply the olcand-bpartner-location's "inner" also to the "mid-level". This is by definition, because it makes sense from a functional side
 					.build();
 		}
 
@@ -133,13 +142,22 @@ final class BPartnerEndpointAdapter
 		final JsonRequestContactUpsertBuilder jsonRequestContactUpsert = JsonRequestContactUpsert.builder();
 		if (jsonBPartnerInfo.getContact() != null)
 		{
+			final JsonRequestContact contact = jsonBPartnerInfo.getContact();
+			if (contact.getExternalId() == null)
+			{
+				throw new InvalidEntityException(TranslatableStrings.constant("JsonRequestContact needs an externalId"))
+						.appendParametersToMessage()
+						.setParameter("jsonRequestContact", contact);
+			}
+			final SyncAdvise innerSyncAdvice = contact.getSyncAdvise();
+
 			jsonRequestContactUpsert
 					.requestItem(JsonRequestContactUpsertItem
 							.builder()
-							.contactIdentifier(IdentifierString.PREFIX_EXTERNAL_ID + jsonBPartnerInfo.getContact().getExternalId().getValue())
-							.contact(jsonBPartnerInfo.getContact())
+							.contactIdentifier(IdentifierString.PREFIX_EXTERNAL_ID + contact.getExternalId().getValue())
+							.contact(contact)
 							.build())
-					.syncAdvise(jsonBPartnerInfo.getSyncAdvise())
+					.syncAdvise(innerSyncAdvice) // Apply the olcand-bpartner-contact's "inner" also to "mid-level"". This is by definition, because it makes sense from a functional side
 					.build();
 		}
 
@@ -155,16 +173,16 @@ final class BPartnerEndpointAdapter
 				.bpartner(bPartner)
 				.locations(jsonRequestLocationUpsert.build())
 				.contacts(jsonRequestContactUpsert.build())
-				.syncAdvise(jsonBPartnerInfo.getSyncAdvise())
+				.syncAdvise(outerSyncAdvise)
 				.build();
 		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(constructBPartnerIdentifier(jsonBPartnerInfo))
 				.bpartnerComposite(bpartnerComposite)
 				.build();
-		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = JsonRequestBPartnerUpsert.builder()
+
+		return JsonRequestBPartnerUpsert.builder()
 				.requestItem(requestItem)
 				.build();
-		return jsonRequestBPartnerUpsert;
 	}
 
 	private String constructLocationIdentifier(
@@ -219,7 +237,7 @@ final class BPartnerEndpointAdapter
 	{
 		final JsonRequestBPartner bpartnerOrNull = jsonBPartnerInfo.getBpartner();
 
-		BPartnerLookupAdvise bpartnerLookupAdvise = jsonBPartnerInfo.getBpartnerLookupAdvise();
+		final BPartnerLookupAdvise bpartnerLookupAdvise = jsonBPartnerInfo.getBpartnerLookupAdvise();
 		if (bpartnerLookupAdvise != null)
 		{
 			// JsonRequestBPartnerLocationAndContact validated in its constructor that this actually works!
@@ -245,19 +263,19 @@ final class BPartnerEndpointAdapter
 		if (bpartnerOrNull != null && bpartnerOrNull.getExternalId() != null)
 		{
 			final String result = IdentifierString.PREFIX_EXTERNAL_ID + bpartnerOrNull.getExternalId().getValue();
-			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but an externalId; -> return identifierString={}", bpartnerLookupAdvise, result);
+			logger.debug("jsonBPartnerInfo has partnerLookupAdvise=null, but an externalId; -> return identifierString={}", result);
 			return result;
 		}
-		else if (jsonBPartnerInfo.getLocation() != null && !Check.isEmpty(jsonBPartnerInfo.getLocation().getGln(), true))
+		else if (jsonBPartnerInfo.getLocation() != null && Check.isNotBlank(jsonBPartnerInfo.getLocation().getGln()))
 		{
 			final String result = IdentifierString.PREFIX_GLN + jsonBPartnerInfo.getLocation().getGln();
-			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but a GLN; -> return identifierString={}", bpartnerLookupAdvise, result);
+			logger.debug("jsonBPartnerInfo has partnerLookupAdvise=null, but a GLN; -> return identifierString={}", result);
 			return result;
 		}
-		else if (bpartnerOrNull != null && !Check.isEmpty(bpartnerOrNull.getCode(), true))
+		else if (bpartnerOrNull != null && Check.isNotBlank(bpartnerOrNull.getCode()))
 		{
 			final String result = IdentifierString.PREFIX_VALUE + bpartnerOrNull.getCode();
-			logger.debug("jsonBPartnerInfo has partnerLookupAdvise={}, but a code; -> return identifierString={}", bpartnerLookupAdvise, result);
+			logger.debug("jsonBPartnerInfo has partnerLookupAdvise=null, but a code; -> return identifierString={}", result);
 			return result;
 		}
 
@@ -290,8 +308,7 @@ final class BPartnerEndpointAdapter
 			final Optional<JsonResponseLocation> location = bpartnerRestController
 					.retrieveBPartner(orgCode, Integer.toString(bpartnerId.getRepoId()))
 					.getBody().getLocations().stream()
-					.sorted(c)
-					.findFirst();
+					.min(c);
 			if (location.isPresent())
 			{
 				result.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, location.get().getMetasfreshId().getValue()));
@@ -310,19 +327,17 @@ final class BPartnerEndpointAdapter
 	{
 		return Comparator
 				.<JsonResponseLocation, Boolean>comparing(l -> !l.isBillTo() /* billTo=true first */)
-				.thenComparing(
-						Comparator.comparing(l -> !l.isBillToDefault())/* billToDefault=true first */);
+				.thenComparing(l -> !l.isBillToDefault() /* billToDefault=true first */);
 	}
 
 	private Comparator<JsonResponseLocation> createShipToLocationComparator()
 	{
 		return Comparator
 				.<JsonResponseLocation, Boolean>comparing(l -> !l.isShipTo() /* shipTo=true first */)
-				.thenComparing(
-						Comparator.comparing(l -> !l.isShipToDefault())/* shipToDefault=true first */);
+				.thenComparing(l -> !l.isShipToDefault() /* shipToDefault=true first */);
 	}
 
-	public JsonResponseBPartner getJsonBPartnerById(@Nullable String orgCode, @NonNull final BPartnerId bpartnerId)
+	public JsonResponseBPartner getJsonBPartnerById(@Nullable final String orgCode, @NonNull final BPartnerId bpartnerId)
 	{
 		final ResponseEntity<JsonResponseComposite> bpartner = bpartnerRestController.retrieveBPartner(
 				orgCode,
@@ -330,7 +345,7 @@ final class BPartnerEndpointAdapter
 		return bpartner.getBody().getBpartner();
 	}
 
-	public JsonResponseLocation getJsonBPartnerLocationById(@Nullable String orgCode, @NonNull final BPartnerLocationId bpartnerLocationId)
+	public JsonResponseLocation getJsonBPartnerLocationById(@Nullable final String orgCode, @NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final ResponseEntity<JsonResponseLocation> location = bpartnerRestController.retrieveBPartnerLocation(
 				orgCode,
@@ -339,7 +354,7 @@ final class BPartnerEndpointAdapter
 		return location.getBody();
 	}
 
-	public JsonResponseContact getJsonBPartnerContactById(@Nullable String orgCode, @NonNull final BPartnerContactId bpartnerContactId)
+	public JsonResponseContact getJsonBPartnerContactById(@Nullable final String orgCode, @NonNull final BPartnerContactId bpartnerContactId)
 	{
 		final ResponseEntity<JsonResponseContact> contact = bpartnerRestController.retrieveBPartnerContact(
 				orgCode,

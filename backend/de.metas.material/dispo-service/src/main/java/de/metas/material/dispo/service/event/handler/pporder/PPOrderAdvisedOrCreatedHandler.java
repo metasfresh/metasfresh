@@ -11,6 +11,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail.P
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -74,7 +75,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
 
-		final CandidatesQuery preExistingSupplyQuery = createPreExistingSupplyCandidateQuery(ppOrder, supplyRequiredDescriptor);
+		final CandidatesQuery preExistingSupplyQuery = createPreExistingSupplyCandidateQuery(ppOrderEvent);
 		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
 
 		final CandidateBuilder builder = existingCandidateOrNull != null
@@ -93,20 +94,24 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 		final Candidate headerCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				// .status(candidateStatus)
 				.businessCaseDetail(headerCandidateProductionDetail)
 				.additionalDemandDetail(headerCandidateDemandDetail)
 				.materialDescriptor(headerCandidateMaterialDescriptor)
 				// .groupId(null) // will be set after save
 				.build();
 
-		final Candidate headerCandidateWithGroupId = candidateChangeService.onCandidateNewOrChange(headerCandidate);
-		return headerCandidateWithGroupId;
+
+		// If the subclasses' createPreExistingSupplyCandidateQuery() method implementation did not want us to find existing Candidates,
+		// then make sure that candidateChangeService does not try to update existing candidates either.
+		// If we don't explicitly tell it not to, it could find and update a candidate using demand- and production-detail
+		final boolean attemptUpdate = !CandidatesQuery.FALSE.equals(preExistingSupplyQuery);
+
+		return candidateChangeService.onCandidateNewOrChange(
+				headerCandidate,
+				OnNewOrChangeAdvise.attemptUpdate(attemptUpdate));
 	}
 
-	protected abstract CandidatesQuery createPreExistingSupplyCandidateQuery(
-			@NonNull PPOrder ppOrder,
-			@Nullable SupplyRequiredDescriptor supplyRequiredDescriptor);
+	protected abstract CandidatesQuery createPreExistingSupplyCandidateQuery(@NonNull AbstractPPOrderEvent ppOrderEvent);
 
 	private static MaterialDescriptor createMaterialDescriptorForPPOrder(final PPOrder ppOrder)
 	{
@@ -115,7 +120,6 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(ppOrder.getQtyOpen())
 				.warehouseId(ppOrder.getWarehouseId())
-				// .customerId(ppOrder.getBPartnerId()) not 100% sure if the ppOrder's bPartner is the customer this is made for
 				.build();
 	}
 
