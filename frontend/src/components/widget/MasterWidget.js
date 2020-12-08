@@ -91,6 +91,7 @@ class MasterWidget extends PureComponent {
       viewId,
       updatePropertyValue,
       disconnected,
+      updateRow,
     } = this.props;
 
     value = formatValueByWidgetType({ widgetType, value });
@@ -141,6 +142,9 @@ class MasterWidget extends PureComponent {
       viewId,
       isEdit
     );
+
+    // flash the row to indicate a change
+    updateRow && updateRow();
     this.setState({ edited: false });
 
     disconnected === 'inlineTab' &&
@@ -324,6 +328,7 @@ MasterWidget.propTypes = {
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
   disconnected: PropTypes.string,
+  updateRow: PropTypes.func,
 };
 
 export default MasterWidget;

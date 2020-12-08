@@ -65,17 +65,13 @@ class TableCell extends PureComponent {
    * when you change a value within a table cell by typing something in that specific cell.
    */
   handleKeyDown = (e) => {
-    const { onKeyDown, property, isReadonly, updateRow } = this.props;
+    const { onKeyDown, property, isReadonly } = this.props;
 
     if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
 
     onKeyDown(e, property, isReadonly);
-
-    // TODO: We should limit this to only action keys (esc, tab, enter)
-    !isReadonly && updateRow(); // toggle the flag in parent component highlighting
-    // the row giving the user feedback that an action is running
   };
 
   /**
@@ -180,6 +176,7 @@ class TableCell extends PureComponent {
       tdValue,
       description,
       colIndex,
+      updateRow,
     } = this.props;
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
@@ -242,6 +239,7 @@ class TableCell extends PureComponent {
               supportFieldEdit,
               entity,
               updateHeight,
+              updateRow,
             }}
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
