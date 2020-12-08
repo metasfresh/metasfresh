@@ -6,6 +6,7 @@ import SectionGroup from '../SectionGroup';
 import { getInlineTabLayoutAndData } from '../../actions/InlineTabActions';
 import { deleteRequest } from '../../api';
 import Prompt from '../app/Prompt';
+import counterpart from 'counterpart';
 
 class InlineTab extends PureComponent {
   constructor(props) {
@@ -116,9 +117,12 @@ class InlineTab extends PureComponent {
                   {/* These prompt strings are hardcoded because they need to be provided by the BE */}
                   {promptOpen && (
                     <Prompt
-                      title="Delete"
-                      text="Are you sure?"
-                      buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+                      title={counterpart.translate('window.Delete.caption')}
+                      text={counterpart.translate('window.delete.message')}
+                      buttons={{
+                        submit: counterpart.translate('window.delete.submit'),
+                        cancel: counterpart.translate('window.delete.cancel'),
+                      }}
                       onCancelClick={this.handlePromptCancel}
                       selected={rowId}
                       onSubmitClick={this.handlePromptDelete}

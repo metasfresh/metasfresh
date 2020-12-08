@@ -400,8 +400,6 @@ ActionButton.propTypes = {
   readonly: PropTypes.bool,
 };
 
-
-
 const mapStateToProps = ({ windowHandler, appHandler }) => ({
   modalVisible: windowHandler.modal.visible,
   processStatus: appHandler.processStatus,
