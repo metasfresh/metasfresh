@@ -113,7 +113,7 @@ public class HUKeyFactory implements IHUKeyFactory
 	@Override
 	public void dispose()
 	{
-		attributesStorageFactory.clearCache();
+		attributesStorageFactory.flushAndClearCache();
 		disposed = true;
 	}
 
@@ -138,7 +138,7 @@ public class HUKeyFactory implements IHUKeyFactory
 	@Override
 	public void clearCache()
 	{
-		attributesStorageFactory.clearCache();
+		attributesStorageFactory.flushAndClearCache();
 	}
 
 	/**
