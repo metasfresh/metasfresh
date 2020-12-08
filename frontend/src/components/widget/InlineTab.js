@@ -36,6 +36,8 @@ class InlineTab extends PureComponent {
     );
   };
 
+  handleDelete = () => {};
+
   render() {
     const {
       id: docId,
@@ -74,17 +76,30 @@ class InlineTab extends PureComponent {
           <div className="inline-tab-active inline-tab-offset-top">
             <div className="inline-tab-content">
               {layout && data && (
-                <SectionGroup
-                  data={data}
-                  dataId={docId}
-                  layout={layout}
-                  modal={true}
-                  tabId={tabId}
-                  rowId={rowId}
-                  isModal={true}
-                  tabsInfo={null}
-                  disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
-                />
+                <div>
+                  <SectionGroup
+                    data={data}
+                    dataId={docId}
+                    layout={layout}
+                    modal={true}
+                    tabId={tabId}
+                    rowId={rowId}
+                    isModal={true}
+                    tabsInfo={null}
+                    disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
+                  />
+                  <div className="row">
+                    <div className="col-lg-12">
+                      <button
+                        className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
+                        onClick={this.handleDelete()}
+                      >
+                        Delete
+                      </button>
+                      <div className="clearfix" />
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
