@@ -22,10 +22,12 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.exceptions.HUException;
@@ -45,10 +47,12 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
@@ -65,7 +69,18 @@ import java.util.TreeSet;
 public class M_InOut
 {
 	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	private final IHUInOutDAO inOutDAO = Services.get(IHUInOutDAO.class);
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 
 	@Init
 	public void init()
@@ -86,7 +101,7 @@ public class M_InOut
 		}
 		else
 		{
-			final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+			final IHUInOutBL huInOutBL = this.huInOutBL;
 			huInOutBL.copyAssignmentsToReversal(inout);
 			huInOutBL.destroyHUs(inout);
 		}
@@ -103,7 +118,7 @@ public class M_InOut
 	{
 		if (shipment.isSOTrx())
 		{
-			final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+			final IHUInOutBL huInOutBL = this.huInOutBL;
 			huInOutBL.createPackingMaterialLines(shipment);
 		}
 		else
@@ -114,7 +129,24 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void setHUStatusShippedForShipment(final I_M_InOut shipment)
+	public void afterComplete(@NonNull final I_M_InOut shipment)
+	{
+		setHUStatusShippedForShipment(shipment);
+		emptyPickingSlots(shipment);
+		generateEmptiesMovementForEmptiesInOut(shipment);
+		updateAttributes(shipment);
+	}
+
+	private void updateAttributes(@NonNull final I_M_InOut shipment)
+	{
+		final List<I_M_HU> hus = inOutDAO.retrieveHandlingUnits(shipment);
+		for (final I_M_HU hu : hus)
+		{
+			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
+		}
+	}
+
+	private void setHUStatusShippedForShipment(final I_M_InOut shipment)
 	{
 		// Make sure we deal with a shipment
 		if (!shipment.isSOTrx())
@@ -123,16 +155,15 @@ public class M_InOut
 		}
 
 		// make sure we are not dealing with a customer return
-		if (Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
+		if (huInOutBL.isCustomerReturn(shipment))
 		{
 			return;
 		}
 
-		Services.get(IHUShipmentAssignmentBL.class).updateHUsOnShipmentComplete(shipment);
+		huShipmentAssignmentBL.updateHUsOnShipmentComplete(shipment);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void emptyPickingSlots(final I_M_InOut shipment)
+	private void emptyPickingSlots(final I_M_InOut shipment)
 	{
 		// Make sure we deal with a shipment
 		if (!shipment.isSOTrx())
@@ -140,13 +171,11 @@ public class M_InOut
 			return;
 		}
 
-		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-
 		//
 		// Retrieve all HUs which we need to remove from their picking slots
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
 
-		final List<I_M_HU> handlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(shipment);
+		final List<I_M_HU> handlingUnits = inOutDAO.retrieveHandlingUnits(shipment);
 
 		husToRemove.addAll(handlingUnits);
 
@@ -158,8 +187,7 @@ public class M_InOut
 		}
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void generateEmptiesMovementForEmptiesInOut(final I_M_InOut inout)
+	private void generateEmptiesMovementForEmptiesInOut(final I_M_InOut inout)
 	{
 		// do nothing if completing the reversal document
 		if (inout.getReversal_ID() > 0)
@@ -169,13 +197,12 @@ public class M_InOut
 
 		// task #1306: Do not genertate empties movements for customer returns
 
-		if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+		if (huInOutBL.isCustomerReturn(inout))
 		{
 			return;
 		}
 
 		// do nothing if this is not an empties shipment/receipt
-		final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 		if (!huEmptiesService.isEmptiesInOut(inout))
 		{
 			return;
@@ -196,11 +223,11 @@ public class M_InOut
 
 		//
 		// Remove all HU Assignments
-		Services.get(IHUShipmentAssignmentBL.class).removeHUAssignments(shipment);
+		huShipmentAssignmentBL.removeHUAssignments(shipment);
 
 		//
 		// Unassign shipment from M_Packages (if any)
-		Services.get(IHUPackageBL.class).unassignShipmentFromPackages(shipment);
+		huPackageBL.unassignShipmentFromPackages(shipment);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
@@ -208,7 +235,6 @@ public class M_InOut
 	{
 		//
 		// Services
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		final boolean hasHUAssignments = huAssignmentDAO.hasHUAssignmentsForModel(inout);
 		if (!hasHUAssignments) // reactivation is allowed if there are no HU assignments
@@ -241,7 +267,7 @@ public class M_InOut
 			return;
 		}
 
-		Services.get(IHUPackageBL.class).unassignShipmentFromPackages(shipment);
+		huPackageBL.unassignShipmentFromPackages(shipment);
 	}
 
 	/**
@@ -254,7 +280,6 @@ public class M_InOut
 	public void updateReversedQtys(final I_M_InOut inout)
 	{
 
-		final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 		final I_M_InOut reversal = inout.getReversal();
 
 		// shall never happen
@@ -279,7 +304,7 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void generateHUsForCustomerReturn(final I_M_InOut customerReturn)
 	{
-		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+		final IHUInOutBL huInOutBL = this.huInOutBL;
 
 		if (!huInOutBL.isCustomerReturn(customerReturn))
 		{
@@ -287,13 +312,13 @@ public class M_InOut
 			return;
 		}
 
-		if (Services.get(IInOutBL.class).isReversal(customerReturn))
+		if (inOutBL.isReversal(customerReturn))
 		{
 			// nothing to do
 			return;
 		}
 
-		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
+		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
 
 		// the handling units are already created
 		if (!existingHandlingUnits.isEmpty())
@@ -313,8 +338,7 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
-		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+		final IHUInOutBL huInOutBL = this.huInOutBL;
 
 		if (!(huInOutBL.isVendorReturn(returnInOut) || huInOutBL.isCustomerReturn(returnInOut)))
 		{
@@ -327,7 +351,7 @@ public class M_InOut
 			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
 		}
 
-		final List<I_M_HU> hus = Services.get(IHUAssignmentDAO.class).retrieveTopLevelHUsForModel(returnInOut);
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(returnInOut);
 
 		if (hus.isEmpty())
 		{
@@ -341,7 +365,7 @@ public class M_InOut
 		}
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
-		Services.get(IHUSnapshotDAO.class).restoreHUs()
+		snapshotDAO.restoreHUs()
 				.setContext(context)
 				.setSnapshotId(snapshotId)
 				.setDateTrx(returnInOut.getMovementDate())
