@@ -103,4 +103,6 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 
 	/** @return previously added listeners that want to be notified before an empty HU is destroyed */
 	List<EmptyHUListener> getEmptyHUListeners();
+
+	void flush();
 }

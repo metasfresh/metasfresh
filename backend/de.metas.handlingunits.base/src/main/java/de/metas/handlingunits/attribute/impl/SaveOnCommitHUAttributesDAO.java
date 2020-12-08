@@ -1,20 +1,19 @@
 package de.metas.handlingunits.attribute.impl;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.NullAutoCloseable;
-
 import com.google.common.base.Supplier;
-
 import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.NullAutoCloseable;
 
 public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 {
@@ -117,8 +116,19 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	@Override
 	public void flushAndClearCache()
 	{
-		// NOTE: clearing the underlying cache is not supported because in order to decide with which delegate we need to work,
-		// we need the HU or at least which is the transaction.
+		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (trx == null || trxManager.isNull(trx))
+		{
+			return;
+		}
+
+		final SaveDecoupledHUAttributesDAO attributesDAO = trx.getProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO);
+		if (attributesDAO == null)
+		{
+			return;
+		}
+
+		attributesDAO.flushAndClearCache();
 	}
 
 }
