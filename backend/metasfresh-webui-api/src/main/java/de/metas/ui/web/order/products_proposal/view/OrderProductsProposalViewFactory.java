@@ -69,7 +69,6 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final CampaignPriceService campaignPriceService;
 
-
 	public OrderProductsProposalViewFactory(
 			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
@@ -133,6 +132,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.order(order)
 				.bpartnerId(order.getBpartnerId())
 				.soTrx(order.getSoTrx())
+				.currencyId(order.getCurrency().getId())
 				//
 				.build();
 	}
