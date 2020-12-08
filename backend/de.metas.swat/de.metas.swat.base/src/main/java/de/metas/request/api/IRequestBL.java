@@ -47,7 +47,7 @@ public interface IRequestBL extends ISingletonService
 	 *
 	 * @param line
 	 */
-	I_R_Request createRequestFromInOutLine(I_M_InOutLine line);
+	I_R_Request createRequestFromInOutLineWithQualityIssues(I_M_InOutLine line);
 
 	I_R_Request createRequestFromDDOrderLine(I_DD_OrderLine line);
 

@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.document.IDocTypeDAO;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -25,14 +26,21 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestDAO;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.request.api.RequestCandidate;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -41,7 +49,9 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_R_Request;
 import org.compiere.model.X_M_InOut;
+import org.compiere.model.X_R_Request;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -50,6 +60,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -87,6 +98,9 @@ public class InOutBL implements IInOutBL
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -519,7 +533,6 @@ public class InOutBL implements IInOutBL
 		}
 	}
 
-
 	@Nullable
 	public I_C_Order getOrderByInOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
@@ -533,5 +546,44 @@ public class InOutBL implements IInOutBL
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 
 		return orderLine.getC_Order();
+	}
+
+	private RequestTypeId getRequestTypeId(final SOTrx soTrx)
+	{
+		return soTrx.isSales()
+				? requestTypeDAO.retrieveCustomerRequestTypeId()
+				: requestTypeDAO.retrieveVendorRequestTypeId();
+	}
+
+	@Override
+	public Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(@NonNull final I_M_InOut inOut)
+	{
+		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+
+		if (docType.getR_RequestType_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(RequestTypeId.ofRepoIdOrNull(docType.getR_RequestType_ID()));
+	}
+
+	@Override
+	public I_R_Request createRequestFromInOut(@NonNull final I_M_InOut inOut)
+	{
+		final Optional<RequestTypeId> requestType = getRequestTypeForCreatingNewRequestsAfterComplete(inOut);
+
+		final RequestCandidate requestCandidate = RequestCandidate.builder()
+				.summary(inOut.getDescription() != null ? inOut.getDescription() : " ")
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.orgId(OrgId.ofRepoId(inOut.getAD_Org_ID()))
+				.recordRef(TableRecordReference.of(inOut))
+				.requestTypeId(requestType.orElseGet(() -> getRequestTypeId(SOTrx.ofBoolean(inOut.isSOTrx()))))
+				.partnerId(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()))
+				.userId(UserId.ofRepoIdOrNull(inOut.getAD_User_ID()))
+				.dateDelivered(TimeUtil.asZonedDateTime(inOut.getMovementDate()))
+				.build();
+
+		return requestsRepo.createRequest(requestCandidate);
 	}
 }
