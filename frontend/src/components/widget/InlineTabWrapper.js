@@ -1,3 +1,19 @@
+/**
+ *  InlineTabWrapper - component
+ *
+ * This is the component that will render when a widget of type 'inlineTab' is present in the layout
+ * - it contains the rows of the inlineTab plus the form that would allow addition of new entries (rows)
+ * - rows are rendered using the <InlineTab> component
+ * - the form for adding a new row is rendered by the SubSections
+ *   + the functionality is similar to Add New under the tabs
+ *   + the difference is that the  data is disconnected from the main structure
+ *   + the data is stored in the Redux Store under the windowHandler.inlineTab.wrapperData path
+ * - actions are found in: src/action/InlineTabActions
+ * - wrapperData index is formed using ${windowId}_${tabId}_${docId} pattern
+ * - adding a new record calls the createWindow action with param NEW for row. From here you will get the rowId on the newly created entry
+ * - data sync with the redux store is done via fetchInlineTabWrapperData action
+ * - inlineTab items keys are formed using ${windowId}_${tabId}_${rowId} pattern
+ */
 import React, { PureComponent } from 'react';
 import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
@@ -8,6 +24,7 @@ import {
   setInlineTabAddNew,
 } from '../../actions/InlineTabActions';
 import SectionGroup from '../SectionGroup';
+import counterpart from 'counterpart';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
@@ -15,6 +32,10 @@ class InlineTabWrapper extends PureComponent {
     this.updateTable(); // this is getting table rows
   }
 
+  /**
+   * @method updateTable
+   * @summary does a refresh of the table data
+   */
   updateTable = () => {
     const query = '';
     const {
@@ -25,6 +46,11 @@ class InlineTabWrapper extends PureComponent {
     fetchInlineTabWrapperData({ tabId, windowId, docId, query });
   };
 
+  /**
+   * @method showAddNewForm
+   * @summary creates a new Window, the data from here are used for rendering the SectionGroup and also from here we get the rowId
+   *          a thing to note here is the `disconnected` flag which specifies the type of Widget, this serves the logic in the WindowActions
+   */
   showAddNewForm = () => {
     const {
       createWindow,
@@ -42,6 +68,10 @@ class InlineTabWrapper extends PureComponent {
     });
   };
 
+  /**
+   * @method handleFormClose
+   * @summary - actions triggered on closing the form, here we toggle the form visibility using the setInlineTabAddNew action
+   */
   handleFormClose = () => {
     const { setInlineTabAddNew } = this.props;
     setInlineTabAddNew({ visible: false });
@@ -84,17 +114,19 @@ class InlineTabWrapper extends PureComponent {
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                 onClick={this.showAddNewForm}
               >
-                Add new
+                {counterpart.translate('window.addNew.caption')}
               </button>
               <div className="clearfix" />
             </div>
           )}
-          {/* Actual content */}
+          {/* Actual form */}
           {addNewFormVisible && rowId && addNewData && (
             <div className="inline-tab-active">
               <div className="inline-tab-content">
                 <div>
-                  <div className="inlinetab-form-header">Add new record</div>
+                  <div className="inlinetab-form-header">
+                    {counterpart.translate('window.addNew.caption')}
+                  </div>
                   <div className="inlinetab-close">
                     <i
                       className="meta-icon-close-alt"
@@ -139,6 +171,11 @@ InlineTabWrapper.propTypes = {
   setInlineTabAddNew: PropTypes.func.isRequired,
 };
 
+/**
+ * @summary - here we do the actual mapping of the redux store props to the local props we need for rendering the elements
+ * @param {*} state - redux state
+ * @param {*} props - local props
+ */
 const mapStateToProps = (state, props) => {
   const {
     inlineTab: { windowId, tabId },
