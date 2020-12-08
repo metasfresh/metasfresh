@@ -12,10 +12,11 @@ import org.compiere.model.X_C_DocType;
 
 public class DocTypeBL implements IDocTypeBL
 {
+	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+
 	@Override
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)
 	{
-		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
 		return InterfaceWrapperHelper.getModelTranslationMap(docType)
 				.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
@@ -24,7 +25,6 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesQuotation(@NonNull final DocTypeId docTypeId)
 	{
-		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 		return isSalesQuotation(dt);
 	}
@@ -39,7 +39,6 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesProposal(@NonNull final DocTypeId docTypeId)
 	{
-		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 		return isSalesProposal(dt);
 	}
@@ -54,7 +53,6 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesProposalOrQuotation(@NonNull final DocTypeId docTypeId)
 	{
-		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 		return isSalesProposalOrQuotation(dt);
 	}
@@ -76,7 +74,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isPrepay(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
 		return isPrepay(docType);
 	}
 
@@ -90,6 +88,6 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean hasRequestType(@NonNull final DocTypeId docTypeId)
 	{
-		return Services.get(IDocTypeDAO.class).getById(docTypeId).getR_RequestType_ID() > 0;
+		return docTypesRepo.getById(docTypeId).getR_RequestType_ID() > 0;
 	}
 }
