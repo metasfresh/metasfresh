@@ -367,6 +367,10 @@ class ActionButton extends PureComponent {
     );
   }
 }
+/**
+ * Default props
+ */
+ActionButton.defaultProps = { readonly: false };
 
 /**
  * @typedef {object} Props Component props
@@ -393,8 +397,10 @@ ActionButton.propTypes = {
   docId: PropTypes.any,
   activeTab: PropTypes.string,
   processStatus: PropTypes.string,
-  readonly: PropTypes.boolean,
+  readonly: PropTypes.bool,
 };
+
+
 
 const mapStateToProps = ({ windowHandler, appHandler }) => ({
   modalVisible: windowHandler.modal.visible,
