@@ -30,20 +30,13 @@ class ActionButton extends PureComponent {
       return;
     }
 
-    openModal(
-      action.caption,
-      action.processId,
-      'process',
-      null,
-      null,
-      false,
-      null,
-      [docId],
-      null,
-      null,
-      null,
-      null
-    );
+    openModal({
+      title: action.caption,
+      windowId: action.processId,
+      modalType: 'process',
+      isAdvanced: false,
+      viewDocumentIds: [docId],
+    });
   };
 
   render() {
@@ -129,20 +122,12 @@ class TableFilter extends PureComponent {
       return;
     }
 
-    openModal(
-      action.caption,
-      action.processId,
-      'process',
-      null,
-      null,
-      false,
-      null,
-      [docId],
-      null,
-      null,
-      null,
-      null
-    );
+    openModal({
+      title: action.caption,
+      windowId: action.processId,
+      modalType: 'process',
+      viewDocumentIds: [docId],
+    });
   };
 
   /**

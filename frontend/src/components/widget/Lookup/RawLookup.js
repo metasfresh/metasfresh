@@ -219,18 +219,13 @@ export class RawLookup extends Component {
     this.handleBlur();
 
     dispatch(
-      openModal(
-        newRecordCaption,
-        newRecordWindowId,
-        'window',
-        null,
-        null,
-        null,
-        null,
-        null,
-        'NEW',
-        filterWidget ? parameterName : mainProperty[0].field
-      )
+      openModal({
+        title: newRecordCaption,
+        windowId: newRecordWindowId,
+        modalType: 'window',
+        dataId: 'NEW',
+        triggerField: filterWidget ? parameterName : mainProperty[0].field
+      })
     );
   };
 

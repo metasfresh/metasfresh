@@ -1,4 +1,4 @@
-import { get } from 'lodash';
+import { get, find } from 'lodash';
 import { createSelector } from 'reselect';
 
 import {
@@ -93,6 +93,16 @@ const getLocalView = createSelector(
 );
 
 const getViewType = (isModal) => (isModal ? 'modals' : 'views');
+
+export function findViewByViewId({ viewHandler }, viewId) {
+  let view = find(viewHandler.views, (item) => item.viewId === viewId);
+
+  if (!view) {
+    view = find(viewHandler.modals, (item) => item.viewId === viewId);
+  }
+
+  return view;
+}
 
 export default function viewHandler(state = initialState, action) {
   if ((!action.payload || !action.payload.id) && action.type !== DELETE_VIEW) {

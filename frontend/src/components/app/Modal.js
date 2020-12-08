@@ -148,6 +148,7 @@ class Modal extends Component {
       tabId,
       rowId,
       modalType,
+      documentType,
       staticModalType,
       parentSelection,
       parentWindowId,
@@ -214,6 +215,7 @@ class Modal extends Component {
             processType: windowId,
             viewId,
             parentId: parentWindowId,
+            documentType,
             ids: viewId
               ? modalViewDocumentIds
               : dataId
@@ -774,6 +776,7 @@ class Modal extends Component {
  * @prop {*} [triggerField]
  * @prop {string} [viewId]
  * @prop {string} [windowId]
+ * @prop {string} [documentType]
  */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -804,6 +807,7 @@ Modal.propTypes = {
   triggerField: PropTypes.any,
   viewId: PropTypes.string,
   windowId: PropTypes.string,
+  documentType: PropTypes.string,
   viewDocumentIds: PropTypes.array,
   printBtnCaption: PropTypes.string,
   printingOptions: PropTypes.object,
