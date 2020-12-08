@@ -204,8 +204,7 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
 
 /*
  * @method quickActionsRequest
- * @summary Do a request for quick actions. If `child/parent` params are available
- * we're fetching QA related to the corresponding view
+ * @summary Do a request for quick actions
  *
  * @param {string} viewId
  * @param {string} viewProfileId
@@ -221,44 +220,31 @@ export async function quickActionsRequest({
   childView,
   parentView,
 }) {
-  let request = null;
   let query = null;
 
-  if (parentView && parentView.viewId) {
+  if (childView && childView.viewId) {
     query = getQueryString({
       viewProfileId,
-      selectedIds: parentView.selected,
-      childViewId: viewId,
-      childViewSelectedIds: selectedIds,
+      selectedIds,
+      childViewId: childView.viewId,
+      childViewSelectedIds: childView.selected,
     });
-
-    request = get(`
-      ${config.API_URL}/documentView/${parentView.windowId}/${
-      parentView.viewId
-    }/quickActions${query ? `?${query}` : ''}`);
-  } else if (childView && childView.viewId) {
+  } else if (parentView && parentView.viewId) {
     query = getQueryString({
       viewProfileId,
-      selectedIds: childView.selected,
-      parentViewId: viewId,
-      parentViewSelectedIds: selectedIds,
+      selectedIds,
+      parentViewId: parentView.viewId,
+      parentViewSelectedIds: parentView.selected,
     });
-
-    request = get(`
-      ${config.API_URL}/documentView/${childView.windowId}/${
-      childView.viewId
-    }/quickActions${query ? `?${query}` : ''}`);
   } else {
     query = getQueryString({
       viewProfileId,
       selectedIds,
     });
-
-    request = get(`
-      ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
-      query ? `?${query}` : ''
-    }`);
   }
 
-  return request;
+  return get(`
+    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
+    query ? `?${query}` : ''
+  }`);
 }

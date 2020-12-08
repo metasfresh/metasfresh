@@ -52,7 +52,6 @@ const DLpropTypes = {
   setListId: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
-  updateTableSelection: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
 };
