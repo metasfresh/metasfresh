@@ -1,18 +1,18 @@
 /**
  *  InlineTabWrapper - component
  *
- * This is the component that will render when a widget of type 'inlineTab' is present in the layout
- * - it contains the rows of the inlineTab plus the form that would allow addition of new entries (rows)
- * - rows are rendered using the <InlineTab> component
- * - the form for adding a new row is rendered by the SubSections
- *   + the functionality is similar to Add New under the tabs
- *   + the difference is that the  data is disconnected from the main structure
- *   + the data is stored in the Redux Store under the windowHandler.inlineTab.wrapperData path
- * - actions are found in: src/action/InlineTabActions
- * - wrapperData index is formed using ${windowId}_${tabId}_${docId} pattern
- * - adding a new record calls the createWindow action with param NEW for row. From here you will get the rowId on the newly created entry
- * - data sync with the redux store is done via fetchInlineTabWrapperData action
- * - inlineTab items keys are formed using ${windowId}_${tabId}_${rowId} pattern
+ *  This is the component that will render when a widget of type 'inlineTab' is present in the layout
+ *  - it contains the rows of the inlineTab plus the form that would allow addition of new entries (rows)
+ *  - rows are rendered using the <InlineTab> component
+ *  - the form for adding a new row is rendered by the SubSections
+ *    + the functionality is similar to Add New under the tabs
+ *    + the difference is that the  data is disconnected from the main structure
+ *    + the data is stored in the Redux Store under the windowHandler.inlineTab.wrapperData path
+ *  - actions are found in: src/action/InlineTabActions
+ *  - wrapperData index is formed using ${windowId}_${tabId}_${docId} pattern
+ *  - adding a new record calls the createWindow action with param NEW for row. From here you will get the rowId on the newly created entry
+ *  - data sync with the redux store is done via fetchInlineTabWrapperData action
+ *  - inlineTab items keys are formed using ${windowId}_${tabId}_${rowId} pattern
  */
 import React, { PureComponent } from 'react';
 import InlineTab from './InlineTab';

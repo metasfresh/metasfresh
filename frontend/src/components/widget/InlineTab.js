@@ -1,3 +1,12 @@
+/**
+ *  InlineTab - component
+ *
+ *  This renders the lines of the main InlineTabWrapper
+ *  - has just two local flags for knowing the open/closed state and the rendering state of the prompt (deletion confirmation)
+ *  - when the row is clicked it will fetch the data used to feed the SectionGroup widget
+ *  - second click on the row it will close the edit mode
+ *
+ */
 import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
@@ -14,6 +23,10 @@ class InlineTab extends PureComponent {
     this.state = { isOpen: false, promptOpen: false };
   }
 
+  /**
+   * @method toggleOpen
+   * @summary - toggles the visibility of the edit mode, it gets the data using getInlineTabLayoutAndData action and it feeds the store
+   */
   toggleOpen = () => {
     const {
       windowId,
@@ -39,10 +52,23 @@ class InlineTab extends PureComponent {
     );
   };
 
+  /**
+   * @method handleDelete
+   * @summary this shows the confirm dialog box
+   */
   handleDelete = () => this.setState({ promptOpen: true });
 
+  /**
+   * @method handlePromptCancel
+   * @summary closes the confirmation dialog by setting the local state flag to false
+   */
   handlePromptCancel = () => this.setState({ promptOpen: false });
 
+  /**
+   * @method handlePromptDelete
+   * @summary - sets the promptOpen flag to `false` value hiding the confirmation dialog and performs a deleteRequest
+   *            when the promisse is fulfilled it refreshes the table data
+   */
   handlePromptDelete = () => {
     this.setState({ promptOpen: false });
     const { windowId, id: docId, tabId, rowId, updateTable } = this.props;
@@ -151,6 +177,12 @@ InlineTab.propTypes = {
   updateTable: PropTypes.func,
 };
 
+/**
+ * @summary - here we do the actual mapping of the redux store props to the local props we need for rendering the InlineTab
+ *            basically we are getting the `data` and the `layout`
+ * @param {*} state - redux state
+ * @param {*} props - local props
+ */
 const mapStateToProps = (state, props) => {
   const { windowId, tabId, rowId } = props;
   const {
