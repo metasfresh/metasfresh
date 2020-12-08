@@ -63,7 +63,7 @@ export function setInlineTabLayoutAndData({ inlineTabId, data }) {
 }
 
 /*
- * Action creator called to set the inlineTab AddNew form related data in the store
+ * Action creator called to set the inlineTab AddNew form related data in the store, visible is for toggling the visibility
  */
 export function setInlineTabAddNew({ visible, windowId, tabId, rowId }) {
   return {
@@ -128,6 +128,12 @@ export function getInlineTabLayoutAndData({ windowId, tabId, docId, rowId }) {
   };
 }
 
+/**
+ * @method inlineTabAfterGetLayout
+ * @summary triggers post layout fetch actions that will update the inline tab layout and data and the inlineTab addNew sub-branch
+ * @param {object} data - the layout fetched previously with getLayout
+ * @param {object} disconnectedData - result from initWindow (add new case for inlineTab) - see in the WindowActions what it contains (for debug)
+ */
 export function inlineTabAfterGetLayout({ data, disconnectedData }) {
   return (dispatch) => {
     const inlineTabTargetId = `${disconnectedData.windowId}_${

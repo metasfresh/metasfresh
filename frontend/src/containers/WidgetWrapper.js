@@ -79,6 +79,7 @@ const mapStateToProps = (state, props) => {
       break;
     case 'modal':
     case 'element':
+      /** forming the fieldsCopy and widgetData for the disconnected case - ex: when is `inlineTab`, other future types can be added as well */
       if (props.disconnected) {
         if (!isEmpty(state.windowHandler.inlineTab)) {
           const { rowId, tabId, windowId } = props;
@@ -96,6 +97,7 @@ const mapStateToProps = (state, props) => {
           ];
         }
       } else {
+        /** normal set of the widgetData and fieldsCopy - these are fetched using cache selectors from the pre-defined structure */
         widgetData = getElementWidgetData(state, isModal, layoutId);
         fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
       }
@@ -120,10 +122,6 @@ const mapStateToProps = (state, props) => {
 
       break;
     }
-    // case 'inline-tab':
-    //   console.log('inline tab field');
-    //   widgetData = getInlineTabLayout(state, isModal, layoutId);
-    //   break;
     default:
       widgetData = [{}];
 

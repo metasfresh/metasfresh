@@ -803,6 +803,7 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     }
+    // INLINE TAB ACTINIONS
     case SET_INLINE_TAB_LAYOUT_AND_DATA: {
       return {
         ...state,

@@ -147,6 +147,7 @@ class MasterWidget extends PureComponent {
     updateRow && updateRow();
     this.setState({ edited: false });
 
+    /** we are using this `disconnected` flag to know when the Master widget should update the property value differently */
     disconnected === 'inlineTab' &&
       updatePropertyValue({ ...updateOptions, ret });
 

@@ -582,6 +582,7 @@ export function createWindow({
           );
           dispatch(updateStatus(response.data));
           dispatch(updateModal(data.rowId));
+          /** special case of inlineTab - disconnectedData will be used for data feed */
           if (disconnected === 'inlineTab') {
             disconnectedData = response.data[0];
           }
@@ -611,6 +612,7 @@ export function createWindow({
               dispatch(updateTabTable(tableId, tableData));
             });
           }
+          /** post get layout action triggered for the inlineTab case */
           if (disconnectedData && disconnected === 'inlineTab') {
             dispatch(inlineTabAfterGetLayout({ data, disconnectedData }));
           }
