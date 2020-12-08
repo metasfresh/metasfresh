@@ -4,11 +4,13 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import SectionGroup from '../SectionGroup';
 import { getInlineTabLayoutAndData } from '../../actions/WindowActions';
+import { deleteRequest } from '../../api';
+import Prompt from '../app/Prompt';
 
 class InlineTab extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { isOpen: false };
+    this.state = { isOpen: false, promptOpen: false };
   }
 
   toggleOpen = () => {
@@ -36,7 +38,17 @@ class InlineTab extends PureComponent {
     );
   };
 
-  handleDelete = () => {};
+  handleDelete = () => this.setState({ promptOpen: true });
+
+  handlePromptCancel = () => this.setState({ promptOpen: false });
+
+  handlePromptDelete = () => {
+    this.setState({ promptOpen: false });
+    const { windowId, id: docId, tabId, rowId, updateTable } = this.props;
+    deleteRequest('window', windowId, docId, tabId, rowId).then(() =>
+      updateTable()
+    );
+  };
 
   render() {
     const {
@@ -48,7 +60,7 @@ class InlineTab extends PureComponent {
       fieldsByName,
       validStatus: { valid },
     } = this.props;
-    const { isOpen } = this.state;
+    const { isOpen, promptOpen } = this.state;
 
     return (
       <div>
@@ -88,17 +100,29 @@ class InlineTab extends PureComponent {
                     tabsInfo={null}
                     disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
                   />
+                  {/* Delete button */}
                   <div className="row">
                     <div className="col-lg-12">
                       <button
                         className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
-                        onClick={this.handleDelete()}
+                        onClick={() => this.handleDelete(rowId)}
                       >
                         Delete
                       </button>
                       <div className="clearfix" />
                     </div>
                   </div>
+                  {/* These prompt strings are hardcoded because they need to be provided by the BE */}
+                  {promptOpen && (
+                    <Prompt
+                      title="Delete"
+                      text="Are you sure?"
+                      buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+                      onCancelClick={this.handlePromptCancel}
+                      selected={rowId}
+                      onSubmitClick={this.handlePromptDelete}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -119,6 +143,7 @@ InlineTab.propTypes = {
   data: PropTypes.any,
   validStatus: PropTypes.object.isRequired,
   getInlineTabLayoutAndData: PropTypes.func.isRequired,
+  updateTable: PropTypes.func,
 };
 
 const mapStateToProps = (state, props) => {

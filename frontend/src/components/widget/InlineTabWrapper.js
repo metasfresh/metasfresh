@@ -70,6 +70,7 @@ class InlineTabWrapper extends PureComponent {
             <InlineTab
               key={`${index}_${tabItem.rowId}`}
               parent={this.props}
+              updateTable={this.updateTable}
               {...tabItem}
             />
           ))}
