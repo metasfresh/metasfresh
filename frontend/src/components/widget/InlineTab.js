@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import SectionGroup from '../SectionGroup';
-import { getInlineTabLayoutAndData } from '../../actions/WindowActions';
+import { getInlineTabLayoutAndData } from '../../actions/InlineTabActions';
 import { deleteRequest } from '../../api';
 import Prompt from '../app/Prompt';
 

@@ -2,11 +2,11 @@ import React, { PureComponent } from 'react';
 import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { createWindow } from '../../actions/WindowActions';
 import {
-  createWindow,
   fetchInlineTabWrapperData,
   setInlineTabAddNew,
-} from '../../actions/WindowActions';
+} from '../../actions/InlineTabActions';
 import SectionGroup from '../SectionGroup';
 
 class InlineTabWrapper extends PureComponent {
