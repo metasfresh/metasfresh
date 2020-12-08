@@ -25,8 +25,6 @@ package de.metas.ui.web.pporder.process;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,11 +33,9 @@ import org.compiere.util.DB;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
@@ -57,54 +53,34 @@ import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 
-public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition {
+public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition
+{
 	final private static AdProcessId LabelPdf_AD_Process_ID = AdProcessId.ofRepoId(584768);
 	protected static final AdMessageKey MSG_MustBe_TopLevel_HU = AdMessageKey
 			.of("WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU");
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	final private IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable() {
-//		if (!getSelectedRowIds().isSingleDocumentId())
-//		{
-//			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-//		}
-//
-//		if (!getSingleSelectedRow().isTopLevelHU())
-//		{
-//			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_MustBe_TopLevel_HU));
-//		}
+	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	{
+
+		final ImmutableSet<HuId> distinctHuIds = retrieveSelectedHuIds();
+		if (distinctHuIds.isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt() {
+	protected String doIt()
+	{
 
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-
-		getSingleSelectedRow();
-
-		final ImmutableList<PPOrderLineRow> selectedRows = getView().streamByIds(selectedRowIds)
-				.collect(ImmutableList.toImmutableList());
-
-		final List<HuId> huIds = new ArrayList<HuId>();
-
-		selectedRows.forEach(row -> {
-			final PPOrderLineType type = row.getType();
-			if (type.isBOMLine()) {
-				huIds.add(row.getHuId());
-			} else if (type.isMainProduct()) {
-				final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
-				includedRows.stream().map(PPOrderLineRow::getHuId).collect(Collectors.toCollection(() -> huIds));
-			}
-		});
-
-		final ImmutableSet<HuId> distinctHuIds = huIds.stream().distinct().collect(ImmutableSet.toImmutableSet());
-
+		// create selection
+		final ImmutableSet<HuId> distinctHuIds = retrieveSelectedHuIds();
 		DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
 
 		// print
@@ -117,7 +93,35 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 	}
 
-	private ReportResult printLabel() {
+	private ImmutableSet<HuId> retrieveSelectedHuIds()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+
+		final ImmutableList<PPOrderLineRow> selectedRows = getView().streamByIds(selectedRowIds)
+				.collect(ImmutableList.toImmutableList());
+
+		final List<HuId> huIds = new ArrayList<HuId>();
+
+		selectedRows.forEach(row -> {
+			final PPOrderLineType type = row.getType();
+			if (type.isMainProduct())
+			{
+				final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
+				includedRows.stream().map(PPOrderLineRow::getHuId).collect(Collectors.toCollection(() -> huIds));
+			}
+			else
+			{
+				huIds.add(row.getHuId());
+			}
+		});
+
+		final ImmutableSet<HuId> distinctHuIds = huIds.stream().filter(Objects::nonNull).distinct()
+				.collect(ImmutableSet.toImmutableSet());
+		return distinctHuIds;
+	}
+
+	private ReportResult printLabel()
+	{
 		final PInstanceRequest pinstanceRequest = createPInstanceRequest();
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
 
@@ -129,13 +133,15 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 		return reportsClient.report(jasperProcessInfo);
 	}
 
-	private PInstanceRequest createPInstanceRequest() {
+	private PInstanceRequest createPInstanceRequest()
+	{
 
 		return PInstanceRequest.builder().processId(LabelPdf_AD_Process_ID)
 				.processParams(ImmutableList.of(ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId()))).build();
 	}
 
-	private String buildFilename() {
+	private String buildFilename()
+	{
 		final String instance = String.valueOf(getPinstanceId().getRepoId());
 		final String title = getProcessInfo().getTitle();
 
