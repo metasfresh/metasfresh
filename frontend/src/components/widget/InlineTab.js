@@ -58,8 +58,9 @@ class InlineTab extends PureComponent {
       layout,
       data,
       fieldsByName,
-      validStatus: { valid },
+      validStatus,
     } = this.props;
+    const valid = validStatus ? validStatus.valid : true;
     const { isOpen, promptOpen } = this.state;
 
     return (
@@ -141,7 +142,7 @@ InlineTab.propTypes = {
   fieldsByName: PropTypes.object,
   layout: PropTypes.any,
   data: PropTypes.any,
-  validStatus: PropTypes.object.isRequired,
+  validStatus: PropTypes.object,
   getInlineTabLayoutAndData: PropTypes.func.isRequired,
   updateTable: PropTypes.func,
 };
