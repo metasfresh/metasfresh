@@ -88,7 +88,7 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
-	public boolean hasRequestType(final DocTypeId docTypeId)
+	public boolean hasRequestType(@NonNull final DocTypeId docTypeId)
 	{
 		return Services.get(IDocTypeDAO.class).getById(docTypeId).getR_RequestType_ID() > 0;
 	}
