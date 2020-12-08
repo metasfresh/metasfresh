@@ -89,6 +89,7 @@ class MasterWidget extends PureComponent {
       isAdvanced = false,
       viewId,
       updatePropertyValue,
+      updateRow,
     } = this.props;
     value = formatValueByWidgetType({ widgetType, value });
 
@@ -132,6 +133,9 @@ class MasterWidget extends PureComponent {
       viewId,
       isEdit
     );
+
+    // flash the row to indicate a change
+    updateRow && updateRow();
     this.setState({ edited: false });
 
     return ret;
@@ -306,6 +310,7 @@ MasterWidget.propTypes = {
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
+  updateRow: PropTypes.func,
 };
 
 export default MasterWidget;
