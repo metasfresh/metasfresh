@@ -73,7 +73,13 @@ class DocumentListContainer extends Component {
     this.fetchLayoutAndData();
     this.renderedSuccessfuly = false;
 
-    this.debouncedRefresh = debounce(this.browseView, 500, { maxWait: 10000 });
+    this.debouncedRefresh = debounce(
+      () => {
+        this.browseView(true);
+      },
+      500,
+      { maxWait: 10000 }
+    );
   }
 
   UNSAFE_componentWillMount() {
@@ -349,7 +355,7 @@ class DocumentListContainer extends Component {
    * @method browseView
    * @summary If viewId exists, than browse that view.
    */
-  browseView = () => {
+  browseView = (websocketRefresh) => {
     const {
       viewId,
       page,
@@ -363,7 +369,13 @@ class DocumentListContainer extends Component {
 
     // in case of redirect from a notification, first call will have viewId empty
     if (viewId) {
-      this.getData(viewId, page, sort, locationSearchFilter).catch((err) => {
+      this.getData(
+        viewId,
+        page,
+        sort,
+        locationSearchFilter,
+        websocketRefresh
+      ).catch((err) => {
         if (err.response && err.response.status === 404) {
           this.createNewView();
         }
@@ -477,7 +489,7 @@ class DocumentListContainer extends Component {
    * @method getData
    * @summary Loads view/included tab data from REST endpoint
    */
-  getData = (id, page, sortingQuery, locationAreaSearch) => {
+  getData = (id, page, sortingQuery, locationAreaSearch, websocketRefresh) => {
     const {
       windowId,
       updateUri,
@@ -508,6 +520,7 @@ class DocumentListContainer extends Component {
       pageLength: this.pageLength,
       orderBy: sortingQuery,
       isModal,
+      websocketRefresh,
     })
       .then((response) => {
         const result = response.result;

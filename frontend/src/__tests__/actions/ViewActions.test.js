@@ -205,6 +205,7 @@ describe('ViewActions thunks', () => {
     const payload1 = {
       id: windowId,
       isModal: true,
+      websocketRefresh: false,
     };
     const payload2 = {
       id: windowId,
@@ -271,6 +272,7 @@ describe('ViewActions thunks', () => {
     const payload1 = {
       id: windowId,
       isModal: false,
+      websocketRefresh: false,
     };
     const payload2 = {
       id: windowId,

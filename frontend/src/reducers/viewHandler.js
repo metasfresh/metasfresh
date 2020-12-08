@@ -158,9 +158,14 @@ export default function viewHandler(state = initialState, action) {
     }
 
     case FETCH_DOCUMENT_PENDING: {
-      const { id, isModal } = action.payload;
+      const { id, isModal, websocketRefresh } = action.payload;
       const type = getViewType(isModal);
       const view = getLocalView(state, id, isModal);
+      // if a websocket event caused this data fetch, we're not setting
+      // pending flag to true as in case of multiple refreshes in a short
+      // period of time it will cause the spinner to flicker
+      // https://github.com/metasfresh/me03/issues/6262#issuecomment-733527251
+      const pending = websocketRefresh ? false : true;
 
       return {
         ...state,
@@ -169,7 +174,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             notFound: false,
-            pending: true,
+            pending,
             error: null,
           },
         },
