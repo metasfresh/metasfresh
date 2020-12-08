@@ -633,9 +633,12 @@ class Header extends PureComponent {
       <div>
         {prompt.open && (
           <Prompt
-            title="Delete"
-            text="Are you sure?"
-            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+            title={counterpart.translate('window.Delete.caption')}
+            text={counterpart.translate('window.delete.message')}
+            buttons={{
+              submit: counterpart.translate('window.delete.submit'),
+              cancel: counterpart.translate('window.delete.cancel'),
+            }}
             onCancelClick={this.handlePromptCancelClick}
             onSubmitClick={() => this.handlePromptSubmitClick(windowId, dataId)}
           />
