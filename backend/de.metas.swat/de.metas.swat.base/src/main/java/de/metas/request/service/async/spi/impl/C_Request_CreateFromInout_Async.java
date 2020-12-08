@@ -149,7 +149,7 @@ public class C_Request_CreateFromInout_Async extends WorkpackageProcessorAdapter
 		// for each line that was enqueued, create a R_Request containing the information from the inout line and inout
 		for (final I_M_InOutLine line : lines)
 		{
-			requestBL.createRequestFromInOutLine(line);
+			requestBL.createRequestFromInOutLineWithQualityIssues(line);
 		}
 
 		return Result.SUCCESS;

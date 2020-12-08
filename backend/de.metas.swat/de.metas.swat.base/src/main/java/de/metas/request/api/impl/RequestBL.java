@@ -67,7 +67,7 @@ public class RequestBL implements IRequestBL
 	protected static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
 
 	@Override
-	public I_R_Request createRequestFromInOutLine(@NonNull final I_M_InOutLine line)
+	public I_R_Request createRequestFromInOutLineWithQualityIssues(@NonNull final I_M_InOutLine line)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 

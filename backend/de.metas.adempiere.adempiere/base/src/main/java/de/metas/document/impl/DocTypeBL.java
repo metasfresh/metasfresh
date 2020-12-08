@@ -1,38 +1,14 @@
 package de.metas.document.impl;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
 
 public class DocTypeBL implements IDocTypeBL
 {
@@ -109,5 +85,11 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		return X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType());
+	}
+
+	@Override
+	public boolean hasRequestType(final DocTypeId docTypeId)
+	{
+		return Services.get(IDocTypeDAO.class).getById(docTypeId).getR_RequestType_ID() > 0;
 	}
 }
