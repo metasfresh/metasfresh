@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -346,6 +347,10 @@ public final class DataTypes
 		{
 			final int valueInt = (int)value;
 			return BigDecimal.valueOf(valueInt);
+		}
+		else if(value instanceof Quantity)
+		{
+			return ((Quantity)value).toBigDecimal();
 		}
 		else
 		{
