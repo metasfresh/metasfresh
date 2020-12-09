@@ -444,7 +444,7 @@ class TableWrapper extends PureComponent {
             title={counterpart.translate('window.Delete.caption')}
             text={counterpart.translate('window.delete.message')}
             buttons={{
-              submit: counterpart.translate('window.delete.submit'),
+              submit: counterpart.translate('window.delete.confirm'),
               cancel: counterpart.translate('window.delete.cancel'),
             }}
             onCancelClick={this.handlePromptCancelClick}
