@@ -76,8 +76,13 @@ class InlineTabWrapper extends PureComponent {
    * @summary - actions triggered on closing the form, here we toggle the form visibility using the setInlineTabAddNew action
    */
   handleFormClose = () => {
-    const { setInlineTabAddNew } = this.props;
-    setInlineTabAddNew({ visible: false });
+    const {
+      setInlineTabAddNew,
+      inlineTab: { windowId, tabId },
+      dataId: docId,
+      rowId,
+    } = this.props;
+    setInlineTabAddNew({ visible: false, windowId, docId, tabId, rowId });
     this.updateTable();
   };
 
@@ -251,9 +256,10 @@ const mapStateToProps = (state, props) => {
   const showMore = inlineTab.showMore[selector]
     ? inlineTab.showMore[selector]
     : false;
-  const {
-    addNew: { visible: addNewFormVisible, rowId },
-  } = inlineTab;
+
+  const addNew = inlineTab.addNew[selector] ? inlineTab.addNew[selector] : null;
+  const addNewFormVisible = addNew ? addNew.visible : false;
+  const rowId = addNew ? addNew.rowId : undefined;
   const addNewData = inlineTab[`${windowId}_${tabId}_${rowId}`];
 
   return {

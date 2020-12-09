@@ -77,10 +77,10 @@ export function setInlineTabLayoutAndData({ inlineTabId, data }) {
 /*
  * Action creator called to set the inlineTab AddNew form related data in the store, visible is for toggling the visibility
  */
-export function setInlineTabAddNew({ visible, windowId, tabId, rowId }) {
+export function setInlineTabAddNew({ visible, windowId, tabId, rowId, docId }) {
   return {
     type: SET_INLINE_TAB_ADD_NEW,
-    payload: { visible, windowId, tabId, rowId },
+    payload: { visible, windowId, tabId, rowId, docId },
   };
 }
 
@@ -192,6 +192,7 @@ export function inlineTabAfterGetLayout({ data, disconnectedData }) {
     dispatch(
       setInlineTabAddNew({
         visible: true,
+        docId: disconnectedData.id,
         windowId: disconnectedData.windowId,
         tabId: disconnectedData.tabId,
         rowId: disconnectedData.rowId,

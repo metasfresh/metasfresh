@@ -112,7 +112,7 @@ export const initialState = {
   modal: initialModalState,
   inlineTab: {
     wrapperData: {},
-    addNew: { visible: false, inlineTabId: null },
+    addNew: {},
     showMore: {},
   },
 
@@ -879,16 +879,19 @@ export default function windowHandler(state = initialState, action) {
     }
 
     case SET_INLINE_TAB_ADD_NEW: {
-      const { visible, windowId, tabId, rowId } = action.payload;
+      const { visible, windowId, tabId, rowId, docId } = action.payload;
       return {
         ...state,
         inlineTab: {
           ...state.inlineTab,
           addNew: {
-            visible,
-            windowId,
-            tabId,
-            rowId,
+            ...state.inlineTab.addNew,
+            [`${windowId}_${tabId}_${docId}`]: {
+              visible,
+              windowId,
+              tabId,
+              rowId,
+            },
           },
         },
       };
