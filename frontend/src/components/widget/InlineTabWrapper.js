@@ -22,6 +22,7 @@ import { createWindow } from '../../actions/WindowActions';
 import {
   fetchInlineTabWrapperData,
   setInlineTabAddNew,
+  setInlineTabShowMore,
 } from '../../actions/InlineTabActions';
 import SectionGroup from '../SectionGroup';
 import counterpart from 'counterpart';
@@ -80,7 +81,17 @@ class InlineTabWrapper extends PureComponent {
     this.updateTable();
   };
 
-  showMoreRows = () => console.log('SHow more');
+  showMoreRows = () => {
+    const {
+      inlineTab: { windowId, tabId },
+      dataId: docId,
+      setInlineTabShowMore,
+    } = this.props;
+    setInlineTabShowMore({
+      inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+      showMore: false,
+    });
+  };
 
   render() {
     const {
@@ -195,6 +206,7 @@ InlineTabWrapper.propTypes = {
   addNewFormVisible: PropTypes.bool,
   setInlineTabAddNew: PropTypes.func.isRequired,
   showMore: PropTypes.bool,
+  setInlineTabShowMore: PropTypes.func.isRequired,
 };
 
 /**
@@ -238,5 +250,6 @@ export default connect(
     fetchInlineTabWrapperData,
     createWindow,
     setInlineTabAddNew,
+    setInlineTabShowMore,
   }
 )(InlineTabWrapper);
