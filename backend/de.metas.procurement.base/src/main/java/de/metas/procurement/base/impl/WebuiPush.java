@@ -1,5 +1,14 @@
 package de.metas.procurement.base.impl;
 
+import de.metas.common.procurement.sync.IAgentSync;
+import de.metas.common.procurement.sync.protocol.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.common.procurement.sync.protocol.SyncProductsRequest.SyncProductsRequestBuilder;
+import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
@@ -7,14 +16,6 @@ import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.SyncRfQCloseEvent;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -26,6 +27,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -156,14 +158,15 @@ public class WebuiPush implements IWebuiPush
 
 		final IQueryBuilder<I_PMM_Product> allPMMProductsQuery = pmmProductDAO.retrievePMMProductsValidOnDateQuery(SystemTime.asTimestamp());
 		final List<I_PMM_Product> allPMMProducts = allPMMProductsQuery.create().list();
-		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
+
+		final SyncProductsRequestBuilder syncProductsRequest = SyncProductsRequest.builder();
 
 		for (final I_PMM_Product pmmProduct : allPMMProducts)
 		{
 			final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
-			syncProductsRequest.getProducts().add(syncProduct);
+			syncProductsRequest.product(syncProduct);
 		}
-		agent.syncProducts(syncProductsRequest);
+		agent.syncProducts(syncProductsRequest.build());
 	}
 
 	@Override
@@ -178,9 +181,8 @@ public class WebuiPush implements IWebuiPush
 
 		final List<SyncBPartner> allSyncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
 
-		final SyncBPartnersRequest request = new SyncBPartnersRequest();
-		request.getBpartners().addAll(allSyncBPartners);
 
+		final SyncBPartnersRequest request = SyncBPartnersRequest.builder().bpartners(allSyncBPartners).build();
 		agent.syncBPartners(request);
 	}
 
@@ -214,7 +216,7 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	public void pushRfQs(final List<SyncRfQ> syncRfqs)
+	public void pushRfQs(@Nullable final SyncRfQsRequest syncRfqs)
 	{
 		if(syncRfqs == null || syncRfqs.isEmpty())
 		{
@@ -231,9 +233,9 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	public void pushRfQCloseEvents(final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	public void pushRfQCloseEvents(@Nullable final SyncRfQCloseEventsRequest syncRfQCloseEventsRequest)
 	{
-		if(syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
+		if(syncRfQCloseEventsRequest == null || syncRfQCloseEventsRequest.isEmpty())
 		{
 			return;
 		}
@@ -244,6 +246,6 @@ public class WebuiPush implements IWebuiPush
 			return;
 		}
 		
-		agent.closeRfQs(syncRfQCloseEvents);
+		agent.closeRfQs(syncRfQCloseEventsRequest);
 	}
 }

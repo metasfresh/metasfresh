@@ -72,7 +72,7 @@ public class M_Transaction_PostMaterialEvent
 		trxManager.runAfterCommit(() -> createAndPostEventsNow(transaction, deleted));
 	}
 
-	private void createAndPostEventsNow(final TransactionDescriptor transaction, final boolean deleted)
+	private void createAndPostEventsNow(@NonNull final TransactionDescriptor transaction, final boolean deleted)
 	{
 		final List<MaterialEvent> events = mtransactionEventCreator.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)

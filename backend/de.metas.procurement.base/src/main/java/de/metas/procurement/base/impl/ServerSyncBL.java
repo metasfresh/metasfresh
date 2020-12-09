@@ -1,13 +1,28 @@
 package de.metas.procurement.base.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.Joiner;
+import de.metas.common.procurement.sync.protocol.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQPriceChangeEvent;
+import de.metas.common.procurement.sync.protocol.SyncRfQQtyChangeEvent;
+import de.metas.common.procurement.sync.protocol.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.procurement.base.IServerSyncBL;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
+import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
+import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
+import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -23,30 +38,13 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-
-import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.procurement.base.IServerSyncBL;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
-import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
-import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
-import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncProductSupply;
-import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.procurement.sync.protocol.SyncRfQPriceChangeEvent;
-import de.metas.procurement.sync.protocol.SyncRfQQtyChangeEvent;
-import de.metas.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -362,9 +360,6 @@ public class ServerSyncBL implements IServerSyncBL
 
 	/**
 	 * Loads the {@link I_PMM_Product} for the given <code>product_uuid</code>, then creates and updates a temporary context and invokes the given <code>processor</code>.
-	 *
-	 * @param product_uuid
-	 * @param processor
 	 */
 	private void loadPMMProductAndProcess(final String product_uuid, final IEventProcessor processor)
 	{

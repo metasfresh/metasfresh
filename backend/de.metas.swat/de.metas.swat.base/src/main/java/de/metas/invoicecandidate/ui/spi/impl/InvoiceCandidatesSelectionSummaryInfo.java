@@ -23,16 +23,7 @@ package de.metas.invoicecandidate.ui.spi.impl;
  */
 
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ui.api.IGridTabSummaryInfo;
-import org.compiere.util.DisplayType;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.currency.Currency;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
@@ -40,6 +31,14 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ui.api.IGridTabSummaryInfo;
+import org.compiere.util.DisplayType;
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.Properties;
+import java.util.Set;
 
 /** Represent a summary information (immutable) about a selection of invoice candidates */
 public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSummaryInfo
@@ -215,12 +214,8 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 			this.countTotalToRecompute += countToRecomputeToAdd;
 		}
 
-		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
 		{
-			final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
-			Check.assumeNotNull(ic, "ic not null");
-
 			final BigDecimal netAmt = ic.getNetAmtToInvoice();
 			final boolean isApprovedForInvoicing = ic.isApprovalForInvoicing();
 			addTotalNetAmt(netAmt, isApprovedForInvoicing);

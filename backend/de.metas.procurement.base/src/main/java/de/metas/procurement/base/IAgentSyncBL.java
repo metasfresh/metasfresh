@@ -1,11 +1,9 @@
 package de.metas.procurement.base;
 
-import java.util.List;
-
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncConfirmation;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.common.procurement.sync.IAgentSync;
+import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
+import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.util.ISingletonService;
 
 /*
@@ -44,5 +42,5 @@ public interface IAgentSyncBL extends IAgentSync, ISingletonService
 	void syncProducts(final SyncProductsRequest request);
 
 	@Override
-	void confirm(List<SyncConfirmation> syncConfirmations);
+	void confirm(SyncConfirmationRequest syncConfirmations);
 }

@@ -62,6 +62,7 @@ public class FederatedRabbitMQTest
 	private static final Integer metasfresh_rabbitmq_port = 5674;
 
 	public static DockerComposeContainer environment;
+
 	private static Instant instant;
 
 	@BeforeAll
@@ -83,7 +84,7 @@ public class FederatedRabbitMQTest
 
 	@Test
 	@Order(10)
-	void sendMetasfresh2ProcurementWebui() throws IOException, TimeoutException, InterruptedException
+	void sendToQueueMetasfresh2ProcurementWebui() throws IOException, TimeoutException
 	{
 		final ConnectionFactory metasfreshFactory = new ConnectionFactory();
 		metasfreshFactory.setHost(metasfresh_rabbitmq_host);
@@ -91,7 +92,7 @@ public class FederatedRabbitMQTest
 		metasfreshFactory.setUsername("metasfresh");
 		metasfreshFactory.setPassword("vNz4R9bGzlcGG5o6Dnnt");
 
-		String message = createFromMetasfreshMessage();
+		final String message = createFromMetasfreshMessage();
 
 		try (final Connection connection = metasfreshFactory.newConnection();
 				final Channel channel = connection.createChannel())
@@ -103,7 +104,7 @@ public class FederatedRabbitMQTest
 
 	@Test
 	@Order(20)
-	void receiveMetasfresh2ProcurementWebui() throws IOException, InterruptedException, TimeoutException
+	void receiveFromQueueMetasfresh2ProcurementWebui() throws IOException, InterruptedException, TimeoutException
 	{
 		final ConnectionFactory procurementWebuiFactory = new ConnectionFactory();
 		procurementWebuiFactory.setHost(procurement_webui_rabbitmq_host);
@@ -135,7 +136,7 @@ public class FederatedRabbitMQTest
 
 	@Test
 	@Order(30)
-	void sendProcurementWebui2Metasfresh() throws IOException, TimeoutException, InterruptedException
+	void sendToQueueProcurementWebui2Metasfresh() throws IOException, TimeoutException
 	{
 		final ConnectionFactory procurementWebuiFactory = new ConnectionFactory();
 		procurementWebuiFactory.setHost(procurement_webui_rabbitmq_host);
@@ -154,7 +155,7 @@ public class FederatedRabbitMQTest
 
 	@Test
 	@Order(40)
-	void receiveProcurementWebui2Metasfresh() throws IOException, InterruptedException, TimeoutException
+	void receiveFromQueueProcurementWebui2Metasfresh() throws IOException, InterruptedException, TimeoutException
 	{
 		final ConnectionFactory metasfreshFactory = new ConnectionFactory();
 		metasfreshFactory.setHost(metasfresh_rabbitmq_host);

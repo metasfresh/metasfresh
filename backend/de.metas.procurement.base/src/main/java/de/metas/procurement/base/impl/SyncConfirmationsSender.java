@@ -1,20 +1,16 @@
 package de.metas.procurement.base.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Supplier;
+import de.metas.common.procurement.sync.protocol.ISyncModel;
+import de.metas.common.procurement.sync.protocol.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
 import de.metas.common.util.time.SystemTime;
+import de.metas.procurement.base.IAgentSyncBL;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-
-import com.google.common.base.Supplier;
-
-import de.metas.procurement.base.IAgentSyncBL;
-import de.metas.procurement.sync.protocol.AbstractSyncModel;
-import de.metas.procurement.sync.protocol.SyncConfirmation;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -74,7 +70,7 @@ final class SyncConfirmationsSender
 
 	private static final String TRXPROPERTY = SyncConfirmationsSender.class.getName();
 
-	private List<SyncConfirmation> syncConfirmations = new ArrayList<SyncConfirmation>();
+	private SyncConfirmationRequest syncConfirmations;
 	private boolean autoSendAfterEachConfirm = false;
 
 	private SyncConfirmationsSender()
@@ -101,11 +97,8 @@ final class SyncConfirmationsSender
 
 	/**
 	 * Generates a {@link SyncConfirmation} instance to be send either directly after the next commit.
-	 *
-	 * @param syncModel
-	 * @param serverEventId
 	 */
-	public void confirm(final AbstractSyncModel syncModel, final String serverEventId)
+	public void confirm(final ISyncModel syncModel, final String serverEventId)
 	{
 		if (syncModel.getSyncConfirmationId() <= 0)
 		{
