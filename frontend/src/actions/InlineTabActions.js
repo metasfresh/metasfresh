@@ -81,9 +81,27 @@ export function setInlineTabAddNew({ visible, windowId, tabId, rowId }) {
  * @param {string} docId
  * @param {string} query
  */
-export function fetchInlineTabWrapperData({ windowId, tabId, docId, query }) {
+export function fetchInlineTabWrapperData({
+  windowId,
+  tabId,
+  docId,
+  query,
+  rowId,
+}) {
   return (dispatch) => {
     dispatch(fetchTab({ tabId, windowId, docId, query })).then((tabData) => {
+      // - if we have the rowId it means we have a new record addition, so we put that at the end of the array
+      if (rowId) {
+        const lastAdditionIndex = tabData.findIndex(
+          (item) => item.rowId === rowId
+        );
+        if (lastAdditionIndex) {
+          const tempData = tabData[lastAdditionIndex];
+          tabData.splice(lastAdditionIndex, 1);
+          tabData.splice(tabData.length, 0, tempData);
+        }
+      }
+
       dispatch(
         setInlineTabWrapperData({
           inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,

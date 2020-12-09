@@ -42,8 +42,9 @@ class InlineTabWrapper extends PureComponent {
       inlineTab: { windowId, tabId },
       dataId: docId,
       fetchInlineTabWrapperData,
+      rowId,
     } = this.props;
-    fetchInlineTabWrapperData({ tabId, windowId, docId, query });
+    fetchInlineTabWrapperData({ tabId, windowId, docId, query, rowId });
   };
 
   /**
