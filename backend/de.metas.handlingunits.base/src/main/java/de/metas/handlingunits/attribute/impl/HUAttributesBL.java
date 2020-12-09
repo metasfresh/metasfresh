@@ -74,7 +74,6 @@ public class HUAttributesBL implements IHUAttributesBL
 		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(attributeCode);
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 		updateHUAttributeRecursive(hu, attribute, attributeValue, onlyHUStatus);
-		 // TODO tbp: check what happens if the attribute doesn't exist?
 	}
 
 	@Override
@@ -87,8 +86,7 @@ public class HUAttributesBL implements IHUAttributesBL
 		final ILoggable loggable = Loggables.get();
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService
-				.createHUAttributeStorageFactory(storageFactory);
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
 
 		final HUIterator iterator = new HUIterator();
 		// I'm not 100% sure which time to pick, but i think for the iterator itself it makes no difference, and i also don't need it in the beforeHU implementation.
@@ -103,10 +101,13 @@ public class HUAttributesBL implements IHUAttributesBL
 				{
 					final IAttributeStorage attributeStorage = huAttributeStorageFactory.getAttributeStorage(currentHU);
 
-					attributeStorage.setValueNoPropagate(attribute, attributeValue);
-					attributeStorage.saveChangesIfNeeded();
-					final String msg = "Updated IAttributeStorage " + attributeStorage + " of M_HU " + currentHU;
-					loggable.addLog(msg);
+					if (attributeStorage.hasAttribute(attribute))
+					{
+						attributeStorage.setValueNoPropagate(attribute, attributeValue);
+						attributeStorage.saveChangesIfNeeded();
+						final String msg = "Updated IAttributeStorage " + attributeStorage + " of M_HU " + currentHU;
+						loggable.addLog(msg);
+					}
 				}
 
 				return Result.CONTINUE;
