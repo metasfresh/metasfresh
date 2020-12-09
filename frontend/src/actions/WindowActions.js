@@ -1102,7 +1102,8 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
-          const parentView = viewId && findViewByViewId(getState(), viewId);
+          const id = parentViewId ? parentViewId : viewId;
+          const parentView = id && findViewByViewId(getState(), id);
           const parentId = parentView ? parentView.windowId : documentType;
 
           await dispatch(
