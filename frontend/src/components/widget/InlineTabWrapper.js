@@ -81,6 +81,11 @@ class InlineTabWrapper extends PureComponent {
     this.updateTable();
   };
 
+  /**
+   * @method showMoreRows
+   * @summary - sets the showMore flag in the redux store path windowHanlder.inlineTab.showMore[ID] to `false` value
+   *            using the setInlineTabShowMore action
+   */
   showMoreRows = () => {
     const {
       inlineTab: { windowId, tabId },
