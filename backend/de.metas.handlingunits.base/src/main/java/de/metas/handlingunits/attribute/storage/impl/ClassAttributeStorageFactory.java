@@ -159,7 +159,7 @@ import lombok.NonNull;
 
 	@Override
 	public final IHUAttributesDAO getHUAttributesDAO()
-	{
+	{	 // TODO tbp: this exception is false: this.huAttributesDAO is NOT NULL!
 		throw new HUException("No IHUAttributesDAO found on " + this);
 	}
 
@@ -199,5 +199,14 @@ import lombok.NonNull;
 	public IHUStorageFactory getHUStorageFactory()
 	{
 		return huStorageFactory;
+	}
+
+	@Override
+	public void flushAndClearCache()
+	{
+		if (huAttributesDAO != null)
+		{
+		huAttributesDAO.flushAndClearCache();
+		}
 	}
 }

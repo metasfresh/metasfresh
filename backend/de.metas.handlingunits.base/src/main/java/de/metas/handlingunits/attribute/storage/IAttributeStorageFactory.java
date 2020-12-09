@@ -76,5 +76,5 @@ public interface IAttributeStorageFactory
 
 	void setHUStorageFactory(IHUStorageFactory huStorageFactory);
 
-	default void flushAndClearCache() {}
+	void flushAndClearCache();
 }
