@@ -82,19 +82,20 @@ class InlineTabWrapper extends PureComponent {
   };
 
   /**
-   * @method showMoreRows
-   * @summary - sets the showMore flag in the redux store path windowHanlder.inlineTab.showMore[ID] to `false` value
+   * @method toggleShowMore
+   * @summary - sets the showMore flag in the redux store path windowHanlder.inlineTab.showMore[ID] to `false/true` value
    *            using the setInlineTabShowMore action
    */
-  showMoreRows = () => {
+  toggleShowMore = () => {
     const {
       inlineTab: { windowId, tabId },
       dataId: docId,
       setInlineTabShowMore,
+      showMore,
     } = this.props;
     setInlineTabShowMore({
       inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
-      showMore: false,
+      showMore: !showMore,
     });
   };
 
@@ -152,9 +153,22 @@ class InlineTabWrapper extends PureComponent {
               <div className="inlinetb-show-more">
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                  onClick={this.showMoreRows}
+                  onClick={this.toggleShowMore}
                 >
                   Show more...
+                </button>
+                <div className="clearfix" />
+              </div>
+            )}
+
+            {/* `Show less` - button */}
+            {!showMore && !addNewFormVisible && (
+              <div className="inlinetb-show-more">
+                <button
+                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                  onClick={this.toggleShowMore}
+                >
+                  Show less...
                 </button>
                 <div className="clearfix" />
               </div>
