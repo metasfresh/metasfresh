@@ -161,5 +161,15 @@
       }
     },
     "startProcessDirectly": false
+  },
+  "modal_included1": {
+    "fieldsByName": {},
+    "pinstanceId": "1195364",
+    "startProcessDirectly": true
+  },
+  "modal_included2": {
+    "pinstanceId": "1195720",
+    "fieldsByName": {},
+    "startProcessDirectly": true
   }
 }
