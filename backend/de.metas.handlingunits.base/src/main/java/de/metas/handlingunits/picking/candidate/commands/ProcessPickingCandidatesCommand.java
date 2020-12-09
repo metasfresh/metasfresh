@@ -199,6 +199,8 @@ public class ProcessPickingCandidatesCommand
 
 		addShipmentScheduleQtyPickedAndUpdateHU(shipmentSchedule, packedToHU, qtyPicked, huContext);
 
+		huContext.flush();
+
 		return HuId.ofRepoId(packedToHU.getM_HU_ID());
 	}
 
