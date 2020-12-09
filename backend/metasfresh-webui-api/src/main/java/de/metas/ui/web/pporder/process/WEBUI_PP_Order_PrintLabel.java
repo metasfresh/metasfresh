@@ -22,18 +22,15 @@
 
 package de.metas.ui.web.pporder.process;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
@@ -66,7 +63,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 
-		final ImmutableSet<HuId> distinctHuIds = retrieveSelectedHuIds();
+		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
 		if (distinctHuIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -81,7 +78,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	{
 
 		// create selection
-		final ImmutableSet<HuId> distinctHuIds = retrieveSelectedHuIds();
+		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
 		DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
 
 		// print
