@@ -3,6 +3,7 @@ package de.metas.rest_api.invoicecandidates.impl;
 import de.metas.Profiles;
 import de.metas.invoice.InvoiceId;
 import de.metas.rest_api.invoice.impl.InvoiceService;
+import de.metas.rest_api.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
@@ -18,6 +19,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -146,7 +148,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		{
 			return ResponseEntity.notFound().build();
 		}
-
+		Env.getAD_Language();
 		final Optional<byte[]> invoicePDF = invoiceService.getInvoicePDF(invoiceId);
 
 		if (invoicePDF.isPresent())
@@ -155,6 +157,28 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		}
 
 		return ResponseEntity.notFound().build();
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Invoice info retrieved"),
+			@ApiResponse(code = 401, message = "You are not authorized"),
+			@ApiResponse(code = 404, message = "No Invoice found")
+	})
+	@GetMapping(path = "{invoiceId}/invoiceInfo", produces = "application/json")
+	@Override
+	public ResponseEntity<?> getInvoiceInfo(
+			@ApiParam(required = true, value = "metasfreshId of the invoice")
+			@PathVariable("invoiceId") final int invoiceRecordId)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
+		if (invoiceId == null)
+		{
+			return ResponseEntity.notFound().build();
+		}
+
+		final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language());
+
+		return ResponseEntity.ok(invoiceInfo);
 	}
 
 	@PutMapping(path = "/{invoiceId}/revert")

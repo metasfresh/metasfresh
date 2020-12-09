@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.i18n.ITranslatableString;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
@@ -187,4 +188,6 @@ public interface IProductBL extends ISingletonService
 	ProductType getProductType(ProductId productId);
 
 	ProductCategoryId getDefaultProductCategoryId();
+
+	ITranslatableString getProductNameTrl(@NonNull ProductId productId);
 }

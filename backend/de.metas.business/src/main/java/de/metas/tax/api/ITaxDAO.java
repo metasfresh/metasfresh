@@ -1,5 +1,6 @@
 package de.metas.tax.api;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /*
@@ -89,6 +90,8 @@ public interface ITaxDAO extends ISingletonService
 	ITranslatableString getTaxCategoryNameById(TaxCategoryId id);
 
 	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
+
+	Optional<BigDecimal> getRateById(@NonNull TaxId taxId);
 
 	@Builder
 	@Value
