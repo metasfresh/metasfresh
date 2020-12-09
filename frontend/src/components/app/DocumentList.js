@@ -302,10 +302,9 @@ export default class DocumentList extends Component {
           </div>
         )}
 
-        {triggerSpinner && !inBackground && <Spinner iconSize={50} />}
-
         {layout && (
           <div className="document-list-body">
+            {triggerSpinner && !inBackground && <Spinner iconSize={50} />}
             <div className="row table-context">
               <Table
                 entity="documentView"
