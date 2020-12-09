@@ -313,13 +313,8 @@
 .inline-tab-wrapper {
     width: 100%;
     box-sizing: border-box;
-    .inlinetb-add-new {
+    .inlinetab-action-button {
       float:left;
-      width: 80px;
-    }
-    .inlinetab-show-more {
-      float:left;
-      width: 120px;
     }
 }
 .inline-tab {

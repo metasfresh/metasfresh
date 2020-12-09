@@ -138,7 +138,7 @@ class InlineTabWrapper extends PureComponent {
           <div>
             {/* `Add New` - button */}
             {!addNewFormVisible && (
-              <div className="inlinetb-add-new">
+              <div className="inlinetab-action-button">
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
                   onClick={this.showAddNewForm}
@@ -150,7 +150,7 @@ class InlineTabWrapper extends PureComponent {
             )}
             {/* `Show more...` - button */}
             {showMore && !addNewFormVisible && (
-              <div className="inlinetb-show-more">
+              <div className="inlinetab-action-button">
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
                   onClick={this.toggleShowMore}
@@ -165,7 +165,7 @@ class InlineTabWrapper extends PureComponent {
             {!showMore &&
               !addNewFormVisible &&
               tabData.length > INLINE_TAB_SHOW_MORE_FROM && (
-                <div className="inlinetb-show-more">
+                <div className="inlinetab-action-button">
                   <button
                     className="btn btn-meta-outline-secondary btn-distance btn-sm"
                     onClick={this.toggleShowMore}
