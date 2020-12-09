@@ -697,9 +697,9 @@ FROM report.Current_Vs_Next_Pricelist_Comparison_Report_With_PP_PI(2156515)
  */
 
 update ad_sysconfig
-set value = 3600000, value = 'Connection timeout in milliseconds when invoking the reports servlet from another metasfresh component, raised to 1h, see #gh10238'
+set value = 3600000, description = 'Connection timeout in milliseconds when invoking the reports servlet from another metasfresh component, raised to 1h, see #gh10238'
 where name ilike '%reports.remoteServletInvoker.connectTimeout%';
 
 update ad_sysconfig
-set value = 3600000, value = 'Read timeout in milliseconds when the reports servlet retrieving data from database, raised to 1h, see #gh10238'
+set value = 3600000, description = 'Read timeout in milliseconds when the reports servlet retrieving data from database, raised to 1h, see #gh10238'
 where name ilike '%reports.remoteServletInvoker.readTimeout%';
