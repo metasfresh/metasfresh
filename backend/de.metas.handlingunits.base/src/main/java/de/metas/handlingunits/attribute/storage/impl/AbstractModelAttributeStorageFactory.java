@@ -176,6 +176,7 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	/**
 	 * Clears internal attribute storages cache and flushes pending saves on {@link #getHUAttributesDAO()}.
 	 */
+	@Override
 	public final void flushAndClearCache()
 	{
 		// First thing, clear the cached attribute storages.

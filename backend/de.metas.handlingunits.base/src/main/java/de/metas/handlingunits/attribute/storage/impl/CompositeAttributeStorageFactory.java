@@ -214,6 +214,5 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 		{
 			factory.flushAndClearCache();
 		}
-		getHUAttributesDAO().flushAndClearCache();
 	}
 }
