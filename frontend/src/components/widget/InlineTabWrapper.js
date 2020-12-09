@@ -160,7 +160,7 @@ class InlineTabWrapper extends PureComponent {
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
                   onClick={this.toggleShowMore}
                 >
-                  Show more...
+                  {counterpart.translate('window.inlineTab.showMore')}
                 </button>
                 <div className="clearfix" />
               </div>
@@ -175,7 +175,7 @@ class InlineTabWrapper extends PureComponent {
                     className="btn btn-meta-outline-secondary btn-distance btn-sm"
                     onClick={this.toggleShowMore}
                   >
-                    Show less...
+                    {counterpart.translate('window.inlineTab.showLess')}
                   </button>
                   <div className="clearfix" />
                 </div>
