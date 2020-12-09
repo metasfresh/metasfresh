@@ -162,17 +162,19 @@ class InlineTabWrapper extends PureComponent {
             )}
 
             {/* `Show less` - button */}
-            {!showMore && !addNewFormVisible && (
-              <div className="inlinetb-show-more">
-                <button
-                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                  onClick={this.toggleShowMore}
-                >
-                  Show less...
-                </button>
-                <div className="clearfix" />
-              </div>
-            )}
+            {!showMore &&
+              !addNewFormVisible &&
+              tabData.length > INLINE_TAB_SHOW_MORE_FROM && (
+                <div className="inlinetb-show-more">
+                  <button
+                    className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                    onClick={this.toggleShowMore}
+                  >
+                    Show less...
+                  </button>
+                  <div className="clearfix" />
+                </div>
+              )}
           </div>
           {/* Actual form */}
           {addNewFormVisible && rowId && addNewData && (
