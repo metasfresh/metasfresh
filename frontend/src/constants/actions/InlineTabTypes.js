@@ -28,3 +28,9 @@ export const UPDATE_INLINE_TAB_ITEM_FIELDS = 'UPDATE_INLINE_TAB_ITEM_FIELDS';
  * @type {string} update the add new form state data
  */
 export const SET_INLINE_TAB_ADD_NEW = 'SET_INLINE_TAB_ADD_NEW';
+
+/**
+ * @constant
+ * @type {string} update the showMore in the store
+ */
+export const SET_INLINE_TAB_SHOW_MORE = 'SET_INLINE_TAB_SHOW_MORE';

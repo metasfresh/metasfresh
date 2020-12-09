@@ -25,6 +25,7 @@ import {
 } from '../../actions/InlineTabActions';
 import SectionGroup from '../SectionGroup';
 import counterpart from 'counterpart';
+import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
@@ -79,6 +80,8 @@ class InlineTabWrapper extends PureComponent {
     this.updateTable();
   };
 
+  showMoreRows = () => console.log('SHow more');
+
   render() {
     const {
       widgetData,
@@ -88,6 +91,7 @@ class InlineTabWrapper extends PureComponent {
       rowId,
       inlineTab: { tabId },
       dataId,
+      showMore,
     } = this.props;
     const { caption } = widgetData;
     if (!tabData) return false;
@@ -97,29 +101,49 @@ class InlineTabWrapper extends PureComponent {
         <span>{caption}</span>
         {/* InlineTab Row Items */}
         {tabData &&
-          tabData.map((tabItem, index) => (
-            <InlineTab
-              key={`${index}_${tabItem.rowId}`}
-              parent={this.props}
-              updateTable={this.updateTable}
-              {...tabItem}
-            />
-          ))}
+          tabData.map((tabItem, index) => {
+            if (showMore && index >= INLINE_TAB_SHOW_MORE_FROM) {
+              return false;
+            } else {
+              return (
+                <InlineTab
+                  key={`${index}_${tabItem.rowId}`}
+                  parent={this.props}
+                  updateTable={this.updateTable}
+                  {...tabItem}
+                />
+              );
+            }
+          })}
         <div className="clearfix" />
         {/* Add content wrapper */}
         <div>
-          {/* Button */}
-          {!addNewFormVisible && (
-            <div>
-              <button
-                className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                onClick={this.showAddNewForm}
-              >
-                {counterpart.translate('window.addNew.caption')}
-              </button>
-              <div className="clearfix" />
-            </div>
-          )}
+          <div>
+            {/* `Add New` - button */}
+            {!addNewFormVisible && (
+              <div className="inlinetb-add-new">
+                <button
+                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                  onClick={this.showAddNewForm}
+                >
+                  {counterpart.translate('window.addNew.caption')}
+                </button>
+                <div className="clearfix" />
+              </div>
+            )}
+            {/* `Show more...` - button */}
+            {showMore && !addNewFormVisible && (
+              <div className="inlinetb-show-more">
+                <button
+                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                  onClick={this.showMoreRows}
+                >
+                  Show more...
+                </button>
+                <div className="clearfix" />
+              </div>
+            )}
+          </div>
           {/* Actual form */}
           {addNewFormVisible && rowId && addNewData && (
             <div className="inline-tab-active">
@@ -170,6 +194,7 @@ InlineTabWrapper.propTypes = {
   addNewData: PropTypes.any,
   addNewFormVisible: PropTypes.bool,
   setInlineTabAddNew: PropTypes.func.isRequired,
+  showMore: PropTypes.bool,
 };
 
 /**
@@ -190,6 +215,9 @@ const mapStateToProps = (state, props) => {
   const tabData = inlineTab.wrapperData[selector]
     ? inlineTab.wrapperData[selector]
     : null;
+  const showMore = inlineTab.showMore[selector]
+    ? inlineTab.showMore[selector]
+    : false;
   const {
     addNew: { visible: addNewFormVisible, rowId },
   } = inlineTab;
@@ -200,6 +228,7 @@ const mapStateToProps = (state, props) => {
     addNewFormVisible,
     addNewData,
     rowId,
+    showMore,
   };
 };
 

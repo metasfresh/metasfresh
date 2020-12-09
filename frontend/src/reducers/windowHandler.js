@@ -55,6 +55,7 @@ import {
   UPDATE_INLINE_TAB_WRAPPER_FIELDS,
   UPDATE_INLINE_TAB_ITEM_FIELDS,
   SET_INLINE_TAB_ADD_NEW,
+  SET_INLINE_TAB_SHOW_MORE,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -112,6 +113,7 @@ export const initialState = {
   inlineTab: {
     wrapperData: {},
     addNew: { visible: false, inlineTabId: null },
+    showMore: {},
   },
 
   overlay: {
@@ -887,6 +889,19 @@ export default function windowHandler(state = initialState, action) {
             windowId,
             tabId,
             rowId,
+          },
+        },
+      };
+    }
+    case SET_INLINE_TAB_SHOW_MORE: {
+      const { inlineTabWrapperId, showMore } = action.payload;
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          showMore: {
+            ...state.inlineTab.showMore,
+            [`${inlineTabWrapperId}`]: showMore,
           },
         },
       };

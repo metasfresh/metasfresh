@@ -1,11 +1,13 @@
 import { fetchTab } from './WindowActions';
 import { getLayout, getData } from '../api';
+import { INLINE_TAB_SHOW_MORE_FROM } from '../constants/Constants';
 import {
   UPDATE_INLINE_TAB_ITEM_FIELDS,
   UPDATE_INLINE_TAB_WRAPPER_FIELDS,
   SET_INLINE_TAB_WRAPPER_DATA,
   SET_INLINE_TAB_LAYOUT_AND_DATA,
   SET_INLINE_TAB_ADD_NEW,
+  SET_INLINE_TAB_SHOW_MORE,
 } from '../constants/ActionTypes';
 
 /*
@@ -53,6 +55,16 @@ export function setInlineTabWrapperData({ inlineTabWrapperId, data }) {
 }
 
 /*
+ * Action creator called to set the showMore value for the corresponding inlineTabWrapperId
+ */
+export function setInlineTabShowMore({ inlineTabWrapperId, showMore }) {
+  return {
+    type: SET_INLINE_TAB_SHOW_MORE,
+    payload: { inlineTabWrapperId, showMore },
+  };
+}
+
+/*
  * Action creator called to set the inlineTab branch in the redux store with the data payload
  */
 export function setInlineTabLayoutAndData({ inlineTabId, data }) {
@@ -90,7 +102,7 @@ export function fetchInlineTabWrapperData({
 }) {
   return (dispatch) => {
     dispatch(fetchTab({ tabId, windowId, docId, query })).then((tabData) => {
-      // - if we have the rowId it means we have a new record addition, so we put that at the end of the array
+      /** - if we have the rowId it means we have a new record addition, so we put that at the end of the array */
       if (rowId) {
         const lastAdditionIndex = tabData.findIndex(
           (item) => item.rowId === rowId
@@ -100,6 +112,12 @@ export function fetchInlineTabWrapperData({
           tabData.splice(lastAdditionIndex, 1);
           tabData.splice(tabData.length, 0, tempData);
         }
+        dispatch(
+          setInlineTabShowMore({
+            inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+            showMore: false,
+          })
+        );
       }
 
       dispatch(
@@ -108,6 +126,14 @@ export function fetchInlineTabWrapperData({
           data: tabData,
         })
       );
+      /** when we don't have the rowId then we are in the case of the normal rendering, we set the flag to show more (if criteria is met) */
+      !rowId &&
+        dispatch(
+          setInlineTabShowMore({
+            inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+            showMore: tabData.length > INLINE_TAB_SHOW_MORE_FROM ? true : false,
+          })
+        );
     });
   };
 }
