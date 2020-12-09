@@ -2239,6 +2239,15 @@ public class DB
 		return createT_Selection(ids, trxName);
 	}
 
+	public void createT_Selection(
+			@NonNull final PInstanceId selectionId, 
+			@NonNull final Set<? extends RepoIdAware> selection, 
+			@Nullable final String trxName)
+	{
+		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
+		createT_Selection(selectionId, ids, trxName);
+	}
+
 	public PInstanceId createT_Selection(@NonNull final TableRecordReferenceSet recordRefs, final String trxName)
 	{
 		final Set<Integer> ids = recordRefs.toIntSet();
