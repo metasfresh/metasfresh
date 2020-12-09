@@ -1211,7 +1211,6 @@ export function handleProcessResponse(response, type, id, parentId) {
 
               await dispatch(
                 openModal({
-                  title: '',
                   windowId: action.windowId,
                   modalType: 'window',
                   isAdvanced: action.advanced ? action.advanced : false,
