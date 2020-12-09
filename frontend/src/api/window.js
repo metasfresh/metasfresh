@@ -152,7 +152,7 @@ export function startProcess(processType, pinstanceId) {
 export function getProcessData({
   processId,
   viewId,
-  parentId,
+  documentType,
   ids,
   tabId,
   rowId,
@@ -184,7 +184,7 @@ export function getProcessData({
     }
   } else {
     payload.documentId = Array.isArray(ids) ? ids[0] : ids;
-    payload.documentType = parentId;
+    payload.documentType = documentType;
     payload.tabId = tabId;
     payload.rowId = rowId;
   }

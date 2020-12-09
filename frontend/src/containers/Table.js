@@ -130,7 +130,13 @@ class TableContainer extends PureComponent {
   openTableModal = () => {
     const { openModal, windowId, tabId } = this.props;
 
-    openModal('Add new', windowId, 'window', tabId, 'NEW');
+    openModal({
+      title: 'Add new',
+      windowId,
+      modalType: 'window',
+      tabId,
+      rowId: 'NEW',
+    });
   };
 
   /**
@@ -142,7 +148,14 @@ class TableContainer extends PureComponent {
     const { openModal, windowId, tabId, docId, selected } = this.props;
 
     if (docId) {
-      openModal('Advanced edit', windowId, 'window', tabId, selected[0], true);
+      openModal({
+        title: 'Advanced edit',
+        windowId,
+        modalType: 'window',
+        tabId,
+        rowId: selected[0],
+        isAdvanced: true,
+      });
     }
   };
 

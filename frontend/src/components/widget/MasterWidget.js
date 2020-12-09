@@ -210,7 +210,13 @@ class MasterWidget extends PureComponent {
   handleProcess = (caption, buttonProcessId, tabId, rowId) => {
     const { openModal } = this.props;
 
-    openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false);
+    openModal({
+      title: caption,
+      windowId: buttonProcessId,
+      modalType: 'process',
+      tabId,
+      rowId,
+    });
   };
 
   /**
