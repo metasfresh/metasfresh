@@ -295,6 +295,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	/**
 	 * Save all attributes to database
 	 */
+	@Override
 	public synchronized final void flush()
 	{
 		logger.trace("Start flushing");

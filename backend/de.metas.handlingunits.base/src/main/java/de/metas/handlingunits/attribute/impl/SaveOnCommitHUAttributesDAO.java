@@ -15,6 +15,8 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 
+import javax.annotation.Nullable;
+
 public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 {
 	private static final String TRX_PROPERTY_SaveDecoupledHUAttributesDAO = SaveDecoupledHUAttributesDAO.class.getName();
@@ -26,7 +28,19 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 		dbHUAttributesDAO = HUAttributesDAO.instance;
 	}
 
-	private final SaveDecoupledHUAttributesDAO getDelegate(final Object contextProvider)
+	@Nullable
+	private SaveDecoupledHUAttributesDAO getDelegateOrNull()
+	{
+		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (trx == null || trxManager.isNull(trx))
+		{
+			return null;
+		}
+
+		return trx.getProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO);
+	}
+
+	private SaveDecoupledHUAttributesDAO getDelegate()
 	{
 		final String trxName = trxManager.getThreadInheritedTrxName();
 		final ITrx trx = trxManager.getTrx(trxName);
@@ -35,70 +49,65 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 		//
 		// Get an existing storage DAO from transaction.
 		// If no storage DAO exists => create a new one
-		return trx.getProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, new Supplier<SaveDecoupledHUAttributesDAO>()
-		{
-			@Override
-			public SaveDecoupledHUAttributesDAO get()
-			{
-				// Create a new attributes storage
-				final SaveDecoupledHUAttributesDAO huAttributesDAO = new SaveDecoupledHUAttributesDAO(dbHUAttributesDAO);
+		return trx.getProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, () -> {
+			// Create a new attributes storage
+			final SaveDecoupledHUAttributesDAO huAttributesDAO = new SaveDecoupledHUAttributesDAO(dbHUAttributesDAO);
 
-				// Listen this transaction for COMMIT events
-				// Before committing the transaction, this listener makes sure we are also saving all storages
-				trx.getTrxListenerManager()
-						.newEventListener(TrxEventTiming.BEFORE_COMMIT)
-						.registerHandlingMethod(innerTrx -> {
+			// Listen this transaction for COMMIT events
+			// Before committing the transaction, this listener makes sure we are also saving all storages
+			trx.getTrxListenerManager()
+					.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+					.registerHandlingMethod(innerTrx -> {
 
-							// Get and remove the save-decoupled HU Storage DAO
-							final SaveDecoupledHUAttributesDAO innerHuAttributesDAO = innerTrx.setProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, null);
-							if (innerHuAttributesDAO == null)
-							{
-								// shall not happen, because this handlerMetghod is invoked only once, 
-								// but silently ignore it
-								return;
-							}
+						// Get and remove the save-decoupled HU Storage DAO
+						final SaveDecoupledHUAttributesDAO innerHuAttributesDAO = innerTrx.setProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, null);
+						if (innerHuAttributesDAO == null)
+						{
+							// shall not happen, because this handlerMetghod is invoked only once,
+							// but silently ignore it
+							return;
+						}
 
-							// Save everything to database
-							innerHuAttributesDAO.flush();
-						});
+						// Save everything to database
+						innerHuAttributesDAO.flush();
+					});
 
-				return huAttributesDAO;
-			}
+			return huAttributesDAO;
 		});
 	}
 
 	@Override
 	public I_M_HU_Attribute newHUAttribute(final Object contextProvider)
 	{
-		final SaveDecoupledHUAttributesDAO delegate = getDelegate(contextProvider);
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		return delegate.newHUAttribute(contextProvider);
 	}
 
 	@Override
 	public void save(final I_M_HU_Attribute huAttribute)
 	{
-		final SaveDecoupledHUAttributesDAO delegate = getDelegate(huAttribute);
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		delegate.save(huAttribute);
 	}
 
 	@Override
 	public void delete(final I_M_HU_Attribute huAttribute)
 	{
-		final SaveDecoupledHUAttributesDAO delegate = getDelegate(huAttribute);
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		delegate.delete(huAttribute);
 	}
 
 	@Override
 	public HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
-		final SaveDecoupledHUAttributesDAO delegate = getDelegate(hu);
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		return delegate.retrieveAttributesOrdered(hu);
 	}
 
 	@Override
 	public I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final AttributeId attributeId)
 	{
-		final SaveDecoupledHUAttributesDAO delegate = getDelegate(hu);
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		return delegate.retrieveAttribute(hu, attributeId);
 	}
 
@@ -116,19 +125,20 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	@Override
 	public void flushAndClearCache()
 	{
-		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trx == null || trxManager.isNull(trx))
+		final SaveDecoupledHUAttributesDAO attributesDAO = getDelegateOrNull();
+		if (attributesDAO != null)
 		{
-			return;
+			attributesDAO.flushAndClearCache();
 		}
-
-		final SaveDecoupledHUAttributesDAO attributesDAO = trx.getProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO);
-		if (attributesDAO == null)
-		{
-			return;
-		}
-
-		attributesDAO.flushAndClearCache();
 	}
 
+	@Override
+	public void flush()
+	{
+		final SaveDecoupledHUAttributesDAO attributesDAO = getDelegateOrNull();
+		if (attributesDAO != null)
+		{
+			attributesDAO.flush();
+		}
+	}
 }

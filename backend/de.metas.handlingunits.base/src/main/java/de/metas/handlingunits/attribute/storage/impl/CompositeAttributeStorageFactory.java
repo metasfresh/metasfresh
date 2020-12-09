@@ -208,6 +208,15 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 	}
 
 	@Override
+	public void flush()
+	{
+		for (final IAttributeStorageFactory factory : factories)
+		{
+			factory.flush();
+		}
+	}
+
+	@Override
 	public void flushAndClearCache()
 	{
 		for (final IAttributeStorageFactory factory : factories)

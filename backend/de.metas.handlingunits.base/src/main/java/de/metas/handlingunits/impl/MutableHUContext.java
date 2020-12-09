@@ -271,7 +271,7 @@ import java.util.Properties;
 		final IAttributeStorageFactory attributesStorageFactory = _attributesStorageFactory;
 		if(attributesStorageFactory != null)
 		{
-			attributesStorageFactory.flushAndClearCache();
+			attributesStorageFactory.flush();
 		}
 	}
 }

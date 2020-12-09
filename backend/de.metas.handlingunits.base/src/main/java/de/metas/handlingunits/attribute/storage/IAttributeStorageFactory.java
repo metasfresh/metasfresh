@@ -76,5 +76,8 @@ public interface IAttributeStorageFactory
 
 	void setHUStorageFactory(IHUStorageFactory huStorageFactory);
 
+	void flush();
+
+	@Deprecated
 	void flushAndClearCache();
 }
