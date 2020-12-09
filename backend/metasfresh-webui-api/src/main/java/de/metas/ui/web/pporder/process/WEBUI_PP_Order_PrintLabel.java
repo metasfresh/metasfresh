@@ -23,6 +23,7 @@
 package de.metas.ui.web.pporder.process;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -93,16 +94,16 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 	}
 
-	private ImmutableSet<HuId> retrieveSelectedHuIds()
+	private Set<HuId> retrieveSelectedHuIds()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 
-		final ImmutableList<PPOrderLineRow> selectedRows = getView().streamByIds(selectedRowIds)
-				.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
+		final ImmutableList<PPOrderLineRow> selectedRows = getView()
+				.streamByIds(selectedRowIds)
 				.collect(ImmutableList.toImmutableList());
 
-		final Set<HuId> huIds = Collections.emptySet();
-
+		final Set<HuId> huIds = new HashSet<HuId>();  
+				
 		for (final PPOrderLineRow row : selectedRows)
 		{
 			final PPOrderLineType type = row.getType();
@@ -110,20 +111,18 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 			{
 				final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
 				includedRows.stream()
+						.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
 						.map(PPOrderLineRow::getHuId)
 						.filter(Objects::nonNull)
-						.collect(Collectors.toCollection(() -> huIds));
+						.forEach(huIds::add);
 			}
-			else if (row.getHuId() != null)
+			else if (row.getHuId() != null && type.isHUOrHUStorage())
 			{
 				huIds.add(row.getHuId());
 			}
 		}
 
-		final ImmutableSet<HuId> distinctHuIds = huIds.stream()
-				.distinct()
-				.collect(ImmutableSet.toImmutableSet());
-		return distinctHuIds;
+		return huIds;
 	}
 
 	private ReportResult printLabel()
