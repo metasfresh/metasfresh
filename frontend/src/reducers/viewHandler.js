@@ -94,6 +94,13 @@ const getLocalView = createSelector(
 
 const getViewType = (isModal) => (isModal ? 'modals' : 'views');
 
+/**
+ * @method findViewByViewId
+ * @summary searches for a specific view with viewId
+ *
+ * @param {object} state
+ * @param {string} viewId
+ */
 export function findViewByViewId({ viewHandler }, viewId) {
   let view = find(viewHandler.views, (item) => item.viewId === viewId);
 

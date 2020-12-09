@@ -224,7 +224,7 @@ export class RawLookup extends Component {
         windowId: newRecordWindowId,
         modalType: 'window',
         dataId: 'NEW',
-        triggerField: filterWidget ? parameterName : mainProperty[0].field
+        triggerField: filterWidget ? parameterName : mainProperty[0].field,
       })
     );
   };

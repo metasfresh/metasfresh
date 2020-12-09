@@ -1059,7 +1059,8 @@ export function createProcess({
   let pid = null;
 
   return async (dispatch, getState) => {
-    // creation of processes can be done only if there isn't any pending process https://github.com/metasfresh/metasfresh/issues/10116
+    // creation of processes can be done only if there isn't any pending process
+    // https://github.com/metasfresh/metasfresh/issues/10116
     const { processStatus } = getState().appHandler;
     if (processStatus === 'pending') {
       return false;
@@ -1102,6 +1103,7 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
+          // processes opening included views need the id of the parent view
           const id = parentViewId ? parentViewId : viewId;
           const parentView = id && findViewByViewId(getState(), id);
           const parentId = parentView ? parentView.windowId : documentType;

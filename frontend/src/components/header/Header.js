@@ -299,7 +299,7 @@ class Header extends PureComponent {
         viewDocumentIds: selected,
         childViewId,
         childViewSelectedIds,
-        staticModalType
+        staticModalType,
       })
     );
   };
@@ -331,7 +331,7 @@ class Header extends PureComponent {
         modalType,
         tabId,
         rowId,
-        staticModalType
+        staticModalType,
       })
     );
   };
