@@ -2,7 +2,6 @@ package de.metas.rest_api.invoicecandidates.impl;
 
 import de.metas.Profiles;
 import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.invoice.InvoiceId;
 import de.metas.rest_api.invoice.impl.InvoiceService;
 import de.metas.rest_api.invoice.impl.JSONInvoiceInfoResponse;
@@ -23,7 +22,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.compiere.util.Env;
-import org.compiere.util.Trace;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -181,7 +179,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			return ResponseEntity.notFound().build();
 		}
 
-			final String ad_language = Env.getAD_Language();
+		final String ad_language = Env.getAD_Language();
 		try
 		{
 			final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, ad_language);
