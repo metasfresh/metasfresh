@@ -37,7 +37,7 @@ public class SyncContractLine implements ISyncModel
 	SyncProduct product;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public SyncContractLine(
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
@@ -55,5 +55,11 @@ public class SyncContractLine implements ISyncModel
 	public String toString()
 	{
 		return "SyncContractLine [product=" + product + "]";
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

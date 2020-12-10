@@ -74,7 +74,13 @@ public class SyncWeeklySupply implements ISyncModel
 				+ ", weekDay=" + weekDay
 				+ ", trend=" + trend
 				+ ", uuid=" + getUuid()
-				+ ", vesion=" + version
+				+ ", version=" + version
 				+ "]";
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

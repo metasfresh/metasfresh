@@ -40,7 +40,7 @@ public class SyncRfQPriceChangeEvent implements ISyncModel
 	String rfq_uuid;
 	BigDecimal price;
 
-	@Builder
+	@Builder(toBuilder = true)
 	@JsonCreator
 	private SyncRfQPriceChangeEvent(
 			@JsonProperty("uuid") final String uuid,
@@ -57,5 +57,11 @@ public class SyncRfQPriceChangeEvent implements ISyncModel
 		this.product_uuid = product_uuid;
 		this.rfq_uuid = rfq_uuid;
 		this.price = price;
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

@@ -1,6 +1,5 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.IServerSync;
 import de.metas.common.procurement.sync.protocol.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.SyncProduct;
 import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
@@ -36,7 +35,7 @@ import java.util.List;
  * #L%
  */
 
-public class MockedServerSync implements IServerSync
+public class MockedServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -44,37 +43,31 @@ public class MockedServerSync implements IServerSync
 	@Lazy
 	private DummyDataProducer dummyDataProducer;
 
-	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
 		return dummyDataProducer.getSyncBPartnersRequest().getBpartners();
 	}
 
-	@Override
 	public List<SyncProduct> getAllProducts()
 	{
 		return dummyDataProducer.getSyncProductsRequest().getProducts();
 	}
 
-	@Override
 	public void reportProductSupplies(SyncProductSuppliesRequest request)
 	{
 		logger.info("Got {}", request);
 	}
 
-	@Override
 	public void reportWeekSupply(SyncWeeklySupplyRequest request)
 	{
 		logger.info("Got {}", request);
 	}
 
-	@Override
 	public String getInfoMessage()
 	{
 		return "";
 	}
 
-	@Override
 	public void reportRfQChanges(SyncRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);

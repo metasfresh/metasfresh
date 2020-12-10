@@ -39,7 +39,7 @@ public class SyncUser implements ISyncModel
 	String language;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public SyncUser(
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
@@ -64,5 +64,11 @@ public class SyncUser implements ISyncModel
 				+ ", password=" + (password != null && !password.isEmpty() ? "********" : "(none)")
 				+ ", language=" + language
 				+ "]";
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

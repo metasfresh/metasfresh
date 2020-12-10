@@ -77,4 +77,10 @@ public class SyncProduct implements ISyncModel
 	{
 		return toBuilder().build();
 	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
+	}
 }

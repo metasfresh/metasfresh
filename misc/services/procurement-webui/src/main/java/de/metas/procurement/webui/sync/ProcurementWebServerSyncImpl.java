@@ -22,8 +22,52 @@
 
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.IServerSync;
+import de.metas.common.procurement.sync.protocol.GetAllBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.GetInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.procurement.webui.sync.rabbitmq.SenderToMetasfresh;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
-public class ProcurementWebServerSyncImpl implements IServerSync
+@Service
+public class ProcurementWebServerSyncImpl
 {
+	private final SenderToMetasfresh senderToMetasfresh;
+
+	public ProcurementWebServerSyncImpl(@NonNull final SenderToMetasfresh senderToMetasfresh)
+	{
+		this.senderToMetasfresh = senderToMetasfresh;
+	}
+
+	public void getAllBPartners()
+	{
+		senderToMetasfresh.send(new GetAllBPartnersRequest());
+	}
+
+	public void getAllProducts()
+	{
+		senderToMetasfresh.send(new GetAllBPartnersRequest());
+	}
+
+	public void getInfoMessage()
+	{
+		senderToMetasfresh.send(new GetInfoMessageRequest());
+	}
+
+	public void reportProductSupplies(final SyncProductSuppliesRequest request)
+	{
+		senderToMetasfresh.send(request);
+	}
+
+	public void reportWeekSupply(final SyncWeeklySupplyRequest request)
+	{
+		senderToMetasfresh.send(request);
+	}
+
+	public void reportRfQChanges(final SyncRfQChangeRequest request)
+	{
+		senderToMetasfresh.send(request);
+	}
 }

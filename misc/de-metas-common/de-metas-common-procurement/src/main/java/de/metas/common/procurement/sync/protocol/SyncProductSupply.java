@@ -45,7 +45,7 @@ public class SyncProductSupply implements ISyncModel
 	boolean weekPlanning;
 	int version;
 
-	@Builder
+	@Builder(toBuilder = true)
 	@JsonCreator
 	public SyncProductSupply(
 			@JsonProperty("uuid") final String uuid,
@@ -85,5 +85,11 @@ public class SyncProductSupply implements ISyncModel
 				+ ", version=" + version
 				+ ", uuid=" + getUuid()
 				+ "]";
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

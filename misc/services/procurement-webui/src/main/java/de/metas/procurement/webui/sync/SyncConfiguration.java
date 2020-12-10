@@ -4,8 +4,6 @@ import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.IServerSync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /*
@@ -42,23 +40,23 @@ public class SyncConfiguration
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(SyncConfiguration.class);
 
-	@Value("${mfprocurement.sync.mocked:false}")
-	private boolean useMockedServer;
+	// @Value("${mfprocurement.sync.mocked:false}")
+	// private boolean useMockedServer;
 
-	/**
-	 * Creates the {@link IServerSync} client endpoint which this application can use to talk to the metasfresh server.
-	 */
-	@Bean
-	public IServerSync clientEndPoint()
-	{
-		if (useMockedServer)
-		{
-			logger.warn("Using mocked implementation for {}", IServerSync.class);
-			return new MockedServerSync();
-		}
-
-		return new ProcurementWebServerSyncImpl();
-	}
+	// /**
+	//  * Creates the {@link IServerSync} client endpoint which this application can use to talk to the metasfresh server.
+	//  */
+	// @Bean
+	// public IServerSync clientEndPoint()
+	// {
+	// 	if (useMockedServer)
+	// 	{
+	// 		logger.warn("Using mocked implementation for {}", IServerSync.class);
+	// 		return new MockedServerSync();
+	// 	}
+	//
+	// 	return new ProcurementWebServerSyncImpl();
+	// }
 
 
 

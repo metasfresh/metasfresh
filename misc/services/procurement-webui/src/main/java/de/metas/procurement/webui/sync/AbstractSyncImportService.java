@@ -3,6 +3,7 @@ package de.metas.procurement.webui.sync;
 import de.metas.common.procurement.sync.protocol.ISyncModel;
 import de.metas.procurement.webui.model.AbstractEntity;
 import de.metas.procurement.webui.model.AbstractTranslationEntity;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +21,12 @@ import java.util.Map;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -83,14 +84,15 @@ public abstract class AbstractSyncImportService
 		}
 	}
 
-	// protected ISyncModel assertNotDeleteRequest_WarnFix(final ISyncModel syncModel, final String reason)
-	// {
-	// 	if (syncModel.isDeleted())
-	// 	{
-	// 		logger.warn("Setting Deleted flag to " + syncModel + " is not allowed while: " + reason+". Unsetting the flag and going forward.");
-	// 		syncModel.withNotDeleted(false);
-	// 	}
-	// }
+	protected <T extends ISyncModel> T assertNotDeleteRequest_WarnAndFix(@NonNull final T syncModel, final String reason)
+	{
+		if (syncModel.isDeleted())
+		{
+			logger.warn("Setting Deleted flag to " + syncModel + " is not allowed while: " + reason + ". Unsetting the flag and going forward.");
+			return (T)syncModel.withNotDeleted();
+		}
+		return syncModel;
+	}
 
 	private static class IllegalDeleteRequestException extends RuntimeException
 	{

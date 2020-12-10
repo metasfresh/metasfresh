@@ -43,7 +43,7 @@ public class SyncContract implements ISyncModel
 	List<SyncContractLine> contractLines;
 	String rfq_uuid; // optional
 
-	@Builder
+	@Builder(toBuilder = true)
 	@JsonCreator
 	public SyncContract(
 			@JsonProperty("uuid") final String uuid,
@@ -71,5 +71,11 @@ public class SyncContract implements ISyncModel
 				+ "dateFrom=" + dateFrom + ", dateTo=" + dateTo
 				+ ", rfq_uuid=" + rfq_uuid
 				+ ", contractLines=" + contractLines + "]";
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

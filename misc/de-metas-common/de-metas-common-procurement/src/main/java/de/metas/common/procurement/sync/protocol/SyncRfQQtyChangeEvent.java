@@ -42,7 +42,7 @@ public class SyncRfQQtyChangeEvent implements ISyncModel
 	String product_uuid;
 	BigDecimal qty;
 
-	@Builder
+	@Builder(toBuilder = true)
 	@JsonCreator
 	private SyncRfQQtyChangeEvent(
 			@JsonProperty("uuid") final String uuid,
@@ -61,5 +61,11 @@ public class SyncRfQQtyChangeEvent implements ISyncModel
 		this.day = day;
 		this.product_uuid = product_uuid;
 		this.qty = qty;
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

@@ -78,4 +78,10 @@ public class SyncBPartner implements ISyncModel
 				+ ", rfqs=" + rfqs
 				+ "]";
 	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
+	}
 }

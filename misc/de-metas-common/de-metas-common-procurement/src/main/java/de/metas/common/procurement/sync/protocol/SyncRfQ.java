@@ -50,7 +50,7 @@ public class SyncRfQ implements ISyncModel
 	String currencyCode;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public SyncRfQ(
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
@@ -93,5 +93,11 @@ public class SyncRfQ implements ISyncModel
 				//
 				+ ", currencyCode=" + currencyCode
 				+ "]";
+	}
+
+	@Override
+	public ISyncModel withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

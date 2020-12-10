@@ -28,6 +28,8 @@ public interface ISyncModel
 
 	boolean isDeleted();
 
+	ISyncModel withNotDeleted();
+
 	/**
 	 * If greater than zero, then the sender requests a confirmation, using this ID.<br>
 	 * The confirmation shall be generated using {@link SyncConfirmation#forConfirmId(long)}, using the ID returned by this method.
