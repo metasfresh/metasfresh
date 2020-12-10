@@ -113,6 +113,12 @@ class Notification extends Component {
         onMouseEnter={() => this.handleClosing(false)}
         onMouseLeave={() => this.handleClosing(true)}
       >
+        <div className="notification-header">
+          <i
+            onClick={() => this.handleCloseButton()}
+            className="meta-icon-close-1"
+          />
+        </div>
         <div className="notification-content">
           {shortMsg && msg.length > SHOW_READ_MORE_FROM ? shortMsg + ' ' : msg}
           {msg.length > SHOW_READ_MORE_FROM &&
