@@ -24,6 +24,7 @@ package de.metas.rest_api.invoice.impl;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.util.JSONObjectMapper;
+import de.metas.util.lang.Percent;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -41,7 +42,7 @@ class JSONInvoiceInfoResponseTest
 								  .product_name("the product name")
 								  .qty_invoiced(BigDecimal.valueOf(12))
 								  .price(BigDecimal.valueOf(34))
-								  .tax_rate(BigDecimal.valueOf(56))
+								  .tax_rate(Percent.of(56))
 								  .line_net_amt(BigDecimal.valueOf(78))
 								  .currency(CurrencyCode.ofThreeLetterCode("ZAR"))
 								  .build())

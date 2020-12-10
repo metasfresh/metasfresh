@@ -19,6 +19,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -61,6 +62,7 @@ public class InvoiceService
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
@@ -84,13 +86,13 @@ public class InvoiceService
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
-		final CurrencyCode currency = Services.get(ICurrencyDAO.class).getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		final CurrencyCode currency = currencyDAO.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId);
 		for (final I_C_InvoiceLine line : lines)
 		{
 			final String productName = productBL.getProductNameTrl(ProductId.ofRepoId(line.getM_Product_ID())).translate(ad_language);
-			final BigDecimal taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID())).orElse(BigDecimal.ZERO);
+			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			result.lineInfo(JSONInvoiceLineInfo.builder()
 									.line_number(line.getLine())

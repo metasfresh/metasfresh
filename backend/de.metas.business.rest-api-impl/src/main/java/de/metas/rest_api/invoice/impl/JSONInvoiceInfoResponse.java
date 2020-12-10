@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.currency.CurrencyCode;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -66,7 +67,7 @@ class JSONInvoiceLineInfo
 	String product_name;
 	BigDecimal qty_invoiced;
 	BigDecimal price;
-	BigDecimal tax_rate;
+	Percent tax_rate;
 	BigDecimal line_net_amt;
 	CurrencyCode currency;
 

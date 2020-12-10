@@ -162,7 +162,8 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Invoice info retrieved"),
 			@ApiResponse(code = 401, message = "You are not authorized"),
-			@ApiResponse(code = 404, message = "No Invoice found")
+			@ApiResponse(code = 404, message = "No Invoice found"),
+			@ApiResponse(code = 422, message = "An error happened during Invoice info retrieval"),
 	})
 	@GetMapping(path = "{invoiceId}/invoiceInfo", produces = "application/json")
 	@Override
@@ -176,9 +177,15 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			return ResponseEntity.notFound().build();
 		}
 
-		final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language());
-
-		return ResponseEntity.ok(invoiceInfo);
+		try
+		{
+			final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language());
+			return ResponseEntity.ok(invoiceInfo);
+		}
+		catch (final Exception e)
+		{
+			return ResponseEntity.unprocessableEntity().body(e.getLocalizedMessage());
+		}
 	}
 
 	@PutMapping(path = "/{invoiceId}/revert")

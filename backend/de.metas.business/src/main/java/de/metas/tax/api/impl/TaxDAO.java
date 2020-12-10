@@ -11,6 +11,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -26,7 +27,6 @@ import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.Query;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
@@ -192,13 +192,13 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
-	public Optional<BigDecimal> getRateById(@NonNull final TaxId taxId)
+	public Percent getRateById(@NonNull final TaxId taxId)
 	{
 		final I_C_Tax tax = queryBL.createQueryBuilder(I_C_Tax.class)
 				// include inactive taxes
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Tax_ID, taxId)
 				.create()
 				.first();
-		return Optional.ofNullable(tax).map(I_C_Tax::getRate);
+		return Percent.of(tax.getRate());
 	}
 }

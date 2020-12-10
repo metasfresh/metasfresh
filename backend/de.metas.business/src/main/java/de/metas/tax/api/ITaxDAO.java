@@ -1,6 +1,5 @@
 package de.metas.tax.api;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /*
@@ -28,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -91,7 +91,7 @@ public interface ITaxDAO extends ISingletonService
 
 	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
 
-	Optional<BigDecimal> getRateById(@NonNull TaxId taxId);
+	Percent getRateById(@NonNull TaxId taxId);
 
 	@Builder
 	@Value
