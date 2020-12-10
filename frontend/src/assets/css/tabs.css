@@ -316,6 +316,9 @@
     .inlinetab-action-button {
       float:left;
     }
+    .inlinetab-showmore {
+      float: right;
+    }
 }
 .inline-tab {
     background: #E3E1E2;

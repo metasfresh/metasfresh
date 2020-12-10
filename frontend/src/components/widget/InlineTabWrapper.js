@@ -184,14 +184,22 @@ class InlineTabWrapper extends PureComponent {
             )}
             {/* `Show more...` - button */}
             {showMore && !addNewFormVisible && (
-              <div className="inlinetab-action-button">
+              // <div className="inlinetab-action-button">
+              //   <button
+              //     className="btn btn-meta-outline-secondary btn-distance btn-sm"
+              //     onClick={this.toggleShowMore}
+              //   >
+              //     {counterpart.translate('window.inlineTab.showMore')}
+              //   </button>
+              //   <div className="clearfix" />
+              // </div>
+              <div className="inlinetab-showmore">
                 <button
-                  className="btn btn-meta-outline-secondary btn-distance btn-sm"
+                  className="btn-icon btn-meta-outline-secondary pointer btn-fullscreen"
                   onClick={this.toggleShowMore}
                 >
-                  {counterpart.translate('window.inlineTab.showMore')}
+                  <i className="meta-icon-fullscreen" />
                 </button>
-                <div className="clearfix" />
               </div>
             )}
 
