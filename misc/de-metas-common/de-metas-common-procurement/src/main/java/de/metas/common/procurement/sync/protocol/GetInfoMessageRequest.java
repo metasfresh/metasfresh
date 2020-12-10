@@ -27,4 +27,9 @@ import lombok.Value;
 @Value
 public class GetInfoMessageRequest extends ProcurementEvent
 {
+	public static final GetInfoMessageRequest INSTANCE = new GetInfoMessageRequest();
+
+	private GetInfoMessageRequest()
+	{
+	}
 }

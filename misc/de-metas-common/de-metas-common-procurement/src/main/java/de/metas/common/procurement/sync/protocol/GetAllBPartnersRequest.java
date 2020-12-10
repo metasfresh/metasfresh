@@ -30,4 +30,7 @@ import lombok.Value;
 @Value
 public class GetAllBPartnersRequest extends ProcurementEvent
 {
+	public static final GetAllBPartnersRequest INSTANCE = new GetAllBPartnersRequest();
+
+	private GetAllBPartnersRequest(){};
 }

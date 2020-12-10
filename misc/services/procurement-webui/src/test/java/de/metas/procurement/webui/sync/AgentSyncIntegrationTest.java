@@ -132,7 +132,7 @@ public class AgentSyncIntegrationTest
 	private final Date contractDateTo = DateUtils.toDayDate(2016, 03, 31);
 
 	@Test
-	public void test_ImportContracts_ReportQty() throws Exception
+	public void test_ImportContracts_ReportQty()
 	{
 		//
 		// Master data
@@ -142,9 +142,12 @@ public class AgentSyncIntegrationTest
 		// Create a partner with one contract with one line
 		final SyncBPartnerBuilder syncBPartner1 = SyncBPartner.builder();
 		final String syncBPartner1_UUID = newUUID();
+
 		final SyncContractBuilder syncContract1 = SyncContract.builder();
+
 		final SyncContractLineBuilder syncContractLine1 = SyncContractLine.builder();
 		final String syncContractLine1_UUID = newUUID();
+
 		{
 			syncBPartner1.uuid(syncBPartner1_UUID)
 					.name("Test")
@@ -194,6 +197,8 @@ public class AgentSyncIntegrationTest
 			//
 			syncContract1.clearContractLines();
 			syncContract1.contractLine(syncContractLine2);
+
+			syncBPartner1.clearContracts().contract(syncContract1.build());
 			//
 			agentSync.syncBPartners(SyncBPartnersRequest.of(syncBPartner1.build()));
 

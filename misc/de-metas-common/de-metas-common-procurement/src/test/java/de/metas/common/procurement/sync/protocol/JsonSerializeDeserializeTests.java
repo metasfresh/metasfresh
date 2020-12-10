@@ -199,19 +199,19 @@ public class JsonSerializeDeserializeTests
 	@Test
 	void getAllBPartnersRequest() throws IOException
 	{
-		assertOK(new GetAllBPartnersRequest(), GetAllBPartnersRequest.class);
+		assertOK(GetAllBPartnersRequest.INSTANCE, GetAllBPartnersRequest.class);
 	}
 
 	@Test
 	void getAllProductsRequest() throws IOException
 	{
-		assertOK(new GetAllProductsRequest(), GetAllProductsRequest.class);
+		assertOK(GetAllProductsRequest.INSTANCE, GetAllProductsRequest.class);
 	}
 
 	@Test
 	void getInfoMessageRequest() throws IOException
 	{
-		assertOK(new GetInfoMessageRequest(), GetInfoMessageRequest.class);
+		assertOK(GetInfoMessageRequest.INSTANCE, GetInfoMessageRequest.class);
 	}
 
 	private <T> void assertOK(final T objectOrig, final Class<T> valueType) throws IOException

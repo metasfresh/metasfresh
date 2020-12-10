@@ -1,8 +1,6 @@
 package de.metas.procurement.base.rfq.model.interceptor;
 
 import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest.SyncRfQCloseEventsRequestBuilder;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.IWebuiPush;
@@ -112,7 +110,7 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 
 		//
 		// Create and collect RfQ close events (winner unknown)
-		final SyncRfQCloseEventsRequestBuilder syncRfQCloseEventsBuilder = SyncRfQCloseEventsRequest.builder();
+		final List<SyncRfQCloseEvent> syncRfQCloseEvents = new ArrayList<>();
 
 		final SyncObjectsFactory syncObjectsFactory = SyncObjectsFactory.newFactory();
 		final IPMM_RfQ_DAO pmmRfqDAO = Services.get(IPMM_RfQ_DAO.class);
@@ -123,10 +121,9 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 			final SyncRfQCloseEvent syncRfQCloseEvent = syncObjectsFactory.createSyncRfQCloseEvent(rfqResponseLine, winnerKnown);
 			if (syncRfQCloseEvent != null)
 			{
-				syncRfQCloseEventsBuilder.syncRfQCloseEvent(syncRfQCloseEvent);
+				syncRfQCloseEvents.add(syncRfQCloseEvent);
 			}
 		}
-		final SyncRfQCloseEventsRequest syncRfQCloseEvents = syncRfQCloseEventsBuilder.build();
 
 		//
 		// Push to WebUI: RfQ close events

@@ -7,12 +7,11 @@ import com.google.gwt.thirdparty.guava.common.eventbus.AsyncEventBus;
 import com.google.gwt.thirdparty.guava.common.eventbus.DeadEvent;
 import com.google.gwt.thirdparty.guava.common.eventbus.Subscribe;
 import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.IServerSync;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.GetAllBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.GetAllProductsRequest;
+import de.metas.common.procurement.sync.protocol.GetInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
 import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest.SyncRfQChangeRequestBuilder;
 import de.metas.common.procurement.sync.protocol.SyncRfQPriceChangeEvent;
@@ -31,12 +30,11 @@ import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.sync.rabbitmq.SenderToMetasfresh;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -81,38 +79,61 @@ public class ServerSyncService implements IServerSyncService
 {
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired(required = true)
+	//@Autowired(required = true)
 	private TaskExecutor taskExecutor;
+
 	private AsyncEventBus eventBus;
 
-	/**
-	 * Server sync REST service client interface
-	 */
-	@Autowired(required = true)
-	@Lazy
-	private IServerSync serverSync;
+	// /**
+	//  * Server sync REST service client interface
+	//  */
+	// @Autowired(required = true)
+	// @Lazy
+	// private IServerSync serverSync;
 
-	@Autowired(required = true)
-	@Lazy
+	// @Autowired(required = true)
+	// @Lazy
+	private SenderToMetasfresh senderToMetasfresh;
+
+	// @Autowired(required = true)
+	// @Lazy
 	private IAgentSync agentSync;
 
-	@Autowired
-	@Lazy
+	// @Autowired
+	// @Lazy
 	private ProductSupplyRepository productSuppliesRepo;
 
-	@Autowired
-	@Lazy
+	// @Autowired
+	// @Lazy
 	private IProductSuppliesService productSuppliesService;
 
-	@Autowired
-	@Lazy
+	// @Autowired
+	// @Lazy
 	private RfqRepository rfqRepo;
 
-	@Autowired
-	@Lazy
+	// @Autowired
+	// @Lazy
 	private SyncConfirmRepository syncConfirmRepo;
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
+
+	public ServerSyncService(
+			final TaskExecutor taskExecutor,
+			final SenderToMetasfresh senderToMetasfresh,
+			final IAgentSync agentSync,
+			final ProductSupplyRepository productSuppliesRepo,
+			final IProductSuppliesService productSuppliesService,
+			final RfqRepository rfqRepo,
+			final SyncConfirmRepository syncConfirmRepo)
+	{
+		this.taskExecutor = taskExecutor;
+		this.senderToMetasfresh = senderToMetasfresh;
+		this.agentSync = agentSync;
+		this.productSuppliesRepo = productSuppliesRepo;
+		this.productSuppliesService = productSuppliesService;
+		this.rfqRepo = rfqRepo;
+		this.syncConfirmRepo = syncConfirmRepo;
+	}
 
 	@PostConstruct
 	private void init()
@@ -120,14 +141,7 @@ public class ServerSyncService implements IServerSyncService
 		eventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
 		eventBus.register(this);
 
-		syncAllAsync(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				initialSync.countDown();
-			}
-		});
+		syncAllAsync(() -> initialSync.countDown());
 	}
 
 	/**
@@ -153,7 +167,7 @@ public class ServerSyncService implements IServerSyncService
 	}
 
 	@Override
-	public void awaitInitialSyncComplete(long timeout, TimeUnit unit) throws InterruptedException
+	public void awaitInitialSyncComplete(final long timeout, final TimeUnit unit) throws InterruptedException
 	{
 		initialSync.await(timeout, unit);
 	}
@@ -164,42 +178,39 @@ public class ServerSyncService implements IServerSyncService
 		logger.debug("syncAll: Start");
 
 		//
-		logger.debug("Fetching bpartners from server and import it");
+		logger.debug("Requesting all bpartners from metasfresh");
 		try
 		{
-			final SyncBPartnersRequest syncBPartnersRequest = SyncBPartnersRequest.of(serverSync.getAllBPartners());
-			agentSync.syncBPartners(syncBPartnersRequest);
+			senderToMetasfresh.send(GetAllBPartnersRequest.INSTANCE);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			logger.error("Failed importing bpartners", e);
+			logger.error("Failed requesting all bpartners", e);
 		}
 
 		//
-		logger.debug("Fetching products from server and importing them");
+		logger.debug("Requesting products from metasfresh");
 		try
 		{
-			final SyncProductsRequest syncProductsRequest = SyncProductsRequest.of(serverSync.getAllProducts());
-			agentSync.syncProducts(syncProductsRequest);
+			senderToMetasfresh.send(GetAllProductsRequest.INSTANCE);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			logger.error("Failed importing products", e);
+			logger.error("Failed requesting all products", e);
 		}
 
 		//
-		logger.debug("Fetching info message from server and import it");
+		logger.debug("Requesting info message from metasfresh");
 		try
 		{
-			final String infoMessage = serverSync.getInfoMessage();
-			agentSync.syncInfoMessage(SyncInfoMessageRequest.of(infoMessage));
+			senderToMetasfresh.send(GetInfoMessageRequest.INSTANCE);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			logger.error("Failed importing info message", e);
+			logger.error("Failed requesting info message", e);
 		}
 
-		logger.debug("syncAll: Done");
+		logger.debug("syncAll: All requests done");
 
 		//
 		logger.debug("Calling request's callback if any");
@@ -266,11 +277,10 @@ public class ServerSyncService implements IServerSyncService
 	{
 		try
 		{
-			serverSync.reportProductSupplies(request);
+			senderToMetasfresh.send(request);
 		}
 		catch (final Exception e)
 		{
-			// thx http://stackoverflow.com/questions/25367566/severe-could-not-dispatch-event-eventbus-com-google-common-eventbus-subscriber
 			logger.error("Caught exception trying to process SyncProductSuppliesRequest=" + request, e);
 		}
 	}
@@ -342,11 +352,10 @@ public class ServerSyncService implements IServerSyncService
 	{
 		try
 		{
-			serverSync.reportWeekSupply(request);
+			senderToMetasfresh.send(request);
 		}
 		catch (final Exception e)
 		{
-			// thx http://stackoverflow.com/questions/25367566/severe-could-not-dispatch-event-eventbus-com-google-common-eventbus-subscriber
 			logger.error("Caught exception trying to process SyncWeeklySupplyRequest=" + request, e);
 		}
 	}
@@ -432,7 +441,7 @@ public class ServerSyncService implements IServerSyncService
 	{
 		try
 		{
-			serverSync.reportRfQChanges(request);
+			senderToMetasfresh.send(request);
 		}
 		catch (final Exception e)
 		{

@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -116,22 +118,20 @@ public class FederatedRabbitMQTest
 		final Connection connection = procurementWebuiFactory.newConnection();
 		final Channel channel = connection.createChannel();
 
-		final boolean[] received = { false };
+		final CountDownLatch countDownLatch = new CountDownLatch(1);
+
 		final String[] message = { null };
 		final DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 			message[0] = new String(delivery.getBody(), StandardCharsets.UTF_8);
 			System.out.println("\n[x] Received on queue '" + Constants.QUEUE_NAME_MF_TO_PW + "': message= '" + message[0] + "'");
-			received[0] = true;
+			countDownLatch.countDown();
 		};
 		channel.basicConsume(Constants.QUEUE_NAME_MF_TO_PW, true, deliverCallback, consumerTag -> {
 		});
 
 		System.out.print("Waiting for message receipt");
-		int count = 1;
-		while (!received[0])
-		{
-			count = waitABit(count);
-		}
+		countDownLatch.await(5, TimeUnit.SECONDS);
+
 		assertThat(message[0]).isEqualTo(createFromMetasfreshMessage());
 	}
 
@@ -167,21 +167,18 @@ public class FederatedRabbitMQTest
 		final Connection connection = metasfreshFactory.newConnection();
 		final Channel channel = connection.createChannel();
 
-		final boolean[] received = { false };
+		final CountDownLatch countDownLatch = new CountDownLatch(1);
 		final String[] message = { null };
 		final DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 			message[0] = new String(delivery.getBody(), StandardCharsets.UTF_8);
 			System.out.println("\n[x] Received on queue '" + Constants.QUEUE_NAME_PW_TO_MF + "': message= '" + message[0] + "'");
-			received[0] = true;
+			countDownLatch.countDown();
 		};
 		channel.basicConsume(Constants.QUEUE_NAME_PW_TO_MF, true, deliverCallback, consumerTag -> {
 		});
 		System.out.print("Waiting for message receipt");
-		int count = 1;
-		while (!received[0])
-		{
-			count = waitABit(count);
-		}
+
+		countDownLatch.await(5, TimeUnit.SECONDS);
 		assertThat(message[0]).isEqualTo(createFromProcurementWebuiMessage());
 	}
 
