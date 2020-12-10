@@ -48,4 +48,5 @@ public interface IInvoicesRestEndpoint
 
 	ResponseEntity<byte[]> getInvoicePDF(int invoiceRecordId);
 
+	ResponseEntity<?> getInvoiceInfo(int invoiceRecordId);
 }
