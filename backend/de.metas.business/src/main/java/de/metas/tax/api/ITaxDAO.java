@@ -50,6 +50,8 @@ public interface ITaxDAO extends ISingletonService
 
 	I_C_Tax getTaxById(int taxRepoId);
 
+	I_C_Tax getTaxById(TaxId taxRepoId);
+
 	I_C_Tax getTaxByIdOrNull(int taxRepoId);
 
 	/**

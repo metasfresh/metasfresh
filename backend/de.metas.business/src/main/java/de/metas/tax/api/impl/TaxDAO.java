@@ -47,6 +47,12 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
+	public I_C_Tax getTaxById(@NonNull final TaxId taxId)
+	{
+		return loadOutOfTrx(taxId, I_C_Tax.class);
+	}
+
+	@Override
 	public I_C_Tax getTaxByIdOrNull(final int taxRepoId)
 	{
 		if (taxRepoId <= 0)
@@ -194,11 +200,7 @@ public class TaxDAO implements ITaxDAO
 	@Override
 	public Percent getRateById(@NonNull final TaxId taxId)
 	{
-		final I_C_Tax tax = queryBL.createQueryBuilder(I_C_Tax.class)
-				// include inactive taxes
-				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Tax_ID, taxId)
-				.create()
-				.first();
+		final I_C_Tax tax = getTaxById(taxId);
 		return Percent.of(tax.getRate());
 	}
 }
