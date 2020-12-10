@@ -123,7 +123,7 @@ describe('MasterWidget component', () => {
     expect(props.updatePropertyValue).not.toBeCalled();
   });
 
-  it('calls `updatePropertyValue` on patch', () => {
+  it('calls `updatePropertyValue` and  on patch', () => {
     const localFixtures = rawWidgetFixtures.text;
     const widgetData = [{ ...fixtures.text.data1, widgetType: 'Quantity' }];
     const props = createDummyProps(
@@ -134,6 +134,7 @@ describe('MasterWidget component', () => {
         widgetData,
         dataId: null,
         updatePropertyValue: jest.fn(),
+        updateRow: jest.fn(),
       },
     );
     const wrapper = shallow(<MasterWidget {...props} />);
@@ -142,5 +143,6 @@ describe('MasterWidget component', () => {
     wrapper.instance().handlePatch(property, 42);
 
     expect(props.updatePropertyValue).toBeCalled();
+    expect(props.updateRow).toBeCalled();
   });
 });

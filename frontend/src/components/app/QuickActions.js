@@ -80,22 +80,17 @@ export class QuickActions extends Component {
       return;
     }
 
-    openModal(
-      action.caption,
-      action.processId,
-      'process',
-      null,
-      null,
-      false,
+    openModal({
+      title: action.caption,
+      windowId: action.processId,
+      modalType: 'process',
       viewId,
-      selected,
-      null,
-      null,
-      parentView.viewId,
-      parentView.viewSelectedIds,
-      childView.viewId,
-      childView.viewSelectedIds
-    );
+      viewDocumentIds: selected,
+      parentViewId: parentView.viewId,
+      parentViewSelectedIds: parentView.viewSelectedIds,
+      childViewId: childView.viewId,
+      childViewSelectedIds: childView.viewSelectedIds,
+    });
 
     this.toggleDropdown(action);
   };

@@ -290,23 +290,17 @@ class Header extends PureComponent {
     const { dispatch, viewId } = this.props;
 
     dispatch(
-      openModal(
-        caption,
+      openModal({
+        title: caption,
         windowId,
         modalType,
-        null,
-        null,
         isAdvanced,
         viewId,
-        selected,
-        null,
-        null,
-        null,
-        null,
+        viewDocumentIds: selected,
         childViewId,
         childViewSelectedIds,
-        staticModalType
-      )
+        staticModalType,
+      })
     );
   };
 
@@ -331,23 +325,14 @@ class Header extends PureComponent {
     const { dispatch } = this.props;
 
     dispatch(
-      openModal(
-        caption,
+      openModal({
+        title: caption,
         windowId,
         modalType,
         tabId,
         rowId,
-        false,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        staticModalType
-      )
+        staticModalType,
+      })
     );
   };
 
@@ -386,23 +371,15 @@ class Header extends PureComponent {
         } else {
           // otherwise we open the modal and we will reset the printing options in the store after the doc is printed
           dispatch(
-            openModal(
-              caption,
+            openModal({
+              title: caption,
               windowId,
-              'static',
-              null,
-              null,
-              false,
+              modalType: 'static',
               viewId,
-              [docNo],
-              docId,
-              null,
-              null,
-              null,
-              null,
-              null,
-              'printing'
-            )
+              viewDocumentIds: [docNo],
+              dataId: docId,
+              staticModalType: 'printing',
+            })
           );
         }
       }
@@ -480,20 +457,18 @@ class Header extends PureComponent {
   };
 
   /**
-   * @method handlePromptScroll
-   * @summary ToDo: Describe the method
-   * @param {string} windowId
-   * @param {docId} docId
+   * @method handlePromptSubmitClick
+   * @summary Hanndler for the prompt submit action
    */
-  handlePromptSubmitClick = (windowId, docId) => {
-    const { dispatch, handleDeletedStatus } = this.props;
+  handlePromptSubmitClick = () => {
+    const { dispatch, handleDeletedStatus, windowId, dataId } = this.props;
 
     this.setState(
       {
         prompt: Object.assign({}, this.state.prompt, { open: false }),
       },
       () => {
-        deleteRequest('window', windowId, null, null, [docId]).then(() => {
+        deleteRequest('window', windowId, null, null, [dataId]).then(() => {
           handleDeletedStatus(true);
           dispatch(push(`/window/${windowId}`));
         });
@@ -637,7 +612,7 @@ class Header extends PureComponent {
             text="Are you sure?"
             buttons={{ submit: 'Delete', cancel: 'Cancel' }}
             onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={() => this.handlePromptSubmitClick(windowId, dataId)}
+            onSubmitClick={this.handlePromptSubmitClick}
           />
         )}
 

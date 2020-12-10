@@ -22,10 +22,18 @@
 
 package de.metas.ui.web.pporder.process;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
@@ -39,30 +47,26 @@ import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.ui.web.pporder.PPOrderLineType;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
-import lombok.NonNull;
 
-public class WEBUI_PP_Order_PrintLabel
-		extends WEBUI_PP_Order_Template
-		implements IProcessPrecondition
+public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
 	final private static AdProcessId LabelPdf_AD_Process_ID = AdProcessId.ofRepoId(584768);
-	protected static final AdMessageKey MSG_MustBe_TopLevel_HU = AdMessageKey.of("WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU");
+	protected static final AdMessageKey MSG_MustBe_TopLevel_HU = AdMessageKey
+			.of("WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU");
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	final private IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedRowIds().isSingleDocumentId())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
 
-		if (!getSingleSelectedRow().isTopLevelHU())
+		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
+		if (distinctHuIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_MustBe_TopLevel_HU));
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -73,55 +77,77 @@ public class WEBUI_PP_Order_PrintLabel
 	protected String doIt()
 	{
 
+		// create selection
+		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
+		DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
+
 		// print
-		final PPOrderLineRow row = getSingleSelectedRow();
-		final ReportResult label = printLabel(row);
+		final ReportResult label = printLabel();
 
 		// preview
-		getResult().setReportData(
-				label.getReportContent(),
-				buildFilename(row),
-				OutputType.PDF.getContentType());
+		getResult().setReportData(label.getReportContent(), buildFilename(), OutputType.PDF.getContentType());
 
 		return MSG_OK;
 
 	}
 
-	private ReportResult printLabel(@NonNull final PPOrderLineRow row)
+	private Set<HuId> retrieveSelectedHuIds()
 	{
-		final PInstanceRequest pinstanceRequest = createPInstanceRequest(row);
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+
+		final ImmutableList<PPOrderLineRow> selectedRows = getView()
+				.streamByIds(selectedRowIds)
+				.collect(ImmutableList.toImmutableList());
+
+		final Set<HuId> huIds = new HashSet<HuId>();  
+				
+		for (final PPOrderLineRow row : selectedRows)
+		{
+			final PPOrderLineType type = row.getType();
+			if (type.isMainProduct())
+			{
+				final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
+				includedRows.stream()
+						.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
+						.map(PPOrderLineRow::getHuId)
+						.filter(Objects::nonNull)
+						.forEach(huIds::add);
+			}
+			else if (row.getHuId() != null && type.isHUOrHUStorage())
+			{
+				huIds.add(row.getHuId());
+			}
+		}
+
+		return huIds;
+	}
+
+	private ReportResult printLabel()
+	{
+		final PInstanceRequest pinstanceRequest = createPInstanceRequest();
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
 
-		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
-				.setCtx(getCtx())
-				.setAD_Process_ID(LabelPdf_AD_Process_ID)
-				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
-				.setReportLanguage(getProcessInfo().getReportLanguage())
-				.setJRDesiredOutputType(OutputType.PDF)
-				.build();
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder().setCtx(getCtx())
+				.setAD_Process_ID(LabelPdf_AD_Process_ID).setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
+				.setReportLanguage(getProcessInfo().getReportLanguage()).setJRDesiredOutputType(OutputType.PDF).build();
 
 		final ReportsClient reportsClient = ReportsClient.get();
 		return reportsClient.report(jasperProcessInfo);
 	}
 
-	private static PInstanceRequest createPInstanceRequest(@NonNull final PPOrderLineRow row)
+	private PInstanceRequest createPInstanceRequest()
 	{
-		return PInstanceRequest.builder()
-				.processId(LabelPdf_AD_Process_ID)
-				.processParams(ImmutableList.of(
-						ProcessInfoParameter.of("RECORD_ID", row.getHuId())))
-				.build();
+
+		return PInstanceRequest.builder().processId(LabelPdf_AD_Process_ID)
+				.processParams(ImmutableList.of(ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId()))).build();
 	}
 
-	private static String buildFilename(@NonNull final PPOrderLineRow row)
+	private String buildFilename()
 	{
-		final String huValue = String.valueOf(row.getHuId().getRepoId());
-		final String product = row.getPackingInfo();
+		final String instance = String.valueOf(getPinstanceId().getRepoId());
+		final String title = getProcessInfo().getTitle();
 
-		return Joiner.on("_")
-				.skipNulls()
-				.join(huValue, product)
-				+ ".pdf";
+		return Joiner.on("_").skipNulls().join(instance, title) + ".pdf";
 	}
 
 }

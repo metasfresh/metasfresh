@@ -11,6 +11,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
 import org.compiere.util.TimeUtil;
 
@@ -57,6 +58,9 @@ public class RequestDAO implements IRequestDAO
 		request.setC_BPartner_ID(BPartnerId.toRepoId(candidate.getPartnerId()));
 		request.setC_Order_ID(candidate.getRecordRef() != null ?
 				candidate.getRecordRef().getTableName().equals(I_C_Order.Table_Name) ? candidate.getRecordRef().getRecord_ID() : -1
+				: -1);
+		request.setM_InOut_ID(candidate.getRecordRef() != null ?
+				candidate.getRecordRef().getTableName().equals(I_M_InOut.Table_Name) ? candidate.getRecordRef().getRecord_ID() : -1
 				: -1);
 		request.setAD_User_ID(UserId.toRepoId(candidate.getUserId()));
 		request.setR_RequestType_ID(candidate.getRequestTypeId().getRepoId());

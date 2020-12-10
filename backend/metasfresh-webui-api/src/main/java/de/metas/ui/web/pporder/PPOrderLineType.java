@@ -137,6 +137,12 @@ public enum PPOrderLineType implements IViewRowType
 				|| this == BOMLine_ByCoProduct;
 	}
 
+	public boolean isMainProduct()
+	{
+		return this == MainProduct;
+	}
+	
+	
 	public boolean isHUOrHUStorage()
 	{
 		return this == HU_LU

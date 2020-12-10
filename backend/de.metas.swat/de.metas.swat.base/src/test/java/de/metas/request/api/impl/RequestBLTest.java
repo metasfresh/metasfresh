@@ -78,7 +78,7 @@ public class RequestBLTest
 		final I_R_RequestType soRequestType = createRequestType("RequestType");
 		createQualityNoteAttribute();
 
-		final I_R_Request request = requestBL.createRequestFromInOutLine(line);
+		final I_R_Request request = requestBL.createRequestFromInOutLineWithQualityIssues(line);
 
 		assertThat(request.getAD_Org_ID()).isEqualTo(line.getAD_Org_ID());
 		assertThat(request.getM_Product_ID()).isEqualTo(line.getM_Product_ID());
