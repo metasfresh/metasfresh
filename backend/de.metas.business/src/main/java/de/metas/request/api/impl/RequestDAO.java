@@ -1,6 +1,7 @@
 package de.metas.request.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.inout.QualityNoteId;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
@@ -15,8 +16,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
 import org.compiere.util.TimeUtil;
 
-import java.time.Instant;
-import java.util.Date;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -65,7 +64,7 @@ public class RequestDAO implements IRequestDAO
 				candidate.getRecordRef().getTableName().equals(I_M_InOut.Table_Name) ? candidate.getRecordRef().getRecord_ID() : -1
 				: -1);
 
-		request.setDateTrx(TimeUtil.asTimestamp(Date.from(Instant.now())));
+		request.setDateTrx(SystemTime.asTimestamp());
 		request.setAD_User_ID(UserId.toRepoId(candidate.getUserId()));
 		request.setR_RequestType_ID(candidate.getRequestTypeId().getRepoId());
 		request.setM_QualityNote_ID(QualityNoteId.toRepoId(candidate.getQualityNoteId()));
