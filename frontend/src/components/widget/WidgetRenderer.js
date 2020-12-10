@@ -113,6 +113,7 @@ class WidgetRenderer extends PureComponent {
       onSetWidgetType,
       onHandleProcess,
       forwardedRef,
+      disconnected,
     } = this.props;
     const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
@@ -181,6 +182,7 @@ class WidgetRenderer extends PureComponent {
       tabIndex,
       autoFocus,
       readonly,
+      disconnected,
     };
 
     switch (widgetType) {

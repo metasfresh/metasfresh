@@ -249,6 +249,7 @@ export default class Attributes extends Component {
    */
   handleCompletion = () => {
     const { data, loading } = this.state;
+    const { disconnected } = this.props;
 
     if (!loading && data) {
       const mandatory = Object.keys(data).filter(
@@ -258,8 +259,15 @@ export default class Attributes extends Component {
 
       //there are required values that are not set. just close
       if (mandatory.length && !valid) {
-        if (window.confirm('Do you really want to leave?')) {
+        /** we are treating the inlineTab differently - we don't show this confirm dialog  */
+        if (disconnected === 'inlineTab') {
+          /** TODO: here we might use a prompt explaining that the settings were not saved */
           this.handleToggle(false);
+        } else {
+          /** the generic case  */
+          if (window.confirm('Do you really want to leave?')) {
+            this.handleToggle(false);
+          }
         }
         return;
       }
@@ -378,4 +386,5 @@ Attributes.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   widgetType: PropTypes.string,
+  disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
 };

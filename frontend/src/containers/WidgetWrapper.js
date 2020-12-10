@@ -122,6 +122,7 @@ const mapStateToProps = (state, props) => {
 
       break;
     }
+
     default:
       widgetData = [{}];
 
