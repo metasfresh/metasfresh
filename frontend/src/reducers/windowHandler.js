@@ -335,20 +335,7 @@ export default function windowHandler(state = initialState, action) {
         modal: {
           ...state.modal,
           visible: true,
-          type: action.windowType,
-          staticModalType: action.staticModalType,
-          dataId: action.dataId,
-          tabId: action.tabId,
-          rowId: action.rowId,
-          viewId: action.viewId,
-          title: action.title,
-          modalType: action.modalType,
-          isAdvanced: action.isAdvanced,
-          viewDocumentIds: action.viewDocumentIds,
-          triggerField: action.triggerField,
-          parentViewId: action.parentViewId,
-          childViewId: action.childViewId,
-          childViewSelectedIds: action.childViewSelectedIds,
+          ...action.payload,
         },
       };
     case UPDATE_MODAL:
@@ -364,7 +351,6 @@ export default function windowHandler(state = initialState, action) {
       return {
         ...state,
         modal: {
-          ...state.modal,
           ...initialState.modal,
         },
       };

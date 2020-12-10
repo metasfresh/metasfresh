@@ -61,6 +61,7 @@ import {
 } from '../api';
 
 import { getTableId } from '../reducers/tables';
+import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
   setNotificationProgress,
@@ -315,23 +316,23 @@ export function noConnection(status) {
   };
 }
 
-export function openModal(
-  title,
+export function openModal({
+  title = '',
   windowId,
   modalType,
-  tabId,
-  rowId,
-  isAdvanced,
-  viewId,
-  viewDocumentIds,
-  dataId,
-  triggerField,
-  parentViewId,
-  parentViewSelectedIds,
-  childViewId,
-  childViewSelectedIds,
-  staticModalType
-) {
+  tabId = null,
+  rowId = null,
+  isAdvanced = false,
+  viewId = null,
+  viewDocumentIds = null,
+  dataId = null,
+  triggerField = null,
+  parentViewId = null,
+  parentViewSelectedIds = null,
+  childViewId = null,
+  childViewSelectedIds = null,
+  staticModalType = null,
+}) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
@@ -341,21 +342,23 @@ export function openModal(
 
   return {
     type: OPEN_MODAL,
-    windowType: windowId,
-    tabId: tabId,
-    rowId: rowId,
-    viewId: viewId,
-    dataId: dataId,
-    title: title,
-    isAdvanced: isAdvanced,
-    viewDocumentIds: viewDocumentIds,
-    triggerField: triggerField,
-    modalType,
-    staticModalType,
-    parentViewId,
-    parentViewSelectedIds,
-    childViewId,
-    childViewSelectedIds,
+    payload: {
+      windowId,
+      tabId,
+      rowId,
+      viewId,
+      dataId,
+      title,
+      isAdvanced,
+      viewDocumentIds,
+      triggerField,
+      modalType,
+      staticModalType,
+      parentViewId,
+      parentViewSelectedIds,
+      childViewId,
+      childViewSelectedIds,
+    },
   };
 }
 
@@ -1068,7 +1071,7 @@ export function createProcess({
   processType,
   rowId,
   tabId,
-  parentId,
+  documentType,
   viewId,
   selectedTab,
   childViewId,
@@ -1079,7 +1082,8 @@ export function createProcess({
   let pid = null;
 
   return async (dispatch, getState) => {
-    // creation of processes can be done only if there isn't any pending process https://github.com/metasfresh/metasfresh/issues/10116
+    // creation of processes can be done only if there isn't any pending process
+    // https://github.com/metasfresh/metasfresh/issues/10116
     const { processStatus } = getState().appHandler;
     if (processStatus === 'pending') {
       return false;
@@ -1095,7 +1099,7 @@ export function createProcess({
         processId: processType,
         rowId,
         tabId,
-        parentId,
+        documentType,
         viewId,
         selectedTab,
         childViewId,
@@ -1121,6 +1125,11 @@ export function createProcess({
 
         try {
           response = await startProcess(processType, pid);
+
+          // processes opening included views need the id of the parent view
+          const id = parentViewId ? parentViewId : viewId;
+          const parentView = id && findViewByViewId(getState(), id);
+          const parentId = parentView ? parentView.windowId : documentType;
 
           await dispatch(
             handleProcessResponse(response, processType, pid, parentId)
@@ -1224,17 +1233,12 @@ export function handleProcessResponse(response, type, id, parentId) {
               keepProcessModal = true;
 
               await dispatch(
-                openModal(
-                  '',
-                  action.windowId,
-                  'window',
-                  null,
-                  null,
-                  action.advanced ? action.advanced : false,
-                  '',
-                  '',
-                  action.documentId
-                )
+                openModal({
+                  windowId: action.windowId,
+                  modalType: 'window',
+                  isAdvanced: action.advanced ? action.advanced : false,
+                  dataId: action.documentId,
+                })
               );
             } else {
               await dispatch(

@@ -263,17 +263,17 @@ export function deleteTopActions() {
  * @method fetchTopActions
  * @summary Fetches tab's top actions
  *
- * @param {number} windowType
+ * @param {number} windowId
  * @param {string} docId
  * @param {string} tabId
  */
-export function fetchTopActions(windowType, docId, tabId) {
+export function fetchTopActions(windowId, docId, tabId) {
   return (dispatch) => {
     dispatch({
       type: FETCH_TOP_ACTIONS,
     });
 
-    return topActionsRequest(windowType, docId, tabId)
+    return topActionsRequest(windowId, docId, tabId)
       .then((response) => {
         dispatch({
           type: FETCH_TOP_ACTIONS_SUCCESS,
