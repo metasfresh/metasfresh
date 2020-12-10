@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import java.sql.Timestamp;
 import java.util.Optional;
 
-public final class OrderCreateNewFromProposal extends JavaProcess implements IProcessPrecondition
+public final class OrderCreateNewFromProposal extends JavaProcess  implements IProcessPrecondition
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -169,6 +169,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
+
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -181,6 +182,13 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 
 		final int orderId = context.getSingleSelectedRecordId();
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderId));
+
+		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(order.getDocStatus());
+		if (!quotationDocStatus.isCompleted())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a completed quotation");
+		}
+
 		final Optional<DocTypeId> docTypeId = DocTypeId.optionalOfRepoId(order.getC_DocTypeTarget_ID());
 		if (docTypeId.isPresent())
 		{
@@ -193,8 +201,9 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 		else
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no C_DocTypeTarget_ID");
+
 		}
 
 		return ProcessPreconditionsResolution.accept();
-	}
+	}  
 }
