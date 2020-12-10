@@ -372,7 +372,6 @@ export default function windowHandler(state = initialState, action) {
         return {
           ...state,
           modal: {
-            ...state.modal,
             ...initialState.modal,
           },
         };
