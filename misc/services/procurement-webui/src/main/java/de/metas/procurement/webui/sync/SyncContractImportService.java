@@ -133,10 +133,9 @@ public class SyncContractImportService extends AbstractSyncImportService
 
 		//
 		// Product
-		final SyncProduct syncProduct = syncContractLine.getProduct();
-		assertNotDeleteRequest_WarnAndFix(syncProduct, "importing contract lines");
+		final SyncProduct syncProductNoDelete = assertNotDeleteRequest_WarnAndFix(syncContractLine.getProduct(), "importing contract lines");
 		Product product = contractLine == null ? null : contractLine.getProduct();
-		product = productsImportService.importProduct(syncProduct, product);
+		product = productsImportService.importProduct(syncProductNoDelete, product);
 
 		//
 		// Contract Line

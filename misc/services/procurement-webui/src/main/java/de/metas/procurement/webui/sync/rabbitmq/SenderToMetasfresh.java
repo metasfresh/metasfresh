@@ -25,7 +25,7 @@ package de.metas.procurement.webui.sync.rabbitmq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.ProcurementEvent;
-import de.metas.procurement.webui.sync.exception.ReceiveSyncException;
+import de.metas.procurement.webui.sync.exception.SendSyncException;
 import lombok.NonNull;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -60,7 +60,7 @@ public class SenderToMetasfresh
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw new ReceiveSyncException(procurementEvent, e);
+			throw new SendSyncException(procurementEvent, e);
 		}
 	}
 }

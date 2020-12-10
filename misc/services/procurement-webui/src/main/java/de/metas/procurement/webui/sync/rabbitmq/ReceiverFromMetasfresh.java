@@ -23,34 +23,29 @@
 package de.metas.procurement.webui.sync.rabbitmq;
 
 import de.metas.common.procurement.sync.Constants;
-import de.metas.common.procurement.sync.protocol.GetAllBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.GetAllProductsRequest;
-import de.metas.common.procurement.sync.protocol.GetInfoMessageRequest;
+import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.ProcurementEvent;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
 import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
 import de.metas.procurement.webui.sync.exception.ReceiveSyncException;
 import lombok.NonNull;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
 import java.io.IOException;
-import java.util.List;
 
 @RabbitListener(queues = Constants.QUEUE_NAME_PW_TO_MF)
 public class ReceiverFromMetasfresh
 {
-	private final SenderToMetasfresh senderToProcurementWebUI;
+	private final IAgentSync agentSync;
 
-	public ReceiverFromMetasfresh(@NonNull final SenderToMetasfresh senderToProcurementWebUI)
+	public ReceiverFromMetasfresh(@NonNull final IAgentSync agentSync)
 	{
-		this.senderToProcurementWebUI = senderToProcurementWebUI;
+		this.agentSync = agentSync;
 	}
 
 	@RabbitHandler
@@ -78,39 +73,36 @@ public class ReceiverFromMetasfresh
 
 	private void invokeServerSyncBL(@NonNull final ProcurementEvent procurementEvent)
 	{
-		final IServerSyncBL serverSyncBL = Services.get(IServerSyncBL.class);
-		if (procurementEvent instanceof SyncWeeklySupplyRequest)
+		if (procurementEvent instanceof SyncBPartnersRequest)
 		{
-			serverSyncBL.reportWeekSupply((SyncWeeklySupplyRequest)procurementEvent);
+			agentSync.syncBPartners((SyncBPartnersRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof SyncProductSuppliesRequest)
+		else if (procurementEvent instanceof SyncProductsRequest)
 		{
-			serverSyncBL.reportProductSupplies((SyncProductSuppliesRequest)procurementEvent);
+			agentSync.syncProducts((SyncProductsRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof SyncRfQChangeRequest)
+		else if (procurementEvent instanceof SyncRfQsRequest)
 		{
-			serverSyncBL.reportRfQChanges((SyncRfQChangeRequest)procurementEvent);
+			final SyncRfQsRequest syncRfQsRequest = (SyncRfQsRequest)procurementEvent;
+			agentSync.syncRfQs(syncRfQsRequest.getSyncRfqs());
 		}
-		else if (procurementEvent instanceof GetAllBPartnersRequest)
+		else if (procurementEvent instanceof SyncInfoMessageRequest)
 		{
-			final List<SyncBPartner> allBPartners = serverSyncBL.getAllBPartners();
-			senderToProcurementWebUI.send(SyncBPartnersRequest.of(allBPartners));
+			agentSync.syncInfoMessage((SyncInfoMessageRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof GetAllProductsRequest)
+		else if (procurementEvent instanceof SyncConfirmationRequest)
 		{
-			final List<SyncProduct> allProducts = serverSyncBL.getAllProducts();
-			senderToProcurementWebUI.send(SyncProductsRequest.of(allProducts));
+			final SyncConfirmationRequest syncConfirmationRequest = (SyncConfirmationRequest)procurementEvent;
+			agentSync.confirm(syncConfirmationRequest.getSyncConfirmations());
 		}
-		else if (procurementEvent instanceof GetInfoMessageRequest)
+		else if (procurementEvent instanceof SyncRfQCloseEventsRequest)
 		{
-			final String infoMessage = serverSyncBL.getInfoMessage();
-			senderToProcurementWebUI.send(SyncInfoMessageRequest.of(infoMessage));
+			final SyncRfQCloseEventsRequest syncRfQCloseEventsRequest = (SyncRfQCloseEventsRequest)procurementEvent;
+			agentSync.closeRfQs(syncRfQCloseEventsRequest.getSyncRfQCloseEvents());
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported type " + procurementEvent.getClass().getName())
-					.appendParametersToMessage()
-					.setParameter("procurementEvent", procurementEvent);
+			throw new ReceiveSyncException(procurementEvent, "Unsupported procurementEvent type " + procurementEvent.getClass().getName());
 		}
 	}
 }
