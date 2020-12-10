@@ -313,6 +313,10 @@
 .inline-tab-wrapper {
     width: 100%;
     box-sizing: border-box;
+    .main-label {
+      font-weight: bold; 
+      color: #495057;
+    }
     .inlinetab-action-button {
       float:left;
     }

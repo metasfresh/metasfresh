@@ -130,24 +130,23 @@ class InlineTabWrapper extends PureComponent {
 
   render() {
     const {
-      widgetData,
       tabData,
       addNewFormVisible,
       addNewData,
       rowId,
-      inlineTab: { tabId },
+      inlineTab: { caption, tabId },
       dataId,
       showMore,
       inlineTab,
     } = this.props;
-    const { caption } = widgetData;
+
     if (!tabData) return false;
 
     const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(inlineTab);
 
     return (
       <div className="inline-tab-wrapper">
-        <span>{caption}</span>
+        <span className="main-label">{caption}</span>
         {/* InlineTab Row Items */}
         {tabData &&
           tabData.map((tabItem, index) => {
