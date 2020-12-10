@@ -43,4 +43,8 @@ public interface I_C_OrderLine extends org.compiere.model.I_C_OrderLine, IDocume
 	void setHandOver_Location_ID(int handoverLocationId);
 	int getHandOver_Location_ID();
 	// @formatter:on
+
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
+	int getM_HU_PI_Item_Product_ID();
 }

@@ -1,21 +1,29 @@
 package de.metas.handlingunits.callout;
 
+import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.adempiere.gui.search.IHUPackingAwareBL;
-import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
-import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.order.api.IHUOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.util.Services;
+import java.util.Optional;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
 	/**
 	 * Task 06915: only updating on QtyEntered, but not on M_HU_PI_Item_Product_ID, because when the HU_PI_Item_Product changes, we want QtyEnteredTU to stay the same.
 	 *
@@ -45,6 +53,17 @@ public class C_OrderLine
 
 		// Update lineNetAmt, because QtyEnteredCU changed : see task 06727
 		Services.get(IOrderLineBL.class).updateLineNetAmtFromQtyEntered(orderLine);
+	}
+
+	@CalloutMethod(columnNames = de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_Product_ID)
+	public void onProductSetOrChanged(final de.metas.interfaces.I_C_OrderLine orderLine)
+	{
+		final Optional<I_M_HU_PI_Item_Product> huPiItemProduct = hupiItemProductDAO.retrieveDefaultForProduct(ProductId.ofRepoId(orderLine.getM_Product_ID()),
+				BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()),
+				TimeUtil.asZonedDateTime(orderLine.getDatePromised()));
+
+		huPiItemProduct.ifPresent(i_m_hu_pi_item_product -> Services.get(IOrderLineBL.class).updateMHuPiItemProduct(orderLine, i_m_hu_pi_item_product.getM_HU_PI_Item_Product_ID()));
+
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID

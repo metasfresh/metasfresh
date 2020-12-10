@@ -154,6 +154,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
+	void updateMHuPiItemProduct(I_C_OrderLine orderLine, int huPiItemProductId);
+
 	void updateLineNetAmtFromQty(Quantity qty, org.compiere.model.I_C_OrderLine orderLine);
 
 	/**

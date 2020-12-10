@@ -329,6 +329,12 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	public void updateMHuPiItemProduct(final I_C_OrderLine orderLine, final int huPiItemProductId)
+	{
+		orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId);
+	}
+
+	@Override
 	public void updateLineNetAmtFromQty(
 			@NonNull final Quantity qtyOverride,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
