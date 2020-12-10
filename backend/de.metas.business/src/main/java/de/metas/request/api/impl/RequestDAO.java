@@ -15,6 +15,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
 import org.compiere.util.TimeUtil;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -62,6 +64,8 @@ public class RequestDAO implements IRequestDAO
 		request.setM_InOut_ID(candidate.getRecordRef() != null ?
 				candidate.getRecordRef().getTableName().equals(I_M_InOut.Table_Name) ? candidate.getRecordRef().getRecord_ID() : -1
 				: -1);
+
+		request.setDateTrx(TimeUtil.asTimestamp(Date.from(Instant.now())));
 		request.setAD_User_ID(UserId.toRepoId(candidate.getUserId()));
 		request.setR_RequestType_ID(candidate.getRequestTypeId().getRepoId());
 		request.setM_QualityNote_ID(QualityNoteId.toRepoId(candidate.getQualityNoteId()));
