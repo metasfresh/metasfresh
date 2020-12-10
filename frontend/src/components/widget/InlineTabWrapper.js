@@ -38,7 +38,7 @@ class InlineTabWrapper extends PureComponent {
    * @method updateTable
    * @summary does a refresh of the table data
    */
-  updateTable = () => {
+  updateTable = (postDeletion = false) => {
     const query = '';
     const {
       inlineTab: { windowId, tabId },
@@ -46,7 +46,14 @@ class InlineTabWrapper extends PureComponent {
       fetchInlineTabWrapperData,
       rowId,
     } = this.props;
-    fetchInlineTabWrapperData({ tabId, windowId, docId, query, rowId });
+    fetchInlineTabWrapperData({
+      tabId,
+      windowId,
+      docId,
+      query,
+      rowId,
+      postDeletion,
+    });
   };
 
   /**

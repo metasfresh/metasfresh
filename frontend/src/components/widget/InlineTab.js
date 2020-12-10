@@ -12,6 +12,7 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import SectionGroup from '../SectionGroup';
+import { updateDataValidStatus } from '../../actions/WindowActions';
 import { getInlineTabLayoutAndData } from '../../actions/InlineTabActions';
 import { deleteRequest } from '../../api';
 import Prompt from '../app/Prompt';
@@ -71,10 +72,21 @@ class InlineTab extends PureComponent {
    */
   handlePromptDelete = () => {
     this.setState({ promptOpen: false });
-    const { windowId, id: docId, tabId, rowId, updateTable } = this.props;
-    deleteRequest('window', windowId, docId, tabId, rowId).then(() => {
-      updateTable();
-    });
+    const {
+      windowId,
+      id: docId,
+      tabId,
+      rowId,
+      updateTable,
+      updateDataValidStatus,
+    } = this.props;
+    deleteRequest('window', windowId, docId, tabId, rowId).then(
+      (deleteResponse) => {
+        updateTable(true); /** we set the postDeletion to `true` */
+        let { validStatus } = deleteResponse.data[0];
+        updateDataValidStatus('master', validStatus || { valid: true });
+      }
+    );
   };
 
   render() {
@@ -212,5 +224,6 @@ export default connect(
   mapStateToProps,
   {
     getInlineTabLayoutAndData,
+    updateDataValidStatus,
   }
 )(InlineTab);

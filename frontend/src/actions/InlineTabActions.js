@@ -99,11 +99,12 @@ export function fetchInlineTabWrapperData({
   docId,
   query,
   rowId,
+  postDeletion,
 }) {
   return (dispatch) => {
     dispatch(fetchTab({ tabId, windowId, docId, query })).then((tabData) => {
-      /** - if we have the rowId it means we have a new record addition, so we put that at the end of the array */
-      if (rowId) {
+      /** - if we have the rowId it means we have a new record addition, so we put that at the end of the array - only if this doesn't happen as a result of deletion */
+      if (rowId && !postDeletion) {
         const lastAdditionIndex = tabData.findIndex(
           (item) => item.rowId === rowId
         );
