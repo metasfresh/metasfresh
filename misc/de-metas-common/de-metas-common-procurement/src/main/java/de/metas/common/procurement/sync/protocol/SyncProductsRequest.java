@@ -25,6 +25,7 @@ package de.metas.common.procurement.sync.protocol;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -33,9 +34,14 @@ import java.util.List;
 @Value
 public class SyncProductsRequest extends ProcurementEvent
 {
-	public static SyncProductsRequest of(final SyncProduct syncProduct)
+	public static SyncProductsRequest of(@NonNull final SyncProduct syncProduct)
 	{
 		return SyncProductsRequest.builder().product(syncProduct).build();
+	}
+
+	public static SyncProductsRequest of(@NonNull final List<SyncProduct> syncProducts)
+	{
+		return SyncProductsRequest.builder().products(syncProducts).build();
 	}
 	
 	List<SyncProduct> products;

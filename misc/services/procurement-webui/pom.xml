@@ -37,8 +37,8 @@
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-
+		<metasfresh.version>10.0.0</metasfresh.version>
+		<metasfresh-common.version>10.0.0</metasfresh-common.version>
 	</properties>
 
 	<dependencyManagement>
@@ -51,35 +51,15 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
-			<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement
-				sections of those poms. Those sections define the versions of various third
-				party deps that CXF used to build with and test with and we would like to
-				make sure the same versions are used for the samples -->
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-parent</artifactId>
-				<version>${cxf.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf</artifactId>
-				<version>${cxf.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
 
 		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.sync-api</artifactId>
-			<version>${metasfresh.version}</version>
+			<groupId>de.metas.common.procurement</groupId>
+			<artifactId>de-metas-common-procurement</artifactId>
+			<version>${metasfresh-common.version}</version>
 		</dependency>
 
 		<dependency>
@@ -191,6 +171,7 @@
 		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
+			<version>1.1.0.Final</version>
 		</dependency>
 
 		<dependency>
@@ -222,16 +203,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jms</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-kahadb-store</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
 		<!-- REST -->
@@ -240,51 +213,11 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>javax.ws.rs-api</artifactId>
-		</dependency>
 
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-transports-jms</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<!-- needed, even if we currently communicate with JMS only -->
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-transports-http</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-client</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-extension-providers</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-management</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-
-		<!-- this provider can also marshal and unmarshal objects that are not
-			tagged with @XmlRoot -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Logging -->
@@ -394,7 +327,7 @@
 				<configuration>
 					<extraJvmArgs>-Xmx1g -Xss1024k</extraJvmArgs>
 
-					<!-- We are doing "inplace" gwt compilation but into subdir VAADIN/widgetsets -->
+					<!-- We are doing "in-place" gwt compilation but into subdir VAADIN/widgetsets -->
 					<webappDirectory>${basedir}/src/main/webapp/VAADIN/widgetsets</webappDirectory>
 					<hostedWebapp>${basedir}/src/main/webapp/VAADIN/widgetsets</hostedWebapp>
 					<noServer>true</noServer>

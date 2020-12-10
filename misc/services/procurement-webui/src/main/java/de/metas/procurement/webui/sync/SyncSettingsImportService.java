@@ -1,13 +1,12 @@
 package de.metas.procurement.webui.sync;
 
-import javax.transaction.Transactional;
-
+import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
+import de.metas.procurement.webui.service.ISettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.procurement.webui.service.ISettingsService;
+import javax.transaction.Transactional;
 
 /*
  * #%L

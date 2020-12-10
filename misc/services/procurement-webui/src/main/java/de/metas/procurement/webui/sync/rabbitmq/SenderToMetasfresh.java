@@ -20,28 +20,27 @@
  * #L%
  */
 
-package de.metas.procurement.base.rabbitmq;
+package de.metas.procurement.webui.sync.rabbitmq;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.ProcurementEvent;
+import de.metas.procurement.webui.sync.exception.ReceiveSyncException;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SenderToProcurementWebUI
+public class SenderToMetasfresh
 {
 	private final RabbitTemplate rabbitTemplate;
 	private final Queue queue;
 
-	public SenderToProcurementWebUI(
+	public SenderToMetasfresh(
 			@NonNull final RabbitTemplate rabbitTemplate,
-			@NonNull @Qualifier(Constants.QUEUE_NAME_MF_TO_PW) final Queue queue
-	)
+			@NonNull @Qualifier(Constants.QUEUE_NAME_MF_TO_PW) final Queue queue)
 	{
 		this.rabbitTemplate = rabbitTemplate;
 		this.queue = queue;
@@ -61,9 +60,7 @@ public class SenderToProcurementWebUI
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("procurementEvent", procurementEvent);
+			throw new ReceiveSyncException(procurementEvent, e);
 		}
 	}
 }

@@ -24,7 +24,6 @@ package de.metas.common.procurement.sync.protocol;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.internal.Nullable;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -43,7 +42,7 @@ public class SyncProductSuppliesRequest extends ProcurementEvent
 				.build();
 	}
 
-	public static SyncProductSuppliesRequest of(@Nullable final Collection<SyncProductSupply> syncProductSupplies)
+	public static SyncProductSuppliesRequest of(final Collection<SyncProductSupply> syncProductSupplies)
 	{
 		final SyncProductSuppliesRequestBuilder requestBuilder = SyncProductSuppliesRequest.builder();
 		if (syncProductSupplies != null)

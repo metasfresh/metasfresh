@@ -7,8 +7,8 @@ import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.SyncProduct;
 import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.common.procurement.sync.protocol.SyncProductsRequest.SyncProductsRequestBuilder;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
@@ -17,9 +17,8 @@ import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -62,35 +61,18 @@ public class WebuiPush implements IWebuiPush
 	 * Return an instance of {@link IAgentSync} that can be used to communicate with the procurement webUI.
 	 * If no such client endpoint is available, return <code>null</code>.
 	 */
-	private IAgentSync getAgentSyncOrNull()
+	@NonNull
+	private IAgentSync getAgentSync()
 	{
 		// if (true) return NullAgentSync.instance; // DEBUGGING: mock the agent sync
 
-		final IAgentSyncBL agentSyncBL = Services.get(IAgentSyncBL.class);
-		if (agentSyncBL == null)
-		{
-			new AdempiereException("Unable to obtain IAgentSyncBL client endpoint proxy. Please check its AD_JAXRS_Endpoint config")
-					.throwOrLogSevere(Services.get(IDeveloperModeBL.class).isEnabled(), logger);
-		}
-		return agentSyncBL;
-	}
-
-	@Override
-	@ManagedOperation(description="Checks if the local connection endpoint is available")
-	public boolean checkAvailable()
-	{
-		return getAgentSyncOrNull() != null;
+		return Services.get(IAgentSyncBL.class);
 	}
 
 	@Override
 	public void pushBPartnerAndUsers(final I_C_BPartner bpartner)
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
-
+		final IAgentSync agent = getAgentSync();
 		final SyncObjectsFactory syncFactory = SyncObjectsFactory.newFactory();
 // @formatter:off
 // FRESH-168: all users with IsMfProcurementUser='Y' are allowed to record a supply via procurement-webui,
@@ -114,11 +96,7 @@ public class WebuiPush implements IWebuiPush
 	@Override
 	public void pushBPartnerForContract(final I_C_Flatrate_Term contract)
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
+		final IAgentSync agent = getAgentSync();
 
 		final int bpartnerId = contract.getDropShip_BPartner_ID();
 
@@ -148,11 +126,7 @@ public class WebuiPush implements IWebuiPush
 	@ManagedOperation(description = "Pushes/synchronizes all currently valid PMM_Products to the procurement webUI.")
 	public void pushAllProducts()
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
+		final IAgentSync agent = getAgentSync();
 
 		final IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
 
@@ -173,11 +147,7 @@ public class WebuiPush implements IWebuiPush
 	@ManagedOperation(description="Pushes/synchronizes Businesspartners with their contracts to the procurement webUI.")
 	public void pushAllBPartners()
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
+		final IAgentSync agent = getAgentSync();
 
 		final List<SyncBPartner> allSyncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
 
@@ -189,11 +159,7 @@ public class WebuiPush implements IWebuiPush
 	@Override
 	public void pushProduct(final I_PMM_Product pmmProduct)
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
+		final IAgentSync agent = getAgentSync();
 
 		final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
 		final SyncProductsRequest syncProductsRequest = SyncProductsRequest.of(syncProduct);
@@ -205,47 +171,34 @@ public class WebuiPush implements IWebuiPush
 	@ManagedOperation
 	public void pushAllInfoMessages()
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
+		final IAgentSync agent = getAgentSync();
 
 		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
 		agent.syncInfoMessage(SyncInfoMessageRequest.of(infoMessage));
 	}
 
 	@Override
-	public void pushRfQs(@Nullable final SyncRfQsRequest syncRfqs)
+	public void pushRfQs(@Nullable final List<SyncRfQ> syncRfqs)
 	{
 		if(syncRfqs == null || syncRfqs.isEmpty())
 		{
 			return;
 		}
-		
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
-		
+
+		final IAgentSync agent = getAgentSync();
 		agent.syncRfQs(syncRfqs);
 	}
 
 	@Override
-	public void pushRfQCloseEvents(@Nullable final SyncRfQCloseEventsRequest syncRfQCloseEventsRequest)
+	public void pushRfQCloseEvents(@Nullable final List<SyncRfQCloseEvent> syncRfQCloseEvents)
 	{
-		if(syncRfQCloseEventsRequest == null || syncRfQCloseEventsRequest.isEmpty())
+		if(syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
 		{
 			return;
 		}
-		
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
-		
-		agent.closeRfQs(syncRfQCloseEventsRequest);
+
+		final IAgentSync agent = getAgentSync();
+
+		agent.closeRfQs(syncRfQCloseEvents);
 	}
 }

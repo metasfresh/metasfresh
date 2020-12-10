@@ -5,8 +5,6 @@ import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
 import de.metas.common.procurement.sync.protocol.SyncProductSupply;
 import de.metas.common.procurement.sync.protocol.SyncRfQ;
 import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
@@ -148,22 +146,18 @@ class PMMWebuiRfQResponsePublisherInstance
 	{
 		//
 		// Push new RfQs
-		final SyncRfQsRequest syncRfQs = SyncRfQsRequest.builder()
-				.syncRfqs(copyAndClear(this.syncRfQs))
-				.build();
+		final List<SyncRfQ> syncRfQsCopy = copyAndClear(this.syncRfQs);
 		if (!syncRfQs.isEmpty())
 		{
-			webuiPush.pushRfQs(syncRfQs);
+			webuiPush.pushRfQs(syncRfQsCopy);
 		}
 
 		// Push close events
 		{
-			final SyncRfQCloseEventsRequest syncRfQCloseEventsRequest = SyncRfQCloseEventsRequest.builder()
-					.syncRfQCloseEvents(copyAndClear(this.syncRfQCloseEvents))
-					.build();
-			if (!syncRfQCloseEventsRequest.isEmpty())
+			final List<SyncRfQCloseEvent> syncRfQCloseEventsCopy = copyAndClear(this.syncRfQCloseEvents);
+			if (!syncRfQCloseEventsCopy.isEmpty())
 			{
-				webuiPush.pushRfQCloseEvents(syncRfQCloseEventsRequest);
+				webuiPush.pushRfQCloseEvents(syncRfQCloseEventsCopy);
 			}
 
 			// Internally push the planned product supplies, to create the PMM_PurchaseCandidates

@@ -136,8 +136,6 @@ public class WebuiPushTests
 
 	/**
 	 * Invokes {@link WebuiPush#pushBPartnerAndUsers(I_C_BPartner)} and verifies, that only a delete-bpartner-sync without users is submitted.
-	 *
-	 * @param bpartner
 	 */
 	private void performTestNoUsersDeletePartner(final I_C_BPartner bpartner)
 	{

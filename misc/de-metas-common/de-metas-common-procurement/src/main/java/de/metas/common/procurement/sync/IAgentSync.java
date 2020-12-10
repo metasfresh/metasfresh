@@ -23,14 +23,16 @@
 package de.metas.common.procurement.sync;
 
 import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
+import de.metas.common.procurement.sync.protocol.SyncConfirmation;
 import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+
+import java.util.List;
 
 /**
- * This is implemented in the procurementUI (agent) and called from metasfresh (server).
+ * This is implemented in the procurementUI (agent) and called according to {@link de.metas.common.procurement.sync.protocol.ProcurementEvent}s received from metasfresh.
  * <p>
  * Note that currently we don't have to use the Consumes and Produces annotations, because we specify those types in the client.
  *
@@ -44,9 +46,9 @@ public interface IAgentSync
 
 	void syncInfoMessage(SyncInfoMessageRequest request);
 
-	void confirm(SyncConfirmationRequest syncConfirmations);
+	void confirm(List<SyncConfirmation> syncConfirmations);
 
-	void syncRfQs(SyncRfQsRequest syncRfQsRequest);
+	void syncRfQs(List<SyncRfQ> syncRfqs);
 
-	void closeRfQs(SyncRfQCloseEventsRequest syncRfQCloseEventsRequest);
+	void closeRfQs(List<SyncRfQCloseEvent> syncRfQCloseEvents);
 }

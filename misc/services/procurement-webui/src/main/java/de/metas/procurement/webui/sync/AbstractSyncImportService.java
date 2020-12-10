@@ -1,15 +1,14 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import de.metas.common.procurement.sync.protocol.ISyncModel;
+import de.metas.procurement.webui.model.AbstractEntity;
+import de.metas.procurement.webui.model.AbstractTranslationEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.metas.procurement.sync.protocol.AbstractSyncModel;
-import de.metas.procurement.webui.model.AbstractEntity;
-import de.metas.procurement.webui.model.AbstractTranslationEntity;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -75,11 +74,8 @@ public abstract class AbstractSyncImportService
 
 	/**
 	 * Throws an {@link IllegalDeleteRequestException} if the given <code>syncModel</code> has <code>isDeleted</code>.
-	 *
-	 * @param syncModel
-	 * @param reason
 	 */
-	protected void assertNotDeleteRequest(final AbstractSyncModel syncModel, final String reason)
+	protected void assertNotDeleteRequest(final ISyncModel syncModel, final String reason)
 	{
 		if (syncModel.isDeleted())
 		{
@@ -87,14 +83,14 @@ public abstract class AbstractSyncImportService
 		}
 	}
 
-	protected void assertNotDeleteRequest_WarnAndFix(final AbstractSyncModel syncModel, final String reason)
-	{
-		if (syncModel.isDeleted())
-		{
-			logger.warn("Setting Deleted flag to " + syncModel + " is not allowed while: " + reason+". Unsetting the flag and going forward.");
-			syncModel.setDeleted(false);
-		}
-	}
+	// protected ISyncModel assertNotDeleteRequest_WarnFix(final ISyncModel syncModel, final String reason)
+	// {
+	// 	if (syncModel.isDeleted())
+	// 	{
+	// 		logger.warn("Setting Deleted flag to " + syncModel + " is not allowed while: " + reason+". Unsetting the flag and going forward.");
+	// 		syncModel.withNotDeleted(false);
+	// 	}
+	// }
 
 	private static class IllegalDeleteRequestException extends RuntimeException
 	{

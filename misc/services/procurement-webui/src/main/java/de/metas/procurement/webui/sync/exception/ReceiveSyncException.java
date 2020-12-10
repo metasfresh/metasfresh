@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.procurement.base
+ * de.metas.procurement.webui
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,25 +20,19 @@
  * #L%
  */
 
-package de.metas.procurement.base.rabbitmq;
+package de.metas.procurement.webui.sync.exception;
 
-import de.metas.common.procurement.sync.Constants;
-import org.springframework.amqp.core.Queue;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import de.metas.common.procurement.sync.protocol.ProcurementEvent;
 
-@Configuration
-public class ProcurementRabbitMQConfig
+public class ReceiveSyncException extends RuntimeException
 {
-	@Bean(name = Constants.QUEUE_NAME_MF_TO_PW)
-	public Queue metasfreshToProcurementWebQueue()
+	public ReceiveSyncException(ProcurementEvent event, Exception cause)
 	{
-		return new Queue(Constants.QUEUE_NAME_MF_TO_PW);
+		super("Error receiving procurementEvent=" + event, cause);
 	}
 
-	@Bean(name = Constants.QUEUE_NAME_PW_TO_MF)
-	public Queue procurementWebTometasfreshQueue()
+	public ReceiveSyncException(String message, Exception cause)
 	{
-		return new Queue(Constants.QUEUE_NAME_PW_TO_MF);
+		super("Error receiving message=" + message, cause);
 	}
 }

@@ -1,21 +1,19 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import com.google.gwt.thirdparty.guava.common.collect.Maps;
+import de.metas.common.procurement.sync.protocol.SyncContract;
+import de.metas.procurement.webui.model.BPartner;
+import de.metas.procurement.webui.model.Contract;
+import de.metas.procurement.webui.repository.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.gwt.thirdparty.guava.common.collect.Maps;
-
-import de.metas.procurement.sync.protocol.SyncContract;
-import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.Contract;
-import de.metas.procurement.webui.repository.ContractRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /*
  * #%L

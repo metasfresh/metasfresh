@@ -1,20 +1,18 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.List;
-
+import de.metas.common.procurement.sync.IServerSync;
+import de.metas.common.procurement.sync.protocol.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.procurement.webui.util.DummyDataProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
-import de.metas.procurement.sync.IServerSync;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
-import de.metas.procurement.webui.util.DummyDataProducer;
+import java.util.List;
 
 /*
  * #%L
@@ -38,7 +36,6 @@ import de.metas.procurement.webui.util.DummyDataProducer;
  * #L%
  */
 
-@NoCxfServerBind
 public class MockedServerSync implements IServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());

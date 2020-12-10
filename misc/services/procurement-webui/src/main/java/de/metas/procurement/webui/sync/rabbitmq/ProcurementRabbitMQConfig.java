@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.procurement.base.rabbitmq;
+package de.metas.procurement.webui.sync.rabbitmq;
 
 import de.metas.common.procurement.sync.Constants;
 import org.springframework.amqp.core.Queue;

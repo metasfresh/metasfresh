@@ -1,7 +1,7 @@
 package de.metas.procurement.base;
 
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.ISingletonService;
@@ -9,6 +9,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -40,11 +41,6 @@ import javax.annotation.Nullable;
 public interface IWebuiPush extends ISingletonService
 {
 	/**
-	 * @return true if the webui connection is available
-	 */
-	boolean checkAvailable();
-
-	/**
 	 * Push bpartner (without pushing the bpartner's contracts).
 	 */
 	void pushBPartnerAndUsers(I_C_BPartner bpartner);
@@ -71,7 +67,7 @@ public interface IWebuiPush extends ISingletonService
 	 */
 	void pushAllBPartners();
 
-	void pushRfQs(@Nullable SyncRfQsRequest syncRfqs);
+	void pushRfQs(@Nullable List<SyncRfQ> syncRfqs);
 
-	void pushRfQCloseEvents(@Nullable SyncRfQCloseEventsRequest syncRfQCloseEventsRequest);
+	void pushRfQCloseEvents(@Nullable List<SyncRfQCloseEvent> syncRfQCloseEvents);
 }

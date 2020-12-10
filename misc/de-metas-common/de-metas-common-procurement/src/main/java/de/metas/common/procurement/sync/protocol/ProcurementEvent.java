@@ -25,10 +25,8 @@ package de.metas.common.procurement.sync.protocol;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo
-		(
-				use = JsonTypeInfo.Id.NAME,
-				property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
+		property = "type")
 @JsonSubTypes({
 		@JsonSubTypes.Type(value = SyncInfoMessageRequest.class, name = "syncInfoMessageRequest"),
 		@JsonSubTypes.Type(value = SyncProductsRequest.class, name = "syncProductsRequest"),
@@ -39,7 +37,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 		@JsonSubTypes.Type(value = SyncBPartnersRequest.class, name = "syncBPartnersRequest"),
 		@JsonSubTypes.Type(value = SyncWeeklySupplyRequest.class, name = "syncWeeklySupplyRequest"),
 		@JsonSubTypes.Type(value = SyncProductSuppliesRequest.class, name = "syncProductSuppliesRequest"),
-		@JsonSubTypes.Type(value = SyncRfQChangeRequest.class, name = "syncRfQChangeRequest")
+		@JsonSubTypes.Type(value = SyncRfQChangeRequest.class, name = "syncRfQChangeRequest"),
+		@JsonSubTypes.Type(value = GetAllBPartnersRequest.class, name = "getAllBPartnersRequest"),
+		@JsonSubTypes.Type(value = GetAllProductsRequest.class, name = "getAllProductsRequest"),
+		@JsonSubTypes.Type(value = GetInfoMessageRequest.class, name = "getInfoMessageRequest")
 })
 public abstract class ProcurementEvent
 {

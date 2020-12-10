@@ -1,19 +1,16 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.List;
-
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+import de.metas.common.procurement.sync.IServerSync;
+import de.metas.common.procurement.sync.protocol.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
-
-import de.metas.procurement.sync.IServerSync;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
+import java.util.List;
 
 /*
  * #%L
@@ -37,7 +34,6 @@ import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
  * #L%
  */
 
-@NoCxfServerBind
 public class NullServerSync implements IServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());

@@ -2,12 +2,14 @@ package de.metas.procurement.base.impl;
 
 import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
+import de.metas.common.procurement.sync.protocol.SyncConfirmation;
 import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
 import org.adempiere.util.lang.ObjectUtils;
+
+import java.util.List;
 
 /*
  * #%L
@@ -65,20 +67,20 @@ public class NullAgentSync implements IAgentSync
 	}
 
 	@Override
-	public void confirm(final SyncConfirmationRequest syncConfirmations)
+	public void confirm(final List<SyncConfirmation> syncConfirmations)
 	{
 		System.out.println("confirm: " + ObjectUtils.toString(syncConfirmations));
 	}
 
 	@Override
-	public void syncRfQs(final SyncRfQsRequest syncRfQsRequest)
+	public void syncRfQs(final List<SyncRfQ> syncRfq)
 	{
-		System.out.println("syncRfQs: " + ObjectUtils.toString(syncRfQsRequest));
+		System.out.println("syncRfQs: " + ObjectUtils.toString(syncRfq));
 	}
 
 	@Override
-	public void closeRfQs(SyncRfQCloseEventsRequest syncRfQCloseEventsRequest)
+	public void closeRfQs(List<SyncRfQCloseEvent> syncRfQCloseEvents)
 	{
-		System.out.println("closeRfQs: " + ObjectUtils.toString(syncRfQCloseEventsRequest));
+		System.out.println("closeRfQs: " + ObjectUtils.toString(syncRfQCloseEvents));
 	}
 }

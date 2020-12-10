@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -35,6 +36,11 @@ import java.util.List;
 @Value
 public class SyncConfirmationRequest extends ProcurementEvent
 {
+	public static SyncConfirmationRequest of(@NonNull final List<SyncConfirmation> syncConfirmations)
+	{
+		return SyncConfirmationRequest.builder().syncConfirmations(syncConfirmations).build();
+	}
+
 	List<SyncConfirmation> syncConfirmations;
 
 	@Builder

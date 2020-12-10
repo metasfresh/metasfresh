@@ -1,23 +1,22 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.List;
-
+import de.metas.common.procurement.sync.IAgentSync;
+import de.metas.common.procurement.sync.protocol.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.common.procurement.sync.protocol.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.procurement.webui.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.SyncRfQCloseEvent;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncConfirmation;
-import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.procurement.sync.protocol.SyncRfQ;
-import de.metas.procurement.webui.Application;
+import java.util.List;
 
 /*
  * #%L

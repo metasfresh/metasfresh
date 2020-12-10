@@ -26,6 +26,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+import de.metas.common.procurement.sync.Constants;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -97,7 +98,7 @@ public class FederatedRabbitMQTest
 		try (final Connection connection = metasfreshFactory.newConnection();
 				final Channel channel = connection.createChannel())
 		{
-			channel.basicPublish("", Constants.QUEUE_NAME_MF_TO_PW, null, message.getBytes());
+			channel.basicPublish("", de.metas.common.procurement.sync.Constants.QUEUE_NAME_MF_TO_PW, null, message.getBytes());
 			System.out.println("[x] Sent on queue '" + Constants.QUEUE_NAME_MF_TO_PW + "': message= '" + message + "'");
 		}
 	}

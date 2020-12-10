@@ -23,8 +23,16 @@
 package de.metas.procurement.base.rabbitmq;
 
 import de.metas.common.procurement.sync.Constants;
+import de.metas.common.procurement.sync.protocol.GetAllBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.GetAllProductsRequest;
+import de.metas.common.procurement.sync.protocol.GetInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.ProcurementEvent;
+import de.metas.common.procurement.sync.protocol.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.SyncProduct;
 import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
 import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
 import de.metas.procurement.base.IServerSyncBL;
@@ -35,10 +43,18 @@ import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
 import java.io.IOException;
+import java.util.List;
 
 @RabbitListener(queues = Constants.QUEUE_NAME_PW_TO_MF)
-public class ReceiverFromProcurementWebUI
+public class ReceiverFromProcurementWeb
 {
+	private final SenderToProcurementWeb senderToProcurementWebUI;
+
+	public ReceiverFromProcurementWeb(@NonNull final SenderToProcurementWeb senderToProcurementWebUI)
+	{
+		this.senderToProcurementWebUI = senderToProcurementWebUI;
+	}
+
 	@RabbitHandler
 	public void receiveMessage(@NonNull final String message)
 	{
@@ -69,6 +85,21 @@ public class ReceiverFromProcurementWebUI
 		else if (procurementEvent instanceof SyncRfQChangeRequest)
 		{
 			serverSyncBL.reportRfQChanges((SyncRfQChangeRequest)procurementEvent);
+		}
+		else if (procurementEvent instanceof GetAllBPartnersRequest)
+		{
+			final List<SyncBPartner> allBPartners = serverSyncBL.getAllBPartners();
+			senderToProcurementWebUI.send(SyncBPartnersRequest.of(allBPartners));
+		}
+		else if (procurementEvent instanceof GetAllProductsRequest)
+		{
+			final List<SyncProduct> allProducts = serverSyncBL.getAllProducts();
+			senderToProcurementWebUI.send(SyncProductsRequest.of(allProducts));
+		}
+		else if(procurementEvent instanceof GetInfoMessageRequest)
+		{
+			final String infoMessage = serverSyncBL.getInfoMessage();
+			senderToProcurementWebUI.send(SyncInfoMessageRequest.of(infoMessage));
 		}
 		else
 		{

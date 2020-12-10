@@ -1,18 +1,8 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import de.metas.procurement.sync.protocol.SyncContract;
-import de.metas.procurement.sync.protocol.SyncContractLine;
-import de.metas.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.SyncContract;
+import de.metas.common.procurement.sync.protocol.SyncContractLine;
+import de.metas.common.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.webui.event.ContractChangedEvent;
 import de.metas.procurement.webui.event.MFEventBus;
 import de.metas.procurement.webui.model.BPartner;
@@ -21,6 +11,15 @@ import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.ContractLineRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L

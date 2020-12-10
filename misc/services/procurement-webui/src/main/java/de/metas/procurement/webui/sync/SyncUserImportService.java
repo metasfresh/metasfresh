@@ -1,19 +1,18 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import de.metas.common.procurement.sync.protocol.SyncUser;
+import de.metas.procurement.webui.model.BPartner;
+import de.metas.procurement.webui.model.User;
+import de.metas.procurement.webui.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.metas.procurement.sync.protocol.SyncUser;
-import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.User;
-import de.metas.procurement.webui.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L

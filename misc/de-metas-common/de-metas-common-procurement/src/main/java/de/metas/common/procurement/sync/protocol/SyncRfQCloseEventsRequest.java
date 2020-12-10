@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -34,6 +35,11 @@ import java.util.List;
 @Value
 public class SyncRfQCloseEventsRequest extends ProcurementEvent
 {
+	public static SyncRfQCloseEventsRequest of(@NonNull final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	{
+		return SyncRfQCloseEventsRequest.builder().syncRfQCloseEvents(syncRfQCloseEvents).build();
+	}
+
 	List<SyncRfQCloseEvent> syncRfQCloseEvents;
 
 	@Builder

@@ -35,6 +35,11 @@ import java.util.List;
 @Value
 public class SyncRfQsRequest extends ProcurementEvent
 {
+	public static SyncRfQsRequest of(@NonNull final List<SyncRfQ> syncRfqs)
+	{
+		return SyncRfQsRequest.builder().syncRfqs(syncRfqs).build();
+	}
+
 	List<SyncRfQ> syncRfqs;
 
 	@Builder

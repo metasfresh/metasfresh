@@ -169,6 +169,7 @@ public class JsonSerializeDeserializeTests
 
 		assertOK(syncProductSuppliesRequest, SyncProductSuppliesRequest.class);
 	}
+
 	@Test
 	void syncRfQChangeRequest() throws IOException
 	{
@@ -193,6 +194,24 @@ public class JsonSerializeDeserializeTests
 				.build();
 
 		assertOK(syncRfQChangeRequest, SyncRfQChangeRequest.class);
+	}
+
+	@Test
+	void getAllBPartnersRequest() throws IOException
+	{
+		assertOK(new GetAllBPartnersRequest(), GetAllBPartnersRequest.class);
+	}
+
+	@Test
+	void getAllProductsRequest() throws IOException
+	{
+		assertOK(new GetAllProductsRequest(), GetAllProductsRequest.class);
+	}
+
+	@Test
+	void getInfoMessageRequest() throws IOException
+	{
+		assertOK(new GetInfoMessageRequest(), GetInfoMessageRequest.class);
 	}
 
 	private <T> void assertOK(final T objectOrig, final Class<T> valueType) throws IOException
