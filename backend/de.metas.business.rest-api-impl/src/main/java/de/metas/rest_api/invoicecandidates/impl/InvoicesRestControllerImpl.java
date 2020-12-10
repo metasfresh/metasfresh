@@ -16,6 +16,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesRe
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
+import de.metas.rest_api.utils.JsonErrors;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -180,19 +181,15 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			return ResponseEntity.notFound().build();
 		}
 
+			final String ad_language = Env.getAD_Language();
 		try
 		{
-			final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language());
+			final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, ad_language);
 			return ResponseEntity.ok(invoiceInfo);
 		}
 		catch (final Exception ex)
 		{
-			final JsonError error = JsonError.ofSingleItem(
-					JsonErrorItem.builder()
-							.message(ex.getLocalizedMessage())
-							.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
-							.throwable(ex)
-							.build());
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, ad_language));
 
 			return ResponseEntity.unprocessableEntity().body(error);
 		}
@@ -219,12 +216,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		}
 		catch (final Exception ex)
 		{
-			final JsonError error = JsonError.ofSingleItem(
-					JsonErrorItem.builder()
-							.message(ex.getLocalizedMessage())
-							.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
-							.throwable(ex)
-							.build());
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage()));
 
 			return ResponseEntity.unprocessableEntity().body(error);
 		}
