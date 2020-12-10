@@ -20,41 +20,53 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Value
-public class SyncRfQChangeRequest extends ProcurementEvent
+public class PutConfirmationToMetasfreshRequest extends RequestToMetasfresh
 {
-	List<SyncRfQPriceChangeEvent> priceChangeEvents;
-	List<SyncRfQQtyChangeEvent> qtyChangeEvents;
+	public static PutConfirmationToMetasfreshRequest of(@NonNull final List<SyncConfirmation> syncConfirmations)
+	{
+		return PutConfirmationToMetasfreshRequest.builder().syncConfirmations(syncConfirmations).build();
+	}
+
+	List<SyncConfirmation> syncConfirmations;
 
 	@Builder
 	@JsonCreator
-	private SyncRfQChangeRequest(
-			@JsonProperty("priceChangeEvents") @Singular final List<SyncRfQPriceChangeEvent> priceChangeEvents,
-			@JsonProperty("qtyChangeEvents") @Singular final List<SyncRfQQtyChangeEvent> qtyChangeEvents)
+	private PutConfirmationToMetasfreshRequest(@JsonProperty("syncConfirmations") @Singular final List<SyncConfirmation> syncConfirmations)
 	{
-		this.priceChangeEvents = priceChangeEvents;
-		this.qtyChangeEvents = qtyChangeEvents;
+		this.syncConfirmations = new ArrayList<>(syncConfirmations);
 	}
 
 	@JsonIgnore
-	public static boolean isEmpty(final SyncRfQChangeRequest request)
+	public boolean isEmpty()
 	{
-		if (request == null)
-		{
-			return true;
-		}
-		return request.priceChangeEvents.isEmpty()
-				&& request.qtyChangeEvents.isEmpty();
+		return syncConfirmations.isEmpty();
+	}
+
+	@JsonIgnore
+	public void add(SyncConfirmation syncConfirmation)
+	{
+		syncConfirmations.add(syncConfirmation);
+	}
+
+	@JsonIgnore
+	public void clear()
+	{
+		syncConfirmations.clear();
 	}
 }

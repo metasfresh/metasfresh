@@ -1,6 +1,6 @@
 package de.metas.procurement.base.rfq.model.interceptor;
 
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.IWebuiPush;

@@ -1,15 +1,15 @@
 package de.metas.procurement.base.impl;
 
 import com.google.common.base.Joiner;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQPriceChangeEvent;
-import de.metas.common.procurement.sync.protocol.SyncRfQQtyChangeEvent;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQPriceChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQQtyChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -108,7 +108,7 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public void reportProductSupplies(final SyncProductSuppliesRequest request)
+	public void reportProductSupplies(final PutProductSuppliesRequest request)
 	{
 		logger.debug("Got request: {}", request);
 
@@ -293,7 +293,7 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public void reportWeekSupply(final SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(final PutWeeklySupplyRequest request)
 	{
 		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
 		{
@@ -414,7 +414,7 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public void reportRfQChanges(final SyncRfQChangeRequest request)
+	public void reportRfQChanges(final PutRfQChangeRequest request)
 	{
 		for (final SyncRfQPriceChangeEvent priceChangeEvent : request.getPriceChangeEvents())
 		{

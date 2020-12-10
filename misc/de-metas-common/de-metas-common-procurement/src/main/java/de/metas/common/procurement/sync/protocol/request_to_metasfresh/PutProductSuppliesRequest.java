@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -33,18 +35,18 @@ import java.util.Collection;
 import java.util.List;
 
 @Value
-public class SyncProductSuppliesRequest extends ProcurementEvent
+public class PutProductSuppliesRequest extends RequestToMetasfresh
 {
-	public static SyncProductSuppliesRequest of(@NonNull final SyncProductSupply syncProductSupply)
+	public static PutProductSuppliesRequest of(@NonNull final SyncProductSupply syncProductSupply)
 	{
-		return SyncProductSuppliesRequest.builder()
+		return PutProductSuppliesRequest.builder()
 				.productSupply(syncProductSupply)
 				.build();
 	}
 
-	public static SyncProductSuppliesRequest of(final Collection<SyncProductSupply> syncProductSupplies)
+	public static PutProductSuppliesRequest of(final Collection<SyncProductSupply> syncProductSupplies)
 	{
-		final SyncProductSuppliesRequestBuilder requestBuilder = SyncProductSuppliesRequest.builder();
+		final PutProductSuppliesRequestBuilder requestBuilder = PutProductSuppliesRequest.builder();
 		if (syncProductSupplies != null)
 		{
 			requestBuilder.productSupplies(syncProductSupplies);
@@ -56,7 +58,7 @@ public class SyncProductSuppliesRequest extends ProcurementEvent
 
 	@Builder
 	@JsonCreator
-	public SyncProductSuppliesRequest(@JsonProperty("productSupplies") @Singular final List<SyncProductSupply> productSupplies)
+	public PutProductSuppliesRequest(@JsonProperty("productSupplies") @Singular final List<SyncProductSupply> productSupplies)
 	{
 		this.productSupplies = productSupplies;
 	}

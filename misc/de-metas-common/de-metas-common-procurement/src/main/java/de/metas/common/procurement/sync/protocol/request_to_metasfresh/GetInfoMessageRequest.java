@@ -20,38 +20,17 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import lombok.Value;
 
-import java.util.List;
-
 @Value
-public class SyncRfQsRequest extends ProcurementEvent
+public class GetInfoMessageRequest extends RequestToMetasfresh
 {
-	public static SyncRfQsRequest of(@NonNull final List<SyncRfQ> syncRfqs)
-	{
-		return SyncRfQsRequest.builder().syncRfqs(syncRfqs).build();
-	}
+	public static final GetInfoMessageRequest INSTANCE = new GetInfoMessageRequest();
 
-	List<SyncRfQ> syncRfqs;
-
-	@Builder
-	@JsonCreator
-	public SyncRfQsRequest(@JsonProperty("syncRfqs") @Singular @NonNull final List<SyncRfQ> syncRfqs)
+	private GetInfoMessageRequest()
 	{
-		this.syncRfqs = syncRfqs;
-	}
-
-	@JsonIgnore
-	public boolean isEmpty()
-	{
-		return syncRfqs.isEmpty();
 	}
 }

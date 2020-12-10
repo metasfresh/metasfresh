@@ -20,24 +20,25 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import lombok.Value;
 
 @Value
-public class SyncInfoMessageRequest extends ProcurementEvent
+public class PutInfoMessageRequest extends RequestToProcurementWeb
 {
-	public static SyncInfoMessageRequest of(final String message)
+	public static PutInfoMessageRequest of(final String message)
 	{
-		return new SyncInfoMessageRequest(message);
+		return new PutInfoMessageRequest(message);
 	}
 
 	private String message;
 
 	@JsonCreator
-	private SyncInfoMessageRequest(@JsonProperty("message") final String message)
+	private PutInfoMessageRequest(@JsonProperty("message") final String message)
 	{
 		this.message = message;
 	}

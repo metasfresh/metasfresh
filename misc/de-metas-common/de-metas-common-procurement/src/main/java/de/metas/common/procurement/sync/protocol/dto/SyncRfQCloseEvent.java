@@ -20,52 +20,52 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.List;
 
+/**
+ * Event fired by metasfresh server to indicate that a given RfQ was closed.
+ *
+ * @author metas-dev <dev@metas-fresh.com>
+ */
 @Value
-public class SyncRfQQtyChangeEvent implements ISyncModel
+public class SyncRfQCloseEvent
 {
-	String uuid;
-	boolean deleted;
-	long syncConfirmationId;
+	private String rfq_uuid;
+	private boolean winnerKnown;
+	private boolean winner;
 
-	String rfq_uuid;
-	Date day;
-	String product_uuid;
-	BigDecimal qty;
+	private List<SyncProductSupply> plannedSupplies;
 
-	@Builder(toBuilder = true)
+	@Builder
 	@JsonCreator
-	private SyncRfQQtyChangeEvent(
-			@JsonProperty("uuid") final String uuid,
-			@JsonProperty("deleted") final boolean deleted,
-			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
+	private SyncRfQCloseEvent(
 			@JsonProperty("rfq_uuid") final String rfq_uuid,
-			@JsonProperty("day") final Date day,
-			@JsonProperty("product_uuid") final String product_uuid,
-			@JsonProperty("qty") final BigDecimal qty)
+			@JsonProperty("winnerKnown") final boolean winnerKnown,
+			@JsonProperty("winner") final boolean winner,
+			@JsonProperty("plannedSupplies") @Singular final List<SyncProductSupply> plannedSupplies)
 	{
-		this.uuid = uuid;
-		this.deleted = deleted;
-		this.syncConfirmationId = syncConfirmationId;
-
 		this.rfq_uuid = rfq_uuid;
-		this.day = day;
-		this.product_uuid = product_uuid;
-		this.qty = qty;
+		this.winnerKnown = winnerKnown;
+		this.winner = winner;
+		this.plannedSupplies = plannedSupplies;
 	}
 
 	@Override
-	public ISyncModel withNotDeleted()
+	public String toString()
 	{
-		return toBuilder().deleted(false).build();
+		return "SyncRfQCloseEvent ["
+				+ "rfq_uuid=" + rfq_uuid
+				+ ", winnerKnown=" + winnerKnown
+				+ ", winner=" + winner
+				+ ", plannedSupplies=" + plannedSupplies
+				+ "]";
 	}
 }

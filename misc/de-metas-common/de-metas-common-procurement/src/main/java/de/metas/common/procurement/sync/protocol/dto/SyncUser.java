@@ -20,83 +20,54 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 @Value
-public class SyncRfQ implements ISyncModel
+public class SyncUser implements IConfirmableDTO
 {
 	String uuid;
 	boolean deleted;
 	long syncConfirmationId;
 
-	Date dateStart;
-	Date dateEnd;
-	Date dateClose;
-
-	String bpartner_uuid;
-
-	SyncProduct product;
-	BigDecimal qtyRequested;
-	String qtyCUInfo;
-
-	String currencyCode;
+	String email;
+	String password;
+	String language;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	public SyncRfQ(
+	public SyncUser(
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
 			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
-			@JsonProperty("dateStart") final Date dateStart,
-			@JsonProperty("dateEnd") final Date dateEnd,
-			@JsonProperty("dateClose") final Date dateClose,
-			@JsonProperty("bpartner_uuid") final String bpartner_uuid,
-			@JsonProperty("product") final SyncProduct product,
-			@JsonProperty("qtyRequested") final BigDecimal qtyRequested,
-			@JsonProperty("qtyCUInfo") final String qtyCUInfo,
-			@JsonProperty("currencyCode") final String currencyCode)
+			@JsonProperty("email") final String email,
+			@JsonProperty("password") final String password,
+			@JsonProperty("language") final String language)
 	{
 		this.uuid = uuid;
 		this.deleted = deleted;
 		this.syncConfirmationId = syncConfirmationId;
 
-		this.dateStart = dateStart;
-		this.dateEnd = dateEnd;
-		this.dateClose = dateClose;
-		this.bpartner_uuid = bpartner_uuid;
-		this.product = product;
-		this.qtyRequested = qtyRequested;
-		this.qtyCUInfo = qtyCUInfo;
-		this.currencyCode = currencyCode;
+		this.email = email;
+		this.password = password;
+		this.language = language;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "SyncRfQ ["
-				+ "dateStart=" + dateStart
-				+ ", dateEnd=" + dateEnd
-				+ ", dateClose=" + dateClose
-				//
-				+ ", bpartner_uuid=" + bpartner_uuid
-				//
-				+ ", product=" + product
-				+ ", qtyRequested=" + qtyRequested + " " + qtyCUInfo
-				//
-				+ ", currencyCode=" + currencyCode
+		return "SyncUser [email=" + email
+				+ ", password=" + (password != null && !password.isEmpty() ? "********" : "(none)")
+				+ ", language=" + language
 				+ "]";
 	}
 
 	@Override
-	public ISyncModel withNotDeleted()
+	public IConfirmableDTO withNotDeleted()
 	{
 		return toBuilder().deleted(false).build();
 	}

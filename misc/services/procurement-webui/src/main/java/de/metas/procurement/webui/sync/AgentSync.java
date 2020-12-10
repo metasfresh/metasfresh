@@ -1,14 +1,14 @@
 package de.metas.procurement.webui.sync;
 
 import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncConfirmation;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 import de.metas.procurement.webui.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ public class AgentSync implements IAgentSync
 	}
 
 	@Override
-	public void syncBPartners(final SyncBPartnersRequest request)
+	public void syncBPartners(final PutBPartnersRequest request)
 	{
 		logger.debug("Importing bpartners: {}", request);
 		int countImported = 0;
@@ -93,7 +93,7 @@ public class AgentSync implements IAgentSync
 	}
 
 	@Override
-	public void syncProducts(final SyncProductsRequest request)
+	public void syncProducts(final PutProductsRequest request)
 	{
 		logger.debug("Importing: {}", request);
 		int countImported = 0;
@@ -115,7 +115,7 @@ public class AgentSync implements IAgentSync
 	}
 
 	@Override
-	public void syncInfoMessage(final SyncInfoMessageRequest request)
+	public void syncInfoMessage(final PutInfoMessageRequest request)
 	{
 		logger.debug("Importing: {}", request);
 		try

@@ -22,12 +22,12 @@
 
 package de.metas.procurement.webui.sync.exception;
 
-import de.metas.common.procurement.sync.protocol.ProcurementEvent;
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 
 public class SendSyncException extends RuntimeException
 {
-	public SendSyncException(ProcurementEvent event, Exception cause)
+	public SendSyncException(RequestToMetasfresh event, Exception cause)
 	{
-		super("Error sending procurementEvent=" + event, cause);
+		super("Error sending request=" + event, cause);
 	}
 }

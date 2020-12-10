@@ -1,10 +1,10 @@
 package de.metas.procurement.base.rfq;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
@@ -161,7 +161,7 @@ class PMMWebuiRfQResponsePublisherInstance
 			}
 
 			// Internally push the planned product supplies, to create the PMM_PurchaseCandidates
-			serverSyncBL.reportProductSupplies(SyncProductSuppliesRequest.of(syncProductSupplies));
+			serverSyncBL.reportProductSupplies(PutProductSuppliesRequest.of(syncProductSupplies));
 		}
 	}
 

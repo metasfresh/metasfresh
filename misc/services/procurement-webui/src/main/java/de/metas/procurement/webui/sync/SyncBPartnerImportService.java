@@ -1,7 +1,7 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;

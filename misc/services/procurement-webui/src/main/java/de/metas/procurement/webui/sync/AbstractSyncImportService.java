@@ -1,6 +1,6 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.ISyncModel;
+import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
 import de.metas.procurement.webui.model.AbstractEntity;
 import de.metas.procurement.webui.model.AbstractTranslationEntity;
 import lombok.NonNull;
@@ -76,7 +76,7 @@ public abstract class AbstractSyncImportService
 	/**
 	 * Throws an {@link IllegalDeleteRequestException} if the given <code>syncModel</code> has <code>isDeleted</code>.
 	 */
-	protected void assertNotDeleteRequest(final ISyncModel syncModel, final String reason)
+	protected void assertNotDeleteRequest(final IConfirmableDTO syncModel, final String reason)
 	{
 		if (syncModel.isDeleted())
 		{
@@ -84,7 +84,7 @@ public abstract class AbstractSyncImportService
 		}
 	}
 
-	protected <T extends ISyncModel> T assertNotDeleteRequest_WarnAndFix(@NonNull final T syncModel, final String reason)
+	protected <T extends IConfirmableDTO> T assertNotDeleteRequest_WarnAndFix(@NonNull final T syncModel, final String reason)
 	{
 		if (syncModel.isDeleted())
 		{

@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -32,31 +34,20 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-public class SyncProductsRequest extends ProcurementEvent
+public class PutWeeklySupplyRequest extends RequestToMetasfresh
 {
-	public static SyncProductsRequest of(@NonNull final SyncProduct syncProduct)
+	public static PutWeeklySupplyRequest of(@NonNull final SyncWeeklySupply syncWeeklySupply)
 	{
-		return SyncProductsRequest.builder().product(syncProduct).build();
-	}
-
-	public static SyncProductsRequest of(@NonNull final List<SyncProduct> syncProducts)
-	{
-		return SyncProductsRequest.builder().products(syncProducts).build();
+		return PutWeeklySupplyRequest.builder().weeklySupply(syncWeeklySupply).build();
 	}
 	
-	List<SyncProduct> products;
+	List<SyncWeeklySupply> weeklySupplies;
 
 	@Builder
 	@JsonCreator
-	private SyncProductsRequest(
-			@JsonProperty("products") @Singular final List<SyncProduct> products)
+	public PutWeeklySupplyRequest(
+			@JsonProperty("weeklySupplies") @Singular final List<SyncWeeklySupply> weeklySupplies)
 	{
-		this.products = products;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "SyncProductsRequest [products=" + products + "]";
+		this.weeklySupplies = weeklySupplies;
 	}
 }

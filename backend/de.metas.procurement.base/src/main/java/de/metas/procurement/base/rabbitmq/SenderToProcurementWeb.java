@@ -24,7 +24,7 @@ package de.metas.procurement.base.rabbitmq;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.common.procurement.sync.Constants;
-import de.metas.common.procurement.sync.protocol.ProcurementEvent;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.amqp.core.Queue;
@@ -46,13 +46,13 @@ public class SenderToProcurementWeb
 		this.queue = queue;
 	}
 
-	public void send(@NonNull final ProcurementEvent procurementEvent)
+	public void send(@NonNull final RequestToProcurementWeb procurementEvent)
 	{
 		final String message = convertToString(procurementEvent);
 		rabbitTemplate.convertAndSend(queue.getName(), message);
 	}
 
-	private String convertToString(@NonNull final ProcurementEvent procurementEvent)
+	private String convertToString(@NonNull final RequestToProcurementWeb procurementEvent)
 	{
 		try
 		{

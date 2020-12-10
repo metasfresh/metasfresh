@@ -24,13 +24,13 @@ package de.metas.procurement.webui.sync.rabbitmq;
 
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.protocol.ProcurementEvent;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutConfirmationToProcurementWebRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQCloseEventsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQsRequest;
 import de.metas.procurement.webui.sync.exception.ReceiveSyncException;
 import lombok.NonNull;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -51,10 +51,10 @@ public class ReceiverFromMetasfresh
 	@RabbitHandler
 	public void receiveMessage(@NonNull final String message)
 	{
-		final ProcurementEvent procurementEvent;
+		final RequestToProcurementWeb procurementEvent;
 		try
 		{
-			procurementEvent = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message, ProcurementEvent.class);
+			procurementEvent = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message, RequestToProcurementWeb.class);
 		}
 		catch (final IOException e)
 		{
@@ -71,33 +71,33 @@ public class ReceiverFromMetasfresh
 		}
 	}
 
-	private void invokeServerSyncBL(@NonNull final ProcurementEvent procurementEvent)
+	private void invokeServerSyncBL(@NonNull final RequestToProcurementWeb procurementEvent)
 	{
-		if (procurementEvent instanceof SyncBPartnersRequest)
+		if (procurementEvent instanceof PutBPartnersRequest)
 		{
-			agentSync.syncBPartners((SyncBPartnersRequest)procurementEvent);
+			agentSync.syncBPartners((PutBPartnersRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof SyncProductsRequest)
+		else if (procurementEvent instanceof PutProductsRequest)
 		{
-			agentSync.syncProducts((SyncProductsRequest)procurementEvent);
+			agentSync.syncProducts((PutProductsRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof SyncRfQsRequest)
+		else if (procurementEvent instanceof PutRfQsRequest)
 		{
-			final SyncRfQsRequest syncRfQsRequest = (SyncRfQsRequest)procurementEvent;
+			final PutRfQsRequest syncRfQsRequest = (PutRfQsRequest)procurementEvent;
 			agentSync.syncRfQs(syncRfQsRequest.getSyncRfqs());
 		}
-		else if (procurementEvent instanceof SyncInfoMessageRequest)
+		else if (procurementEvent instanceof PutInfoMessageRequest)
 		{
-			agentSync.syncInfoMessage((SyncInfoMessageRequest)procurementEvent);
+			agentSync.syncInfoMessage((PutInfoMessageRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof SyncConfirmationRequest)
+		else if (procurementEvent instanceof PutConfirmationToProcurementWebRequest)
 		{
-			final SyncConfirmationRequest syncConfirmationRequest = (SyncConfirmationRequest)procurementEvent;
+			final PutConfirmationToProcurementWebRequest syncConfirmationRequest = (PutConfirmationToProcurementWebRequest)procurementEvent;
 			agentSync.confirm(syncConfirmationRequest.getSyncConfirmations());
 		}
-		else if (procurementEvent instanceof SyncRfQCloseEventsRequest)
+		else if (procurementEvent instanceof PutRfQCloseEventsRequest)
 		{
-			final SyncRfQCloseEventsRequest syncRfQCloseEventsRequest = (SyncRfQCloseEventsRequest)procurementEvent;
+			final PutRfQCloseEventsRequest syncRfQCloseEventsRequest = (PutRfQCloseEventsRequest)procurementEvent;
 			agentSync.closeRfQs(syncRfQCloseEventsRequest.getSyncRfQCloseEvents());
 		}
 		else

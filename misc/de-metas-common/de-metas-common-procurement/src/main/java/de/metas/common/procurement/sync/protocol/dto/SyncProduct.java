@@ -20,54 +20,66 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
+import java.util.Map;
+
 @Value
-public class SyncUser implements ISyncModel
+public class SyncProduct implements IConfirmableDTO
 {
 	String uuid;
 	boolean deleted;
 	long syncConfirmationId;
 
-	String email;
-	String password;
-	String language;
+	String name;
+	String packingInfo;
+	boolean shared;
 
-	@JsonCreator
+	/**
+	 * adLanguage to translated product name map
+	 */
+	Map<String, String> nameTrls;
+
 	@Builder(toBuilder = true)
-	public SyncUser(
+	@JsonCreator
+	public SyncProduct(
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
 			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
-			@JsonProperty("email") final String email,
-			@JsonProperty("password") final String password,
-			@JsonProperty("language") final String language)
+			@JsonProperty("name") final String name,
+			@JsonProperty("packingInfo") final String packingInfo,
+			@JsonProperty("shared") final boolean shared,
+			@Singular @JsonProperty("namesTrl") final Map<String, String> nameTrls)
 	{
 		this.uuid = uuid;
 		this.deleted = deleted;
 		this.syncConfirmationId = syncConfirmationId;
 
-		this.email = email;
-		this.password = password;
-		this.language = language;
+		this.name = name;
+		this.packingInfo = packingInfo;
+		this.shared = shared;
+		this.nameTrls = nameTrls;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "SyncUser [email=" + email
-				+ ", password=" + (password != null && !password.isEmpty() ? "********" : "(none)")
-				+ ", language=" + language
-				+ "]";
+		return "SyncProduct [name=" + name + ", packingInfo=" + packingInfo + ", shared=" + shared + ", nameTrls=" + nameTrls + "]";
+	}
+
+	public SyncProduct copy()
+	{
+		return toBuilder().build();
 	}
 
 	@Override
-	public ISyncModel withNotDeleted()
+	public IConfirmableDTO withNotDeleted()
 	{
 		return toBuilder().deleted(false).build();
 	}

@@ -1,6 +1,6 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductTrl;
 import de.metas.procurement.webui.repository.ProductRepository;

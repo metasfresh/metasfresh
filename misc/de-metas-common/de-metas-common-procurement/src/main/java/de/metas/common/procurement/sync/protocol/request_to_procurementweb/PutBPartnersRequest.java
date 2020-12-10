@@ -20,48 +20,45 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Value
-public class SyncRfQPriceChangeEvent implements ISyncModel
+@Builder
+public class PutBPartnersRequest extends RequestToProcurementWeb
 {
-	String uuid;
-	boolean deleted;
-	long syncConfirmationId;
-
-	String product_uuid;
-	String rfq_uuid;
-	BigDecimal price;
-
-	@Builder(toBuilder = true)
-	@JsonCreator
-	private SyncRfQPriceChangeEvent(
-			@JsonProperty("uuid") final String uuid,
-			@JsonProperty("deleted") final boolean deleted,
-			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
-			@JsonProperty("product_uuid") final String product_uuid,
-			@JsonProperty("rfq_uuid") final String rfq_uuid,
-			@JsonProperty("price") final BigDecimal price)
+	public static final PutBPartnersRequest of(@NonNull final SyncBPartner syncBPartner)
 	{
-		this.uuid = uuid;
-		this.deleted = deleted;
-		this.syncConfirmationId = syncConfirmationId;
+		return PutBPartnersRequest.builder().bpartner(syncBPartner).build();
+	}
 
-		this.product_uuid = product_uuid;
-		this.rfq_uuid = rfq_uuid;
-		this.price = price;
+	public static final PutBPartnersRequest of(@NonNull final List<SyncBPartner> syncBPartners)
+	{
+		return PutBPartnersRequest.builder().bpartners(syncBPartners).build();
+	}
+
+	@Singular
+	List<SyncBPartner> bpartners;
+
+	@JsonCreator
+	private PutBPartnersRequest(@JsonProperty("bpartners") final List<SyncBPartner> bpartners)
+	{
+		this.bpartners = bpartners;
 	}
 
 	@Override
-	public ISyncModel withNotDeleted()
+	public String toString()
 	{
-		return toBuilder().deleted(false).build();
+		return "SyncBPartnersRequest [bpartners=" + bpartners + "]";
 	}
 }

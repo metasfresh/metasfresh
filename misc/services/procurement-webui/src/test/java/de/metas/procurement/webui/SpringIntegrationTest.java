@@ -3,11 +3,11 @@ package de.metas.procurement.webui;
 import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.IServerSync;
-import de.metas.common.procurement.sync.protocol.ISyncModel;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 import de.metas.procurement.webui.SpringIntegrationTest.TestConfig;
 import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
 import de.metas.procurement.webui.model.BPartner;
@@ -166,7 +166,7 @@ public class SpringIntegrationTest
 		//
 		// Test delete all product
 		{
-			final SyncProductsRequest.SyncProductsRequestBuilder request = SyncProductsRequest.builder();
+			final PutProductsRequest.PutProductsRequestBuilder request = PutProductsRequest.builder();
 			for (final Product product : productsRepo.findAll())
 			{
 				final SyncProduct syncProduct = SyncProduct.builder()
@@ -253,7 +253,7 @@ public class SpringIntegrationTest
 	 * @param actual
 	 * @task https://metasfresh.atlassian.net/browse/FRESH-206
 	 */
-	private void assertConfirmOK(final AbstractSyncConfirmAwareEntity expected, final ISyncModel actual)
+	private void assertConfirmOK(final AbstractSyncConfirmAwareEntity expected, final IConfirmableDTO actual)
 	{
 		assertThat(actual.getSyncConfirmationId(), greaterThan(0L));
 

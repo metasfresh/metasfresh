@@ -1,7 +1,7 @@
 package de.metas.procurement.base;
 
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.ISingletonService;

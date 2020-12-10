@@ -1,12 +1,12 @@
 package de.metas.procurement.base.impl;
 
 import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncConfirmation;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 import org.adempiere.util.lang.ObjectUtils;
 
 import java.util.List;
@@ -49,19 +49,19 @@ public class NullAgentSync implements IAgentSync
 	}
 
 	@Override
-	public void syncBPartners(final SyncBPartnersRequest request)
+	public void syncBPartners(final PutBPartnersRequest request)
 	{
 		System.out.println("syncBPartners: " + ObjectUtils.toString(request));
 	}
 
 	@Override
-	public void syncProducts(final SyncProductsRequest request)
+	public void syncProducts(final PutProductsRequest request)
 	{
 		System.out.println("syncProducts: " + ObjectUtils.toString(request));
 	}
 
 	@Override
-	public void syncInfoMessage(final SyncInfoMessageRequest request)
+	public void syncInfoMessage(final PutInfoMessageRequest request)
 	{
 		System.out.println("syncInfoMessage: " + ObjectUtils.toString(request));
 	}

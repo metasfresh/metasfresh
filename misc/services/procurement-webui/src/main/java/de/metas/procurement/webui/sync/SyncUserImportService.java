@@ -1,6 +1,6 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncUser;
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.repository.UserRepository;

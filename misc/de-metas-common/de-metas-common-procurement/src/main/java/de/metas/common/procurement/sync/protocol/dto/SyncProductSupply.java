@@ -20,66 +20,75 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.Date;
 
 @Value
-public class SyncProduct implements ISyncModel
+public class SyncProductSupply implements IConfirmableDTO
 {
 	String uuid;
 	boolean deleted;
 	long syncConfirmationId;
 
-	String name;
-	String packingInfo;
-	boolean shared;
-
-	/**
-	 * adLanguage to translated product name map
-	 */
-	Map<String, String> nameTrls;
+	String bpartner_uuid;
+	String product_uuid;
+	String contractLine_uuid;
+	BigDecimal qty;
+	Date day;
+	boolean weekPlanning;
+	int version;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
-	public SyncProduct(
+	public SyncProductSupply(
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
 			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
-			@JsonProperty("name") final String name,
-			@JsonProperty("packingInfo") final String packingInfo,
-			@JsonProperty("shared") final boolean shared,
-			@Singular @JsonProperty("namesTrl") final Map<String, String> nameTrls)
+			@JsonProperty("bpartner_uuid") final String bpartner_uuid,
+			@JsonProperty("product_uuid") final String product_uuid,
+			@JsonProperty("contractLine_uuid") final String contractLine_uuid,
+			@JsonProperty("qty") final BigDecimal qty,
+			@JsonProperty("day") final Date day,
+			@JsonProperty("weekPlanning") final boolean weekPlanning,
+			@JsonProperty("version") final int version)
 	{
 		this.uuid = uuid;
 		this.deleted = deleted;
 		this.syncConfirmationId = syncConfirmationId;
 
-		this.name = name;
-		this.packingInfo = packingInfo;
-		this.shared = shared;
-		this.nameTrls = nameTrls;
+		this.bpartner_uuid = bpartner_uuid;
+		this.product_uuid = product_uuid;
+		this.contractLine_uuid = contractLine_uuid;
+		this.qty = qty;
+		this.day = day;
+		this.weekPlanning = weekPlanning;
+		this.version = version;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "SyncProduct [name=" + name + ", packingInfo=" + packingInfo + ", shared=" + shared + ", nameTrls=" + nameTrls + "]";
-	}
-
-	public SyncProduct copy()
-	{
-		return toBuilder().build();
+		return "SyncProductSupply ["
+				+ "bpartner_uuid=" + bpartner_uuid
+				+ ", product_uuid=" + product_uuid
+				+ ", contractLine_uuid=" + contractLine_uuid
+				+ ", qty=" + qty
+				+ ", day=" + day
+				+ ", weekPlanning=" + weekPlanning
+				+ ", version=" + version
+				+ ", uuid=" + getUuid()
+				+ "]";
 	}
 
 	@Override
-	public ISyncModel withNotDeleted()
+	public IConfirmableDTO withNotDeleted()
 	{
 		return toBuilder().deleted(false).build();
 	}

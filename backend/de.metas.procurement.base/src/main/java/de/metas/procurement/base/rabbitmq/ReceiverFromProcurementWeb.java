@@ -23,18 +23,18 @@
 package de.metas.procurement.base.rabbitmq;
 
 import de.metas.common.procurement.sync.Constants;
-import de.metas.common.procurement.sync.protocol.GetAllBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.GetAllProductsRequest;
-import de.metas.common.procurement.sync.protocol.GetInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.ProcurementEvent;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,7 +60,7 @@ public class ReceiverFromProcurementWeb
 	{
 		try
 		{
-			final ProcurementEvent procurementEvent = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message, ProcurementEvent.class);
+			final RequestToMetasfresh procurementEvent = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message, RequestToMetasfresh.class);
 			invokeServerSyncBL(procurementEvent);
 		}
 		catch (final IOException e)
@@ -71,35 +71,35 @@ public class ReceiverFromProcurementWeb
 		}
 	}
 
-	private void invokeServerSyncBL(@NonNull final ProcurementEvent procurementEvent)
+	private void invokeServerSyncBL(@NonNull final RequestToMetasfresh procurementEvent)
 	{
 		final IServerSyncBL serverSyncBL = Services.get(IServerSyncBL.class);
-		if (procurementEvent instanceof SyncWeeklySupplyRequest)
+		if (procurementEvent instanceof PutWeeklySupplyRequest)
 		{
-			serverSyncBL.reportWeekSupply((SyncWeeklySupplyRequest)procurementEvent);
+			serverSyncBL.reportWeekSupply((PutWeeklySupplyRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof SyncProductSuppliesRequest)
+		else if (procurementEvent instanceof PutProductSuppliesRequest)
 		{
-			serverSyncBL.reportProductSupplies((SyncProductSuppliesRequest)procurementEvent);
+			serverSyncBL.reportProductSupplies((PutProductSuppliesRequest)procurementEvent);
 		}
-		else if (procurementEvent instanceof SyncRfQChangeRequest)
+		else if (procurementEvent instanceof PutRfQChangeRequest)
 		{
-			serverSyncBL.reportRfQChanges((SyncRfQChangeRequest)procurementEvent);
+			serverSyncBL.reportRfQChanges((PutRfQChangeRequest)procurementEvent);
 		}
 		else if (procurementEvent instanceof GetAllBPartnersRequest)
 		{
 			final List<SyncBPartner> allBPartners = serverSyncBL.getAllBPartners();
-			senderToProcurementWebUI.send(SyncBPartnersRequest.of(allBPartners));
+			senderToProcurementWebUI.send(PutBPartnersRequest.of(allBPartners));
 		}
 		else if (procurementEvent instanceof GetAllProductsRequest)
 		{
 			final List<SyncProduct> allProducts = serverSyncBL.getAllProducts();
-			senderToProcurementWebUI.send(SyncProductsRequest.of(allProducts));
+			senderToProcurementWebUI.send(PutProductsRequest.of(allProducts));
 		}
 		else if(procurementEvent instanceof GetInfoMessageRequest)
 		{
 			final String infoMessage = serverSyncBL.getInfoMessage();
-			senderToProcurementWebUI.send(SyncInfoMessageRequest.of(infoMessage));
+			senderToProcurementWebUI.send(PutInfoMessageRequest.of(infoMessage));
 		}
 		else
 		{

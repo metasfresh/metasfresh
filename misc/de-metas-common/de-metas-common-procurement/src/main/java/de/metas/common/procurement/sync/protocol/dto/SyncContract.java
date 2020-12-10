@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 @Value
-public class SyncContract implements ISyncModel
+public class SyncContract implements IConfirmableDTO
 {
 	String uuid;
 	boolean deleted;
@@ -74,7 +74,7 @@ public class SyncContract implements ISyncModel
 	}
 
 	@Override
-	public ISyncModel withNotDeleted()
+	public IConfirmableDTO withNotDeleted()
 	{
 		return toBuilder().deleted(false).build();
 	}

@@ -1,18 +1,18 @@
 package de.metas.procurement.webui.util;
 
 import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncBPartner.SyncBPartnerBuilder;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest.SyncBPartnersRequestBuilder;
-import de.metas.common.procurement.sync.protocol.SyncContract;
-import de.metas.common.procurement.sync.protocol.SyncContract.SyncContractBuilder;
-import de.metas.common.procurement.sync.protocol.SyncContractLine;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest.SyncProductsRequestBuilder;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncUser;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner.SyncBPartnerBuilder;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract.SyncContractBuilder;
+import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest.PutBPartnersRequestBuilder;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest.PutProductsRequestBuilder;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.model.ContractLine;
@@ -88,8 +88,8 @@ public class DummyDataProducer
 			//
 	);
 
-	private SyncBPartnersRequest _syncBPartnersRequest;
-	private SyncProductsRequest _syncProductsRequest;
+	private PutBPartnersRequest _syncBPartnersRequest;
+	private PutProductsRequest _syncProductsRequest;
 
 	public DummyDataProducer(
 			final BPartnerRepository bpartnersRepo,
@@ -105,13 +105,13 @@ public class DummyDataProducer
 
 	public void createDummyData()
 	{
-		final SyncBPartnersRequest request = getSyncBPartnersRequest();
+		final PutBPartnersRequest request = getSyncBPartnersRequest();
 		agentSync.syncBPartners(request);
 
 		createDummyProductSupplies();
 	}
 
-	public SyncBPartnersRequest getSyncBPartnersRequest()
+	public PutBPartnersRequest getSyncBPartnersRequest()
 	{
 		if (_syncBPartnersRequest == null)
 		{
@@ -120,9 +120,9 @@ public class DummyDataProducer
 		return _syncBPartnersRequest;
 	}
 
-	private SyncBPartnersRequest createSyncBPartnersRequest()
+	private PutBPartnersRequest createSyncBPartnersRequest()
 	{
-		final SyncBPartnersRequestBuilder request = SyncBPartnersRequest.builder();
+		final PutBPartnersRequestBuilder request = PutBPartnersRequest.builder();
 
 		//
 		// BPartner
@@ -148,7 +148,7 @@ public class DummyDataProducer
 						.dateFrom(contractDateFrom)
 						.dateTo(contractDateTo);
 
-				final SyncProductsRequest syncProductsRequest = getSyncProductsRequest();
+				final PutProductsRequest syncProductsRequest = getSyncProductsRequest();
 				for (final SyncProduct syncProduct : syncProductsRequest.getProducts().subList(0, 6))
 				{
 					final SyncContractLine syncContractLine = SyncContractLine.builder()
@@ -195,7 +195,7 @@ public class DummyDataProducer
 		return request.build();
 	}
 
-	public SyncProductsRequest getSyncProductsRequest()
+	public PutProductsRequest getSyncProductsRequest()
 	{
 		if (_syncProductsRequest == null)
 		{
@@ -204,9 +204,9 @@ public class DummyDataProducer
 		return _syncProductsRequest;
 	}
 
-	private SyncProductsRequest createSyncProductsRequest()
+	private PutProductsRequest createSyncProductsRequest()
 	{
-		final SyncProductsRequestBuilder request = SyncProductsRequest.builder();
+		final PutProductsRequestBuilder request = PutProductsRequest.builder();
 
 		//
 		// Products

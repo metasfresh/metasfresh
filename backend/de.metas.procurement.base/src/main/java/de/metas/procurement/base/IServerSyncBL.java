@@ -1,12 +1,12 @@
 package de.metas.procurement.base;
 
 import de.metas.common.procurement.sync.IServerSync;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.javaclasses.AD_JavaClass;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
@@ -85,23 +85,23 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * <b>Important:</b> Make sure that each record is saved.
 	 *
 	 * @return {@link Response#ok()}
-	 * @see IServerSync#reportProductSupplies(SyncProductSuppliesRequest)
+	 * @see IServerSync#reportProductSupplies(PutProductSuppliesRequest)
 	 */
 	@Override
-	public void reportProductSupplies(SyncProductSuppliesRequest request);
+	public void reportProductSupplies(PutProductSuppliesRequest request);
 
 	/**
 	 *
 	 * @return {@link Response#ok()}
-	 * @see IServerSync#reportWeekSupply(SyncWeeklySupplyRequest)
+	 * @see IServerSync#reportWeekSupply(PutWeeklySupplyRequest)
 	 */
 	@Override
-	public void reportWeekSupply(SyncWeeklySupplyRequest request);
+	public void reportWeekSupply(PutWeeklySupplyRequest request);
 
 	/**
-	 * @see IServerSync#reportRfQChanges(SyncRfQChangeRequest)
+	 * @see IServerSync#reportRfQChanges(PutRfQChangeRequest)
 	 */
 	@Override
-	public void reportRfQChanges(SyncRfQChangeRequest request);
+	public void reportRfQChanges(PutRfQChangeRequest request);
 
 }

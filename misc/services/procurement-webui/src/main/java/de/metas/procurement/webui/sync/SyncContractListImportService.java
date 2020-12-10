@@ -1,7 +1,7 @@
 package de.metas.procurement.webui.sync;
 
 import com.google.gwt.thirdparty.guava.common.collect.Maps;
-import de.metas.common.procurement.sync.protocol.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.repository.ContractRepository;

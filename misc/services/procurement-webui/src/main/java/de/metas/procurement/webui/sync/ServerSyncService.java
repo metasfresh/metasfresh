@@ -7,18 +7,18 @@ import com.google.gwt.thirdparty.guava.common.eventbus.AsyncEventBus;
 import com.google.gwt.thirdparty.guava.common.eventbus.DeadEvent;
 import com.google.gwt.thirdparty.guava.common.eventbus.Subscribe;
 import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.protocol.GetAllBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.GetAllProductsRequest;
-import de.metas.common.procurement.sync.protocol.GetInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest.SyncRfQChangeRequestBuilder;
-import de.metas.common.procurement.sync.protocol.SyncRfQPriceChangeEvent;
-import de.metas.common.procurement.sync.protocol.SyncRfQQtyChangeEvent;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest.SyncWeeklySupplyRequestBuilder;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQPriceChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQQtyChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest.PutWeeklySupplyRequestBuilder;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest.PutRfQChangeRequestBuilder;
 import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
@@ -226,7 +226,7 @@ public class ServerSyncService implements IServerSyncService
 			return;
 		}
 
-		final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
+		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
 	}
@@ -240,7 +240,7 @@ public class ServerSyncService implements IServerSyncService
 			throw new RuntimeException("No product supply found for ID=" + product_supply_id);
 		}
 
-		final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(Arrays.asList(productSupply));
+		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(Arrays.asList(productSupply));
 		logger.debug("Pushing request: {}", request);
 		process(request);
 		logger.debug("Pushing request done");
@@ -260,7 +260,7 @@ public class ServerSyncService implements IServerSyncService
 				throw new RuntimeException("No supplies found");
 			}
 
-			final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
+			final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
 			logger.debug("Pushing request: {}", request);
 			process(request);
 			logger.debug("Pushing request done");
@@ -273,7 +273,7 @@ public class ServerSyncService implements IServerSyncService
 	}
 
 	@Subscribe
-	public void process(final SyncProductSuppliesRequest request)
+	public void process(final PutProductSuppliesRequest request)
 	{
 		try
 		{
@@ -285,9 +285,9 @@ public class ServerSyncService implements IServerSyncService
 		}
 	}
 
-	private SyncProductSuppliesRequest createSyncProductSuppliesRequest(final List<ProductSupply> productSupplies)
+	private PutProductSuppliesRequest createSyncProductSuppliesRequest(final List<ProductSupply> productSupplies)
 	{
-		final SyncProductSuppliesRequest.SyncProductSuppliesRequestBuilder request = SyncProductSuppliesRequest.builder();
+		final PutProductSuppliesRequest.PutProductSuppliesRequestBuilder request = PutProductSuppliesRequest.builder();
 		for (final ProductSupply productSupply : productSupplies)
 		{
 			final SyncProductSupply syncProductSupply = SyncProductSupply.builder()
@@ -316,7 +316,7 @@ public class ServerSyncService implements IServerSyncService
 			return;
 		}
 
-		final SyncWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
+		final PutWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
 	}
@@ -335,7 +335,7 @@ public class ServerSyncService implements IServerSyncService
 				throw new RuntimeException("No supplies found");
 			}
 
-			final SyncWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
+			final PutWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
 			logger.debug("Pushing request: {}", request);
 			process(request);
 			logger.debug("Pushing request done");
@@ -348,7 +348,7 @@ public class ServerSyncService implements IServerSyncService
 	}
 
 	@Subscribe
-	public void process(final SyncWeeklySupplyRequest request)
+	public void process(final PutWeeklySupplyRequest request)
 	{
 		try
 		{
@@ -360,9 +360,9 @@ public class ServerSyncService implements IServerSyncService
 		}
 	}
 
-	private SyncWeeklySupplyRequest creatSyncWeekSupplyRequest(final List<WeekSupply> weekSupplies)
+	private PutWeeklySupplyRequest creatSyncWeekSupplyRequest(final List<WeekSupply> weekSupplies)
 	{
-		final SyncWeeklySupplyRequestBuilder request = SyncWeeklySupplyRequest.builder();
+		final PutWeeklySupplyRequestBuilder request = PutWeeklySupplyRequest.builder();
 
 		for (final WeekSupply weeklySupply : weekSupplies)
 		{
@@ -425,8 +425,8 @@ public class ServerSyncService implements IServerSyncService
 
 	private void reportRfQChangesAsync(final List<Rfq> rfqs, final List<RfqQty> rfqQuantities)
 	{
-		final SyncRfQChangeRequest request = createSyncRfQChangeRequest(rfqs, rfqQuantities);
-		if (SyncRfQChangeRequest.isEmpty(request))
+		final PutRfQChangeRequest request = createSyncRfQChangeRequest(rfqs, rfqQuantities);
+		if (PutRfQChangeRequest.isEmpty(request))
 		{
 			logger.debug("No RfQ change requests to enqueue");
 			return;
@@ -437,7 +437,7 @@ public class ServerSyncService implements IServerSyncService
 	}
 
 	@Subscribe
-	public void process(final SyncRfQChangeRequest request)
+	public void process(final PutRfQChangeRequest request)
 	{
 		try
 		{
@@ -451,9 +451,9 @@ public class ServerSyncService implements IServerSyncService
 
 	}
 
-	private SyncRfQChangeRequest createSyncRfQChangeRequest(final List<Rfq> rfqs, final List<RfqQty> rfqQuantities)
+	private PutRfQChangeRequest createSyncRfQChangeRequest(final List<Rfq> rfqs, final List<RfqQty> rfqQuantities)
 	{
-		final SyncRfQChangeRequestBuilder changeRequest = SyncRfQChangeRequest.builder();
+		final PutRfQChangeRequestBuilder changeRequest = PutRfQChangeRequest.builder();
 
 		for (final Rfq rfq : rfqs)
 		{
@@ -507,7 +507,7 @@ public class ServerSyncService implements IServerSyncService
 			throw new RuntimeException("No RfQ found for ID=" + rfq_id);
 		}
 
-		final SyncRfQChangeRequest request = createSyncRfQChangeRequest(ImmutableList.of(rfq), rfq.getQuantities());
+		final PutRfQChangeRequest request = createSyncRfQChangeRequest(ImmutableList.of(rfq), rfq.getQuantities());
 		logger.debug("Pushing request: {}", request);
 		process(request);
 		logger.debug("Pushing request done");

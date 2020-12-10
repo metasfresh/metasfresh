@@ -20,10 +20,13 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -32,31 +35,25 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-@Builder
-public class SyncBPartnersRequest extends ProcurementEvent
+public class PutRfQsRequest extends RequestToProcurementWeb
 {
-	public static final SyncBPartnersRequest of(@NonNull final SyncBPartner syncBPartner)
+	public static PutRfQsRequest of(@NonNull final List<SyncRfQ> syncRfqs)
 	{
-		return SyncBPartnersRequest.builder().bpartner(syncBPartner).build();
+		return PutRfQsRequest.builder().syncRfqs(syncRfqs).build();
 	}
 
-	public static final SyncBPartnersRequest of(@NonNull final List<SyncBPartner> syncBPartners)
-	{
-		return SyncBPartnersRequest.builder().bpartners(syncBPartners).build();
-	}
+	List<SyncRfQ> syncRfqs;
 
-	@Singular
-	List<SyncBPartner> bpartners;
-
+	@Builder
 	@JsonCreator
-	private SyncBPartnersRequest(@JsonProperty("bpartners") final List<SyncBPartner> bpartners)
+	public PutRfQsRequest(@JsonProperty("syncRfqs") @Singular @NonNull final List<SyncRfQ> syncRfqs)
 	{
-		this.bpartners = bpartners;
+		this.syncRfqs = syncRfqs;
 	}
 
-	@Override
-	public String toString()
+	@JsonIgnore
+	public boolean isEmpty()
 	{
-		return "SyncBPartnersRequest [bpartners=" + bpartners + "]";
+		return syncRfqs.isEmpty();
 	}
 }

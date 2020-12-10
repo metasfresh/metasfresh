@@ -22,17 +22,17 @@
 
 package de.metas.procurement.webui.sync.exception;
 
-import de.metas.common.procurement.sync.protocol.ProcurementEvent;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import lombok.NonNull;
 
 public class ReceiveSyncException extends RuntimeException
 {
-	public ReceiveSyncException(@NonNull final ProcurementEvent event, @NonNull final Exception cause)
+	public ReceiveSyncException(@NonNull final RequestToProcurementWeb event, @NonNull final Exception cause)
 	{
 		super("Error receiving procurementEvent=" + event, cause);
 	}
 
-	public ReceiveSyncException(@NonNull final ProcurementEvent event, @NonNull final String errorMessage)
+	public ReceiveSyncException(@NonNull final RequestToProcurementWeb event, @NonNull final String errorMessage)
 	{
 		super("Error receiving procurementEvent; errorMessage=" + errorMessage + "; procurementEvent=" + event);
 	}

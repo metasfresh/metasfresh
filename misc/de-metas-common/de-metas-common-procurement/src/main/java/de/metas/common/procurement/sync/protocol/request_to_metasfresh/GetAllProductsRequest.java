@@ -20,17 +20,19 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 import lombok.Value;
 
 /**
- * Send from the procurement-webui to metasfresh to request a {@link SyncBPartnersRequest} containing all business partners that shall be able to log into the procurement webui.
+ * Send from the procurement-webui to metasfresh to request a {@link PutProductsRequest} containing all products that shall be know to the procurement-webui.
  */
 @Value
-public class GetAllBPartnersRequest extends ProcurementEvent
+public class GetAllProductsRequest extends RequestToMetasfresh
 {
-	public static final GetAllBPartnersRequest INSTANCE = new GetAllBPartnersRequest();
+	public static final GetAllProductsRequest INSTANCE = new GetAllProductsRequest();
 
-	private GetAllBPartnersRequest(){};
+	private GetAllProductsRequest(){};
 }

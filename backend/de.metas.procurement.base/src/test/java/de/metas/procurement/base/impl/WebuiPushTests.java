@@ -1,8 +1,8 @@
 package de.metas.procurement.base.impl;
 
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncUser;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
 import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.util.Services;
@@ -143,10 +143,10 @@ public class WebuiPushTests
 
 		verifyOnlySyncBPartnersCalled();
 
-		final ArgumentCaptor<SyncBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(SyncBPartnersRequest.class);
+		final ArgumentCaptor<PutBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(PutBPartnersRequest.class);
 		Mockito.verify(agentSync).syncBPartners(syncBPartnersRequestCaptor.capture());
 
-		final SyncBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
+		final PutBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
 		// agentSync.syncBPartners(syncBPartnersRequest = withCapture());
 
 		assertNotNull(syncBPartnersRequest);
@@ -187,10 +187,10 @@ public class WebuiPushTests
 
 		verifyOnlySyncBPartnersCalled();
 
-		final ArgumentCaptor<SyncBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(SyncBPartnersRequest.class);
+		final ArgumentCaptor<PutBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(PutBPartnersRequest.class);
 		Mockito.verify(agentSync).syncBPartners(syncBPartnersRequestCaptor.capture());
 
-		final SyncBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
+		final PutBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
 
 		assertNotNull(syncBPartnersRequest);
 		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));

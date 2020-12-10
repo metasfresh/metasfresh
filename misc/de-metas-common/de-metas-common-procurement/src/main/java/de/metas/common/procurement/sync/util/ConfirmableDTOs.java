@@ -22,21 +22,21 @@
 
 package de.metas.common.procurement.sync.util;
 
-import de.metas.common.procurement.sync.protocol.ISyncModel;
+import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Helper class used to manipulate {@link ISyncModel}s.
+ * Helper class used to manipulate {@link IConfirmableDTO}s.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class SyncModels
+public final class ConfirmableDTOs
 {
-	public static final Set<String> extractUUIDs(final Collection<? extends ISyncModel> syncModels)
+	public static final Set<String> extractUUIDs(final Collection<? extends IConfirmableDTO> syncModels)
 	{
 		final Set<String> uuids = new HashSet<>();
 		if (syncModels == null || syncModels.isEmpty())
@@ -44,7 +44,7 @@ public final class SyncModels
 			return uuids;
 		}
 
-		for (final ISyncModel syncModel : syncModels)
+		for (final IConfirmableDTO syncModel : syncModels)
 		{
 			if (syncModel == null)
 			{
@@ -65,7 +65,7 @@ public final class SyncModels
 		return uuids;
 	}
 
-	private SyncModels()
+	private ConfirmableDTOs()
 	{
 		super();
 	}

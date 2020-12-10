@@ -1,8 +1,8 @@
 package de.metas.procurement.base.impl;
 
-import de.metas.common.procurement.sync.protocol.ISyncModel;
-import de.metas.common.procurement.sync.protocol.SyncConfirmation;
-import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
+import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutConfirmationToProcurementWebRequest;
 import de.metas.common.util.time.SystemTime;
 import de.metas.procurement.base.rabbitmq.SenderToProcurementWeb;
 import de.metas.util.Services;
@@ -90,7 +90,7 @@ final class SyncConfirmationsSender
 			return;
 		}
 
-		final SyncConfirmationRequest syncConfirmationRequest = SyncConfirmationRequest.of(syncConfirmations);
+		final PutConfirmationToProcurementWebRequest syncConfirmationRequest = PutConfirmationToProcurementWebRequest.of(syncConfirmations);
 		senderToProcurementWebUI.send(syncConfirmationRequest);
 		syncConfirmations.clear();
 	}
@@ -98,7 +98,7 @@ final class SyncConfirmationsSender
 	/**
 	 * Generates a {@link SyncConfirmation} instance to be send either directly after the next commit.
 	 */
-	public void confirm(final ISyncModel syncModel, final String serverEventId)
+	public void confirm(final IConfirmableDTO syncModel, final String serverEventId)
 	{
 		if (syncModel.getSyncConfirmationId() <= 0)
 		{

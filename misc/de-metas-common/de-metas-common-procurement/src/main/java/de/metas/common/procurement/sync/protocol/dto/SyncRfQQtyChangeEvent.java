@@ -20,52 +20,52 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.Date;
 
-/**
- * Event fired by metasfresh server to indicate that a given RfQ was closed.
- *
- * @author metas-dev <dev@metas-fresh.com>
- */
 @Value
-public class SyncRfQCloseEvent
+public class SyncRfQQtyChangeEvent implements IConfirmableDTO
 {
-	private String rfq_uuid;
-	private boolean winnerKnown;
-	private boolean winner;
+	String uuid;
+	boolean deleted;
+	long syncConfirmationId;
 
-	private List<SyncProductSupply> plannedSupplies;
+	String rfq_uuid;
+	Date day;
+	String product_uuid;
+	BigDecimal qty;
 
-	@Builder
+	@Builder(toBuilder = true)
 	@JsonCreator
-	private SyncRfQCloseEvent(
+	private SyncRfQQtyChangeEvent(
+			@JsonProperty("uuid") final String uuid,
+			@JsonProperty("deleted") final boolean deleted,
+			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
 			@JsonProperty("rfq_uuid") final String rfq_uuid,
-			@JsonProperty("winnerKnown") final boolean winnerKnown,
-			@JsonProperty("winner") final boolean winner,
-			@JsonProperty("plannedSupplies") @Singular final List<SyncProductSupply> plannedSupplies)
+			@JsonProperty("day") final Date day,
+			@JsonProperty("product_uuid") final String product_uuid,
+			@JsonProperty("qty") final BigDecimal qty)
 	{
+		this.uuid = uuid;
+		this.deleted = deleted;
+		this.syncConfirmationId = syncConfirmationId;
+
 		this.rfq_uuid = rfq_uuid;
-		this.winnerKnown = winnerKnown;
-		this.winner = winner;
-		this.plannedSupplies = plannedSupplies;
+		this.day = day;
+		this.product_uuid = product_uuid;
+		this.qty = qty;
 	}
 
 	@Override
-	public String toString()
+	public IConfirmableDTO withNotDeleted()
 	{
-		return "SyncRfQCloseEvent ["
-				+ "rfq_uuid=" + rfq_uuid
-				+ ", winnerKnown=" + winnerKnown
-				+ ", winner=" + winner
-				+ ", plannedSupplies=" + plannedSupplies
-				+ "]";
+		return toBuilder().deleted(false).build();
 	}
 }

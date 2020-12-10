@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -70,7 +70,7 @@ public class SyncConfirmation
 	/**
 	 * Shall be used by the remote/receiving endpoint to generate a confirmation instance.
 	 *
-	 * @param syncConfirmationId shall be taken from {@link ISyncModel#getSyncConfirmationId()} which was received from the sending endpoint.<br>
+	 * @param syncConfirmationId shall be taken from {@link IConfirmableDTO#getSyncConfirmationId()} which was received from the sending endpoint.<br>
 	 *                           The sending endpoint will know to correlate this instance with the sync package it send by using the ID.
 	 */
 	public static SyncConfirmation forConfirmId(final long syncConfirmationId)

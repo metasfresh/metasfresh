@@ -20,11 +20,12 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -33,25 +34,31 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-public class SyncRfQCloseEventsRequest extends ProcurementEvent
+public class PutProductsRequest extends RequestToProcurementWeb
 {
-	public static SyncRfQCloseEventsRequest of(@NonNull final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	public static PutProductsRequest of(@NonNull final SyncProduct syncProduct)
 	{
-		return SyncRfQCloseEventsRequest.builder().syncRfQCloseEvents(syncRfQCloseEvents).build();
+		return PutProductsRequest.builder().product(syncProduct).build();
 	}
 
-	List<SyncRfQCloseEvent> syncRfQCloseEvents;
+	public static PutProductsRequest of(@NonNull final List<SyncProduct> syncProducts)
+	{
+		return PutProductsRequest.builder().products(syncProducts).build();
+	}
+	
+	List<SyncProduct> products;
 
 	@Builder
 	@JsonCreator
-	public SyncRfQCloseEventsRequest(@JsonProperty("syncRfQCloseEvents") @Singular final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	private PutProductsRequest(
+			@JsonProperty("products") @Singular final List<SyncProduct> products)
 	{
-		this.syncRfQCloseEvents = syncRfQCloseEvents;
+		this.products = products;
 	}
 
-	@JsonIgnore
-	public boolean isEmpty()
+	@Override
+	public String toString()
 	{
-		return syncRfQCloseEvents.isEmpty();
+		return "SyncProductsRequest [products=" + products + "]";
 	}
 }

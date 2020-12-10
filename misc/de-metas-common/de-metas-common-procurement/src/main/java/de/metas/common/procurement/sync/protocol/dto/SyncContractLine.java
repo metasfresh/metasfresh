@@ -20,32 +20,46 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.List;
-
 @Value
-public class SyncWeeklySupplyRequest extends ProcurementEvent
+public class SyncContractLine implements IConfirmableDTO
 {
-	public static SyncWeeklySupplyRequest of(@NonNull final SyncWeeklySupply syncWeeklySupply)
-	{
-		return SyncWeeklySupplyRequest.builder().weeklySupply(syncWeeklySupply).build();
-	}
-	
-	List<SyncWeeklySupply> weeklySupplies;
+	String uuid;
+	boolean deleted;
+	long syncConfirmationId;
 
-	@Builder
+	SyncProduct product;
+
 	@JsonCreator
-	public SyncWeeklySupplyRequest(
-			@JsonProperty("weeklySupplies") @Singular final List<SyncWeeklySupply> weeklySupplies)
+	@Builder(toBuilder = true)
+	public SyncContractLine(
+			@JsonProperty("uuid") final String uuid,
+			@JsonProperty("deleted") final boolean deleted,
+			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
+			@JsonProperty("product") final SyncProduct product)
 	{
-		this.weeklySupplies = weeklySupplies;
+		this.uuid = uuid;
+		this.deleted = deleted;
+		this.syncConfirmationId = syncConfirmationId;
+
+		this.product = product;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "SyncContractLine [product=" + product + "]";
+	}
+
+	@Override
+	public IConfirmableDTO withNotDeleted()
+	{
+		return toBuilder().deleted(false).build();
 	}
 }

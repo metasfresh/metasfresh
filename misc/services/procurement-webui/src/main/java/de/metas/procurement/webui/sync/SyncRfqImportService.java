@@ -1,10 +1,10 @@
 package de.metas.procurement.webui.sync;
 
 import com.google.gwt.thirdparty.guava.common.base.Objects;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.procurement.webui.event.MFEventBus;
 import de.metas.procurement.webui.event.ProductSupplyChangedEvent;
 import de.metas.procurement.webui.event.RfqChangedEvent;

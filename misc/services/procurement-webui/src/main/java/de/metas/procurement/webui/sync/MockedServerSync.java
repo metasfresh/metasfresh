@@ -1,10 +1,10 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.procurement.webui.util.DummyDataProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,12 +53,12 @@ public class MockedServerSync
 		return dummyDataProducer.getSyncProductsRequest().getProducts();
 	}
 
-	public void reportProductSupplies(SyncProductSuppliesRequest request)
+	public void reportProductSupplies(PutProductSuppliesRequest request)
 	{
 		logger.info("Got {}", request);
 	}
 
-	public void reportWeekSupply(SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(PutWeeklySupplyRequest request)
 	{
 		logger.info("Got {}", request);
 	}
@@ -68,7 +68,7 @@ public class MockedServerSync
 		return "";
 	}
 
-	public void reportRfQChanges(SyncRfQChangeRequest request)
+	public void reportRfQChanges(PutRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);
 	}

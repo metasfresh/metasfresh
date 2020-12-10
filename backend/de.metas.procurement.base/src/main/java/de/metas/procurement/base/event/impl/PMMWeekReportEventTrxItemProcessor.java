@@ -1,7 +1,7 @@
 package de.metas.procurement.base.event.impl;
 
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -206,7 +206,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 				.day(dateTwoWeeksAgo)
 				.build();
 
-		Services.get(IServerSyncBL.class).reportProductSupplies(SyncProductSuppliesRequest.of(syncProductSupply_TwoWeeksAgo));
+		Services.get(IServerSyncBL.class).reportProductSupplies(PutProductSuppliesRequest.of(syncProductSupply_TwoWeeksAgo));
 	}
 
 	private void markError(

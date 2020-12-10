@@ -20,45 +20,66 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 
+import java.util.Date;
+
 @Value
-public class SyncContractLine implements ISyncModel
+public class SyncWeeklySupply implements IConfirmableDTO
 {
 	String uuid;
 	boolean deleted;
 	long syncConfirmationId;
 
-	SyncProduct product;
+	String bpartner_uuid;
+	String product_uuid;
+	Date weekDay;
+	String trend;
+	int version;
 
-	@JsonCreator
 	@Builder(toBuilder = true)
-	public SyncContractLine(
+	@JsonCreator
+	public SyncWeeklySupply(
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
 			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
-			@JsonProperty("product") final SyncProduct product)
+			@JsonProperty("bpartner_uuid") final String bpartner_uuid,
+			@JsonProperty("product_uuid") final String product_uuid,
+			@JsonProperty("weekDay") final Date weekDay,
+			@JsonProperty("trend") final String trend,
+			@JsonProperty("version") final int version)
 	{
 		this.uuid = uuid;
 		this.deleted = deleted;
 		this.syncConfirmationId = syncConfirmationId;
 
-		this.product = product;
+		this.bpartner_uuid = bpartner_uuid;
+		this.product_uuid = product_uuid;
+		this.weekDay = weekDay;
+		this.trend = trend;
+		this.version = version;
 	}
 
 	@Override
 	public String toString()
 	{
-		return "SyncContractLine [product=" + product + "]";
+		return "SyncWeeklySupply ["
+				+ "bpartner_uuid=" + bpartner_uuid
+				+ ", product_uuid=" + product_uuid
+				+ ", weekDay=" + weekDay
+				+ ", trend=" + trend
+				+ ", uuid=" + getUuid()
+				+ ", version=" + version
+				+ "]";
 	}
 
 	@Override
-	public ISyncModel withNotDeleted()
+	public IConfirmableDTO withNotDeleted()
 	{
 		return toBuilder().deleted(false).build();
 	}

@@ -1,14 +1,14 @@
 package de.metas.procurement.base.impl;
 
 import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest.SyncProductsRequestBuilder;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest.PutProductsRequestBuilder;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
@@ -89,7 +89,7 @@ public class WebuiPush implements IWebuiPush
 			return;
 		}
 
-		final SyncBPartnersRequest syncBPartnersRequest = SyncBPartnersRequest.of(syncBPartner);
+		final PutBPartnersRequest syncBPartnersRequest = PutBPartnersRequest.of(syncBPartner);
 		agent.syncBPartners(syncBPartnersRequest);
 	}
 
@@ -107,7 +107,7 @@ public class WebuiPush implements IWebuiPush
 			return;
 		}
 
-		final SyncBPartnersRequest syncBPartnersRequest = SyncBPartnersRequest.of(syncBPartner);
+		final PutBPartnersRequest syncBPartnersRequest = PutBPartnersRequest.of(syncBPartner);
 		agent.syncBPartners(syncBPartnersRequest);
 	}
 
@@ -133,7 +133,7 @@ public class WebuiPush implements IWebuiPush
 		final IQueryBuilder<I_PMM_Product> allPMMProductsQuery = pmmProductDAO.retrievePMMProductsValidOnDateQuery(SystemTime.asTimestamp());
 		final List<I_PMM_Product> allPMMProducts = allPMMProductsQuery.create().list();
 
-		final SyncProductsRequestBuilder syncProductsRequest = SyncProductsRequest.builder();
+		final PutProductsRequestBuilder syncProductsRequest = PutProductsRequest.builder();
 
 		for (final I_PMM_Product pmmProduct : allPMMProducts)
 		{
@@ -152,7 +152,7 @@ public class WebuiPush implements IWebuiPush
 		final List<SyncBPartner> allSyncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
 
 
-		final SyncBPartnersRequest request = SyncBPartnersRequest.builder().bpartners(allSyncBPartners).build();
+		final PutBPartnersRequest request = PutBPartnersRequest.builder().bpartners(allSyncBPartners).build();
 		agent.syncBPartners(request);
 	}
 
@@ -162,7 +162,7 @@ public class WebuiPush implements IWebuiPush
 		final IAgentSync agent = getAgentSync();
 
 		final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
-		final SyncProductsRequest syncProductsRequest = SyncProductsRequest.of(syncProduct);
+		final PutProductsRequest syncProductsRequest = PutProductsRequest.of(syncProduct);
 
 		agent.syncProducts(syncProductsRequest);
 	}
@@ -174,7 +174,7 @@ public class WebuiPush implements IWebuiPush
 		final IAgentSync agent = getAgentSync();
 
 		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
-		agent.syncInfoMessage(SyncInfoMessageRequest.of(infoMessage));
+		agent.syncInfoMessage(PutInfoMessageRequest.of(infoMessage));
 	}
 
 	@Override

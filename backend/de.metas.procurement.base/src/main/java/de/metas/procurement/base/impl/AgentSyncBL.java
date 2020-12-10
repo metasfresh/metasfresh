@@ -22,15 +22,15 @@
 
 package de.metas.procurement.base.impl;
 
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncConfirmation;
-import de.metas.common.procurement.sync.protocol.SyncConfirmationRequest;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEventsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQsRequest;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutConfirmationToProcurementWebRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQCloseEventsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQsRequest;
 import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.rabbitmq.SenderToProcurementWeb;
 import lombok.NonNull;
@@ -49,19 +49,19 @@ public class AgentSyncBL implements IAgentSyncBL
 	}
 
 	@Override
-	public void syncBPartners(@NonNull final SyncBPartnersRequest request)
+	public void syncBPartners(@NonNull final PutBPartnersRequest request)
 	{
 		senderToProcurementWebUI.send(request);
 	}
 
 	@Override
-	public void syncProducts(@NonNull final SyncProductsRequest request)
+	public void syncProducts(@NonNull final PutProductsRequest request)
 	{
 		senderToProcurementWebUI.send(request);
 	}
 
 	@Override
-	public void syncInfoMessage(@NonNull final SyncInfoMessageRequest request)
+	public void syncInfoMessage(@NonNull final PutInfoMessageRequest request)
 	{
 		senderToProcurementWebUI.send(request);
 	}
@@ -69,18 +69,18 @@ public class AgentSyncBL implements IAgentSyncBL
 	@Override
 	public void confirm(@NonNull final List<SyncConfirmation> syncConfirmations)
 	{
-		senderToProcurementWebUI.send(SyncConfirmationRequest.of(syncConfirmations));
+		senderToProcurementWebUI.send(PutConfirmationToProcurementWebRequest.of(syncConfirmations));
 	}
 
 	@Override
 	public void syncRfQs(@NonNull final List<SyncRfQ> syncRfqs)
 	{
-		senderToProcurementWebUI.send(SyncRfQsRequest.of(syncRfqs));
+		senderToProcurementWebUI.send(PutRfQsRequest.of(syncRfqs));
 	}
 
 	@Override
 	public void closeRfQs(@NonNull final List<SyncRfQCloseEvent> syncRfQCloseEvents)
 	{
-		senderToProcurementWebUI.send(SyncRfQCloseEventsRequest.of(syncRfQCloseEvents));
+		senderToProcurementWebUI.send(PutRfQCloseEventsRequest.of(syncRfQCloseEvents));
 	}
 }

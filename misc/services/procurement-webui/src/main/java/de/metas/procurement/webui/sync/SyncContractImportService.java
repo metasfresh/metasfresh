@@ -1,8 +1,8 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncContract;
-import de.metas.common.procurement.sync.protocol.SyncContractLine;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.procurement.webui.event.ContractChangedEvent;
 import de.metas.procurement.webui.event.MFEventBus;
 import de.metas.procurement.webui.model.BPartner;

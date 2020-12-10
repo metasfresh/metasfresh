@@ -24,7 +24,7 @@ package de.metas.procurement.webui.sync.rabbitmq;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.common.procurement.sync.Constants;
-import de.metas.common.procurement.sync.protocol.ProcurementEvent;
+import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import de.metas.procurement.webui.sync.exception.SendSyncException;
 import lombok.NonNull;
 import org.springframework.amqp.core.Queue;
@@ -46,13 +46,13 @@ public class SenderToMetasfresh
 		this.queue = queue;
 	}
 
-	public void send(@NonNull final ProcurementEvent procurementEvent)
+	public void send(@NonNull final RequestToMetasfresh procurementEvent)
 	{
 		final String message = convertToString(procurementEvent);
 		rabbitTemplate.convertAndSend(queue.getName(), message);
 	}
 
-	private String convertToString(@NonNull final ProcurementEvent procurementEvent)
+	private String convertToString(@NonNull final RequestToMetasfresh procurementEvent)
 	{
 		try
 		{

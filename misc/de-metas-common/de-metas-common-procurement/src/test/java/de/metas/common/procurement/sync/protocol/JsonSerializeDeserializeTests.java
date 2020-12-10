@@ -24,6 +24,31 @@ package de.metas.common.procurement.sync.protocol;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.procurement.sync.Constants;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQPriceChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQQtyChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutConfirmationToMetasfreshRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutConfirmationToProcurementWebRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQCloseEventsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQsRequest;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -39,14 +64,14 @@ public class JsonSerializeDeserializeTests
 	@Test
 	void syncConfirmRequest() throws Exception
 	{
-		assertOK(SyncConfirmationRequest.builder()
+		assertRequestToMetasfreshOK(PutConfirmationToMetasfreshRequest.builder()
 						.syncConfirmation(SyncConfirmation.forConfirmId(23L))
 						.syncConfirmation(SyncConfirmation.builder()
 								.confirmId(24L)
 								.dateConfirmed(new Date())
 								.serverEventId("serverEventId").build())
 						.build(),
-				SyncConfirmationRequest.class);
+				PutConfirmationToMetasfreshRequest.class);
 	}
 
 	@Test
@@ -68,7 +93,7 @@ public class JsonSerializeDeserializeTests
 						.build())
 				.syncConfirmationId(23L)
 				.build();
-		assertOK(SyncBPartnersRequest.of(syncBPartner), SyncBPartnersRequest.class);
+		assertRequestToProcurementWebOK(PutBPartnersRequest.of(syncBPartner), PutBPartnersRequest.class);
 	}
 
 	@Test
@@ -81,40 +106,51 @@ public class JsonSerializeDeserializeTests
 				.uuid("uuid")
 				.build();
 
-		assertOK(SyncProductsRequest.of(syncProduct), SyncProductsRequest.class);
+		assertRequestToProcurementWebOK(PutProductsRequest.of(syncProduct), PutProductsRequest.class);
 	}
 
 	@Test
 	void syncInfoMessage() throws IOException
 	{
-		final SyncInfoMessageRequest syncInfoMessageRequest = SyncInfoMessageRequest.of("String");
+		final PutInfoMessageRequest syncInfoMessageRequest = PutInfoMessageRequest.of("String");
 
-		assertOK(syncInfoMessageRequest, SyncInfoMessageRequest.class);
+		assertRequestToProcurementWebOK(syncInfoMessageRequest, PutInfoMessageRequest.class);
 	}
 
 	@Test
-	void confirm() throws IOException
+	void confirmToMetasfresh() throws IOException
 	{
-		final SyncConfirmationRequest syncConfirmationRequest = SyncConfirmationRequest.builder()
+		final PutConfirmationToMetasfreshRequest syncConfirmationRequest = PutConfirmationToMetasfreshRequest.builder()
 				.syncConfirmation(SyncConfirmation.forConfirmId(23L))
 				.syncConfirmation(SyncConfirmation.forConfirmId(24L))
 				.build();
 
-		assertOK(syncConfirmationRequest, SyncConfirmationRequest.class);
+		assertRequestToMetasfreshOK(syncConfirmationRequest, PutConfirmationToMetasfreshRequest.class);
+	}
+
+	@Test
+	void confirmToProcurementWeb() throws IOException
+	{
+		final PutConfirmationToProcurementWebRequest syncConfirmationRequest = PutConfirmationToProcurementWebRequest.builder()
+				.syncConfirmation(SyncConfirmation.forConfirmId(23L))
+				.syncConfirmation(SyncConfirmation.forConfirmId(24L))
+				.build();
+
+		assertRequestToProcurementWebOK(syncConfirmationRequest, PutConfirmationToProcurementWebRequest.class);
 	}
 
 	@Test
 	void syncRfQsRequest() throws IOException
 	{
-		final SyncRfQsRequest syncRfQsRequest = SyncRfQsRequest.builder().syncRfq(SyncRfQ.builder().build()).build();
+		final PutRfQsRequest syncRfQsRequest = PutRfQsRequest.builder().syncRfq(SyncRfQ.builder().build()).build();
 
-		assertOK(syncRfQsRequest, SyncRfQsRequest.class);
+		assertRequestToProcurementWebOK(syncRfQsRequest, PutRfQsRequest.class);
 	}
 
 	@Test
 	void syncRfQCloseEventsRequest() throws IOException
 	{
-		final SyncRfQCloseEventsRequest syncRfQCloseEventsRequest = SyncRfQCloseEventsRequest.builder()
+		final PutRfQCloseEventsRequest syncRfQCloseEventsRequest = PutRfQCloseEventsRequest.builder()
 				.syncRfQCloseEvent(SyncRfQCloseEvent.builder()
 						.winnerKnown(true)
 						.rfq_uuid("rfq_uuid")
@@ -130,7 +166,7 @@ public class JsonSerializeDeserializeTests
 						.build())
 				.build();
 
-		assertOK(syncRfQCloseEventsRequest, SyncRfQCloseEventsRequest.class);
+		assertRequestToProcurementWebOK(syncRfQCloseEventsRequest, PutRfQCloseEventsRequest.class);
 	}
 
 	//
@@ -139,7 +175,7 @@ public class JsonSerializeDeserializeTests
 	@Test
 	void syncWeeklySupplyRequest() throws IOException
 	{
-		final SyncWeeklySupplyRequest syncWeeklySupplyRequest = SyncWeeklySupplyRequest.builder()
+		final PutWeeklySupplyRequest syncWeeklySupplyRequest = PutWeeklySupplyRequest.builder()
 				.weeklySupply(SyncWeeklySupply.builder()
 						.weekDay(new Date())
 						.trend("trend")
@@ -150,13 +186,13 @@ public class JsonSerializeDeserializeTests
 						.build())
 				.build();
 
-		assertOK(syncWeeklySupplyRequest, SyncWeeklySupplyRequest.class);
+		assertRequestToMetasfreshOK(syncWeeklySupplyRequest, PutWeeklySupplyRequest.class);
 	}
 
 	@Test
 	void syncProductSuppliesRequest() throws IOException
 	{
-		final SyncProductSuppliesRequest syncProductSuppliesRequest = SyncProductSuppliesRequest.of(SyncProductSupply.builder()
+		final PutProductSuppliesRequest syncProductSuppliesRequest = PutProductSuppliesRequest.of(SyncProductSupply.builder()
 				.version(1)
 				.qty(BigDecimal.TEN)
 				.uuid("uuid")
@@ -167,13 +203,13 @@ public class JsonSerializeDeserializeTests
 				.contractLine_uuid("contractLine_uuid")
 				.build());
 
-		assertOK(syncProductSuppliesRequest, SyncProductSuppliesRequest.class);
+		assertRequestToMetasfreshOK(syncProductSuppliesRequest, PutProductSuppliesRequest.class);
 	}
 
 	@Test
 	void syncRfQChangeRequest() throws IOException
 	{
-		final SyncRfQChangeRequest syncRfQChangeRequest = SyncRfQChangeRequest.builder()
+		final PutRfQChangeRequest syncRfQChangeRequest = PutRfQChangeRequest.builder()
 				.priceChangeEvent(SyncRfQPriceChangeEvent.builder()
 						.product_uuid("product_uuid")
 						.syncConfirmationId(10L)
@@ -193,34 +229,44 @@ public class JsonSerializeDeserializeTests
 						.build())
 				.build();
 
-		assertOK(syncRfQChangeRequest, SyncRfQChangeRequest.class);
+		assertRequestToMetasfreshOK(syncRfQChangeRequest, PutRfQChangeRequest.class);
 	}
 
 	@Test
 	void getAllBPartnersRequest() throws IOException
 	{
-		assertOK(GetAllBPartnersRequest.INSTANCE, GetAllBPartnersRequest.class);
+		assertRequestToMetasfreshOK(GetAllBPartnersRequest.INSTANCE, GetAllBPartnersRequest.class);
 	}
 
 	@Test
 	void getAllProductsRequest() throws IOException
 	{
-		assertOK(GetAllProductsRequest.INSTANCE, GetAllProductsRequest.class);
+		assertRequestToMetasfreshOK(GetAllProductsRequest.INSTANCE, GetAllProductsRequest.class);
 	}
 
 	@Test
 	void getInfoMessageRequest() throws IOException
 	{
-		assertOK(GetInfoMessageRequest.INSTANCE, GetInfoMessageRequest.class);
+		assertRequestToMetasfreshOK(GetInfoMessageRequest.INSTANCE, GetInfoMessageRequest.class);
 	}
 
-	private <T> void assertOK(final T objectOrig, final Class<T> valueType) throws IOException
+	private <T> void assertRequestToProcurementWebOK(final T objectOrig, final Class<T> valueType) throws IOException
+	{
+		assertRequestOK(objectOrig, valueType, RequestToProcurementWeb.class);
+	}
+
+	private <T> void assertRequestToMetasfreshOK(final T objectOrig, final Class<T> valueType) throws IOException
+	{
+		assertRequestOK(objectOrig, valueType, RequestToMetasfresh.class);
+	}
+
+	private <T> void assertRequestOK(final T objectOrig, final Class<T> valueType, final Class<?> requestSuperType) throws IOException
 	{
 		final String jsonString = jsonObjectMapper.writeValueAsString(objectOrig);
 		assertThat(jsonString).isNotEmpty();
 
 		// when
-		final ProcurementEvent object = jsonObjectMapper.readValue(jsonString, ProcurementEvent.class);
+		final Object object = jsonObjectMapper.readValue(jsonString, requestSuperType);
 
 		// then
 		assertThat(object).isInstanceOf(valueType);

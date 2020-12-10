@@ -1,6 +1,6 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
 import de.metas.procurement.webui.service.ISettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -38,7 +38,7 @@ public class SyncSettingsImportService extends AbstractSyncImportService
 	@Lazy
 	private ISettingsService settingsService;
 
-	public void importSyncInfoMessage(final SyncInfoMessageRequest request)
+	public void importSyncInfoMessage(final PutInfoMessageRequest request)
 	{
 		// logger.debug("Importing: {}", request);
 		settingsService.setInfoMessage(request.getMessage());

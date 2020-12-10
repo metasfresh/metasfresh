@@ -7,13 +7,13 @@ import com.google.gwt.thirdparty.guava.common.cache.LoadingCache;
 import com.google.gwt.thirdparty.guava.common.util.concurrent.ListenableFuture;
 import com.google.gwt.thirdparty.guava.common.util.concurrent.SettableFuture;
 import de.metas.common.procurement.sync.IServerSync;
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductSupply;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.procurement.webui.util.DummyDataProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +93,7 @@ public class MockedTestServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportProductSupplies(final SyncProductSuppliesRequest request)
+	public void reportProductSupplies(final PutProductSuppliesRequest request)
 	{
 		logger.info("Got {}", request);
 
@@ -131,7 +131,7 @@ public class MockedTestServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportWeekSupply(final SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(final PutWeeklySupplyRequest request)
 	{
 		logger.info("Got {}", request);
 		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
@@ -186,7 +186,7 @@ public class MockedTestServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportRfQChanges(SyncRfQChangeRequest request)
+	public void reportRfQChanges(PutRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);
 	}

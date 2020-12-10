@@ -20,16 +20,21 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.dto;
 
-import lombok.Value;
-
-@Value
-public class GetInfoMessageRequest extends ProcurementEvent
+public interface IConfirmableDTO
 {
-	public static final GetInfoMessageRequest INSTANCE = new GetInfoMessageRequest();
+	String getUuid();
 
-	private GetInfoMessageRequest()
-	{
-	}
+	boolean isDeleted();
+
+	IConfirmableDTO withNotDeleted();
+
+	/**
+	 * If greater than zero, then the sender requests a confirmation, using this ID.<br>
+	 * The confirmation shall be generated using {@link SyncConfirmation#forConfirmId(long)}, using the ID returned by this method.
+	 *
+	 * task https://metasfresh.atlassian.net/browse/FRESH-206
+	 */
+	long getSyncConfirmationId();
 }

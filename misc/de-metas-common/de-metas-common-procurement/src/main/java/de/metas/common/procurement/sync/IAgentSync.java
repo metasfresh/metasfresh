@@ -22,17 +22,18 @@
 
 package de.metas.common.procurement.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.SyncConfirmation;
-import de.metas.common.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQ;
-import de.metas.common.procurement.sync.protocol.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 
 import java.util.List;
 
 /**
- * This is implemented in the procurementUI (agent) and called according to {@link de.metas.common.procurement.sync.protocol.ProcurementEvent}s received from metasfresh.
+ * This is implemented in the procurementUI (agent) and called according to {@link RequestToProcurementWeb}s received from metasfresh.
  * <p>
  * Note that currently we don't have to use the Consumes and Produces annotations, because we specify those types in the client.
  *
@@ -40,11 +41,11 @@ import java.util.List;
  */
 public interface IAgentSync
 {
-	void syncBPartners(SyncBPartnersRequest request);
+	void syncBPartners(PutBPartnersRequest request);
 
-	void syncProducts(SyncProductsRequest request);
+	void syncProducts(PutProductsRequest request);
 
-	void syncInfoMessage(SyncInfoMessageRequest request);
+	void syncInfoMessage(PutInfoMessageRequest request);
 
 	void confirm(List<SyncConfirmation> syncConfirmations);
 

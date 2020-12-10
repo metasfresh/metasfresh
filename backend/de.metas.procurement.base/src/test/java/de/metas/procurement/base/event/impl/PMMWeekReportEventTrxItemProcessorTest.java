@@ -1,8 +1,8 @@
 package de.metas.procurement.base.event.impl;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.impl.SyncUUIDs;
 import de.metas.procurement.base.model.I_PMM_Product;
@@ -157,12 +157,12 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final SyncWeeklySupply syncWeeklySupply1 = createWeeklySupply(pmmProduct, bpartner, weekDate).toBuilder()
 				.trend(X_PMM_WeekReport_Event.PMM_TREND_Up)
 				.build();
-		serverSyncBL.reportWeekSupply(SyncWeeklySupplyRequest.of(syncWeeklySupply1));
+		serverSyncBL.reportWeekSupply(PutWeeklySupplyRequest.of(syncWeeklySupply1));
 
 		final SyncWeeklySupply syncWeeklySupply2 = createWeeklySupply(pmmProduct, bpartner, weekDate).toBuilder()
 				.trend(X_PMM_WeekReport_Event.PMM_TREND_Down)
 				.build();
-		serverSyncBL.reportWeekSupply(SyncWeeklySupplyRequest.of(syncWeeklySupply2));
+		serverSyncBL.reportWeekSupply(PutWeeklySupplyRequest.of(syncWeeklySupply2));
 
 		//
 		// Mark all previously reported events as processed, to prevent them from processing
@@ -186,7 +186,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final SyncWeeklySupply syncWeeklySupply3 = createWeeklySupply(pmmProduct, bpartner, weekDate).toBuilder()
 				.trend(X_PMM_WeekReport_Event.PMM_TREND_Zero)
 				.build();
-		serverSyncBL.reportWeekSupply(SyncWeeklySupplyRequest.of(syncWeeklySupply3));
+		serverSyncBL.reportWeekSupply(PutWeeklySupplyRequest.of(syncWeeklySupply3));
 		PMMWeekReportEventsProcessor.newInstance().processAll();
 		//
 		//@formatter:off
@@ -224,7 +224,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 
 	private void reportAndProcess(final SyncWeeklySupply syncWeeklySupply)
 	{
-		serverSyncBL.reportWeekSupply(SyncWeeklySupplyRequest.of(syncWeeklySupply));
+		serverSyncBL.reportWeekSupply(PutWeeklySupplyRequest.of(syncWeeklySupply));
 
 		//
 		// Process all events

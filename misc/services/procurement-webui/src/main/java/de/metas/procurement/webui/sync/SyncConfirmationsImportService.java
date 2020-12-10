@@ -1,6 +1,6 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
 import de.metas.procurement.webui.model.SyncConfirm;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import org.slf4j.Logger;

@@ -22,11 +22,11 @@
 
 package de.metas.common.procurement.sync;
 
-import de.metas.common.procurement.sync.protocol.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.SyncProduct;
-import de.metas.common.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.common.procurement.sync.protocol.SyncWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 
 import java.util.List;
 
@@ -53,12 +53,12 @@ public interface IServerSync
 	/**
 	 * Report a product supply to metasfresh. Create <code>PMM_QtyReport_Event</code>.
 	 */
-	void reportProductSupplies(SyncProductSuppliesRequest request);
+	void reportProductSupplies(PutProductSuppliesRequest request);
 
 	/**
 	 * Report the supplier's forecast.
 	 */
-	void reportWeekSupply(SyncWeeklySupplyRequest request);
+	void reportWeekSupply(PutWeeklySupplyRequest request);
 	
-	void reportRfQChanges(SyncRfQChangeRequest request);
+	void reportRfQChanges(PutRfQChangeRequest request);
 }

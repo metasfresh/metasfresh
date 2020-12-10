@@ -20,51 +20,40 @@
  * #L%
  */
 
-package de.metas.common.procurement.sync.protocol;
+package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Value
-public class SyncConfirmationRequest extends ProcurementEvent
+public class PutRfQCloseEventsRequest extends RequestToProcurementWeb
 {
-	public static SyncConfirmationRequest of(@NonNull final List<SyncConfirmation> syncConfirmations)
+	public static PutRfQCloseEventsRequest of(@NonNull final List<SyncRfQCloseEvent> syncRfQCloseEvents)
 	{
-		return SyncConfirmationRequest.builder().syncConfirmations(syncConfirmations).build();
+		return PutRfQCloseEventsRequest.builder().syncRfQCloseEvents(syncRfQCloseEvents).build();
 	}
 
-	List<SyncConfirmation> syncConfirmations;
+	List<SyncRfQCloseEvent> syncRfQCloseEvents;
 
 	@Builder
 	@JsonCreator
-	private SyncConfirmationRequest(@JsonProperty("syncConfirmations") @Singular final List<SyncConfirmation> syncConfirmations)
+	public PutRfQCloseEventsRequest(@JsonProperty("syncRfQCloseEvents") @Singular final List<SyncRfQCloseEvent> syncRfQCloseEvents)
 	{
-		this.syncConfirmations = new ArrayList<>(syncConfirmations);
+		this.syncRfQCloseEvents = syncRfQCloseEvents;
 	}
 
 	@JsonIgnore
 	public boolean isEmpty()
 	{
-		return syncConfirmations.isEmpty();
-	}
-
-	@JsonIgnore
-	public void add(SyncConfirmation syncConfirmation)
-	{
-		syncConfirmations.add(syncConfirmation);
-	}
-
-	@JsonIgnore
-	public void clear()
-	{
-		syncConfirmations.clear();
+		return syncRfQCloseEvents.isEmpty();
 	}
 }
