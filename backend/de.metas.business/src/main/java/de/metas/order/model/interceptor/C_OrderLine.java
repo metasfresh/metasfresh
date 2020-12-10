@@ -6,8 +6,10 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
@@ -77,6 +79,7 @@ public class C_OrderLine
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
 	{
@@ -144,6 +147,11 @@ public class C_OrderLine
 	})
 	public void checkHaddexDate(final I_C_OrderLine orderLine)
 	{
+		if (!orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID())).isSOTrx())
+		{
+			return;
+		}
+
 		final I_M_Product product = productDAO.getById(orderLine.getM_Product_ID());
 
 		if (product.isHaddexCheck() && product.getDateHaddexCheck() != null)
