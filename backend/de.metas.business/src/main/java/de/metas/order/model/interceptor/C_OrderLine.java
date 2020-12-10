@@ -2,6 +2,7 @@ package de.metas.order.model.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -10,6 +11,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -24,13 +26,17 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -66,6 +72,11 @@ public class C_OrderLine
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
+	private static final String SYS_CONFIG_MAX_HADDEX_AGE = "MAX_HADDEX_AGE";
+	private static final String MSG_HADDEX_CHECK_ERROR = "de.metas.base.producthadexerror";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
 	{
@@ -124,6 +135,32 @@ public class C_OrderLine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
 		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void checkHaddexDate(final I_C_OrderLine orderLine)
+	{
+		final I_M_Product product = productDAO.getById(orderLine.getM_Product_ID());
+
+		if (product.isHaddexCheck() && product.getDateHaddexCheck() != null)
+		{
+			final long hadexAllowedDifference = Math.abs(ChronoUnit.MONTHS.between(SystemTime.asZonedDateTime(),
+					TimeUtil.asZonedDateTime(product.getDateHaddexCheck())));
+			if (hadexAllowedDifference > getMaxHaddexAge(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID()))
+			{
+				throw new AdempiereException(MSG_HADDEX_CHECK_ERROR).markAsUserValidationError();
+			}
+		}
+
+	}
+
+	private int getMaxHaddexAge(int clientID, int orgID)
+	{
+		return sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE, 1000, clientID, orgID);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
