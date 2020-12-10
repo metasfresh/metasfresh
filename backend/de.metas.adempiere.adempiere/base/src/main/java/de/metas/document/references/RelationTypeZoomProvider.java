@@ -310,7 +310,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 						.append(originTableName)
 						.append(".")
 						.append(originRecordIdName);
-				if (whereClause != null)
+				if (Check.isNotBlank(whereClause))
 				{
 					queryWhereClause.append(" AND ").append(whereClause);
 				}
