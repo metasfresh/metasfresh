@@ -27,7 +27,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -95,12 +94,12 @@ public class InvoiceService
 			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
 
 			result.lineInfo(JSONInvoiceLineInfo.builder()
-									.line_number(line.getLine())
-									.product_name(productName)
-									.qty_invoiced(line.getQtyEntered())
+									.lineNumber(line.getLine())
+									.productName(productName)
+									.qtyInvoiced(line.getQtyEntered())
 									.price(line.getPriceEntered())
-									.tax_rate(taxRate)
-									.line_net_amt(line.getLineNetAmt())
+									.taxRate(taxRate)
+									.lineNetAmt(line.getLineNetAmt())
 									.currency(currency)
 									.build());
 		}

@@ -63,12 +63,12 @@ public class JSONInvoiceInfoResponse
 @JsonDeserialize(builder = JSONInvoiceLineInfo.JSONInvoiceLineInfoBuilder.class)
 class JSONInvoiceLineInfo
 {
-	int line_number;
-	String product_name;
-	BigDecimal qty_invoiced;
+	int lineNumber;
+	String productName;
+	BigDecimal qtyInvoiced;
 	BigDecimal price;
-	Percent tax_rate;
-	BigDecimal line_net_amt;
+	Percent taxRate;
+	BigDecimal lineNetAmt;
 	CurrencyCode currency;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

@@ -38,12 +38,12 @@ class JSONInvoiceInfoResponseTest
 	{
 		final JSONInvoiceInfoResponse expected = JSONInvoiceInfoResponse.builder()
 				.lineInfo(JSONInvoiceLineInfo.builder()
-								  .line_number(1234)
-								  .product_name("the product name")
-								  .qty_invoiced(BigDecimal.valueOf(12))
+								  .lineNumber(1234)
+								  .productName("the product name")
+								  .qtyInvoiced(BigDecimal.valueOf(12))
 								  .price(BigDecimal.valueOf(34))
-								  .tax_rate(Percent.of(56))
-								  .line_net_amt(BigDecimal.valueOf(78))
+								  .taxRate(Percent.of(56))
+								  .lineNetAmt(BigDecimal.valueOf(78))
 								  .currency(CurrencyCode.ofThreeLetterCode("ZAR"))
 								  .build())
 				.build();
