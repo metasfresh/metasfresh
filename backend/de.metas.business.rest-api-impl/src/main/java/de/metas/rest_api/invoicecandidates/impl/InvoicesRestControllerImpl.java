@@ -148,7 +148,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		{
 			return ResponseEntity.notFound().build();
 		}
-		Env.getAD_Language();
+
 		final Optional<byte[]> invoicePDF = invoiceService.getInvoicePDF(invoiceId);
 
 		if (invoicePDF.isPresent())
