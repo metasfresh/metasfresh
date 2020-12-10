@@ -7,7 +7,7 @@
  *  - second click on the row it will close the edit mode
  *
  */
-import React, { PureComponent } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -86,6 +86,7 @@ class InlineTab extends PureComponent {
       data,
       fieldsByName,
       validStatus,
+      fieldsOrder,
     } = this.props;
     const valid = validStatus ? validStatus.valid : true;
     const { isOpen, promptOpen } = this.state;
@@ -106,6 +107,14 @@ class InlineTab extends PureComponent {
           </div>
           {/* Header  */}
           <div className="pull-left offset-left">
+            {fieldsOrder.map((fieldKey, index) => {
+              return (
+                <Fragment key={`${fieldKey}_${index}`}>
+                  <span>{fieldsByName[fieldKey].value}</span>
+                  <span>&nbsp;&nbsp;</span>
+                </Fragment>
+              );
+            })}
             <span>{fieldsByName.Name.value}</span>&nbsp;&nbsp;
             <span>{fieldsByName.Address.value}</span>
           </div>
@@ -175,6 +184,7 @@ InlineTab.propTypes = {
   validStatus: PropTypes.object,
   getInlineTabLayoutAndData: PropTypes.func.isRequired,
   updateTable: PropTypes.func,
+  fieldsOrder: PropTypes.array.isRequired,
 };
 
 /**

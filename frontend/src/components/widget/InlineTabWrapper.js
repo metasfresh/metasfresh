@@ -104,6 +104,23 @@ class InlineTabWrapper extends PureComponent {
     });
   };
 
+  /**
+   * @method getFieldsDisplayOrder
+   * @summanry - function used to get the order from the `elements` array of the `inlineTab`
+   *             currently we are getting the first four. In future development this might be refactored for
+   *             more specific ordering
+   * @param {array} inlineTab
+   */
+  getFieldsDisplayOrder = (inlineTab) => {
+    const { elements } = inlineTab;
+    const orderFields = [];
+    elements.map((elementItem, index) => {
+      if (index < 4) orderFields.push(elementItem.fields[0].field);
+      return elementItem;
+    });
+    return orderFields;
+  };
+
   render() {
     const {
       widgetData,
@@ -114,9 +131,12 @@ class InlineTabWrapper extends PureComponent {
       inlineTab: { tabId },
       dataId,
       showMore,
+      inlineTab,
     } = this.props;
     const { caption } = widgetData;
     if (!tabData) return false;
+
+    const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(inlineTab);
 
     return (
       <div className="inline-tab-wrapper">
@@ -130,7 +150,7 @@ class InlineTabWrapper extends PureComponent {
               return (
                 <InlineTab
                   key={`${index}_${tabItem.rowId}`}
-                  parent={this.props}
+                  fieldsOrder={inlineFieldsDisplayOrder}
                   updateTable={this.updateTable}
                   {...tabItem}
                 />
