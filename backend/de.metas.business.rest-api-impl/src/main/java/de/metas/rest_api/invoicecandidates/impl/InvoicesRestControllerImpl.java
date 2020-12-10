@@ -1,6 +1,8 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.invoice.InvoiceId;
 import de.metas.rest_api.invoice.impl.InvoiceService;
 import de.metas.rest_api.invoice.impl.JSONInvoiceInfoResponse;
@@ -20,6 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.compiere.util.Env;
+import org.compiere.util.Trace;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -182,9 +185,16 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language());
 			return ResponseEntity.ok(invoiceInfo);
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			return ResponseEntity.unprocessableEntity().body(e.getLocalizedMessage());
+			final JsonError error = JsonError.ofSingleItem(
+					JsonErrorItem.builder()
+							.message(ex.getLocalizedMessage())
+							.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
+							.throwable(ex)
+							.build());
+
+			return ResponseEntity.unprocessableEntity().body(error);
 		}
 	}
 
@@ -207,9 +217,16 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 					? ResponseEntity.ok(response.get())
 					: ResponseEntity.notFound().build();
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			return ResponseEntity.unprocessableEntity().body(e.getLocalizedMessage());
+			final JsonError error = JsonError.ofSingleItem(
+					JsonErrorItem.builder()
+							.message(ex.getLocalizedMessage())
+							.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
+							.throwable(ex)
+							.build());
+
+			return ResponseEntity.unprocessableEntity().body(error);
 		}
 	}
 }
