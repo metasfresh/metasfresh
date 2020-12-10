@@ -147,13 +147,15 @@ class InlineTabWrapper extends PureComponent {
             if (showMore && index >= INLINE_TAB_SHOW_MORE_FROM) {
               return false;
             } else {
-              return (
+              return tabItem ? (
                 <InlineTab
                   key={`${index}_${tabItem.rowId}`}
                   fieldsOrder={inlineFieldsDisplayOrder}
                   updateTable={this.updateTable}
                   {...tabItem}
                 />
+              ) : (
+                false
               );
             }
           })}

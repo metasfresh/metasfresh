@@ -72,9 +72,9 @@ class InlineTab extends PureComponent {
   handlePromptDelete = () => {
     this.setState({ promptOpen: false });
     const { windowId, id: docId, tabId, rowId, updateTable } = this.props;
-    deleteRequest('window', windowId, docId, tabId, rowId).then(() =>
-      updateTable()
-    );
+    deleteRequest('window', windowId, docId, tabId, rowId).then(() => {
+      updateTable();
+    });
   };
 
   render() {
@@ -185,6 +185,7 @@ InlineTab.propTypes = {
   getInlineTabLayoutAndData: PropTypes.func.isRequired,
   updateTable: PropTypes.func,
   fieldsOrder: PropTypes.array.isRequired,
+  updateDataValidStatus: PropTypes.func.isRequired,
 };
 
 /**
