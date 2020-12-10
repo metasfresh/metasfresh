@@ -1,7 +1,19 @@
 package org.adempiere.process;
 
-import java.sql.Timestamp;
-
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,19 +25,13 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.sql.Timestamp;
 
-public final class OrderCreateNewFromProposal extends JavaProcess 
+public final class OrderCreateNewFromProposal extends JavaProcess  implements IProcessPrecondition
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
 	private MOrder sourceOrder;
 
@@ -152,4 +158,24 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		}
 	}
 
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+
+		final OrderId quotationId = OrderId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
+		if (quotationId == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no document selected");
+		}
+
+		final I_C_Order quotation = ordersRepo.getById(quotationId);
+
+		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(quotation.getDocStatus());
+		if (!quotationDocStatus.isCompleted())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a completed quotation");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 }
