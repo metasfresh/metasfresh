@@ -108,7 +108,7 @@ class InlineTabWrapper extends PureComponent {
    * @method getFieldsDisplayOrder
    * @summanry - function used to get the order from the `elements` array of the `inlineTab`
    *             currently we are getting the first four. In future development this might be refactored for
-   *             more specific ordering
+   *             more specific ordering. This is the reason I did not even put that in a constant.
    * @param {array} inlineTab
    */
   getFieldsDisplayOrder = (inlineTab) => {
