@@ -259,6 +259,7 @@
     height: calc(100% - 55px);
     background-color: #fff;
     z-index: 99;
+    overflow-y: auto;
 
     &.container-fluid {
         height: calc(100% - 55px);
@@ -323,6 +324,12 @@
     .inlinetab-showmore {
       float: right;
     }
+    .bottom-offset {
+      margin-bottom: 5px;
+    }
+}
+.inline-tab-fullscreen-top-offset {
+  padding-top: 20px !important;
 }
 .inline-tab {
     background: #E3E1E2;

@@ -26,6 +26,7 @@ import {
 } from '../../actions/InlineTabActions';
 import SectionGroup from '../SectionGroup';
 import counterpart from 'counterpart';
+import classnames from 'classnames';
 import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
 
 class InlineTabWrapper extends PureComponent {
@@ -145,8 +146,29 @@ class InlineTabWrapper extends PureComponent {
     const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(inlineTab);
 
     return (
-      <div className="inline-tab-wrapper">
+      <div
+        className={classnames('inline-tab-wrapper', {
+          'tabs-fullscreen container-fluid inline-tab-fullscreen-top-offset':
+            !showMore &&
+            !addNewFormVisible &&
+            tabData.length > INLINE_TAB_SHOW_MORE_FROM,
+        })}
+      >
         <span className="main-label">{caption}</span>
+        {/* `Show less` - button */}
+        {!showMore &&
+          !addNewFormVisible &&
+          tabData.length > INLINE_TAB_SHOW_MORE_FROM && (
+            <div className="inlinetab-showmore bottom-offset">
+              <button
+                className="btn-icon btn-meta-outline-secondary pointer btn-fullscreen"
+                onClick={this.toggleShowMore}
+              >
+                <i className="meta-icon-fullscreen" />
+              </button>
+            </div>
+          )}
+
         {/* InlineTab Row Items */}
         {tabData &&
           tabData.map((tabItem, index) => {
@@ -183,15 +205,6 @@ class InlineTabWrapper extends PureComponent {
             )}
             {/* `Show more...` - button */}
             {showMore && !addNewFormVisible && (
-              // <div className="inlinetab-action-button">
-              //   <button
-              //     className="btn btn-meta-outline-secondary btn-distance btn-sm"
-              //     onClick={this.toggleShowMore}
-              //   >
-              //     {counterpart.translate('window.inlineTab.showMore')}
-              //   </button>
-              //   <div className="clearfix" />
-              // </div>
               <div className="inlinetab-showmore">
                 <button
                   className="btn-icon btn-meta-outline-secondary pointer btn-fullscreen"
@@ -201,21 +214,6 @@ class InlineTabWrapper extends PureComponent {
                 </button>
               </div>
             )}
-
-            {/* `Show less` - button */}
-            {!showMore &&
-              !addNewFormVisible &&
-              tabData.length > INLINE_TAB_SHOW_MORE_FROM && (
-                <div className="inlinetab-action-button">
-                  <button
-                    className="btn btn-meta-outline-secondary btn-distance btn-sm"
-                    onClick={this.toggleShowMore}
-                  >
-                    {counterpart.translate('window.inlineTab.showLess')}
-                  </button>
-                  <div className="clearfix" />
-                </div>
-              )}
           </div>
           {/* Actual form */}
           {addNewFormVisible && rowId && addNewData && (
