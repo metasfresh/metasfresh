@@ -145,7 +145,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2020-12-10T12:29:17.902Z
 -- URL zum Konzept
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541350,'O',TO_TIMESTAMP('2020-12-10 14:29:17','YYYY-MM-DD HH24:MI:SS'),100,'If the current date - the value from the haddex date column of a product is bigger than the value from this sys config that product can''t be added to a sales orderline','D','Y','MAX_HADDEX_AGE',TO_TIMESTAMP('2020-12-10 14:29:17','YYYY-MM-DD HH24:MI:SS'),100,'100')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541350,'O',TO_TIMESTAMP('2020-12-10 14:29:17','YYYY-MM-DD HH24:MI:SS'),100,'If the current date - the value from the haddex date column of a product is bigger than the value from this sys config that product can''t be added to a sales orderline','D','Y','MAX_HADDEX_AGE_IN_MONTHS',TO_TIMESTAMP('2020-12-10 14:29:17','YYYY-MM-DD HH24:MI:SS'),100,'100')
 ;
 
 -- 2020-12-10T12:50:10.299Z

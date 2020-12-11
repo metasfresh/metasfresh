@@ -74,7 +74,7 @@ public class C_OrderLine
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
-	private static final String SYS_CONFIG_MAX_HADDEX_AGE = "MAX_HADDEX_AGE";
+	private static final String SYS_CONFIG_MAX_HADDEX_AGE = "MAX_HADDEX_AGE_IN_MONTHS";
 	private static final String MSG_HADDEX_CHECK_ERROR = "de.metas.base.producthadexerror";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
