@@ -259,7 +259,7 @@
     height: calc(100% - 55px);
     background-color: #fff;
     z-index: 99;
-    overflow-y: auto;
+    overflow-y: overlay;
 
     &.container-fluid {
         height: calc(100% - 55px);
