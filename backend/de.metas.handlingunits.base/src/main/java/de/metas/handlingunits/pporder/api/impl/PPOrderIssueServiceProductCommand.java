@@ -216,6 +216,16 @@ class PPOrderIssueServiceProductCommand
 		{
 			final ArrayList<I_M_HU> singleItemHUs = new ArrayList<>();
 
+			final CreateReceiptCandidateRequest.CreateReceiptCandidateRequestBuilder createReceiptCandidateRequestTemplate = CreateReceiptCandidateRequest.builder()
+					.orderId(PPOrderId.ofRepoId(finishedGoodsReceiveCandidate.getPP_Order_ID()))
+					.orgId(OrgId.ofRepoId(finishedGoodsReceiveCandidate.getAD_Org_ID()))
+					.date(date)
+					.locatorId(IHandlingUnitsBL.extractLocatorId(hu))
+					.productId(finishedGoodProductId)
+					.qtyToReceive(Quantity.of(1, uomEach))
+					//.topLevelHUId(...)
+					;
+
 			// Extract CUs of 1 item each,
 			// but leave one item in the original HU
 			for (int i = 1; i <= huQty - 1; i++)
@@ -230,19 +240,20 @@ class PPOrderIssueServiceProductCommand
 
 				singleItemHUs.add(extractedHU);
 
-				ppOrderQtyDAO.save(CreateReceiptCandidateRequest.builder()
-						.orderId(PPOrderId.ofRepoId(finishedGoodsReceiveCandidate.getPP_Order_ID()))
-						.orgId(OrgId.ofRepoId(finishedGoodsReceiveCandidate.getAD_Org_ID()))
-						.date(date)
-						.locatorId(IHandlingUnitsBL.extractLocatorId(hu))
+				ppOrderQtyDAO.save(createReceiptCandidateRequestTemplate
 						.topLevelHUId(HuId.ofRepoId(extractedHU.getM_HU_ID()))
-						.productId(finishedGoodProductId)
-						.qtyToReceive(Quantity.of(1, uomEach))
 						.build());
 			}
 
+			// delete the original candidate, we no longer need it
+			// NOTE: we have to delete it first and then create the new link because of the unique constraint on (PP_Order_ID, M_HU_ID).
+			ppOrderQtyDAO.delete(finishedGoodsReceiveCandidate);
+
 			// add (as first item) our original HU which we assume it has only one item left into it
 			singleItemHUs.add(0, hu);
+			ppOrderQtyDAO.save(createReceiptCandidateRequestTemplate
+					.topLevelHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.build());
 
 			return singleItemHUs;
 		}
