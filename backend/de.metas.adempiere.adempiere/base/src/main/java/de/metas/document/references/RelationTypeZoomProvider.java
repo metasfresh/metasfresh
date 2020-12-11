@@ -275,6 +275,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		final String targetTableName = zoomOrigin.getTableName();
 		final String originTableName = refTable.getTableName();
 
+		final String whereClause = refTable.getWhereClause();
 		if (isTableRecordIdTarget)
 		{
 			String originRecordIdName = null;
@@ -309,6 +310,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 						.append(originTableName)
 						.append(".")
 						.append(originRecordIdName);
+				if (Check.isNotBlank(whereClause))
+				{
+					queryWhereClause.append(" AND ").append(whereClause);
+				}
+
 			}
 			else
 			{
@@ -319,7 +325,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		else
 		{
 
-			final String refTableWhereClause = refTable.getWhereClause();
+			final String refTableWhereClause = whereClause;
 
 			if (!Check.isEmpty(refTableWhereClause))
 			{
@@ -338,8 +344,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	 * Parses given <code>where</code>
 	 *
 	 * @param zoomOrigin zoom source
-	 * @param where where clause to be parsed
-	 * @param throwEx true if an exception shall be thrown in case the parsing failed.
+	 * @param where      where clause to be parsed
+	 * @param throwEx    true if an exception shall be thrown in case the parsing failed.
 	 * @return parsed where clause or empty string in case parsing failed and throwEx is <code>false</code>
 	 */
 	private static String parseWhereClause(@NonNull final IZoomSource zoomOrigin, final String where, final boolean throwEx)
