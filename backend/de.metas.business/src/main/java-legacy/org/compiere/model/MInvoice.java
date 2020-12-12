@@ -25,10 +25,8 @@ import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -36,7 +34,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -49,6 +46,8 @@ import de.metas.order.IMatchPODAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -60,14 +59,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
-import org.compiere.print.ReportEngine;
+import org.compiere.SpringContextHolder;
+import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -101,8 +100,6 @@ import static org.adempiere.util.CustomColNames.C_Invoice_ISUSE_BPARTNER_ADDRESS
 @SuppressWarnings("serial")
 public class MInvoice extends X_C_Invoice implements IDocument
 {
-	private static final AdMessageKey ERR_NoBaseConversionBetweenCurrencies = AdMessageKey.of("NoBaseConversionBetweenCurrencies");
-
 	/**
 	 * Get Payments Of BPartner
 	 *
@@ -795,26 +792,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("Could not create PDF file", e);
-		}
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.INVOICE, getC_Invoice_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}    // getPDF
-
-	private File createPDF(final File file)
-	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.INVOICE, getC_Invoice_ID(), get_TrxName());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	}    // createPDF
 
 	@Override
 	public boolean processIt(final String processAction)
@@ -1184,32 +1165,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 		}    // for all lines
 
-		// verify that we can deal with the invoice's currency
-		// Update total revenue and balance / credit limit (reversed on AllocationLine.processIt)
-		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
-				getGrandTotal(true),    // CM adjusted
-				CurrencyId.ofRepoId(getC_Currency_ID()),
-				TimeUtil.asLocalDate(getDateAcct()),
-				CurrencyConversionTypeId.ofRepoIdOrNull(getC_ConversionType_ID()),
-				ClientId.ofRepoId(getAD_Client_ID()),
-				OrgId.ofRepoId(getAD_Org_ID()));
-
-		if (invAmt == null)
-		{
-			final Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
-			final Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
-
-			final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-			final I_C_BPartner bpartner = bpartnerDAO.getById(getC_BPartner_ID());
-
-			throw new AdempiereException(
-					ERR_NoBaseConversionBetweenCurrencies,
-					bpartner.getName(),
-					bpartner.getValue(),
-					currency.getCurrencyCode().toThreeLetterCode(),
-					currencyTo.getCurrencyCode().toThreeLetterCode());
-		}
-
 		// Update Project
 		if (isSOTrx() && getC_Project_ID() > 0)
 		{
@@ -1226,10 +1181,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));
-			}
-			if (amt == null)
-			{
-				throw new AdempiereException("Could not convert C_Currency_ID=" + getC_Currency_ID() + " to Project C_Currency_ID=" + C_CurrencyTo_ID);
 			}
 			BigDecimal newAmt = project.getInvoicedAmt();
 			if (newAmt == null)

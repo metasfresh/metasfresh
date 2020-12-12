@@ -28,8 +28,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.MimeType;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -121,12 +119,8 @@ public class ProcessExecutionResult
 	// Reporting
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private transient MPrintFormat printFormat;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private byte[] reportData;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String reportFilename;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String reportContentType;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private ReportResultData reportData;
 
 	/**
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
@@ -187,9 +181,7 @@ public class ProcessExecutionResult
 			// @JsonProperty("logs") final List<ProcessInfoLog> logs, // transient
 			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy,
 			// @JsonProperty("printFormat") final MPrintFormat printFormat, // transient
-			@JsonProperty("reportData") final byte[] reportData,
-			@JsonProperty("reportFilename") final String reportFilename,
-			@JsonProperty("reportContentType") final String reportContentType,
+			@JsonProperty("reportData") final ReportResultData reportData,
 			// @JsonProperty("throwable") final Throwable throwable, // transient
 			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
 			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
@@ -207,8 +199,6 @@ public class ProcessExecutionResult
 		this.timeout = timeout;
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
 		this.reportData = reportData;
-		this.reportFilename = reportFilename;
-		this.reportContentType = reportContentType;
 		this.refreshAllAfterExecution = refreshAllAfterExecution;
 		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
 		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
@@ -319,7 +309,7 @@ public class ProcessExecutionResult
 	 * If the process has failed with a Throwable, that Throwable can be retrieved using this getter.
 	 *
 	 * @return throwable
-	 * @task 03152
+	 * Task 03152
 	 */
 	public Throwable getThrowable()
 	{
@@ -536,6 +526,7 @@ public class ProcessExecutionResult
 		this.recordsToOpen = recordsToOpen;
 	}
 
+	@Nullable
 	public RecordsToOpen getRecordsToOpen()
 	{
 		return recordsToOpen;
@@ -544,7 +535,7 @@ public class ProcessExecutionResult
 	/**
 	 * Sets webui's viewId on which this process was executed.
 	 */
-	public void setWebuiViewId(String webuiViewId)
+	public void setWebuiViewId(final String webuiViewId)
 	{
 		this.webuiViewId = webuiViewId;
 	}
@@ -564,41 +555,53 @@ public class ProcessExecutionResult
 		return printFormat;
 	}
 
-	public void setReportData(final byte[] data, final String filename, final String contentType)
+	public void setReportData(final byte[] data, @Nullable final String filename, final String contentType)
 	{
-		reportData = data;
-		reportFilename = filename;
-		reportContentType = contentType;
+		setReportData(ReportResultData.builder()
+				.reportData(data)
+				.reportFilename(filename)
+				.reportContentType(contentType)
+				.build());
 	}
 
 	public void setReportData(@NonNull final File file)
 	{
-		reportData = Util.readBytes(file);
-		reportFilename = file.getName();
-		reportContentType = MimeType.getMimeType(reportFilename);
+		setReportData(ReportResultData.ofFile(file));
 	}
 
-	public void setReportData(@NonNull final ReportResultData reportResult)
+	public void setReportData(@Nullable final ReportResultData reportData)
 	{
-		reportData = reportResult.getReportData();
-		reportFilename = reportResult.getReportFilename();
-		reportContentType = reportResult.getReportContentType();
+		this.reportData = reportData;
 	}
 
-	public byte[] getReportData()
+	@Nullable
+	public ReportResultData getReportData()
 	{
 		return reportData;
 	}
 
 	@Nullable
-	public String getReportFilename()
+	public byte[] getReportDataAsByteArray()
 	{
-		return reportFilename;
+		return reportData != null
+				? reportData.getReportData()
+				: null;
 	}
 
+	@Nullable
+	public String getReportFilename()
+	{
+		return reportData != null
+				? reportData.getReportFilename()
+				: null;
+	}
+
+	@Nullable
 	public String getReportContentType()
 	{
-		return reportContentType;
+		return reportData != null
+				? reportData.getReportContentType()
+				: null;
 	}
 
 	/**
@@ -826,8 +829,6 @@ public class ProcessExecutionResult
 		// Reporting
 		printFormat = otherResult.printFormat;
 		reportData = otherResult.reportData;
-		reportFilename = otherResult.reportFilename;
-		reportContentType = otherResult.reportContentType;
 
 		refreshAllAfterExecution = otherResult.refreshAllAfterExecution;
 

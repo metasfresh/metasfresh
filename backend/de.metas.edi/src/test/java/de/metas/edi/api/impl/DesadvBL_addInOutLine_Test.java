@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -95,6 +96,8 @@ class DesadvBL_addInOutLine_Test
 
 	private I_C_UOM catchUomRecord;
 	private UomId orderUomId;
+
+	private final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(20);
 
 	private I_M_HU_PI_Item huPIItemPallet;
 	private HUTestHelper huTestHelper;
@@ -197,7 +200,7 @@ class DesadvBL_addInOutLine_Test
 	void addInOutLine_no_HU()
 	{
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord);
+		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
 
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(desadvLine.getEDI_DesadvLine_ID());
@@ -229,7 +232,7 @@ class DesadvBL_addInOutLine_Test
 		saveRecord(inOutLineRecord);
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord);
+		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
 
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(desadvLine.getEDI_DesadvLine_ID());
@@ -250,7 +253,7 @@ class DesadvBL_addInOutLine_Test
 		changeDesadvLineToCOLIasUOM();
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord);
+		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
 
 		final I_EDI_DesadvLine resultDesadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(resultDesadvLine.getEDI_DesadvLine_ID());
@@ -272,7 +275,7 @@ class DesadvBL_addInOutLine_Test
 		setupHandlingUnit(); // HU with 49 CUs
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord);
+		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
 
 		final List<I_EDI_DesadvLine_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
 		assertThat(packRecords)
@@ -293,7 +296,7 @@ class DesadvBL_addInOutLine_Test
 		setupHandlingUnit();
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord);
+		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
 
 		final List<I_EDI_DesadvLine_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
 		assertThat(packRecords)

@@ -1,36 +1,7 @@
 package de.metas.ui.web.mail;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_User;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
@@ -43,11 +14,15 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.report.DocumentReportFlavor;
+import de.metas.report.ReportResultData;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.mail.WebuiEmail.WebuiEmailBuilder;
 import de.metas.ui.web.mail.WebuiMailRepository.WebuiEmailRemovedEvent;
 import de.metas.ui.web.mail.json.JSONEmail;
 import de.metas.ui.web.mail.json.JSONEmailRequest;
+import de.metas.ui.web.print.WebuiDocumentPrintRequest;
+import de.metas.ui.web.print.WebuiDocumentPrintService;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -58,7 +33,6 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
@@ -66,6 +40,31 @@ import de.metas.util.Services;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.context.event.EventListener;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -101,16 +100,12 @@ public class MailRestController
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final IUserBL usersService = Services.get(IUserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	@Autowired
-	private UserSession userSession;
-	@Autowired
-	private WebuiMailRepository mailRepo;
-	@Autowired
-	private WebuiMailAttachmentsRepository mailAttachmentsRepo;
-	@Autowired
-	private MailService mailService;
-	@Autowired
-	private DocumentCollection documentCollection;
+	private final UserSession userSession;
+	private final WebuiMailRepository mailRepo;
+	private final WebuiMailAttachmentsRepository mailAttachmentsRepo;
+	private final MailService mailService;
+	private final DocumentCollection documentCollection;
+	private final WebuiDocumentPrintService documentPrintService;
 
 	private static final String PATCH_FIELD_To = "to";
 	private static final String PATCH_FIELD_Subject = "subject";
@@ -119,7 +114,23 @@ public class MailRestController
 	private static final String PATCH_FIELD_TemplateId = "templateId";
 	private static final Set<String> PATCH_FIELD_ALL = ImmutableSet.of(PATCH_FIELD_To, PATCH_FIELD_Subject, PATCH_FIELD_Message, PATCH_FIELD_Attachments, PATCH_FIELD_TemplateId);
 
-	private final void assertReadable(final WebuiEmail email)
+	public MailRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final WebuiMailRepository mailRepo,
+			@NonNull final WebuiMailAttachmentsRepository mailAttachmentsRepo,
+			@NonNull final MailService mailService,
+			@NonNull final DocumentCollection documentCollection,
+			@NonNull final WebuiDocumentPrintService documentPrintService)
+	{
+		this.userSession = userSession;
+		this.mailRepo = mailRepo;
+		this.mailAttachmentsRepo = mailAttachmentsRepo;
+		this.mailService = mailService;
+		this.documentCollection = documentCollection;
+		this.documentPrintService = documentPrintService;
+	}
+
+	private void assertReadable(final WebuiEmail email)
 	{
 		// Make sure current logged in user is the owner
 		if (!userSession.isLoggedInAs(email.getOwnerUserId()))
@@ -131,7 +142,7 @@ public class MailRestController
 
 	}
 
-	private final void assertWritable(final WebuiEmail email)
+	private void assertWritable(final WebuiEmail email)
 	{
 		assertReadable(email);
 
@@ -165,8 +176,14 @@ public class MailRestController
 		{
 			try
 			{
-				final DocumentPrint contextDocumentPrint = documentCollection.createDocumentPrint(contextDocumentPath);
-				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, contextDocumentPrint.getFilename(), contextDocumentPrint.getReportData()));
+				final ReportResultData contextDocumentPrint = documentPrintService.createDocumentPrint(WebuiDocumentPrintRequest.builder()
+						.flavor(DocumentReportFlavor.EMAIL)
+						.documentPath(contextDocumentPath)
+						.userId(userSession.getLoggedUserId())
+						.roleId(userSession.getLoggedRoleId())
+						.build());
+
+				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, contextDocumentPrint.getReportFilename(), contextDocumentPrint.getReportData()));
 			}
 			catch (final Exception ex)
 			{
@@ -193,7 +210,7 @@ public class MailRestController
 	{
 		userSession.assertLoggedIn();
 
-		changeEmail(emailId, emailOld -> sendEmail(emailOld));
+		changeEmail(emailId, this::sendEmail);
 		mailRepo.removeEmailById(emailId);
 	}
 
@@ -205,10 +222,10 @@ public class MailRestController
 		// Create the email object
 		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(userSession.getClientId());
 		final EMailCustomType mailCustomType = null;
-		
+
 		final UserId fromUserId = webuiEmail.getFrom().getIdAs(UserId::ofRepoId);
 		final UserEMailConfig userEmailConfig = usersService.getEmailConfigById(fromUserId);
-		
+
 		final List<EMailAddress> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
 		{
@@ -219,12 +236,12 @@ public class MailRestController
 		final String message = webuiEmail.getMessage();
 		final boolean html = false;
 		final EMail email = mailService.createEMail(
-				tenantEmailConfig, 
-				mailCustomType, 
-				userEmailConfig, 
-				to, 
-				subject, 
-				message, 
+				tenantEmailConfig,
+				mailCustomType,
+				userEmailConfig,
+				to,
+				subject,
+				message,
 				html);
 		toList.stream().skip(1).forEach(email::addTo);
 
@@ -252,11 +269,11 @@ public class MailRestController
 		return webuiEmail.toBuilder().sent(true).build();
 	}
 
-	private final Stream<EMailAddress> extractEMailAddreses(final LookupValuesList users)
+	private Stream<EMailAddress> extractEMailAddreses(final LookupValuesList users)
 	{
 
 		return users.stream()
-				.map(userLookupValue -> extractEMailAddress(userLookupValue));
+				.map(this::extractEMailAddress);
 	}
 
 	private EMailAddress extractEMailAddress(final LookupValue userLookupValue)
@@ -323,13 +340,11 @@ public class MailRestController
 		final String fieldName = event.getPath();
 		if (PATCH_FIELD_To.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked")
-			final List<Object> jsonTo = (List<Object>)event.getValue();
+			@SuppressWarnings("unchecked") final List<Object> jsonTo = (List<Object>)event.getValue();
 
-			@SuppressWarnings("unchecked")
-			final LookupValuesList to = jsonTo.stream()
+			@SuppressWarnings("unchecked") final LookupValuesList to = jsonTo.stream()
 					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(map -> JSONLookupValue.integerLookupValueFromJsonMap(map))
+					.map(JSONLookupValue::integerLookupValueFromJsonMap)
 					.collect(LookupValuesList.collect());
 
 			newEmailBuilder.to(to);
@@ -346,21 +361,18 @@ public class MailRestController
 		}
 		else if (PATCH_FIELD_Attachments.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked")
-			final List<Object> jsonAttachments = (List<Object>)event.getValue();
+			@SuppressWarnings("unchecked") final List<Object> jsonAttachments = (List<Object>)event.getValue();
 
-			@SuppressWarnings("unchecked")
-			final LookupValuesList attachments = jsonAttachments.stream()
+			@SuppressWarnings("unchecked") final LookupValuesList attachments = jsonAttachments.stream()
 					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(map -> JSONLookupValue.stringLookupValueFromJsonMap(map))
+					.map(JSONLookupValue::stringLookupValueFromJsonMap)
 					.collect(LookupValuesList.collect());
 
 			newEmailBuilder.attachments(attachments);
 		}
 		else if (PATCH_FIELD_TemplateId.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked")
-			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
+			@SuppressWarnings("unchecked") final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
 			applyTemplate(email, newEmailBuilder, templateId);
 		}
 		else
@@ -395,7 +407,7 @@ public class MailRestController
 
 	@PostMapping("/{emailId}/field/attachments")
 	@ApiOperation("Attaches a file to email")
-	public JSONEmail attachFile(@PathVariable("emailId") final String emailId, @RequestParam("file") final MultipartFile file) throws IOException
+	public JSONEmail attachFile(@PathVariable("emailId") final String emailId, @RequestParam("file") final MultipartFile file)
 	{
 		userSession.assertLoggedIn();
 
@@ -406,8 +418,7 @@ public class MailRestController
 	private WebuiEmail attachFile(final String emailId, final Supplier<LookupValue> attachmentProducer)
 	{
 		// Ask the producer to create the attachment
-		@NonNull
-		final LookupValue attachment = attachmentProducer.get();
+		@NonNull final LookupValue attachment = attachmentProducer.get();
 
 		try
 		{

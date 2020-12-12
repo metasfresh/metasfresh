@@ -7,6 +7,8 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -462,5 +464,18 @@ public final class ProductBL implements IProductBL
 	public ProductCategoryId getDefaultProductCategoryId()
 	{
 		return productsRepo.getDefaultProductCategoryId();
+	}
+
+	@Override
+	public ITranslatableString getProductNameTrl(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (product == null)
+		{
+			return TranslatableStrings.anyLanguage("<" + productId + ">");
+		}
+
+		return InterfaceWrapperHelper.getModelTranslationMap(product)
+				.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
 	}
 }

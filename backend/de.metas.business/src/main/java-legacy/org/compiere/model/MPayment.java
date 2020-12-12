@@ -1766,7 +1766,7 @@ public final class MPayment extends X_C_Payment
 		{
 			// Invoice
 			String sql = "UPDATE C_Invoice "
-					+ "SET C_Payment_ID = NULL, IsPaid='N' "
+					+ "SET C_Payment_ID = NULL "
 					+ "WHERE C_Invoice_ID=" + getC_Invoice_ID()
 					+ " AND C_Payment_ID=" + getC_Payment_ID();
 						int no = DB.executeUpdate(sql, get_TrxName());
@@ -1787,7 +1787,7 @@ public final class MPayment extends X_C_Payment
 				log.debug("Unlink Order #" + no);
 			}
 		}
-		//
+
 		setC_Invoice_ID(0);
 		setIsAllocated(false);
 	}    // deallocate

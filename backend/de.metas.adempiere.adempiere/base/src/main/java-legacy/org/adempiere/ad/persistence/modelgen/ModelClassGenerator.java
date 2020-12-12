@@ -70,18 +70,19 @@ public class ModelClassGenerator
 		//
 		final StringBuilder start = new StringBuilder()
 				.append(ModelInterfaceGenerator.COPY)
-				.append("/** Generated Model - DO NOT CHANGE */").append(NL)
+				.append("// Generated Model - DO NOT CHANGE").append(NL)
 				.append("package ").append(packageName).append(";").append(NL)
 				.append(NL);
 
 		addImportClass(java.util.Properties.class);
 		addImportClass(java.sql.ResultSet.class);
+		addImportClass(javax.annotation.Nullable.class);
 		createImports(start);
 		// Class
 		start.append("/** Generated Model for ").append(tableName).append(NL)
 				.append(" *  @author metasfresh (generated) ").append(NL)
 				.append(" */").append(NL)
-				.append("@SuppressWarnings(\"javadoc\")").append(NL)
+				//.append("@SuppressWarnings(\"javadoc\")").append(NL) // commented out because it gives warnings in intelliJ
 				.append("public class ").append(className)
 				.append(" extends org.compiere.model.PO")
 				.append(" implements I_").append(tableName)
@@ -98,7 +99,7 @@ public class ModelClassGenerator
 				// Standard Constructor
 				.append(NL)
 				.append("    /** Standard Constructor */").append(NL)
-				.append("    public ").append(className).append(" (final Properties ctx, final int ").append(keyColumn).append(", final String trxName)").append(NL)
+				.append("    public ").append(className).append(" (final Properties ctx, final int ").append(keyColumn).append(", @Nullable final String trxName)").append(NL)
 				.append("    {").append(NL)
 				.append("      super (ctx, ").append(keyColumn).append(", trxName);").append(NL)
 				.append("    }").append(NL)
@@ -107,7 +108,7 @@ public class ModelClassGenerator
 				// Load Constructor
 				.append(NL)
 				.append("    /** Load Constructor */").append(NL)
-				.append("    public ").append(className).append(" (final Properties ctx, final ResultSet rs, final String trxName)").append(NL)
+				.append("    public ").append(className).append(" (final Properties ctx, final ResultSet rs, @Nullable final String trxName)").append(NL)
 				.append("    {").append(NL)
 				.append("      super (ctx, rs, trxName);").append(NL)
 				.append("    }").append(NL)

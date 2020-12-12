@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.ADMessageAndParams;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -27,7 +28,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.impl.OrderLineBL;
 import de.metas.order.model.I_C_Order;
@@ -88,7 +88,7 @@ public class PurchaseOrderFromItemFactoryTest
 		final OrderLineBL orderLineBL = new OrderLineBL()
 		{
 			@Override
-			public void updatePrices(I_C_OrderLine orderLine)
+			public void updatePrices(final I_C_OrderLine orderLine)
 			{
 				// do nothing
 			}
@@ -96,6 +96,7 @@ public class PurchaseOrderFromItemFactoryTest
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_UOM createUOM(final String name)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);

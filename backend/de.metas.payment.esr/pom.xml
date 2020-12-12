@@ -102,6 +102,7 @@
 								<source>src/main/xsd/camt.054.001.06.xsd</source>
 							</sources>
 							<packageName>de.metas.payment.camt054_001_06</packageName>
+							<outputDirectory>target/generated-sources/jaxb</outputDirectory>
 						</configuration>
 					</execution>
 					
@@ -116,6 +117,7 @@
 							</sources>
 							<packageName>de.metas.payment.camt054_001_02</packageName>
 							<clearOutputDir>false</clearOutputDir>
+							<outputDirectory>target/generated-sources/jaxb</outputDirectory>
 						</configuration>
 					</execution>
 

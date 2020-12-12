@@ -62,8 +62,8 @@ Map build(final MvnConf mvnConf) {
                 }
                 // echo "DONE calling misc.createReleaseLinkWithText"
 
-
-                String latestE2eDockerImageName = "nexus.metasfresh.com:6001/metasfresh/metasfresh-e2e:${env.BRANCH_NAME}_LATEST"
+                def normalizedDockerTag = misc.mkDockerTag(env.BRANCH_NAME)
+                String latestE2eDockerImageName = "nexus.metasfresh.com:6001/metasfresh/metasfresh-e2e:${normalizedDockerTag}_LATEST"
 
                 currentBuild.description = """${currentBuild.description}<p/>
 <h2>Distribution</h2>						

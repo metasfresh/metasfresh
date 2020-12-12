@@ -2239,6 +2239,15 @@ public class DB
 		return createT_Selection(ids, trxName);
 	}
 
+	public void createT_Selection(
+			@NonNull final PInstanceId selectionId, 
+			@NonNull final Set<? extends RepoIdAware> selection, 
+			@Nullable final String trxName)
+	{
+		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
+		createT_Selection(selectionId, ids, trxName);
+	}
+
 	public PInstanceId createT_Selection(@NonNull final TableRecordReferenceSet recordRefs, final String trxName)
 	{
 		final Set<Integer> ids = recordRefs.toIntSet();
@@ -2685,6 +2694,12 @@ public class DB
 		else if (returnType.isAssignableFrom(String.class))
 		{
 			value = (AT)rs.getString(columnIndex);
+		}
+		else if(RepoIdAware.class.isAssignableFrom(returnType))
+		{
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
+			value = (AT)RepoIdAwares.ofRepoIdOrNull(rs.getInt(columnIndex), repoIdAwareType);
 		}
 		else
 		{

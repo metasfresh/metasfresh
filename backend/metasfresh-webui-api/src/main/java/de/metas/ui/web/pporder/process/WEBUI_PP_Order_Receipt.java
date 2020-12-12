@@ -41,7 +41,6 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
@@ -228,7 +227,7 @@ public class WEBUI_PP_Order_Receipt
 		final PPOrderLinesView ppOrderLinesView = getView();
 		ppOrderLinesView.invalidateAll();
 
-		getViewsRepo().notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
+		getViewsRepo().notifyRecordsChangedAsync(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
 	}
 
 	@Nullable

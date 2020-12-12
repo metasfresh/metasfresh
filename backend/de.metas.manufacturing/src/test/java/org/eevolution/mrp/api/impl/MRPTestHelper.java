@@ -1,33 +1,19 @@
 package org.eevolution.mrp.api.impl;
 
-import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerLocationId;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.engine.impl.PlainDocumentBL;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.logging.LogManager;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.planning.DurationUnitCodeUtils;
-import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.impl.MRPContext;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.product.ResourceId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Services;
+import de.metas.workflow.interceptors.AD_Workflow;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -78,17 +64,55 @@ import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assume;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+/*
+ * #%L
+ * de.metas.adempiere.libero.libero
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.logging.LogManager;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.planning.DurationUnitCodeUtils;
+import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.impl.MRPContext;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.product.ResourceId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
 
 public class MRPTestHelper
 {
@@ -213,7 +237,7 @@ public class MRPTestHelper
 			adOrg01 = InterfaceWrapperHelper.create(ctx, adOrgId, I_AD_Org.class, ITrx.TRXNAME_None);
 		}
 
-		SystemTime.setFixedTimeSource(_today);
+		SystemTime.setTimeSource(() -> _today.toInstant().toEpochMilli());
 	}
 
 	private void setupMRPExecutorService()
@@ -277,7 +301,7 @@ public class MRPTestHelper
 		final I_AD_Client client = null;
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
-		modelInterceptorRegistry.addModelInterceptor(new org.compiere.wf.model.validator.AD_Workflow(), client);
+		modelInterceptorRegistry.addModelInterceptor(new AD_Workflow(), client);
 
 		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), client);
 	}
@@ -768,7 +792,7 @@ public class MRPTestHelper
 		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
-		final Timestamp t1 = de.metas.common.util.time.SystemTime.asTimestamp();
+		final Timestamp t1 = SystemTime.asTimestamp();
 		ppOrder.setDateOrdered(t1);
 		ppOrder.setDateStartSchedule(t1);
 	}

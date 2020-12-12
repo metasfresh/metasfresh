@@ -1,18 +1,16 @@
 package de.metas.impexp.parser;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -39,18 +37,23 @@ import lombok.ToString;
 @ToString
 public final class ImpDataParser
 {
-	private static final Charset CHARSET = StandardCharsets.UTF_8;
-
 	private final boolean multiline;
-	private final ImpDataLineParser lineParser;
+	private final @NonNull ImpDataLineParser lineParser;
+	private final @NonNull Charset charset;
+	private final int skipFirstNRows;
 
 	@Builder
 	private ImpDataParser(
 			final boolean multiline,
-			@NonNull final ImpDataLineParser lineParser)
+			@NonNull final ImpDataLineParser lineParser,
+			@NonNull final Charset charset,
+			final int skipFirstNRows
+	)
 	{
 		this.multiline = multiline;
 		this.lineParser = lineParser;
+		this.charset = charset;
+		this.skipFirstNRows = Math.max(skipFirstNRows,0);
 	}
 
 	public Stream<ImpDataLine> streamDataLines(final Resource resource)
@@ -58,6 +61,7 @@ public final class ImpDataParser
 		final AtomicInteger nextLineNo = new AtomicInteger(1);
 
 		return streamSourceLines(resource)
+				.skip(skipFirstNRows)
 				.map(lineStr -> createImpDataLine(lineStr, nextLineNo));
 	}
 
@@ -68,11 +72,11 @@ public final class ImpDataParser
 		{
 			if (multiline)
 			{
-				return FileImportReader.readMultiLines(data, CHARSET).stream();
+				return FileImportReader.readMultiLines(data, charset).stream();
 			}
 			else
 			{
-				return FileImportReader.readRegularLines(data, CHARSET).stream();
+				return FileImportReader.readRegularLines(data, charset).stream();
 			}
 		}
 		catch (final IOException ex)

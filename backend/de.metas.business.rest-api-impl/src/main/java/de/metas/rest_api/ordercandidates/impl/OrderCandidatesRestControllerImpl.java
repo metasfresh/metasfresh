@@ -389,7 +389,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	}
 
 	@VisibleForTesting
-	ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
+	static ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
 	{
 		if (tagKeyValuePairs == null)
 		{

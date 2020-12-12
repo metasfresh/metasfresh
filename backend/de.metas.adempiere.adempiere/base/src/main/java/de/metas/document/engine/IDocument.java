@@ -73,7 +73,7 @@ public interface IDocument
 	String getProcessMsg();
 
 	/** @return true if success */
-	default boolean processIt(final String docAction) throws Exception
+	default boolean processIt(final String docAction)
 	{
 		return Services.get(IDocumentBL.class).processIt(this, docAction);
 	}

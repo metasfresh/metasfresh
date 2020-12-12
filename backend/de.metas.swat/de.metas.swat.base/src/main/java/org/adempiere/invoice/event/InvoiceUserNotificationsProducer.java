@@ -2,6 +2,7 @@ package org.adempiere.invoice.event;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -50,7 +51,7 @@ import lombok.NonNull;
  */
 public class InvoiceUserNotificationsProducer
 {
-	public static final InvoiceUserNotificationsProducer newInstance()
+	public static InvoiceUserNotificationsProducer newInstance()
 	{
 		return new InvoiceUserNotificationsProducer();
 	}
@@ -62,7 +63,7 @@ public class InvoiceUserNotificationsProducer
 
 	private static final transient Logger logger = LogManager.getLogger(InvoiceUserNotificationsProducer.class);
 
-	private static final String MSG_Event_InvoiceGenerated = "Event_InvoiceGenerated";
+	private static final AdMessageKey MSG_Event_InvoiceGenerated = AdMessageKey.of("Event_InvoiceGenerated");
 
 	private InvoiceUserNotificationsProducer()
 	{
@@ -70,8 +71,6 @@ public class InvoiceUserNotificationsProducer
 
 	/**
 	 * Post events about given invoice that was generated.
-	 *
-	 * @param inouts
 	 */
 	public InvoiceUserNotificationsProducer notifyGenerated(
 			@Nullable final I_C_Invoice invoice,
@@ -94,7 +93,7 @@ public class InvoiceUserNotificationsProducer
 		return this;
 	}
 
-	private final UserNotificationRequest createInvoiceGeneratedEvent(
+	private UserNotificationRequest createInvoiceGeneratedEvent(
 			@NonNull final I_C_Invoice invoice,
 			@Nullable final UserId recipientUserId)
 	{
@@ -116,7 +115,7 @@ public class InvoiceUserNotificationsProducer
 				.build();
 	}
 
-	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	private UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
 				.topic(EVENTBUS_TOPIC);

@@ -1,26 +1,31 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 
-/** Generated Interface for R_Request
- *  @author Adempiere (generated) 
+/**
+ * Generated Interface for R_Request
+ *
+ * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public interface I_R_Request 
+public interface I_R_Request
 {
 
-    /** TableName=R_Request */
-    public static final String Table_Name = "R_Request";
+	/**
+	 * TableName=R_Request
+	 */
+	public static final String Table_Name = "R_Request";
 
-    /** AD_Table_ID=417 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	/** AD_Table_ID=417 */
+	//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+	//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
+	/** AccessLevel = 7 - System - Client - Org
+	 */
+	//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
 
-    /** Load Meta Data */
+	/** Load Meta Data */
 
 	/**
 	 * Set Asset.
@@ -30,7 +35,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_Asset_ID (int A_Asset_ID);
+	public void setA_Asset_ID(int A_Asset_ID);
 
 	/**
 	 * Get Asset.
@@ -46,10 +51,14 @@ public interface I_R_Request
 
 	public void setA_Asset(org.compiere.model.I_A_Asset A_Asset);
 
-    /** Column definition for A_Asset_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_A_Asset> COLUMN_A_Asset_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_A_Asset>(I_R_Request.class, "A_Asset_ID", org.compiere.model.I_A_Asset.class);
-    /** Column name A_Asset_ID */
-    public static final String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
+	/**
+	 * Column definition for A_Asset_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_A_Asset> COLUMN_A_Asset_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_A_Asset>(I_R_Request.class, "A_Asset_ID", org.compiere.model.I_A_Asset.class);
+	/**
+	 * Column name A_Asset_ID
+	 */
+	public static final String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
 
 	/**
 	 * Get Client.
@@ -63,10 +72,14 @@ public interface I_R_Request
 
 	public org.compiere.model.I_AD_Client getAD_Client();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Client>(I_R_Request.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Column definition for AD_Client_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Client>(I_R_Request.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+	/**
+	 * Column name AD_Client_ID
+	 */
+	public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Sektion.
@@ -76,7 +89,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID(int AD_Org_ID);
 
 	/**
 	 * Get Sektion.
@@ -92,10 +105,14 @@ public interface I_R_Request
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Org>(I_R_Request.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	/**
+	 * Column definition for AD_Org_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Org>(I_R_Request.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+	/**
+	 * Column name AD_Org_ID
+	 */
+	public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Rolle.
@@ -105,7 +122,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Role_ID (int AD_Role_ID);
+	public void setAD_Role_ID(int AD_Role_ID);
 
 	/**
 	 * Get Rolle.
@@ -121,10 +138,14 @@ public interface I_R_Request
 
 	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
 
-    /** Column definition for AD_Role_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Role>(I_R_Request.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
-    /** Column name AD_Role_ID */
-    public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
+	/**
+	 * Column definition for AD_Role_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Role>(I_R_Request.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
+	/**
+	 * Column name AD_Role_ID
+	 */
+	public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
 	 * Set DB-Tabelle.
@@ -134,7 +155,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	public void setAD_Table_ID(int AD_Table_ID);
 
 	/**
 	 * Get DB-Tabelle.
@@ -150,10 +171,14 @@ public interface I_R_Request
 
 	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
 
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Table>(I_R_Request.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	/**
+	 * Column definition for AD_Table_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_Table>(I_R_Request.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
+	/**
+	 * Column name AD_Table_ID
+	 */
+	public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Set Ansprechpartner.
@@ -163,7 +188,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	public void setAD_User_ID(int AD_User_ID);
 
 	/**
 	 * Get Ansprechpartner.
@@ -179,10 +204,14 @@ public interface I_R_Request
 
 	public void setAD_User(org.compiere.model.I_AD_User AD_User);
 
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	/**
+	 * Column definition for AD_User_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
+	/**
+	 * Column name AD_User_ID
+	 */
+	public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Set Kostenstelle.
@@ -192,7 +221,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Activity_ID (int C_Activity_ID);
+	public void setC_Activity_ID(int C_Activity_ID);
 
 	/**
 	 * Get Kostenstelle.
@@ -208,10 +237,14 @@ public interface I_R_Request
 
 	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
 
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Activity>(I_R_Request.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
-    /** Column name C_Activity_ID */
-    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+	/**
+	 * Column definition for C_Activity_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Activity>(I_R_Request.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+	/**
+	 * Column name C_Activity_ID
+	 */
+	public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
 	 * Set Zulieferant.
@@ -220,7 +253,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_Vendor_ID (int C_BP_Vendor_ID);
+	public void setC_BP_Vendor_ID(int C_BP_Vendor_ID);
 
 	/**
 	 * Get Zulieferant.
@@ -235,10 +268,14 @@ public interface I_R_Request
 
 	public void setC_BP_Vendor(org.compiere.model.I_C_BPartner C_BP_Vendor);
 
-    /** Column definition for C_BP_Vendor_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner> COLUMN_C_BP_Vendor_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner>(I_R_Request.class, "C_BP_Vendor_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BP_Vendor_ID */
-    public static final String COLUMNNAME_C_BP_Vendor_ID = "C_BP_Vendor_ID";
+	/**
+	 * Column definition for C_BP_Vendor_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner> COLUMN_C_BP_Vendor_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner>(I_R_Request.class, "C_BP_Vendor_ID", org.compiere.model.I_C_BPartner.class);
+	/**
+	 * Column name C_BP_Vendor_ID
+	 */
+	public static final String COLUMNNAME_C_BP_Vendor_ID = "C_BP_Vendor_ID";
 
 	/**
 	 * Set Business Partner .
@@ -248,7 +285,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_BPartner_ID(int C_BPartner_ID);
 
 	/**
 	 * Get Business Partner .
@@ -264,10 +301,14 @@ public interface I_R_Request
 
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner>(I_R_Request.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	/**
+	 * Column definition for C_BPartner_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_BPartner>(I_R_Request.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+	/**
+	 * Column name C_BPartner_ID
+	 */
+	public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Werbemassnahme.
@@ -277,7 +318,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Campaign_ID (int C_Campaign_ID);
+	public void setC_Campaign_ID(int C_Campaign_ID);
 
 	/**
 	 * Get Werbemassnahme.
@@ -293,10 +334,14 @@ public interface I_R_Request
 
 	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
-    /** Column definition for C_Campaign_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Campaign>(I_R_Request.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-    /** Column name C_Campaign_ID */
-    public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+	/**
+	 * Column definition for C_Campaign_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Campaign>(I_R_Request.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+	/**
+	 * Column name C_Campaign_ID
+	 */
+	public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
 	 * Set Rechnung.
@@ -306,7 +351,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_ID (int C_Invoice_ID);
+	public void setC_Invoice_ID(int C_Invoice_ID);
 
 	/**
 	 * Get Rechnung.
@@ -322,10 +367,14 @@ public interface I_R_Request
 
 	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
 
-    /** Column definition for C_Invoice_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice>(I_R_Request.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
-    /** Column name C_Invoice_ID */
-    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+	/**
+	 * Column definition for C_Invoice_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice>(I_R_Request.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	/**
+	 * Column name C_Invoice_ID
+	 */
+	public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
 	 * Set Request Invoice.
@@ -335,7 +384,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_InvoiceRequest_ID (int C_InvoiceRequest_ID);
+	public void setC_InvoiceRequest_ID(int C_InvoiceRequest_ID);
 
 	/**
 	 * Get Request Invoice.
@@ -351,10 +400,14 @@ public interface I_R_Request
 
 	public void setC_InvoiceRequest(org.compiere.model.I_C_Invoice C_InvoiceRequest);
 
-    /** Column definition for C_InvoiceRequest_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice> COLUMN_C_InvoiceRequest_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice>(I_R_Request.class, "C_InvoiceRequest_ID", org.compiere.model.I_C_Invoice.class);
-    /** Column name C_InvoiceRequest_ID */
-    public static final String COLUMNNAME_C_InvoiceRequest_ID = "C_InvoiceRequest_ID";
+	/**
+	 * Column definition for C_InvoiceRequest_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice> COLUMN_C_InvoiceRequest_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Invoice>(I_R_Request.class, "C_InvoiceRequest_ID", org.compiere.model.I_C_Invoice.class);
+	/**
+	 * Column name C_InvoiceRequest_ID
+	 */
+	public static final String COLUMNNAME_C_InvoiceRequest_ID = "C_InvoiceRequest_ID";
 
 	/**
 	 * Set Auftrag.
@@ -364,7 +417,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Order_ID (int C_Order_ID);
+	public void setC_Order_ID(int C_Order_ID);
 
 	/**
 	 * Get Auftrag.
@@ -380,10 +433,14 @@ public interface I_R_Request
 
 	public void setC_Order(org.compiere.model.I_C_Order C_Order);
 
-    /** Column definition for C_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Order>(I_R_Request.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_ID */
-    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+	/**
+	 * Column definition for C_Order_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Order>(I_R_Request.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	/**
+	 * Column name C_Order_ID
+	 */
+	public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Zahlung.
@@ -393,7 +450,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Payment_ID (int C_Payment_ID);
+	public void setC_Payment_ID(int C_Payment_ID);
 
 	/**
 	 * Get Zahlung.
@@ -409,10 +466,14 @@ public interface I_R_Request
 
 	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
 
-    /** Column definition for C_Payment_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Payment>(I_R_Request.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
-    /** Column name C_Payment_ID */
-    public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+	/**
+	 * Column definition for C_Payment_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Payment>(I_R_Request.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
+	/**
+	 * Column name C_Payment_ID
+	 */
+	public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
 	 * Set Project.
@@ -422,7 +483,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Project_ID (int C_Project_ID);
+	public void setC_Project_ID(int C_Project_ID);
 
 	/**
 	 * Get Project.
@@ -438,10 +499,14 @@ public interface I_R_Request
 
 	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
-    /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Project>(I_R_Request.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
-    /** Column name C_Project_ID */
-    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+	/**
+	 * Column definition for C_Project_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_C_Project>(I_R_Request.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
+	/**
+	 * Column name C_Project_ID
+	 */
+	public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Set Close Date.
@@ -451,7 +516,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCloseDate (java.sql.Timestamp CloseDate);
+	public void setCloseDate(java.sql.Timestamp CloseDate);
 
 	/**
 	 * Get Close Date.
@@ -463,10 +528,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getCloseDate();
 
-    /** Column definition for CloseDate */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_CloseDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "CloseDate", null);
-    /** Column name CloseDate */
-    public static final String COLUMNNAME_CloseDate = "CloseDate";
+	/**
+	 * Column definition for CloseDate
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_CloseDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "CloseDate", null);
+	/**
+	 * Column name CloseDate
+	 */
+	public static final String COLUMNNAME_CloseDate = "CloseDate";
 
 	/**
 	 * Set Confidentiality.
@@ -476,7 +545,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setConfidentialType (java.lang.String ConfidentialType);
+	public void setConfidentialType(java.lang.String ConfidentialType);
 
 	/**
 	 * Get Confidentiality.
@@ -488,10 +557,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getConfidentialType();
 
-    /** Column definition for ConfidentialType */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialType", null);
-    /** Column name ConfidentialType */
-    public static final String COLUMNNAME_ConfidentialType = "ConfidentialType";
+	/**
+	 * Column definition for ConfidentialType
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialType", null);
+	/**
+	 * Column name ConfidentialType
+	 */
+	public static final String COLUMNNAME_ConfidentialType = "ConfidentialType";
 
 	/**
 	 * Set Entry Confidentiality.
@@ -501,7 +574,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setConfidentialTypeEntry (java.lang.String ConfidentialTypeEntry);
+	public void setConfidentialTypeEntry(java.lang.String ConfidentialTypeEntry);
 
 	/**
 	 * Get Entry Confidentiality.
@@ -513,10 +586,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getConfidentialTypeEntry();
 
-    /** Column definition for ConfidentialTypeEntry */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialTypeEntry = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialTypeEntry", null);
-    /** Column name ConfidentialTypeEntry */
-    public static final String COLUMNNAME_ConfidentialTypeEntry = "ConfidentialTypeEntry";
+	/**
+	 * Column definition for ConfidentialTypeEntry
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ConfidentialTypeEntry = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ConfidentialTypeEntry", null);
+	/**
+	 * Column name ConfidentialTypeEntry
+	 */
+	public static final String COLUMNNAME_ConfidentialTypeEntry = "ConfidentialTypeEntry";
 
 	/**
 	 * Get Created.
@@ -528,10 +605,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Column definition for Created
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Created", null);
+	/**
+	 * Column name Created
+	 */
+	public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -543,10 +624,14 @@ public interface I_R_Request
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	/**
+	 * Column definition for CreatedBy
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+	/**
+	 * Column name CreatedBy
+	 */
+	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Complete Plan.
@@ -556,7 +641,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateCompletePlan (java.sql.Timestamp DateCompletePlan);
+	public void setDateCompletePlan(java.sql.Timestamp DateCompletePlan);
 
 	/**
 	 * Get Complete Plan.
@@ -568,10 +653,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getDateCompletePlan();
 
-    /** Column definition for DateCompletePlan */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateCompletePlan = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateCompletePlan", null);
-    /** Column name DateCompletePlan */
-    public static final String COLUMNNAME_DateCompletePlan = "DateCompletePlan";
+	/**
+	 * Column definition for DateCompletePlan
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateCompletePlan = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateCompletePlan", null);
+	/**
+	 * Column name DateCompletePlan
+	 */
+	public static final String COLUMNNAME_DateCompletePlan = "DateCompletePlan";
 
 	/**
 	 * Set Lieferdatum.
@@ -581,7 +670,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateDelivered (java.sql.Timestamp DateDelivered);
+	public void setDateDelivered(@Nullable java.sql.Timestamp DateDelivered);
 
 	/**
 	 * Get Lieferdatum.
@@ -593,10 +682,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getDateDelivered();
 
-    /** Column definition for DateDelivered */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateDelivered = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateDelivered", null);
-    /** Column name DateDelivered */
-    public static final String COLUMNNAME_DateDelivered = "DateDelivered";
+	/**
+	 * Column definition for DateDelivered
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateDelivered = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateDelivered", null);
+	/**
+	 * Column name DateDelivered
+	 */
+	public static final String COLUMNNAME_DateDelivered = "DateDelivered";
 
 	/**
 	 * Set Date last action.
@@ -606,7 +699,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateLastAction (java.sql.Timestamp DateLastAction);
+	public void setDateLastAction(java.sql.Timestamp DateLastAction);
 
 	/**
 	 * Get Date last action.
@@ -618,10 +711,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getDateLastAction();
 
-    /** Column definition for DateLastAction */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateLastAction = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateLastAction", null);
-    /** Column name DateLastAction */
-    public static final String COLUMNNAME_DateLastAction = "DateLastAction";
+	/**
+	 * Column definition for DateLastAction
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateLastAction = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateLastAction", null);
+	/**
+	 * Column name DateLastAction
+	 */
+	public static final String COLUMNNAME_DateLastAction = "DateLastAction";
 
 	/**
 	 * Set Last Alert.
@@ -631,7 +728,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateLastAlert (java.sql.Timestamp DateLastAlert);
+	public void setDateLastAlert(java.sql.Timestamp DateLastAlert);
 
 	/**
 	 * Get Last Alert.
@@ -643,10 +740,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getDateLastAlert();
 
-    /** Column definition for DateLastAlert */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateLastAlert = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateLastAlert", null);
-    /** Column name DateLastAlert */
-    public static final String COLUMNNAME_DateLastAlert = "DateLastAlert";
+	/**
+	 * Column definition for DateLastAlert
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateLastAlert = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateLastAlert", null);
+	/**
+	 * Column name DateLastAlert
+	 */
+	public static final String COLUMNNAME_DateLastAlert = "DateLastAlert";
 
 	/**
 	 * Set Date next action.
@@ -656,7 +757,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateNextAction (java.sql.Timestamp DateNextAction);
+	public void setDateNextAction(java.sql.Timestamp DateNextAction);
 
 	/**
 	 * Get Date next action.
@@ -668,10 +769,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getDateNextAction();
 
-    /** Column definition for DateNextAction */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateNextAction = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateNextAction", null);
-    /** Column name DateNextAction */
-    public static final String COLUMNNAME_DateNextAction = "DateNextAction";
+	/**
+	 * Column definition for DateNextAction
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateNextAction = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateNextAction", null);
+	/**
+	 * Column name DateNextAction
+	 */
+	public static final String COLUMNNAME_DateNextAction = "DateNextAction";
 
 	/**
 	 * Set Start Plan.
@@ -681,7 +786,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateStartPlan (java.sql.Timestamp DateStartPlan);
+	public void setDateStartPlan(java.sql.Timestamp DateStartPlan);
 
 	/**
 	 * Get Start Plan.
@@ -693,10 +798,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getDateStartPlan();
 
-    /** Column definition for DateStartPlan */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateStartPlan = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateStartPlan", null);
-    /** Column name DateStartPlan */
-    public static final String COLUMNNAME_DateStartPlan = "DateStartPlan";
+	/**
+	 * Column definition for DateStartPlan
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateStartPlan = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateStartPlan", null);
+	/**
+	 * Column name DateStartPlan
+	 */
+	public static final String COLUMNNAME_DateStartPlan = "DateStartPlan";
 
 	/**
 	 * Set Vorgangsdatum.
@@ -706,7 +815,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateTrx (java.sql.Timestamp DateTrx);
+	public void setDateTrx(@Nullable java.sql.Timestamp DateTrx);
 
 	/**
 	 * Get Vorgangsdatum.
@@ -718,10 +827,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getDateTrx();
 
-    /** Column definition for DateTrx */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateTrx", null);
-    /** Column name DateTrx */
-    public static final String COLUMNNAME_DateTrx = "DateTrx";
+	/**
+	 * Column definition for DateTrx
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateTrx = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateTrx", null);
+	/**
+	 * Column name DateTrx
+	 */
+	public static final String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
 	 * Set Nr..
@@ -731,7 +844,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	public void setDocumentNo(java.lang.String DocumentNo);
 
 	/**
 	 * Get Nr..
@@ -743,10 +856,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	/**
+	 * Column definition for DocumentNo
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DocumentNo", null);
+	/**
+	 * Column name DocumentNo
+	 */
+	public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Due type.
@@ -756,7 +873,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDueType (java.lang.String DueType);
+	public void setDueType(java.lang.String DueType);
 
 	/**
 	 * Get Due type.
@@ -768,10 +885,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getDueType();
 
-    /** Column definition for DueType */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DueType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DueType", null);
-    /** Column name DueType */
-    public static final String COLUMNNAME_DueType = "DueType";
+	/**
+	 * Column definition for DueType
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DueType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DueType", null);
+	/**
+	 * Column name DueType
+	 */
+	public static final String COLUMNNAME_DueType = "DueType";
 
 	/**
 	 * Set Enddatum.
@@ -781,7 +902,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEndTime (java.sql.Timestamp EndTime);
+	public void setEndTime(java.sql.Timestamp EndTime);
 
 	/**
 	 * Get Enddatum.
@@ -793,10 +914,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getEndTime();
 
-    /** Column definition for EndTime */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_EndTime = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "EndTime", null);
-    /** Column name EndTime */
-    public static final String COLUMNNAME_EndTime = "EndTime";
+	/**
+	 * Column definition for EndTime
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_EndTime = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "EndTime", null);
+	/**
+	 * Column name EndTime
+	 */
+	public static final String COLUMNNAME_EndTime = "EndTime";
 
 	/**
 	 * Set Active.
@@ -806,7 +931,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	public void setIsActive(boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -818,10 +943,14 @@ public interface I_R_Request
 	 */
 	public boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	/**
+	 * Column definition for IsActive
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsActive", null);
+	/**
+	 * Column name IsActive
+	 */
+	public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Escalated.
@@ -831,7 +960,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsEscalated (boolean IsEscalated);
+	public void setIsEscalated(boolean IsEscalated);
 
 	/**
 	 * Get Escalated.
@@ -843,10 +972,14 @@ public interface I_R_Request
 	 */
 	public boolean isEscalated();
 
-    /** Column definition for IsEscalated */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsEscalated = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsEscalated", null);
-    /** Column name IsEscalated */
-    public static final String COLUMNNAME_IsEscalated = "IsEscalated";
+	/**
+	 * Column definition for IsEscalated
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsEscalated = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsEscalated", null);
+	/**
+	 * Column name IsEscalated
+	 */
+	public static final String COLUMNNAME_IsEscalated = "IsEscalated";
 
 	/**
 	 * Set Invoiced.
@@ -856,7 +989,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInvoiced (boolean IsInvoiced);
+	public void setIsInvoiced(boolean IsInvoiced);
 
 	/**
 	 * Get Invoiced.
@@ -868,10 +1001,14 @@ public interface I_R_Request
 	 */
 	public boolean isInvoiced();
 
-    /** Column definition for IsInvoiced */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsInvoiced = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsInvoiced", null);
-    /** Column name IsInvoiced */
-    public static final String COLUMNNAME_IsInvoiced = "IsInvoiced";
+	/**
+	 * Column definition for IsInvoiced
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsInvoiced = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsInvoiced", null);
+	/**
+	 * Column name IsInvoiced
+	 */
+	public static final String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
 	 * Set Self-Service.
@@ -881,7 +1018,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSelfService (boolean IsSelfService);
+	public void setIsSelfService(boolean IsSelfService);
 
 	/**
 	 * Get Self-Service.
@@ -893,10 +1030,14 @@ public interface I_R_Request
 	 */
 	public boolean isSelfService();
 
-    /** Column definition for IsSelfService */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsSelfService = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsSelfService", null);
-    /** Column name IsSelfService */
-    public static final String COLUMNNAME_IsSelfService = "IsSelfService";
+	/**
+	 * Column definition for IsSelfService
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_IsSelfService = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "IsSelfService", null);
+	/**
+	 * Column name IsSelfService
+	 */
+	public static final String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
 	 * Set Last Result.
@@ -906,7 +1047,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLastResult (java.lang.String LastResult);
+	public void setLastResult(java.lang.String LastResult);
 
 	/**
 	 * Get Last Result.
@@ -918,10 +1059,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getLastResult();
 
-    /** Column definition for LastResult */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_LastResult = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "LastResult", null);
-    /** Column name LastResult */
-    public static final String COLUMNNAME_LastResult = "LastResult";
+	/**
+	 * Column definition for LastResult
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_LastResult = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "LastResult", null);
+	/**
+	 * Column name LastResult
+	 */
+	public static final String COLUMNNAME_LastResult = "LastResult";
 
 	/**
 	 * Set Change Request.
@@ -931,7 +1076,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ChangeRequest_ID (int M_ChangeRequest_ID);
+	public void setM_ChangeRequest_ID(int M_ChangeRequest_ID);
 
 	/**
 	 * Get Change Request.
@@ -947,10 +1092,14 @@ public interface I_R_Request
 
 	public void setM_ChangeRequest(org.compiere.model.I_M_ChangeRequest M_ChangeRequest);
 
-    /** Column definition for M_ChangeRequest_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeRequest> COLUMN_M_ChangeRequest_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeRequest>(I_R_Request.class, "M_ChangeRequest_ID", org.compiere.model.I_M_ChangeRequest.class);
-    /** Column name M_ChangeRequest_ID */
-    public static final String COLUMNNAME_M_ChangeRequest_ID = "M_ChangeRequest_ID";
+	/**
+	 * Column definition for M_ChangeRequest_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeRequest> COLUMN_M_ChangeRequest_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeRequest>(I_R_Request.class, "M_ChangeRequest_ID", org.compiere.model.I_M_ChangeRequest.class);
+	/**
+	 * Column name M_ChangeRequest_ID
+	 */
+	public static final String COLUMNNAME_M_ChangeRequest_ID = "M_ChangeRequest_ID";
 
 	/**
 	 * Set Fixed in.
@@ -960,7 +1109,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_FixChangeNotice_ID (int M_FixChangeNotice_ID);
+	public void setM_FixChangeNotice_ID(int M_FixChangeNotice_ID);
 
 	/**
 	 * Get Fixed in.
@@ -976,10 +1125,14 @@ public interface I_R_Request
 
 	public void setM_FixChangeNotice(org.compiere.model.I_M_ChangeNotice M_FixChangeNotice);
 
-    /** Column definition for M_FixChangeNotice_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeNotice> COLUMN_M_FixChangeNotice_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeNotice>(I_R_Request.class, "M_FixChangeNotice_ID", org.compiere.model.I_M_ChangeNotice.class);
-    /** Column name M_FixChangeNotice_ID */
-    public static final String COLUMNNAME_M_FixChangeNotice_ID = "M_FixChangeNotice_ID";
+	/**
+	 * Column definition for M_FixChangeNotice_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeNotice> COLUMN_M_FixChangeNotice_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_ChangeNotice>(I_R_Request.class, "M_FixChangeNotice_ID", org.compiere.model.I_M_ChangeNotice.class);
+	/**
+	 * Column name M_FixChangeNotice_ID
+	 */
+	public static final String COLUMNNAME_M_FixChangeNotice_ID = "M_FixChangeNotice_ID";
 
 	/**
 	 * Set Lieferung/Wareneingang.
@@ -989,7 +1142,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InOut_ID (int M_InOut_ID);
+	public void setM_InOut_ID(int M_InOut_ID);
 
 	/**
 	 * Get Lieferung/Wareneingang.
@@ -1005,10 +1158,14 @@ public interface I_R_Request
 
 	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut);
 
-    /** Column definition for M_InOut_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_InOut>(I_R_Request.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
-    /** Column name M_InOut_ID */
-    public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+	/**
+	 * Column definition for M_InOut_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_InOut>(I_R_Request.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	/**
+	 * Column name M_InOut_ID
+	 */
+	public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
 	 * Set Produkt.
@@ -1018,7 +1175,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	public void setM_Product_ID(int M_Product_ID);
 
 	/**
 	 * Get Produkt.
@@ -1034,10 +1191,14 @@ public interface I_R_Request
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product>(I_R_Request.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	/**
+	 * Column definition for M_Product_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product>(I_R_Request.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+	/**
+	 * Column name M_Product_ID
+	 */
+	public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Product Used.
@@ -1047,7 +1208,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ProductSpent_ID (int M_ProductSpent_ID);
+	public void setM_ProductSpent_ID(int M_ProductSpent_ID);
 
 	/**
 	 * Get Product Used.
@@ -1063,10 +1224,14 @@ public interface I_R_Request
 
 	public void setM_ProductSpent(org.compiere.model.I_M_Product M_ProductSpent);
 
-    /** Column definition for M_ProductSpent_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product> COLUMN_M_ProductSpent_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product>(I_R_Request.class, "M_ProductSpent_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_ProductSpent_ID */
-    public static final String COLUMNNAME_M_ProductSpent_ID = "M_ProductSpent_ID";
+	/**
+	 * Column definition for M_ProductSpent_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product> COLUMN_M_ProductSpent_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_Product>(I_R_Request.class, "M_ProductSpent_ID", org.compiere.model.I_M_Product.class);
+	/**
+	 * Column name M_ProductSpent_ID
+	 */
+	public static final String COLUMNNAME_M_ProductSpent_ID = "M_ProductSpent_ID";
 
 	/**
 	 * Set Qualität-Notiz.
@@ -1075,7 +1240,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_QualityNote_ID (int M_QualityNote_ID);
+	public void setM_QualityNote_ID(int M_QualityNote_ID);
 
 	/**
 	 * Get Qualität-Notiz.
@@ -1086,10 +1251,14 @@ public interface I_R_Request
 	 */
 	public int getM_QualityNote_ID();
 
-    /** Column definition for M_QualityNote_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_M_QualityNote_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "M_QualityNote_ID", null);
-    /** Column name M_QualityNote_ID */
-    public static final String COLUMNNAME_M_QualityNote_ID = "M_QualityNote_ID";
+	/**
+	 * Column definition for M_QualityNote_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_M_QualityNote_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "M_QualityNote_ID", null);
+	/**
+	 * Column name M_QualityNote_ID
+	 */
+	public static final String COLUMNNAME_M_QualityNote_ID = "M_QualityNote_ID";
 
 	/**
 	 * Set RMA.
@@ -1099,7 +1268,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_RMA_ID (int M_RMA_ID);
+	public void setM_RMA_ID(int M_RMA_ID);
 
 	/**
 	 * Get RMA.
@@ -1115,10 +1284,14 @@ public interface I_R_Request
 
 	public void setM_RMA(org.compiere.model.I_M_RMA M_RMA);
 
-    /** Column definition for M_RMA_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_RMA> COLUMN_M_RMA_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_RMA>(I_R_Request.class, "M_RMA_ID", org.compiere.model.I_M_RMA.class);
-    /** Column name M_RMA_ID */
-    public static final String COLUMNNAME_M_RMA_ID = "M_RMA_ID";
+	/**
+	 * Column definition for M_RMA_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_RMA> COLUMN_M_RMA_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_M_RMA>(I_R_Request.class, "M_RMA_ID", org.compiere.model.I_M_RMA.class);
+	/**
+	 * Column name M_RMA_ID
+	 */
+	public static final String COLUMNNAME_M_RMA_ID = "M_RMA_ID";
 
 	/**
 	 * Set Next action.
@@ -1128,7 +1301,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setNextAction (java.lang.String NextAction);
+	public void setNextAction(java.lang.String NextAction);
 
 	/**
 	 * Get Next action.
@@ -1140,10 +1313,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getNextAction();
 
-    /** Column definition for NextAction */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_NextAction = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "NextAction", null);
-    /** Column name NextAction */
-    public static final String COLUMNNAME_NextAction = "NextAction";
+	/**
+	 * Column definition for NextAction
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_NextAction = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "NextAction", null);
+	/**
+	 * Column name NextAction
+	 */
+	public static final String COLUMNNAME_NextAction = "NextAction";
 
 	/**
 	 * Set PerformanceType.
@@ -1152,7 +1329,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPerformanceType (java.lang.String PerformanceType);
+	public void setPerformanceType(@Nullable java.lang.String PerformanceType);
 
 	/**
 	 * Get PerformanceType.
@@ -1163,10 +1340,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getPerformanceType();
 
-    /** Column definition for PerformanceType */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_PerformanceType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "PerformanceType", null);
-    /** Column name PerformanceType */
-    public static final String COLUMNNAME_PerformanceType = "PerformanceType";
+	/**
+	 * Column definition for PerformanceType
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_PerformanceType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "PerformanceType", null);
+	/**
+	 * Column name PerformanceType
+	 */
+	public static final String COLUMNNAME_PerformanceType = "PerformanceType";
 
 	/**
 	 * Set Priority.
@@ -1176,7 +1357,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPriority (java.lang.String Priority);
+	public void setPriority(java.lang.String Priority);
 
 	/**
 	 * Get Priority.
@@ -1188,10 +1369,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getPriority();
 
-    /** Column definition for Priority */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Priority = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Priority", null);
-    /** Column name Priority */
-    public static final String COLUMNNAME_Priority = "Priority";
+	/**
+	 * Column definition for Priority
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Priority = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Priority", null);
+	/**
+	 * Column name Priority
+	 */
+	public static final String COLUMNNAME_Priority = "Priority";
 
 	/**
 	 * Set User Importance.
@@ -1201,7 +1386,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriorityUser (java.lang.String PriorityUser);
+	public void setPriorityUser(java.lang.String PriorityUser);
 
 	/**
 	 * Get User Importance.
@@ -1213,10 +1398,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getPriorityUser();
 
-    /** Column definition for PriorityUser */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_PriorityUser = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "PriorityUser", null);
-    /** Column name PriorityUser */
-    public static final String COLUMNNAME_PriorityUser = "PriorityUser";
+	/**
+	 * Column definition for PriorityUser
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_PriorityUser = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "PriorityUser", null);
+	/**
+	 * Column name PriorityUser
+	 */
+	public static final String COLUMNNAME_PriorityUser = "PriorityUser";
 
 	/**
 	 * Set Verarbeitet.
@@ -1226,7 +1415,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	public void setProcessed(boolean Processed);
 
 	/**
 	 * Get Verarbeitet.
@@ -1238,10 +1427,14 @@ public interface I_R_Request
 	 */
 	public boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	/**
+	 * Column definition for Processed
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Processed", null);
+	/**
+	 * Column name Processed
+	 */
+	public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Berechn. Menge.
@@ -1251,7 +1444,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced);
+	public void setQtyInvoiced(java.math.BigDecimal QtyInvoiced);
 
 	/**
 	 * Get Berechn. Menge.
@@ -1263,10 +1456,14 @@ public interface I_R_Request
 	 */
 	public java.math.BigDecimal getQtyInvoiced();
 
-    /** Column definition for QtyInvoiced */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QtyInvoiced", null);
-    /** Column name QtyInvoiced */
-    public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+	/**
+	 * Column definition for QtyInvoiced
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QtyInvoiced", null);
+	/**
+	 * Column name QtyInvoiced
+	 */
+	public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
 	 * Set Quantity Plan.
@@ -1276,7 +1473,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyPlan (java.math.BigDecimal QtyPlan);
+	public void setQtyPlan(java.math.BigDecimal QtyPlan);
 
 	/**
 	 * Get Quantity Plan.
@@ -1288,10 +1485,14 @@ public interface I_R_Request
 	 */
 	public java.math.BigDecimal getQtyPlan();
 
-    /** Column definition for QtyPlan */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QtyPlan = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QtyPlan", null);
-    /** Column name QtyPlan */
-    public static final String COLUMNNAME_QtyPlan = "QtyPlan";
+	/**
+	 * Column definition for QtyPlan
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QtyPlan = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QtyPlan", null);
+	/**
+	 * Column name QtyPlan
+	 */
+	public static final String COLUMNNAME_QtyPlan = "QtyPlan";
 
 	/**
 	 * Set Quantity Used.
@@ -1301,7 +1502,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtySpent (java.math.BigDecimal QtySpent);
+	public void setQtySpent(java.math.BigDecimal QtySpent);
 
 	/**
 	 * Get Quantity Used.
@@ -1313,10 +1514,14 @@ public interface I_R_Request
 	 */
 	public java.math.BigDecimal getQtySpent();
 
-    /** Column definition for QtySpent */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QtySpent = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QtySpent", null);
-    /** Column name QtySpent */
-    public static final String COLUMNNAME_QtySpent = "QtySpent";
+	/**
+	 * Column definition for QtySpent
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_QtySpent = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "QtySpent", null);
+	/**
+	 * Column name QtySpent
+	 */
+	public static final String COLUMNNAME_QtySpent = "QtySpent";
 
 	/**
 	 * Set Category.
@@ -1326,7 +1531,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_Category_ID (int R_Category_ID);
+	public void setR_Category_ID(int R_Category_ID);
 
 	/**
 	 * Get Category.
@@ -1342,10 +1547,14 @@ public interface I_R_Request
 
 	public void setR_Category(org.compiere.model.I_R_Category R_Category);
 
-    /** Column definition for R_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Category> COLUMN_R_Category_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Category>(I_R_Request.class, "R_Category_ID", org.compiere.model.I_R_Category.class);
-    /** Column name R_Category_ID */
-    public static final String COLUMNNAME_R_Category_ID = "R_Category_ID";
+	/**
+	 * Column definition for R_Category_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Category> COLUMN_R_Category_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Category>(I_R_Request.class, "R_Category_ID", org.compiere.model.I_R_Category.class);
+	/**
+	 * Column name R_Category_ID
+	 */
+	public static final String COLUMNNAME_R_Category_ID = "R_Category_ID";
 
 	/**
 	 * Set Group.
@@ -1355,7 +1564,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_Group_ID (int R_Group_ID);
+	public void setR_Group_ID(int R_Group_ID);
 
 	/**
 	 * Get Group.
@@ -1371,10 +1580,14 @@ public interface I_R_Request
 
 	public void setR_Group(org.compiere.model.I_R_Group R_Group);
 
-    /** Column definition for R_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Group> COLUMN_R_Group_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Group>(I_R_Request.class, "R_Group_ID", org.compiere.model.I_R_Group.class);
-    /** Column name R_Group_ID */
-    public static final String COLUMNNAME_R_Group_ID = "R_Group_ID";
+	/**
+	 * Column definition for R_Group_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Group> COLUMN_R_Group_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Group>(I_R_Request.class, "R_Group_ID", org.compiere.model.I_R_Group.class);
+	/**
+	 * Column name R_Group_ID
+	 */
+	public static final String COLUMNNAME_R_Group_ID = "R_Group_ID";
 
 	/**
 	 * Set Mail Template.
@@ -1384,7 +1597,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_MailText_ID (int R_MailText_ID);
+	public void setR_MailText_ID(int R_MailText_ID);
 
 	/**
 	 * Get Mail Template.
@@ -1400,10 +1613,14 @@ public interface I_R_Request
 
 	public void setR_MailText(org.compiere.model.I_R_MailText R_MailText);
 
-    /** Column definition for R_MailText_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_MailText>(I_R_Request.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
-    /** Column name R_MailText_ID */
-    public static final String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
+	/**
+	 * Column definition for R_MailText_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_MailText>(I_R_Request.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
+	/**
+	 * Column name R_MailText_ID
+	 */
+	public static final String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
 	 * Set Request.
@@ -1413,7 +1630,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setR_Request_ID (int R_Request_ID);
+	public void setR_Request_ID(int R_Request_ID);
 
 	/**
 	 * Get Request.
@@ -1425,10 +1642,14 @@ public interface I_R_Request
 	 */
 	public int getR_Request_ID();
 
-    /** Column definition for R_Request_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_R_Request_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "R_Request_ID", null);
-    /** Column name R_Request_ID */
-    public static final String COLUMNNAME_R_Request_ID = "R_Request_ID";
+	/**
+	 * Column definition for R_Request_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_R_Request_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "R_Request_ID", null);
+	/**
+	 * Column name R_Request_ID
+	 */
+	public static final String COLUMNNAME_R_Request_ID = "R_Request_ID";
 
 	/**
 	 * Set Related Request.
@@ -1438,7 +1659,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_RequestRelated_ID (int R_RequestRelated_ID);
+	public void setR_RequestRelated_ID(int R_RequestRelated_ID);
 
 	/**
 	 * Get Related Request.
@@ -1454,10 +1675,14 @@ public interface I_R_Request
 
 	public void setR_RequestRelated(org.compiere.model.I_R_Request R_RequestRelated);
 
-    /** Column definition for R_RequestRelated_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Request> COLUMN_R_RequestRelated_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Request>(I_R_Request.class, "R_RequestRelated_ID", org.compiere.model.I_R_Request.class);
-    /** Column name R_RequestRelated_ID */
-    public static final String COLUMNNAME_R_RequestRelated_ID = "R_RequestRelated_ID";
+	/**
+	 * Column definition for R_RequestRelated_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Request> COLUMN_R_RequestRelated_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Request>(I_R_Request.class, "R_RequestRelated_ID", org.compiere.model.I_R_Request.class);
+	/**
+	 * Column name R_RequestRelated_ID
+	 */
+	public static final String COLUMNNAME_R_RequestRelated_ID = "R_RequestRelated_ID";
 
 	/**
 	 * Set Request Type.
@@ -1467,7 +1692,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setR_RequestType_ID (int R_RequestType_ID);
+	public void setR_RequestType_ID(int R_RequestType_ID);
 
 	/**
 	 * Get Request Type.
@@ -1483,10 +1708,14 @@ public interface I_R_Request
 
 	public void setR_RequestType(org.compiere.model.I_R_RequestType R_RequestType);
 
-    /** Column definition for R_RequestType_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_RequestType> COLUMN_R_RequestType_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_RequestType>(I_R_Request.class, "R_RequestType_ID", org.compiere.model.I_R_RequestType.class);
-    /** Column name R_RequestType_ID */
-    public static final String COLUMNNAME_R_RequestType_ID = "R_RequestType_ID";
+	/**
+	 * Column definition for R_RequestType_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_RequestType> COLUMN_R_RequestType_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_RequestType>(I_R_Request.class, "R_RequestType_ID", org.compiere.model.I_R_RequestType.class);
+	/**
+	 * Column name R_RequestType_ID
+	 */
+	public static final String COLUMNNAME_R_RequestType_ID = "R_RequestType_ID";
 
 	/**
 	 * Set Request Type Interner Name.
@@ -1495,7 +1724,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_RequestType_InternalName (java.lang.String R_RequestType_InternalName);
+	public void setR_RequestType_InternalName(java.lang.String R_RequestType_InternalName);
 
 	/**
 	 * Get Request Type Interner Name.
@@ -1506,10 +1735,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getR_RequestType_InternalName();
 
-    /** Column definition for R_RequestType_InternalName */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_R_RequestType_InternalName = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "R_RequestType_InternalName", null);
-    /** Column name R_RequestType_InternalName */
-    public static final String COLUMNNAME_R_RequestType_InternalName = "R_RequestType_InternalName";
+	/**
+	 * Column definition for R_RequestType_InternalName
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_R_RequestType_InternalName = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "R_RequestType_InternalName", null);
+	/**
+	 * Column name R_RequestType_InternalName
+	 */
+	public static final String COLUMNNAME_R_RequestType_InternalName = "R_RequestType_InternalName";
 
 	/**
 	 * Set Resolution.
@@ -1519,7 +1752,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_Resolution_ID (int R_Resolution_ID);
+	public void setR_Resolution_ID(int R_Resolution_ID);
 
 	/**
 	 * Get Resolution.
@@ -1535,10 +1768,14 @@ public interface I_R_Request
 
 	public void setR_Resolution(org.compiere.model.I_R_Resolution R_Resolution);
 
-    /** Column definition for R_Resolution_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Resolution> COLUMN_R_Resolution_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Resolution>(I_R_Request.class, "R_Resolution_ID", org.compiere.model.I_R_Resolution.class);
-    /** Column name R_Resolution_ID */
-    public static final String COLUMNNAME_R_Resolution_ID = "R_Resolution_ID";
+	/**
+	 * Column definition for R_Resolution_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Resolution> COLUMN_R_Resolution_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Resolution>(I_R_Request.class, "R_Resolution_ID", org.compiere.model.I_R_Resolution.class);
+	/**
+	 * Column name R_Resolution_ID
+	 */
+	public static final String COLUMNNAME_R_Resolution_ID = "R_Resolution_ID";
 
 	/**
 	 * Set Standard Response.
@@ -1548,7 +1785,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_StandardResponse_ID (int R_StandardResponse_ID);
+	public void setR_StandardResponse_ID(int R_StandardResponse_ID);
 
 	/**
 	 * Get Standard Response.
@@ -1564,10 +1801,14 @@ public interface I_R_Request
 
 	public void setR_StandardResponse(org.compiere.model.I_R_StandardResponse R_StandardResponse);
 
-    /** Column definition for R_StandardResponse_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_StandardResponse> COLUMN_R_StandardResponse_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_StandardResponse>(I_R_Request.class, "R_StandardResponse_ID", org.compiere.model.I_R_StandardResponse.class);
-    /** Column name R_StandardResponse_ID */
-    public static final String COLUMNNAME_R_StandardResponse_ID = "R_StandardResponse_ID";
+	/**
+	 * Column definition for R_StandardResponse_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_StandardResponse> COLUMN_R_StandardResponse_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_StandardResponse>(I_R_Request.class, "R_StandardResponse_ID", org.compiere.model.I_R_StandardResponse.class);
+	/**
+	 * Column name R_StandardResponse_ID
+	 */
+	public static final String COLUMNNAME_R_StandardResponse_ID = "R_StandardResponse_ID";
 
 	/**
 	 * Set Status.
@@ -1577,7 +1818,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_Status_ID (int R_Status_ID);
+	public void setR_Status_ID(int R_Status_ID);
 
 	/**
 	 * Get Status.
@@ -1593,10 +1834,14 @@ public interface I_R_Request
 
 	public void setR_Status(org.compiere.model.I_R_Status R_Status);
 
-    /** Column definition for R_Status_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Status> COLUMN_R_Status_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Status>(I_R_Request.class, "R_Status_ID", org.compiere.model.I_R_Status.class);
-    /** Column name R_Status_ID */
-    public static final String COLUMNNAME_R_Status_ID = "R_Status_ID";
+	/**
+	 * Column definition for R_Status_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Status> COLUMN_R_Status_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_R_Status>(I_R_Request.class, "R_Status_ID", org.compiere.model.I_R_Status.class);
+	/**
+	 * Column name R_Status_ID
+	 */
+	public static final String COLUMNNAME_R_Status_ID = "R_Status_ID";
 
 	/**
 	 * Set Datensatz-ID.
@@ -1606,7 +1851,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRecord_ID (int Record_ID);
+	public void setRecord_ID(int Record_ID);
 
 	/**
 	 * Get Datensatz-ID.
@@ -1618,10 +1863,14 @@ public interface I_R_Request
 	 */
 	public int getRecord_ID();
 
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+	/**
+	 * Column definition for Record_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Record_ID", null);
+	/**
+	 * Column name Record_ID
+	 */
+	public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Wiedervorlage Datum.
@@ -1630,7 +1879,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setReminderDate (java.sql.Timestamp ReminderDate);
+	public void setReminderDate(java.sql.Timestamp ReminderDate);
 
 	/**
 	 * Get Wiedervorlage Datum.
@@ -1641,10 +1890,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getReminderDate();
 
-    /** Column definition for ReminderDate */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ReminderDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ReminderDate", null);
-    /** Column name ReminderDate */
-    public static final String COLUMNNAME_ReminderDate = "ReminderDate";
+	/**
+	 * Column definition for ReminderDate
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_ReminderDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "ReminderDate", null);
+	/**
+	 * Column name ReminderDate
+	 */
+	public static final String COLUMNNAME_ReminderDate = "ReminderDate";
 
 	/**
 	 * Set Request_includedTab.
@@ -1653,7 +1906,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRequest_includedTab (java.lang.String Request_includedTab);
+	public void setRequest_includedTab(java.lang.String Request_includedTab);
 
 	/**
 	 * Get Request_includedTab.
@@ -1664,10 +1917,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getRequest_includedTab();
 
-    /** Column definition for Request_includedTab */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Request_includedTab = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Request_includedTab", null);
-    /** Column name Request_includedTab */
-    public static final String COLUMNNAME_Request_includedTab = "Request_includedTab";
+	/**
+	 * Column definition for Request_includedTab
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Request_includedTab = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Request_includedTab", null);
+	/**
+	 * Column name Request_includedTab
+	 */
+	public static final String COLUMNNAME_Request_includedTab = "Request_includedTab";
 
 	/**
 	 * Set Request Amount.
@@ -1677,7 +1934,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setRequestAmt (java.math.BigDecimal RequestAmt);
+	public void setRequestAmt(java.math.BigDecimal RequestAmt);
 
 	/**
 	 * Get Request Amount.
@@ -1689,10 +1946,14 @@ public interface I_R_Request
 	 */
 	public java.math.BigDecimal getRequestAmt();
 
-    /** Column definition for RequestAmt */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_RequestAmt = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "RequestAmt", null);
-    /** Column name RequestAmt */
-    public static final String COLUMNNAME_RequestAmt = "RequestAmt";
+	/**
+	 * Column definition for RequestAmt
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_RequestAmt = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "RequestAmt", null);
+	/**
+	 * Column name RequestAmt
+	 */
+	public static final String COLUMNNAME_RequestAmt = "RequestAmt";
 
 	/**
 	 * Set Ergebnis.
@@ -1702,7 +1963,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setResult (java.lang.String Result);
+	public void setResult(java.lang.String Result);
 
 	/**
 	 * Get Ergebnis.
@@ -1714,10 +1975,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getResult();
 
-    /** Column definition for Result */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Result = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Result", null);
-    /** Column name Result */
-    public static final String COLUMNNAME_Result = "Result";
+	/**
+	 * Column definition for Result
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Result = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Result", null);
+	/**
+	 * Column name Result
+	 */
+	public static final String COLUMNNAME_Result = "Result";
 
 	/**
 	 * Set Aussendienst.
@@ -1726,7 +1991,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSalesRep_ID (int SalesRep_ID);
+	public void setSalesRep_ID(int SalesRep_ID);
 
 	/**
 	 * Get Aussendienst.
@@ -1741,10 +2006,14 @@ public interface I_R_Request
 
 	public void setSalesRep(org.compiere.model.I_AD_User SalesRep);
 
-    /** Column definition for SalesRep_ID */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
-    /** Column name SalesRep_ID */
-    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+	/**
+	 * Column definition for SalesRep_ID
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
+	/**
+	 * Column name SalesRep_ID
+	 */
+	public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Anfangsdatum.
@@ -1754,7 +2023,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStartDate (java.sql.Timestamp StartDate);
+	public void setStartDate(java.sql.Timestamp StartDate);
 
 	/**
 	 * Get Anfangsdatum.
@@ -1766,10 +2035,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getStartDate();
 
-    /** Column definition for StartDate */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_StartDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "StartDate", null);
-    /** Column name StartDate */
-    public static final String COLUMNNAME_StartDate = "StartDate";
+	/**
+	 * Column definition for StartDate
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_StartDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "StartDate", null);
+	/**
+	 * Column name StartDate
+	 */
+	public static final String COLUMNNAME_StartDate = "StartDate";
 
 	/**
 	 * Set Startdatum.
@@ -1778,7 +2051,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStartTime (java.sql.Timestamp StartTime);
+	public void setStartTime(java.sql.Timestamp StartTime);
 
 	/**
 	 * Get Startdatum.
@@ -1789,10 +2062,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getStartTime();
 
-    /** Column definition for StartTime */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_StartTime = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "StartTime", null);
-    /** Column name StartTime */
-    public static final String COLUMNNAME_StartTime = "StartTime";
+	/**
+	 * Column definition for StartTime
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_StartTime = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "StartTime", null);
+	/**
+	 * Column name StartTime
+	 */
+	public static final String COLUMNNAME_StartTime = "StartTime";
 
 	/**
 	 * Set Summary.
@@ -1802,7 +2079,7 @@ public interface I_R_Request
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSummary (java.lang.String Summary);
+	public void setSummary(java.lang.String Summary);
 
 	/**
 	 * Get Summary.
@@ -1814,10 +2091,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getSummary();
 
-    /** Column definition for Summary */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Summary = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Summary", null);
-    /** Column name Summary */
-    public static final String COLUMNNAME_Summary = "Summary";
+	/**
+	 * Column definition for Summary
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Summary = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Summary", null);
+	/**
+	 * Column name Summary
+	 */
+	public static final String COLUMNNAME_Summary = "Summary";
 
 	/**
 	 * Set Task Status.
@@ -1827,7 +2108,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTaskStatus (java.lang.String TaskStatus);
+	public void setTaskStatus(java.lang.String TaskStatus);
 
 	/**
 	 * Get Task Status.
@@ -1839,10 +2120,14 @@ public interface I_R_Request
 	 */
 	public java.lang.String getTaskStatus();
 
-    /** Column definition for TaskStatus */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_TaskStatus = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "TaskStatus", null);
-    /** Column name TaskStatus */
-    public static final String COLUMNNAME_TaskStatus = "TaskStatus";
+	/**
+	 * Column definition for TaskStatus
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_TaskStatus = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "TaskStatus", null);
+	/**
+	 * Column name TaskStatus
+	 */
+	public static final String COLUMNNAME_TaskStatus = "TaskStatus";
 
 	/**
 	 * Get Updated.
@@ -1854,10 +2139,14 @@ public interface I_R_Request
 	 */
 	public java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	/**
+	 * Column definition for Updated
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "Updated", null);
+	/**
+	 * Column name Updated
+	 */
+	public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -1869,8 +2158,12 @@ public interface I_R_Request
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/**
+	 * Column definition for UpdatedBy
+	 */
+	public static final org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_R_Request, org.compiere.model.I_AD_User>(I_R_Request.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+	/**
+	 * Column name UpdatedBy
+	 */
+	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -87,7 +87,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 *
 	 * @param onlyOrgIds restrict to any of the given orgIds. If empty, then don't filter for orgIds
 	 * @return empty if the given {@code salesPartnerCode} is empty.
-	 * @throws exception if the given parameters match more than one bPartner.
+	 * @throws org.adempiere.exceptions.AdempiereException if the given parameters match more than one bPartner.
 	 */
 	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode, Set<OrgId> onlyOrgIds);
 
@@ -158,9 +158,6 @@ public interface IBPartnerDAO extends ISingletonService
 	ShipperId getShipperId(BPartnerId bpartnerId);
 
 	/**
-	 * @param address
-	 * @param po
-	 * @param columnName
 	 * @return true if an address with the flag columnName on true already exists in the table, false otherwise.
 	 */
 	boolean existsDefaultAddressInTable(I_C_BPartner_Location address, String trxName, String columnName);
@@ -306,6 +303,8 @@ public interface IBPartnerDAO extends ISingletonService
 	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
 
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+
+	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
 	@Value
 	@Builder

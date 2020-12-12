@@ -1,9 +1,5 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.util.Check.assumeNotEmpty;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.GLN;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
@@ -11,6 +7,9 @@ import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import static de.metas.util.Check.assumeNotEmpty;
 
 /*
  * #%L
@@ -34,6 +33,7 @@ import lombok.Value;
  * #L%
  */
 
+/** Key used in conjunction with an orgId to do caching. */
 @Value
 public class BPartnerCompositeLookupKey
 {
@@ -101,5 +101,4 @@ public class BPartnerCompositeLookupKey
 		this.code = code;
 		this.gln = gln;
 	}
-
 }

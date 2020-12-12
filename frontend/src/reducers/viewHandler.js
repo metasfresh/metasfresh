@@ -1,4 +1,4 @@
-import { get } from 'lodash';
+import { get, find } from 'lodash';
 import { createSelector } from 'reselect';
 
 import {
@@ -66,6 +66,7 @@ export const initialState = {
     viewId: null,
     windowId: null,
     viewProfileId: null,
+    parentId: null,
   },
 };
 
@@ -92,6 +93,23 @@ const getLocalView = createSelector(
 );
 
 const getViewType = (isModal) => (isModal ? 'modals' : 'views');
+
+/**
+ * @method findViewByViewId
+ * @summary searches for a specific view with viewId
+ *
+ * @param {object} state
+ * @param {string} viewId
+ */
+export function findViewByViewId({ viewHandler }, viewId) {
+  let view = find(viewHandler.views, (item) => item.viewId === viewId);
+
+  if (!view) {
+    view = find(viewHandler.modals, (item) => item.viewId === viewId);
+  }
+
+  return view;
+}
 
 export default function viewHandler(state = initialState, action) {
   if ((!action.payload || !action.payload.id) && action.type !== DELETE_VIEW) {
@@ -462,7 +480,7 @@ export default function viewHandler(state = initialState, action) {
       return state;
     }
     case SET_INCLUDED_VIEW: {
-      const { id, viewId, viewProfileId } = action.payload;
+      const { id, viewId, viewProfileId, parentId } = action.payload;
 
       return {
         ...state,
@@ -471,6 +489,7 @@ export default function viewHandler(state = initialState, action) {
           viewId,
           windowId: id,
           viewProfileId,
+          parentId,
         },
       };
     }
@@ -486,6 +505,7 @@ export default function viewHandler(state = initialState, action) {
             viewId: null,
             windowId: null,
             viewProfileId: null,
+            parentId: null,
           },
         };
       } else {

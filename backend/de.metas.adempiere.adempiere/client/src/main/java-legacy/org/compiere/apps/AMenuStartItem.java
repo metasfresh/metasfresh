@@ -23,6 +23,11 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import de.metas.workflow.WFNode;
+import de.metas.workflow.Workflow;
+import de.metas.workflow.WorkflowId;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -75,9 +80,12 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		new AMenuStartItem(adMenuId, isMenu, name, menu).start();
 	}
 	
-	public static final void startWFNode(final I_AD_WF_Node wfNode, final AMenu menu)
+	public static final void startWFNode(
+			@NonNull final WorkflowId workflowId,
+			@NonNull final WFNode wfNode,
+			final AMenu menu)
 	{
-		new AMenuStartItem(wfNode, menu).start();
+		new AMenuStartItem(workflowId, wfNode, menu).start();
 	}
 
 	/**
@@ -109,25 +117,26 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		m_menu = menu == null ? AEnv.getAMenu() : menu;
 	}
 	
-	private AMenuStartItem(final I_AD_WF_Node wfNode, final AMenu menu)
+	private AMenuStartItem(
+			@NonNull final WorkflowId workflowId,
+			@NonNull final WFNode wfNode,
+			final AMenu menu)
 	{
-		super();
-		Check.assumeNotNull(wfNode, "node not null");
-		m_ID = wfNode.getAD_WF_Node_ID();
+		m_ID = wfNode.getId().getRepoId();
 		m_isMenu = false;
-		m_name = wfNode.getName();
+		m_name = wfNode.getName().translate(Env.getADLanguageOrBaseLanguage());
 
 		m_menu = menu == null ? AEnv.getAMenu() : menu;
 
 		//
 		// Load
-		this.action = wfNode.getAction();
-		this.adWindowId = AdWindowId.ofRepoIdOrNull(wfNode.getAD_Window_ID());
+		this.action = wfNode.getAction().getCode();
+		this.adWindowId = wfNode.getAdWindowId();
 		this.adWorkbenchId = -1;
-		this.adProcessId = wfNode.getAD_Process_ID();
-		this.adFormId = wfNode.getAD_Form_ID();
-		this.adTaskId = wfNode.getAD_Task_ID();
-		this.adWorkflowId = wfNode.getWorkflow_ID();
+		this.adProcessId = -1; // wfNode.getAD_Process_ID();
+		this.adFormId = -1; // wfNode.getAD_Form_ID();
+		this.adTaskId = -1; // wfNode.getAD_Task_ID();
+		this.adWorkflowId = workflowId;
 		this.IsSOTrx = true;
 		this.loaded = true;
 	}
@@ -147,7 +156,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	private AdWindowId adWindowId = null;
 	private int adWorkbenchId = -1;
 	private int adProcessId = -1;
-	private int adWorkflowId = -1;
+	private WorkflowId adWorkflowId = null;
 	private int adFormId = -1;
 	private int adTaskId = -1;
 
@@ -255,7 +264,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 				adWindowId = AdWindowId.ofRepoIdOrNull(rs.getInt("AD_Window_ID"));
 				adProcessId = rs.getInt("AD_Process_ID");
 				adWorkbenchId = rs.getInt("AD_Workbench_ID");
-				adWorkflowId = rs.getInt(m_isMenu ? I_AD_Menu.COLUMNNAME_AD_Workflow_ID : I_AD_WF_Node.COLUMNNAME_Workflow_ID);
+				adWorkflowId = WorkflowId.ofRepoIdOrNull(rs.getInt(m_isMenu ? I_AD_Menu.COLUMNNAME_AD_Workflow_ID : I_AD_WF_Node.COLUMNNAME_Workflow_ID));
 				adTaskId = rs.getInt("AD_Task_ID");
 				adFormId = rs.getInt("AD_Form_ID");
 				loaded = true;
@@ -330,7 +339,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 				.show();
 	}
 
-	private final void startWorkflow(final int AD_Workflow_ID)
+	private final void startWorkflow(final WorkflowId workflowId)
 	{
 		if (m_menu == null)
 		{
@@ -338,7 +347,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 					.throwOrLogWarning(false, logger);
 			return;
 		}
-		m_menu.startWorkFlow(AD_Workflow_ID);
+		m_menu.startWorkFlow(workflowId);
 	}
 
 	/**
