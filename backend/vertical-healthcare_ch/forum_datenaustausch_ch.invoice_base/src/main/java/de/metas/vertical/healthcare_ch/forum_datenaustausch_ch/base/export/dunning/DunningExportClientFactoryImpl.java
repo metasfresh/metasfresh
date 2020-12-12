@@ -1,10 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.dunning;
 
-import java.util.Optional;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.dunning_gateway.spi.DunningExportClient;
 import de.metas.dunning_gateway.spi.DunningExportClientFactory;
 import de.metas.dunning_gateway.spi.model.BPartnerId;
@@ -13,11 +9,14 @@ import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.util.Loggables;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -87,9 +86,9 @@ public class DunningExportClientFactoryImpl implements DunningExportClientFactor
 		}
 
 		final BPartnerId recipientId = dunning.getRecipientId();
-		final ConfigQuery query = ConfigQuery
+		final BPartnerQuery query = BPartnerQuery
 				.builder()
-				.bpartnerId(recipientId)
+				.bPartnerId(de.metas.bpartner.BPartnerId.ofRepoId(recipientId.getRepoId()))
 				.build();
 		final ExportConfig config = configRepository.getForQueryOrNull(query);
 		if (config == null)

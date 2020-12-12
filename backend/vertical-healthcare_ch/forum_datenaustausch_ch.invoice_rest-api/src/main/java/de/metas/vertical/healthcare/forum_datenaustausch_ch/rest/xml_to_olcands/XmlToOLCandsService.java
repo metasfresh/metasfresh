@@ -1,96 +1,8 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
-
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE;
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.assumeNotNull;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.StringJoiner;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.jgoodies.common.base.Objects;
-
-import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.exception.MissingPropertyException;
-import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
-import de.metas.rest_api.ordercandidates.request.JsonOrganization;
-import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
-import de.metas.rest_api.ordercandidates.request.JsonProductInfo.Type;
-import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
-import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact.JsonRequestBPartnerLocationAndContactBuilder;
-import de.metas.rest_api.ordercandidates.response.JsonAttachment;
-import de.metas.rest_api.ordercandidates.response.JsonOLCand;
-import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.ExternalId;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions.InvalidXMLException;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthcareCHHelper;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GuarantorAddressType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InvoiceType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayloadType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PersonType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PostalAddressType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDRGType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDrugType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordLabType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordMigelType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordOtherType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordParamedType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordTarmedType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ServicesType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ZipType;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_rest-api
+ * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -108,19 +20,110 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.jgoodies.common.base.Objects;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.organization.OrgId;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.exception.MissingPropertyException;
+import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact.JsonRequestBPartnerLocationAndContactBuilder;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
+import de.metas.rest_api.ordercandidates.response.JsonOLCand;
+import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.RestApiConstants;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.RestApiStartupCondition;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.InvalidXMLException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvalidRequestIdException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvoiceAttachException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvoiceInputStreamException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvoiceUnmarshalException;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthcareCHHelper;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfig;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfigRepository;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BillerAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.BodyType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.CompanyType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.GuarantorAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.InvoiceType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.OnlineAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PatientAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PayloadType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PersonType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.PostalAddressType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ServicesType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.ZipType;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBElement;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.StringJoiner;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXTERNAL_REFERENCE;
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.assumeNotNull;
+
 @Service
 @Conditional(RestApiStartupCondition.class)
 public class XmlToOLCandsService
 {
-	private static final String CURRENCY_CODE = "CHF";
-
-	private static final String UOM_CODE = "MJ";  // minute; HUR would be hour
-
 	private final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
+	private final BpartnerRestController bpartnerRestController;
+	private final ImportConfigRepository importConfigRepository;
 
-	public XmlToOLCandsService(@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint)
+	public XmlToOLCandsService(
+			@NonNull final OrderCandidatesRestEndpoint orderCandidatesRestEndpoint,
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final ImportConfigRepository importConfigRepository)
 	{
 		this.orderCandidatesRestEndpoint = orderCandidatesRestEndpoint;
+		this.bpartnerRestController = bpartnerRestController;
+		this.importConfigRepository = importConfigRepository;
 	}
 
 	public JsonAttachment createOLCands(@NonNull final CreateOLCandsRequest createOLCandsRequest)
@@ -216,50 +219,6 @@ public class XmlToOLCandsService
 		}
 	}
 
-	public static class XmlInvoiceInputStreamException extends RuntimeException
-	{
-		private static final long serialVersionUID = 8216181888558013882L;
-
-		public XmlInvoiceInputStreamException(@NonNull final Throwable cause)
-		{
-			super("An error occurred while trying access the XML invoice input stream", cause);
-		}
-	}
-
-	public static class XmlInvoiceUnmarshalException extends RuntimeException
-	{
-		private static final long serialVersionUID = 8216181888558013882L;
-
-		public XmlInvoiceUnmarshalException(@NonNull final Throwable cause)
-		{
-			super("An error occurred while trying to unmarshal the invoice XML data", cause);
-		}
-	}
-
-	public static class XmlInvalidRequestIdException extends RuntimeException
-	{
-		private static final long serialVersionUID = -4688552956794873772L;
-
-		@Getter
-		private final String invalidRequestId;
-
-		public XmlInvalidRequestIdException(@Nullable final String invalidRequestId)
-		{
-			super("Invalid invoice request_id=" + invalidRequestId + "; it has to start with EA_, KV_ or KT_");
-			this.invalidRequestId = invalidRequestId;
-		}
-	}
-
-	public static class XmlInvoiceAttachException extends RuntimeException
-	{
-		private static final long serialVersionUID = 2013021164753485741L;
-
-		public XmlInvoiceAttachException(@NonNull final Throwable cause)
-		{
-			super("An error occurred while trying attach the XML data to the order line candidates", cause);
-		}
-	}
-
 	@VisibleForTesting
 	JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
 			@NonNull final RequestType xmlInvoice,
@@ -293,10 +252,12 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	/** Contains context-infos from high-up in the call-hierarchy */
+	/**
+	 * Contains context-infos from high-up in the call-hierarchy
+	 */
 	@Value
 	@Builder
-	private static class HighLevelContext
+	public static class HighLevelContext
 	{
 		@NonNull
 		HealthCareInvoiceDocSubType targetDocType;
@@ -369,6 +330,10 @@ public class XmlToOLCandsService
 		{
 			result = requestIdToUse.substring("EA_".length());
 		}
+		else if (requestIdToUse.startsWith("GM_")) // "Gemeinde"
+		{
+			result = requestIdToUse.substring("GM_".length());
+		}
 		else
 		{
 			throw new XmlInvalidRequestIdException(requestIdToUse);
@@ -399,13 +364,21 @@ public class XmlToOLCandsService
 		{
 			case KV:
 			case KT:
+				// the bpartner already exists in metasfresh
 				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
 				break;
 			case EA:
-				addPatientInvoiceRecipients(
+				// The bill-receiver (patient) might or might not yet exist.
+				// We extract all the infos, so the sales order-candidate-API could create it on the fly
+				addPatientInvoiceRecipient(
 						requestBuilder,
 						body,
 						context);
+				break;
+			case GM:
+				// The bill-receiver (municipality)  might or might not yet exist.
+				// We need it to be at org=* which can't be done by sales order-candidate-API
+				requestBuilder.bpartner(addMunicipalityInvoiceRecipient(body, context));
 				break;
 			default:
 				throw new AdempiereException("Unsupported targetDocType=" + context.getTargetDocType());
@@ -472,7 +445,7 @@ public class XmlToOLCandsService
 		return body.getTiersPayant().getGuarantor();
 	}
 
-	private void addPatientInvoiceRecipients(
+	private void addPatientInvoiceRecipient(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
 			@NonNull final BodyType body,
 			@NonNull final HighLevelContext context)
@@ -490,11 +463,18 @@ public class XmlToOLCandsService
 		final PersonType person = patient.getPerson();
 		final String patientName = createFullPersonName(person);
 
+		final BPartnerQuery bPartnerQuery = BPartnerQuery.builder()
+				.externalId(ExternalId.of(patientExternalId.getValue()))
+				.failIfNotExists(false)
+				.build();
+		final ImportConfig importConfig = importConfigRepository.getForQueryOrNull(bPartnerQuery);
+
 		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
 		bPartner.setGlobalId(patient.getSsn());
 		bPartner.setExternalId(patientExternalId);
 		bPartner.setName(patientName);
-		bPartner.setLanguage("de_CH");
+		bPartner.setGroup(importConfig.getPartientBPartnerGroupName());
+		bPartner.setLanguage(importConfig.getLanguageCode());
 		bPartnerInfo.bpartner(bPartner);
 
 		final JsonRequestLocation patientLocation = createJsonBPartnerLocation(
@@ -502,27 +482,12 @@ public class XmlToOLCandsService
 				null/* gln */,
 				person.getPostal());
 
-		final PostalAddressType guarantorPostal;
-		final String guarantorName;
-		if (guarantor.getCompany() != null)
-		{
-			guarantorPostal = guarantor.getCompany().getPostal();
-			guarantorName = guarantor.getCompany().getCompanyname();
-		}
-		else if (guarantor.getPerson() != null)
-		{
-			guarantorPostal = guarantor.getPerson().getPostal();
-			guarantorName = createFullPersonName(guarantor.getPerson());
-		}
-		else
-		{
-			throw new MissingPropertyException("guarantor/company or guarantor/person", guarantor);
-		}
+		final NameAndPostal nameAndPostal = extractGuarantorNameAndPostal(guarantor);
 
 		final JsonRequestLocation guarantorLocation = createJsonBPartnerLocation(
 				patientExternalId,
 				null/* gln */,
-				guarantorPostal);
+				nameAndPostal.getPostal());
 		if (Objects.equals(patientLocation, guarantorLocation))
 		{
 			patientLocation.setName(patientName);
@@ -540,8 +505,8 @@ public class XmlToOLCandsService
 					.bpartner(bPartner);
 
 			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
-			guarantorLocation.setName(guarantorName);
-			guarantorLocation.setBpartnerName(guarantorName);
+			guarantorLocation.setName(nameAndPostal.getName());
+			guarantorLocation.setBpartnerName(nameAndPostal.getName());
 			guarantorLocation.setExternalId(JsonExternalId.of(guarantorLocation.getExternalId().getValue() + "_GUARANTOR"));
 			guarantorLocation.setShipTo(false);
 			guarantorLocation.setShipToDefault(false);
@@ -559,6 +524,114 @@ public class XmlToOLCandsService
 		}
 		bPartnerInfo.location(patientLocation);
 		requestBuilder.bpartner(bPartnerInfo.build());
+	}
+
+	private JsonRequestBPartnerLocationAndContact addMunicipalityInvoiceRecipient(
+			@NonNull final BodyType body,
+			@NonNull final HighLevelContext context)
+	{
+		final GuarantorAddressType guarantor = getGuarantor(body); // the guarantor is the municipality who gets the invoice
+
+		final NameAndPostal guarantorNameAndPostal = extractGuarantorNameAndPostal(guarantor);
+
+		final String zipCode = guarantorNameAndPostal.getPostal().getZip().getValue();
+
+		final String bpartnerCode = "GM-" + zipCode;
+		final JsonExternalId guarantorExternalId = JsonExternalId.of(bpartnerCode);
+		final JsonExternalId locationExternalId = JsonExternalId.of(guarantorExternalId.getValue() + "_GUARANTOR");
+
+		final BPartnerQuery bPartnerQuery = BPartnerQuery.builder()
+				.bpartnerValue(bpartnerCode).onlyOrgId(OrgId.ANY)
+				.failIfNotExists(false)
+				.build();
+		final ImportConfig importConfig = importConfigRepository.getForQueryOrNull(bPartnerQuery);
+
+		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
+		bPartner.setCode(bpartnerCode);
+		bPartner.setExternalId(guarantorExternalId);
+		bPartner.setCompanyName(guarantorNameAndPostal.getName());
+		bPartner.setName(guarantorNameAndPostal.getName());
+		bPartner.setGroup(importConfig.getMunicipalityBPartnerGroupName());
+		bPartner.setLanguage(importConfig.getLanguageCode());
+
+		final JsonRequestLocation guarantorLocation = createJsonBPartnerLocation(
+				guarantorExternalId,
+				null/* gln */,
+				guarantorNameAndPostal.getPostal());
+
+		guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
+		guarantorLocation.setName(guarantorNameAndPostal.getName());
+		guarantorLocation.setBpartnerName(guarantorNameAndPostal.getName());
+		guarantorLocation.setExternalId(locationExternalId);
+		guarantorLocation.setShipTo(true);
+		guarantorLocation.setShipToDefault(true);
+		guarantorLocation.setBillTo(true);
+		guarantorLocation.setBillToDefault(true);
+
+		final JsonRequestBPartnerUpsert partnerUpsert = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(context.getDebitorSyncAdvise())
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+						.bpartnerIdentifier("val-" + bpartnerCode) // the
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.orgCode("0") // if a bpartner is created, then with Org=*
+								.bpartner(bPartner)
+								.locations(JsonRequestLocationUpsert.builder()
+										.requestItem(JsonRequestLocationUpsertItem.builder()
+												.locationIdentifier("ext-" + locationExternalId.getValue())
+												.location(guarantorLocation)
+												.build())
+										.build())
+								.build())
+						.build())
+				.build();
+		bpartnerRestController.createOrUpdateBPartner(partnerUpsert);
+
+		// now prepare the JSON to put into the order line candidate request
+		final JsonRequestBPartner lookupOnlyBPartner = new JsonRequestBPartner();
+		lookupOnlyBPartner.setExternalId(guarantorExternalId);
+		final JsonRequestLocation lookupOnlyLocation = new JsonRequestLocation();
+		lookupOnlyLocation.setExternalId(locationExternalId);
+
+		return JsonRequestBPartnerLocationAndContact
+				.builder()
+				.syncAdvise(SyncAdvise.READ_ONLY) // there should be nothing to do since we just did it
+				.bpartner(lookupOnlyBPartner)
+				.location(lookupOnlyLocation)
+				.build();
+	}
+
+	@NonNull
+	private NameAndPostal extractGuarantorNameAndPostal(@NonNull final GuarantorAddressType guarantor)
+	{
+		final PostalAddressType guarantorPostal;
+		final String guarantorName;
+		if (guarantor.getCompany() != null)
+		{
+			guarantorPostal = guarantor.getCompany().getPostal();
+			guarantorName = guarantor.getCompany().getCompanyname();
+		}
+		else if (guarantor.getPerson() != null)
+		{
+			guarantorPostal = guarantor.getPerson().getPostal();
+			guarantorName = createFullPersonName(guarantor.getPerson());
+		}
+		else
+		{
+			throw new MissingPropertyException("guarantor/company or guarantor/person", guarantor);
+		}
+
+		final NameAndPostal nameAndPostal = new NameAndPostal(guarantorName, guarantorPostal);
+		return nameAndPostal;
+	}
+
+	@Value
+	private static class NameAndPostal
+	{
+		@NonNull
+		String name;
+
+		@NonNull
+		PostalAddressType postal;
 	}
 
 	private String createFullPersonName(@NonNull final PersonType person)
@@ -587,7 +660,7 @@ public class XmlToOLCandsService
 			@NonNull final BillerAddressType biller,
 			@NonNull final HighLevelContext context)
 	{
-		final Name name = createName(biller);
+		final PersonName name = createName(biller);
 
 		return JsonOrganization
 				.builder()
@@ -633,7 +706,7 @@ public class XmlToOLCandsService
 			@NonNull final BillerAddressType biller,
 			@NonNull final HighLevelContext context)
 	{
-		final Name name = createName(biller);
+		final PersonName name = createName(biller);
 
 		final CompanyType company = biller.getCompany();
 		final JsonExternalId billerBPartnerExternalId = createBPartnerExternalId(biller);
@@ -681,9 +754,9 @@ public class XmlToOLCandsService
 				.build();
 	}
 
-	private Name createName(@NonNull final BillerAddressType biller)
+	private PersonName createName(@NonNull final BillerAddressType biller)
 	{
-		final Name.NameBuilder name = Name.builder();
+		final PersonName.PersonNameBuilder name = PersonName.builder();
 
 		final String orgName;
 		if (biller.getCompany() != null)
@@ -704,7 +777,7 @@ public class XmlToOLCandsService
 
 	@Value
 	@Builder
-	private static class Name
+	private static class PersonName
 	{
 		String firstName;
 		String lastName;
@@ -803,103 +876,8 @@ public class XmlToOLCandsService
 		final List<Object> records = services.getRecordTarmedOrRecordDrgOrRecordLab();
 		for (final Object record : records)
 		{
-			result.addAll(insertServiceRecordIntoBuilder(invoiceRecipient, record, context));
+			result.addAll(XmlServiceRecordUtil.insertServiceRecordIntoBuilder(invoiceRecipient, record, context));
 		}
-
-		return result.build();
-	}
-
-	private ImmutableList<JsonOLCandCreateRequestBuilder> insertServiceRecordIntoBuilder(
-			@NonNull final JsonOLCandCreateRequest preliminaryRequest,
-			@NonNull final Object record,
-			@NonNull final HighLevelContext context)
-	{
-		final ImmutableList.Builder<JsonOLCandCreateRequestBuilder> result = ImmutableList.builder();
-
-		final String externalLineId;
-		final JsonProductInfo product;
-		final BigDecimal price;
-		final BigDecimal quantity;
-		if (record instanceof RecordTarmedType)
-		{
-			final RecordTarmedType recordTarmedType = (RecordTarmedType)record;
-
-			externalLineId = createExternalId(preliminaryRequest, recordTarmedType.getRecordId());
-			product = createProduct(recordTarmedType.getCode(), recordTarmedType.getName(), context);
-			price = recordTarmedType.getAmount();
-			quantity = ONE;
-		}
-		else if (record instanceof RecordDRGType)
-		{
-			final RecordDRGType recordDRGType = (RecordDRGType)record;
-
-			externalLineId = createExternalId(preliminaryRequest, recordDRGType.getRecordId());
-			product = createProduct(recordDRGType.getCode(), recordDRGType.getName(), context);
-			price = createPrice(recordDRGType.getUnit(), recordDRGType.getUnitFactor(), recordDRGType.getExternalFactor());
-			quantity = recordDRGType.getQuantity();
-		}
-		else if (record instanceof RecordLabType)
-		{
-			final RecordLabType recordLabType = (RecordLabType)record;
-
-			externalLineId = createExternalId(preliminaryRequest, recordLabType.getRecordId());
-			product = createProduct(recordLabType.getCode(), recordLabType.getName(), context);
-			price = createPrice(recordLabType.getUnit(), recordLabType.getUnitFactor(), recordLabType.getExternalFactor());
-			quantity = recordLabType.getQuantity();
-		}
-		else if (record instanceof RecordMigelType)
-		{
-			final RecordMigelType recordMigelType = (RecordMigelType)record;
-
-			externalLineId = createExternalId(preliminaryRequest, recordMigelType.getRecordId());
-			product = createProduct(recordMigelType.getCode(), recordMigelType.getName(), context);
-			price = createPrice(recordMigelType.getUnit(), recordMigelType.getUnitFactor(), recordMigelType.getExternalFactor());
-			quantity = recordMigelType.getQuantity();
-		}
-		else if (record instanceof RecordParamedType)
-		{
-			final RecordParamedType recordParamedOtherType = (RecordParamedType)record;
-
-			externalLineId = createExternalId(preliminaryRequest, recordParamedOtherType.getRecordId());
-			product = createProduct(recordParamedOtherType.getCode(), recordParamedOtherType.getName(), context);
-			price = createPrice(recordParamedOtherType.getUnit(), recordParamedOtherType.getUnitFactor(), recordParamedOtherType.getExternalFactor());
-			quantity = recordParamedOtherType.getQuantity();
-		}
-		else if (record instanceof RecordDrugType)
-		{
-			final RecordDrugType recordDrugType = (RecordDrugType)record;
-
-			externalLineId = createExternalId(preliminaryRequest, recordDrugType.getRecordId());
-			product = createProduct(recordDrugType.getCode(), recordDrugType.getName(), context);
-			price = createPrice(recordDrugType.getUnit(), recordDrugType.getUnitFactor(), recordDrugType.getExternalFactor());
-			quantity = recordDrugType.getQuantity();
-		}
-		else if (record instanceof RecordOtherType)
-		{
-			final RecordOtherType recordOtherType = (RecordOtherType)record;
-
-			externalLineId = createExternalId(preliminaryRequest, recordOtherType.getRecordId());
-			product = createProduct(recordOtherType.getCode(), recordOtherType.getName(), context);
-			price = createPrice(recordOtherType);
-			quantity = recordOtherType.getQuantity();
-
-		}
-		else
-		{
-			Check.fail("Unexpected record type={}", record);
-			return null;
-		}
-		final JsonOLCandCreateRequestBuilder serviceRecordBuilder = preliminaryRequest.toBuilder()
-				.externalLineId(externalLineId)
-				.product(product)
-				.price(price)
-				.currencyCode(CURRENCY_CODE)
-				// the UOM shall be taken from the product-masterdata, because we don't really know it from the XML file
-				// .uomCode(UOM_CODE)
-				.discount(ZERO)
-				.qty(quantity);
-
-		result.add(serviceRecordBuilder);
 
 		return result.build();
 	}
@@ -920,48 +898,4 @@ public class XmlToOLCandsService
 				+ billRecipientExternalId.getValue(); // bill receiver, might be the same for different billers
 	}
 
-	private String createExternalId(
-			@NonNull final JsonOLCandCreateRequest request,
-			final int recordId)
-	{
-		final String externalHeaderId = assumeNotEmpty(request.getExternalHeaderId(), "request.externalHeaderId may not be empty; request={}", request);
-		return ""
-				+ externalHeaderId
-				+ "_"
-				+ recordId;
-	}
-
-	private JsonProductInfo createProduct(
-			@NonNull final String productCode,
-			@NonNull final String productName,
-			@NonNull final HighLevelContext context)
-	{
-		return JsonProductInfo.builder()
-				.syncAdvise(context.getProductsSyncAdvise())
-				.code(productCode)
-				.name(productName)
-				.type(Type.SERVICE)
-				.uomCode(UOM_CODE)
-				.build();
-	}
-
-	private BigDecimal createPrice(@NonNull final RecordOtherType recordOtherType)
-	{
-		return createPrice(
-				recordOtherType.getUnit(),
-				recordOtherType.getUnitFactor(),
-				recordOtherType.getExternalFactor());
-	}
-
-	private BigDecimal createPrice(
-			@Nullable final BigDecimal unit,
-			@Nullable final BigDecimal unitFactor,
-			@Nullable final BigDecimal externalFactor)
-	{
-		final BigDecimal unitToUse = coalesce(unit, ONE); // tax point (TP) of the applied service
-		final BigDecimal unitFactorToUse = coalesce(unitFactor, ONE); // tax point value (TPV) of the applied service
-		final BigDecimal externalFactorToUse = coalesce(externalFactor, ONE);
-
-		return unitToUse.multiply(unitFactorToUse).multiply(externalFactorToUse);
-	}
 }
