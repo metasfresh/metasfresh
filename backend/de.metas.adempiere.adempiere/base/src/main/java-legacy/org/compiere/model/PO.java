@@ -711,7 +711,7 @@ public abstract class PO
 	 * @return
 	 *         <ul>
 	 *         <li>string value
-	 *         <li>empty string in case the underlying value is null
+	 *         <li>null in case the underlying value is null
 	 *         <li>"Y"/"N" in case the underlying value is {@link Boolean}
 	 *         </ul>
 	 */
@@ -721,7 +721,7 @@ public abstract class PO
 		final Object value = get_Value(variableName);
 		if (value == null)
 		{
-			return "";
+			return null;
 		}
 		//
 		// In case we deal with a boolean column we need to return "Y"/"N" instead of "true"/"false",

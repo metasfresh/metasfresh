@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -87,6 +88,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final SOTrx soTrx;
 
 	@Getter
+	private final CurrencyId currencyId;
+	@Getter
 	private final ViewHeaderProperties headerProperties;
 
 	private ProductsProposalViewFilter filter = ProductsProposalViewFilter.ANY;
@@ -101,6 +104,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 			@Nullable final Order order,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
+			@Nullable final CurrencyId currencyId,
 			//
 			@Nullable final ViewHeaderProperties headerProperties,
 			//
@@ -115,6 +119,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		this.bpartnerId = Optional.ofNullable(bpartnerId);
 		this.soTrx = soTrx;
 
+		this.currencyId = currencyId;
 		this.headerProperties = headerProperties != null ? headerProperties : ViewHeaderProperties.EMPTY;
 
 		rowIdsOrdered = rows.stream()
