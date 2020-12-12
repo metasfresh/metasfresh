@@ -171,6 +171,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
+
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -183,6 +184,13 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 
 		final int orderId = context.getSingleSelectedRecordId();
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderId));
+
+		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(order.getDocStatus());
+		if (!quotationDocStatus.isCompleted())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a completed quotation");
+		}
+
 		final Optional<DocTypeId> docTypeId = DocTypeId.optionalOfRepoId(order.getC_DocTypeTarget_ID());
 		if (docTypeId.isPresent())
 		{
@@ -195,6 +203,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 		else
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no C_DocTypeTarget_ID");
+
 		}
 
 		return ProcessPreconditionsResolution.accept();
