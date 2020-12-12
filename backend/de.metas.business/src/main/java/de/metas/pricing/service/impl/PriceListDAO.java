@@ -877,7 +877,10 @@ public class PriceListDAO implements IPriceListDAO
 				.execute();
 		logger.debug("Updated {} M_ProductPrice records", updatedRecords);
 
-		invalidateCacheForProductPrice(updatedRecords, productPriceQuery);
+		if (updatedRecords > 0)
+		{
+			invalidateCacheForProductPrice(updatedRecords, productPriceQuery);
+		}
 	}
 
 	private IQuery<I_M_PriceList_Version> currentPriceListVersionQuery(@NonNull final LocalDate dateFrom)
