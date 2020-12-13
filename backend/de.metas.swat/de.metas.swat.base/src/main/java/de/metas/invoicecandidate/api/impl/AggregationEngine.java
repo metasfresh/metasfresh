@@ -1,57 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.LocalDate;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.base.MoreObjects;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationFactory;
@@ -65,6 +15,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
@@ -94,9 +45,32 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.
@@ -268,10 +242,10 @@ public final class AggregationEngine
 
 	/**
 	 * Add an Invoice Candidate to be aggregated.
-	 *
+	 * <p>
 	 * If the InOutLine association <code>iciol</code> is not <code>null</code>, create an extended aggregation key for it; otherwise create a normal header key.
 	 *
-	 * @param iciol IC-IOL association (could be <code>null</code>)
+	 * @param iciol       IC-IOL association (could be <code>null</code>)
 	 * @param isLastIcIol if true, then we need to allocate all the given <code>ic</code>'s remaining qtyToInvoice to the given icIol.
 	 */
 	private void addInvoiceCandidateForInOutLine(
@@ -309,9 +283,9 @@ public final class AggregationEngine
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-					+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-					+ " ic's own headerAggregationKey = {};\n"
-					+ " new headerAndAggregators = {}",
+							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
+							+ " ic's own headerAggregationKey = {};\n"
+							+ " new headerAndAggregators = {}",
 					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
@@ -386,77 +360,86 @@ public final class AggregationEngine
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			@Nullable final InOutId inoutId)
 	{
-		final BPartnerLocationId billBPLocationId = getBillLocationId(icRecord);
-		final BPartnerContactId billContactId = getBillContactId(icRecord, billBPLocationId);
-
-		invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
-		invoiceHeader.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
-		invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());
-		invoiceHeader.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
-		invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
-		invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
-		invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
-		invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
-
-		// why not using DateToInvoice[_Override] if available?
-		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
-		// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
-		final LocalDate dateInvoiced = computeDateInvoiced(icRecord);
-		logger.debug("Setting invoiceHeader's dateInvoiced={}", dateInvoiced);
-		invoiceHeader.setDateInvoiced(dateInvoiced);
-
-		final LocalDate dateAcct = computeDateAcct(icRecord);
-		logger.debug("Setting invoiceHeader's dateAcct={}", dateAcct);
-		invoiceHeader.setDateAcct(dateAcct);
-
-		// #367 Invoice candidates invoicing Pricelist not found
-		// https://github.com/metasfresh/metasfresh/issues/367
-		// If we know the PLV, then just go with the PLV's M_PriceList_ID (new behavior).
-		// Otherwise falls back to looking up the M_PriceList_ID via M_PricingSystem, location and SOTrx (old behavior).
-		// The old behavior can fail as described by #367.
-		final int M_PriceList_ID;
-		if (icRecord.getM_PriceList_Version_ID() > 0)
+		try
 		{
-			M_PriceList_ID = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(icRecord.getM_PriceList_Version_ID())).getM_PriceList_ID();
-		}
-		else
-		{
-			final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(icRecord.getBill_BPartner_ID(), icRecord.getBill_Location_ID());
-			final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
-					PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()),
-					bpLocationId,
-					SOTrx.ofBoolean(icRecord.isSOTrx()));
-			if (plId == null)
+			final BPartnerLocationId billBPLocationId = getBillLocationId(icRecord);
+			final BPartnerContactId billContactId = getBillContactId(icRecord, billBPLocationId);
+
+			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
+			invoiceHeader.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
+			invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());
+			invoiceHeader.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
+			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
+			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
+			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
+			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
+
+			// why not using DateToInvoice[_Override] if available?
+			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
+			// tsa: true, but as far as i can see, using the Override is available could be also intuitive for user. More, in some test this logic is also assumed.
+			final LocalDate dateInvoiced = computeDateInvoiced(icRecord);
+			logger.debug("Setting invoiceHeader's dateInvoiced={}", dateInvoiced);
+			invoiceHeader.setDateInvoiced(dateInvoiced);
+
+			final LocalDate dateAcct = computeDateAcct(icRecord);
+			logger.debug("Setting invoiceHeader's dateAcct={}", dateAcct);
+			invoiceHeader.setDateAcct(dateAcct);
+
+			// #367 Invoice candidates invoicing Pricelist not found
+			// https://github.com/metasfresh/metasfresh/issues/367
+			// If we know the PLV, then just go with the PLV's M_PriceList_ID (new behavior).
+			// Otherwise falls back to looking up the M_PriceList_ID via M_PricingSystem, location and SOTrx (old behavior).
+			// The old behavior can fail as described by #367.
+			final int M_PriceList_ID;
+			if (icRecord.getM_PriceList_Version_ID() > 0)
 			{
-				throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-						new Object[] {
-								icRecord.getM_PricingSystem_ID() > 0 ? loadOutOfTrx(icRecord.getM_PricingSystem_ID(), I_M_PricingSystem.class).getName() : "NO PRICING-SYTEM",
-								invoiceHeader.getBill_Location_ID() > 0 ? loadOutOfTrx(invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class).getName() : "NO BILL-TO-LOCATION" });
+				M_PriceList_ID = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(icRecord.getM_PriceList_Version_ID())).getM_PriceList_ID();
 			}
-			M_PriceList_ID = plId.getRepoId();
+			else
+			{
+				final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(icRecord.getBill_BPartner_ID(), icRecord.getBill_Location_ID());
+				final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
+						PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()),
+						bpLocationId,
+						SOTrx.ofBoolean(icRecord.isSOTrx()));
+				if (plId == null)
+				{
+					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
+							new Object[] {
+									icRecord.getM_PricingSystem_ID() > 0 ? loadOutOfTrx(icRecord.getM_PricingSystem_ID(), I_M_PricingSystem.class).getName() : "NO PRICING-SYTEM",
+									invoiceHeader.getBill_Location_ID() > 0 ? loadOutOfTrx(invoiceHeader.getBill_Location_ID(), I_C_BPartner_Location.class).getName() : "NO BILL-TO-LOCATION" });
+				}
+				M_PriceList_ID = plId.getRepoId();
+			}
+			invoiceHeader.setM_PriceList_ID(M_PriceList_ID);
+			// #367 end
+
+			// 03805: set also the currency id
+			invoiceHeader.setC_Currency_ID(icRecord.getC_Currency_ID());
+
+			// 04258: set header and footer
+			invoiceHeader.setDescription(icRecord.getDescriptionHeader());
+			invoiceHeader.setDescriptionBottom(icRecord.getDescriptionBottom());
+
+			invoiceHeader.setIsSOTrx(icRecord.isSOTrx());
+
+			invoiceHeader.setTaxIncluded(invoiceCandBL.isTaxIncluded(icRecord)); // task 08541
+
+			if (icRecord.getC_DocTypeInvoice_ID() > 0)
+			{
+				final I_C_DocType docTypeInvoice = docTypeDAO.getById(icRecord.getC_DocTypeInvoice_ID());
+				invoiceHeader.setC_DocTypeInvoice(docTypeInvoice);
+			}
+
+			// 06630: set shipment id to header
+			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 		}
-		invoiceHeader.setM_PriceList_ID(M_PriceList_ID);
-		// #367 end
-
-		// 03805: set also the currency id
-		invoiceHeader.setC_Currency_ID(icRecord.getC_Currency_ID());
-
-		// 04258: set header and footer
-		invoiceHeader.setDescription(icRecord.getDescriptionHeader());
-		invoiceHeader.setDescriptionBottom(icRecord.getDescriptionBottom());
-
-		invoiceHeader.setIsSOTrx(icRecord.isSOTrx());
-
-		invoiceHeader.setTaxIncluded(invoiceCandBL.isTaxIncluded(icRecord)); // task 08541
-
-		if (icRecord.getC_DocTypeInvoice_ID() > 0)
+		catch (final RuntimeException rte)
 		{
-			final I_C_DocType docTypeInvoice = docTypeDAO.getById(icRecord.getC_DocTypeInvoice_ID());
-			invoiceHeader.setC_DocTypeInvoice(docTypeInvoice);
+			throw AdempiereException.wrapIfNeeded(rte).appendParametersToMessage()
+					.setParameter("C_Invoice_Candidate_ID", icRecord.getC_Invoice_Candidate_ID())
+					.setParameter("M_InOut_ID", InOutId.toRepoId(inoutId));
 		}
-
-		// 06630: set shipment id to header
-		invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 	}
 
 	private LocalDate computeDateInvoiced(@NonNull final I_C_Invoice_Candidate ic)
@@ -565,7 +548,7 @@ public final class AggregationEngine
 					.bPartnerLocationId(billBPLocationId)
 					.ifNotFound(IfNotFound.RETURN_NULL)
 					.build());
-			if(defaultBillContact != null)
+			if (defaultBillContact != null)
 			{
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
 			}
@@ -603,7 +586,6 @@ public final class AggregationEngine
 	 * Aggregates all invoice lines and populate {@link IInvoiceHeader}'s lines.
 	 *
 	 * @param headerAndAggregators
-	 *
 	 * @return {@link IInvoiceHeader} or <code>null</code>
 	 */
 	private IInvoiceHeader aggregate(final InvoiceHeaderAndLineAggregators headerAndAggregators)
