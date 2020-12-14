@@ -28,6 +28,7 @@ import java.text.DecimalFormat;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.compiere.util.DisplayType;
 
@@ -215,12 +216,8 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 			this.countTotalToRecompute += countToRecomputeToAdd;
 		}
 
-		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
 		{
-			final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
-			Check.assumeNotNull(ic, "ic not null");
-
 			final BigDecimal netAmt = ic.getNetAmtToInvoice();
 			final boolean isApprovedForInvoicing = ic.isApprovalForInvoicing();
 			addTotalNetAmt(netAmt, isApprovedForInvoicing);
