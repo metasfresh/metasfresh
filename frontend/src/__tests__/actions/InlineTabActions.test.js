@@ -1,9 +1,6 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import { combineReducers } from 'redux';
-import nock from 'nock';
-import { getQuickActionsId } from '../../reducers/actionsHandler';
 import { updateInlineTabItemFields } from '../../actions/InlineTabActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import gridProps from '../../../test_setup/fixtures/grid.json';
