@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -217,7 +216,7 @@ public class CustomerReturnLineHUGenerator
 		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();// Quantity.of(customerReturnLine.getQtyEntered(), customerReturnLine.getC_UOM());
 		if (qtyCUsTotal.isInfinite())
 		{
-			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
+			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
 		}
 		setQtyToAllocateTarget(qtyCUsTotal);
 
