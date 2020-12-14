@@ -139,6 +139,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 			candidates.addAll(candidateForDDorder);
 		}
+		// TODO: make "inventory a real business case, such as e.g. production
+		// else if (event.getInventoryLineId() > 0)
+		// {
+		// 	candidates.addAll(prepareCandidateForInventory(event));
+		// }
 		else
 		{
 			candidates.addAll(prepareUnrelatedCandidate(event));
@@ -293,7 +298,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return result.build();
 	}
 
-	/** uses PurchaseDetails.receiptScheduleRepoId to find out if a candidate already exists */
+	/**
+	 * uses PurchaseDetails.receiptScheduleRepoId to find out if a candidate already exists
+	 */
 	private List<Candidate> createCandidateForReceiptSchedule(
 			@NonNull final AbstractTransactionEvent event,
 			@NonNull final Entry<Integer, BigDecimal> receiptScheduleId2Qty)
@@ -379,9 +386,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			final Candidate candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
-							.businessCaseDetail(productionDetail)
-							.transactionDetail(transactionDetailOfEvent)
-							.build();
+					.businessCaseDetail(productionDetail)
+					.transactionDetail(transactionDetailOfEvent)
+					.build();
 			candidates = ImmutableList.of(candidate);
 		}
 		else if (existingCandidate != null)
@@ -426,9 +433,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			final Candidate candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
-							.businessCaseDetail(distributionDetail)
-							.transactionDetail(transactionDetailOfEvent)
-							.build();
+					.businessCaseDetail(distributionDetail)
+					.transactionDetail(transactionDetailOfEvent)
+					.build();
 			candidates = ImmutableList.of(candidate);
 		}
 		else if (existingCandidate != null)
@@ -501,6 +508,19 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		throw fail("Unexpected subclass of AbstractTransactionEvent; event={}", event);
 	}
 
+	// private List<Candidate> prepareCandidateForInventory(@NonNull final AbstractTransactionEvent event)
+	// {
+	// 	final List<Candidate> candidates;
+	// 	final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
+	//
+	// 	final CandidatesQuery query = CandidatesQuery.builder()
+	// 			.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
+	// 			.build();
+	// 	final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+	// 	// TODO continue here
+	// 	return null;
+	// }
+
 	private List<Candidate> prepareUnrelatedCandidate(@NonNull final AbstractTransactionEvent event)
 	{
 		final List<Candidate> candidates;
@@ -517,8 +537,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			final Candidate candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
-							.transactionDetail(transactionDetailOfEvent)
-							.build();
+					.transactionDetail(transactionDetailOfEvent)
+					.build();
 			candidates = ImmutableList.of(candidate);
 		}
 		else if (existingCandidate != null)
@@ -535,7 +555,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	}
 
 	/**
-	 *
 	 * Returns a list with one or two candidates.
 	 * The list's first candidate always contains the given {@code changedTransactionDetail}.
 	 * <p>
@@ -656,17 +675,20 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			@NonNull final TransactionCreatedEvent transactionCreatedEvent,
 			@NonNull final BigDecimal quantity)
 	{
-		final CandidateBuilder builder = Candidate
-				.builderForEventDescr(transactionCreatedEvent.getEventDescriptor());
+		final CandidateBuilder builder = Candidate.builderForEventDescr(transactionCreatedEvent.getEventDescriptor());
+
+		// TODO INVENTORY_UP/DOWN are not CandidateTypes, but business-cases!
 		if (quantity.signum() <= 0)
 		{
-			return builder.type(CandidateType.UNEXPECTED_DECREASE)
+			final CandidateType type = transactionCreatedEvent.getInventoryLineId() > 0 ? CandidateType.INVENTORY_DOWN : CandidateType.UNEXPECTED_DECREASE;
+			return builder.type(type)
 					.materialDescriptor(transactionCreatedEvent.getMaterialDescriptor().withQuantity(quantity.negate()))
 					.minMaxDescriptor(transactionCreatedEvent.getMinMaxDescriptor());
 		}
 		else
 		{
-			return builder.type(CandidateType.UNEXPECTED_INCREASE)
+			final CandidateType type = transactionCreatedEvent.getInventoryLineId() > 0 ? CandidateType.INVENTORY_UP : CandidateType.UNEXPECTED_INCREASE;
+			return builder.type(type)
 					.materialDescriptor(transactionCreatedEvent.getMaterialDescriptor());
 		}
 	}

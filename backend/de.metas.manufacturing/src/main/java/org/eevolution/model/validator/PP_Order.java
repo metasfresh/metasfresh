@@ -4,6 +4,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
@@ -200,17 +201,15 @@ public class PP_Order
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl
 		}
 
-		// Let's not send PPOrderChangedEvents for now, because the interesting stuff is already send when the M_Transactions happen.
-		// It might later turn out that it makes sense to send just the info that a PP_Order was "Closed" though.
-		// final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
+		 final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
 		deleteWorkflowAndBOM(orderId);
 		createWorkflowAndBOM(ppOrderRecord);
 
-		// final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
-		//
-		// materialEventService.postEventAfterNextCommit(event);
+		final PPOrderChangedEvent event = eventFactory.inspectPPOrderAfterChange();
+
+		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)

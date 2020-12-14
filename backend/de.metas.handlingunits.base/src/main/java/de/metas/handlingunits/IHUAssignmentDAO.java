@@ -45,13 +45,6 @@ public interface IHUAssignmentDAO extends ISingletonService
 {
 	/**
 	 * Retrieve single top-level handling unit assignment. "Top-level" means that both {@code M_LU_HU_ID} and {@code M_TU_HU_ID} are null. If no such record is found, return null.
-	 *
-	 * @param ctx
-	 * @param huId
-	 * @param adTableId
-	 * @param recordId
-	 * @param trxName
-	 * @return assignment
 	 */
 	I_M_HU_Assignment retrieveHUAssignmentOrNull(Properties ctx, int huId, int adTableId, int recordId, String trxName);
 
