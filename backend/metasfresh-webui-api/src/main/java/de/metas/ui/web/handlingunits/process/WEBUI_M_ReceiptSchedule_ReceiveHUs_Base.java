@@ -5,9 +5,9 @@ import java.util.List;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.organization.ClientAndOrgId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
@@ -142,7 +142,7 @@ import de.metas.util.Services;
 		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();
 		if (qtyCUsTotal.isInfinite())
 		{
-			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
+			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
 		}
 		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
 
