@@ -283,6 +283,7 @@ const mapStateToProps = (state, props) => {
   const {
     windowHandler: { inlineTab },
   } = state;
+
   const selector = `${windowId}_${tabId}_${docId}`;
   const tabData = inlineTab.wrapperData[selector]
     ? inlineTab.wrapperData[selector]

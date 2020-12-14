@@ -1,4 +1,5 @@
 import React from 'react';
+import nock from 'nock';
 import { shallow, mount } from 'enzyme';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
@@ -12,6 +13,8 @@ import { initialState as windowHandlerState } from '../../../reducers/windowHand
 import tablesHandler from '../../../reducers/tables';
 import { Provider } from 'react-redux';
 import props from '../../../../test_setup/fixtures/widget/inline_tab_wrapper.json';
+import tabData from '../../../../test_setup/fixtures/widget/inline_tab_data.json';
+import inlineTabStore from '../../../../test_setup/fixtures/widget/inlineTabStore.json';
 import thunk from 'redux-thunk';
 const middlewares = [thunk];
 
@@ -39,8 +42,9 @@ const initialState = createStore({
   windowHandler: {
     allowShortcut: true,
     modal: {
-      visible: false,
+      visible: true,
     },
+    inlineTab: inlineTabStore,
   },
 });
 const store = mockStore(initialState);
@@ -50,14 +54,22 @@ describe('InlineTabWrapper component', () => {
     it('renders without errors', () => {
       shallow(<InlineTabWrapper {...props} />);
     });
-    it('renders without errors', () => {
-      mount(
+    it('renders a line properly', () => {
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/window/123/2156425/AD_Tab-222/`)
+        .reply(200, tabData);
+
+      const wrapper = mount(
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
           <Provider store={store}>
             <InlineTabWrapper {...props} />
           </Provider>
         </ShortcutProvider>
       );
+      const htmlOutput = wrapper.html();
+      expect(htmlOutput).toContain('<span>Testadresse 3</span');
+      expect(htmlOutput).toContain('inlinetab-action-button');
     });
   });
 });
