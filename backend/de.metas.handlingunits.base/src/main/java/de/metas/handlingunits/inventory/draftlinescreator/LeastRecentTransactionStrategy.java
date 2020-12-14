@@ -26,6 +26,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
@@ -148,7 +149,7 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 		huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
 		huQueryBuilder.addOnlyInLocatorIds(locatorIds);
 
-		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+		huQueryBuilder.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
 		// Order by
 		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
