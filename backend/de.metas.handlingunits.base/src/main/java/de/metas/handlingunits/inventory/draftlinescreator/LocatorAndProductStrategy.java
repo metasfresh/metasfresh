@@ -15,6 +15,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -93,7 +94,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	{
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyTopLevelHUs()
-				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
 		if (warehouseId != null)
 		{
