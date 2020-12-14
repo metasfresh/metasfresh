@@ -238,8 +238,6 @@ public class CustomerReturnLineHUGenerator
 	/**
 	 * This method is important in getting precomputed HUs
 	 * 
-	 * @param schedule
-	 * @return
 	 */
 	// private IHUAllocations getHUAllocations(final I_M_InOutLine inOutLine)
 	// {
@@ -359,9 +357,6 @@ public class CustomerReturnLineHUGenerator
 	/**
 	 * Create Handling Units for not allocated qty of line.
 	 *
-	 * @param ctx
-	 * @param maxLUsToCreate
-	 * @param trxName
 	 * @return generated HUs
 	 */
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate0(final IAllocationRequest request)
@@ -421,12 +416,6 @@ public class CustomerReturnLineHUGenerator
 		return allocationSources;
 	}
 
-	/**
-	 * Keep in sync with {@link de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleCUKey.createVHU()}
-	 * 
-	 * @param qty
-	 * @return
-	 */
 	private final IAllocationRequest createAllocationRequest(final Quantity qty)
 	{
 		final IContextAware contextProvider = getContextInitial();

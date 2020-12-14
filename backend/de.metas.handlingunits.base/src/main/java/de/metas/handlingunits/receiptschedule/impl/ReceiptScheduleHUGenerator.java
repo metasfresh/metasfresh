@@ -142,9 +142,7 @@ public class ReceiptScheduleHUGenerator
 	/**
 	 * Sets if, after generating the HUs, we shall also update receipt schedule's LUTU configuration.
 	 *
-	 * IMPORTANT: this flag applies for {@link #generateWithinOwnTransaction()} but does not apply for {@link #generateAllPlanningHUs_InChunks()}.
-	 *
-	 * @param updateReceiptScheduleDefaultConfiguration
+	 * IMPORTANT: this flag applies for {@link #generateWithinOwnTransaction()}.
 	 */
 	public ReceiptScheduleHUGenerator setUpdateReceiptScheduleDefaultConfiguration(final boolean updateReceiptScheduleDefaultConfiguration)
 	{
@@ -431,12 +429,6 @@ public class ReceiptScheduleHUGenerator
 		return allocationSources;
 	}
 
-	/**
-	 * Keep in sync with {@link de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleCUKey.createVHU()}
-	 *
-	 * @param qty
-	 * @return
-	 */
 	private final IAllocationRequest createAllocationRequest(final Quantity qty)
 	{
 		final IContextAware contextProvider = getContextInitial();
