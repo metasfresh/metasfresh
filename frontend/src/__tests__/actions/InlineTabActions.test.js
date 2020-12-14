@@ -1,7 +1,7 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import { updateInlineTabItemFields } from '../../actions/InlineTabActions';
+import { updateInlineTabItemFields, updateInlineTabWrapperFields } from '../../actions/InlineTabActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import gridProps from '../../../test_setup/fixtures/grid.json';
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
@@ -24,8 +24,9 @@ const createState = function(state = {}) {
 };
 
 describe('InlineTab - actions general', () => {
+  /** UPDATE_INLINE_TAB_ITEM_FIELDS action */
   it('should call UPDATE_INLINE_TAB_ITEM_FIELDS action with correct payload', () => {
-    const { windowType, viewId } = gridProps.props1;
+    const { windowType } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
     const initialInlineTabId = '123_AD_Tab-222_2205230';
     const initialFieldsByName = {
@@ -71,6 +72,56 @@ describe('InlineTab - actions general', () => {
       updateInlineTabItemFields({
         inlineTabId: initialInlineTabId,
         fieldsByName: initialFieldsByName,
+      })
+    );
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  /** UPDATE_INLINE_TAB_WRAPPER_FIELDS action */
+  it('should call UPDATE_INLINE_TAB_WRAPPER_FIELDS action with correct payload', () => {
+    const { windowType } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const rowId = '2205230';
+    const payload = {
+      inlineTabWrapperId: initialInlineTabId,
+      rowId,
+      response: {},
+    };
+
+    const action = updateInlineTabWrapperFields({
+      inlineTabWrapperId: initialInlineTabId,
+      rowId,
+      response: {},
+    });
+
+    expect(action.type).toEqual(ACTION_TYPES.UPDATE_INLINE_TAB_WRAPPER_FIELDS);
+    expect(action.payload).toHaveProperty(
+      'inlineTabWrapperId',
+      payload.inlineTabWrapperId
+    );
+    expect(action.payload).toHaveProperty('rowId', payload.rowId);
+    expect(action.payload).toHaveProperty('response', payload.response);
+
+    const initialState = createState({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+    });
+    const store = mockStore(initialState);
+    const expectedActions = [
+      { type: ACTION_TYPES.UPDATE_INLINE_TAB_WRAPPER_FIELDS, payload },
+    ];
+
+    store.dispatch(
+      updateInlineTabWrapperFields({
+        inlineTabWrapperId: initialInlineTabId,
+        rowId,
+        response: {},
       })
     );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
