@@ -3,19 +3,19 @@ import nock from 'nock';
 import { shallow, mount } from 'enzyme';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import viewHandler from '../../../reducers/viewHandler';
-import InlineTabWrapper from '../../../components/widget/InlineTabWrapper';
-import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../../test_setup/fixtures/keymap.json';
-import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
-import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
-import tablesHandler from '../../../reducers/tables';
+import viewHandler from '../../../../reducers/viewHandler';
+import InlineTabWrapper from '../../../../components/widget/InlineTabWrapper';
+import hotkeys from '../../../../../test_setup/fixtures/hotkeys.json';
+import keymap from '../../../../../test_setup/fixtures/keymap.json';
+import { ShortcutProvider } from '../../../../components/keyshortcuts/ShortcutProvider';
+import { initialState as appHandlerState } from '../../../../reducers/appHandler';
+import { initialState as windowHandlerState } from '../../../../reducers/windowHandler';
+import tablesHandler from '../../../../reducers/tables';
 import { Provider } from 'react-redux';
-import props from '../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
-import tabData from '../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
-import inlineTabStoreMore from '../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
-import inlineTabStore from '../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
+import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
+import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
+import inlineTabStoreMore from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
+import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
 import thunk from 'redux-thunk';
 const middlewares = [thunk];
 
@@ -114,7 +114,7 @@ describe('InlineTabWrapper component', () => {
     expect(htmlOutput).toContain('meta-icon-fullscreen');
   });
 
-  it('renders the form in full screen corectly', () => {
+  it('renders the form in full screen correctly', () => {
     props.dataId = '2155894'; // we pass different docId such that will match the selector used for the mocked up data
     inlineTabStoreMore.showMore['123_AD_Tab-222_2155894'] = false;
     const initialState = createStore({
