@@ -51,6 +51,8 @@ public interface IHUAttributesBL extends ISingletonService
 	/**
 	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
 	 *
+	 * Note: for complex scenarios (distributing a weight onto an HU-tree), see {@link de.metas.handlingunits.attribute.propagation.IHUAttributePropagator} and {@link de.metas.handlingunits.attribute.strategy.IAttributeStrategy}.
+	 *
 	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.
 	 */
 	void updateHUAttributeRecursive(
