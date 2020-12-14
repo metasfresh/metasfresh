@@ -12,6 +12,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -43,6 +45,7 @@ public class HuId implements RepoIdAware
 		return new HuId(repoId);
 	}
 
+	@Nullable
 	public static HuId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;

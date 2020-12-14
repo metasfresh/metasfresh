@@ -32,10 +32,7 @@ import lombok.NonNull;
  */
 
 /**
- * Does nothing yet, but shall add to the "normal" result all connected HU-trace records
- * 
- * @author metas-dev <dev@metasfresh.com>
- * 
+ * Shall add to the "normal" result all connected HU-trace records
  */
 @Component
 public class HUTraceSqlConverterDecorator implements SqlDocumentFilterConverterDecorator

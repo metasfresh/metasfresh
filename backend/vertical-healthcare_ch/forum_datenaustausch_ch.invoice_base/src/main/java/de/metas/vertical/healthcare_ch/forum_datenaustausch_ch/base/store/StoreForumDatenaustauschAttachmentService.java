@@ -1,31 +1,18 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.store;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.attachments.storeattachment.StoreAttachmentServiceImpl;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.cache.CCache;
 import de.metas.dunning_gateway.spi.DunningExportClientFactory;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
-import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.xml.XmlIntrospectionUtil;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
@@ -34,6 +21,17 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Optional;
 
 /*
  * #%L
@@ -137,9 +135,8 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 			return Optional.empty();
 		}
 
-		final ConfigQuery configQuery = ConfigQuery
-				.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bPartnerRepoId))
+		final BPartnerQuery configQuery = BPartnerQuery.builder()
+				.bPartnerId(de.metas.bpartner.BPartnerId.ofRepoId(bPartnerRepoId))
 				.build();
 		final StoreConfig config = configRepository.getForQueryOrNull(configQuery);
 		return Optional.ofNullable(config);

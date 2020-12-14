@@ -1,16 +1,25 @@
 package de.metas.rest_api.invoice.impl;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -18,6 +27,7 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 /*
@@ -49,6 +59,9 @@ public class InvoiceService
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
@@ -63,6 +76,34 @@ public class InvoiceService
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
 		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
+	}
+
+	@NonNull
+	public JSONInvoiceInfoResponse getInvoiceInfo(@NonNull final InvoiceId invoiceId, final String ad_language)
+	{
+		final JSONInvoiceInfoResponse.JSONInvoiceInfoResponseBuilder result = JSONInvoiceInfoResponse.builder();
+
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+
+		final CurrencyCode currency = currencyDAO.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId);
+		for (final I_C_InvoiceLine line : lines)
+		{
+			final String productName = productBL.getProductNameTrl(ProductId.ofRepoId(line.getM_Product_ID())).translate(ad_language);
+			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
+
+			result.lineInfo(JSONInvoiceLineInfo.builder()
+									.lineNumber(line.getLine())
+									.productName(productName)
+									.qtyInvoiced(line.getQtyEntered())
+									.price(line.getPriceEntered())
+									.taxRate(taxRate)
+									.lineNetAmt(line.getLineNetAmt())
+									.currency(currency)
+									.build());
+		}
+		return result.build();
 	}
 
 	@NonNull

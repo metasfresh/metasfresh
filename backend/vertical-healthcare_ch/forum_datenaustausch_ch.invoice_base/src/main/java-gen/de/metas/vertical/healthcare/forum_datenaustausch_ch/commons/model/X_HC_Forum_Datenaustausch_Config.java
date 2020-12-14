@@ -5,96 +5,59 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for HC_Forum_Datenaustausch_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO implements I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -688898494L;
+	private static final long serialVersionUID = 1798838991L;
 
     /** Standard Constructor */
-    public X_HC_Forum_Datenaustausch_Config (Properties ctx, int HC_Forum_Datenaustausch_Config_ID, String trxName)
+    public X_HC_Forum_Datenaustausch_Config (final Properties ctx, final int HC_Forum_Datenaustausch_Config_ID, final String trxName)
     {
       super (ctx, HC_Forum_Datenaustausch_Config_ID, trxName);
-      /** if (HC_Forum_Datenaustausch_Config_ID == 0)
-        {
-			setExportedXmlMode (null); // P
-			setExportedXmlVersion (null);
-			setHC_Forum_Datenaustausch_Config_ID (0);
-			setVia_EAN (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_HC_Forum_Datenaustausch_Config (Properties ctx, ResultSet rs, String trxName)
+    public X_HC_Forum_Datenaustausch_Config (final Properties ctx, final ResultSet rs, final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
-	}
-
-	/** Set Rechnungspartner.
-		@param Bill_BPartner_ID 
-		Geschäftspartner für die Rechnungsstellung
-	  */
-	@Override
-	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
 		if (Bill_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
 	}
 
-	/** Get Rechnungspartner.
-		@return Geschäftspartner für die Rechnungsstellung
-	  */
 	@Override
-	public int getBill_BPartner_ID () 
+	public int getBill_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -106,21 +69,16 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	public static final String EXPORTEDXMLMODE_Production = "P";
 	/** test = T */
 	public static final String EXPORTEDXMLMODE_Test = "T";
-	/** Set Modus der Exportdateien.
-		@param ExportedXmlMode Modus der Exportdateien	  */
 	@Override
-	public void setExportedXmlMode (java.lang.String ExportedXmlMode)
+	public void setExportedXmlMode (final java.lang.String ExportedXmlMode)
 	{
-
 		set_Value (COLUMNNAME_ExportedXmlMode, ExportedXmlMode);
 	}
 
-	/** Get Modus der Exportdateien.
-		@return Modus der Exportdateien	  */
 	@Override
-	public java.lang.String getExportedXmlMode () 
+	public java.lang.String getExportedXmlMode() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExportedXmlMode);
+		return get_ValueAsString(COLUMNNAME_ExportedXmlMode);
 	}
 
 	/** 
@@ -130,99 +88,137 @@ public class X_HC_Forum_Datenaustausch_Config extends org.compiere.model.PO impl
 	public static final int EXPORTEDXMLVERSION_AD_Reference_ID=540921;
 	/** v440 = 4.4 */
 	public static final String EXPORTEDXMLVERSION_V440 = "4.4";
-	/** Set Export XML Version.
-		@param ExportedXmlVersion Export XML Version	  */
 	@Override
-	public void setExportedXmlVersion (java.lang.String ExportedXmlVersion)
+	public void setExportedXmlVersion (final java.lang.String ExportedXmlVersion)
 	{
-
 		set_Value (COLUMNNAME_ExportedXmlVersion, ExportedXmlVersion);
 	}
 
-	/** Get Export XML Version.
-		@return Export XML Version	  */
 	@Override
-	public java.lang.String getExportedXmlVersion () 
+	public java.lang.String getExportedXmlVersion() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExportedXmlVersion);
+		return get_ValueAsString(COLUMNNAME_ExportedXmlVersion);
 	}
 
-	/** Set Absender EAN.
-		@param From_EAN 
-		Falls angegeben ersetzt dieser Wert den Wert des request/processing/transport from Attributes in der exportierten XML-Datei
-	  */
 	@Override
-	public void setFrom_EAN (java.lang.String From_EAN)
+	public void setFrom_EAN (final java.lang.String From_EAN)
 	{
 		set_Value (COLUMNNAME_From_EAN, From_EAN);
 	}
 
-	/** Get Absender EAN.
-		@return Falls angegeben ersetzt dieser Wert den Wert des request/processing/transport from Attributes in der exportierten XML-Datei
-	  */
 	@Override
-	public java.lang.String getFrom_EAN () 
+	public java.lang.String getFrom_EAN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_From_EAN);
+		return get_ValueAsString(COLUMNNAME_From_EAN);
 	}
 
-	/** Set forum-datenaustausch.ch config.
-		@param HC_Forum_Datenaustausch_Config_ID forum-datenaustausch.ch config	  */
 	@Override
-	public void setHC_Forum_Datenaustausch_Config_ID (int HC_Forum_Datenaustausch_Config_ID)
+	public void setHC_Forum_Datenaustausch_Config_ID (final int HC_Forum_Datenaustausch_Config_ID)
 	{
 		if (HC_Forum_Datenaustausch_Config_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_HC_Forum_Datenaustausch_Config_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_HC_Forum_Datenaustausch_Config_ID, Integer.valueOf(HC_Forum_Datenaustausch_Config_ID));
+			set_ValueNoCheck (COLUMNNAME_HC_Forum_Datenaustausch_Config_ID, HC_Forum_Datenaustausch_Config_ID);
 	}
 
-	/** Get forum-datenaustausch.ch config.
-		@return forum-datenaustausch.ch config	  */
 	@Override
-	public int getHC_Forum_Datenaustausch_Config_ID () 
+	public int getHC_Forum_Datenaustausch_Config_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_HC_Forum_Datenaustausch_Config_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_HC_Forum_Datenaustausch_Config_ID);
 	}
 
-	/** Set Speicherverzeichnis.
-		@param StoreDirectory 
-		Verzeichnis, in dem exportierte Dateien gespeichert werden.
-	  */
+	/** 
+	 * ImportedBPartnerLanguage AD_Reference_ID=327
+	 * Reference name: AD_Language System
+	 */
+	public static final int IMPORTEDBPARTNERLANGUAGE_AD_Reference_ID=327;
 	@Override
-	public void setStoreDirectory (java.lang.String StoreDirectory)
+	public void setImportedBPartnerLanguage (final java.lang.String ImportedBPartnerLanguage)
+	{
+		set_Value (COLUMNNAME_ImportedBPartnerLanguage, ImportedBPartnerLanguage);
+	}
+
+	@Override
+	public java.lang.String getImportedBPartnerLanguage() 
+	{
+		return get_ValueAsString(COLUMNNAME_ImportedBPartnerLanguage);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getImportedMunicipalityBP_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_ImportedMunicipalityBP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setImportedMunicipalityBP_Group(final org.compiere.model.I_C_BP_Group ImportedMunicipalityBP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_ImportedMunicipalityBP_Group_ID, org.compiere.model.I_C_BP_Group.class, ImportedMunicipalityBP_Group);
+	}
+
+	@Override
+	public void setImportedMunicipalityBP_Group_ID (final int ImportedMunicipalityBP_Group_ID)
+	{
+		if (ImportedMunicipalityBP_Group_ID < 1) 
+			set_Value (COLUMNNAME_ImportedMunicipalityBP_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_ImportedMunicipalityBP_Group_ID, ImportedMunicipalityBP_Group_ID);
+	}
+
+	@Override
+	public int getImportedMunicipalityBP_Group_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ImportedMunicipalityBP_Group_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getImportedPartientBP_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_ImportedPartientBP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setImportedPartientBP_Group(final org.compiere.model.I_C_BP_Group ImportedPartientBP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_ImportedPartientBP_Group_ID, org.compiere.model.I_C_BP_Group.class, ImportedPartientBP_Group);
+	}
+
+	@Override
+	public void setImportedPartientBP_Group_ID (final int ImportedPartientBP_Group_ID)
+	{
+		if (ImportedPartientBP_Group_ID < 1) 
+			set_Value (COLUMNNAME_ImportedPartientBP_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_ImportedPartientBP_Group_ID, ImportedPartientBP_Group_ID);
+	}
+
+	@Override
+	public int getImportedPartientBP_Group_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ImportedPartientBP_Group_ID);
+	}
+
+	@Override
+	public void setStoreDirectory (final java.lang.String StoreDirectory)
 	{
 		set_Value (COLUMNNAME_StoreDirectory, StoreDirectory);
 	}
 
-	/** Get Speicherverzeichnis.
-		@return Verzeichnis, in dem exportierte Dateien gespeichert werden.
-	  */
 	@Override
-	public java.lang.String getStoreDirectory () 
+	public java.lang.String getStoreDirectory() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_StoreDirectory);
+		return get_ValueAsString(COLUMNNAME_StoreDirectory);
 	}
 
-	/** Set Via EAN.
-		@param Via_EAN 
-		Dieser Wert wird bei request/processing/transport/via in die exportierten XML-Datei eingefügt. Evtl. vorhandene "via" Knoten werden entfernt.
-	  */
 	@Override
-	public void setVia_EAN (java.lang.String Via_EAN)
+	public void setVia_EAN (final java.lang.String Via_EAN)
 	{
 		set_Value (COLUMNNAME_Via_EAN, Via_EAN);
 	}
 
-	/** Get Via EAN.
-		@return Dieser Wert wird bei request/processing/transport/via in die exportierten XML-Datei eingefügt. Evtl. vorhandene "via" Knoten werden entfernt.
-	  */
 	@Override
-	public java.lang.String getVia_EAN () 
+	public java.lang.String getVia_EAN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Via_EAN);
+		return get_ValueAsString(COLUMNNAME_Via_EAN);
 	}
 }

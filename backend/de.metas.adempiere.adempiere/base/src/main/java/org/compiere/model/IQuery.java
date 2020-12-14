@@ -173,7 +173,7 @@ public interface IQuery<T>
 		return idMapper.apply(firstIdOnly());
 	}
 
-	<ET extends T> ET first() throws DBException;
+	@Nullable <ET extends T> ET first() throws DBException;
 
 	/**
 	 * @return first record or null

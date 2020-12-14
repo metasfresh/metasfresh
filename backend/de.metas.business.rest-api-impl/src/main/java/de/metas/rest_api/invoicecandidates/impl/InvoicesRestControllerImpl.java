@@ -1,8 +1,10 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.JsonError;
 import de.metas.invoice.InvoiceId;
 import de.metas.rest_api.invoice.impl.InvoiceService;
+import de.metas.rest_api.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
@@ -13,11 +15,13 @@ import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesRe
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
+import de.metas.rest_api.utils.JsonErrors;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -157,6 +161,38 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		return ResponseEntity.notFound().build();
 	}
 
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Invoice info retrieved"),
+			@ApiResponse(code = 401, message = "You are not authorized"),
+			@ApiResponse(code = 404, message = "No Invoice found"),
+			@ApiResponse(code = 422, message = "An error happened during Invoice info retrieval"),
+	})
+	@GetMapping(path = "{invoiceId}/invoiceInfo", produces = "application/json")
+	@Override
+	public ResponseEntity<?> getInvoiceInfo(
+			@ApiParam(required = true, value = "metasfreshId of the invoice")
+			@PathVariable("invoiceId") final int invoiceRecordId)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
+		if (invoiceId == null)
+		{
+			return ResponseEntity.notFound().build();
+		}
+
+		final String ad_language = Env.getAD_Language();
+		try
+		{
+			final JSONInvoiceInfoResponse invoiceInfo = invoiceService.getInvoiceInfo(invoiceId, ad_language);
+			return ResponseEntity.ok(invoiceInfo);
+		}
+		catch (final Exception ex)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, ad_language));
+
+			return ResponseEntity.unprocessableEntity().body(error);
+		}
+	}
+
 	@PutMapping(path = "/{invoiceId}/revert")
 	public ResponseEntity<?> revertInvoice(
 			@PathVariable("invoiceId") @ApiParam(required = true, value = "metasfreshId of the invoice to revert") final int invoiceRecordId)
@@ -176,9 +212,11 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 					? ResponseEntity.ok(response.get())
 					: ResponseEntity.notFound().build();
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			return ResponseEntity.unprocessableEntity().body(e.getLocalizedMessage());
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage()));
+
+			return ResponseEntity.unprocessableEntity().body(error);
 		}
 	}
 }

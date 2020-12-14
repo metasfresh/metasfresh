@@ -9,6 +9,16 @@
     "processType": "ADP_540801",
     "parentId": "540345"
   },
+  "processData3": {
+    "pid": "1195364",
+    "processType": "ADP_540871",
+    "parentId": "540328"
+  },
+  "processData4": {
+    "pid": "1195720",
+    "processType": "ADP_540809",
+    "parentId": "540350"
+  },
   "processResponse1": {
     "action": {
       "windowId": "540759",
@@ -25,6 +35,27 @@
     "action": {
       "windowId": "husToPick",
       "viewId": "husToPick-4",
+      "viewType": "includedView",
+      "profileId": "husToPick",
+      "type": "openIncludedView"
+    }
+  },
+  "processResponse3": {
+    "pinstanceId": "1195364",
+    "error": false,
+    "action": {
+      "windowId": "540189",
+      "viewId": "540189-h",
+      "viewType": "includedView",
+      "type": "openIncludedView"
+    }
+  },
+  "processResponse4": {
+    "pinstanceId": "1195720",
+    "error": false,
+    "action": {
+      "windowId": "husToPick",
+      "viewId": "husToPick-s",
       "viewType": "includedView",
       "profileId": "husToPick",
       "type": "openIncludedView"

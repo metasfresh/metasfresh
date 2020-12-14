@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -329,7 +330,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						),
 						I_C_Invoice.class);
 
-
 				// Validate M_PriceList_ID
 				final int invoicePriceListId = invoice.getM_PriceList_ID();
 				Check.assume(
@@ -355,10 +355,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
-			
+
 			setC_DocType(invoice, invoiceHeader);
-			
-			
+
 			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(invoiceHeader.getBillBPartnerId(), invoiceHeader.getBill_User_ID());
@@ -841,6 +840,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				catch (final AdempiereException e)
 				{
 					createNoticesAndMarkICs(ImmutableList.of(ic), e);
+					Loggables.withLogger(logger, Level.WARN).addLog("Cannot invoice C_Invoice_Candidate_ID=" + ic.getC_Invoice_Candidate_ID() + "! See preceding logged error");
 				}
 			}
 		}
