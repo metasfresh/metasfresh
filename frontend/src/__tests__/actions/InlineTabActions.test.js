@@ -7,6 +7,7 @@ import {
   setInlineTabWrapperData,
   setInlineTabShowMore,
   setInlineTabLayoutAndData,
+  setInlineTabAddNew,
 } from '../../actions/InlineTabActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import gridProps from '../../../test_setup/fixtures/grid.json';
@@ -261,6 +262,59 @@ describe('InlineTab - actions general', () => {
       setInlineTabLayoutAndData({
         inlineTabId: initialInlineTabId,
         data: {},
+      })
+    );
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  /** SET_INLINE_TAB_ADD_NEW action */
+  it('should call SET_INLINE_TAB_ADD_NEW action with correct payload', () => {
+    const { windowType } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const visible = true;
+    const windowId = '123';
+    const tabId = 'AD_Tab-222';
+    const docId = '2205230';
+    const rowId = '111111';
+    const payload = {
+      visible,
+      windowId,
+      tabId,
+      rowId,
+      docId,
+    };
+
+    const action = setInlineTabAddNew(payload);
+
+    expect(action.type).toEqual(ACTION_TYPES.SET_INLINE_TAB_ADD_NEW);
+    expect(action.payload).toHaveProperty('visible', payload.visible);
+    expect(action.payload).toHaveProperty('windowId', payload.windowId);
+    expect(action.payload).toHaveProperty('docId', payload.docId);
+    expect(action.payload).toHaveProperty('rowId', payload.rowId);
+    expect(action.payload).toHaveProperty('tabId', payload.tabId);
+
+    const initialState = createState({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+    });
+    const store = mockStore(initialState);
+    const expectedActions = [
+      { type: ACTION_TYPES.SET_INLINE_TAB_ADD_NEW, payload },
+    ];
+
+    store.dispatch(
+      setInlineTabAddNew({
+        visible,
+        windowId,
+        tabId,
+        rowId,
+        docId,
       })
     );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
