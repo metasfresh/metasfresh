@@ -53,3 +53,33 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Parent account', PrintName='Pa
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578614,'en_US') 
 ;
 
+-- 2020-12-14T15:50:02.921Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=578614, Description=NULL, Help=NULL, Name='Übergeordnetes Konto',Updated=TO_TIMESTAMP('2020-12-14 16:50:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=598471
+;
+
+-- 2020-12-14T15:50:02.923Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578614) 
+;
+
+-- 2020-12-14T15:50:02.931Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=598471
+;
+
+-- 2020-12-14T15:50:02.934Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(598471)
+;
+
+-- 2020-12-14T15:52:25.961Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Reference SET Help='Ordering by length to make sure that if you want to select just "9", then 9 is the first match, and not 290, 329, 59 etc',Updated=TO_TIMESTAMP('2020-12-14 16:52:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541113
+;
+
+-- 2020-12-14T15:52:39.983Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET OrderByClause='length(C_ElementValue.Value), C_ElementValue.Value',Updated=TO_TIMESTAMP('2020-12-14 16:52:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541113
+;
+
