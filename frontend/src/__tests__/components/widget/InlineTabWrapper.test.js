@@ -76,7 +76,7 @@ describe('InlineTabWrapper component', () => {
     });
   });
 
-  it('renders more line properly', () => {
+  it('renders more lines properly', () => {
     props.dataId = '2155894'; // we pass different docId such that will match the selector used for the mocked up data
     const initialState = createStore({
       windowHandler: {
@@ -113,4 +113,46 @@ describe('InlineTabWrapper component', () => {
     expect(htmlOutput).not.toContain('Russland'); // only five rows shown - this should not be rendered
     expect(htmlOutput).toContain('meta-icon-fullscreen');
   });
+
+  it('renders the form in full screen corectly', () => {
+    props.dataId = '2155894'; // we pass different docId such that will match the selector used for the mocked up data
+    inlineTabStoreMore.showMore['123_AD_Tab-222_2155894'] = false;
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: true,
+        },
+        inlineTab: inlineTabStoreMore,
+      },
+    });
+    const store = mockStore(initialState);
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/window/123/2155894/AD_Tab-222/`)
+      .reply(200, tabData);
+
+    const wrapper = mount(
+      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <Provider store={store}>
+          <InlineTabWrapper {...props} />
+        </Provider>
+      </ShortcutProvider>
+    );
+    const htmlOutput = wrapper.html();
+
+    expect(htmlOutput).toContain('Amerikanische Jungferninseln');
+    expect(htmlOutput).toContain('Amerikanisch-Samoa');
+    expect(htmlOutput).toContain('Amerikanisch-Samoa (2)');
+    expect(htmlOutput).toContain('Am Nossbacher Weg 2');
+    expect(htmlOutput).toContain(
+      'Antarktis (Sonderstatus durch Antarktis-Vertrag)'
+    );
+    expect(htmlOutput).toContain('Russland'); // all rows should be visible now, including this one
+    expect(htmlOutput).toContain('meta-icon-fullscreen');
+  });
+
+
+
 });
