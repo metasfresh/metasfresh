@@ -14,7 +14,7 @@ import tablesHandler from '../../../../reducers/tables';
 import { Provider } from 'react-redux';
 import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
 import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
-import inlineTabStoreMore from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
+import fieldsByName from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_fieldsByName.json';
 import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
 import thunk from 'redux-thunk';
 const middlewares = [thunk];
@@ -45,7 +45,7 @@ describe('InlineTab component', () => {
       shallow(<InlineTab {...props} />);
     });
 
-    it.skip('renders a line properly', () => {
+    it('renders the InlineTab item correctly', () => {
       const initialState = createStore({
         windowHandler: {
           allowShortcut: true,
@@ -62,17 +62,25 @@ describe('InlineTab component', () => {
         .get(`/window/123/2156425/AD_Tab-222/`)
         .reply(200, tabData);
 
-      const wrapper = mount(
+      const fieldsOrder = ['Name', 'GLN', 'IsActive', 'IsShipTo'];
+      const wrapper = shallow(
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
           <Provider store={store}>
-            <InlineTab {...props} />
+            <InlineTab
+              id={`2155894`}
+              rowId={`2205238`}
+              tabId={`AD_Tab-222`}
+              fieldsOrder={fieldsOrder}
+              fieldsByName={fieldsByName}
+              {...props}
+            />
           </Provider>
         </ShortcutProvider>
       );
-      const htmlOutput = wrapper.html();
-      expect(htmlOutput).toContain('<span>Testadresse 3</span');
-      expect(htmlOutput).toContain('inlinetab-action-button');
-      expect(htmlOutput).not.toContain('meta-icon-fullscreen');
+      let htmlOutput = wrapper.html();
+      expect(htmlOutput).toContain(
+        'Antarktis (Sonderstatus durch Antarktis-Vertrag)'
+      );
     });
   });
 });
