@@ -224,7 +224,7 @@ import java.util.Map;
 		//
 		// Update received HUs
 		InterfaceWrapperHelper.setThreadInheritedTrxName(planningHUs); // just to be sure
-		updateReceivedHUs(huContext, planningHUs);
+		updateReceivedHUs(huContext, planningHUs, ppOrderReceiptCandidateCollector.coByProductOrderBOMLineId);
 
 		//
 		// Create receipt candidates
@@ -310,7 +310,7 @@ import java.util.Map;
 			}
 
 			//
-			updateReceivedHUs(huContext, ImmutableSet.of(planningHU));
+			updateReceivedHUs(huContext, ImmutableSet.of(planningHU), null);  // TODO tbp: not sure if this should be null
 		});
 	}
 
@@ -326,11 +326,12 @@ import java.util.Map;
 
 	private void updateReceivedHUs(
 			final IHUContext huContext,
-			final Collection<I_M_HU> hus)
+			final Collection<I_M_HU> hus,
+			@Nullable final PPOrderBOMLineId coByProductOrderBOMLineId)
 	{
 		//
 		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
-		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId());
+		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId(), coByProductOrderBOMLineId);
 
 		if (lotNumber != null
 				|| bestBeforeDate != null)
