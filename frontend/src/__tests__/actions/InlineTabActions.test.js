@@ -6,6 +6,7 @@ import {
   updateInlineTabWrapperFields,
   setInlineTabWrapperData,
   setInlineTabShowMore,
+  setInlineTabLayoutAndData,
 } from '../../actions/InlineTabActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import gridProps from '../../../test_setup/fixtures/grid.json';
@@ -136,15 +137,15 @@ describe('InlineTab - actions general', () => {
   it('should call SET_INLINE_TAB_WRAPPER_DATA action with correct payload', () => {
     const { windowType } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
-    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const initialInlineTabWrapperId = '123_AD_Tab-222_2205230';
     const dummyProp = { dummyProp: 'test ' };
     const payload = {
-      inlineTabWrapperId: initialInlineTabId,
+      inlineTabWrapperId: initialInlineTabWrapperId,
       data: dummyProp,
     };
 
     const action = setInlineTabWrapperData({
-      inlineTabWrapperId: initialInlineTabId,
+      inlineTabWrapperId: initialInlineTabWrapperId,
       data: dummyProp,
     });
 
@@ -171,7 +172,7 @@ describe('InlineTab - actions general', () => {
 
     store.dispatch(
       setInlineTabWrapperData({
-        inlineTabWrapperId: initialInlineTabId,
+        inlineTabWrapperId: initialInlineTabWrapperId,
         data: dummyProp,
       })
     );
@@ -182,14 +183,14 @@ describe('InlineTab - actions general', () => {
   it('should call SET_INLINE_TAB_SHOW_MORE action with correct payload', () => {
     const { windowType } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
-    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const initialInlineTabWrapperId = '123_AD_Tab-222_2205230';
     const payload = {
-      inlineTabWrapperId: initialInlineTabId,
+      inlineTabWrapperId: initialInlineTabWrapperId,
       showMore: true,
     };
 
     const action = setInlineTabShowMore({
-      inlineTabWrapperId: initialInlineTabId,
+      inlineTabWrapperId: initialInlineTabWrapperId,
       showMore: true,
     });
 
@@ -216,8 +217,50 @@ describe('InlineTab - actions general', () => {
 
     store.dispatch(
       setInlineTabShowMore({
-        inlineTabWrapperId: initialInlineTabId,
+        inlineTabWrapperId: initialInlineTabWrapperId,
         showMore: true,
+      })
+    );
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  /** SET_INLINE_TAB_LAYOUT_AND_DATA action */
+  it('should call SET_INLINE_TAB_LAYOUT_AND_DATA action with correct payload', () => {
+    const { windowType } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const payload = {
+      inlineTabId: initialInlineTabId,
+      data: {},
+    };
+
+    const action = setInlineTabLayoutAndData({
+      inlineTabId: initialInlineTabId,
+      data: {},
+    });
+
+    expect(action.type).toEqual(ACTION_TYPES.SET_INLINE_TAB_LAYOUT_AND_DATA);
+    expect(action.payload).toHaveProperty('inlineTabId', payload.inlineTabId);
+    expect(action.payload).toHaveProperty('data', payload.data);
+
+    const initialState = createState({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+    });
+    const store = mockStore(initialState);
+    const expectedActions = [
+      { type: ACTION_TYPES.SET_INLINE_TAB_LAYOUT_AND_DATA, payload },
+    ];
+
+    store.dispatch(
+      setInlineTabLayoutAndData({
+        inlineTabId: initialInlineTabId,
+        data: {},
       })
     );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
