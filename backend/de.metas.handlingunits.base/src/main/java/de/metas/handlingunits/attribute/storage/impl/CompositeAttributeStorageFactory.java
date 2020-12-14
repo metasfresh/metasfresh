@@ -22,11 +22,6 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -35,6 +30,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CompositeAttributeStorageFactory implements IAttributeStorageFactory
 {
@@ -205,6 +204,24 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 		for (final IAttributeStorageFactory factory : factories)
 		{
 			factory.setHUStorageFactory(huStorageFactory);
+		}
+	}
+
+	@Override
+	public void flush()
+	{
+		for (final IAttributeStorageFactory factory : factories)
+		{
+			factory.flush();
+		}
+	}
+
+	@Override
+	public void flushAndClearCache()
+	{
+		for (final IAttributeStorageFactory factory : factories)
+		{
+			factory.flushAndClearCache();
 		}
 	}
 }
