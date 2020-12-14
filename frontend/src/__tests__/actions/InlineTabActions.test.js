@@ -1,7 +1,12 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import merge from 'merge';
-import { updateInlineTabItemFields, updateInlineTabWrapperFields } from '../../actions/InlineTabActions';
+import {
+  updateInlineTabItemFields,
+  updateInlineTabWrapperFields,
+  setInlineTabWrapperData,
+  setInlineTabShowMore,
+} from '../../actions/InlineTabActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import gridProps from '../../../test_setup/fixtures/grid.json';
 import gridLayoutFixtures from '../../../test_setup/fixtures/grid/layout.json';
@@ -122,6 +127,97 @@ describe('InlineTab - actions general', () => {
         inlineTabWrapperId: initialInlineTabId,
         rowId,
         response: {},
+      })
+    );
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  /** SET_INLINE_TAB_WRAPPER_DATA action */
+  it('should call SET_INLINE_TAB_WRAPPER_DATA action with correct payload', () => {
+    const { windowType } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const dummyProp = { dummyProp: 'test ' };
+    const payload = {
+      inlineTabWrapperId: initialInlineTabId,
+      data: dummyProp,
+    };
+
+    const action = setInlineTabWrapperData({
+      inlineTabWrapperId: initialInlineTabId,
+      data: dummyProp,
+    });
+
+    expect(action.type).toEqual(ACTION_TYPES.SET_INLINE_TAB_WRAPPER_DATA);
+    expect(action.payload).toHaveProperty(
+      'inlineTabWrapperId',
+      payload.inlineTabWrapperId
+    );
+    expect(action.payload).toHaveProperty('data', payload.data);
+
+    const initialState = createState({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+    });
+    const store = mockStore(initialState);
+    const expectedActions = [
+      { type: ACTION_TYPES.SET_INLINE_TAB_WRAPPER_DATA, payload },
+    ];
+
+    store.dispatch(
+      setInlineTabWrapperData({
+        inlineTabWrapperId: initialInlineTabId,
+        data: dummyProp,
+      })
+    );
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  /** SET_INLINE_TAB_SHOW_MORE action */
+  it('should call SET_INLINE_TAB_SHOW_MORE action with correct payload', () => {
+    const { windowType } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const payload = {
+      inlineTabWrapperId: initialInlineTabId,
+      showMore: true,
+    };
+
+    const action = setInlineTabShowMore({
+      inlineTabWrapperId: initialInlineTabId,
+      showMore: true,
+    });
+
+    expect(action.type).toEqual(ACTION_TYPES.SET_INLINE_TAB_SHOW_MORE);
+    expect(action.payload).toHaveProperty(
+      'inlineTabWrapperId',
+      payload.inlineTabWrapperId
+    );
+    expect(action.payload).toHaveProperty('showMore', payload.showMore);
+
+    const initialState = createState({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+    });
+    const store = mockStore(initialState);
+    const expectedActions = [
+      { type: ACTION_TYPES.SET_INLINE_TAB_SHOW_MORE, payload },
+    ];
+
+    store.dispatch(
+      setInlineTabShowMore({
+        inlineTabWrapperId: initialInlineTabId,
+        showMore: true,
       })
     );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
