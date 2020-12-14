@@ -127,8 +127,6 @@ class InlineTab extends PureComponent {
                 </Fragment>
               );
             })}
-            <span>{fieldsByName.Name.value}</span>&nbsp;&nbsp;
-            <span>{fieldsByName.Address.value}</span>
           </div>
         </div>
 
