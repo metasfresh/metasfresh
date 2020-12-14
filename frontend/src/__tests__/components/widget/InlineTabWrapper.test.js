@@ -12,10 +12,10 @@ import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import tablesHandler from '../../../reducers/tables';
 import { Provider } from 'react-redux';
-import props from '../../../../test_setup/fixtures/widget/inline_tab_wrapper.json';
-import tabData from '../../../../test_setup/fixtures/widget/inline_tab_data.json';
-import inlineTabStoreMore from '../../../../test_setup/fixtures/widget/inline_tab_data_more.json';
-import inlineTabStore from '../../../../test_setup/fixtures/widget/inlineTabStore.json';
+import props from '../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
+import tabData from '../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
+import inlineTabStoreMore from '../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
+import inlineTabStore from '../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
 import thunk from 'redux-thunk';
 const middlewares = [thunk];
 
@@ -152,7 +152,4 @@ describe('InlineTabWrapper component', () => {
     expect(htmlOutput).toContain('Russland'); // all rows should be visible now, including this one
     expect(htmlOutput).toContain('meta-icon-fullscreen');
   });
-
-
-
 });
