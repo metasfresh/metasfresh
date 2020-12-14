@@ -1,21 +1,8 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvalidRequestIdException;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvoiceAttachException;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvoiceInputStreamException;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.XmlInvoiceUnmarshalException;
-import lombok.NonNull;
-
 /*
  * #%L
- * de.metas.ordercandidate.rest-api-impl
+ * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +19,19 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
+
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.InvalidXMLException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvalidRequestIdException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvoiceAttachException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvoiceInputStreamException;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.exceptions.XmlInvoiceUnmarshalException;
+import lombok.NonNull;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice("de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions.RestResponseEntityExceptionHandler")
 public class XMLInvoiceResponseEntityExceptionHandler

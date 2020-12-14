@@ -42,7 +42,7 @@ import lombok.ToString;
  * NOTE: when calculating the total net amount to invoice checksum we don't care about currency, we use the sum of {@link I_C_Invoice_Candidate#getNetAmtToInvoice()} as a checksum exclusivelly.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
+ * task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
  */
 @ToString
 /* package */class ICNetAmtToInvoiceChecker implements IAggregator<BigDecimal, I_C_Invoice_Candidate>

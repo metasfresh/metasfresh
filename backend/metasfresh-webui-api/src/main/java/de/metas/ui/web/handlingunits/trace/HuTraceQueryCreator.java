@@ -407,7 +407,6 @@ final class HuTraceQueryCreator
 			return (String)value;
 		}
 
-		Check.fail("Unable to extract a String from parameter={}", parameter);
-		return null; // not reached
+		throw Check.fail("Unable to extract a String from parameter={}", parameter);
 	}
 }

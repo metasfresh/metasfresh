@@ -1,14 +1,8 @@
-package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.exceptions;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
-
 /*
  * #%L
- * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api
+ * vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,12 +20,18 @@ import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
  * #L%
  */
 
-public class InvalidXMLException extends AdempiereException implements ExceptionWithOwnHeaderMessage
-{
-	private static final long serialVersionUID = 6370799498905180084L;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config;
 
-	public InvalidXMLException(String msg)
-	{
-		super(msg);
-	}
+import lombok.Builder;
+import lombok.Value;
+
+@Value
+@Builder
+public class ImportConfig
+{
+	String partientBPartnerGroupName;
+
+	String municipalityBPartnerGroupName;
+
+	String languageCode;
 }

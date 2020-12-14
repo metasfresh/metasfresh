@@ -193,8 +193,6 @@ public class InvoiceHeaderImplBuilder
 
 	/**
 	 * Sets/adds the given pricelist for this header. See {@link #getM_PriceList_ID()} for how conflicts are resolved.
-	 *
-	 * @param priceListId
 	 */
 	public void setM_PriceList_ID(final int priceListId)
 	{
