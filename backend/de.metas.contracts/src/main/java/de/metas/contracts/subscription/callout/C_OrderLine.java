@@ -72,9 +72,6 @@ public class C_OrderLine
 			return;
 		}
 
-		// resetting PriceEntered so that it won't override the new price
-		ol.setPriceEntered(BigDecimal.ZERO);
-
 		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
 		if (subscriptionId <= 0)
 		{
