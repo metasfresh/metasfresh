@@ -23,7 +23,7 @@ public interface IPPOrderProductAttributeBL extends ISingletonService
 	 * </ul>
 	 * only if the HUs is for a MainProduct
 	 *
-	 * @param coByProductOrderBOMLineId null if this is the MainProduct, false if this is a By, Co, or anything else Product
+	 * @param coByProductOrderBOMLineId null if this is the MainProduct, non-null if this is a By, Co, or anything else Product
 	 */
 	void updateHUAttributes(@NonNull Collection<I_M_HU> hus, @NonNull PPOrderId fromPPOrderId, @Nullable PPOrderBOMLineId coByProductOrderBOMLineId);
 
