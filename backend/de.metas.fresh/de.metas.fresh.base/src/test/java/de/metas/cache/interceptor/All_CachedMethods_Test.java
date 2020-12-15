@@ -72,7 +72,6 @@ public class All_CachedMethods_Test
 			.skipIfClassnameStartsWith("de.metas.dpd.model.MDPDScanCode")
 			.skipIfClassnameStartsWith("de.metas.dpd.model.MDPDFileInfo")
 			.skipIfClassnameStartsWith("de.metas.banking.misc.ImportBankstatementCtrl")
-			.skipIfClassnameStartsWith("de.metas.handlingunits.client.terminal.editor.model.impl.HUKeyNameBuilder")
 			// Legacy code
 			.skipIfClassnameStartsWith("de.metas.dpd.process.ImportStatusData")
 			// Tests:

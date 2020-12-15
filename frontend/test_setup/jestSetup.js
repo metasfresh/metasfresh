@@ -51,6 +51,8 @@ window.HTMLDivElement.prototype.getBoundingClientRect = function() {
 //   console.log('EXCEPTION', err);
 // });
 
+export const serverTestPort = '10001'; // everything from 10000-65535 should be fine, setting it lower could make it collide with other open ports
+
 global.EventSource = EventSource;
 global.window = window;
 global.document = window.document;
@@ -60,6 +62,6 @@ global.render = render;
 global.mount = mount;
 global.config = {
   API_URL: 'http://api.test.url/rest/api',
-  WS_URL: 'ws://localhost:8080/ws',
+  WS_URL: `ws://localhost:${serverTestPort}/ws`,
 };
 global.PLUGINS = [];
