@@ -273,11 +273,11 @@ class Modal extends Component {
       closeCallback,
       dataId,
       windowId,
-      parentWindowId,
       parentDataId,
       triggerField,
       rowId,
       tabId,
+      documentType,
     } = this.props;
     const { isNew, isNewDoc } = this.state;
 
@@ -286,7 +286,7 @@ class Modal extends Component {
         dispatch(
           patch(
             'window',
-            parentWindowId,
+            documentType,
             parentDataId,
             null,
             null,

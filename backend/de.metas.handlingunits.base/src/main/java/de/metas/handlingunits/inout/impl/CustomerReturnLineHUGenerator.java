@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -217,7 +216,7 @@ public class CustomerReturnLineHUGenerator
 		final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();// Quantity.of(customerReturnLine.getQtyEntered(), customerReturnLine.getC_UOM());
 		if (qtyCUsTotal.isInfinite())
 		{
-			throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
+			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
 		}
 		setQtyToAllocateTarget(qtyCUsTotal);
 
@@ -238,8 +237,6 @@ public class CustomerReturnLineHUGenerator
 	/**
 	 * This method is important in getting precomputed HUs
 	 * 
-	 * @param schedule
-	 * @return
 	 */
 	// private IHUAllocations getHUAllocations(final I_M_InOutLine inOutLine)
 	// {
@@ -359,9 +356,6 @@ public class CustomerReturnLineHUGenerator
 	/**
 	 * Create Handling Units for not allocated qty of line.
 	 *
-	 * @param ctx
-	 * @param maxLUsToCreate
-	 * @param trxName
 	 * @return generated HUs
 	 */
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate0(final IAllocationRequest request)
@@ -421,12 +415,6 @@ public class CustomerReturnLineHUGenerator
 		return allocationSources;
 	}
 
-	/**
-	 * Keep in sync with {@link de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleCUKey.createVHU()}
-	 * 
-	 * @param qty
-	 * @return
-	 */
 	private final IAllocationRequest createAllocationRequest(final Quantity qty)
 	{
 		final IContextAware contextProvider = getContextInitial();

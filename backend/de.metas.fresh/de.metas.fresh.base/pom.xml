@@ -215,12 +215,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.handlingunits</groupId>
-			<artifactId>de.metas.handlingunits.client</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-cockpit</artifactId>
 			<version>${metasfresh.version}</version>

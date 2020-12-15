@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/metasfresh/misc/dev-support/dev-support.iml" filepath="$PROJECT_DIR$/metasfresh/misc/dev-support/dev-support.iml" />
+      <module fileurl="file://$PROJECT_DIR$/metasfresh/e2e/e2e.iml" filepath="$PROJECT_DIR$/metasfresh/e2e/e2e.iml" />
+      <module fileurl="file://$PROJECT_DIR$/metasfresh/frontend/frontend.iml" filepath="$PROJECT_DIR$/metasfresh/frontend/frontend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/metasfresh-documentation/metasfresh-documentation.iml" filepath="$PROJECT_DIR$/metasfresh-documentation/metasfresh-documentation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/work-metas-customers/work-metas-customers.iml" filepath="$PROJECT_DIR$/work-metas-customers/work-metas-customers.iml" />
+    </modules>
+  </component>
+</project>
