@@ -17,6 +17,7 @@ import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_
 import inlineTabStoreMore from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
 import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
 import addNewData from '../../../../../test_setup/fixtures/widget/inlinetab/addNewData.json';
+import inlineTabInvalid from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_invalid.json';
 import thunk from 'redux-thunk';
 const middlewares = [thunk];
 
@@ -193,5 +194,36 @@ describe('InlineTabWrapper component', () => {
       `<div class="form-group form-field-BPartnerName">`
     );
     expect(htmlOutput).toContain(`<i class="meta-icon-close-alt">`);
+  });
+
+  it('show error correctly', () => {
+    props.dataId = '2156435'; // we pass different docId such that will match the selector used for the mocked up data
+    // inlineTabStoreMore.showMore['123_AD_Tab-222_2155894'] = false;
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: true,
+        },
+        inlineTab: inlineTabInvalid,
+      },
+    });
+    const store = mockStore(initialState);
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/window/123/2156435/AD_Tab-222/`)
+      .reply(200, tabData);
+
+    const wrapper = mount(
+      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <Provider store={store}>
+          <InlineTabWrapper {...props} />
+        </Provider>
+      </ShortcutProvider>
+    );
+    const htmlOutput = wrapper.html();
+
+    expect(htmlOutput).toContain('inline-tab form-control-label row-not-saved');
   });
 });
