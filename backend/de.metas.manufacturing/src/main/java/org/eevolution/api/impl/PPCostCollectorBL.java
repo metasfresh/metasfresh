@@ -72,7 +72,6 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -205,8 +204,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	@Override
 	public I_PP_Cost_Collector createReceipt(final ReceiptCostCollectorCandidate candidate)
 	{
-		final I_PP_Order_BOMLine orderBOMLine = candidate.getOrderBOMLine();
-		if (orderBOMLine == null)
+		if (!candidate.isCoOrByProductReceipt())
 		{
 			return createFinishedGoodsReceipt(candidate);
 		}
@@ -218,8 +216,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 	private I_PP_Cost_Collector createCoProductReceipt(final ReceiptCostCollectorCandidate candidate)
 	{
-		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-
 		//
 		// Get and validate the BOM Line
 		final I_PP_Order_BOMLine orderBOMLine = candidate.getOrderBOMLine();
