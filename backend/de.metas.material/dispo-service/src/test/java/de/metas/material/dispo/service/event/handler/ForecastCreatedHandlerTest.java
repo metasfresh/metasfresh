@@ -85,7 +85,6 @@ public class ForecastCreatedHandlerTest
 		forecastCreatedHandler = new ForecastCreatedHandler(
 				new CandidateChangeService(ImmutableList.of(
 						new StockUpCandiateHandler(
-								candidateRepository,
 								candidateRepositoryCommands,
 								postMaterialEventService,
 								stockRepository))));
