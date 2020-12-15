@@ -16,6 +16,7 @@ import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_ta
 import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
 import inlineTabStoreMore from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
 import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
+import addNewData from '../../../../../test_setup/fixtures/widget/inlinetab/addNewData.json';
 import thunk from 'redux-thunk';
 const middlewares = [thunk];
 
@@ -151,5 +152,46 @@ describe('InlineTabWrapper component', () => {
     );
     expect(htmlOutput).toContain('Russland'); // all rows should be visible now, including this one
     expect(htmlOutput).toContain('meta-icon-fullscreen');
+  });
+
+  it('renders the add new form', () => {
+    props.dataId = '2155894'; // we pass different docId such that will match the selector used for the mocked up data
+    // inlineTabStoreMore.showMore['123_AD_Tab-222_2155894'] = false;
+    inlineTabStoreMore.addNew[`123_AD_Tab-222_2155894`] = {
+      visible: true,
+      windowId: '123',
+      tabId: 'AD_Tab-222',
+      rowId: '2205259',
+    };
+    inlineTabStoreMore[`123_AD_Tab-222_2205259`] = addNewData;
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: true,
+        },
+        inlineTab: inlineTabStoreMore,
+      },
+    });
+    const store = mockStore(initialState);
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/window/123/2155894/AD_Tab-222/`)
+      .reply(200, tabData);
+
+    const wrapper = mount(
+      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <Provider store={store}>
+          <InlineTabWrapper {...props} />
+        </Provider>
+      </ShortcutProvider>
+    );
+    const htmlOutput = wrapper.html();
+
+    expect(htmlOutput).toContain(
+      `<div class="form-group form-field-BPartnerName">`
+    );
+    expect(htmlOutput).toContain(`<i class="meta-icon-close-alt">`);
   });
 });
