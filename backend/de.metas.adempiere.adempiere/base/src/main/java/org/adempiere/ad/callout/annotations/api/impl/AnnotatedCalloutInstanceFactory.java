@@ -59,7 +59,7 @@ public final class AnnotatedCalloutInstanceFactory
 	private Object annotatedCalloutObject;
 	private String tableName;
 	private Callout.RecursionAvoidanceLevel recursionAvoidanceLevel;
-	private final Set<String> columnNames = new HashSet<String>();
+	private final Set<String> columnNames = new HashSet<>();
 
 	private final transient ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> mapPointcuts = ArrayListMultimap.create();
 
@@ -124,7 +124,7 @@ public final class AnnotatedCalloutInstanceFactory
 		return calloutInstances;
 	}
 
-	private final AnnotatedCalloutInstance createCalloutInstance(final String id,
+	private AnnotatedCalloutInstance createCalloutInstance(final String id,
 			final Set<String> columnNames,
 			final ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> mapPointcuts)
 	{
@@ -137,13 +137,13 @@ public final class AnnotatedCalloutInstanceFactory
 		return this;
 	}
 
-	private final Object getAnnotatedCalloutObject()
+	private Object getAnnotatedCalloutObject()
 	{
 		Check.assumeNotNull(annotatedCalloutObject, "annotatedCalloutObj not null");
 		return annotatedCalloutObject;
 	}
 
-	private final Class<?> getAnnotatedClass()
+	private Class<?> getAnnotatedClass()
 	{
 		return getAnnotatedCalloutObject().getClass();
 	}
@@ -252,12 +252,12 @@ public final class AnnotatedCalloutInstanceFactory
 			paramCalloutFieldRequired = false;
 		}
 
-		final CalloutMethodPointcut pointcut = new CalloutMethodPointcut(modelClass,
+		return new CalloutMethodPointcut(modelClass,
 				method,
 				annModelChange.columnNames(),
 				paramCalloutFieldRequired,
-				annModelChange.skipIfCopying());
-		return pointcut;
+				annModelChange.skipIfCopying(),
+				annModelChange.skipIfIndirectlyCalled());
 	}
 
 	private void addPointcutToMap(final CalloutMethodPointcut pointcut)
