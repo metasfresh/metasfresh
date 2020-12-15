@@ -133,3 +133,8 @@ UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2020-12-15 15:15:4
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2020-12-15 15:17:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=628503
 ;
 
+-- 2020-12-15T14:43:10.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='MD_Candidate_BusinessCase', WidgetSize='S',Updated=TO_TIMESTAMP('2020-12-15 15:43:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543326
+;
+
