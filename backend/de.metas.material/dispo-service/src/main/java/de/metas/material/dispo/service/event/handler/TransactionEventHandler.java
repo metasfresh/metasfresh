@@ -508,18 +508,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		throw fail("Unexpected subclass of AbstractTransactionEvent; event={}", event);
 	}
 
-	// private List<Candidate> prepareCandidateForInventory(@NonNull final AbstractTransactionEvent event)
-	// {
-	// 	final List<Candidate> candidates;
-	// 	final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
-	//
-	// 	final CandidatesQuery query = CandidatesQuery.builder()
-	// 			.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
-	// 			.build();
-	// 	final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
-	// 	// TODO continue here
-	// 	return null;
-	// }
 
 	private List<Candidate> prepareUnrelatedCandidate(@NonNull final AbstractTransactionEvent event)
 	{
