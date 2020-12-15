@@ -22,28 +22,25 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.util.Collection;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util.ArrayKey;
+
+import java.util.Collection;
 
 /**
  * Abstract implementation of {@link IAttributeStorageFactory} which is oriented by having an underlying data-type from which we can get the {@link IAttributeStorage} in a standard way.
  *
- * @author tsa
- *
- * @param <ModelType> underlying data-type
+ * @param <ModelType>            underlying data-type
  * @param <AttributeStorageType> attribute storage type
+ * @author tsa
  */
 public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeStorageType extends IAttributeStorage>
 		extends AbstractAttributeStorageFactory
@@ -80,8 +77,7 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	 * Gets the underlying data-type from given <code>modelObj</code>
 	 *
 	 * @param modelObj
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>underlying data-type model
 	 *         <li><code>null</code> if this modelObj cannot be handled by this factory
 	 *         <li>a null marker if this modelObj is actually handled by this factory but there is no underlying data-type model for it. In this case {@link #isNullModel(Object)} shall return true for
@@ -176,7 +172,8 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	/**
 	 * Clears internal attribute storages cache and flushes pending saves on {@link #getHUAttributesDAO()}.
 	 */
-	public final void clearCache()
+	@Override
+	public final void flushAndClearCache()
 	{
 		// First thing, clear the cached attribute storages.
 		// We do this first because in case the attribute storages are disposed while clearing the cache,
@@ -189,9 +186,15 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 		getHUAttributesDAO().flushAndClearCache();
 	}
 
+	@Override
+	public void flush()
+	{
+		getHUAttributesDAO().flush();
+	}
+
 	/**
 	 * Method called when an {@link IAttributeStorage} is removed from cache.
-	 *
+	 * <p>
 	 * If needed you could do some cleanup work like, {@link #removeListenersFromAttributeStorage(IAttributeStorage)}, destroy it etc.
 	 *
 	 * @param attributeStorage
