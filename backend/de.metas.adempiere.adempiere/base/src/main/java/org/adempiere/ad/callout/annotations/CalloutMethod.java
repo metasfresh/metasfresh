@@ -62,7 +62,7 @@ public @interface CalloutMethod
 
 	/**
 	 * Skip calling this callout if it is called via another callout.
-	 * Use case: you want a callout to do stuff only if invoked by a user (or business logic).
+	 * Use case: you want a callout to do stuff only if invoked *directly* by a user (or business logic).
 	 */
 	boolean skipIfIndirectlyCalled() default false;
 }
