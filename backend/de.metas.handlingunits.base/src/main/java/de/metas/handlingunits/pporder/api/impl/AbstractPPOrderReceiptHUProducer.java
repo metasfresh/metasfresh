@@ -118,7 +118,7 @@ import java.util.Map;
 	protected abstract Object getAllocationRequestReferencedModel();
 	protected abstract IAllocationSource createAllocationSource();
 	protected abstract IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager();
-	protected abstract void setAssignedHUs(final Collection<I_M_HU> hus);
+	protected abstract void addAssignedHUs(final Collection<I_M_HU> hus);
 	// @formatter:on
 
 	public AbstractPPOrderReceiptHUProducer(@NonNull final PPOrderId ppOrderId)
@@ -289,7 +289,7 @@ import java.util.Map;
 
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine
-		setAssignedHUs(hus);
+		addAssignedHUs(hus);
 	}
 
 	@Override
