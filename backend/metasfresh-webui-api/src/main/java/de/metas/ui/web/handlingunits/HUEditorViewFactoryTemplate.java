@@ -141,7 +141,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return windowId;
 	}
 
-	private List<HUEditorViewCustomizer> getViewCustomizers(final String referencingTableName)
+	private List<HUEditorViewCustomizer> getViewCustomizers(@Nullable final String referencingTableName)
 	{
 		return viewCustomizersByReferencingTableName.get(referencingTableName);
 	}
@@ -195,6 +195,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					sqlWhereClause.append("\n /* first tab */ AND (").append(firstTabWhereClause).append(")");
 				}
 			}
+
+			//
+			final String additionalSqlWhereClause = getAdditionalSqlWhereClause();
+			if (Check.isNotBlank(additionalSqlWhereClause))
+			{
+				sqlWhereClause.append("\n /* additional */ AND (").append(additionalSqlWhereClause).append(")");
+			}
 		}
 
 		//
@@ -247,6 +254,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		//
 		return sqlViewBinding.build();
 	}
+
+	@Nullable
+	protected String getAdditionalSqlWhereClause() { return null; }
 
 	protected final DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
