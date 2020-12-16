@@ -35,11 +35,15 @@ import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 @ViewFactory(windowId = HUsToReturnViewFactory.Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 {
 	public static final String Window_ID_String = "541011"; // FIXME: hardcoded
 	public static final WindowId Window_ID = WindowId.fromJson(Window_ID_String);
+
+	public static final String PARAM_HUsToReturnViewContext = "HUsToReturnViewContext";
 
 	protected HUsToReturnViewFactory()
 	{
@@ -69,8 +73,19 @@ public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
 	{
+		huViewBuilder.assertParameterSet(PARAM_HUsToReturnViewContext);
+
 		huViewBuilder.considerTableRelatedProcessDescriptors(false)
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(HUsToReturn_SelectHU.class));
+	}
+
+	@Nullable
+	@Override
+	protected String getAdditionalSqlWhereClause()
+	{
+		// FIXME: commented out for debugging
+		//return I_M_HU.COLUMNNAME_HUStatus + "=" + DB.TO_STRING(X_M_HU.HUSTATUS_Shipped);
+		return null;
 	}
 
 	/**

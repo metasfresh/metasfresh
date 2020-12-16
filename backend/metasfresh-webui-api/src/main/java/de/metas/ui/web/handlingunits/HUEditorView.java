@@ -227,8 +227,8 @@ public class HUEditorView implements IView
 		return Optional.ofNullable(value);
 	}
 
-	@Nullable
-	public <T> Optional<T> getParameter(final String name, final Class<T> type)
+	@NonNull
+	public <T> Optional<T> getParameter(@NonNull final String name, @NonNull final Class<T> type)
 	{
 		final Object value = parameters.get(name);
 		return value != null ? Optional.of(type.cast(value)) : Optional.empty();

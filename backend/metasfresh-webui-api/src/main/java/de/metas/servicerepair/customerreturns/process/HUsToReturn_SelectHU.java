@@ -22,13 +22,17 @@
 
 package de.metas.servicerepair.customerreturns.process;
 
+import de.metas.handlingunits.HuId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
+import de.metas.servicerepair.customerreturns.HUsToReturnViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -55,6 +59,11 @@ public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IP
 	protected String doIt()
 	{
 		final HUEditorRow row = getSingleSelectedRow();
+		final HuId huId = row.getHuId();
+		final HUsToReturnViewContext viewContext = getHUsToReturnViewContext();
+		System.out.println("huId=" + huId);
+		System.out.println("viewContext=" + viewContext);
+
 		throw new UnsupportedOperationException(); // TODO
 	}
 
@@ -62,6 +71,13 @@ public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IP
 	protected HUEditorView getView()
 	{
 		return HUEditorView.cast(super.getView());
+	}
+
+	public HUsToReturnViewContext getHUsToReturnViewContext()
+	{
+		return getView()
+				.getParameter(HUsToReturnViewFactory.PARAM_HUsToReturnViewContext, HUsToReturnViewContext.class)
+				.orElseThrow(() -> new AdempiereException("No view context"));
 	}
 
 	@Nullable
