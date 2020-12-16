@@ -23,6 +23,8 @@
 package de.metas.servicerepair.customerreturns.process;
 
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.process.IProcessPrecondition;
@@ -30,6 +32,8 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -83,7 +87,26 @@ public class CustomerReturns_OpenHUToReturn extends JavaProcess implements IProc
 		final IView view = viewsRepo
 				.createView(CreateViewRequest
 						.builder(WEBUI_HU_Constants.WEBUI_SERVICE_HU_Window_ID)
+						.addStickyFilters(newFilterBuilder().build())
 						.build());
 		return view.getViewId();
+	}
+
+	private static DocumentFilter.Builder newFilterBuilder()
+	{
+		final DocumentFilter.Builder builder = DocumentFilter.builder().setFilterId("emptyFilter");
+		final DocumentFilterParam activeParameter = DocumentFilterParam
+				.builder()
+				.setFieldName(I_M_HU.COLUMNNAME_IsActive)
+				.setValue(false)
+				.build();
+		final DocumentFilterParam statusParameter = DocumentFilterParam
+				.builder()
+				.setFieldName(I_M_HU.COLUMNNAME_HUStatus)
+				.setValue(X_M_HU.HUSTATUS_Shipped)
+				.build();
+		builder.addParameter(activeParameter)
+				.addParameter(statusParameter);
+		return builder;
 	}
 }
