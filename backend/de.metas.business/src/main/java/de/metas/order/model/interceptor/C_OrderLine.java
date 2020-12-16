@@ -2,7 +2,6 @@ package de.metas.order.model.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
-import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
@@ -157,12 +156,14 @@ public class C_OrderLine
 
 		if (product.isHaddexCheck() && product.getDateHaddexCheck() != null)
 		{
-			final long differenceBetweenNowAndPromisedDateInMonths = Math.abs(
+			final long differenceBetweenHaddexCheckDateAndPromisedDateInMonths = Math.abs(
 					ChronoUnit.MONTHS.between(
-							SystemTime.asZonedDateTime(),
+							TimeUtil.asZonedDateTime(product.getDateHaddexCheck()),
 							TimeUtil.asZonedDateTime(orderLine.getDatePromised())
 							));
-			if (differenceBetweenNowAndPromisedDateInMonths > getMaxHaddexAgeInMonths(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID()))
+
+
+			if (differenceBetweenHaddexCheckDateAndPromisedDateInMonths > getMaxHaddexAgeInMonths(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID()))
 			{
 				throw new AdempiereException(MSG_HADDEX_CHECK_ERROR).markAsUserValidationError();
 			}
