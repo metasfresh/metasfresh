@@ -16,6 +16,7 @@ import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_ta
 import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
 import fieldsByName from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_fieldsByName.json';
 import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
+import inlineTabItemRow from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_item_row.json';
 import thunk from 'redux-thunk';
 const middlewares = [thunk];
 
@@ -82,5 +83,43 @@ describe('InlineTab component', () => {
         'Antarktis (Sonderstatus durch Antarktis-Vertrag)'
       );
     });
+  });
+
+  it('renders the InlineTab item collapsed when isOpen is true', () => {
+    inlineTabStore[`123_AD_Tab-222_2205262`] = inlineTabItemRow;
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: true,
+        },
+        inlineTab: inlineTabStore,
+      },
+    });
+    const store = mockStore(initialState);
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/window/123/2156425/AD_Tab-222/`)
+      .reply(200, tabData);
+
+    const fieldsOrder = ['Name', 'GLN', 'IsActive', 'IsShipTo'];
+    const wrapper = shallow(
+      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <Provider store={store}>
+          <InlineTab
+            id={`2155894`}
+            rowId={`2205262`}
+            tabId={`AD_Tab-222`}
+            fieldsOrder={fieldsOrder}
+            fieldsByName={fieldsByName}
+            {...props}
+          />
+        </Provider>
+      </ShortcutProvider>
+    );
+    let htmlOutput = wrapper.html();
+    expect(htmlOutput).toContain('inline-tab-active');
+    expect(htmlOutput).toContain('Business Partner Shipment Address');
   });
 });
