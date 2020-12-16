@@ -591,6 +591,7 @@ import lombok.NonNull;
 				.rangeFilter(gridFieldDefaultFilterInfo.isRangeFilter())
 				.showFilterIncrementButtons(gridFieldDefaultFilterInfo.isShowFilterIncrementButtons())
 				.autoFilterInitialValue(autoFilterInitialValue)
+				.showFilterInline(gridFieldDefaultFilterInfo.isShowFilterInline())
 				//
 				.facetFilter(gridFieldDefaultFilterInfo.isFacetFilter())
 				.facetFilterSeqNo(gridFieldDefaultFilterInfo.getFacetFilterSeqNo())

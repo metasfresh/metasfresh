@@ -30,17 +30,18 @@ import lombok.Value;
  */
 
 @Value
-public final class GridFieldDefaultFilterDescriptor
+public class GridFieldDefaultFilterDescriptor
 {
-	private final boolean defaultFilter;
-	private final int defaultFilterSeqNo;
-	private final boolean rangeFilter;
-	private final boolean showFilterIncrementButtons;
-	private final String defaultValue;
+	boolean defaultFilter;
+	int defaultFilterSeqNo;
+	boolean rangeFilter;
+	boolean showFilterIncrementButtons;
+	boolean showFilterInline;
+	String defaultValue;
 
-	private final boolean facetFilter;
-	private final int facetFilterSeqNo;
-	private final OptionalInt maxFacetsToFetch;
+	boolean facetFilter;
+	int facetFilterSeqNo;
+	OptionalInt maxFacetsToFetch;
 
 	@Builder
 	public GridFieldDefaultFilterDescriptor(
@@ -48,6 +49,7 @@ public final class GridFieldDefaultFilterDescriptor
 			final int defaultFilterSeqNo,
 			final boolean rangeFilter,
 			final boolean showFilterIncrementButtons,
+			final boolean showFilterInline,
 			final String defaultValue,
 			//
 			final boolean facetFilter,
@@ -67,6 +69,7 @@ public final class GridFieldDefaultFilterDescriptor
 			this.defaultFilterSeqNo = defaultFilterSeqNo;
 			this.rangeFilter = rangeFilter;
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
+			this.showFilterInline = showFilterInline;
 			this.defaultValue = defaultValue;
 		}
 		else
@@ -75,6 +78,7 @@ public final class GridFieldDefaultFilterDescriptor
 			this.defaultFilterSeqNo = 0;
 			this.rangeFilter = false;
 			this.showFilterIncrementButtons = false;
+			this.showFilterInline = false;
 			this.defaultValue = null;
 		}
 

@@ -1,14 +1,11 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.OptionalInt;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -35,15 +32,16 @@ import lombok.Value;
 @Value
 public class DocumentFieldDefaultFilterDescriptor
 {
-	private final boolean defaultFilter;
-	private final int defaultFilterSeqNo;
-	private final boolean rangeFilter;
-	private final boolean showFilterIncrementButtons;
-	private final Object autoFilterInitialValue;
+	boolean defaultFilter;
+	int defaultFilterSeqNo;
+	boolean rangeFilter;
+	boolean showFilterIncrementButtons;
+	Object autoFilterInitialValue;
+	boolean showFilterInline;
 
-	private final boolean facetFilter;
-	private final int facetFilterSeqNo;
-	private final OptionalInt maxFacetsToFetch;
+	boolean facetFilter;
+	int facetFilterSeqNo;
+	OptionalInt maxFacetsToFetch;
 
 	@Builder
 	public DocumentFieldDefaultFilterDescriptor(
@@ -53,6 +51,7 @@ public class DocumentFieldDefaultFilterDescriptor
 			final int defaultFilterSeqNo,
 			final boolean rangeFilter,
 			final boolean showFilterIncrementButtons,
+			final boolean showFilterInline,
 			@Nullable final Object autoFilterInitialValue,
 			//
 			final boolean facetFilter,
@@ -71,6 +70,7 @@ public class DocumentFieldDefaultFilterDescriptor
 			this.rangeFilter = rangeFilter;
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
 			this.autoFilterInitialValue = autoFilterInitialValue;
+			this.showFilterInline = showFilterInline;
 		}
 		else
 		{
@@ -79,6 +79,7 @@ public class DocumentFieldDefaultFilterDescriptor
 			this.rangeFilter = false;
 			this.showFilterIncrementButtons = false;
 			this.autoFilterInitialValue = null;
+			this.showFilterInline = false;
 		}
 
 		if (facetFilter)

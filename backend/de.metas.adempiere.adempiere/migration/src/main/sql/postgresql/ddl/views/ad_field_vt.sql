@@ -75,6 +75,7 @@ c_trl.ad_language
 , c.SelectionColumnSeqNo
 , c.IsRangeFilter
 , c.IsShowFilterIncrementButtons
+, c.IsShowFilterInline
 , c.FilterDefaultValue
 , c.IsFacetFilter
 , c.FacetFilterSeqNo
