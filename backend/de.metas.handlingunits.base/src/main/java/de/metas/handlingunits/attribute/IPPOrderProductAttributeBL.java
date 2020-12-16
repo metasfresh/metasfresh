@@ -1,13 +1,16 @@
 package de.metas.handlingunits.attribute;
 
-import java.util.Collection;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 public interface IPPOrderProductAttributeBL extends ISingletonService
 {
@@ -18,11 +21,11 @@ public interface IPPOrderProductAttributeBL extends ISingletonService
 	 * <li>given HUs
 	 * <li>all already received HUs
 	 * </ul>
-	 * 
-	 * @param ppOrder
-	 * @param hus
+	 * only if the HUs is for a MainProduct
+	 *
+	 * @param coByProductOrderBOMLineId null if this is the MainProduct, non-null if this is a By, Co, or anything else Product
 	 */
-	void updateHUAttributes(Collection<I_M_HU> hus, final PPOrderId fromPPOrderId);
+	void updateHUAttributes(@NonNull Collection<I_M_HU> hus, @NonNull PPOrderId fromPPOrderId, @Nullable PPOrderBOMLineId coByProductOrderBOMLineId);
 
 	/**
 	 * Create new PP_Order_ProductAttribute entries for the given cost collector

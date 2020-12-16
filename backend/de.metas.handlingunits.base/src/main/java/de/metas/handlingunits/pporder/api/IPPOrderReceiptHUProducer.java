@@ -42,14 +42,6 @@ public interface IPPOrderReceiptHUProducer
 	I_M_HU receiveVHU(Quantity qtyToReceive);
 
 	/**
-	 * Creates & processes manufacturing receipt candidate(s) for an already existing planning HU.
-	 *
-	 * @deprecated To be removed. Needed only for the legacy Swing UI.
-	 */
-	@Deprecated
-	void createReceiptCandidatesFromPlanningHU(I_M_HU planningHU);
-
-	/**
 	 * NOTE: by default current system time is considered.
 	 */
 	IPPOrderReceiptHUProducer movementDate(final ZonedDateTime movementDate);
