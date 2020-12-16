@@ -224,7 +224,7 @@ import java.util.Map;
 		//
 		// Update received HUs
 		InterfaceWrapperHelper.setThreadInheritedTrxName(planningHUs); // just to be sure
-		updateReceivedHUs(huContext, planningHUs);
+		updateReceivedHUs(huContext, planningHUs, ppOrderReceiptCandidateCollector.coByProductOrderBOMLineId);
 
 		//
 		// Create receipt candidates
@@ -265,55 +265,6 @@ import java.util.Map;
 
 	protected abstract ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer();
 
-	@Override
-	public final void createReceiptCandidatesFromPlanningHU(@NonNull final I_M_HU planningHU)
-	{
-		processReceiptCandidates = true;
-
-		if (!X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
-		{
-			throw new HUException("HU " + planningHU + " shall have status Planning but it has " + planningHU.getHUStatus());
-		}
-
-		huTrxBL.process(huContext -> {
-			InterfaceWrapperHelper.setThreadInheritedTrxName(planningHU); // just to be sure
-
-			//
-			// Delete previously created candidates
-			// Assume there are no processed one, and even if it would be it would fail on DAO level
-			huPPOrderQtyDAO.streamOrderQtys(getPpOrderId())
-					.filter(candidate -> candidate.getM_HU_ID() == planningHU.getM_HU_ID())
-					.forEach(huPPOrderQtyDAO::delete);
-
-			// Extract it if not top level
-			huTrxBL.setParentHU(huContext,
-					null,
-					planningHU,
-					true // destroyOldParentIfEmptyStorage
-			);
-
-			final HuId topLevelHUId = HuId.ofRepoId(planningHU.getM_HU_ID());
-			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(planningHU.getM_Locator_ID());
-
-			// Stream all product storages
-			// ... and create planning receipt candidates
-			{
-				final ImmutableList<CreateReceiptCandidateRequest> requests = huContext.getHUStorageFactory()
-						.getStorage(planningHU)
-						.getProductStorages()
-						.stream()
-						// FIXME: validate if the storage product is accepted
-						.map(productStorage -> toCreateReceiptCandidateRequest(productStorage, topLevelHUId, locatorId))
-						.collect(ImmutableList.toImmutableList());
-
-				createAndProcessReceiptCandidatesIfRequested(requests);
-			}
-
-			//
-			updateReceivedHUs(huContext, ImmutableSet.of(planningHU));
-		});
-	}
-
 	private static CreateReceiptCandidateRequest toCreateReceiptCandidateRequest(final IHUProductStorage productStorage, final HuId topLevelHUId, final LocatorId locatorId)
 	{
 		return CreateReceiptCandidateRequest.builder()
@@ -326,11 +277,12 @@ import java.util.Map;
 
 	private void updateReceivedHUs(
 			final IHUContext huContext,
-			final Collection<I_M_HU> hus)
+			final Collection<I_M_HU> hus,
+			@Nullable final PPOrderBOMLineId coByProductOrderBOMLineId)
 	{
 		//
 		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
-		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId());
+		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId(), coByProductOrderBOMLineId);
 
 		if (lotNumber != null
 				|| bestBeforeDate != null)
