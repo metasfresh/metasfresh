@@ -15,8 +15,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.NullAutoCloseable;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -136,27 +134,9 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		}
 	}
 
-	/**
-	 * @return {@link NullAutoCloseable} always
-	 */
-	@Override
-	public IAutoCloseable temporaryDisableAutoflush()
-	{
-		// NOTE: conceptualy this DAO implementation is continuously auto-flushing because it's saving/deleting direclty in database,
-		// but we cannot disable this functionality
-		return NullAutoCloseable.instance;
-	}
-
 	@Override
 	public void flush()
 	{
 		// nothing because there is no internal cache
 	}
-
-	@Override
-	public void flushAndClearCache()
-	{
-		// nothing because there is no internal cache
-	}
-
 }

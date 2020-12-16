@@ -65,7 +65,7 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 	}
 
 	@Override
-	public void removeAttributeStorageListener(IAttributeStorageListener listener)
+	public void removeAttributeStorageListener(final IAttributeStorageListener listener)
 	{
 		if (listener == null)
 		{
@@ -213,15 +213,6 @@ public class CompositeAttributeStorageFactory implements IAttributeStorageFactor
 		for (final IAttributeStorageFactory factory : factories)
 		{
 			factory.flush();
-		}
-	}
-
-	@Override
-	public void flushAndClearCache()
-	{
-		for (final IAttributeStorageFactory factory : factories)
-		{
-			factory.flushAndClearCache();
 		}
 	}
 }

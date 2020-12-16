@@ -26,6 +26,8 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Attribute Storage Factory. Hint: use {@link IAttributeStorageFactoryService} to get an instance.
  */
@@ -64,6 +66,7 @@ public interface IAttributeStorageFactory
 	 * @param model
 	 * @return attribute storage or null
 	 */
+	@Nullable
 	IAttributeStorage getAttributeStorageIfHandled(Object model);
 
 	IHUAttributesDAO getHUAttributesDAO();
@@ -77,7 +80,4 @@ public interface IAttributeStorageFactory
 	void setHUStorageFactory(IHUStorageFactory huStorageFactory);
 
 	void flush();
-
-	@Deprecated
-	void flushAndClearCache();
 }

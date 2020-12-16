@@ -12,8 +12,6 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.NullAutoCloseable;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -118,27 +116,6 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	{
 		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		return delegate.retrieveAttribute(hu, attributeId);
-	}
-
-	/**
-	 * @return {@link NullAutoCloseable} always
-	 */
-	@Override
-	public IAutoCloseable temporaryDisableAutoflush()
-	{
-		// NOTE: disabling "autoflush" is not supported because in order to decide with which delegate we need to work,
-		// we need the HU or at least which is the transaction.
-		return NullAutoCloseable.instance;
-	}
-
-	@Override
-	public void flushAndClearCache()
-	{
-		final SaveDecoupledHUAttributesDAO attributesDAO = getDelegateOrNull();
-		if (attributesDAO != null)
-		{
-			attributesDAO.flushAndClearCache();
-		}
 	}
 
 	@Override

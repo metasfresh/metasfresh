@@ -23,8 +23,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Attribute;
@@ -67,8 +65,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	@ToStringBuilder(skip = true)
 	private final IHUAttributesDAO db;
 
-	private boolean _autoflushEnabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AutoFlushEnabledInitial, false); // false to be backward compatible;
-	private boolean _incrementalFlush = false;
+	private final boolean _autoflushEnabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_AutoFlushEnabledInitial, false); // false to be backward compatible;
 
 	// Status
 	/**
@@ -96,34 +93,17 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	@Override
 	protected void finalize() throws Throwable
 	{
-		if (idsToSaveFromLastFlush != null && !idsToSaveFromLastFlush.isEmpty())
+		if (!idsToSaveFromLastFlush.isEmpty())
 		{
 			new AdempiereException("WARNING: It could be that following M_HU_Attribute_IDs have changes which will never be saved to database: " + idsToSaveFromLastFlush)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 
-		if (_huAttributesToRemove != null && !_huAttributesToRemove.isEmpty())
+		if (!_huAttributesToRemove.isEmpty())
 		{
 			new AdempiereException("WARNING: It could be that following M_HU_Attributes to be removed are skipped: " + _huAttributesToRemove)
 					.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
-	}
-
-	public synchronized final SaveDecoupledHUAttributesDAO setAutoflushEnabled(final boolean autoflushEnabled)
-	{
-		if (_autoflushEnabled == autoflushEnabled)
-		{
-			return this;
-		}
-
-		// If we are about to enable autoflush, we need to flush existing values first
-		if (autoflushEnabled)
-		{
-			flush();
-		}
-
-		_autoflushEnabled = autoflushEnabled;
-		return this;
 	}
 
 	/**
@@ -135,23 +115,9 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		return _autoflushEnabled;
 	}
 
-	/**
-	 * Enables/Disabled incremental flush.
-	 * <p>
-	 * Incremental flush means that {@link #flush()} will save only the objects which were enqueued to be saved after last flush.
-	 * If this functionality is not enabled (default), all objects from internal flush are tried to be saved on {@link #flush()}.
-	 * <p>
-	 * NOTE: in future, i think we can consider to take out this method ALWAYS do incremental flush.
-	 */
-	public synchronized final SaveDecoupledHUAttributesDAO setIncrementalFlush(final boolean incrementalFlush)
-	{
-		_incrementalFlush = incrementalFlush;
-		return this;
-	}
-
 	private boolean isIncrementalFlush()
 	{
-		return _incrementalFlush;
+		return false;
 	}
 
 	@Override
@@ -197,9 +163,9 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		if (huAttributeOld != null && !Util.same(huAttribute, huAttributeOld))
 		{
 			final HUException ex = new HUException("HU attribute shall not exist in internal cache or it shall be the same instance."
-					+ "\n HU Attribute: " + huAttribute + " (" + (huAttribute == null ? null : huAttribute.getCreated()) + ")"
+					+ "\n HU Attribute: " + huAttribute + " (" + huAttribute.getCreated() + ")"
 					+ "\n HU Attribute - trx: " + trxManager.get(InterfaceWrapperHelper.getTrxName(huAttribute), OnTrxMissingPolicy.ReturnTrxNone)
-					+ "\n HU Attribute(in cache): " + huAttributeOld + " (" + (huAttributeOld == null ? null : huAttributeOld.getCreated()) + ")"
+					+ "\n HU Attribute(in cache): " + huAttributeOld + " (" + huAttributeOld.getCreated() + ")"
 					+ "\n HU: " + hu
 					+ "\n HU Trx: " + trxManager.get(InterfaceWrapperHelper.getTrxName(hu), OnTrxMissingPolicy.ReturnTrxNone)
 					+ "\n Autoflush enabled: " + autoflushEnabled);
@@ -385,42 +351,6 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		}
 	}
 
-	@Override
-	public synchronized IAutoCloseable temporaryDisableAutoflush()
-	{
-		// If autoflush was not enabled, then we don't have to disable it because it's already disabled
-		if (!isAutoflushEnabled())
-		{
-			return NullAutoCloseable.instance;
-		}
-
-		//
-		// Disable the autoflush now
-		setAutoflushEnabled(false);
-
-		//
-		// Return an AutoCloseable which will restore the "autoflush" status
-		return new IAutoCloseable()
-		{
-			private boolean closed = false;
-
-			@Override
-			public void close()
-			{
-				// If closed method is called more then once, do nothing
-				// (respect the "method needs to be idempotent" requirement from method contract)
-				if (closed)
-				{
-					return;
-				}
-				closed = true;
-
-				// Enable back the autoflush
-				setAutoflushEnabled(true);
-			}
-		};
-	}
-
 	/**
 	 * Debugging method which logs in console the given huAttribute.
 	 */
@@ -447,16 +377,6 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		final String daoStatus = "IncrementalFlush=" + isIncrementalFlush() + ", IdsToSaveFromLastFlush=" + idsToSaveFromLastFlush;
 
 		logger.trace("" + message + ": " + modelChangeInfo + " -- " + huAttribute + " -- " + daoStatus);
-	}
-
-	@Override
-	public synchronized void flushAndClearCache()
-	{
-		// First of all, we flush everything that's pending, to make sure nothing is lost.
-		flush();
-
-		_hu2huAttributes.clear();
-		logger.trace("cached cleared");
 	}
 
 	private static class HUAttributesMap implements Iterable<I_M_HU_Attribute>
