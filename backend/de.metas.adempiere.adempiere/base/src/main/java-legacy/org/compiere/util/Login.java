@@ -475,7 +475,6 @@ public class Login
 	 *
 	 * @param org org information
 	 * @param timestamp optional date
-	 * @param printerName optional printer info
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(

@@ -27,6 +27,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
 import de.metas.handlingunits.inout.returns.AbstractReturnsInOutProducer;
@@ -91,9 +92,9 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	private final EmptiesInOutLinesProducer packingMaterialInoutLinesBuilder = EmptiesInOutLinesProducer.newInstance(inoutRef);
 
 	// services
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUPackingMaterialDAO huPackingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUPackingMaterialDAO huPackingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
 	/**
 	 * List of handling units that have to be returned to vendor
@@ -211,7 +212,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void afterInOutProcessed(final I_M_InOut inout)
 	{
-		huAssignmentBL.setAssignedHandlingUnits(inout, getHUsReturned());
+		huInOutBL.setAssignedHandlingUnits(inout, getHUsReturned());
 
 		createHUSnapshots();
 	}

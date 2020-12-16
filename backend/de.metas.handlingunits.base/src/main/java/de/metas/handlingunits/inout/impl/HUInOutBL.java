@@ -23,7 +23,6 @@ package de.metas.handlingunits.inout.impl;
  */
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -74,13 +73,12 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 public class HUInOutBL implements IHUInOutBL
 {
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IDocumentLUTUConfigurationHandler<I_M_InOutLine> lutuConfigurationHandler = CustomerReturnLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_InOutLine>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
 
@@ -365,10 +363,21 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
+	public void setAssignedHandlingUnits(final org.compiere.model.I_M_InOut inout, final List<I_M_HU> hus)
+	{
+		huAssignmentBL.setAssignedHandlingUnits(inout, hus);
+	}
+
+	@Override
+	public void setAssignedHandlingUnits(final org.compiere.model.I_M_InOutLine inoutLine, final List<I_M_HU> hus)
+	{
+		huAssignmentBL.setAssignedHandlingUnits(inoutLine, hus);
+	}
+
+	@Override
 	public void copyAssignmentsToReversal(@NonNull final org.compiere.model.I_M_InOut inOutRecord)
 	{
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 
 		final List<I_M_InOutLine> lineRecords = inOutDAO.retrieveLines(inOutRecord, I_M_InOutLine.class);
 		for (final I_M_InOutLine lineRecord : lineRecords)

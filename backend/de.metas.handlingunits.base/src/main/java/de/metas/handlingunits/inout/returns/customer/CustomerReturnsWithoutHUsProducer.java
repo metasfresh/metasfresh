@@ -31,7 +31,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -45,6 +45,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU;
@@ -92,9 +93,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static de.metas.handlingunits.HUPIItemProductId.VIRTUAL_HU;
-import static org.adempiere.mm.attributes.AttributeSetInstanceId.NONE;
-
 @Service
 public class CustomerReturnsWithoutHUsProducer
 {
@@ -108,8 +106,10 @@ public class CustomerReturnsWithoutHUsProducer
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final CustomerReturnInOutRecordFactory customerReturnRepository;
 
@@ -154,21 +154,21 @@ public class CustomerReturnsWithoutHUsProducer
 					final List<CustomerReturnLineCandidate> returnLineCandidates = returnLineCandidatesByGroupingKey.get(groupingKey);
 
 					//2.1 create the customer return header
-					final I_M_InOut returnHeader = customerReturnRepository.createCustomerReturnHeader(buildCreateCustomerReturnHeaderRequest(groupingKey));
+					final I_M_InOut returnHeader = customerReturnRepository.createCustomerReturnHeader(createCustomerReturnHeaderRequest(groupingKey));
 					final InOutId returnHeaderId = InOutId.ofRepoId(returnHeader.getM_InOut_ID());
 
 					//2.2 create customer return lines
 					final Stream<I_M_InOutLine> returnLines = returnLineCandidates
 							.stream()
-							.map(returnLineCandidate -> buildCreateCustomerReturnLineRequest(returnLineCandidate, returnHeaderId))
-							.map(customerReturnRepository::createReturnLine);
+							.map(returnLineCandidate -> createCustomerReturnLineRequest(returnLineCandidate, returnHeaderId))
+							.map(this::createReturnLine);
 
 					//2.3 generate HUs for those lines
 					final List<I_M_HU> createdHUs = returnLines.map(this::createHUsForReturnLine)
 							.flatMap(Collection::stream)
 							.collect(ImmutableList.toImmutableList());
 
-					huAssignmentBL.setAssignedHandlingUnits(returnHeader, createdHUs);
+					huInOutBL.setAssignedHandlingUnits(returnHeader, createdHUs);
 
 					createdReturnIdCollector.add(returnHeaderId);
 
@@ -179,9 +179,13 @@ public class CustomerReturnsWithoutHUsProducer
 		return createdReturnIdCollector.build();
 	}
 
+	public I_M_InOutLine createReturnLine(@NonNull final CreateCustomerReturnLineReq request)
+	{
+		return customerReturnRepository.createReturnLine(request);
+	}
+
 	private int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(docBaseType)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
@@ -192,7 +196,7 @@ public class CustomerReturnsWithoutHUsProducer
 		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 	}
 
-	private CreateCustomerReturnHeaderReq buildCreateCustomerReturnHeaderRequest(@NonNull final CustomerReturnLineGroupingKey customerReturnGroupingKey)
+	private CreateCustomerReturnHeaderReq createCustomerReturnHeaderRequest(@NonNull final CustomerReturnLineGroupingKey customerReturnGroupingKey)
 	{
 		final I_C_Order originSalesOrder = customerReturnGroupingKey.getOrderId() != null
 				? orderDAO.getById(customerReturnGroupingKey.getOrderId(), I_C_Order.class)
@@ -213,7 +217,9 @@ public class CustomerReturnsWithoutHUsProducer
 				.build();
 	}
 
-	private CreateCustomerReturnLineReq buildCreateCustomerReturnLineRequest(@NonNull final CustomerReturnLineCandidate returnLineCandidate, @NonNull final InOutId customerReturnId)
+	private CreateCustomerReturnLineReq createCustomerReturnLineRequest(
+			@NonNull final CustomerReturnLineCandidate returnLineCandidate,
+			@NonNull final InOutId customerReturnId)
 	{
 		final AttributeSetInstanceId attributeSetInstanceId = createAttributeSetInstance(returnLineCandidate);
 
@@ -233,10 +239,8 @@ public class CustomerReturnsWithoutHUsProducer
 	private List<I_M_HU> createHUsForReturnLine(@NonNull final I_M_InOutLine returnLine)
 	{
 		final List<I_M_HU> createdHUs;
-
-		final HUPIItemProductId lineHUPIProductIdOrNull = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
-
-		if (lineHUPIProductIdOrNull == null || VIRTUAL_HU.equals(lineHUPIProductIdOrNull))
+		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
+		if (hupiItemProductId == null || hupiItemProductId.isVirtualHU())
 		{
 			createdHUs = ImmutableList.of(createCUs(returnLine));
 		}
@@ -245,7 +249,7 @@ public class CustomerReturnsWithoutHUsProducer
 			createdHUs = createLUTUs(returnLine);
 		}
 
-		huAssignmentBL.setAssignedHandlingUnits(returnLine, createdHUs);
+		huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs);
 
 		return createdHUs;
 	}
@@ -253,13 +257,10 @@ public class CustomerReturnsWithoutHUsProducer
 	private List<I_M_HU> createLUTUs(@NonNull final I_M_InOutLine returnLine)
 	{
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(returnLine);
-
-		final CustomerReturnLineHUGenerator huGenerator = CustomerReturnLineHUGenerator.newInstance(contextProvider)
-				.setIHUTrxListeners(ImmutableList.of(CreateReturnedHUsTrxListener.instance));
-
-		huGenerator.addM_InOutLine(returnLine);
-
-		return huGenerator.generate();
+		return CustomerReturnLineHUGenerator.newInstance(contextProvider)
+				.setIHUTrxListeners(ImmutableList.of(CreateReturnedHUsTrxListener.instance))
+				.addM_InOutLine(returnLine)
+				.generate();
 	}
 
 	private I_M_HU createCUs(@NonNull final I_M_InOutLine returnLine)
@@ -281,39 +282,31 @@ public class CustomerReturnsWithoutHUsProducer
 
 		final IAllocationSource source = createAllocationSource(returnLine);
 
-		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(returnLine.getM_Locator_ID());
-
-		final I_M_HU returnCUs = initializeCUs(locatorId);
-
-		final IAllocationDestination destination = HUListAllocationSourceDestination.of(returnCUs);
+		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoId(returnLine.getM_Locator_ID());
+		final I_M_HU returnCU = initializeCU(locatorId);
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(returnCU);
 
 		// Execute transfer
-		final HULoader loader = HULoader.of(source, destination)
+		HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(true);
+				.setAllowPartialLoads(true)
+				.load(request);
 
-		loader.load(request);
-
-		return returnCUs;
+		return returnCU;
 	}
 
-	private I_M_HU initializeCUs(@NonNull final LocatorId locatorId)
+	private I_M_HU initializeCU(@NonNull final LocatorId locatorId)
 	{
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		final I_M_HU_PI_Item_Product piItemProduct = hupiItemProductDAO.getById(HUPIItemProductId.VIRTUAL_HU);
+		final I_M_HU_PI huPI = handlingUnitsDAO.getPackingInstructionById(HuPackingInstructionsId.VIRTUAL);
 
-		final I_M_HU_PI_Item_Product item = hupiItemProductDAO.getById(VIRTUAL_HU);
-
-		final I_M_HU_PI huPI = item.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-
-		final I_M_HU hu = huTrxBL.createHUContextProcessorExecutor()
+		return huTrxBL.createHUContextProcessorExecutor()
 				.call(huContext -> handlingUnitsDAO.createHUBuilder(huContext)
 						.setM_HU_Item_Parent(null) // no parent
-						.setM_HU_PI_Item_Product(item)
+						.setM_HU_PI_Item_Product(piItemProduct)
 						.setLocatorId(locatorId)
 						.setHUStatus(X_M_HU.HUSTATUS_Planning) //will change to active when completing the return
 						.create(huPI));
-
-		return hu;
 	}
 
 	private IAllocationSource createAllocationSource(@NonNull final I_M_InOutLine returnLine)
@@ -323,7 +316,6 @@ public class CustomerReturnsWithoutHUsProducer
 		final BigDecimal qty = returnLine.getQtyEntered();
 
 		final PlainProductStorage productStorage = new PlainProductStorage(productId, uom, qty);
-		;
 
 		return new GenericAllocationSourceDestination(productStorage, returnLine);
 	}
@@ -340,7 +332,7 @@ public class CustomerReturnsWithoutHUsProducer
 
 		final AddAttributesRequest addAttributesRequest = AddAttributesRequest.builder()
 				.productId(customerReturnLineCandidate.getProductId())
-				.existingAttributeSetIdOrNone(NONE)
+				.existingAttributeSetIdOrNone(AttributeSetInstanceId.NONE)
 				.attributeInstanceBasicInfos(attributes)
 				.build();
 

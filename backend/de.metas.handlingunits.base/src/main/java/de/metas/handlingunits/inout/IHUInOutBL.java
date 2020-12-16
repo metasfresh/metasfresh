@@ -49,9 +49,9 @@ public interface IHUInOutBL extends ISingletonService
 
 	/**
 	 * Create additional inout lines for packing materials (TU and LU) based on the qtyTUs.
-	 *
+	 * <p>
 	 * The lines are taken one by one, the packing materials are collected from the assigned HUs.
-	 *
+	 * <p>
 	 * Afterwards, they are counted, and the qty TU of the current line is incremented with the new value (see {@link I_M_InOutLine#setQtyEnteredTU(java.math.BigDecimal)}.
 	 * <p>
 	 * <b>IMPORTANT:</b> if there is already at least one existing packing material line, then this method will do nothing. If you want the packing materials to be re-generated, please use
@@ -150,6 +150,9 @@ public interface IHUInOutBL extends ISingletonService
 	 */
 	void moveHUsForCustomerReturn(Properties ctx, List<I_M_HU> husToReturn);
 
-	void copyAssignmentsToReversal(I_M_InOut inoutRecord);
+	void setAssignedHandlingUnits(I_M_InOut inout, List<I_M_HU> hus);
 
+	void setAssignedHandlingUnits(final org.compiere.model.I_M_InOutLine inoutLine, final List<I_M_HU> hus);
+
+	void copyAssignmentsToReversal(I_M_InOut inoutRecord);
 }
