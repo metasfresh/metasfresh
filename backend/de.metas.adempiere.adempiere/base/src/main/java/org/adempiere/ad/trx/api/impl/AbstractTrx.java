@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -40,12 +41,12 @@ import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
-
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * Abstract {@link ITrx} implementation which has no dependencies on any native implementation.
@@ -111,7 +112,7 @@ public abstract class AbstractTrx implements ITrx
 		return m_trxName;
 	}
 
-	private final void validateTrxSavepoint(final ITrxSavepoint savepoint)
+	private void validateTrxSavepoint(final ITrxSavepoint savepoint)
 	{
 		if (savepoint == null)
 		{
@@ -167,7 +168,7 @@ public abstract class AbstractTrx implements ITrx
 	}
 
 	@Override
-	public boolean rollback(boolean throwException) throws SQLException
+	public boolean rollback(final boolean throwException) throws SQLException
 	// metas: begin: 02367
 	{
 		boolean success = false;
@@ -190,10 +191,6 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) rollback implementation.
-	 *
-	 * @param throwException
-	 * @return
-	 * @throws SQLException
 	 */
 	protected abstract boolean rollbackNative(boolean throwException) throws SQLException;
 
@@ -205,7 +202,7 @@ public abstract class AbstractTrx implements ITrx
 			final boolean throwException = false;
 			return rollback(throwException);
 		}
-		catch (Throwable ex)
+		catch (final Throwable ex)
 		{
 			// NOTE: we are catching ALL exceptions (Throwable) and not only "Exception",
 			// because by contract this method is not supposed to fail
@@ -222,7 +219,7 @@ public abstract class AbstractTrx implements ITrx
 		{
 			return rollbackNative(savepoint);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new DBException("Cannot rollback " + this + " to savepoint " + savepoint, e);
 		}
@@ -234,15 +231,11 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) rollback to savepoint implementation
-	 *
-	 * @param savepointNative
-	 * @return
-	 * @throws SQLException
 	 */
 	protected abstract boolean rollbackNative(ITrxSavepoint savepoint) throws Exception;
 
 	@Override
-	public boolean commit(boolean throwException) throws SQLException
+	public boolean commit(final boolean throwException) throws SQLException
 	// metas: begin: 02367
 	{
 		final ITrxListenerManager trxListenerManager = getTrxListenerManager(false);
@@ -273,22 +266,19 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) commit implementation
-	 *
-	 * @param throwException
-	 * @return
-	 * @throws SQLException
 	 */
 	protected abstract boolean commitNative(boolean throwException) throws SQLException;
 
+	@Nullable
 	@Override
-	public ITrxSavepoint createTrxSavepoint(String name)
+	public ITrxSavepoint createTrxSavepoint(final String name)
 	{
 		final ITrxSavepoint savepoint;
 		try
 		{
 			savepoint = createTrxSavepointNative(name);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new DBException("Cannot create savepoint '" + name + "' for transaction " + this, e);
 		}
@@ -302,10 +292,9 @@ public abstract class AbstractTrx implements ITrx
 	}
 
 	/**
-	 * @param name
 	 * @return savepoint or return <code>null</code> if no connection could be obtained of if we have an autoCommit connection.
-	 * @throws Exception
 	 */
+	@Nullable
 	protected abstract ITrxSavepoint createTrxSavepointNative(String name) throws Exception;
 
 	@Override
@@ -318,7 +307,7 @@ public abstract class AbstractTrx implements ITrx
 		{
 			released = releaseSavepointNative(savepoint);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new DBException("Cannot release savepoint " + savepoint + " on AbstractTrx=" + this, e);
 		}
@@ -331,9 +320,6 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Release native savepoint
-	 *
-	 * @param savepointNative
-	 * @return true if released or if it was already released
 	 */
 	protected abstract boolean releaseSavepointNative(ITrxSavepoint savepoint) throws Exception;
 
@@ -348,7 +334,7 @@ public abstract class AbstractTrx implements ITrx
 		{
 			return commit(false);
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			return false;
 		}
@@ -448,7 +434,7 @@ public abstract class AbstractTrx implements ITrx
 	/**
 	 * Current {@link ITrxListenerManager}
 	 *
-	 * @task 04265
+	 * Task 04265
 	 */
 	private ITrxListenerManager trxListenerManager = null;
 
@@ -457,10 +443,7 @@ public abstract class AbstractTrx implements ITrx
 	 *
 	 * If no {@link ITrxListenerManager} was already created and <code>create</code> is true, a new transaction listener manager will be created and returned
 	 *
-	 * @param create
-	 * @return
-	 *
-	 * @task 04265
+	 * Task 04265
 	 */
 	private ITrxListenerManager getTrxListenerManager(final boolean create)
 	{
@@ -490,7 +473,7 @@ public abstract class AbstractTrx implements ITrx
 		return trxManager;
 	}
 
-	private final Map<String, Object> getPropertiesMap()
+	private Map<String, Object> getPropertiesMap()
 	{
 		if(_properties == null)
 		{
@@ -505,7 +488,7 @@ public abstract class AbstractTrx implements ITrx
 		return _properties;
 	}
 
-	private final Map<String, Object> getPropertiesMapOrNull()
+	private Map<String, Object> getPropertiesMapOrNull()
 	{
 		synchronized (this)
 		{
@@ -513,6 +496,7 @@ public abstract class AbstractTrx implements ITrx
 		}
 	}
 
+	@Nullable
 	@Override
 	public final <T> T setProperty(final String name, final Object value)
 	{
@@ -566,7 +550,7 @@ public abstract class AbstractTrx implements ITrx
 	@Override
 	public <T> T setAndGetProperty(@NonNull final String name, @NonNull final Function<T, T> valueRemappingFunction)
 	{
-		final BiFunction<? super String, ? super Object, ? extends Object> remappingFunction = (propertyName, oldValue) -> {
+		final BiFunction<? super String, ? super Object, ?> remappingFunction = (propertyName, oldValue) -> {
 			@SuppressWarnings("unchecked")
 			final T oldValueCasted = (T)oldValue;
 
