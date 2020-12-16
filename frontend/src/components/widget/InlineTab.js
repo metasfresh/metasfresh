@@ -56,6 +56,12 @@ class InlineTab extends PureComponent {
     );
   };
 
+  /**
+   * @method setProperty
+   * @summary this updates a property for the inlineTabItem (row) to a given value
+   * @param {string} targetProp - the targeted property (i.e. `propmtOpen`)
+   * @param {*} targetValue - value of the property can be whaterver you want boolean, string aso.
+   */
   setProperty = ({ targetProp, targetValue }) => {
     const { setInlineTabItemProp, windowId, tabId, rowId } = this.props;
     setInlineTabItemProp({
