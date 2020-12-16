@@ -93,7 +93,8 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	@Override
+	protected RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))

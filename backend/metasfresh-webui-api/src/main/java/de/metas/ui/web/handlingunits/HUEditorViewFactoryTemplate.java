@@ -37,6 +37,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -93,9 +95,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
 	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
 
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
-
 	@Autowired
 	private HUReservationService huReservationService;
 
@@ -511,6 +513,14 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	protected boolean isAlwaysUseSameLayout()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_AlwaysUseSameLayout, false);
+	}
+
+	protected RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	{
+		return RelatedProcessDescriptor.builder()
+				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewQuickActions)
+				.build();
 	}
 
 	@Value(staticConstructor = "of")

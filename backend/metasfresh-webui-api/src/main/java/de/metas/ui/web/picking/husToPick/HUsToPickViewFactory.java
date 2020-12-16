@@ -1,20 +1,12 @@
 package de.metas.ui.web.picking.husToPick;
 
-import java.util.List;
-import java.util.function.Supplier;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.process.IADProcessDAO;
-import de.metas.process.RelatedProcessDescriptor;
-import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -41,8 +33,11 @@ import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -72,8 +67,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	static final String WINDOW_ID_STRING = "husToPick";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	private HUReservationDocumentFilterService huReservationDocumentFilterService;
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final HUReservationDocumentFilterService huReservationDocumentFilterService;
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL;
 
@@ -186,16 +180,8 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 		}
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
-	{
-		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
-				.displayPlace(DisplayPlace.ViewQuickActions)
-				.build();
-	}
-
 	@Override
-	public IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, Supplier<IViewsRepository> viewsRepo)
+	public IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, final Supplier<IViewsRepository> viewsRepo)
 	{
 		final CreateViewRequest.Builder filterViewBuilder = CreateViewRequest.filterViewBuilder(view, filterViewRequest);
 
