@@ -267,7 +267,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		{
 			if (invoiceCandBL.isCandidateForRecalculate(icRecord))
 			{
-				this.headerKeys.put(icRecord.getPOReference(), icRecord.getC_Invoice_Candidate_ID());
+				this.headerKeys.put(icRecord.getHeaderAggregationKey(), icRecord.getC_Invoice_Candidate_ID());
 			}
 		}
 

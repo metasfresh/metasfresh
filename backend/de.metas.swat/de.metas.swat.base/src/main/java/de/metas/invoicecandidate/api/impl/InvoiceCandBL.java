@@ -300,9 +300,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		while (candidates.hasNext())
 		{
 			final I_C_Invoice_Candidate next = candidates.next();
-			if (!isCandidateDelivered(next))
+			if (!ic.equals((next)) && !isCandidateDelivered(next))
 			{
 				allCandidatesDelivered = false;
+				break;
 			}
 		}
 		return allCandidatesDelivered;
@@ -913,7 +914,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				&& (dateToInvoice == null || dateToInvoice.isAfter(getToday())))
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
-					new Object[] { ic.getC_Invoice_Candidate_ID(), dateToInvoice, getToday() });
+					new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -2377,6 +2378,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.map(ic -> {
 					set_DateToInvoice_DefaultImpl(ic);
 					return ic;
-				}).collect(Collectors.toSet());
+				})
+				.collect(Collectors.toSet());
 	}
 }
