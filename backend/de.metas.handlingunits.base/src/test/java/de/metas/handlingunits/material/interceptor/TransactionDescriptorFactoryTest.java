@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptorFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;

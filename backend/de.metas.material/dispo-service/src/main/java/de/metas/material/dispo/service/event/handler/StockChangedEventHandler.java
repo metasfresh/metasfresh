@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
-import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -80,9 +80,25 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		return ImmutableList.of(StockChangedEvent.class);
 	}
 
+	/**
+	 * Only handles the event if it's coming from an invocation of the reset-stock process.
+	 * It the other cases, the material dispo is updated from the {@link TransactionEventHandler}.
+	 */
 	@Override
 	public void handleEvent(@NonNull final StockChangedEvent event)
 	{
+		if (event.getStockChangeDetails() == null)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("The event has no stockChangeDetails; -> nothing to do");
+			return;
+		}
+		if (event.getStockChangeDetails().getResetStockPInstanceId() == null
+				|| event.getStockChangeDetails().getResetStockPInstanceId().getRepoId() <= 0)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("The event has no stockChangeDetails.resetStockPInstanceId; -> nothing to do");
+			return;
+		}
+
 		final MaterialDescriptorQuery materialDescriptorQuery = createMaterialDescriptorQuery(event);
 
 		final CandidatesQuery stockQuery = CandidatesQuery.builder()
@@ -162,8 +178,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 			Loggables.withLogger(logger, Level.DEBUG).addLog("The event's quantity is what was already expected; nothing to do");
 			return null;
 		}
-		final CandidateType type = quantity.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
-		return type;
+		return quantity.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
 	}
 
 	private CandidateBuilder createCandidateBuilder(
@@ -175,10 +190,9 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 				.quantity(quantity)
 				.build();
 
-		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
+		return Candidate.builderForEventDescr(event.getEventDescriptor())
 				.materialDescriptor(materialDescriptorBuilder)
 				.transactionDetail(stockChangeDetail);
-		return candidateBuilder;
 	}
 
 	private MaterialDispoGroupId retrieveGroupIdOrNull(
@@ -189,7 +203,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		MaterialDispoGroupId groupId = null;
 		if (CandidateType.INVENTORY_UP.equals(type) && transactionId > 0)
 		{
-			// see if there is a preceeding "down" record to connect with
+			// see if there is a preceding "down" record to connect with
 			// that's the case when a storage attribute has changed
 			final CandidatesQuery inventoryQuery = CandidatesQuery.builder()
 					.type(CandidateType.INVENTORY_DOWN)
@@ -198,10 +212,10 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 					.matchExactStorageAttributesKey(true)
 					.build();
 
-			final Candidate preceedingInventoryRecord = candidateRepository.retrieveLatestMatchOrNull(inventoryQuery);
-			if (preceedingInventoryRecord != null)
+			final Candidate precedingInventoryRecord = candidateRepository.retrieveLatestMatchOrNull(inventoryQuery);
+			if (precedingInventoryRecord != null)
 			{
-				groupId = preceedingInventoryRecord.getGroupId();
+				groupId = precedingInventoryRecord.getGroupId();
 			}
 		}
 		return groupId;
@@ -256,9 +270,8 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 
 	private Instant computeDate(@NonNull final StockChangedEvent event)
 	{
-		final Instant date = CoalesceUtil.coalesceSuppliers(
-				() -> event.getChangeDate(),
-				() -> SystemTime.asInstant());
-		return date;
+		return CoalesceUtil.coalesceSuppliers(
+				event::getChangeDate,
+				SystemTime::asInstant);
 	}
 }

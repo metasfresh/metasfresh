@@ -52,8 +52,6 @@ import java.util.Collection;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class StockUpCandiateHandler implements CandidateHandler
 {
-	@NonNull
-	private final CandidateRepositoryRetrieval candidateRepository;
 
 	private final PostMaterialEventService materialEventService;
 
@@ -62,14 +60,12 @@ public class StockUpCandiateHandler implements CandidateHandler
 	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	public StockUpCandiateHandler(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService,
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final AvailableToPromiseRepository availableToPromiseRepository)
 	{
 		this.availableToPromiseRepository = availableToPromiseRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
-		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
 	}
 

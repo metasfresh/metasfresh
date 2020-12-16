@@ -1,4 +1,26 @@
-package de.metas.handlingunits.material.interceptor;
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.material.interceptor.transactionevent;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -34,39 +56,17 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-public class M_Transaction_InOutLineEventCreator
+public class TransactionEventFactoryForInOutLine
 {
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IReceiptScheduleDAO receiptSchedulesRepo = Services.get(IReceiptScheduleDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final M_Transaction_HuDescriptor huDescriptionFactory;
+	private final HUDescriptorsFromHUAssignmentService huDescriptionFactory;
 	private final ReplenishInfoRepository replenishInfoRepository;
 
-	public M_Transaction_InOutLineEventCreator(@NonNull final M_Transaction_HuDescriptor huDescriptionFactory,
+	public TransactionEventFactoryForInOutLine(@NonNull final HUDescriptorsFromHUAssignmentService huDescriptionFactory,
 			@NonNull final ReplenishInfoRepository replenishInfoRepository)
 	{
 		this.huDescriptionFactory = huDescriptionFactory;
