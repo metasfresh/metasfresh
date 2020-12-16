@@ -41,6 +41,14 @@ public interface IViewFactory
 	{
 	}
 
+	/**
+	 * Sets the windowId on which this factory was bind.
+	 * Don't call it directly. Will be called by API.
+	 */
+	default void setWindowId(final WindowId windowId)
+	{
+	}
+
 	IView createView(@NonNull CreateViewRequest request);
 
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, ViewProfileId profileId);

@@ -22,30 +22,10 @@
 
 package de.metas.ui.web.handlingunits;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.ad.dao.impl.InArrayQueryFilter;
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Tab;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -91,6 +71,23 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.dao.impl.InArrayQueryFilter;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
@@ -107,6 +104,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
 	private final ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
 	private final ImmutableMap<String, Boolean> rowAttributesAlwaysReadonlyByReferencingTableName;
+	private WindowId windowId;
 
 	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
 	private final transient CCache<ViewLayoutKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
@@ -130,6 +128,17 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		logger.info("Initialized row attributes always readonly flags: {}", rowAttributesAlwaysReadonlyByReferencingTableName);
 	}
 
+	@Override
+	public void setWindowId(final WindowId windowId)
+	{
+		this.windowId = windowId;
+	}
+
+	protected final WindowId getWindowId()
+	{
+		return windowId;
+	}
+
 	private List<HUEditorViewCustomizer> getViewCustomizers(final String referencingTableName)
 	{
 		return viewCustomizersByReferencingTableName.get(referencingTableName);
@@ -151,11 +160,15 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	 */
 	private DocumentEntityDescriptor getHUEntityDescriptor()
 	{
-		if (this instanceof ServiceHUEditorViewFactory)
+		final WindowId windowId = getWindowId();
+		if (windowId != null && documentDescriptorFactory.isWindowIdSupported(windowId))
 		{
-			return documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_SERVICE_HU_Window_ID);
+			return documentDescriptorFactory.getDocumentEntityDescriptor(windowId);
 		}
-		return documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_HU_Window_ID);
+		else
+		{
+			return documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_HU_Window_ID);
+		}
 	}
 
 	private SqlViewBinding createSqlViewBinding()
@@ -170,10 +183,15 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlWhereClause.append(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null"); // top level
 
 			// Consider window tab's where clause if any
-			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(huEntityDescriptor.getWindowId().toAdWindowId());
-			if (!Check.isEmpty(huTab.getWhereClause(), true))
+			final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+			final AdWindowId adWindowId = huEntityDescriptor.getWindowId().toAdWindowIdOrNull();
+			if (adWindowId != null)
 			{
-				sqlWhereClause.append("\n AND (").append(huTab.getWhereClause()).append(")");
+				final String firstTabWhereClause = adWindowDAO.getFirstTabWhereClause(adWindowId);
+				if (Check.isNotBlank(firstTabWhereClause))
+				{
+					sqlWhereClause.append("\n /* first tab */ AND (").append(firstTabWhereClause).append(")");
+				}
 			}
 		}
 

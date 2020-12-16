@@ -161,6 +161,8 @@ public class ViewsRepository implements IViewsRepository
 			}
 
 			final WindowId windowId = WindowId.fromJson(annotation.windowId());
+			factory.setWindowId(windowId);
+
 			JSONViewDataType[] viewTypes = annotation.viewTypes();
 			if (viewTypes.length == 0)
 			{

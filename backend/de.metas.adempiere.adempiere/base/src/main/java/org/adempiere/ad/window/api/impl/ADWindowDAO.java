@@ -394,6 +394,13 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
+	public String getFirstTabWhereClause(@NonNull final AdWindowId adWindowId)
+	{
+		final I_AD_Tab firstTab = retrieveFirstTab(adWindowId);
+		return firstTab != null ? firstTab.getWhereClause() : null;
+	}
+
+	@Override
 	public void copyWindow(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
 	{
 		final I_AD_Window targetWindow = getWindowByIdInTrx(targetWindowId);
