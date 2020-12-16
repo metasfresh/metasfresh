@@ -58,6 +58,12 @@ public class ServiceHUEditorViewFactory extends HUEditorViewFactoryTemplate
 						ViewColumnHelper.ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
 	}
 
+	@Override
+	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
+	{
+		huViewBuilder.considerTableRelatedProcessDescriptors(false);
+	}
+
 	/**
 	 * This view is not configuration dependent always should be false to execute the customizeViewLayout method
 	 */
