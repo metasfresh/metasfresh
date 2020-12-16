@@ -34,13 +34,13 @@ import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
-@ViewFactory(windowId = ServiceHUEditorViewFactory.Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class ServiceHUEditorViewFactory extends HUEditorViewFactoryTemplate
+@ViewFactory(windowId = HUsToReturnViewFactory.Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 {
 	public static final String Window_ID_String = "541011"; // FIXME: hardcoded
 	public static final WindowId Window_ID = WindowId.fromJson(Window_ID_String);
 
-	protected ServiceHUEditorViewFactory()
+	protected HUsToReturnViewFactory()
 	{
 		super(ImmutableList.of());
 	}

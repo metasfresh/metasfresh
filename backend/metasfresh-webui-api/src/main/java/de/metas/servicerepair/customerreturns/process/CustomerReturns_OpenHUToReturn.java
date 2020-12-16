@@ -30,7 +30,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.servicerepair.customerreturns.ServiceHUEditorViewFactory;
+import de.metas.servicerepair.customerreturns.HUsToReturnViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -82,7 +82,7 @@ public class CustomerReturns_OpenHUToReturn extends JavaProcess implements IProc
 	{
 		final IView view = viewsRepo
 				.createView(CreateViewRequest
-						.builder(ServiceHUEditorViewFactory.Window_ID)
+						.builder(HUsToReturnViewFactory.Window_ID)
 						.build());
 		return view.getViewId();
 	}
