@@ -20,19 +20,26 @@
  * #L%
  */
 
-package de.metas.ui.web.handlingunits;
+package de.metas.servicerepair.customerreturns;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
+import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
+import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
-@ViewFactory(windowId = WEBUI_HU_Constants.WEBUI_SERVICE_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+@ViewFactory(windowId = ServiceHUEditorViewFactory.Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class ServiceHUEditorViewFactory extends HUEditorViewFactoryTemplate
 {
+	public static final String Window_ID_String = "541011"; // FIXME: hardcoded
+	public static final WindowId Window_ID = WindowId.fromJson(Window_ID_String);
+
 	protected ServiceHUEditorViewFactory()
 	{
 		super(ImmutableList.of());
