@@ -3,6 +3,7 @@ package de.metas.order.model.interceptor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -74,8 +75,8 @@ public class C_OrderLine
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
-	private static final String SYS_CONFIG_MAX_HADDEX_AGE = "MAX_HADDEX_AGE_IN_MONTHS";
-	private static final String MSG_HADDEX_CHECK_ERROR = "de.metas.base.producthadexerror";
+	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "MAX_HADDEX_AGE_IN_MONTHS";
+	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.producthadexerror");
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -156,9 +157,12 @@ public class C_OrderLine
 
 		if (product.isHaddexCheck() && product.getDateHaddexCheck() != null)
 		{
-			final long hadexAllowedDifference = Math.abs(ChronoUnit.MONTHS.between(SystemTime.asZonedDateTime(),
-					TimeUtil.asZonedDateTime(product.getDateHaddexCheck())));
-			if (hadexAllowedDifference > getMaxHaddexAge(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID()))
+			final long differenceBetweenNowAndPromisedDateInMonths = Math.abs(
+					ChronoUnit.MONTHS.between(
+							SystemTime.asZonedDateTime(),
+							TimeUtil.asZonedDateTime(orderLine.getDatePromised())
+							));
+			if (differenceBetweenNowAndPromisedDateInMonths > getMaxHaddexAgeInMonths(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID()))
 			{
 				throw new AdempiereException(MSG_HADDEX_CHECK_ERROR).markAsUserValidationError();
 			}
@@ -166,9 +170,9 @@ public class C_OrderLine
 
 	}
 
-	private int getMaxHaddexAge(int clientID, int orgID)
+	private int getMaxHaddexAgeInMonths(int clientID, int orgID)
 	{
-		return sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE, 1000, clientID, orgID);
+		return sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS, 24, clientID, orgID);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
