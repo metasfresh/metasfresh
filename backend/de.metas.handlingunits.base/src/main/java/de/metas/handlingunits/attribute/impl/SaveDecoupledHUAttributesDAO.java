@@ -1,14 +1,19 @@
 package de.metas.handlingunits.attribute.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAndPIAttributes;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
+import de.metas.handlingunits.attribute.PIAttributes;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -26,21 +31,15 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.HUAndPIAttributes;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
-import de.metas.handlingunits.attribute.PIAttributes;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * {@link IHUAttributesDAO} implementation which acts like a save buffer:
@@ -48,11 +47,10 @@ import de.metas.util.Services;
  * <li>automatically loads attributes from underlying {@link IHUAttributesDAO}, if they does not already exist in our local cache
  * <li>on save, instead of directly saving them we are just adding them to the cache/buffer. Later, on {@link #flush()} everything will be saved.
  * </ul>
- *
+ * <p>
  * NOTE to developer: Please make sure all public methods are synchronized.
  *
  * @author tsa
- *
  */
 public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 {
@@ -73,7 +71,9 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	private boolean _incrementalFlush = false;
 
 	// Status
-	/** Cache: huKey to huAtributeKey to {@link I_M_HU_Attribute} */
+	/**
+	 * Cache: huKey to huAtributeKey to {@link I_M_HU_Attribute}
+	 */
 	@ToStringBuilder(skip = true)
 	private final HashMap<HuId, HUAttributesMap> _hu2huAttributes = new HashMap<>();
 	@ToStringBuilder(skip = true)
@@ -127,9 +127,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	/**
-	 *
 	 * @return <code>false</code> by default, for performance reasons. Note that we do call {@link #flush()} on commit, see the <code>SaveOnCommitHUAttributesDAOTrxListener</code> in
-	 *         {@link SaveOnCommitHUAttributesDAO}.
+	 * {@link SaveOnCommitHUAttributesDAO}.
 	 */
 	public synchronized final boolean isAutoflushEnabled()
 	{
@@ -138,14 +137,11 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 	/**
 	 * Enables/Disabled incremental flush.
-	 *
+	 * <p>
 	 * Incremental flush means that {@link #flush()} will save only the objects which were enqueued to be saved after last flush.
 	 * If this functionality is not enabled (default), all objects from internal flush are tried to be saved on {@link #flush()}.
-	 *
+	 * <p>
 	 * NOTE: in future, i think we can consider to take out this method ALWAYS do incremental flush.
-	 *
-	 * @param incrementalFlush
-	 * @return
 	 */
 	public synchronized final SaveDecoupledHUAttributesDAO setIncrementalFlush(final boolean incrementalFlush)
 	{
@@ -153,7 +149,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		return this;
 	}
 
-	private final boolean isIncrementalFlush()
+	private boolean isIncrementalFlush()
 	{
 		return _incrementalFlush;
 	}
@@ -166,7 +162,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		return huAttribute;
 	}
 
-	private static final void setReadonly(final Object model, final boolean readonly)
+	private static void setReadonly(final Object model, final boolean readonly)
 	{
 		if (model == null)
 		{
@@ -249,6 +245,12 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
+	public List<I_M_HU_Attribute> retrieveAttributesNoCache(final Collection<HuId> huIds)
+	{
+		return db.retrieveAttributesNoCache(huIds);
+	}
+
+	@Override
 	public synchronized HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		final HUAttributesMap huAttributes = getHUAttributesMap(hu);
@@ -266,20 +268,20 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		return piAttributesRepo.retrievePIAttributesByIds(piAttributeIds);
 	}
 
-	private final HUAttributesMap getHUAttributesMap(final I_M_HU hu)
+	private HUAttributesMap getHUAttributesMap(final I_M_HU hu)
 	{
 		return getHUAttributesMap(hu, this::retrieveHUAttributesMap);
 	}
 
 	private HUAttributesMap retrieveHUAttributesMap(final I_M_HU hu)
 	{
-		HUAttributesMap huAttributes;
+		final HUAttributesMap huAttributes;
 		final HUAndPIAttributes huAndPIAttributes = db.retrieveAttributesOrdered(hu);
 		huAttributes = HUAttributesMap.of(huAndPIAttributes);
 		return huAttributes;
 	}
 
-	private final HUAttributesMap getHUAttributesMap(final I_M_HU hu, final Function<I_M_HU, HUAttributesMap> loader)
+	private HUAttributesMap getHUAttributesMap(final I_M_HU hu, final Function<I_M_HU, HUAttributesMap> loader)
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		return _hu2huAttributes.computeIfAbsent(huId, k -> loader.apply(hu));
@@ -304,7 +306,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		logger.trace("TrxName={}", trxName);
 
 		// Remove queued attributes
-		for (final Iterator<I_M_HU_Attribute> it = _huAttributesToRemove.iterator(); it.hasNext();)
+		for (final Iterator<I_M_HU_Attribute> it = _huAttributesToRemove.iterator(); it.hasNext(); )
 		{
 			final I_M_HU_Attribute huAttributeToRemove = it.next();
 
@@ -316,7 +318,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		//
 		// Save all attributes
-		for (HUAttributesMap huAttributes : _hu2huAttributes.values())
+		for (final HUAttributesMap huAttributes : _hu2huAttributes.values())
 		{
 			if (huAttributes == null || huAttributes.isEmpty())
 			{
@@ -335,7 +337,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		logger.trace("Flushing done");
 	}
 
-	private final void saveToDatabase(final I_M_HU_Attribute model, final String trxName)
+	private void saveToDatabase(final I_M_HU_Attribute model, final String trxName)
 	{
 		//
 		// If incremental flush is enabled and our record it's not in the list of records to be saved from last flush
@@ -366,7 +368,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 		}
 	}
 
-	private final void deleteFromDatabase(final Object model, final String trxName)
+	private void deleteFromDatabase(final Object model, final String trxName)
 	{
 		setReadonly(model, false);
 		final String modelTrxName = InterfaceWrapperHelper.getTrxName(model);
@@ -421,11 +423,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 	/**
 	 * Debugging method which logs in console the given huAttribute.
-	 *
-	 * @param message
-	 * @param huAttribute
 	 */
-	private final void trace(final String message, final I_M_HU_Attribute huAttribute)
+	private void trace(final String message, final I_M_HU_Attribute huAttribute)
 	{
 		if (!logger.isTraceEnabled())
 		{
@@ -507,6 +506,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 			return ImmutableList.copyOf(huAttributes.values());
 		}
 
+		@Nullable
 		public I_M_HU_Attribute put(final I_M_HU_Attribute huAttribute)
 		{
 			final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());

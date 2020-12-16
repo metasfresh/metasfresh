@@ -524,8 +524,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return itemType;
 		}
 
-		// FIXME: remove it after we migrate all HUs
-		return getPIItem(huItem).getItemType();
+		// FIXME: remove it after we migrate all HUs and we have M_HU_Item.ItemType always set
+		final I_M_HU_PI_Item piItem = getPIItem(huItem);
+		if (piItem != null)
+		{
+			return piItem.getItemType();
+		}
+		throw new HUException("Failed getting ItemType for " + huItem + " because neither ItemType nor M_HU_PI_Item_ID is set");
 	}
 
 	@Override
@@ -617,15 +622,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		else if (isTransportUnit(hu))
 		{
-			@SuppressWarnings("UnnecessaryLocalVariable")
-			final I_M_HU tuHU = hu;
+			@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU tuHU = hu;
 			final I_M_HU luHU = getLoadingUnitHU(tuHU);
 			return LUTUCUPair.ofTU(tuHU, luHU);
 		}
 		else // virtual or aggregate
 		{
-			@SuppressWarnings("UnnecessaryLocalVariable")
-			final I_M_HU vhu = hu;
+			@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU vhu = hu;
 			final I_M_HU tuHU = getTransportUnitHU(vhu);
 			final I_M_HU luHU = tuHU != null ? getLoadingUnitHU(tuHU) : null;
 			return LUTUCUPair.ofVHU(vhu, tuHU, luHU);
@@ -633,7 +636,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public @Nullable I_M_HU getLoadingUnitHU(final I_M_HU hu)
+	public @Nullable
+	I_M_HU getLoadingUnitHU(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
 
@@ -792,7 +796,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public @Nullable HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
+	public @Nullable
+	HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
 	{
 		final I_M_HU_PI_Version piVersion = getEffectivePIVersion(hu);
 		if (piVersion == null)
@@ -804,6 +809,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
 	{
 		if (!isAggregateHU(hu))
@@ -826,7 +832,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public @Nullable I_M_HU_PI getEffectivePI(final I_M_HU hu)
+	public @Nullable
+	I_M_HU_PI getEffectivePI(final I_M_HU hu)
 	{
 		if (!isAggregateHU(hu))
 		{
@@ -931,7 +938,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.orElse(AttributesKey.NONE);
 	}
 
-	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider,@NonNull final String huStatus)
+	@Override
+	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider, @NonNull final String huStatus)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHUContext huContext = createMutableHUContext(contextProvider);
@@ -941,10 +949,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		handlingUnitsRepo.saveHU(hu);
 	}
 
+	@Override
 	public boolean isEmptyStorage(@NonNull final I_M_HU hu)
 	{
 		return getStorageFactory()
 				.streamHUProductStorages(hu)
 				.allMatch(IProductStorage::isEmpty);
+	}
+
+	@Override
+	public CopyHUsResponse copyAsPlannedHUs(@NonNull final Collection<HuId> huIdsToCopy)
+	{
+		return CopyHUsCommand.builder()
+				.huIdsToCopy(huIdsToCopy)
+				.build()
+				.execute();
 	}
 }

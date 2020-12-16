@@ -27,10 +27,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
@@ -54,6 +56,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -196,8 +199,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * @return current PI Version or null
 	 */
+	@Nullable
 	I_M_HU_PI_Version retrievePICurrentVersionOrNull(I_M_HU_PI pi);
 
+	@Nullable
 	I_M_HU_PI_Version retrievePICurrentVersionOrNull(final HuPackingInstructionsId piId);
 
 	I_M_HU_PI_Version retrievePIVersionById(final HuPackingInstructionsVersionId id);
@@ -228,11 +233,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	/**
 	 * For the given {@code parentHU} and {@code piOfChildHU}, retrieve the PI item (with type HU) that can be used to link child and parent.
 	 */
+	@Nullable
 	I_M_HU_PI_Item retrieveParentPIItemForChildHUOrNull(I_M_HU parentHU, I_M_HU_PI piOfChildHU, IContextAware ctx);
 
 	/**
 	 * Retrieve first parent item if more are defined.
 	 */
+	@Nullable
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
 
 	/**
@@ -240,24 +247,29 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 *
 	 * @return default LU or <code>null</code>.
 	 */
+	@Nullable
 	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
 
 	/**
 	 * @return packing material or null
 	 */
+	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI pi, BPartnerId bpartnerId);
 
 	/**
 	 * @return packing material or null
 	 */
+	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves packing material of given HU.
 	 */
 	// TODO: i think we shall drop this method because is no longer valid!!!
+	@Nullable
 	I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU hu);
 
+	@Nullable
 	I_M_HU retrieveVirtualHU(I_M_HU_Item itemMaterial);
 
 	List<I_M_HU> retrieveVirtualHUs(I_M_HU_Item itemMaterial);
@@ -267,6 +279,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveHUsForWarehouses(Properties ctx, Collection<WarehouseId> warehouseIds, String trxName);
 
 	IHUQueryBuilder createHUQueryBuilder();
+
+	List<I_M_HU_Item> retrieveItemsNoCache(Collection<HuId> huIds);
+
+	List<I_M_HU> retrieveIncludedHUsNoCache(Set<HuItemId> huItemIds);
+
+	List<I_M_HU_Item_Storage> retrieveItemStoragesNoCache(Set<HuItemId> huItemIds);
+
+	List<I_M_HU_Storage> retrieveStoragesNoCache(Set<HuId> huIds);
 
 	/**
 	 * Retrieve the packing materials of the given {@code hu}.<br>
@@ -287,6 +307,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 *
 	 * @param product (NOT USED); here just in case the requirements will change later and there will be gebinde network distributions based on product
 	 */
+	@Nullable
 	I_DD_NetworkDistribution retrieveEmptiesDistributionNetwork(Properties ctx, I_M_Product product, String trxName);
 
 	/**
