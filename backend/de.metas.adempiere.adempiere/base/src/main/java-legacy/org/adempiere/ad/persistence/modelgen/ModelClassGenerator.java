@@ -83,6 +83,7 @@ public class ModelClassGenerator
 				.append(" *  @author metasfresh (generated) ").append(NL)
 				.append(" */").append(NL)
 				//.append("@SuppressWarnings(\"javadoc\")").append(NL) // commented out because it gives warnings in intelliJ
+				.append("@SuppressWarnings(\"unused\")\n")
 				.append("public class ").append(className)
 				.append(" extends org.compiere.model.PO")
 				.append(" implements I_").append(tableName)
