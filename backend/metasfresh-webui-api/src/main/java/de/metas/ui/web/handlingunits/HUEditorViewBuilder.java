@@ -46,6 +46,8 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public final class HUEditorViewBuilder
 {
 	private ViewId parentViewId;
@@ -53,17 +55,17 @@ public final class HUEditorViewBuilder
 	private ViewId viewId;
 	private JSONViewDataType viewType = JSONViewDataType.grid;
 
-	private String referencingTableName;
+	@Nullable private String referencingTableName;
 	private Set<DocumentPath> referencingDocumentPaths;
 
 	private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
-	private List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = null;
+	@Nullable private List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = null;
 
 	private DocumentFilterList stickyFilters;
 	private DocumentFilterList filters;
 	private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 
-	private ArrayList<DocumentQueryOrderBy> orderBys = null;
+	@Nullable private ArrayList<DocumentQueryOrderBy> orderBys = null;
 
 	private LinkedHashMap<String, Object> parameters;
 	private HUEditorViewRepository huEditorViewRepository;
@@ -123,13 +125,14 @@ public final class HUEditorViewBuilder
 		return viewType;
 	}
 
-	public HUEditorViewBuilder setReferencingDocumentPaths(final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)
+	public HUEditorViewBuilder setReferencingDocumentPaths(@Nullable final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)
 	{
 		this.referencingTableName = referencingTableName;
 		this.referencingDocumentPaths = referencingDocumentPaths;
 		return this;
 	}
 
+	@Nullable
 	public String getReferencingTableName()
 	{
 		return referencingTableName;
@@ -252,7 +255,7 @@ public final class HUEditorViewBuilder
 		return DocumentQueryOrderByList.ofList(orderBys);
 	}
 
-	public HUEditorViewBuilder setParameter(final String name, final Object value)
+	public HUEditorViewBuilder setParameter(final String name, @Nullable final Object value)
 	{
 		if (value == null)
 		{

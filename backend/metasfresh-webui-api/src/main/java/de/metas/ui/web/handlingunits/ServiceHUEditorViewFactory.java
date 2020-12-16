@@ -23,40 +23,22 @@
 package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-import java.util.Optional;
 
 @ViewFactory(windowId = WEBUI_HU_Constants.WEBUI_SERVICE_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class ServiceHUEditorViewFactory extends HUEditorViewFactoryTemplate
 {
-
-	@Autowired
-	protected ServiceHUEditorViewFactory(final Optional<List<HUEditorViewCustomizer>> viewCustomizers)
+	protected ServiceHUEditorViewFactory()
 	{
-		super(viewCustomizers.orElse(ImmutableList.of()));
+		super(ImmutableList.of());
 	}
 
 	@Override
-	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
-	{
-		if (huViewBuilder.isUseAutoFilters() && huViewBuilder.getFilters().isEmpty())
-		{
-			final List<DocumentFilter> autoFilters = SqlViewFactory.createAutoFilters(huViewBuilder.getFilterDescriptors().getAll());
-			huViewBuilder.setFilters(DocumentFilterList.ofList(autoFilters));
-		}
-	}
-
 	protected void customizeViewLayout(
 			@NonNull final ViewLayout.Builder viewLayoutBuilder,
 			final JSONViewDataType viewDataType)
@@ -78,8 +60,8 @@ public class ServiceHUEditorViewFactory extends HUEditorViewFactoryTemplate
 
 	/**
 	 * This view is not configuration dependent always should be false to execute the customizeViewLayout method
-	 * @return
 	 */
+	@Override
 	protected boolean isAlwaysUseSameLayout()
 	{
 		return false;
