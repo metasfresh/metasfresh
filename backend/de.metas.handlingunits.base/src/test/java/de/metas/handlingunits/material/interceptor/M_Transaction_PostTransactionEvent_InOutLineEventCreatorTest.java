@@ -3,6 +3,12 @@ package de.metas.handlingunits.material.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorsFromHUAssignmentService;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionEventFactory;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptorFactory;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEvent;
@@ -63,7 +69,7 @@ import static org.compiere.util.TimeUtil.asInstant;
  * #L%
  */
 
-public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
+public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 {
 	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THREE = new BigDecimal("3");
@@ -113,10 +119,12 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
-		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
-				new ReplenishInfoRepository());
+				new ReplenishInfoRepository(),
+				new InventoryRepository(),
+				new HUDescriptorService());
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -142,10 +150,12 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
-		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
-				new ReplenishInfoRepository());
+				new ReplenishInfoRepository(),
+				new InventoryRepository(),
+				new HUDescriptorService());
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -175,10 +185,12 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
-		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
-				new ReplenishInfoRepository());
+				new ReplenishInfoRepository(),
+				new InventoryRepository(),
+				new HUDescriptorService());
 
 		//
 		// invoke the method under test
@@ -196,7 +208,7 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 
 	}
 
-	private M_Transaction_HuDescriptor createM_Transaction_HuDescriptor(@NonNull final String huQty)
+	private HUDescriptorsFromHUAssignmentService createM_Transaction_HuDescriptor(@NonNull final String huQty)
 	{
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				product.getM_Product_ID(),
@@ -209,7 +221,7 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 				.quantityDelta(new BigDecimal(huQty))
 				.build();
 
-		return new M_Transaction_HuDescriptor()
+		return new HUDescriptorsFromHUAssignmentService(new HUDescriptorService())
 		{
 			public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(@NonNull InOutAndLineId inOutLineId, boolean deleted)
 			{
@@ -251,10 +263,12 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
-		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
-				new ReplenishInfoRepository());
+				new ReplenishInfoRepository(),
+				new InventoryRepository(),
+				new HUDescriptorService());
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -281,10 +295,12 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createReceiptTransaction();
 
-		final M_Transaction_HuDescriptor huDescriptionFactory = createM_Transaction_HuDescriptor("7");
-		final M_Transaction_TransactionEventCreator transactionEventCreator = new M_Transaction_TransactionEventCreator(
+		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
+		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
-				new ReplenishInfoRepository());
+				new ReplenishInfoRepository(),
+				new InventoryRepository(),
+				new HUDescriptorService());
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -351,7 +367,7 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 
 		//
 		// invoke the method under test
-		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
+		final HUDescriptorsFromHUAssignmentService huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService());
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
 				.transaction(transactionDescriptor)
 				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
@@ -405,7 +421,7 @@ public class M_Transaction_PostMaterialEvent_InOutLineEventCreatorTest
 		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
 
 		// invoke the method under test
-		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
+		final HUDescriptorsFromHUAssignmentService huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService());
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
 				.transaction(transactionDescriptor)
 				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))

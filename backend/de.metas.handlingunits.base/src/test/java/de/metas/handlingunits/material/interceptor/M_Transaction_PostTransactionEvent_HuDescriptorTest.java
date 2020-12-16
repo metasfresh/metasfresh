@@ -4,6 +4,8 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorsFromHUAssignmentService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -54,14 +56,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-public class M_Transaction_PostMaterialEvent_HuDescriptorTest
+public class M_Transaction_PostTransactionEvent_HuDescriptorTest
 {
 	private static final BigDecimal THIRTY_IFCOS_PER_PALET = new BigDecimal("30");
 	private static final BigDecimal FOURTY_TOMATOES_PER_IFCO = new BigDecimal("40");
 	private static final BigDecimal TOTAL_CU_QTY = FOURTY_TOMATOES_PER_IFCO.multiply(THIRTY_IFCOS_PER_PALET);
 
 	private HUTestHelper helper;
-	private M_Transaction_HuDescriptor huDescriptorCreator;
+	private HUDescriptorsFromHUAssignmentService huDescriptorCreator;
 
 	private I_M_HU_PI huDefPalet;
 
@@ -69,7 +71,7 @@ public class M_Transaction_PostMaterialEvent_HuDescriptorTest
 	public void init()
 	{
 		helper = new HUTestHelper();
-		huDescriptorCreator = new M_Transaction_HuDescriptor();
+		huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService());
 
 		// HU PI: IFCO
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
