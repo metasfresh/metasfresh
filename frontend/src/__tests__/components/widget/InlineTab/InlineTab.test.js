@@ -114,8 +114,13 @@ describe('InlineTab component', () => {
       </ShortcutProvider>
     );
     let htmlOutput = wrapper.html();
+
     expect(htmlOutput).toContain('inline-tab-active');
     expect(htmlOutput).toContain('Business Partner Shipment Address');
+    // delete button needs to be present in the open state
+    expect(htmlOutput).toContain(
+      '<button class="btn btn-meta-outline-secondary btn-sm btn-pull-right">missing translation: en.window.Delete.caption</button>'
+    );
   });
 
   it('renders the InlineTab item unexpanded when isOpen is false', () => {

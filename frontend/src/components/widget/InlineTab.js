@@ -166,7 +166,7 @@ class InlineTab extends PureComponent {
                         className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
                         onClick={() => this.handleDelete(rowId)}
                       >
-                        Delete
+                        {counterpart.translate('window.Delete.caption')}
                       </button>
                       <div className="clearfix" />
                     </div>
