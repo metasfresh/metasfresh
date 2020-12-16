@@ -123,24 +123,18 @@ public class BPartnerCompositeRestUtils
 		{
 			return null;
 		}
-		final InvoiceRule invoiceRule;
 		switch (jsonInvoiceRule)
 		{
 			case AfterDelivery:
-				invoiceRule = InvoiceRule.AfterDelivery;
-				break;
+				return InvoiceRule.AfterDelivery;
 			case CustomerScheduleAfterDelivery:
-				invoiceRule = InvoiceRule.CustomerScheduleAfterDelivery;
-				break;
+				return InvoiceRule.CustomerScheduleAfterDelivery;
 			case Immediate:
-				invoiceRule = InvoiceRule.Immediate;
-				break;
+				return InvoiceRule.Immediate;
 			case OrderCompletelyDelivered:
-				invoiceRule = InvoiceRule.OrderCompletelyDelivered;
-				break;
+				return InvoiceRule.OrderCompletelyDelivered;
 			default:
 				throw new AdempiereException("Unsupported JsonInvliceRule " + jsonInvoiceRule);
 		}
-		return invoiceRule;
 	}
 }
