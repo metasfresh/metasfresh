@@ -24,6 +24,7 @@ package de.metas.handlingunits.inout.returns.customer;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
 import de.metas.inout.InOutLineId;
 import de.metas.order.OrderId;
@@ -36,7 +37,6 @@ import lombok.Value;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -85,5 +85,5 @@ public class CustomerReturnLineCandidate
 	HUPIItemProductId hupiItemProductId;
 
 	@Nullable
-	BigDecimal returnedTUQty;
+	QtyTU returnedTUQty;
 }

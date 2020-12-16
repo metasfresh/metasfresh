@@ -26,6 +26,8 @@ import de.metas.handlingunits.inout.returns.ReturnsInOutHeaderFiller;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutDAO;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,7 +43,7 @@ class CustomerReturnInOutRecordFactory
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public I_M_InOut createCustomerReturnHeader(@NonNull final CreateCustomerReturnHeaderReq request)
 	{
@@ -76,10 +78,12 @@ class CustomerReturnInOutRecordFactory
 		returnLine.setM_InOut_ID(request.getHeaderId().getRepoId());
 
 		returnLine.setM_Product_ID(request.getProductId().getRepoId());
-		returnLine.setC_UOM_ID(request.getCommonUOMId().getRepoId());
 
-		returnLine.setMovementQty(request.getMovementQty().toBigDecimal());
-		returnLine.setQtyEntered(request.getQtyEntered().toBigDecimal());
+		returnLine.setC_UOM_ID(request.getQtyReturned().getUomId().getRepoId());
+		returnLine.setQtyEntered(request.getQtyReturned().toBigDecimal());
+
+		final Quantity movementQty = uomConversionBL.convertToProductUOM(request.getQtyReturned(), request.getProductId());
+		returnLine.setMovementQty(movementQty.toBigDecimal());
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(returnHeader.getM_Warehouse_ID());
 		returnLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
@@ -91,7 +95,7 @@ class CustomerReturnInOutRecordFactory
 
 		if (request.getHupiItemProductId() != null && request.getQtyTU() != null)
 		{
-			returnLine.setQtyEnteredTU(request.getQtyTU());
+			returnLine.setQtyEnteredTU(request.getQtyTU().toBigDecimal());
 			returnLine.setM_HU_PI_Item_Product_ID(request.getHupiItemProductId().getRepoId());
 		}
 
