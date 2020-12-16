@@ -7,6 +7,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -128,7 +129,9 @@ public class CandidateRepositoryWriteService
 	@Builder
 	public static class SaveResult
 	{
-		/** The saved candidate. */
+		/**
+		 * The saved candidate.
+		 */
 		@NonNull
 		Candidate candidate;
 
@@ -204,7 +207,9 @@ public class CandidateRepositoryWriteService
 			return candidate.withQuantity(getQtyDelta());
 		}
 
-		/** Convenience method that returns a new instance whose included {@link Candidate} has the given id. */
+		/**
+		 * Convenience method that returns a new instance whose included {@link Candidate} has the given id.
+		 */
 		public SaveResult withCandidateId(@Nullable final CandidateId candidateId)
 		{
 			return SaveResult
@@ -215,7 +220,9 @@ public class CandidateRepositoryWriteService
 					.build();
 		}
 
-		/** Convenience method that returns a new instance with negated candidate quantity and previousQty */
+		/**
+		 * Convenience method that returns a new instance with negated candidate quantity and previousQty
+		 */
 		public SaveResult withNegatedQuantity()
 		{
 			return SaveResult
@@ -390,7 +397,12 @@ public class CandidateRepositoryWriteService
 				.reduce(ZERO, BigDecimal::add);
 		candidateRecord.setQtyFulfilled(fulfilledQty);
 
-		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0)
+		final boolean typeImpliesProcessedDone =
+				candidate.getType().equals(CandidateType.INVENTORY_UP)
+						|| candidate.getType().equals(CandidateType.INVENTORY_DOWN)
+						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_FROM)
+						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_TO);
+		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0 || typeImpliesProcessedDone)
 		{
 			candidateRecord.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Processed);
 		}
