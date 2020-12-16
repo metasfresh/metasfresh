@@ -8,6 +8,7 @@ import {
   setInlineTabShowMore,
   setInlineTabLayoutAndData,
   setInlineTabAddNew,
+  setInlineTabItemProp,
 } from '../../actions/InlineTabActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import gridProps from '../../../test_setup/fixtures/grid.json';
@@ -271,7 +272,6 @@ describe('InlineTab - actions general', () => {
   it('should call SET_INLINE_TAB_ADD_NEW action with correct payload', () => {
     const { windowType } = gridProps.props1;
     const layoutResponse = gridLayoutFixtures.layout1;
-    const initialInlineTabId = '123_AD_Tab-222_2205230';
     const visible = true;
     const windowId = '123';
     const tabId = 'AD_Tab-222';
@@ -315,6 +315,52 @@ describe('InlineTab - actions general', () => {
         tabId,
         rowId,
         docId,
+      })
+    );
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+  });
+
+  /** SET_INLINE_TAB_ITEM_PROP action */
+  it('should call SET_INLINE_TAB_ITEM_PROP action with correct payload', () => {
+    const { windowType } = gridProps.props1;
+    const layoutResponse = gridLayoutFixtures.layout1;
+    const initialInlineTabId = '123_AD_Tab-222_2205230';
+    const payload = {
+      inlineTabId: initialInlineTabId,
+      targetProp: 'promptOpen',
+      targetValue: true,
+    };
+
+    const action = setInlineTabItemProp({
+      inlineTabId: initialInlineTabId,
+      targetProp: 'promptOpen',
+      targetValue: true,
+    });
+
+    expect(action.type).toEqual(ACTION_TYPES.SET_INLINE_TAB_ITEM_PROP);
+    expect(action.payload).toHaveProperty('inlineTabId', payload.inlineTabId);
+    expect(action.payload).toHaveProperty('targetProp', payload.targetProp);
+    expect(action.payload).toHaveProperty('targetValue', payload.targetValue);
+
+    const initialState = createState({
+      viewHandler: {
+        views: {
+          [windowType]: {
+            layout: { ...layoutResponse },
+          },
+        },
+      },
+    });
+    const store = mockStore(initialState);
+    const expectedActions = [
+      { type: ACTION_TYPES.SET_INLINE_TAB_ITEM_PROP, payload },
+    ];
+
+    store.dispatch(
+      setInlineTabItemProp({
+        inlineTabId: initialInlineTabId,
+        targetProp: 'promptOpen',
+        targetValue: true,
       })
     );
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
