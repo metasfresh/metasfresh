@@ -797,7 +797,10 @@ export default function windowHandler(state = initialState, action) {
         ...state,
         inlineTab: {
           ...state.inlineTab,
-          [`${action.payload.inlineTabId}`]: action.payload.data,
+          [`${action.payload.inlineTabId}`]: {
+            ...state.inlineTab[`${action.payload.inlineTabId}`],
+            ...action.payload.data,
+          },
         },
       };
     }

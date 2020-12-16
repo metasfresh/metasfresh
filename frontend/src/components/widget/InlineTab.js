@@ -22,11 +22,6 @@ import Prompt from '../app/Prompt';
 import counterpart from 'counterpart';
 
 class InlineTab extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = { isOpen: false };
-  }
-
   /**
    * @method toggleOpen
    * @summary - toggles the visibility of the edit mode, it gets the data using getInlineTabLayoutAndData action and it feeds the store
@@ -38,22 +33,16 @@ class InlineTab extends PureComponent {
       tabId,
       rowId,
       getInlineTabLayoutAndData,
+      isOpen,
     } = this.props;
 
-    this.setState(
-      (prevState) => {
-        return { isOpen: !prevState.isOpen };
-      },
-      () => {
-        this.state.isOpen &&
-          getInlineTabLayoutAndData({
-            windowId,
-            tabId,
-            docId,
-            rowId,
-          });
-      }
-    );
+    getInlineTabLayoutAndData({
+      windowId,
+      tabId,
+      docId,
+      rowId,
+    });
+    this.setProperty({ targetProp: 'isOpen', targetValue: !isOpen });
   };
 
   /**
@@ -122,9 +111,9 @@ class InlineTab extends PureComponent {
       validStatus,
       fieldsOrder,
       promptOpen,
+      isOpen,
     } = this.props;
     const valid = validStatus ? validStatus.valid : true;
-    const { isOpen } = this.state;
 
     return (
       <div>
@@ -221,6 +210,7 @@ InlineTab.propTypes = {
   fieldsOrder: PropTypes.array.isRequired,
   updateDataValidStatus: PropTypes.func.isRequired,
   setInlineTabItemProp: PropTypes.func.isRequired,
+  isOpen: PropTypes.bool,
 };
 
 /**
@@ -240,11 +230,13 @@ const mapStateToProps = (state, props) => {
   const promptOpen = inlineTab[selector]
     ? inlineTab[selector].promptOpen
     : false;
+  const isOpen = inlineTab[selector] ? inlineTab[selector].isOpen : false;
 
   return {
     layout,
     data,
     promptOpen,
+    isOpen,
   };
 };
 
