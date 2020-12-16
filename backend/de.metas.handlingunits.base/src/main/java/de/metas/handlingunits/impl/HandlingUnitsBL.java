@@ -163,19 +163,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean isListContainsCurrentVersion(final List<I_M_HU_PI_Version> versions)
-	{
-		for (final I_M_HU_PI_Version version : versions)
-		{
-			if (version.isCurrent())
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public boolean destroyIfEmptyStorage(@NonNull final I_M_HU huToDestroy)
 	{
 		//
@@ -354,20 +341,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		final String huUnitType = getHU_UnitType(hu);
 		return X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType);
-	}
-
-	@Override
-	public void assertLoadingUnit(final I_M_HU hu)
-	{
-		Check.assumeNotNull(hu, "hu not null");
-		if (isLoadingUnit(hu))
-		{
-			return;
-		}
-
-		final String huUnitType = getHU_UnitType(hu);
-		final String huUnitTypeStr = Check.isEmpty(huUnitType, true) ? "not set" : huUnitType;
-		throw new HUException("HU " + getDisplayName(hu) + " shall be a Loading Unit(LU) but it is '" + huUnitTypeStr + "'");
 	}
 
 	@Override
@@ -794,19 +767,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public @NonNull I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		return handlingUnitsRepo.getIncludedPI(piItem);
-	}
-
-	@Override
-	public @Nullable
-	HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
-	{
-		final I_M_HU_PI_Version piVersion = getEffectivePIVersion(hu);
-		if (piVersion == null)
-		{
-			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
-		}
-
-		return HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
 	}
 
 	@Override

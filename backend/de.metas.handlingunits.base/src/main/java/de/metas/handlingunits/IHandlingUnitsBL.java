@@ -117,11 +117,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_C_UOM getC_UOM(I_M_Transaction mtrx);
 
 	/**
-	 * Method iterated the given version and checks if one of them has {@link I_M_HU_PI_Version#isCurrent()} set to <code>true</code>.
-	 */
-	boolean isListContainsCurrentVersion(List<I_M_HU_PI_Version> versions);
-
-	/**
 	 * @return true if HU was destroyed
 	 */
 	boolean isDestroyed(I_M_HU hu);
@@ -284,13 +279,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isLoadingUnit(I_M_HU hu);
 
 	/**
-	 * Asserts given HU is a Loading Unit(LU).
-	 *
-	 * @throws HUException in case given LU is not a loading unit
-	 */
-	void assertLoadingUnit(I_M_HU hu);
-
-	/**
 	 * Determines if the handling unit is strictly a transport unit (a.k.a. trade unit, type {@link X_M_HU_PI_Version#HU_UNITTYPE_TransportUnit} ).
 	 *
 	 * @return true if transport unit (TU)
@@ -408,9 +396,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
-
-	@Nullable
-	HuPackingInstructionsVersionId getEffectivePIVersionId(I_M_HU hu);
 
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
