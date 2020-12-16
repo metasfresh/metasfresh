@@ -227,6 +227,13 @@ public class HUEditorView implements IView
 		return Optional.ofNullable(value);
 	}
 
+	@Nullable
+	public <T> Optional<T> getParameter(final String name, final Class<T> type)
+	{
+		final Object value = parameters.get(name);
+		return value != null ? Optional.of(type.cast(value)) : Optional.empty();
+	}
+
 	@Override
 	public HUEditorRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{

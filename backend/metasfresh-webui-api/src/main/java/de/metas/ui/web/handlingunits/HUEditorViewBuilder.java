@@ -38,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -304,6 +305,15 @@ public final class HUEditorViewBuilder
 	{
 		@SuppressWarnings("unchecked") final T value = (T)parameters.get(name);
 		return value;
+	}
+
+	public void assertParameterSet(final String name)
+	{
+		final Object value = getParameter(name);
+		if(value == null)
+		{
+			throw new AdempiereException("Parameter "+name+" is expected to be set in "+parameters+" for "+this);
+		}
 	}
 
 	public HUEditorViewBuilder setHUEditorViewRepository(final HUEditorViewRepository huEditorViewRepository)
