@@ -25,6 +25,7 @@ package de.metas.handlingunits.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -36,6 +37,11 @@ public class CopyHUsResponse
 	@NonNull
 	@Singular
 	ImmutableList<CopyHUsResponseItem> items;
+
+	public CopyHUsResponseItem getSingleItem()
+	{
+		return CollectionUtils.singleElement(items);
+	}
 
 	@Value
 	@Builder

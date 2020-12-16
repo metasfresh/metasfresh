@@ -925,4 +925,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.build()
 				.execute();
 	}
+
+	@Override
+	public I_M_HU copyAsPlannedHU(@NonNull final HuId huId)
+	{
+		return copyAsPlannedHUs(ImmutableList.of(huId))
+				.getSingleItem()
+				.getNewHU();
+	}
 }

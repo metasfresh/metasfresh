@@ -234,6 +234,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	CopyHUsResponse copyAsPlannedHUs(@NonNull Collection<HuId> huIdsToCopy);
 
+	I_M_HU copyAsPlannedHU(@NonNull HuId huId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
