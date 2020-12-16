@@ -76,150 +76,20 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.sync-api</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
 
-		<dependency>
-			<groupId>org.vaadin.spring.extensions</groupId>
-			<artifactId>vaadin-spring-ext-boot</artifactId>
-			<version>${vaadin4spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin</groupId>
-					<artifactId>vaadin-spring</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.vaadin.spring.addons</groupId>
-			<artifactId>vaadin-spring-addon-eventbus</artifactId>
-			<version>${vaadin4spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin</groupId>
-					<artifactId>vaadin-spring</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.vaadin.spring.addons</groupId>
-			<artifactId>vaadin-spring-addon-i18n</artifactId>
-			<version>${vaadin4spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin</groupId>
-					<artifactId>vaadin-spring</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
 
-		<!-- Database -->
-		<dependency>
-			<!-- used for embedded database, in demo and tests -->
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-spring</artifactId>
-			<version>${vaadin-spring.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin</groupId>
-					<artifactId>vaadin-server</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin.addon</groupId>
-			<artifactId>vaadin-touchkit-agpl</artifactId>
-			<version>${touchkit.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-server</artifactId>
-			<version>${version.vaadin}</version>
-			<exclusions>
-				<!-- <exclusion> <artifactId>guava</artifactId> <groupId>com.vaadin.external.google</groupId>
-					</exclusion> -->
-				<exclusion>
-					<artifactId>vaadin-theme-compiler</artifactId>
-					<groupId>com.vaadin</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-client</artifactId>
-			<version>${version.vaadin}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>javax.validation</groupId>
-					<artifactId>validation-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-push</artifactId>
-			<version>${version.vaadin}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.vaadin</groupId>
-			<artifactId>viritin</artifactId>
-			<version>1.35</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin</groupId>
-					<artifactId>vaadin-server</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 
-		<dependency>
-			<groupId>org.vaadin.addons</groupId>
-			<artifactId>qrcode</artifactId>
-			<version>2.0.1</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -386,89 +256,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<plugin>
-				<groupId>com.vaadin</groupId>
-				<artifactId>vaadin-maven-plugin</artifactId>
-				<version>${vaadin.plugin.version}</version>
-				<configuration>
-					<extraJvmArgs>-Xmx1g -Xss1024k</extraJvmArgs>
-
-					<!-- We are doing "inplace" gwt compilation but into subdir VAADIN/widgetsets -->
-					<webappDirectory>${basedir}/src/main/webapp/VAADIN/widgetsets</webappDirectory>
-					<hostedWebapp>${basedir}/src/main/webapp/VAADIN/widgetsets</hostedWebapp>
-					<noServer>true</noServer>
-					<!-- Remove draftCompile when project is ready -->
-					<draftCompile>false</draftCompile>
-					<persistentunitcachedir>${project.build.directory}/gwtdirt</persistentunitcachedir>
-					<compileReport>false</compileReport>
-					<style>OBF</style>
-					<strict>true</strict>
-					<!-- Symbol maps etc, not needed in vaadin app, just target them outside
-						war -->
-					<deploy>${project.build.directory}/gwt-deploy</deploy>
-				</configuration>
-				<executions>
-					<execution>
-						<configuration>
-							<!-- if you don't specify any modules, the plugin will find them -->
-							<!-- <modules> <module>com.vaadin.demo.mobilemail.gwt.ColorPickerWidgetSet</module>
-								</modules> -->
-						</configuration>
-						<goals>
-							<goal>clean</goal>
-							<goal>resources</goal>
-							<!-- These are non functional currently with spring boot directory
-								structure <goal>update-theme</goal> <goal>update-widgetset</goal> -->
-							<goal>compile-theme</goal>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<!-- ensure fresly compiled widgetset to jar, TODO check vaadin plugin
-						configuration could get rid of this -->
-					<execution>
-						<id>copy-resources</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/classes/VAADIN</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${basedir}/src/main/webapp/VAADIN</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!--
-			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
-			Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
-			-->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<properties>
-						<property>
-							<name>metasfresh.version</name>
-							<searchReactor>false</searchReactor>
-							<autoLinkDependencies>true</autoLinkDependencies>
-						</property>
-					</properties>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
-	<description>Standalone mobile web application that is connected to metasfresh and allows the user to log report the availiability of goods which he would like to sell.</description>
 </project>
