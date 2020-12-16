@@ -158,4 +158,42 @@ describe('InlineTab component', () => {
       'Antarktis (Sonderstatus durch Antarktis-Vertrag)'
     );
   });
+
+  it('renders the deletion prompt', () => {
+    inlineTabItemRow.isOpen = true;
+    inlineTabItemRow.promptOpen = true;
+    inlineTabStore[`123_AD_Tab-222_2205262`] = inlineTabItemRow;
+    const initialState = createStore({
+      windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: true,
+        },
+        inlineTab: inlineTabStore,
+      },
+    });
+    const store = mockStore(initialState);
+
+    const wrapper = mount(
+      <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+        <Provider store={store}>
+          <InlineTab
+            id={`2155894`}
+            rowId={`2205262`}
+            tabId={`AD_Tab-222`}
+            fieldsOrder={fieldsOrder}
+            fieldsByName={fieldsByName}
+            {...props}
+          />
+        </Provider>
+      </ShortcutProvider>
+    );
+    let htmlOutput = wrapper.html();
+
+    expect(htmlOutput).toContain('inline-tab-active');
+    // check if we are displaying the confirmation dialog in case of a deletion
+    expect(htmlOutput).toContain(
+      'span class="panel-prompt-header-title panel-modal-header-title">'
+    );
+  });
 });
