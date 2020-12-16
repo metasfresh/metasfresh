@@ -65,7 +65,8 @@ import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.uom.IUOMDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -97,7 +98,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
-	final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	public I_M_HU getById(@NonNull final HuId huId)
@@ -148,17 +149,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public I_C_UOM getHandlingUOM(final I_M_Product product)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		// FIXME: not sure that is correct
-		return uomDAO.getById(product.getC_UOM_ID());
-
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productBL.getStockUOM(product);
 	}
 
 	@Override
 	public I_C_UOM getC_UOM(final I_M_Transaction mtrx)
 	{
-		return getHandlingUOM(mtrx.getM_Product());
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final ProductId productId = ProductId.ofRepoId(mtrx.getM_Product_ID());
+		return productBL.getStockUOM(productId);
 	}
 
 	@Override
@@ -409,7 +410,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return true;
 		}
 
-		// If we are asked to stricly validate TUs and we reached this point, well our HU is not a TU
+		// If we are asked to strictly validate TUs and we reached this point, well our HU is not a TU
 		if (strict)
 		{
 			return false;
@@ -919,8 +920,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		return handlingUnitsDAO.createHUQueryBuilder();
+		return handlingUnitsRepo.createHUQueryBuilder();
 	}
 
 	@Override
