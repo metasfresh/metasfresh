@@ -43,12 +43,12 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class AbstractTransactionEventHandler
+public class TransactionEventHandlerForCockpitRecords
 		implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 
-	public AbstractTransactionEventHandler(
+	public TransactionEventHandlerForCockpitRecords(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
@@ -87,5 +87,4 @@ public class AbstractTransactionEventHandler
 		}
 		return dataRequestBuilder.build();
 	}
-
 }

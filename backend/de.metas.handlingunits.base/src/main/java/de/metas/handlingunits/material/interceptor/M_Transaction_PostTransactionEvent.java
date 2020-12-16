@@ -1,5 +1,8 @@
 package de.metas.handlingunits.material.interceptor;
 
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionEventFactory;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
+import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptorFactory;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.util.Services;
@@ -38,24 +41,26 @@ import java.util.List;
  */
 @Interceptor(I_M_Transaction.class)
 @Component
-public class M_Transaction_PostMaterialEvent
+public class M_Transaction_PostTransactionEvent
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PostMaterialEventService materialEventService;
-	private final M_Transaction_TransactionEventCreator mtransactionEventCreator;
+	private final TransactionEventFactory transactionEventCreator;
 	private final TransactionDescriptorFactory transactionDescriptorFactory;
 
-	public M_Transaction_PostMaterialEvent(@NonNull final PostMaterialEventService materialEventService)
+	public M_Transaction_PostTransactionEvent(
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final TransactionEventFactory transactionEventCreator)
 	{
 		this.materialEventService = materialEventService;
-		this.mtransactionEventCreator = new M_Transaction_TransactionEventCreator();
+		this.transactionEventCreator = transactionEventCreator;
 		this.transactionDescriptorFactory = new TransactionDescriptorFactory();
 	}
 
 	/**
 	 * Note: it's important to enqueue the transaction after it was saved and before it is deleted, because we need its ID.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/710
+	 * task https://github.com/metasfresh/metasfresh/issues/710
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -72,9 +77,9 @@ public class M_Transaction_PostMaterialEvent
 		trxManager.runAfterCommit(() -> createAndPostEventsNow(transaction, deleted));
 	}
 
-	private void createAndPostEventsNow(final TransactionDescriptor transaction, final boolean deleted)
+	private void createAndPostEventsNow(@NonNull final TransactionDescriptor transaction, final boolean deleted)
 	{
-		final List<MaterialEvent> events = mtransactionEventCreator.createEventsForTransaction(transaction, deleted);
+		final List<MaterialEvent> events = transactionEventCreator.createEventsForTransaction(transaction, deleted);
 		for (final MaterialEvent event : events)
 		{
 			materialEventService.postEventNow(event);
