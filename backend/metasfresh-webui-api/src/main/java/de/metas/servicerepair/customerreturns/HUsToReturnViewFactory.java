@@ -23,6 +23,7 @@
 package de.metas.servicerepair.customerreturns;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.servicerepair.customerreturns.process.HUsToReturn_SelectHU;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
@@ -68,7 +69,8 @@ public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
 	{
-		huViewBuilder.considerTableRelatedProcessDescriptors(false);
+		huViewBuilder.considerTableRelatedProcessDescriptors(false)
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(HUsToReturn_SelectHU.class));
 	}
 
 	/**
