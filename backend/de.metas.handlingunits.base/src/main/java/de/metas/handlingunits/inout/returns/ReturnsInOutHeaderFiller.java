@@ -1,19 +1,8 @@
-package de.metas.handlingunits.inout.impl;
-
-import de.metas.inout.IInOutBL;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
-
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,23 +20,27 @@ import java.sql.Timestamp;
  * #L%
  */
 
+package de.metas.handlingunits.inout.returns;
+
+import de.metas.inout.IInOutBL;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.X_C_DocType;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+
 /**
  * Helper class used to fill an empties InOut header.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
-class ReturnsInOutHeaderFiller
+public class ReturnsInOutHeaderFiller
 {
 	public static ReturnsInOutHeaderFiller newInstance()
 	{
 		return new ReturnsInOutHeaderFiller();
-	}
-
-	@FunctionalInterface
-	public static interface IReturnsDocTypeIdProvider
-	{
-		int getReturnsDocTypeId(String docBaseType, boolean isSOTrx, int adClientId, int adOrgId);
 	}
 
 	// services

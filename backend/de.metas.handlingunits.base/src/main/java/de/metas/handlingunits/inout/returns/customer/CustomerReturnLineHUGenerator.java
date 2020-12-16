@@ -1,4 +1,26 @@
-package de.metas.handlingunits.inout.impl;
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.inout.returns.customer;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
@@ -50,28 +72,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
+/**
+ * Generates HUs for given customer return line(s).
  */
-
 public class CustomerReturnLineHUGenerator
 {
 
@@ -108,7 +111,7 @@ public class CustomerReturnLineHUGenerator
 	private final List<I_M_InOutLine> _inOutLines = new ArrayList<>();
 	private final Map<Integer, IProductStorage> _inOutLine2productStorage = new HashMap<>();
 	private Quantity _qtyToAllocateTarget = null;
-	private List<IHUTrxListener> _customerListeners = new ArrayList<>(); //default value, to be set by de.metas.handlingunits.inout.impl.CustomerReturnLineHUGenerator.setIHUTrxListeners
+	private List<IHUTrxListener> _customerListeners = new ArrayList<>(); //default value, to be set by de.metas.handlingunits.inout.returns.customer.CustomerReturnLineHUGenerator.setIHUTrxListeners
 
 	//
 	// Status
@@ -181,10 +184,9 @@ public class CustomerReturnLineHUGenerator
 		return _inOutLines;
 	}
 
-	public CustomerReturnLineHUGenerator addM_InOutLine(final I_M_InOutLine inOutLine)
+	public CustomerReturnLineHUGenerator addM_InOutLine(@NonNull final I_M_InOutLine inOutLine)
 	{
 		assertConfigurable();
-		Check.assumeNotNull(inOutLine, "inOutLine not null");
 
 		Check.assume(!inOutLine.isPackagingMaterial(), "inOutLine shall not be about packing materials: {}", inOutLine);
 
@@ -300,12 +302,9 @@ public class CustomerReturnLineHUGenerator
 
 	/**
 	 * Create the HUs (if necessary, also see the remarks on the class-javadoc). This will take place in a dedicated {@link TrxRunnable} which will be committed (or rolled back) within this method.
-	 * 
-	 * @return
 	 */
 	public List<I_M_HU> generate()
 	{
-
 		final Quantity qtyCUsTotal = getQtyToAllocateTarget();
 		Check.assume(!qtyCUsTotal.isInfinite(), "QtyToAllocate(target) shall not be infinite");
 

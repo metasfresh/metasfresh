@@ -22,6 +22,8 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -37,7 +39,12 @@ import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.customer.CustomerReturnLUTUConfigurationHandler;
+import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineHUGenerator;
+import de.metas.handlingunits.inout.returns.customer.ManualCustomerReturnInOutProducer;
+import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.vendor.MultiVendorHUReturnsInOutProducer;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -48,6 +55,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -257,20 +265,8 @@ public class HUInOutBL implements IHUInOutBL
 				.create();
 	}
 
-	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(
-			final I_M_InOut manualCustomerReturn,
-			final Map<Integer, List<I_M_HU>> lineToHus)
-	{
-		Check.assume(isCustomerReturn(manualCustomerReturn), " {0} not a customer return", manualCustomerReturn);
-
-		return ManualCustomerReturnInOutProducer.newInstance()
-				.addLineToHUs(lineToHus)
-				.setManualCustomerReturn(manualCustomerReturn)
-				.create();
-	}
-
 	@Override
-	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines)
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(final List<I_M_InOutLine> inOutLines)
 	{
 		Check.assumeNotEmpty(inOutLines, "inOutLines not empty");
 		if (inOutLines.size() == 1)
@@ -285,7 +281,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_InOutLine inOutLine)
+	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(final I_M_InOutLine inOutLine)
 	{
 		return new DocumentLUTUConfigurationManager<>(inOutLine, lutuConfigurationHandler);
 	}
@@ -293,7 +289,7 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
-		final DocTypeQuery docTypeQuery = createQueryBuilder(inOut)
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 				.isSOTrx(true)
 				.build();
@@ -304,7 +300,7 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
-		final DocTypeQuery docTypeQuery = createQueryBuilder(inOut)
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
 				.isSOTrx(false)
 				.build();
@@ -312,17 +308,16 @@ public class HUInOutBL implements IHUInOutBL
 		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
-	private DocTypeQueryBuilder createQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)
+	private DocTypeQueryBuilder createDocTypeQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
-		final DocTypeQueryBuilder builder = DocTypeQuery.builder()
+		return DocTypeQuery.builder()
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
 				.adClientId(inOut.getAD_Client_ID())
 				.adOrgId(inOut.getAD_Org_ID());
-		return builder;
 	}
 
 	@Override
-	public List<I_M_HU> createHUsForCustomerReturn(final I_M_InOut customerReturn)
+	public List<I_M_HU> createHUsForCustomerReturn(@NonNull final I_M_InOut customerReturn)
 	{
 		Check.assume(isCustomerReturn(customerReturn), "Inout {} is not a customer return ", customerReturn);
 		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(customerReturn);
@@ -334,7 +329,7 @@ public class HUInOutBL implements IHUInOutBL
 			throw new AdempiereException(" No customer return lines found");
 		}
 
-		final Map<Integer, List<I_M_HU>> lineToHus = new HashMap<>();
+		final ArrayListMultimap<InOutLineId, I_M_HU> husByLineId = ArrayListMultimap.create();
 		//
 		// Create HU generator
 
@@ -347,10 +342,14 @@ public class HUInOutBL implements IHUInOutBL
 			final List<I_M_HU> currentHUs = huGenerator.generate();
 			hus.addAll(currentHUs);
 
-			lineToHus.put(customerReturnLine.getM_InOutLine_ID(), currentHUs);
+			husByLineId.putAll(InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()), currentHUs);
 		}
 
-		updateManualCustomerReturnInOutForHUs(customerReturn, lineToHus);
+		ManualCustomerReturnInOutProducer.builder()
+				.manualCustomerReturn(customerReturn)
+				.husByLineId(husByLineId)
+				.build()
+				.create();
 
 		return hus;
 	}

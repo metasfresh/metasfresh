@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.inout.returns;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

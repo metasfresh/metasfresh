@@ -1,10 +1,8 @@
-package de.metas.handlingunits.inout.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+package de.metas.handlingunits.inout.returns;
+
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -30,7 +30,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;

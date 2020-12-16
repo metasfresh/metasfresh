@@ -1,4 +1,26 @@
-package de.metas.handlingunits.inout.impl;
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.inout.returns.customer;
 
 import com.google.common.base.Preconditions;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -6,7 +28,8 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.AbstractReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -41,37 +64,13 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
 
-	public static final CustomerReturnsInOutProducer newInstance()
+	public static CustomerReturnsInOutProducer newInstance()
 	{
 		return new CustomerReturnsInOutProducer();
 	}
-
-	private HUPackingMaterialsCollector collector = null;
 
 	/**
 	 * Builder for lines with products that are not packing materials
@@ -118,7 +117,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(inOutLine.getAD_Client_ID(), inOutLine.getAD_Org_ID());
 			final IHUContext huContext = clientOrg2huContext.computeIfAbsent(clientAndOrgId, key -> handlingUnitsBL.createMutableHUContext(getCtx(), key));
 
-			collector = new HUPackingMaterialsCollector(huContext);
+			final HUPackingMaterialsCollector collector = new HUPackingMaterialsCollector(huContext);
 			collector.setisCollectTUNumberPerOrigin(true);
 			collector.setisCollectAggregatedHUs(true);
 
@@ -145,7 +144,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToSource();
 			final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = collector.getKey2candidates();
 
-			for (Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
+			for (final Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
 			{
 				Collection<HUPackingMaterialDocumentLineCandidate> list = pmCandidates.get(entry.getKey());
 
@@ -173,17 +172,8 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			for (final HUpipToHUPackingMaterialCollectorSource key : huPIPToOriginInOutLinesMap.keySet())
 			{
 				final int newQtyTU = huPIPToOriginInOutLinesMap.get(key);
-				final Integer existingQtyTU = huPIPToInOutLines.get(key);
 
-				if (existingQtyTU == null)
-				{
-					huPIPToInOutLines.put(key, newQtyTU);
-				}
-
-				else
-				{
-					huPIPToInOutLines.put(key, existingQtyTU + newQtyTU);
-				}
+				huPIPToInOutLines.merge(key, newQtyTU, Integer::sum);
 			}
 
 			huSnapshotProducer.addModel(hu);
@@ -206,14 +196,14 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 		// update the qtyTU and M_HU_PI_Item_Product in the newly created lines
 		for (final I_M_InOutLine newInOutLine : inoutLinesBuilder.getInOutLines())
 		{
-			de.metas.inout.model.I_M_InOutLine returnOriginInOutLine = newInOutLine.getReturn_Origin_InOutLine();
+			final de.metas.inout.model.I_M_InOutLine returnOriginInOutLine = newInOutLine.getReturn_Origin_InOutLine();
 
 			if (returnOriginInOutLine == null)
 			{
 				continue;
 			}
 
-			for (HUpipToHUPackingMaterialCollectorSource huPipToInOutLine : huPIPToInOutLines.keySet())
+			for (final HUpipToHUPackingMaterialCollectorSource huPipToInOutLine : huPIPToInOutLines.keySet())
 			{
 				if (huPipToInOutLine.getOriginalSourceID() == returnOriginInOutLine.getM_InOutLine_ID())
 				{
@@ -267,18 +257,17 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 				.collect(Collectors.toList());
 	}
 
-	public CustomerReturnsInOutProducer addHUToReturn(@NonNull final I_M_HU hu, final int originalReceiptInOutLineId)
+	public void addHUToReturn(@NonNull final I_M_HU hu, final int originalReceiptInOutLineId)
 	{
 		Preconditions.checkArgument(originalReceiptInOutLineId > 0, "originalReceiptInOutLineId > 0");
 		_husToReturn.add(new HUToReturn(hu, originalReceiptInOutLineId));
-		return this;
 	}
 
 	@Value
-	private static final class HUToReturn
+	private static class HUToReturn
 	{
-		private @NonNull final I_M_HU hu;
-		private final int originalReceiptInOutLineId;
+		@NonNull I_M_HU hu;
+		int originalReceiptInOutLineId;
 
 		private int getM_HU_ID()
 		{

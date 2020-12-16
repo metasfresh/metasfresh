@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.inout.returns.customer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
@@ -45,6 +45,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.inout.returns.customer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -54,7 +54,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public final class CreateReturnedHUsTrxListener implements IHUTrxListener
+final class CreateReturnedHUsTrxListener implements IHUTrxListener
 {
 	public static final CreateReturnedHUsTrxListener instance = new CreateReturnedHUsTrxListener();
 

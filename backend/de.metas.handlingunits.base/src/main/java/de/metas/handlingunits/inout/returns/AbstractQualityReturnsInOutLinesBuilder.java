@@ -1,4 +1,26 @@
-package de.metas.handlingunits.inout.impl;
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.inout.returns;
 
 import lombok.NonNull;
 
@@ -21,7 +43,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -32,29 +53,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
 
-public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLinesBuilder
+public abstract class AbstractQualityReturnsInOutLinesBuilder
 {
 
 	// services
@@ -79,29 +80,23 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		_inoutRef = inoutRef;
 	}
 
-	private final I_M_InOut getM_InOut()
+	private I_M_InOut getM_InOut()
 	{
 		return _inoutRef.getValue();
 	}
 
-	@Override
-	public AbstractQualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage, final I_M_InOutLine originInOutLine)
+	public void addHUProductStorage(final IHUProductStorage productStorage, final I_M_InOutLine originInOutLine)
 	{
 		final I_M_InOut inout = getM_InOut();
 		InterfaceWrapperHelper.save(inout); // make sure inout header is saved
 
 		updateInOutLine(productStorage, originInOutLine);
-
-		return this;
 	}
 
 	/**
 	 * Extract the product from the product storage together with its quantity.
 	 * If there is already an inout line for this product, update the existing qty based on the new one. If the inout line for this product does not exist yet, create it.
 	 * In the end assign the handling unit to the inout line and mark the HU as shipped.
-	 *
-	 * @param productStorage
-	 * @param originInOutLine
 	 */
 	private void updateInOutLine(final IHUProductStorage productStorage, final I_M_InOutLine originInOutLine)
 	{
@@ -201,10 +196,8 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 	/**
 	 * Search the inout lines map (_inOutLines) and check if there is already a line for the given product. In case it already exists, return it. Otherwise, create a line for this product.
-	 *
-	 * @param productId
-	 * @return
 	 */
+	@Nullable
 	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine, final ProductId productId)
 	{
 		final I_M_InOut inout = getM_InOut();
@@ -258,6 +251,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		return newInOutLine;
 	}
 
+	@Nullable
 	private I_M_InOutLine getCreateInOutLineInDispute(final I_M_InOutLine originInOutLine, final ProductId productId)
 	{
 		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(originInOutLine), I_M_InOutLine.class);
@@ -283,16 +277,12 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 	/**
 	 * Make a unique key for the given product. This will serve in mapping the inout lines to their products.
-	 *
-	 * @param productId
-	 * @return
 	 */
 	private static ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine, @NonNull final ProductId productId)
 	{
 		return Util.mkKey(originInOutLine.getM_InOutLine_ID(), productId);
 	}
 
-	@Override
 	public boolean isEmpty()
 	{
 		return _inOutLines.isEmpty();

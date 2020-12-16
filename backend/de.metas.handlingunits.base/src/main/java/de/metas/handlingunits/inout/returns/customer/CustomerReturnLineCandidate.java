@@ -20,37 +20,45 @@
  * #L%
  */
 
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.inout.returns.customer;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.model.I_C_Order;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
+import de.metas.inout.InOutLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Value
 @Builder
-public class CreateCustomerReturnHeaderReq
+public class CustomerReturnLineCandidate
 {
-	@NonNull OrgId orgId;
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
-	ReturnsInOutHeaderFiller.IReturnsDocTypeIdProvider returnDocTypeIdProvider;
+	ProductId productId;
+
+	@NonNull
+	Quantity returnedQty;
 
 	@NonNull
 	BPartnerLocationId bPartnerLocationId;
 
 	@NonNull
-	WarehouseId warehouseId;
-
-	@Nullable
-	I_C_Order order;
+	ReturnedGoodsWarehouseType returnedGoodsWarehouseType;
 
 	@Nullable
 	LocalDate movementDate;
@@ -59,8 +67,23 @@ public class CreateCustomerReturnHeaderReq
 	ZonedDateTime dateReceived;
 
 	@Nullable
-	String externalId;
+	List<CreateAttributeInstanceReq> createAttributeInstanceReqs;
 
 	@Nullable
 	String externalResourceURL;
+
+	@Nullable
+	InOutLineId originalShipmentInOutLineId;
+
+	@Nullable
+	OrderId orderId;
+
+	@Nullable
+	String externalId;
+
+	@Nullable
+	HUPIItemProductId hupiItemProductId;
+
+	@Nullable
+	BigDecimal returnedTUQty;
 }

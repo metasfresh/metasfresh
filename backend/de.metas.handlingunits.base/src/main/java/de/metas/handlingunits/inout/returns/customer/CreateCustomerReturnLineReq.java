@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.inout.impl;
+package de.metas.handlingunits.inout.returns.customer;
 
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.InOutId;

@@ -1,19 +1,8 @@
-package de.metas.handlingunits.inout.impl;
-
-import org.adempiere.util.lang.IReference;
-import org.compiere.model.I_M_InOut;
-
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.util.Services;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,6 +19,18 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.inout.returns.vendor;
+
+import de.metas.handlingunits.inout.returns.AbstractQualityReturnsInOutLinesBuilder;
+import org.adempiere.util.lang.IReference;
+import org.compiere.model.I_M_InOut;
+
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.Services;
 
 /**
  * Builder for vendor return inout lines that are for non-packing material products

@@ -2,6 +2,7 @@ package de.metas.handlingunits.inout;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
