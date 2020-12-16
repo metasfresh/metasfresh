@@ -19,8 +19,10 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_ProjectLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProductPO;
@@ -106,8 +108,7 @@ public class ProjectGenPO extends JavaProcess
 		else
 		{
 			MProject project = new MProject (getCtx(), m_C_Project_ID, get_TrxName());
-			MProjectLine[] lines = project.getLines();
-			for (MProjectLine line : lines)
+			for (I_C_ProjectLine line : project.getLines())
 			{
 				createPO (project, line);
 			}
@@ -119,7 +120,7 @@ public class ProjectGenPO extends JavaProcess
 	 * 	Create PO from Planned Amt/Qty
 	 * 	@param projectLine project line
 	 */
-	private void createPO (MProject project, MProjectLine projectLine)
+	private void createPO (MProject project, I_C_ProjectLine projectLine)
 	{
 		if (projectLine.getM_Product_ID() == 0)
 		{
@@ -224,7 +225,7 @@ public class ProjectGenPO extends JavaProcess
 
 		//	update ProjectLine
 		projectLine.setC_OrderPO_ID(order.getC_Order_ID());
-		projectLine.save();
+		InterfaceWrapperHelper.save(projectLine);
 		addLog (projectLine.getLine(), null, projectLine.getPlannedQty(), order.getDocumentNo());
 	}	//	createPOfromProjectLine
 
