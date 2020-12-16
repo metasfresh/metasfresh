@@ -1,23 +1,10 @@
 package de.metas.ui.web.handlingunits.report;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_AD_Process;
-import org.springframework.stereotype.Component;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.cache.CCache;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
@@ -41,6 +28,7 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -51,6 +39,17 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_AD_Process;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -174,6 +173,14 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		}
 
 		if (!(viewContext.getView() instanceof HUEditorView))
+		{
+			return Stream.empty();
+		}
+
+		// NOTE: atm there is no need for a separate flag for allowing table related processes and allowing HU reports,
+		// so we are reusing the same flag.
+		final IView huEditorView = viewContext.getView();
+		if (!huEditorView.isConsiderTableRelatedProcessDescriptors())
 		{
 			return Stream.empty();
 		}

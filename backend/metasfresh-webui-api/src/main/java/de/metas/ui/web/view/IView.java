@@ -1,17 +1,6 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
@@ -28,6 +17,14 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -83,7 +80,6 @@ public interface IView
 
 	/**
 	 * @param documentId can be used by multi-table implementations to return the correct table name for a given row.
-	 *
 	 * @return table name for the given row; might also return {@code null}.
 	 */
 	@Nullable
@@ -113,7 +109,7 @@ public interface IView
 	{
 		// nothing
 	}
-	
+
 	default void afterDestroy()
 	{
 		// nothing
@@ -125,7 +121,7 @@ public interface IView
 
 	/**
 	 * Invalidate ALL view rows.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT sending websocket notifications
 	 */
 	void invalidateAll();
@@ -137,7 +133,7 @@ public interface IView
 
 	/**
 	 * Invalidate given row by ID.
-	 *
+	 * <p>
 	 * If there is no custom implementation then this method will invoke {@link #invalidateAll()}.
 	 */
 	default void invalidateRowById(final DocumentId rowId)
@@ -207,7 +203,7 @@ public interface IView
 
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
-	 *         If a {@link IViewRow} was not found for given ID, this method simply ignores it.
+	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.
 	 */
 	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
 
@@ -216,10 +212,17 @@ public interface IView
 	 */
 	void notifyRecordsChanged(TableRecordReferenceSet recordRefs, boolean watchedByFrontend);
 
-	/** @return actions which were registered particularly for this view instance */
+	/**
+	 * @return actions which were registered particularly for this view instance
+	 */
 	default ViewActionDescriptorsList getActions()
 	{
 		return ViewActionDescriptorsList.EMPTY;
+	}
+
+	default boolean isConsiderTableRelatedProcessDescriptors()
+	{
+		return true;
 	}
 
 	default List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()

@@ -1,21 +1,7 @@
 package de.metas.ui.web.process;
 
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.RelatedProcessDescriptor;
@@ -35,6 +21,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -131,9 +128,14 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	public <T extends IView> T getView(final Class<T> viewType)
 	{
-		@SuppressWarnings("unchecked")
-		final T viewCasted = (T)view;
+		@SuppressWarnings("unchecked") final T viewCasted = (T)view;
 		return viewCasted;
+	}
+
+	@Override
+	public boolean isConsiderTableRelatedProcessDescriptors()
+	{
+		return view.isConsiderTableRelatedProcessDescriptors();
 	}
 
 	@Override
@@ -232,7 +234,9 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		private final ImmutableList<?> models;
 		private final Class<?> modelClass;
 
-		/** empty constructor */
+		/**
+		 * empty constructor
+		 */
 		private SelectedModelsList()
 		{
 			models = ImmutableList.of();
@@ -268,8 +272,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 			// we can simple cast & return them
 			if (Objects.equals(modelClass, this.modelClass))
 			{
-				@SuppressWarnings("unchecked")
-				final List<T> modelsCasted = (List<T>)models;
+				@SuppressWarnings("unchecked") final List<T> modelsCasted = (List<T>)models;
 				return modelsCasted;
 			}
 			// If not the same class, we have to wrap them fist.
