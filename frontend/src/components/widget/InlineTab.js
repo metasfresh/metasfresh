@@ -13,7 +13,10 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import SectionGroup from '../SectionGroup';
 import { updateDataValidStatus } from '../../actions/WindowActions';
-import { getInlineTabLayoutAndData } from '../../actions/InlineTabActions';
+import {
+  getInlineTabLayoutAndData,
+  setInlineTabItemProp,
+} from '../../actions/InlineTabActions';
 import { deleteRequest } from '../../api';
 import Prompt from '../app/Prompt';
 import counterpart from 'counterpart';
@@ -21,7 +24,7 @@ import counterpart from 'counterpart';
 class InlineTab extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { isOpen: false, promptOpen: false };
+    this.state = { isOpen: false };
   }
 
   /**
@@ -53,17 +56,30 @@ class InlineTab extends PureComponent {
     );
   };
 
+  setProperty = ({ targetProp, targetValue }) => {
+    const { setInlineTabItemProp, windowId, tabId, rowId } = this.props;
+    setInlineTabItemProp({
+      inlineTabId: `${windowId}_${tabId}_${rowId}`,
+      targetProp,
+      targetValue,
+    });
+  };
+
   /**
    * @method handleDelete
    * @summary this shows the confirm dialog box
    */
-  handleDelete = () => this.setState({ promptOpen: true });
+  handleDelete = () => {
+    this.setProperty({ targetProp: 'promptOpen', targetValue: true });
+  };
 
   /**
    * @method handlePromptCancel
    * @summary closes the confirmation dialog by setting the local state flag to false
    */
-  handlePromptCancel = () => this.setState({ promptOpen: false });
+  handlePromptCancel = () => {
+    this.setProperty({ targetProp: 'promptOpen', targetValue: false });
+  };
 
   /**
    * @method handlePromptDelete
@@ -71,7 +87,7 @@ class InlineTab extends PureComponent {
    *            when the promisse is fulfilled it refreshes the table data
    */
   handlePromptDelete = () => {
-    this.setState({ promptOpen: false });
+    this.setProperty({ targetProp: 'promptOpen', targetValue: false });
     const {
       windowId,
       id: docId,
@@ -99,9 +115,10 @@ class InlineTab extends PureComponent {
       fieldsByName,
       validStatus,
       fieldsOrder,
+      promptOpen,
     } = this.props;
     const valid = validStatus ? validStatus.valid : true;
-    const { isOpen, promptOpen } = this.state;
+    const { isOpen } = this.state;
 
     return (
       <div>
@@ -194,8 +211,10 @@ InlineTab.propTypes = {
   validStatus: PropTypes.object,
   getInlineTabLayoutAndData: PropTypes.func.isRequired,
   updateTable: PropTypes.func,
+  promptOpen: PropTypes.bool,
   fieldsOrder: PropTypes.array.isRequired,
   updateDataValidStatus: PropTypes.func.isRequired,
+  setInlineTabItemProp: PropTypes.func.isRequired,
 };
 
 /**
@@ -212,9 +231,14 @@ const mapStateToProps = (state, props) => {
   const selector = `${windowId}_${tabId}_${rowId}`;
   const layout = inlineTab[selector] ? inlineTab[selector].layout : null;
   const data = inlineTab[selector] ? inlineTab[selector].data : null;
+  const promptOpen = inlineTab[selector]
+    ? inlineTab[selector].promptOpen
+    : false;
+
   return {
     layout,
     data,
+    promptOpen,
   };
 };
 
@@ -223,5 +247,6 @@ export default connect(
   {
     getInlineTabLayoutAndData,
     updateDataValidStatus,
+    setInlineTabItemProp,
   }
 )(InlineTab);

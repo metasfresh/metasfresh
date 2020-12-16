@@ -8,6 +8,7 @@ import {
   SET_INLINE_TAB_LAYOUT_AND_DATA,
   SET_INLINE_TAB_ADD_NEW,
   SET_INLINE_TAB_SHOW_MORE,
+  SET_INLINE_TAB_ITEM_PROP,
 } from '../constants/ActionTypes';
 
 /*
@@ -81,6 +82,16 @@ export function setInlineTabAddNew({ visible, windowId, tabId, rowId, docId }) {
   return {
     type: SET_INLINE_TAB_ADD_NEW,
     payload: { visible, windowId, tabId, rowId, docId },
+  };
+}
+
+/*
+ * Action creator called to set the inlineTab item property to a specific value
+ */
+export function setInlineTabItemProp({ inlineTabId, targetProp, targetValue }) {
+  return {
+    type: SET_INLINE_TAB_ITEM_PROP,
+    payload: { inlineTabId, targetProp, targetValue },
   };
 }
 

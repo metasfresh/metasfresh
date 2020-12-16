@@ -34,3 +34,9 @@ export const SET_INLINE_TAB_ADD_NEW = 'SET_INLINE_TAB_ADD_NEW';
  * @type {string} update the showMore in the store
  */
 export const SET_INLINE_TAB_SHOW_MORE = 'SET_INLINE_TAB_SHOW_MORE';
+
+/**
+ * @constant
+ * @type {string} update a property in the inlineTab item
+ */
+export const SET_INLINE_TAB_ITEM_PROP = 'SET_INLINE_TAB_ITEM_PROP';

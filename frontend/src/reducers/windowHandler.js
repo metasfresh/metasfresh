@@ -56,6 +56,7 @@ import {
   UPDATE_INLINE_TAB_ITEM_FIELDS,
   SET_INLINE_TAB_ADD_NEW,
   SET_INLINE_TAB_SHOW_MORE,
+  SET_INLINE_TAB_ITEM_PROP,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -894,7 +895,20 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     }
+    case SET_INLINE_TAB_ITEM_PROP: {
+      const { inlineTabId, targetProp, targetValue } = action.payload;
 
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${inlineTabId}`]: {
+            ...state.inlineTab[`${inlineTabId}`],
+            [`${targetProp}`]: targetValue,
+          },
+        },
+      };
+    }
     default:
       return state;
   }
