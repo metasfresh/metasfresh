@@ -157,7 +157,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
 		flatrateConditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee);
-		flatrateConditions.setM_PricingSystem(pricingSystem);
+		flatrateConditions.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		save(flatrateConditions);
 
 		final I_C_Country country = newInstance(I_C_Country.class);

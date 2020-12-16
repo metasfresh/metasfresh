@@ -753,7 +753,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCandsWithSameReference(final I_C_Invoice_Candidate ic)
+	public final void invalidateCandsWithSameTableReference(final I_C_Invoice_Candidate ic)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(TableRecordReference.ofReferenced(ic))
 				// Not already processed
@@ -1280,7 +1280,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	 * <p>
 	 * If there were any changes, those invoice candidates will be invalidated.
 	 *
-	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
+	 * @param columnName {@link I_C_Invoice_Candidate}'s column to update
 	 * @param value value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
 	 * @param selectionId invoice candidates selection (AD_PInstance_ID)

@@ -1,62 +1,54 @@
 package de.metas.ordercandidate.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OLCandProcessor
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_OLCandProcessor 
 {
 
-    /** TableName=C_OLCandProcessor */
-    public static final String Table_Name = "C_OLCandProcessor";
+	String Table_Name = "C_OLCandProcessor";
 
-    /** AD_Table_ID=540245 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540245 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Ablaufsteuerung.
@@ -66,7 +58,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Scheduler_ID (int AD_Scheduler_ID);
+	void setAD_Scheduler_ID (int AD_Scheduler_ID);
 
 	/**
 	 * Get Ablaufsteuerung.
@@ -76,16 +68,14 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Scheduler_ID();
+	int getAD_Scheduler_ID();
 
-	public org.compiere.model.I_AD_Scheduler getAD_Scheduler();
+	@Nullable org.compiere.model.I_AD_Scheduler getAD_Scheduler();
 
-	public void setAD_Scheduler(org.compiere.model.I_AD_Scheduler AD_Scheduler);
+	void setAD_Scheduler(@Nullable org.compiere.model.I_AD_Scheduler AD_Scheduler);
 
-    /** Column definition for AD_Scheduler_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_Scheduler> COLUMN_AD_Scheduler_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_Scheduler>(I_C_OLCandProcessor.class, "AD_Scheduler_ID", org.compiere.model.I_AD_Scheduler.class);
-    /** Column name AD_Scheduler_ID */
-    public static final String COLUMNNAME_AD_Scheduler_ID = "AD_Scheduler_ID";
+	ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_Scheduler> COLUMN_AD_Scheduler_ID = new ModelColumn<>(I_C_OLCandProcessor.class, "AD_Scheduler_ID", org.compiere.model.I_AD_Scheduler.class);
+	String COLUMNNAME_AD_Scheduler_ID = "AD_Scheduler_ID";
 
 	/**
 	 * Set Betreuer.
@@ -95,7 +85,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
+	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
 	 * Get Betreuer.
@@ -105,10 +95,9 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_InCharge_ID();
+	int getAD_User_InCharge_ID();
 
-    /** Column name AD_User_InCharge_ID */
-    public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
+	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
 	 * Set Zielbelegart.
@@ -118,7 +107,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
+	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
 	 * Get Zielbelegart.
@@ -128,10 +117,9 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_DocTypeTarget_ID();
+	int getC_DocTypeTarget_ID();
 
-    /** Column name C_DocTypeTarget_ID */
-    public static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
+	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 
 	/**
 	 * Set C_OLCandAgg_IncludedTab.
@@ -140,7 +128,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OLCandAgg_IncludedTab (java.lang.String C_OLCandAgg_IncludedTab);
+	void setC_OLCandAgg_IncludedTab (@Nullable java.lang.String C_OLCandAgg_IncludedTab);
 
 	/**
 	 * Get C_OLCandAgg_IncludedTab.
@@ -149,12 +137,10 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getC_OLCandAgg_IncludedTab();
+	@Nullable java.lang.String getC_OLCandAgg_IncludedTab();
 
-    /** Column definition for C_OLCandAgg_IncludedTab */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_C_OLCandAgg_IncludedTab = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "C_OLCandAgg_IncludedTab", null);
-    /** Column name C_OLCandAgg_IncludedTab */
-    public static final String COLUMNNAME_C_OLCandAgg_IncludedTab = "C_OLCandAgg_IncludedTab";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_C_OLCandAgg_IncludedTab = new ModelColumn<>(I_C_OLCandProcessor.class, "C_OLCandAgg_IncludedTab", null);
+	String COLUMNNAME_C_OLCandAgg_IncludedTab = "C_OLCandAgg_IncludedTab";
 
 	/**
 	 * Set Auftragskand. Verarb..
@@ -163,7 +149,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OLCandProcessor_ID (int C_OLCandProcessor_ID);
+	void setC_OLCandProcessor_ID (int C_OLCandProcessor_ID);
 
 	/**
 	 * Get Auftragskand. Verarb..
@@ -172,63 +158,57 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_OLCandProcessor_ID();
+	int getC_OLCandProcessor_ID();
 
-    /** Column definition for C_OLCandProcessor_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_C_OLCandProcessor_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "C_OLCandProcessor_ID", null);
-    /** Column name C_OLCandProcessor_ID */
-    public static final String COLUMNNAME_C_OLCandProcessor_ID = "C_OLCandProcessor_ID";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_C_OLCandProcessor_ID = new ModelColumn<>(I_C_OLCandProcessor.class, "C_OLCandProcessor_ID", null);
+	String COLUMNNAME_C_OLCandProcessor_ID = "C_OLCandProcessor_ID";
 
 	/**
-	 * Set Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_PaymentTerm_ID();
+	int getC_PaymentTerm_ID();
 
-    /** Column name C_PaymentTerm_ID */
-    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Created = new ModelColumn<>(I_C_OLCandProcessor.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Lieferart.
@@ -238,7 +218,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryRule (java.lang.String DeliveryRule);
+	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
 	 * Get Lieferart.
@@ -248,12 +228,10 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDeliveryRule();
+	java.lang.String getDeliveryRule();
 
-    /** Column definition for DeliveryRule */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_DeliveryRule = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "DeliveryRule", null);
-    /** Column name DeliveryRule */
-    public static final String COLUMNNAME_DeliveryRule = "DeliveryRule";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_DeliveryRule = new ModelColumn<>(I_C_OLCandProcessor.class, "DeliveryRule", null);
+	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
 	 * Set Lieferung.
@@ -263,7 +241,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryViaRule (java.lang.String DeliveryViaRule);
+	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Lieferung.
@@ -273,35 +251,31 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDeliveryViaRule();
+	java.lang.String getDeliveryViaRule();
 
-    /** Column definition for DeliveryViaRule */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_DeliveryViaRule = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "DeliveryViaRule", null);
-    /** Column name DeliveryViaRule */
-    public static final String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_C_OLCandProcessor.class, "DeliveryViaRule", null);
+	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Description = new ModelColumn<>(I_C_OLCandProcessor.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Frachtkostenberechnung.
@@ -311,7 +285,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFreightCostRule (java.lang.String FreightCostRule);
+	void setFreightCostRule (java.lang.String FreightCostRule);
 
 	/**
 	 * Get Frachtkostenberechnung.
@@ -321,12 +295,10 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFreightCostRule();
+	java.lang.String getFreightCostRule();
 
-    /** Column definition for FreightCostRule */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_FreightCostRule = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "FreightCostRule", null);
-    /** Column name FreightCostRule */
-    public static final String COLUMNNAME_FreightCostRule = "FreightCostRule";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_FreightCostRule = new ModelColumn<>(I_C_OLCandProcessor.class, "FreightCostRule", null);
+	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
 	 * Set Rechnungsstellung.
@@ -336,7 +308,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoiceRule (java.lang.String InvoiceRule);
+	void setInvoiceRule (java.lang.String InvoiceRule);
 
 	/**
 	 * Get Rechnungsstellung.
@@ -346,37 +318,33 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getInvoiceRule();
+	java.lang.String getInvoiceRule();
 
-    /** Column definition for InvoiceRule */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_InvoiceRule = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "InvoiceRule", null);
-    /** Column name InvoiceRule */
-    public static final String COLUMNNAME_InvoiceRule = "InvoiceRule";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_OLCandProcessor.class, "InvoiceRule", null);
+	String COLUMNNAME_InvoiceRule = "InvoiceRule";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_IsActive = new ModelColumn<>(I_C_OLCandProcessor.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Merkmals-Satz.
@@ -386,7 +354,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSet_ID (int M_AttributeSet_ID);
+	void setM_AttributeSet_ID (int M_AttributeSet_ID);
 
 	/**
 	 * Get Merkmals-Satz.
@@ -396,91 +364,83 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSet_ID();
+	int getM_AttributeSet_ID();
 
-	public org.compiere.model.I_M_AttributeSet getM_AttributeSet();
+	@Nullable org.compiere.model.I_M_AttributeSet getM_AttributeSet();
 
-	public void setM_AttributeSet(org.compiere.model.I_M_AttributeSet M_AttributeSet);
+	void setM_AttributeSet(@Nullable org.compiere.model.I_M_AttributeSet M_AttributeSet);
 
-    /** Column definition for M_AttributeSet_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_AttributeSet> COLUMN_M_AttributeSet_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_AttributeSet>(I_C_OLCandProcessor.class, "M_AttributeSet_ID", org.compiere.model.I_M_AttributeSet.class);
-    /** Column name M_AttributeSet_ID */
-    public static final String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
+	ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_AttributeSet> COLUMN_M_AttributeSet_ID = new ModelColumn<>(I_C_OLCandProcessor.class, "M_AttributeSet_ID", org.compiere.model.I_M_AttributeSet.class);
+	String COLUMNNAME_M_AttributeSet_ID = "M_AttributeSet_ID";
 
 	/**
-	 * Set Preissystem.
-	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 * Set Pricing System.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
+	void setM_PricingSystem_ID (int M_PricingSystem_ID);
 
 	/**
-	 * Get Preissystem.
-	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 * Get Pricing System.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_PricingSystem_ID();
+	int getM_PricingSystem_ID();
 
-    /** Column name M_PricingSystem_ID */
-    public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
+	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Set Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Set Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Shipper_ID (int M_Shipper_ID);
+	void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
-	 * Get Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Get Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Shipper_ID();
+	int getM_Shipper_ID();
 
-	public org.compiere.model.I_M_Shipper getM_Shipper();
+	org.compiere.model.I_M_Shipper getM_Shipper();
 
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+	void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
 
-    /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_Shipper>(I_C_OLCandProcessor.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-    /** Column name M_Shipper_ID */
-    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+	ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_C_OLCandProcessor.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Warehouse_ID();
+	int getM_Warehouse_ID();
 
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Name.
@@ -489,7 +449,7 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -498,63 +458,56 @@ public interface I_C_OLCandProcessor
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Name = new ModelColumn<>(I_C_OLCandProcessor.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Zahlungsweise.
-	 * Wie die Rechnung bezahlt wird
+	 * Set Payment Rule.
+	 * How you pay the invoice
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPaymentRule (java.lang.String PaymentRule);
+	void setPaymentRule (java.lang.String PaymentRule);
 
 	/**
-	 * Get Zahlungsweise.
-	 * Wie die Rechnung bezahlt wird
+	 * Get Payment Rule.
+	 * How you pay the invoice
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPaymentRule();
+	java.lang.String getPaymentRule();
 
-    /** Column definition for PaymentRule */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_PaymentRule = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "PaymentRule", null);
-    /** Column name PaymentRule */
-    public static final String COLUMNNAME_PaymentRule = "PaymentRule";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_OLCandProcessor.class, "PaymentRule", null);
+	String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, Object>(I_C_OLCandProcessor.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_OLCandProcessor, Object> COLUMN_Updated = new ModelColumn<>(I_C_OLCandProcessor.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

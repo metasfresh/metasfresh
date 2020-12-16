@@ -1,24 +1,24 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
-import java.util.function.Predicate;
-
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
-import de.metas.rest_api.exception.MissingResourceException;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.rest_api.common.JsonInvoiceRule;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.function.Predicate;
 
 import static de.metas.util.Check.isNotBlank;
 
@@ -115,5 +115,32 @@ public class BPartnerCompositeRestUtils
 			orgId = Env.getOrgId();
 		}
 		return orgId;
+	}
+
+	public static InvoiceRule getInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
+	{
+		if (jsonInvoiceRule == null)
+		{
+			return null;
+		}
+		final InvoiceRule invoiceRule;
+		switch (jsonInvoiceRule)
+		{
+			case AfterDelivery:
+				invoiceRule = InvoiceRule.AfterDelivery;
+				break;
+			case CustomerScheduleAfterDelivery:
+				invoiceRule = InvoiceRule.CustomerScheduleAfterDelivery;
+				break;
+			case Immediate:
+				invoiceRule = InvoiceRule.Immediate;
+				break;
+			case OrderCompletelyDelivered:
+				invoiceRule = InvoiceRule.OrderCompletelyDelivered;
+				break;
+			default:
+				throw new AdempiereException("Unsupported JsonInvliceRule " + jsonInvoiceRule);
+		}
+		return invoiceRule;
 	}
 }

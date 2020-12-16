@@ -195,7 +195,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		POJOWrapper.setInstanceName(term, "term1");
-		term.setAD_Org(conditions.getAD_Org());
+		term.setAD_Org_ID(conditions.getAD_Org_ID());
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		term.setC_Flatrate_Conditions(conditions);
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);

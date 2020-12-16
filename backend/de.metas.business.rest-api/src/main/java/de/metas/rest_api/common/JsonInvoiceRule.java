@@ -26,11 +26,14 @@ import de.pentabyte.springfox.ApiEnum;
 
 public enum JsonInvoiceRule
 {
-	@ApiEnum("Specifies that only *delivered* quanties will be invoiced")
+	@ApiEnum("Specifies that only *delivered* quantities will be invoiced")
 	AfterDelivery,
 
 	@ApiEnum("Like `AfterDelivery`, but the invoicing date is also set according to the respective bill partner's invoicing schedule (e.g. once per month)")
 	CustomerScheduleAfterDelivery,
+
+	@ApiEnum("Specifies that no invoicing should take place until all quantities belonging to the same invoice have been shipped")
+	OrderCompletelyDelivered,
 
 	@ApiEnum("Any ordered quantities - delivered or not - can be invoiced right away")
 	Immediate;

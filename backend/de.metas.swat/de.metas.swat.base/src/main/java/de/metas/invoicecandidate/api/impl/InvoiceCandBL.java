@@ -169,19 +169,26 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -223,6 +230,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * there was no delivery yet
 	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_CustomerScheduleAfterDelivery}: basically the result of {@link InvoiceSchedule#calculateNextDateToInvoice(LocalDate)} or
 	 * {@link Env#MAX_DATE} if there was no delivery yet
+	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_OrderCompletelyDelivered} : <code>DateOrdered</code> if all other candidates with the same headerAggregation have been delivered, {@link Env#MAX_DATE} otherwise
 	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_Immediate} : <code>DateOrdered</code>
 	 * <li>else (which should not happen, unless a new invoice rule is introduced): <code>Created</code>
 	 * </ul>
@@ -245,10 +253,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				return icRecord.getDateOrdered();
 
 			case AfterDelivery:
-				return computedateToInvoiceBasedOnDeliveryDate(icRecord);
-
 			case AfterOrderDelivered:
 				return computedateToInvoiceBasedOnDeliveryDate(icRecord);
+
+			case OrderCompletelyDelivered:
+				if (isCandidateDelivered(icRecord) && isAllCandidatesInGroupDelivered(icRecord))
+				{
+					return computedateToInvoiceBasedOnDeliveryDate(icRecord);
+				}
+				else
+				{
+					return Env.MAX_DATE;
+				}
 
 			case CustomerScheduleAfterDelivery:
 				if (icRecord.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
@@ -274,6 +290,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			default:
 				throw new AdempiereException("Unexpected invoicerule=" + invoiceRule);
 		}
+	}
+
+	private boolean isAllCandidatesInGroupDelivered(final @NonNull I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(ic), ic.getHeaderAggregationKey(), getTrxName(ic));
+		boolean allCandidatesDelivered = true;
+		while (candidates.hasNext())
+		{
+			final I_C_Invoice_Candidate next = candidates.next();
+			if (!isCandidateDelivered(next))
+			{
+				allCandidatesDelivered = false;
+			}
+		}
+		return allCandidatesDelivered;
+	}
+
+	private boolean isCandidateDelivered(final I_C_Invoice_Candidate icRecord)
+	{
+		return icRecord.getQtyOrdered().subtract(icRecord.getQtyDelivered()).compareTo(ZERO) <= 0;
 	}
 
 	private Timestamp computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate icRecord)
@@ -459,7 +496,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
 			// we don't need to check the invoice's DocStatus. If the ila is there, we count it.
-// @formatter:off
+			// @formatter:off
 //			final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(ila.getC_InvoiceLine(), I_C_InvoiceLine.class);
 //			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 //
@@ -501,7 +538,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			{
 				netAmtInvoiced = netAmtInvoiced.add(amountInvoiced);
 			}
-// @formatter:off
+			// @formatter:off
 //			}
 // @formatter:on
 		}
@@ -2315,4 +2352,31 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return new GetInvoiceCandidatesAmtSelectionSummaryCommand(extraWhereClause).execute();
 	}
 
+	/**
+	 * Tests whether it makes sense to update associated records for a given {@link I_C_Invoice_Candidate}
+	 * That's currently the case if:
+	 * <ul>
+	 *     <li>{@link I_C_Invoice_Candidate#getInvoiceRule()}  return {@link InvoiceRule#OrderCompletelyDelivered}</li>
+	 *     <li>{@link I_C_Invoice_Candidate#getDateToInvoice()} is not null and not{@link Env#MAX_DATE}</li>
+	 * </ul>
+	 *
+	 * @param icRecord
+	 * @return
+	 */
+	public boolean isCandidateForRecalculate(final I_C_Invoice_Candidate icRecord)
+	{
+		final InvoiceRule invoiceRule = getInvoiceRule(icRecord);
+		final Timestamp dateToInvoice = icRecord.getDateToInvoice();
+		return InvoiceRule.OrderCompletelyDelivered.equals(invoiceRule) && dateToInvoice != null && dateToInvoice.before(Env.MAX_DATE);
+	}
+
+	public Collection<I_C_Invoice_Candidate> getRefreshedAssociatedInvoiceCandidates(final Iterator<I_C_Invoice_Candidate> candidates, final Collection<Integer> processedRecords)
+	{
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(candidates, Spliterator.ORDERED), false)
+				.filter(c -> !processedRecords.contains(c.getC_Invoice_Candidate_ID()))
+				.map(ic -> {
+					set_DateToInvoice_DefaultImpl(ic);
+					return ic;
+				}).collect(Collectors.toSet());
+	}
 }
