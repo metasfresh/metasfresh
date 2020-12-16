@@ -229,7 +229,6 @@ public class CustomerReturnsWithoutHUsProducer
 				.productId(returnLineCandidate.getProductId())
 				.movementQty(returnLineCandidate.getReturnedQty())
 				.qtyEntered(returnLineCandidate.getReturnedQty())
-				.orgId(returnLineCandidate.getOrgId())
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.hupiItemProductId(returnLineCandidate.getHupiItemProductId())
 				.qtyTU(returnLineCandidate.getReturnedTUQty())

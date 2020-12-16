@@ -25,7 +25,6 @@ package de.metas.handlingunits.inout.returns.customer;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -41,9 +40,6 @@ import java.math.BigDecimal;
 @Value
 public class CreateCustomerReturnLineReq
 {
-	@NonNull
-	OrgId orgId;
-
 	@NonNull
 	InOutId headerId;
 
@@ -69,7 +65,7 @@ public class CreateCustomerReturnLineReq
 	BigDecimal qtyTU;
 
 	@Builder
-	public CreateCustomerReturnLineReq(@NonNull final OrgId orgId,
+	public CreateCustomerReturnLineReq(
 			@NonNull final InOutId headerId,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyEntered,
@@ -84,7 +80,6 @@ public class CreateCustomerReturnLineReq
 			throw new AdempiereException("qtyEntered and movementQty must have the same uom!");
 		}
 
-		this.orgId = orgId;
 		this.headerId = headerId;
 		this.productId = productId;
 		this.qtyEntered = qtyEntered;
