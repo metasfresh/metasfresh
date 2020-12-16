@@ -17,6 +17,8 @@
 package org.compiere.process;
 
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_ProjectLine;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
@@ -24,7 +26,9 @@ import de.metas.process.JavaProcess;
 
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
- 
+
+import java.util.List;
+
 /**
  *  Close Project.
  *
@@ -67,7 +71,6 @@ public class ProjectClose extends JavaProcess
 		MProject project = new MProject (getCtx(), m_C_Project_ID, get_TrxName());
 		log.info("doIt - " + project);
 
-		MProjectLine[] projectLines = project.getLines();
 		if (MProject.PROJECTCATEGORY_WorkOrderJob.equals(project.getProjectCategory())
 			|| MProject.PROJECTCATEGORY_AssetProject.equals(project.getProjectCategory()))
 		{
@@ -75,10 +78,11 @@ public class ProjectClose extends JavaProcess
 		}
 
 		//	Close lines
-		for (int line = 0; line < projectLines.length; line++)
+		final List<MProjectLine> projectLines = project.getLines();
+		for (final I_C_ProjectLine projectLine : projectLines)
 		{
-			projectLines[line].setProcessed(true);
-			projectLines[line].saveEx();
+			projectLine.setProcessed(true);
+			InterfaceWrapperHelper.save(projectLine);
 		}
 
 		project.setProcessed(true);
