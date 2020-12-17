@@ -3,19 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent.general</artifactId>
-		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../../parent-pom/pom.xml</relativePath>
-	</parent>
 
-	<groupId>de.metas.procurement</groupId>
-	<artifactId>de.metas.procurement.webui</artifactId>
-
-	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
-		can't set it to another version it -->
-	<version>10.0.0</version>
 
 	<properties>
 		<start-class>de.metas.procurement.webui.Application</start-class>
@@ -94,10 +82,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jms</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>

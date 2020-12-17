@@ -3,23 +3,28 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!--TODO should the parent be de.metas.parent.general?-->
-	<!--	in that case, what do i do with this springboot_starter_parent parent? -->
+<!--	<parent>-->
+<!--		<groupId>org.springframework.boot</groupId>-->
+<!--		<artifactId>spring-boot-starter-parent</artifactId>-->
+<!--		<version>2.4.1</version>-->
+<!--		<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+<!--	</parent>-->
+
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.1</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<artifactId>de.metas.parent.general</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+		<relativePath>../../parent-pom/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.procurement</groupId>
 	<artifactId>procurement-webui-backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<!--	TODO TBP what is the correct version?-->
-	<!--	<version>10.0.0</version>-->
 	<name>procurement-webui-backend</name>
 	<description>Rest API for webui that is connected to metasfresh and allows the user to log report the availability of goods which he would like to sell.</description>
 
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
+		can't set it to another version it -->
+	<version>10.0.0</version>
 
 	<properties>
 		<java.version>15</java.version>
@@ -60,6 +65,11 @@
 <!--			<groupId>org.springframework.boot</groupId>-->
 <!--			<artifactId>spring-boot-starter-websocket</artifactId>-->
 <!--		</dependency>-->
+
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
