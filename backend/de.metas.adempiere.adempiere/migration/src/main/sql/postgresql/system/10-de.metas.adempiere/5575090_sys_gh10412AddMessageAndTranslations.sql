@@ -24,6 +24,6 @@ UPDATE AD_Message SET MsgText='The product''s haddex check has to be renewed',Up
 
 -- 2020-12-16T13:27:36.733Z
 -- URL zum Konzept
-UPDATE AD_Message SET Value='de.metas.order.model.interceptor.producthadexerror',Updated=TO_TIMESTAMP('2020-12-16 10:27:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545019
+UPDATE AD_Message SET Value='de.metas.order.producthadexerror',Updated=TO_TIMESTAMP('2020-12-16 10:27:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545019
 ;
 
