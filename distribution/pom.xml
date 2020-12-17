@@ -25,6 +25,7 @@
 		<metasfresh-procurement-webui.version>[1,10.0.0]</metasfresh-procurement-webui.version>
 		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>
 		<metasfresh-webui-frontend.version>[1,10.0.0]</metasfresh-webui-frontend.version>
+		<procurement-webui-backend.version>[1,10.0.0]</procurement-webui-backend.version>
 	</properties>
 
 	<dependencies>
@@ -52,6 +53,13 @@ Since we now work with a range, we now declare the dependencies here where range
 			<groupId>de.metas.procurement</groupId>
 			<artifactId>de.metas.procurement.webui</artifactId>
 			<version>${metasfresh-procurement-webui.version}</version>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.procurement</groupId>
+			<artifactId>procurement-webui-backend</artifactId>
+			<version>${procurement-webui-backend.version}</version>
 			<type>jar</type>
 		</dependency>
 
