@@ -1,7 +1,7 @@
 package de.metas.procurement.webui;
 
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
 
+import com.google.common.base.Preconditions;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contracts;
 import de.metas.procurement.webui.model.User;

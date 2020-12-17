@@ -8,17 +8,6 @@
 	<properties>
 		<start-class>de.metas.procurement.webui.Application</start-class>
 
-		<version.vaadin>7.6.1</version.vaadin>
-		<vaadin.plugin.version>${version.vaadin}</vaadin.plugin.version>
-
-		<touchkit.version>4.1.0.rc1</touchkit.version>
-
-		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
-
-		<vaadin-spring.version>1.0.0.beta3</vaadin-spring.version>
-
-		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
-
 		<!-- note that we also use 3.1.6 in the metasfresh/de.metas.jaxrs module. -->
 		<cxf.version>3.1.6</cxf.version>
 
@@ -31,14 +20,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Import dependency management from Spring Boot -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
 
 			<!-- Pull in the cxf-parents as import scope to re-use the dependenecyManagement
 				sections of those poms. Those sections define the versions of various third
@@ -63,9 +44,6 @@
 	</dependencyManagement>
 
 	<dependencies>
-
-
-
 
 		<dependency>
 			<groupId>javax.validation</groupId>
