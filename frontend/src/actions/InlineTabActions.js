@@ -115,6 +115,7 @@ export function fetchInlineTabWrapperData({
   return (dispatch) => {
     dispatch(fetchTab({ tabId, windowId, docId, query })).then((tabData) => {
       /** - if we have the rowId it means we have a new record addition, so we put that at the end of the array - only if this doesn't happen as a result of deletion */
+      const inlineTabWrapperSelector = `${windowId}_${tabId}_${docId}`;
       if (rowId && !postDeletion) {
         const lastAdditionIndex = tabData.findIndex(
           (item) => item.rowId === rowId
@@ -126,7 +127,7 @@ export function fetchInlineTabWrapperData({
         }
         dispatch(
           setInlineTabShowMore({
-            inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+            inlineTabWrapperId: inlineTabWrapperSelector,
             showMore: false,
           })
         );
@@ -134,7 +135,7 @@ export function fetchInlineTabWrapperData({
 
       dispatch(
         setInlineTabWrapperData({
-          inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+          inlineTabWrapperId: inlineTabWrapperSelector,
           data: tabData,
         })
       );
@@ -142,7 +143,7 @@ export function fetchInlineTabWrapperData({
       !rowId &&
         dispatch(
           setInlineTabShowMore({
-            inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+            inlineTabWrapperId: inlineTabWrapperSelector,
             showMore: tabData.length > INLINE_TAB_SHOW_MORE_FROM ? true : false,
           })
         );
