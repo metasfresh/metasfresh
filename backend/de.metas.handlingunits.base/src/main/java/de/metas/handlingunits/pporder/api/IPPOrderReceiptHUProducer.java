@@ -30,15 +30,6 @@ public interface IPPOrderReceiptHUProducer
 	 */
 	void createDraftReceiptCandidatesAndPlanningHUs();
 
-	/**
-	 * Creates planning HUs to be received.
-	 * NO manufacturing receipt candidates will be created.
-	 * 
-	 * @deprecated To be removed. Needed only for the legacy Swing UI.
-	 */
-	@Deprecated
-	List<I_M_HU> createPlanningHUs(Quantity qtyToReceive);
-
 	I_M_HU receiveVHU(Quantity qtyToReceive);
 
 	/**
