@@ -58,7 +58,6 @@ import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.util.DateUtils;
-import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 
 /*
  * #%L

@@ -17,8 +17,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.IntegrationTest;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -73,11 +71,11 @@ import de.metas.procurement.webui.util.DummyDataProducer;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { AgentSyncTestConfig.class })
+//
+// @RunWith(SpringJUnit4ClassRunner.class)
+// @SpringApplicationConfiguration(classes = { AgentSyncTestConfig.class })
 @WebAppConfiguration
-@IntegrationTest("server.port:0")
+// @IntegrationTest("server.port:0")
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 public class AgentSyncIntegrationTest
 {

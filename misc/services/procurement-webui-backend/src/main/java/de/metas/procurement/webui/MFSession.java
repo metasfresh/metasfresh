@@ -7,9 +7,6 @@ import de.metas.procurement.webui.model.Contracts;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.IContractsService;
 import de.metas.procurement.webui.service.ISendService;
-import de.metas.procurement.webui.service.impl.SendService;
-import de.metas.procurement.webui.ui.model.ProductQtyReportRepository;
-import de.metas.procurement.webui.ui.model.RfqHeaderContainer;
 
 /*
  * #%L
@@ -44,10 +41,10 @@ public final class MFSession
 	private final String bpartner_uuid;
 
 	private final Contracts contracts;
-	private final ProductQtyReportRepository productQtyReportRepository;
-	private RfqHeaderContainer _activeRfqsContainer; // lazy
-
-	private final ISendService sendService = new SendService();
+	// private final ProductQtyReportRepository productQtyReportRepository;
+	// private RfqHeaderContainer _activeRfqsContainer; // lazy
+	//
+	// private final ISendService sendService = new SendService();
 
 	private MFSession(final Builder builder)
 	{
@@ -60,7 +57,7 @@ public final class MFSession
 		final BPartner bpartner = user.getBpartner();
 		contracts = builder.getContractsRepository().getContracts(bpartner);
 
-		productQtyReportRepository = new ProductQtyReportRepository(user, contracts);
+		// productQtyReportRepository = new ProductQtyReportRepository(user, contracts);
 	}
 
 	/**
@@ -81,32 +78,32 @@ public final class MFSession
 		return contracts;
 	}
 
-	public ProductQtyReportRepository getProductQtyReportRepository()
-	{
-		return productQtyReportRepository;
-	}
-
-	public RfqHeaderContainer getActiveRfqs()
-	{
-		if (_activeRfqsContainer == null)
-		{
-			synchronized (this)
-			{
-				if (_activeRfqsContainer == null)
-				{
-					final RfqHeaderContainer activeRfqsContainer = new RfqHeaderContainer(user);
-					activeRfqsContainer.loadAll();
-					_activeRfqsContainer = activeRfqsContainer;
-				}
-			}
-		}
-		return _activeRfqsContainer;
-	}
-
-	public ISendService getSendService()
-	{
-		return sendService;
-	}
+	// public ProductQtyReportRepository getProductQtyReportRepository()
+	// {
+	// 	return productQtyReportRepository;
+	// }
+	//
+	// public RfqHeaderContainer getActiveRfqs()
+	// {
+	// 	if (_activeRfqsContainer == null)
+	// 	{
+	// 		synchronized (this)
+	// 		{
+	// 			if (_activeRfqsContainer == null)
+	// 			{
+	// 				final RfqHeaderContainer activeRfqsContainer = new RfqHeaderContainer(user);
+	// 				activeRfqsContainer.loadAll();
+	// 				_activeRfqsContainer = activeRfqsContainer;
+	// 			}
+	// 		}
+	// 	}
+	// 	return _activeRfqsContainer;
+	// }
+	//
+	// public ISendService getSendService()
+	// {
+	// 	return sendService;
+	// }
 
 	public static final class Builder
 	{

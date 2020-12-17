@@ -3,6 +3,7 @@ package de.metas.procurement.webui.util;
 import java.util.Date;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
 
