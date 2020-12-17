@@ -1,21 +1,9 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -26,6 +14,15 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -59,14 +56,20 @@ public final class DocumentLayoutDescriptor
 	private final WindowId windowId;
 	private final ITranslatableString caption;
 
-	/** Special element: Document summary */
+	/**
+	 * Special element: Document summary
+	 */
 	private final DocumentLayoutElementDescriptor documentSummaryElement;
-	/** Special element: DocStatus/DocAction */
+	/**
+	 * Special element: DocStatus/DocAction
+	 */
 	private final DocumentLayoutElementDescriptor docActionElement;
 
 	private final DocumentLayoutSingleRow singleRowLayout;
 	private final ViewLayout gridView;
-	/** Side list layout */
+	/**
+	 * Side list layout
+	 */
 	private final ViewLayout sideListView;
 
 	// private final Map<DocumentLayoutDetailGroupDescriptor, List<DocumentLayoutDetailDescriptor>> detailGroupToDetails = new HashMap<>();
@@ -74,13 +77,19 @@ public final class DocumentLayoutDescriptor
 
 	// private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
 
-	/** Single row layout: included tabs. */
+	/**
+	 * Single row layout: included tabs.
+	 */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
 
-	/** {@link #details} plus their included details. */
+	/**
+	 * {@link #details} plus their included details.
+	 */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> allDetails;
 
-	/** Misc debugging properties */
+	/**
+	 * Misc debugging properties
+	 */
 	@Getter
 	private final DebugProperties debugProperties;
 
@@ -159,7 +168,9 @@ public final class DocumentLayoutDescriptor
 		return sideListView;
 	}
 
-	/** the this instance's "direct" details, without their included sub-details. */
+	/**
+	 * the this instance's "direct" details, without their included sub-details.
+	 */
 	public Collection<DocumentLayoutDetailDescriptor> getDetails()
 	{
 		return details.values();
@@ -185,8 +196,8 @@ public final class DocumentLayoutDescriptor
 
 		private WindowId windowId;
 		private ITranslatableString caption = TranslatableStrings.empty();
-		private DocumentLayoutElementDescriptor documentSummaryElement;
-		private DocumentLayoutElementDescriptor docActionElement;
+		@Nullable private DocumentLayoutElementDescriptor documentSummaryElement;
+		@Nullable private DocumentLayoutElementDescriptor docActionElement;
 
 		private DocumentLayoutSingleRow.Builder singleRowLayout;
 		private ViewLayout.Builder _gridView;
@@ -263,25 +274,25 @@ public final class DocumentLayoutDescriptor
 			map.put(detail.getDetailId(), detail);
 		}
 
-		public Builder setWindowId(WindowId windowId)
+		public Builder setWindowId(final WindowId windowId)
 		{
 			this.windowId = windowId;
 			return this;
 		}
 
-		public Builder setCaption(ITranslatableString caption)
+		public Builder setCaption(final ITranslatableString caption)
 		{
 			this.caption = TranslatableStrings.nullToEmpty(caption);
 			return this;
 		}
 
-		public Builder setDocumentSummaryElement(DocumentLayoutElementDescriptor documentSummaryElement)
+		public Builder setDocumentSummaryElement(@Nullable final DocumentLayoutElementDescriptor documentSummaryElement)
 		{
 			this.documentSummaryElement = documentSummaryElement;
 			return this;
 		}
 
-		public Builder setDocActionElement(final DocumentLayoutElementDescriptor docActionElement)
+		public Builder setDocActionElement(@Nullable final DocumentLayoutElementDescriptor docActionElement)
 		{
 			this.docActionElement = docActionElement;
 			return this;

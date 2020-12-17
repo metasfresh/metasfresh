@@ -1,14 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
-import java.time.Duration;
-import java.util.Objects;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -19,6 +11,13 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSON
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.time.Duration;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -254,7 +253,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return caption;
 		}
 
-		public Builder setLookupInfos(final LookupDescriptor lookupDescriptor)
+		public Builder setLookupInfos(@Nullable final LookupDescriptor lookupDescriptor)
 		{
 			if (lookupDescriptor != null)
 			{
@@ -310,7 +309,9 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return fieldType == null;
 		}
 
-		/** May be {@code null}, unless the field type is {@link FieldType#Tooltip}. */
+		/**
+		 * May be {@code null}, unless the field type is {@link FieldType#Tooltip}.
+		 */
 		public Builder setTooltipIconName(final String tooltipIconName)
 		{
 			this.tooltipIconName = tooltipIconName;
@@ -345,7 +346,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder setEmptyFieldText(ITranslatableString emptyFieldText)
+		public Builder setEmptyFieldText(final ITranslatableString emptyFieldText)
 		{
 			this.emptyFieldText = emptyFieldText;
 			return this;
@@ -373,7 +374,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 			return _devices;
 		}
 
-		public Builder setSupportZoomInto(boolean supportZoomInto)
+		public Builder setSupportZoomInto(final boolean supportZoomInto)
 		{
 			this.supportZoomInto = supportZoomInto;
 			return this;

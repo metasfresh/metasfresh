@@ -1,20 +1,20 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.Getter;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -39,8 +39,9 @@ import io.swagger.annotations.ApiModel;
  */
 
 @ApiModel("column")
-@SuppressWarnings("serial")
-public final class JSONDocumentLayoutColumn implements Serializable
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@ToString
+public final class JSONDocumentLayoutColumn
 {
 	static List<JSONDocumentLayoutColumn> ofList(final List<DocumentLayoutColumnDescriptor> columns, final JSONDocumentLayoutOptions jsonOpts)
 	{
@@ -54,19 +55,14 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		return new JSONDocumentLayoutColumn(column, jsonOpts);
 	}
 
-	static final JSONDocumentLayoutColumn EMPTY = new JSONDocumentLayoutColumn();
-
 	@JsonProperty("elementGroups")
 	@JsonInclude(Include.NON_EMPTY)
+	@Getter
 	private final List<JSONDocumentLayoutElementGroup> elementGroups;
 
-	private JSONDocumentLayoutColumn()
-	{
-		this.elementGroups = ImmutableList.of();
-	}
-
 	@JsonCreator
-	private JSONDocumentLayoutColumn(@Nullable @JsonProperty("elementGroups") final List<JSONDocumentLayoutElementGroup> elementGroups)
+	private JSONDocumentLayoutColumn(
+			@JsonProperty("elementGroups") @Nullable final List<JSONDocumentLayoutElementGroup> elementGroups)
 	{
 		this.elementGroups = elementGroups == null ? ImmutableList.of() : ImmutableList.copyOf(elementGroups);
 	}
@@ -76,16 +72,8 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
 	}
 
-	@Override
-	public String toString()
+	Stream<JSONDocumentLayoutElement> streamInlineTabElements()
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("elementGroups", elementGroups)
-				.toString();
-	}
-
-	public List<JSONDocumentLayoutElementGroup> getElementGroups()
-	{
-		return elementGroups;
+		return getElementGroups().stream().flatMap(JSONDocumentLayoutElementGroup::streamInlineTabElements);
 	}
 }
