@@ -1,6 +1,7 @@
 -- 2020-12-10T12:09:02.388Z
 -- URL zum Konzept
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,578607,0,'HaddexCheck',TO_TIMESTAMP('2020-12-10 14:09:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Haddex Prüfung erforderlich','Haddex Prüfung erforderlich',TO_TIMESTAMP('2020-12-10 14:09:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+VALUES (0,578607,0,'HaddexCheck',TO_TIMESTAMP('2020-12-10 14:09:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Haddex Prüfung erforderlich','Haddex Prüfung erforderlich',TO_TIMESTAMP('2020-12-10 14:09:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2020-12-10T12:09:02.451Z
@@ -143,9 +144,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('M_Product','ALTER TABLE public.M_Product ADD COLUMN HaddexControlNr VARCHAR(100)')
 ;
 
--- 2020-12-10T12:29:17.902Z
+-- 2020-12-16T13:50:13.970Z
 -- URL zum Konzept
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541350,'O',TO_TIMESTAMP('2020-12-10 14:29:17','YYYY-MM-DD HH24:MI:SS'),100,'If the current date - the value from the haddex date column of a product is bigger than the value from this sys config that product can''t be added to a sales orderline','D','Y','MAX_HADDEX_AGE_IN_MONTHS',TO_TIMESTAMP('2020-12-10 14:29:17','YYYY-MM-DD HH24:MI:SS'),100,'100')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541351,'O',TO_TIMESTAMP('2020-12-16 10:50:11','YYYY-MM-DD HH24:MI:SS'),100,'If the current date - the value from the haddex date column of a product is bigger than the value from this sys config so that product can''t be added to a sales orderline. This value must be in months.','D','Y','MAX_HADDEX_AGE_IN_MONTHS',TO_TIMESTAMP('2020-12-16 10:50:11','YYYY-MM-DD HH24:MI:SS'),100,'24')
 ;
 
 -- 2020-12-10T12:50:10.299Z
