@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+
 
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Rfq;

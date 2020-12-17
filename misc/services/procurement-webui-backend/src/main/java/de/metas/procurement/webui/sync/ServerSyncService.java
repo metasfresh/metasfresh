@@ -21,12 +21,12 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
-import com.google.gwt.thirdparty.guava.common.base.Throwables;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
-import com.google.gwt.thirdparty.guava.common.eventbus.AsyncEventBus;
-import com.google.gwt.thirdparty.guava.common.eventbus.DeadEvent;
-import com.google.gwt.thirdparty.guava.common.eventbus.Subscribe;
+
+
+
+
+
+
 
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.IServerSync;

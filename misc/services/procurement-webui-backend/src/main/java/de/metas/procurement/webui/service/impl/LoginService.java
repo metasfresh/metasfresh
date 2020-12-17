@@ -19,9 +19,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.vaadin.spring.i18n.I18N;
 
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
-import com.google.gwt.thirdparty.guava.common.base.Strings;
-import com.google.gwt.thirdparty.guava.common.hash.Hashing;
+
+
+
 
 import de.metas.procurement.webui.exceptions.LoginFailedException;
 import de.metas.procurement.webui.exceptions.PasswordResetFailedException;

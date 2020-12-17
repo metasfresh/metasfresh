@@ -1,6 +1,5 @@
 package de.metas.procurement.webui;
 
-import com.vaadin.server.ThemeResource;
 
 /*
  * #%L
@@ -29,8 +28,8 @@ public final class Constants
 	public static final String THEME_NAME = "MFProcurement";
 	public static final String WIDGETSET = "de.metas.procurement.webui.widgetset.MFProcurementWidgetSet";
 	
-	public static final ThemeResource RESOURCE_Logo = new ThemeResource("./icons/logo.png");
-	public static final ThemeResource RESOURCE_PoweredBy = new ThemeResource("./icons/poweredby.png");
+	// public static final ThemeResource RESOURCE_Logo = new ThemeResource("./icons/logo.png");
+	// public static final ThemeResource RESOURCE_PoweredBy = new ThemeResource("./icons/poweredby.png");
 
 	private Constants()
 	{

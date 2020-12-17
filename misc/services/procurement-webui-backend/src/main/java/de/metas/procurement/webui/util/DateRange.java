@@ -9,7 +9,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 
 /*
  * #%L
@@ -133,7 +134,7 @@ public final class DateRange implements Serializable, Cloneable
 	@Override
 	public String toString()
 	{
-		return com.google.gwt.thirdparty.guava.common.base.Objects.toStringHelper(this)
+		return MoreMoreObjects.toStringHelper(this)
 				.add("from", dateFrom)
 				.add("to", dateTo)
 				.toString();

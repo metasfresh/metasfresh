@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects;
+
 
 import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.procurement.sync.protocol.SyncProduct;

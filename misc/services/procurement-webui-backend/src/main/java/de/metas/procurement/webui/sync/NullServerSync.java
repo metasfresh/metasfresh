@@ -5,7 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+
 
 import de.metas.procurement.sync.IServerSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;

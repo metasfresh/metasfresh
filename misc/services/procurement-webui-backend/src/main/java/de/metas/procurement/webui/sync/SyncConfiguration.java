@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.google.gwt.thirdparty.guava.common.base.Strings;
+
 
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.IServerSync;

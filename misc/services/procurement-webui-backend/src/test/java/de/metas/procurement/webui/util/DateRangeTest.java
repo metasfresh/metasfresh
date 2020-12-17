@@ -6,7 +6,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+
 
 import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;

@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
-import com.google.gwt.thirdparty.guava.common.base.Throwables;
-import com.google.gwt.thirdparty.guava.common.cache.CacheBuilder;
-import com.google.gwt.thirdparty.guava.common.cache.CacheLoader;
-import com.google.gwt.thirdparty.guava.common.cache.LoadingCache;
-import com.google.gwt.thirdparty.guava.common.util.concurrent.ListenableFuture;
-import com.google.gwt.thirdparty.guava.common.util.concurrent.SettableFuture;
+
+
+
+
+
+
 
 import de.metas.procurement.sync.IServerSync;
 import de.metas.procurement.sync.protocol.SyncBPartner;

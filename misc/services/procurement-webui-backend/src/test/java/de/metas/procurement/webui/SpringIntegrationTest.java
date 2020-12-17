@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+
 
 import de.metas.procurement.sync.IAgentSync;
 import de.metas.procurement.sync.IServerSync;

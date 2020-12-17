@@ -4,6 +4,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.Cookie;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +15,11 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gwt.thirdparty.guava.common.base.Objects;
-import com.google.gwt.thirdparty.guava.common.base.Throwables;
-import com.vaadin.server.Page;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinService;
+
+
+
+
+
 
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
@@ -235,7 +237,7 @@ public class LoginRememberMeService
 		@Override
 		public String toString()
 		{
-			return Objects.toStringHelper(this)
+			return MoreObjects.toStringHelper(this)
 					.add("user", user)
 					.add("token", token)
 					.toString();

@@ -1,12 +1,13 @@
 package de.metas.procurement.webui.service.impl;
 
+import com.sun.xml.bind.v2.runtime.property.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
-import com.vaadin.data.Property;
-import com.vaadin.data.util.BeanItem;
-import com.vaadin.data.util.BeanItemContainer;
-import com.vaadin.data.util.ObjectProperty;
+
+
+
+
 
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.MFProcurementUI;

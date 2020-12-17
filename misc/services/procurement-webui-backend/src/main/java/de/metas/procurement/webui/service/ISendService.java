@@ -1,7 +1,7 @@
 package de.metas.procurement.webui.service;
 
-import com.vaadin.data.Property;
-import com.vaadin.data.util.BeanItem;
+
+
 
 /*
  * #%L
@@ -24,6 +24,8 @@ import com.vaadin.data.util.BeanItem;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import com.sun.xml.bind.v2.runtime.property.Property;
 
 /**
  * Central point for controlling all aspects around "Send" objects to metasfresh server.

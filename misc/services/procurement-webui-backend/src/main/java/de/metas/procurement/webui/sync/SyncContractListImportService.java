@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.gwt.thirdparty.guava.common.collect.Maps;
+
 
 import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.webui.model.BPartner;

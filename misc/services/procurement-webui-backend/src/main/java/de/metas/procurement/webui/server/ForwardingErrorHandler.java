@@ -1,9 +1,9 @@
 package de.metas.procurement.webui.server;
 
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
-import com.vaadin.server.ErrorEvent;
-import com.vaadin.server.ErrorMessage;
-import com.vaadin.ui.AbstractComponent;
+
+
+
+
 
 /*
  * #%L
@@ -26,6 +26,8 @@ import com.vaadin.ui.AbstractComponent;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import com.google.common.base.Preconditions;
 
 @SuppressWarnings("serial")
 public class ForwardingErrorHandler extends AbstractErrorHandler

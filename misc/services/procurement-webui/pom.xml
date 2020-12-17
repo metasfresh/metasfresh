@@ -9,7 +9,6 @@
 		<start-class>de.metas.procurement.webui.Application</start-class>
 
 		<!-- note that we also use 3.1.6 in the metasfresh/de.metas.jaxrs module. -->
-		<cxf.version>3.1.6</cxf.version>
 
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
@@ -83,41 +82,10 @@
 			<version>${cxf.version}</version>
 		</dependency>
 		<!-- needed, even if we currently communicate with JMS only -->
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-transports-http</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
 
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-client</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-extension-providers</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-management</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
 
 		<!-- this provider can also marshal and unmarshal objects that are not
 			tagged with @XmlRoot -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
-		</dependency>
 
 		<!-- Logging -->
 		<dependency>

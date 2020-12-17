@@ -256,7 +256,7 @@ public class DummyDataProducer
 	}
 
 	@Transactional
-	private void createDummyProductSupplies()
+	 void createDummyProductSupplies()
 	{
 		for (final BPartner bpartner : bpartnersRepo.findAll())
 		{

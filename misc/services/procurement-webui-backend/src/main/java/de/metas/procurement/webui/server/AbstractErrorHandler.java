@@ -7,13 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.spring.i18n.I18N;
 
-import com.vaadin.server.AbstractErrorMessage;
-import com.vaadin.server.DefaultErrorHandler;
-import com.vaadin.server.ErrorEvent;
-import com.vaadin.server.ErrorHandler;
-import com.vaadin.server.ErrorMessage;
-import com.vaadin.server.SystemError;
-import com.vaadin.server.UserError;
+
+
+
+
+
+
+
 
 import de.metas.procurement.webui.Application;
 
