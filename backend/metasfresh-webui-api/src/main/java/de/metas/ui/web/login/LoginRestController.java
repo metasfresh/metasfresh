@@ -6,6 +6,10 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
@@ -17,6 +21,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.LoginContext;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -87,6 +92,9 @@ public class LoginRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/login";
 
+	private static final Logger logger = LogManager.getLogger(LoginRestController.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+
 	@Autowired
 	private UserSession userSession;
 
@@ -98,6 +106,8 @@ public class LoginRestController
 
 	@Autowired
 	private WebuiImageService imageService;
+
+	private static final AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
 	private Login getLoginService()
 	{
@@ -158,7 +168,24 @@ public class LoginRestController
 		{
 			userSession.setLoggedIn(false);
 			destroyMFSession(loginService);
-			throw AdempiereException.wrapIfNeeded(ex);
+			throw convertToUserFriendlyException(ex);
+		}
+	}
+
+	private AdempiereException convertToUserFriendlyException(final Exception ex)
+	{
+		AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(ex);
+		if(metasfreshException.isUserValidationError())
+		{
+			return metasfreshException;
+		}
+		else
+		{
+			final AdIssueId adIssueId = errorManager.createIssue(ex);
+			metasfreshException = new AdempiereException(MSG_UserLoginInternalError, adIssueId);
+			metasfreshException.initCause(ex);
+			metasfreshException.markAsUserValidationError();
+			return metasfreshException;
 		}
 	}
 
