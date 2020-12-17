@@ -75,7 +75,8 @@ public class C_OrderLine
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "MAX_HADDEX_AGE_IN_MONTHS";
-	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.producthadexerror");
+	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.model.interceptor.producthadexerror");
+
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
