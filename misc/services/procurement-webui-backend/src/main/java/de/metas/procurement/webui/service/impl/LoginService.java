@@ -1,33 +1,20 @@
 package de.metas.procurement.webui.service.impl;
 
+import com.google.common.base.Preconditions;
+import com.google.common.hash.Hashing;
+import de.metas.procurement.webui.model.User;
+import de.metas.procurement.webui.repository.UserRepository;
+import de.metas.procurement.webui.service.ILoginService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.transaction.Transactional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Service;
-import org.vaadin.spring.i18n.I18N;
-
-
-
-
-
-import de.metas.procurement.webui.exceptions.LoginFailedException;
-import de.metas.procurement.webui.exceptions.PasswordResetFailedException;
-import de.metas.procurement.webui.model.User;
-import de.metas.procurement.webui.repository.UserRepository;
-import de.metas.procurement.webui.service.ILoginService;
 
 /*
  * #%L
@@ -54,15 +41,15 @@ import de.metas.procurement.webui.service.ILoginService;
 @Service
 public class LoginService implements ILoginService
 {
-	@Autowired
-    private I18N i18n;
+	// @Autowired
+    // private I18N i18n;
 	
 	@Autowired
 	private UserRepository userRepository;
 
-	@Autowired
-	@Lazy
-	private JavaMailSender emailSender;
+	// @Autowired
+	// @Lazy
+	// private JavaMailSender emailSender;
 	
 	@Value("${mfprocurement.mail.from:}")
 	private String emailFrom;
@@ -109,25 +96,25 @@ public class LoginService implements ILoginService
 		//
 		// Get the user
 		final User user = getUserByMail(email);
-		if (user == null)
-		{
-			throw new LoginFailedException(email);
-		}
-		
+		// if (user == null)
+		// {
+		// 	throw new LoginFailedException(email);
+		// }
 		//
-		// Validate the password
-		final String userPassword = user.getPassword();
-		if (Strings.isNullOrEmpty(userPassword))
-		{
-			// empty user passwords are considered as no password was set
-			throw new LoginFailedException(email);
-		}
-		if (!Objects.equals(userPassword, password)
-				&& !Objects.equals(createPasswordHash(userPassword), password) // support for hashed password (also used by remember-me functionality
-			)
-		{
-			throw new LoginFailedException(email);
-		}
+		// //
+		// // Validate the password
+		// final String userPassword = user.getPassword();
+		// if (Strings.isNullOrEmpty(userPassword))
+		// {
+		// 	// empty user passwords are considered as no password was set
+		// 	throw new LoginFailedException(email);
+		// }
+		// if (!Objects.equals(userPassword, password)
+		// 		&& !Objects.equals(createPasswordHash(userPassword), password) // support for hashed password (also used by remember-me functionality
+		// 	)
+		// {
+		// 	throw new LoginFailedException(email);
+		// }
 
 		return user;
 	}
@@ -146,27 +133,27 @@ public class LoginService implements ILoginService
 	{
 		Preconditions.checkNotNull(passwordResetURI, "passwordResetURI is null");
 		
-		MimeMessage mail = emailSender.createMimeMessage();
-		try
-		{
-			MimeMessageHelper helper = new MimeMessageHelper(mail, true); // multipart=true
-			
-			if(emailFrom != null && !emailFrom.trim().isEmpty())
-			{
-				helper.setFrom(emailFrom.trim());
-			}
-			helper.setTo(email);
-			helper.setSubject(i18n.get("PasswordReset.email.subject"));
-			helper.setText(i18n.get("PasswordReset.email.content", passwordResetURI));
-		}
-		catch (MessagingException e)
-		{
-			e.printStackTrace();
-		}
-		finally
-		{
-		}
-		emailSender.send(mail);
+		// MimeMessage mail = emailSender.createMimeMessage();
+		// try
+		// {
+		// 	MimeMessageHelper helper = new MimeMessageHelper(mail, true); // multipart=true
+		//
+		// 	if(emailFrom != null && !emailFrom.trim().isEmpty())
+		// 	{
+		// 		helper.setFrom(emailFrom.trim());
+		// 	}
+		// 	helper.setTo(email);
+		// 	helper.setSubject(i18n.get("PasswordReset.email.subject"));
+		// 	helper.setText(i18n.get("PasswordReset.email.content", passwordResetURI));
+		// }
+		// catch (MessagingException e)
+		// {
+		// 	e.printStackTrace();
+		// }
+		// finally
+		// {
+		// }
+		// emailSender.send(mail);
 	}
 
 	@Override
@@ -176,7 +163,7 @@ public class LoginService implements ILoginService
 		final User user = getUserByMail(email);
 		if (user == null)
 		{
-			throw new PasswordResetFailedException(email, i18n.get("LoginService.error.emailNotRegistered"));
+			// throw new PasswordResetFailedException(email, i18n.get("LoginService.error.emailNotRegistered"));
 		}
 
 		//
@@ -195,7 +182,7 @@ public class LoginService implements ILoginService
 		final User user = getUserByPasswordResetKey(passwordResetKey);
 		if (user == null)
 		{
-			throw new PasswordResetFailedException(null, i18n.get("LoginService.error.invalidPasswordResetKey"));
+			// throw new PasswordResetFailedException(null, i18n.get("LoginService.error.invalidPasswordResetKey"));
 		}
 		
 		final String passwordNew = generatePassword(PASSWORD_Length);

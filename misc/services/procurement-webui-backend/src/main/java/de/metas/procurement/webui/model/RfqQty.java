@@ -8,7 +8,9 @@ import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
 
 
 
@@ -44,17 +46,17 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 	/* package */static final String TABLE_NAME = "rfq_qty";
 
 	@ManyToOne(fetch = FetchType.EAGER)
-	@NotNull
+	@NonNull
 	private Rfq rfq;
 
-	@NotNull
+	@NonNull
 	private Date datePromised;
 
-	@NotNull
+	@NonNull
 	private BigDecimal qtyPromised;
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("datePromised", datePromised)

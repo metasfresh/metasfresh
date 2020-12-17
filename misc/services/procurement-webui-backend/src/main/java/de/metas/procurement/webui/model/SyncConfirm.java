@@ -1,5 +1,7 @@
 package de.metas.procurement.webui.model;
 
+import com.google.common.base.MoreObjects;
+
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -68,7 +70,7 @@ public class SyncConfirm extends AbstractEntity
 	private Date dateConfirmReceived;
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("entryType", entryType)

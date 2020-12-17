@@ -6,7 +6,9 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
 
 import org.hibernate.annotations.SelectBeforeUpdate;
 import org.springframework.context.annotation.Lazy;
@@ -45,14 +47,14 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 {
 	@ManyToOne
 	@Lazy
-	@NotNull
+	@NonNull
 	private BPartner bpartner;
 
 	@ManyToOne
-	@NotNull
+	@NonNull
 	private Product product;
 
-	@NotNull
+	@NonNull
 	private Date day;
 
 	private String trend;
@@ -63,7 +65,7 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 	}
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("product", product)

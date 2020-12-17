@@ -57,7 +57,6 @@ public interface ISendService
 
 	void decrementNotSentCounter();
 
-	<BT extends ISendAwareBean> void updateSentStatus(BeanItem<BT> item);
 
 	void sendAll();
 }

@@ -11,7 +11,9 @@ import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
 
 
 
@@ -44,33 +46,33 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 {
 	/* package */static final String TABLE_NAME = "rfq";
 
-	@NotNull
+	@NonNull
 	private Date dateStart;
-	@NotNull
+	@NonNull
 	private Date dateEnd;
 
 	@ManyToOne(fetch = FetchType.EAGER)
-	@NotNull
+	@NonNull
 	private BPartner bpartner;
 
-	@NotNull
+	@NonNull
 	private Date dateClose;
 	private boolean closed;
 	private boolean winnerKnown;
 	private boolean winner;
 
 	@ManyToOne
-	@NotNull
+	@NonNull
 	private Product product;
 
-	@NotNull
+	@NonNull
 	private BigDecimal qtyRequested = BigDecimal.ZERO;
-	@NotNull
+	@NonNull
 	private String qtyCUInfo;
 
-	@NotNull
+	@NonNull
 	private BigDecimal pricePromised = BigDecimal.ZERO;
-	@NotNull
+	@NonNull
 	private String currencyCode;
 
 	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
@@ -80,7 +82,7 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.omitNullValues()

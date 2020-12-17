@@ -14,7 +14,10 @@ import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
 
 
 
@@ -48,13 +51,13 @@ import de.metas.procurement.webui.util.DateUtils;
 @SuppressWarnings("serial")
 public class Contract extends AbstractEntity
 {
-	@NotNull
+	@NonNull
 	private Date dateFrom;
-	@NotNull
+	@NonNull
 	private Date dateTo;
 
 	@ManyToOne(fetch = FetchType.EAGER)
-	@NotNull
+	@NonNull
 	private BPartner bpartner;
 	
 	private String rfq_uuid;
@@ -63,7 +66,7 @@ public class Contract extends AbstractEntity
 	private List<ContractLine> contractLines = new ArrayList<>();
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("dateFrom", dateFrom)

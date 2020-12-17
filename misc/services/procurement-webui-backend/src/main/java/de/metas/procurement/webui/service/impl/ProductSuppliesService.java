@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.vaadin.spring.i18n.I18N;
 
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
@@ -67,8 +66,6 @@ public class ProductSuppliesService implements IProductSuppliesService
 {
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired
-	private I18N i18n;
 
 	@Autowired
 	private UserProductRepository userProductRepository;
@@ -105,7 +102,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 			products.add(product);
 		}
 
-		Collections.sort(products, Product.comparatorByName(i18n.getLocale()));
+		// Collections.sort(products, Product.comparatorByName(i18n.getLocale()));
 		return products;
 	}
 
@@ -166,7 +163,8 @@ public class ProductSuppliesService implements IProductSuppliesService
 		final BPartner bpartner;
 		if (bpartner_id > 0)
 		{
-			bpartner = bpartnersRepository.findOne(bpartner_id);
+			// bpartner = bpartnersRepository.findOne(bpartner_id);
+			bpartner = null;
 			if (bpartner == null)
 			{
 				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
@@ -180,7 +178,8 @@ public class ProductSuppliesService implements IProductSuppliesService
 		final Product product;
 		if (product_id > 0)
 		{
-			product = productRepository.findOne(product_id);
+			// product = productRepository.findOne(product_id);
+			product = null;
 			if (product == null)
 			{
 				throw new RuntimeException("No Product found for ID=" + product_id);
@@ -263,33 +262,33 @@ public class ProductSuppliesService implements IProductSuppliesService
 	@Override
 	public List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo)
 	{
-		final BPartner bpartner;
-		if (bpartner_id > 0)
-		{
-			bpartner = bpartnersRepository.findOne(bpartner_id);
-			if (bpartner == null)
-			{
-				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
-			}
-		}
-		else
-		{
-			bpartner = null;
-		}
+		final BPartner bpartner = null;
+		// if (bpartner_id > 0)
+		// {
+		// 	 bpartner = bpartnersRepository.findOne(bpartner_id);
+		// 	if (bpartner == null)
+		// 	{
+		// 		throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
+		// 	}
+		// }
+		// else
+		// {
+		// 	bpartner = null;
+		// }
 
-		final Product product;
-		if (product_id > 0)
-		{
-			product = productRepository.findOne(product_id);
-			if (product == null)
-			{
-				throw new RuntimeException("No Product found for ID=" + product_id);
-			}
-		}
-		else
-		{
-			product = null;
-		}
+		final Product product = null;
+		// if (product_id > 0)
+		// {
+		// 	product = productRepository.findOne(product_id);
+		// 	if (product == null)
+		// 	{
+		// 		throw new RuntimeException("No Product found for ID=" + product_id);
+		// 	}
+		// }
+		// else
+		// {
+		// 	product = null;
+		// }
 
 		dayFrom = DateUtils.truncToDay(dayFrom);
 		if (dayFrom == null)

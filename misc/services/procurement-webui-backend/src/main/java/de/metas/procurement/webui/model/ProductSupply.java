@@ -7,7 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import lombok.NonNull;
 
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -77,11 +80,11 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 
 	@ManyToOne
 	@Lazy
-	@NotNull
+	@NonNull
 	private BPartner bpartner;
 
 	@ManyToOne
-	@NotNull
+	@NonNull
 	private Product product;
 
 	@ManyToOne
@@ -90,10 +93,10 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 	@org.hibernate.annotations.ForeignKey(name = "none")         // deprecated but see http://stackoverflow.com/questions/27040735/jpa-association-without-foreign-key
 	private ContractLine contractLine;
 
-	@NotNull
+	@NonNull
 	private BigDecimal qty = BigDecimal.ZERO;
 
-	@NotNull
+	@NonNull
 	private Date day;
 
 	ProductSupply()
@@ -102,7 +105,7 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 	}
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("product", product)

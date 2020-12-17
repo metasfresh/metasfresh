@@ -2,7 +2,11 @@ package de.metas.procurement.webui.model;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
+
+import static com.google.common.base.MoreObjects.*;
 
 
 
@@ -40,7 +44,7 @@ public class BPartner extends AbstractEntity
 		return bpartner;
 	}
 
-	@NotNull
+	@NonNull
 	private String name;
 
 	public BPartner()

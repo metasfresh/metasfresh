@@ -1,5 +1,7 @@
 package de.metas.procurement.webui.model;
 
+import com.google.common.base.MoreObjects;
+
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -38,7 +40,7 @@ public class ProductTrl extends AbstractTranslationEntity<Product>
 	private String name;
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		super.toString(toStringHelper);
 		toStringHelper

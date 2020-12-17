@@ -5,7 +5,9 @@ import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
 
 
 
@@ -39,14 +41,14 @@ import javax.validation.constraints.NotNull;
 public class ContractLine extends AbstractEntity
 {
 	@ManyToOne(fetch = FetchType.EAGER)
-	@NotNull
+	@NonNull
 	private Contract contract;
 	@ManyToOne
-	@NotNull
+	@NonNull
 	private Product product;
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("product", product);

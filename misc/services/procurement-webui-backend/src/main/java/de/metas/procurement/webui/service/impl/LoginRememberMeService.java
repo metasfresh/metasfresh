@@ -79,12 +79,12 @@ public class LoginRememberMeService
 			return false;
 		}
 
-		final Page page = Page.getCurrent();
-		if (page != null && page.getWebBrowser().isChrome())
-		{
-			logger.trace("Considering feature disabled for chome because Chrome's password manager is known to work");
-			return false;
-		}
+		// final Page page = Page.getCurrent();
+		// if (page != null && page.getWebBrowser().isChrome())
+		// {
+		// 	logger.trace("Considering feature disabled for chome because Chrome's password manager is known to work");
+		// 	return false;
+		// }
 
 		return true;
 	}
@@ -128,28 +128,28 @@ public class LoginRememberMeService
 
 	private Cookie getRememberMeCookie()
 	{
-		final VaadinRequest vaadinRequest = VaadinService.getCurrentRequest();
-		if(vaadinRequest == null)
-		{
-			logger.warn("Could not get the VaadinRequest. It might be that we are called from a websocket connection.");
-			return null;
-		}
-		
+		// final VaadinRequest vaadinRequest = VaadinService.getCurrentRequest();
+		// if(vaadinRequest == null)
+		// {
+		// 	logger.warn("Could not get the VaadinRequest. It might be that we are called from a websocket connection.");
+		// 	return null;
+		// }
 		//
-		// Get the remember me cookie
-		final Cookie[] cookies = vaadinRequest.getCookies();
-		if (cookies == null)
-		{
-			return null;
-		}
-
-		for (final Cookie cookie : cookies)
-		{
-			if (COOKIENAME_RememberMe.equals(cookie.getName()))
-			{
-				return cookie;
-			}
-		}
+		// //
+		// // Get the remember me cookie
+		// final Cookie[] cookies = vaadinRequest.getCookies();
+		// if (cookies == null)
+		// {
+		// 	return null;
+		// }
+		//
+		// for (final Cookie cookie : cookies)
+		// {
+		// 	if (COOKIENAME_RememberMe.equals(cookie.getName()))
+		// 	{
+		// 		return cookie;
+		// 	}
+		// }
 
 		return null;
 	}
@@ -196,7 +196,7 @@ public class LoginRememberMeService
 			
 			final String path = "/"; // (VaadinService.getCurrentRequest().getContextPath());
 			rememberMeCookie.setPath(path); 
-			VaadinService.getCurrentResponse().addCookie(rememberMeCookie);
+			// VaadinService.getCurrentResponse().addCookie(rememberMeCookie);
 			logger.debug("Cookie added for {}: {} (maxAge={}, path={})", user, rememberMeToken, maxAge, path);
 		}
 		catch (final Exception e)
@@ -219,7 +219,7 @@ public class LoginRememberMeService
 			cookie.setValue(null);
 			cookie.setMaxAge(0); // by setting the cookie maxAge to 0 it will deleted immediately
 			cookie.setPath("/");
-			VaadinService.getCurrentResponse().addCookie(cookie);
+			// VaadinService.getCurrentResponse().addCookie(cookie);
 			
 			logger.debug("Cookie removed");
 		}

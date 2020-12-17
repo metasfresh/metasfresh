@@ -5,7 +5,7 @@ import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,11 +45,11 @@ public class UserProduct extends AbstractEntity
 	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@NotNull
+	@NonNull
 	private User user;
 
 	@ManyToOne
-	@NotNull
+	@NonNull
 	private Product product;
 
 	public User getUser()

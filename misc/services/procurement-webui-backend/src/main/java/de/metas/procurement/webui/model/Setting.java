@@ -4,7 +4,9 @@ import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
 
 
 
@@ -37,14 +39,14 @@ import javax.validation.constraints.NotNull;
 @SuppressWarnings("serial")
 public class Setting extends AbstractEntity
 {
-	@NotNull
+	@NonNull
 	private String name;
 
 	@Lob
 	private String value;
 
 	@Override
-	protected void toString(ToStringHelper toStringHelper)
+	protected void toString(MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("name", name)

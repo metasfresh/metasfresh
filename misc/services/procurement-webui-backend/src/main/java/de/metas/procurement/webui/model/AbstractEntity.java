@@ -1,5 +1,9 @@
 package de.metas.procurement.webui.model;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
+import lombok.NonNull;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -12,7 +16,6 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
-import javax.validation.constraints.NotNull;
 
 
 
@@ -49,7 +52,7 @@ public abstract class AbstractEntity implements Serializable
 
 	private boolean deleted = false;
 
-	@NotNull
+	@NonNull
 	private String uuid = UUID.randomUUID().toString();
 
 	//
@@ -83,7 +86,7 @@ public abstract class AbstractEntity implements Serializable
 	@Override
 	public final String toString()
 	{
-		final ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
+		final MoreObjects.ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
 		toString(toStringHelper);
 		return toStringHelper
 				.add("id", id)
@@ -93,7 +96,7 @@ public abstract class AbstractEntity implements Serializable
 				.toString();
 	}
 
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		// nothing at this level
 	}

@@ -1,5 +1,7 @@
 package de.metas.procurement.webui.model;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -32,22 +34,20 @@ import java.util.Map;
 
 public enum Trend
 {
-	UP("U", "trend-up", FontAwesome.ARROW_UP)
-	, DOWN("D", "trend-down", FontAwesome.ARROW_DOWN)
-	, EVEN("E", "trend-even", FontAwesome.ARROW_RIGHT)
-	, ZERO("Z", "trend-zero", FontAwesome.REMOVE)
+	UP("U", "trend-up")
+	, DOWN("D", "trend-down")
+	, EVEN("E", "trend-even")
+	, ZERO("Z", "trend-zero")
 	//
 	;
 
 	private final String code;
 	private final String cssStyleName;
-	private final Resource icon;
 
-	Trend(final String code, final String cssStyleName, final Resource icon)
+	Trend(final String code, final String cssStyleName)
 	{
 		this.code = code;
 		this.cssStyleName = cssStyleName;
-		this.icon = icon;
 	}
 	
 	public String getCode()
@@ -60,11 +60,6 @@ public enum Trend
 		return cssStyleName;
 	}
 	
-	public Resource getIcon()
-	{
-		return icon;
-	}
-
 	public static Trend forQtyAndTarget(final BigDecimal qty, final BigDecimal targetQty)
 	{
 		final int cmp = qty.compareTo(targetQty);
@@ -82,28 +77,11 @@ public enum Trend
 		}
 	}
 	
-	public static void applyStyleName(final Component comp, final Trend trend)
-	{
-		if (comp == null)
-		{
-			return;
-		}
-		
-		for (final Trend t : values())
-		{
-			comp.removeStyleName(t.getCssStyleName());
-		}
-		//
-		if (trend != null)
-		{
-			comp.addStyleName(trend.getCssStyleName());
-		}
-	}
-	
+
 	private static final Map<String, Trend> code2value;
 	static
 	{
-		final ImmutableMap.Builder<String, Trend> code2valueBuilder = ImmutableMap.builder(); 
+		final ImmutableMap.Builder<String, Trend> code2valueBuilder = ImmutableMap.builder();
 		for (final Trend trend : values())
 		{
 			code2valueBuilder.put(trend.getCode(), trend);

@@ -6,7 +6,10 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
 
 
 
@@ -45,10 +48,10 @@ import javax.validation.constraints.NotNull;
 public class User extends AbstractEntity
 {
 	@ManyToOne(fetch = FetchType.EAGER)
-	@NotNull
+	@NonNull
 	private BPartner bpartner;
 
-	@NotNull
+	@NonNull
 	private String email;
 
 	private String password;
@@ -65,7 +68,7 @@ public class User extends AbstractEntity
 	}
 
 	@Override
-	protected void toString(final ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("email", email)
