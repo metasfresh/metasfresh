@@ -149,9 +149,12 @@ class InlineTabWrapper extends PureComponent {
       <div
         className={classnames('inline-tab-wrapper', {
           'tabs-fullscreen container-fluid inline-tab-fullscreen-top-offset':
-            !showMore &&
-            !addNewFormVisible &&
-            tabData.length > INLINE_TAB_SHOW_MORE_FROM,
+            (!showMore &&
+              !addNewFormVisible &&
+              tabData.length > INLINE_TAB_SHOW_MORE_FROM) ||
+            (addNewFormVisible &&
+              rowId &&
+              tabData.length > INLINE_TAB_SHOW_MORE_FROM),
         })}
       >
         <span className="main-label">{caption}</span>
