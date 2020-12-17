@@ -18,6 +18,8 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+
+import org.compiere.model.I_C_ProjectLine;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
@@ -179,15 +181,14 @@ public class ProjectIssue extends JavaProcess
 
 			//	Find/Create Project Line
 			MProjectLine pl = null;
-			MProjectLine[] pls = m_project.getLines();
-			for (int ii = 0; ii < pls.length; ii++)
+			for (MProjectLine line : m_project.getLines())
 			{
 				//	The Order we generated is the same as the Order of the receipt
-				if (pls[ii].getC_OrderPO_ID() == inOut.getC_Order_ID()
-					&& pls[ii].getM_Product_ID() == inOutLine.getM_Product_ID()
-					&& pls[ii].getC_ProjectIssue_ID() == 0)		//	not issued
+				if (line.getC_OrderPO_ID() == inOut.getC_Order_ID()
+					&& line.getM_Product_ID() == inOutLine.getM_Product_ID()
+					&& line.getC_ProjectIssue_ID() == 0)		//	not issued
 				{
-					pl = pls[ii];
+					pl = line;
 					break;
 				}
 			}

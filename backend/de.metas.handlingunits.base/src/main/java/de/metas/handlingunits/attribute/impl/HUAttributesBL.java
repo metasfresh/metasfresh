@@ -15,6 +15,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -29,12 +30,15 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
+
+	private final static transient Logger logger = LogManager.getLogger(HUAttributesBL.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -71,7 +75,12 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	public void updateHUAttributeRecursive(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue, @Nullable final String onlyHUStatus)
 	{
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValue(attributeCode);
+		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
+		if (attribute == null)
+		{
+			logger.debug("M_Attribute with Value={} does not exis of is inactive; -> do nothing", attributeCode.getCode());
+			return;
+		}
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 		updateHUAttributeRecursive(hu, attribute, attributeValue, onlyHUStatus);
 	}

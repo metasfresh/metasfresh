@@ -38,12 +38,13 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
@@ -57,6 +58,7 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateRe
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.organization.OrgId;
@@ -74,6 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
 import org.eevolution.api.PPCostCollectorId;
 
@@ -211,7 +214,7 @@ import java.util.Map;
 		//
 		// Update received HUs
 		InterfaceWrapperHelper.setThreadInheritedTrxName(planningHUs); // just to be sure
-		updateReceivedHUs(huContext, planningHUs);
+		updateReceivedHUs(huContext, planningHUs, ppOrderReceiptCandidateCollector.coByProductOrderBOMLineId);
 
 		//
 		// Create receipt candidates
@@ -249,7 +252,8 @@ import java.util.Map;
 
 	private void updateReceivedHUs(
 			final IHUContext huContext,
-			final Collection<I_M_HU> hus)
+			final Collection<I_M_HU> hus,
+			@Nullable final PPOrderBOMLineId coByProductOrderBOMLineId)
 	{
 		if (hus.isEmpty())
 		{
@@ -258,7 +262,7 @@ import java.util.Map;
 
 		//
 		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
-		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId());
+		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId(), coByProductOrderBOMLineId);
 
 		final IAttributeStorageFactory huAttributeStorageFactory = huContext.getHUAttributeStorageFactory();
 

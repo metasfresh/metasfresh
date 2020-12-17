@@ -41,6 +41,8 @@ import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public interface IProductBL extends ISingletonService
 {
 	I_M_Product getById(ProductId productId);
@@ -70,7 +72,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isStocked(I_M_Product product);
 
-	boolean isStocked(ProductId productId);
+	boolean isStocked(@Nullable ProductId productId);
 
 	boolean isDiverse(ProductId productId);
 
