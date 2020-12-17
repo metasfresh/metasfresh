@@ -27,3 +27,18 @@ UPDATE AD_Message SET MsgText='The product''s haddex check has to be renewed',Up
 UPDATE AD_Message SET Value='de.metas.order.producthadexerror',Updated=TO_TIMESTAMP('2020-12-16 10:27:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545019
 ;
 
+-- 2020-12-17T18:56:13.691Z
+-- URL zum Konzept
+UPDATE AD_Message SET MsgText='Der Haddex-Check für das Produkt muss erneuert werden',Updated=TO_TIMESTAMP('2020-12-17 15:56:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545019
+;
+
+-- 2020-12-17T18:56:37.882Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2020-12-17 15:56:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545019
+;
+
+-- 2020-12-17T18:56:43.930Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-12-17 15:56:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545019
+;
+
