@@ -90,9 +90,9 @@ final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRec
 	}
 
 	@Override
-	protected void setAssignedHUs(final Collection<I_M_HU> hus)
+	protected void addAssignedHUs(final Collection<I_M_HU> hus)
 	{
 		final I_PP_Order_BOMLine bomLine = getCoByProductOrderBOMLine();
-		huPPOrderBL.setAssignedHandlingUnits(bomLine, hus);
+		huPPOrderBL.addAssignedHandlingUnits(bomLine, hus);
 	}
 }

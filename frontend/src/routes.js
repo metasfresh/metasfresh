@@ -143,7 +143,12 @@ export const getRoutes = (store, auth, plugins) => {
       path: '/window/:windowType/:docId',
       component: MasterWindow,
       onEnter: ({ params }) =>
-        store.dispatch(createWindow(params.windowType, params.docId)),
+        store.dispatch(
+          createWindow({
+            windowId: params.windowType,
+            docId: params.docId,
+          })
+        ),
     },
     {
       path: '/sitemap',

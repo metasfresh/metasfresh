@@ -265,9 +265,9 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * Add a {@link NotEqualsQueryFilter}.
 	 * As with all {@link CompareQueryFilter}s: if the filter is about an {@code _ID}, then also {@link RepoIdAware} is supported.
 	 */
-	ICompositeQueryFilter<T> addNotEqualsFilter(String columnName, Object value);
+	ICompositeQueryFilter<T> addNotEqualsFilter(String columnName, @Nullable Object value);
 
-	ICompositeQueryFilter<T> addNotEqualsFilter(ModelColumn<T, ?> column, Object value);
+	ICompositeQueryFilter<T> addNotEqualsFilter(ModelColumn<T, ?> column, @Nullable Object value);
 
 	ICompositeQueryFilter<T> addNotNull(ModelColumn<T, ?> column);
 

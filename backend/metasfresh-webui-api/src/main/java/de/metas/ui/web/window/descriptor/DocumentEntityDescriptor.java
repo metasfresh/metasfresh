@@ -552,7 +552,7 @@ public class DocumentEntityDescriptor
 			return WindowId.of(_documentTypeId);
 		}
 
-		public Builder setDetailId(final DetailId detailId)
+		public Builder setDetailId(@Nullable final DetailId detailId)
 		{
 			_detailId = detailId;
 
@@ -644,6 +644,7 @@ public class DocumentEntityDescriptor
 			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0) : null;
 		}
 
+		@Nullable
 		public String getSingleIdFieldNameOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();

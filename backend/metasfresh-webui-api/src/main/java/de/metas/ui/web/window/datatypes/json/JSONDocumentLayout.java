@@ -1,10 +1,5 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -22,6 +18,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import io.swagger.annotations.ApiModel;
 import lombok.NonNull;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -46,8 +47,7 @@ import lombok.NonNull;
  */
 
 @ApiModel("layout")
-@SuppressWarnings("serial")
-public final class JSONDocumentLayout implements Serializable
+public final class JSONDocumentLayout
 {
 	public static JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONDocumentLayoutOptions options)
 	{
@@ -109,7 +109,9 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonInclude(Include.NON_EMPTY)
 	private final String emptyResultHint;
 
-	/** Other properties */
+	/**
+	 * Other properties
+	 */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	/**
@@ -144,7 +146,36 @@ public final class JSONDocumentLayout implements Serializable
 		}
 		else
 		{
-			tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), options);
+			final ImmutableListMultimap<DetailId, JSONDocumentLayoutElement> elementsByTabIdToInline = sections.stream()
+					.flatMap(JSONDocumentLayoutSection::streamInlineTabElements)
+					.collect(ImmutableListMultimap.toImmutableListMultimap(
+							element -> element.getInlineTabId(),
+							element -> element
+					));
+
+			final ImmutableSet<DetailId> tabIdsToInline = elementsByTabIdToInline.keySet();
+
+			final ArrayList<JSONDocumentLayoutTab> jsonTabs = new ArrayList<>();
+			for (DocumentLayoutDetailDescriptor tab : layout.getDetails())
+			{
+				final JSONDocumentLayoutTab jsonTab = JSONDocumentLayoutTab.ofOrNull(tab, options);
+				if (jsonTab == null)
+				{
+					continue;
+				}
+				else if (tabIdsToInline.contains(jsonTab.getTabId()))
+				{
+					final ImmutableList<JSONDocumentLayoutElement> elements = elementsByTabIdToInline.get(jsonTab.getTabId());
+					elements.forEach(element -> element.setInlineTab(jsonTab));
+					// NOTE: not adding the tab to the json tabs list because we don't want to render it as included tab
+				}
+				else
+				{
+					jsonTabs.add(jsonTab);
+				}
+			}
+
+			tabs = ImmutableList.copyOf(jsonTabs);
 		}
 
 		filters = null;
@@ -206,7 +237,7 @@ public final class JSONDocumentLayout implements Serializable
 	}
 
 	@JsonAnySetter
-	/* package */void putOtherProperty(final String name, final Object jsonValue)
+		/* package */void putOtherProperty(final String name, final Object jsonValue)
 	{
 		otherProperties.put(name, jsonValue);
 	}

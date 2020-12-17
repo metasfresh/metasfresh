@@ -1,16 +1,6 @@
 package org.eevolution.api;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
@@ -18,18 +8,26 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /**
- * Instances of this class can be passed to {@link IPPCostCollectorBL#createReceipt(IReceiptCostCollectorCandidate)} to have it generate and process a receipt. <br>
+ * Instances of this class can be passed to {@link IPPCostCollectorBL#createReceipt(ReceiptCostCollectorCandidate)} to have it generate and process a receipt. <br>
  * <p>
  * Note that in the context of a "co-product", a receipt is a negative issue (but that should not bother the user).
- *
  */
 @Value
 public class ReceiptCostCollectorCandidate
 {
 	I_PP_Order order;
-	/** manufacturing order's BOM Line if this is a co/by-product receipt; <code>null</code> otherwise */
+	/**
+	 * manufacturing order's BOM Line if this is a co/by-product receipt; <code>null</code> otherwise
+	 */
 	I_PP_Order_BOMLine orderBOMLine;
 
 	ZonedDateTime movementDate;
@@ -71,10 +69,9 @@ public class ReceiptCostCollectorCandidate
 		this.pickingCandidateId = pickingCandidateId > 0 ? pickingCandidateId : -1;
 	}
 
-	private static LocatorId extractLocatorId(I_PP_Order order)
+	private static LocatorId extractLocatorId(final I_PP_Order order)
 	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
-		return LocatorId.ofRepoId(warehouseId, order.getM_Locator_ID());
+		return LocatorId.ofRepoId(order.getM_Warehouse_ID(), order.getM_Locator_ID());
 	}
 
 	public PPOrderId getOrderId()
@@ -82,11 +79,17 @@ public class ReceiptCostCollectorCandidate
 		return PPOrderId.ofRepoId(getOrder().getPP_Order_ID());
 	}
 
+	@Nullable
 	public PPOrderBOMLineId getOrderBOMLineId()
 	{
 		final I_PP_Order_BOMLine orderBOMLine = getOrderBOMLine();
 		return orderBOMLine != null
 				? PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID())
 				: null;
+	}
+
+	public boolean isCoOrByProductReceipt()
+	{
+		return getOrderBOMLine() != null;
 	}
 }

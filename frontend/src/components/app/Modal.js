@@ -22,7 +22,7 @@ import { getTableId, getSelection } from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
 import ChangeLogModal from '../ChangeLogModal';
 import Process from '../Process';
-import Window from '../Window';
+import SectionGroup from '../SectionGroup';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
@@ -194,7 +194,14 @@ class Modal extends Component {
       case 'window':
         try {
           await dispatch(
-            createWindow(windowId, dataId, tabId, rowId, true, isAdvanced)
+            createWindow({
+              windowId,
+              docId: dataId,
+              tabId,
+              rowId,
+              isModal: true,
+              isAdvanced,
+            })
           );
         } catch (error) {
           this.handleClose();
@@ -474,7 +481,7 @@ class Modal extends Component {
       }
       case 'window':
         return (
-          <Window
+          <SectionGroup
             data={data}
             dataId={dataId}
             layout={layout}

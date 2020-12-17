@@ -92,6 +92,9 @@ public enum DocumentFieldWidgetType
 	, ZoomIntoButton(LayoutAlign.Left, Integer.class, DisplayType.Button) //
 
 	//
+	, InlineTab(LayoutAlign.Left, null, -1) //
+
+	//
 	;
 
 	private static final Set<DocumentFieldWidgetType> TYPES_ALL_DATES = Sets.immutableEnumSet(LocalDate, LocalTime, ZonedDateTime, Timestamp);

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
@@ -576,7 +577,7 @@ public final class DocumentFieldDescriptor
 			return key;
 		}
 
-		public Builder setParentLink(final boolean parentLink, final String parentLinkFieldName)
+		public Builder setParentLink(final boolean parentLink, @Nullable final String parentLinkFieldName)
 		{
 			assertNotBuilt();
 			this.parentLink = parentLink;
@@ -1079,7 +1080,7 @@ public final class DocumentFieldDescriptor
 			return ImmutableList.copyOf(callouts);
 		}
 
-		public Builder setButtonActionDescriptor(final ButtonFieldActionDescriptor buttonActionDescriptor)
+		public Builder setButtonActionDescriptor(@Nullable final ButtonFieldActionDescriptor buttonActionDescriptor)
 		{
 			this.buttonActionDescriptor = buttonActionDescriptor;
 			return this;
@@ -1121,7 +1122,7 @@ public final class DocumentFieldDescriptor
 			return true;
 		}
 
-		public Builder setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
+		public Builder setDefaultFilterInfo(@Nullable DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
 		{
 			this.defaultFilterInfo = defaultFilterInfo;
 			return this;

@@ -15,10 +15,11 @@ import { INITIALLY_CLOSED } from '../constants/Constants';
 const EMPTY_OBJECT = {};
 /**
  * @file Class based component.
- * @module Window
+ * @module SectionGroup
  * @extends PureComponent
+ * @summary - this was previously the <Window /> component and was renamed because it is no longer a `window` but a group of sections
  */
-class Window extends PureComponent {
+class SectionGroup extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -333,6 +334,7 @@ class Window extends PureComponent {
       data,
       isModal,
       isAdvanced,
+      disconnected,
     } = this.props;
     const { fullScreen } = this.state;
 
@@ -361,6 +363,7 @@ class Window extends PureComponent {
           requestElementGroupFocus={this.requestElementGroupFocus}
           isSectionCollapsed={isSectionCollapsed}
           toggleSectionCollapsed={this.toggleSectionCollapsed}
+          disconnected={disconnected}
         />
       );
     });
@@ -472,7 +475,7 @@ class Window extends PureComponent {
  * @prop {string} rowId
  * @prop {bool} isAdvanced
  */
-Window.propTypes = {
+SectionGroup.propTypes = {
   layout: PropTypes.shape(),
   handleDropFile: PropTypes.func,
   handleRejectDropped: PropTypes.func,
@@ -490,9 +493,10 @@ Window.propTypes = {
   rowId: PropTypes.string,
   isAdvanced: PropTypes.bool,
   onRefreshTab: PropTypes.func,
+  disconnected: PropTypes.string, // flag used to indicate rendering outside the pre-existing structure, this will contain the branch from the redux store where data resides
 };
 
-Window.defaultProps = {
+SectionGroup.defaultProps = {
   handleDropFile: () => {
     // eslint-disable-next-line no-console
     console.warn('TODO: handleDropFile prop is missing');
@@ -507,4 +511,4 @@ Window.defaultProps = {
   },
 };
 
-export default Window;
+export default SectionGroup;

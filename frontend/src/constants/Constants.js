@@ -157,3 +157,9 @@ export const DEBOUNCE_TIME_SEARCH = 150;
  * @type {integer} Used to indicate the number of characters from where we show read more link in the notification toastr
  */
 export const SHOW_READ_MORE_FROM = 100;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the number of rows from where we display the `Show more...` button
+ */
+export const INLINE_TAB_SHOW_MORE_FROM = 5;
