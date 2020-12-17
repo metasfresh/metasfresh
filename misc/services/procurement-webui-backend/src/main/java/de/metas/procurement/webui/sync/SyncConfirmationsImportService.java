@@ -52,26 +52,26 @@ public class SyncConfirmationsImportService extends AbstractSyncImportService
 	@Transactional
 	public void importConfirmation(final SyncConfirmation syncConfirmation)
 	{
-		SyncConfirm confirmRecord = null;
-		if (syncConfirmation.getConfirmId() > 0)
-		{
-			confirmRecord = syncConfirmRepo.findOne(syncConfirmation.getConfirmId());
-		}
-
-		if (confirmRecord == null)
-		{
-			// something is actually wrong. Either the given syncConfirm has no ID, or there is no record with this ID.
-			// Since the whole syncConfirm thing is about stability and diagnosibility, we shall now try to make the best of the situation.
-			confirmRecord = new SyncConfirm();
-			confirmRecord.setEntryType("UNKNOWN ID " + syncConfirmation.getConfirmId());
-			logger.error("Found no record for {}", syncConfirmation);
-
-		}
-
-		confirmRecord.setServerEventId(syncConfirmation.getServerEventId());
-		confirmRecord.setDateConfirmed(syncConfirmation.getDateConfirmed());
-		confirmRecord.setDateConfirmReceived(new Date());
-
-		syncConfirmRepo.save(confirmRecord);
+		// SyncConfirm confirmRecord = null;
+		// if (syncConfirmation.getConfirmId() > 0)
+		// {
+		// 	confirmRecord = syncConfirmRepo.findOne(syncConfirmation.getConfirmId());
+		// }
+		//
+		// if (confirmRecord == null)
+		// {
+		// 	// something is actually wrong. Either the given syncConfirm has no ID, or there is no record with this ID.
+		// 	// Since the whole syncConfirm thing is about stability and diagnosibility, we shall now try to make the best of the situation.
+		// 	confirmRecord = new SyncConfirm();
+		// 	confirmRecord.setEntryType("UNKNOWN ID " + syncConfirmation.getConfirmId());
+		// 	logger.error("Found no record for {}", syncConfirmation);
+		//
+		// }
+		//
+		// confirmRecord.setServerEventId(syncConfirmation.getServerEventId());
+		// confirmRecord.setDateConfirmed(syncConfirmation.getDateConfirmed());
+		// confirmRecord.setDateConfirmReceived(new Date());
+		//
+		// syncConfirmRepo.save(confirmRecord);
 	}
 }

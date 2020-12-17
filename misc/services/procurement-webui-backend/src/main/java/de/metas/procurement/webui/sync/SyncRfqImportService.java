@@ -1,34 +1,21 @@
 package de.metas.procurement.webui.sync;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-
-
 import de.metas.procurement.sync.SyncRfQCloseEvent;
-import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductSupply;
 import de.metas.procurement.sync.protocol.SyncRfQ;
-import de.metas.procurement.webui.event.MFEventBus;
-import de.metas.procurement.webui.event.ProductSupplyChangedEvent;
-import de.metas.procurement.webui.event.RfqChangedEvent;
 import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.ContractLine;
-import de.metas.procurement.webui.model.Product;
-import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractLineRepository;
 import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
-import de.metas.procurement.webui.util.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /*
  * #%L
@@ -73,9 +60,9 @@ public class SyncRfqImportService extends AbstractSyncImportService
 	@Lazy
 	private ProductSupplyRepository productSupplyRepo;
 	
-	@Autowired
-	@Lazy
-	private MFEventBus applicationEventBus;
+	// @Autowired
+	// @Lazy
+	// private MFEventBus applicationEventBus;
 
 	public void importRfQs(final BPartner bpartner, final List<SyncRfQ> syncRfQs)
 	{
@@ -95,149 +82,149 @@ public class SyncRfqImportService extends AbstractSyncImportService
 	{
 		final String rfq_uuid = syncRfQ.getUuid();
 		Rfq rfq = rfqRepo.findByUuid(rfq_uuid);
-		if (rfq == null)
-		{
-			rfq = new Rfq();
-			rfq.setUuid(rfq_uuid);
-
-			if (bpartner == null)
-			{
-				bpartner = bpartnerRepo.findByUuid(syncRfQ.getBpartner_uuid());
-			}
-			rfq.setBpartner(bpartner);
-		}
-
-		rfq.setDeleted(false);
-
+		// if (rfq == null)
+		// {
+		// 	rfq = new Rfq();
+		// 	rfq.setUuid(rfq_uuid);
 		//
-		// Dates
-		rfq.setDateStart(DateUtils.truncToDay(syncRfQ.getDateStart()));
-		rfq.setDateEnd(DateUtils.truncToDay(syncRfQ.getDateEnd()));
-		rfq.setDateClose(DateUtils.truncToDay(syncRfQ.getDateClose()));
-
+		// 	if (bpartner == null)
+		// 	{
+		// 		bpartner = bpartnerRepo.findByUuid(syncRfQ.getBpartner_uuid());
+		// 	}
+		// 	rfq.setBpartner(bpartner);
+		// }
 		//
-		// Product
-		final SyncProduct syncProduct = syncRfQ.getProduct();
-		final Product product = productImportService.importProduct(syncProduct);
-		if (product == null)
-		{
-			throw new RuntimeException("No product found for "+syncProduct);
-		}
-		rfq.setProduct(product);
-
+		// rfq.setDeleted(false);
 		//
-		// Quantity
-		rfq.setQtyRequested(syncRfQ.getQtyRequested());
-		rfq.setQtyCUInfo(syncRfQ.getQtyCUInfo());
-		
+		// //
+		// // Dates
+		// rfq.setDateStart(DateUtils.truncToDay(syncRfQ.getDateStart()));
+		// rfq.setDateEnd(DateUtils.truncToDay(syncRfQ.getDateEnd()));
+		// rfq.setDateClose(DateUtils.truncToDay(syncRfQ.getDateClose()));
 		//
-		// Price & currency
-		rfq.setCurrencyCode(syncRfQ.getCurrencyCode());
-		
+		// //
+		// // Product
+		// final SyncProduct syncProduct = syncRfQ.getProduct();
+		// final Product product = productImportService.importProduct(syncProduct);
+		// if (product == null)
+		// {
+		// 	throw new RuntimeException("No product found for "+syncProduct);
+		// }
+		// rfq.setProduct(product);
 		//
-		// Save & return
-		rfqRepo.save(rfq);
-		logger.debug("Imported: {} -> {}", syncRfQ, rfq);
-
-		applicationEventBus.post(RfqChangedEvent.of(rfq));
+		// //
+		// // Quantity
+		// rfq.setQtyRequested(syncRfQ.getQtyRequested());
+		// rfq.setQtyCUInfo(syncRfQ.getQtyCUInfo());
+		//
+		// //
+		// // Price & currency
+		// rfq.setCurrencyCode(syncRfQ.getCurrencyCode());
+		//
+		// //
+		// // Save & return
+		// rfqRepo.save(rfq);
+		// logger.debug("Imported: {} -> {}", syncRfQ, rfq);
+		//
+		// applicationEventBus.post(RfqChangedEvent.of(rfq));
 		
 		return rfq;
 	}
 
 	public void importRfQCloseEvent(final SyncRfQCloseEvent syncRfQCloseEvent)
 	{
-		final String rfq_uuid = syncRfQCloseEvent.getRfq_uuid();
-		final Rfq rfq = rfqRepo.findByUuid(rfq_uuid);
-		if (rfq == null)
-		{
-			logger.warn("No RfQ found for {}. Skip importing the event.", syncRfQCloseEvent);
-			return;
-		}
-
-		if (rfq.isClosed() && rfq.isWinnerKnown())
-		{
-			logger.warn("RfQ {} is already closed when we got {}. Skip importing the event.", rfq, syncRfQCloseEvent);
-			return;
-		}
-
+		// final String rfq_uuid = syncRfQCloseEvent.getRfq_uuid();
+		// final Rfq rfq = rfqRepo.findByUuid(rfq_uuid);
+		// if (rfq == null)
+		// {
+		// 	logger.warn("No RfQ found for {}. Skip importing the event.", syncRfQCloseEvent);
+		// 	return;
+		// }
 		//
-		// Update the RfQ
-		rfq.setClosed(true);
-		if (syncRfQCloseEvent.isWinnerKnown())
-		{
-			rfq.setWinnerKnown(true);
-			rfq.setWinner(syncRfQCloseEvent.isWinner());
-		}
-		
-		rfqRepo.save(rfq);
-		applicationEventBus.post(RfqChangedEvent.of(rfq));
-
-		if (syncRfQCloseEvent.isWinnerKnown() && syncRfQCloseEvent.isWinner())
-		{
-			final List<SyncProductSupply> plannedSupplies = syncRfQCloseEvent.getPlannedSupplies();
-			if (plannedSupplies != null && !plannedSupplies.isEmpty())
-			{
-				final BPartner bpartner = rfq.getBpartner();
-				
-				for (final SyncProductSupply syncProductSupply : plannedSupplies)
-				{
-					importPlannedProductSupply(syncProductSupply, bpartner);
-				}
-			}
-		}
+		// if (rfq.isClosed() && rfq.isWinnerKnown())
+		// {
+		// 	logger.warn("RfQ {} is already closed when we got {}. Skip importing the event.", rfq, syncRfQCloseEvent);
+		// 	return;
+		// }
+		//
+		// //
+		// // Update the RfQ
+		// rfq.setClosed(true);
+		// if (syncRfQCloseEvent.isWinnerKnown())
+		// {
+		// 	rfq.setWinnerKnown(true);
+		// 	rfq.setWinner(syncRfQCloseEvent.isWinner());
+		// }
+		//
+		// rfqRepo.save(rfq);
+		// applicationEventBus.post(RfqChangedEvent.of(rfq));
+		//
+		// if (syncRfQCloseEvent.isWinnerKnown() && syncRfQCloseEvent.isWinner())
+		// {
+		// 	final List<SyncProductSupply> plannedSupplies = syncRfQCloseEvent.getPlannedSupplies();
+		// 	if (plannedSupplies != null && !plannedSupplies.isEmpty())
+		// 	{
+		// 		final BPartner bpartner = rfq.getBpartner();
+		//
+		// 		for (final SyncProductSupply syncProductSupply : plannedSupplies)
+		// 		{
+		// 			importPlannedProductSupply(syncProductSupply, bpartner);
+		// 		}
+		// 	}
+		// }
 	}
 
 	private void importPlannedProductSupply(final SyncProductSupply syncProductSupply, final BPartner bpartner)
 	{
-		final String product_uuid = syncProductSupply.getProduct_uuid();
-		final Product product = productRepo.findByUuid(product_uuid);
+		// final String product_uuid = syncProductSupply.getProduct_uuid();
+		// final Product product = productRepo.findByUuid(product_uuid);
+		// //
+		// final String contractLine_uuid = syncProductSupply.getContractLine_uuid();
+		// final ContractLine contractLine = contractLineRepo.findByUuid(contractLine_uuid);
+		// //
+		// final Date day = DateUtils.truncToDay(syncProductSupply.getDay());
+		// final BigDecimal qty = Objects.firstNonNull(syncProductSupply.getQty(), BigDecimal.ZERO);
 		//
-		final String contractLine_uuid = syncProductSupply.getContractLine_uuid();
-		final ContractLine contractLine = contractLineRepo.findByUuid(contractLine_uuid);
+		// ProductSupply productSupply = productSupplyRepo.findByProductAndBpartnerAndDay(product, bpartner, day);
+		// final boolean isNew;
+		// if (productSupply == null)
+		// {
+		// 	isNew = true;
+		// 	productSupply = ProductSupply.build(bpartner, product, contractLine, day);
+		// }
+		// else
+		// {
+		// 	isNew = false;
+		// }
 		//
-		final Date day = DateUtils.truncToDay(syncProductSupply.getDay());
-		final BigDecimal qty = Objects.firstNonNull(syncProductSupply.getQty(), BigDecimal.ZERO);
-		
-		ProductSupply productSupply = productSupplyRepo.findByProductAndBpartnerAndDay(product, bpartner, day);
-		final boolean isNew;
-		if (productSupply == null)
-		{
-			isNew = true;
-			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
-		}
-		else
-		{
-			isNew = false;
-		}
-		
+		// //
+		// // Contract line
+		// if(!isNew)
+		// {
+		// 	final ContractLine contractLineOld = productSupply.getContractLine();
+		// 	if (!Objects.equal(contractLine, contractLineOld))
+		// 	{
+		// 		logger.warn("Changing contract line {}->{} for {} because of planning supply: {}", contractLineOld, contractLine, productSupply, syncProductSupply);
+		// 	}
+		// 	productSupply.setContractLine(contractLine);
+		// }
 		//
-		// Contract line
-		if(!isNew)
-		{
-			final ContractLine contractLineOld = productSupply.getContractLine();
-			if (!Objects.equal(contractLine, contractLineOld))
-			{
-				logger.warn("Changing contract line {}->{} for {} because of planning supply: {}", contractLineOld, contractLine, productSupply, syncProductSupply);
-			}
-			productSupply.setContractLine(contractLine);
-		}
-		
+		// //
+		// // Quantity
+		// if(!isNew)
+		// {
+		// 	final BigDecimal qtyOld = productSupply.getQty();
+		// 	if (qty.compareTo(qtyOld) != 0)
+		// 	{
+		// 		logger.warn("Changing quantity {}->{} for {} because of planning supply: {}", qtyOld, qty, productSupply, syncProductSupply);
+		// 	}
+		// }
+		// productSupply.setQty(qty);
 		//
-		// Quantity
-		if(!isNew)
-		{
-			final BigDecimal qtyOld = productSupply.getQty();
-			if (qty.compareTo(qtyOld) != 0)
-			{
-				logger.warn("Changing quantity {}->{} for {} because of planning supply: {}", qtyOld, qty, productSupply, syncProductSupply);
-			}
-		}
-		productSupply.setQty(qty);
-
+		// //
+		// // Save the product supply
+		// productSupplyRepo.save(productSupply);
 		//
-		// Save the product supply
-		productSupplyRepo.save(productSupply);
-		
-		applicationEventBus.post(ProductSupplyChangedEvent.of(productSupply));
+		// applicationEventBus.post(ProductSupplyChangedEvent.of(productSupply));
 	}
 }

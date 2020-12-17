@@ -134,7 +134,7 @@ public final class DateRange implements Serializable, Cloneable
 	@Override
 	public String toString()
 	{
-		return MoreMoreObjects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("from", dateFrom)
 				.add("to", dateTo)
 				.toString();

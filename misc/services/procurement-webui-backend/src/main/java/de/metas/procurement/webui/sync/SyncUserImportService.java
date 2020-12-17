@@ -47,31 +47,31 @@ public class SyncUserImportService extends AbstractSyncImportService
 
 	public void importUsers(final BPartner bpartner, final List<SyncUser> syncUsers)
 	{
-		final Map<String, User> users = mapByUuid(usersRepo.findByBpartner(bpartner));
-		final List<User> usersToSave = new ArrayList<>();
-		for (final SyncUser syncUser : syncUsers)
-		{
-			if (syncUser.isDeleted())
-			{
-				continue;
-			}
-
-			User user = users.remove(syncUser.getUuid());
-			user = importUserNoSave(bpartner, syncUser, user);
-			if (user != null)
-			{
-				usersToSave.add(user);
-			}
-		}
+		// final Map<String, User> users = mapByUuid(usersRepo.findByBpartner(bpartner));
+		// final List<User> usersToSave = new ArrayList<>();
+		// for (final SyncUser syncUser : syncUsers)
+		// {
+		// 	if (syncUser.isDeleted())
+		// 	{
+		// 		continue;
+		// 	}
 		//
-		// Delete remaining users
-		for (final User user : users.values())
-		{
-			deleteUser(user);
-		}
-		//
-		// Save users
-		usersRepo.save(usersToSave);
+		// 	User user = users.remove(syncUser.getUuid());
+		// 	user = importUserNoSave(bpartner, syncUser, user);
+		// 	if (user != null)
+		// 	{
+		// 		usersToSave.add(user);
+		// 	}
+		// }
+		// //
+		// // Delete remaining users
+		// for (final User user : users.values())
+		// {
+		// 	deleteUser(user);
+		// }
+		// //
+		// // Save users
+		// usersRepo.save(usersToSave);
 	}
 
 	private User importUserNoSave(final BPartner bpartner, final SyncUser syncUser, User user)

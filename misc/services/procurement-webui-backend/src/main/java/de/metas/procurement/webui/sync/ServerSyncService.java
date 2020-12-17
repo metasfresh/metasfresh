@@ -9,6 +9,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.DeadEvent;
+import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,9 +88,9 @@ public class ServerSyncService implements IServerSyncService
 {
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired(required = true)
-	private TaskExecutor taskExecutor;
-	private AsyncEventBus eventBus;
+	// @Autowired(required = true)
+	// private TaskExecutor taskExecutor;
+	// private AsyncEventBus eventBus;
 
 	/** Server sync REST service client interface */
 	@Autowired(required = true)
@@ -116,8 +122,8 @@ public class ServerSyncService implements IServerSyncService
 	@PostConstruct
 	private void init()
 	{
-		eventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
-		eventBus.register(this);
+		// eventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
+		// eventBus.register(this);
 
 		syncAllAsync(new Runnable()
 		{
@@ -148,7 +154,7 @@ public class ServerSyncService implements IServerSyncService
 	{
 		final SyncAllRequest request = SyncAllRequest.of(callback);
 		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		// eventBus.post(request);
 	}
 
 	@Override
@@ -218,22 +224,22 @@ public class ServerSyncService implements IServerSyncService
 
 		final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
 		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		// eventBus.post(request);
 	}
 
 	@ManagedOperation(description = "Pushes a particular product supply, identified by ID, from webui server to metasfresh server")
 	public void pushReportProductSupplyById(final long product_supply_id)
 	{
-		final ProductSupply productSupply = productSuppliesRepo.findOne(product_supply_id);
-		if (productSupply == null)
-		{
-			throw new RuntimeException("No product supply found for ID=" + product_supply_id);
-		}
-
-		final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(Arrays.asList(productSupply));
-		logger.debug("Pushing request: {}", request);
-		process(request);
-		logger.debug("Pushing request done");
+		// final ProductSupply productSupply = productSuppliesRepo.findOne(product_supply_id);
+		// if (productSupply == null)
+		// {
+		// 	throw new RuntimeException("No product supply found for ID=" + product_supply_id);
+		// }
+		//
+		// final SyncProductSuppliesRequest request = createSyncProductSuppliesRequest(Arrays.asList(productSupply));
+		// logger.debug("Pushing request: {}", request);
+		// process(request);
+		// logger.debug("Pushing request done");
 	}
 
 	@ManagedOperation(description = "Pushes all product supply reports, identified by selection, from webui server to metasfresh server")
@@ -301,15 +307,15 @@ public class ServerSyncService implements IServerSyncService
 	@Override
 	public void reportWeeklySupplyAsync(final List<WeekSupply> weeklySupplies)
 	{
-		if (weeklySupplies.isEmpty())
-		{
-			logger.debug("Nothing to enqueue");
-			return;
-		}
-
-		final SyncWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
-		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		// if (weeklySupplies.isEmpty())
+		// {
+		// 	logger.debug("Nothing to enqueue");
+		// 	return;
+		// }
+		//
+		// final SyncWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
+		// logger.debug("Enqueuing: {}", request);
+		// eventBus.post(request);
 	}
 
 	@ManagedOperation(description = "Pushes all weekly supply reports, identified by selection, from webui server to metasfresh server")
@@ -417,15 +423,15 @@ public class ServerSyncService implements IServerSyncService
 
 	private void reportRfQChangesAsync(final List<Rfq> rfqs, final List<RfqQty> rfqQuantities)
 	{
-		final SyncRfQChangeRequest request = createSyncRfQChangeRequest(rfqs, rfqQuantities);
-		if(SyncRfQChangeRequest.isEmpty(request))
-		{
-			logger.debug("No RfQ change requests to enqueue");
-			return;
-		}
-
-		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		// final SyncRfQChangeRequest request = createSyncRfQChangeRequest(rfqs, rfqQuantities);
+		// if(SyncRfQChangeRequest.isEmpty(request))
+		// {
+		// 	logger.debug("No RfQ change requests to enqueue");
+		// 	return;
+		// }
+		//
+		// logger.debug("Enqueuing: {}", request);
+		// eventBus.post(request);
 	}
 
 	@Subscribe
@@ -493,16 +499,16 @@ public class ServerSyncService implements IServerSyncService
 	@ManagedOperation(description = "Pushes a particular RfQ, identified by ID, from webui server to metasfresh server")
 	public void pushRfqById(final long rfq_id)
 	{
-		final Rfq rfq = rfqRepo.findOne(rfq_id);
-		if (rfq == null)
-		{
-			throw new RuntimeException("No RfQ found for ID=" + rfq_id);
-		}
-
-		final SyncRfQChangeRequest request = createSyncRfQChangeRequest(ImmutableList.of(rfq), rfq.getQuantities());
-		logger.debug("Pushing request: {}", request);
-		process(request);
-		logger.debug("Pushing request done");
+		// final Rfq rfq = rfqRepo.findOne(rfq_id);
+		// if (rfq == null)
+		// {
+		// 	throw new RuntimeException("No RfQ found for ID=" + rfq_id);
+		// }
+		//
+		// final SyncRfQChangeRequest request = createSyncRfQChangeRequest(ImmutableList.of(rfq), rfq.getQuantities());
+		// logger.debug("Pushing request: {}", request);
+		// process(request);
+		// logger.debug("Pushing request done");
 	}
 	
 	@Override

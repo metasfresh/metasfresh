@@ -14,7 +14,6 @@ import de.metas.procurement.sync.protocol.SyncContract;
 import de.metas.procurement.sync.protocol.SyncContractLine;
 import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.webui.event.ContractChangedEvent;
-import de.metas.procurement.webui.event.MFEventBus;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.model.ContractLine;
@@ -57,42 +56,42 @@ public class SyncContractImportService extends AbstractSyncImportService
 	@Autowired
 	@Lazy
 	private SyncProductImportService productsImportService;
-	@Autowired
-	private MFEventBus applicationEventBus;
+	// @Autowired
+	// private MFEventBus applicationEventBus;
 
 	public Contract importContract(final BPartner bpartner, final SyncContract syncContract, Contract contract)
 	{
 		contract = importContractNoCascade(bpartner, syncContract, contract);
-		if (contract == null)
-		{
-			return null;
-		}
-
+		// if (contract == null)
+		// {
+		// 	return null;
+		// }
 		//
-		// Contract Line
-		final List<ContractLine> contractLinesToSave = new ArrayList<>();
-		final Map<String, ContractLine> contractLines = mapByUuid(contract.getContractLines());
-		for (final SyncContractLine syncContractLine : syncContract.getContractLines())
-		{
-			final ContractLine contractLine = importContractLineNoSave(contract, syncContractLine, contractLines);
-			if (contractLine == null)
-			{
-				continue;
-			}
-			
-			contractLinesToSave.add(contractLine);
-		}
+		// //
+		// // Contract Line
+		// final List<ContractLine> contractLinesToSave = new ArrayList<>();
+		// final Map<String, ContractLine> contractLines = mapByUuid(contract.getContractLines());
+		// for (final SyncContractLine syncContractLine : syncContract.getContractLines())
+		// {
+		// 	final ContractLine contractLine = importContractLineNoSave(contract, syncContractLine, contractLines);
+		// 	if (contractLine == null)
+		// 	{
+		// 		continue;
+		// 	}
 		//
-		// Delete remaining lines
-		for (final ContractLine contractLine : contractLines.values())
-		{
-			deleteContractLine(contractLine);
-		}
+		// 	contractLinesToSave.add(contractLine);
+		// }
+		// //
+		// // Delete remaining lines
+		// for (final ContractLine contractLine : contractLines.values())
+		// {
+		// 	deleteContractLine(contractLine);
+		// }
+		// //
+		// // Save created/updated lines
+		// contractLinesRepo.save(contractLinesToSave);
 		//
-		// Save created/updated lines
-		contractLinesRepo.save(contractLinesToSave);
-		
-		applicationEventBus.post(ContractChangedEvent.of(contract.getBpartner().getUuid(), contract.getId()));
+		// applicationEventBus.post(ContractChangedEvent.of(contract.getBpartner().getUuid(), contract.getId()));
 		
 		return contract;
 	}

@@ -2,6 +2,7 @@ package de.metas.procurement.webui.sync;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

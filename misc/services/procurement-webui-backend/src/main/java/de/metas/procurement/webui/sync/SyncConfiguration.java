@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import javax.ws.rs.core.MediaType;
 
+import com.google.common.base.Strings;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.cxf.bus.spring.SpringBus;

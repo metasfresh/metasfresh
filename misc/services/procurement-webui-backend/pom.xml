@@ -1,195 +1,222 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent.general</artifactId>
-		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../../parent-pom/pom.xml</relativePath>
-	</parent>
+    <parent>
+        <artifactId>de.metas.parent.general</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../../parent-pom/pom.xml</relativePath>
+    </parent>
 
-	<groupId>de.metas.procurement</groupId>
-	<artifactId>procurement-webui-backend</artifactId>
-	<name>procurement-webui-backend</name>
-	<description>Rest API for webui that is connected to metasfresh and allows the user to log report the availability of goods which he would like to sell.</description>
+    <groupId>de.metas.procurement</groupId>
+    <artifactId>procurement-webui-backend</artifactId>
+    <name>procurement-webui-backend</name>
+    <description>Rest API for webui that is connected to metasfresh and allows the user to log report the availability of goods which he would like to sell.</description>
 
-	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
-		can't set it to another version it -->
-	<version>10.0.0</version>
+    <!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
+        can't set it to another version it -->
+    <version>10.0.0</version>
 
-	<properties>
-		<java.version>15</java.version>
-		<maven.compiler.source>15</maven.compiler.source>
-		<maven.compiler.target>15</maven.compiler.target>
-		<spring-boot.version>2.4.1</spring-boot.version>
-		<cxf.version>3.4.1</cxf.version>
-	</properties>
+    <properties>
+        <java.version>15</java.version>
+        <maven.compiler.source>15</maven.compiler.source>
+        <maven.compiler.target>15</maven.compiler.target>
+        <spring-boot.version>2.4.1</spring-boot.version>
+        <cxf.version>3.4.1</cxf.version>
+    </properties>
 
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<!-- Import dependency management from Spring Boot -->
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Import dependency management from Spring Boot -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.sync-api</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.procurement</groupId>
+            <artifactId>de.metas.procurement.sync-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-validation</artifactId>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-web-services</artifactId>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-websocket</artifactId>-->
-<!--		</dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <!--		<dependency>-->
+        <!--			<groupId>org.springframework.boot</groupId>-->
+        <!--			<artifactId>spring-boot-starter-validation</artifactId>-->
+        <!--		</dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!--		<dependency>-->
+        <!--			<groupId>org.springframework.boot</groupId>-->
+        <!--			<artifactId>spring-boot-starter-web-services</artifactId>-->
+        <!--		</dependency>-->
+        <!--		<dependency>-->
+        <!--			<groupId>org.springframework.boot</groupId>-->
+        <!--			<artifactId>spring-boot-starter-websocket</artifactId>-->
+        <!--		</dependency>-->
 
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-broker</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-transports-http</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxrs</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-client</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-rs-client</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-rs-extension-providers</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-rs-extension-providers</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-management</artifactId>
-			<version>${cxf.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-management</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-jms</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
 
-		<!-- Logging -->
-<!--		<dependency>-->
-<!--			<groupId>net.logstash.logback</groupId>-->
-<!--			<artifactId>logstash-logback-encoder</artifactId>-->
-<!--			<exclusions>-->
-<!--				<exclusion>-->
-<!--					<groupId>ch.qos.logback</groupId>-->
-<!--					<artifactId>logback-core</artifactId>-->
-<!--				</exclusion>-->
-<!--				<exclusion>-->
-<!--					<groupId>com.fasterxml.jackson.core</groupId>-->
-<!--					<artifactId>jackson-databind</artifactId>-->
-<!--				</exclusion>-->
-<!--			</exclusions>-->
-<!--		</dependency>-->
+        <!--		<dependency>-->
+        <!--			<groupId>javax.ws.rs</groupId>-->
+        <!--			<artifactId>javax.ws.rs-api</artifactId>-->
+        <!--		</dependency>-->
 
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+        </dependency>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-			<!--todo TBP: not sure if mojo versions plugin is needed-->
-			<!--
-			See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
-			Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
-			-->
-<!--			<plugin>-->
-<!--				<groupId>org.codehaus.mojo</groupId>-->
-<!--				<artifactId>versions-maven-plugin</artifactId>-->
-<!--				<version>2.8.1</version>-->
-<!--				<configuration>-->
-<!--					<properties>-->
-<!--						<property>-->
-<!--							<name>metasfresh.version</name>-->
-<!--							<searchReactor>false</searchReactor>-->
-<!--							<autoLinkDependencies>true</autoLinkDependencies>-->
-<!--						</property>-->
-<!--					</properties>-->
-<!--				</configuration>-->
-<!--			</plugin>-->
+        <!-- Logging -->
+        <!--		<dependency>-->
+        <!--			<groupId>net.logstash.logback</groupId>-->
+        <!--			<artifactId>logstash-logback-encoder</artifactId>-->
+        <!--			<exclusions>-->
+        <!--				<exclusion>-->
+        <!--					<groupId>ch.qos.logback</groupId>-->
+        <!--					<artifactId>logback-core</artifactId>-->
+        <!--				</exclusion>-->
+        <!--				<exclusion>-->
+        <!--					<groupId>com.fasterxml.jackson.core</groupId>-->
+        <!--					<artifactId>jackson-databind</artifactId>-->
+        <!--				</exclusion>-->
+        <!--			</exclusions>-->
+        <!--		</dependency>-->
 
-		</plugins>
-	</build>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!--todo TBP: not sure if mojo versions plugin is needed-->
+            <!--
+            See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
+            Note that the propery needs to be declared in the actual child poms, see http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
+            -->
+            <!--			<plugin>-->
+            <!--				<groupId>org.codehaus.mojo</groupId>-->
+            <!--				<artifactId>versions-maven-plugin</artifactId>-->
+            <!--				<version>2.8.1</version>-->
+            <!--				<configuration>-->
+            <!--					<properties>-->
+            <!--						<property>-->
+            <!--							<name>metasfresh.version</name>-->
+            <!--							<searchReactor>false</searchReactor>-->
+            <!--							<autoLinkDependencies>true</autoLinkDependencies>-->
+            <!--						</property>-->
+            <!--					</properties>-->
+            <!--				</configuration>-->
+            <!--			</plugin>-->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>15</source>
+                    <target>15</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
 
 </project>
