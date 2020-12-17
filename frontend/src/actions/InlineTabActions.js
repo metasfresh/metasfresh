@@ -214,6 +214,16 @@ export function inlineTabAfterGetLayout({ data, disconnectedData }) {
   };
 }
 
+/**
+ * @method patchInlineTab
+ * @summary after an a patch action that targeted a field belonging to a inlineTab we execute this method that will update the
+ *          updateInlineTabWrapperFields and updateInlineTabItemFields
+ * @param {object} ret - this is what the `PATCH` returned from the xhr call
+ * @param {string} windowId
+ * @param {string} tabId
+ * @param {string} docId
+ * @param {string} rowId
+ */
 export function patchInlineTab({ ret, windowId, tabId, docId, rowId }) {
   return (dispatch) => {
     ret.then((response) => {
