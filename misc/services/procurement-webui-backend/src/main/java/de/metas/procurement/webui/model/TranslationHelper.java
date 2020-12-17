@@ -3,8 +3,8 @@ package de.metas.procurement.webui.model;
 import java.util.Locale;
 import java.util.Map;
 
-import com.google.gwt.thirdparty.guava.common.base.Joiner;
-import com.google.gwt.thirdparty.guava.common.base.Strings;
+
+
 
 /*
  * #%L

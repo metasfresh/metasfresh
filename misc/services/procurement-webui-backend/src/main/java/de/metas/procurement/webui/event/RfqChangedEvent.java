@@ -1,7 +1,8 @@
 package de.metas.procurement.webui.event;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects;
 
+
+import com.google.common.base.MoreObjects;
 import de.metas.procurement.webui.model.Rfq;
 
 /*
@@ -50,7 +51,7 @@ public class RfqChangedEvent implements IApplicationEvent
 	@Override
 	public String toString()
 	{
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("bpartner_uuid", bpartner_uuid)
 				.add("rfq_id", rfq_id)
 				.add("closed", closed)

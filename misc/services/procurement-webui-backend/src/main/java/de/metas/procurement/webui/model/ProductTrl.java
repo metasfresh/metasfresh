@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
+
 
 /*
  * #%L

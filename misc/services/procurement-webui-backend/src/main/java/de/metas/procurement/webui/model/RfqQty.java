@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
+
 
 /*
  * #%L

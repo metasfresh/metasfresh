@@ -10,9 +10,9 @@ import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
-import com.google.gwt.thirdparty.guava.common.base.Optional;
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+
+
+
 
 /*
  * #%L

@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects;
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+
+
 
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.repository.ContractRepository;
@@ -60,7 +60,7 @@ public class Contracts
 	@Override
 	public String toString()
 	{
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("bpartner", bpartner)
 				.add("contracts", _contracts)
 				.toString();

@@ -3,10 +3,10 @@ package de.metas.procurement.webui.model;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableMap;
-import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Resource;
-import com.vaadin.ui.Component;
+
+
+
+
 
 /*
  * #%L

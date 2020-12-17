@@ -3,8 +3,7 @@ package de.metas.procurement.webui.event;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects;
-
+import com.google.common.base.MoreObjects;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
 
@@ -55,7 +54,7 @@ public class ProductSupplyChangedEvent implements IApplicationEvent
 	@Override
 	public String toString()
 	{
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("bpartner_uuid", bpartner_uuid)
 				.add("product", product)
 				.add("day", day)

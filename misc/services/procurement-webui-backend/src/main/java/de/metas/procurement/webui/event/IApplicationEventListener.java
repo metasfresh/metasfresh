@@ -1,6 +1,6 @@
 package de.metas.procurement.webui.event;
 
-import com.vaadin.ui.UI;
+
 
 /*
  * #%L
@@ -26,7 +26,7 @@ import com.vaadin.ui.UI;
 
 public interface IApplicationEventListener
 {
-	public UI getUI();
+	// public UI getUI();
 
 	public void onContractChanged(final ContractChangedEvent event);
 

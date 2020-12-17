@@ -4,7 +4,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 
-import com.google.gwt.thirdparty.guava.common.base.Objects.ToStringHelper;
+
 
 /*
  * #%L
