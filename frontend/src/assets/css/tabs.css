@@ -387,7 +387,7 @@
   }
   .inline-tab-separator {
     width:100%;
-    border-top: 1px solid #C8D6D5;
+    border-top: 1px solid $brand-light-color;
     margin: 10px 0px 10px 0px;
     box-sizing: border-box;
   }

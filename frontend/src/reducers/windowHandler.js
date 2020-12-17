@@ -848,7 +848,7 @@ export default function windowHandler(state = initialState, action) {
 
       const targetTabData = { ...state.inlineTab[`${inlineTabId}`].data };
 
-      Object.keys(fieldsByName).map((fieldItem) => {
+      Object.keys(fieldsByName).forEach((fieldItem) => {
         targetTabData.fieldsByName[fieldItem] = {
           ...targetTabData.fieldsByName[fieldItem],
           ...fieldsByName[fieldItem],
