@@ -33,7 +33,7 @@ public class DetailIdTest
 	@Test
 	public void fromAD_Tab_ID()
 	{
-		final DetailId detailId = DetailId.fromAD_Tab_ID(39);
+		final DetailId detailId = DetailId.fromAD_Tab_ID(AdTabId.ofRepoId(39));
 
 		assertThat(detailId.toAdTabId()).isEqualTo(AdTabId.ofRepoId(39));
 		assertThat(detailId.toJson()).isEqualTo("AD_Tab-39");

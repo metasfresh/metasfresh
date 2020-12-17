@@ -672,7 +672,7 @@ public class ViewLayout implements ETagAware
 				if (element.getFieldNames().contains(fieldName))
 				{
 					element.removeFieldByFieldName(fieldName);
-					if (element.getFieldsCount() == 0)
+					if (element.getFieldsCount() <= 0)
 					{
 						it.remove();
 						continue;

@@ -1,22 +1,21 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -41,8 +40,9 @@ import lombok.NonNull;
  */
 
 @ApiModel("elementGroup")
-@SuppressWarnings("serial")
-public final class JSONDocumentLayoutElementGroup implements Serializable
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@ToString
+public final class JSONDocumentLayoutElementGroup
 {
 	static List<JSONDocumentLayoutElementGroup> ofList(
 			@NonNull final List<DocumentLayoutElementGroupDescriptor> elementGroups,
@@ -69,11 +69,11 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, value = "Number of equal-width-columns into which the included elementsLines shall be displayed:\n"
-					+ "Notes:\n"
-					+ "* one element line per cell"
-					+ "* an empty element line shall be rendered as empty cell"
-					+ "* if you have e.g. columnCount=3 and four element lines, then the rightmost two cells of the last line shall be empty"
-					+ "* if this property is missing, then <code>1</code> should be assumed")
+			+ "Notes:\n"
+			+ "* one element line per cell"
+			+ "* an empty element line shall be rendered as empty cell"
+			+ "* if you have e.g. columnCount=3 and four element lines, then the rightmost two cells of the last line shall be empty"
+			+ "* if this property is missing, then <code>1</code> should be assumed")
 	@JsonProperty("columnCount")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
@@ -86,9 +86,9 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, value = "Container for elementy that are supposed to be displayed next to each other\n"
-					+ "Notes:"
-					+ "* individual element lines might be empty for layout purposes; see <code>columnCount</code>\n"
-					+ "* in most of the cases, each elementLine has one element")
+			+ "Notes:"
+			+ "* individual element lines might be empty for layout purposes; see <code>columnCount</code>\n"
+			+ "* in most of the cases, each elementLine has one element")
 	@JsonProperty("elementsLine")
 	@JsonInclude(JsonInclude.Include.ALWAYS)
 	@Getter
@@ -117,22 +117,16 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		this.elementLines = elementLines == null ? ImmutableList.of() : ImmutableList.copyOf(elementLines);
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("type", type)
-				.add("columnCount", columnCount)
-				.add("elements", elementLines.isEmpty() ? null : elementLines)
-				.toString();
-	}
-
 	private boolean isEmpty()
 	{
 		final boolean atLeastOneLineIsFilled = elementLines
 				.stream()
 				.anyMatch(line -> !line.isEmpty());
 		return !atLeastOneLineIsFilled;
+	}
+
+	Stream<JSONDocumentLayoutElement> streamInlineTabElements()
+	{
+		return getElementLines().stream().flatMap(JSONDocumentLayoutElementLine::streamInlineTabElements);
 	}
 }

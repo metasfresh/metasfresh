@@ -1,14 +1,8 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.List;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.compiere.model.GridTabVO;
-import org.compiere.model.GridWindowVO;
-import org.slf4j.Logger;
-
 import com.google.common.base.Stopwatch;
-
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntrySubTabBindingDescriptorBuilder;
 import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoader;
@@ -20,6 +14,12 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.compiere.model.GridTabVO;
+import org.compiere.model.GridWindowVO;
+import org.slf4j.Logger;
+
+import java.util.List;
 
 /*
  * #%L
@@ -56,7 +56,6 @@ import lombok.NonNull;
 	//
 	// Status
 	private boolean _executed = false;
-
 
 	/* package */ DefaultDocumentDescriptorLoader(
 			final AdWindowId adWindowId,
@@ -97,7 +96,9 @@ import lombok.NonNull;
 		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVO.MAIN_TabNo);
 		final LayoutFactory rootLayoutFactory = LayoutFactory.ofMainTab(gridWindowVO, mainTabVO);
 		{
-			layoutBuilder.setCaption(rootLayoutFactory.getWindowCaption());
+			final ITranslatableString windowCaption = TranslatableStrings.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
+			layoutBuilder.setCaption(windowCaption);
+
 			layoutBuilder.setSingleRowLayout(rootLayoutFactory.layoutSingleRow());
 			layoutBuilder.setGridView(rootLayoutFactory.layoutGridView());
 			layoutBuilder.setSideListView(rootLayoutFactory.layoutSideListView());

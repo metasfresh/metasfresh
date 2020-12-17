@@ -15,6 +15,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Check;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -349,8 +351,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		 * They shall be independent from descriptors.
 		 * That's the reason why it's a static method (to make sure we are no doing any mistakes).
 		 *
-		 * @param descriptionColumnName currently only used in lookup value
-		 *
 		 * @return document field value loader
 		 */
 		private static DocumentFieldValueLoader createDocumentFieldValueLoader(
@@ -544,7 +544,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return getValueClass();
 		}
 
-		public Builder setLookupDescriptor(final LookupDescriptor lookupDescriptor)
+		public Builder setLookupDescriptor(@Nullable final LookupDescriptor lookupDescriptor)
 		{
 			this._lookupDescriptor = lookupDescriptor;
 			return this;

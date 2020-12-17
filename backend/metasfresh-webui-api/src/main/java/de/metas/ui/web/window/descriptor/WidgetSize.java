@@ -3,6 +3,7 @@ package de.metas.ui.web.window.descriptor;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
+import de.metas.util.Check;
 import org.compiere.model.X_AD_UI_Element;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.GuavaCollectors;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -59,9 +62,10 @@ public enum WidgetSize
 	}
 
 	@JsonCreator
-	public static WidgetSize fromNullableADRefListValue(final String adRefListValue)
+	@Nullable
+	public static WidgetSize fromNullableADRefListValue(@Nullable final String adRefListValue)
 	{
-		if (adRefListValue == null || adRefListValue.trim().isEmpty())
+		if(Check.isBlank(adRefListValue))
 		{
 			return null;
 		}
