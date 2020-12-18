@@ -893,15 +893,15 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final LabelsLookup lookup = LabelsLookup.cast(documentField.getDescriptor().getLookupDescriptor().orElse(null));
 
 		final int linkId = document.getFieldView(lookup.getLinkColumnName()).getValueAsInt(-1);
-		final Set<Object> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeys();
+		final Set<String> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeysAsString();
 
 		final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
-		final Set<Object> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeys()) : new HashSet<>();
+		final HashSet<String> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeysAsString()) : new HashSet<>();
 
 		//
 		// Delete removed labels
 		{
-			final Set<Object> listValuesToDelete = new HashSet<>(listValuesInDatabase);
+			final Set<String> listValuesToDelete = new HashSet<>(listValuesInDatabase);
 			listValuesToDelete.removeAll(listValuesToSave);
 			if (!listValuesToDelete.isEmpty())
 			{
@@ -919,15 +919,14 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		//
 		// Create new labels
 		{
-			final Set<Object> listValuesToSaveEffective = new HashSet<>(listValuesToSave);
+			final Set<String> listValuesToSaveEffective = new HashSet<>(listValuesToSave);
 			listValuesToSaveEffective.removeAll(listValuesInDatabase);
 			listValuesToSaveEffective.forEach(listValueToSave -> createLabelPORecord(listValueToSave, linkId, lookup));
 		}
 	}
 
-	private static void createLabelPORecord(@NonNull final Object listValueObj, final int linkId, @NonNull final LabelsLookup lookup)
+	private static void createLabelPORecord(@NonNull final String listValue, final int linkId, @NonNull final LabelsLookup lookup)
 	{
-		final String listValue = listValueObj.toString();
 		final PO labelPO = TableModelLoader.instance.newPO(lookup.getLabelsTableName());
 		labelPO.set_ValueNoCheck(lookup.getLabelsLinkColumnName(), linkId);
 		labelPO.set_ValueNoCheck(lookup.getLabelsValueColumnName(), listValue);
