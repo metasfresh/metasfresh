@@ -1,11 +1,11 @@
 -- 2020-12-15T15:34:00.976Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/lmanufacturingorder/label_3_segment.jasper',Updated=TO_TIMESTAMP('2020-12-15 17:34:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584768
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/manufacturingorder/label_3_segment.jasper',Updated=TO_TIMESTAMP('2020-12-15 17:34:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584768
 ;
 
 -- 2020-12-15T15:35:03.287Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,JasperReport,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584773,'N','de.metas.report.jasper.client.process.JasperReportStarter','N',TO_TIMESTAMP('2020-12-15 17:35:03','YYYY-MM-DD HH24:MI:SS'),100,'Manufacturing order label (jasper)','U','Y','N','Y','Y','N','N','Y','N','Y','Y','@PREFIX@de/metas/docs/lmanufacturingorder/label.jasper',0,'Manufacturing order label ','json','N','N','JasperReportsSQL',TO_TIMESTAMP('2020-12-15 17:35:03','YYYY-MM-DD HH24:MI:SS'),100,'Manufacturing order simple label')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,JasperReport,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584773,'N','de.metas.report.jasper.client.process.JasperReportStarter','N',TO_TIMESTAMP('2020-12-15 17:35:03','YYYY-MM-DD HH24:MI:SS'),100,'Manufacturing order label (jasper)','U','Y','N','Y','Y','N','N','Y','N','Y','Y','@PREFIX@de/metas/docs/manufacturingorder/label.jasper',0,'Manufacturing order label ','json','N','N','JasperReportsSQL',TO_TIMESTAMP('2020-12-15 17:35:03','YYYY-MM-DD HH24:MI:SS'),100,'Manufacturing order simple label')
 ;
 
 -- 2020-12-15T15:35:03.290Z
