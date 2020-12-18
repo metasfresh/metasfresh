@@ -901,12 +901,12 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		//
 		// Delete removed labels
 		{
-			final Set<String> listValuesToDelete = new HashSet<>(listValuesInDatabase);
+			final HashSet<String> listValuesToDelete = new HashSet<>(listValuesInDatabase);
 			listValuesToDelete.removeAll(listValuesToSave);
 			if (!listValuesToDelete.isEmpty())
 			{
 				final int countDeleted = lookup.retrieveExistingValuesRecordQuery(linkId)
-						.addInArrayFilter(lookup.getLabelsValueColumnName(), listValuesToDelete)
+						.addInArrayFilter(lookup.getLabelsValueColumnName(), lookup.normalizeStringIds(listValuesToDelete))
 						.create()
 						.delete();
 				if (countDeleted != listValuesToDelete.size())
@@ -925,7 +925,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 	}
 
-	private static void createLabelPORecord(@NonNull final String listValue, final int linkId, @NonNull final LabelsLookup lookup)
+	private static void createLabelPORecord(
+			@NonNull final String listValue,
+			final int linkId,
+			@NonNull final LabelsLookup lookup)
 	{
 		final PO labelPO = TableModelLoader.instance.newPO(lookup.getLabelsTableName());
 		labelPO.set_ValueNoCheck(lookup.getLabelsLinkColumnName(), linkId);
