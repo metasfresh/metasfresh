@@ -79,7 +79,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
-public class CustomerReturnService
+public class CustomerReturnRestService
 {
 	private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
 	private final AttributeSetHelper attributeSetHelper;
@@ -94,7 +94,7 @@ public class CustomerReturnService
 
 	private static final String SYS_CONFIG_UNKNOWN_BPARTNER = "sysconfig.customerReturn.unknownBpartner";
 
-	public CustomerReturnService(final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer, final AttributeSetHelper attributeSetHelper)
+	public CustomerReturnRestService(final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer, final AttributeSetHelper attributeSetHelper)
 	{
 		this.customerReturnsWithoutHUsProducer = customerReturnsWithoutHUsProducer;
 		this.attributeSetHelper = attributeSetHelper;
@@ -133,7 +133,7 @@ public class CustomerReturnService
 	}
 
 	private void validateRequestItem(@NonNull final JsonCreateCustomerReturnInfo customerReturnInfo,
-			@NonNull final CustomerReturnService.ReturnProductInfoProvider returnProductInfoProvider)
+			@NonNull final CustomerReturnRestService.ReturnProductInfoProvider returnProductInfoProvider)
 	{
 		//will throw error if there is no product
 		returnProductInfoProvider.getOrgId(customerReturnInfo.getOrgCode());
@@ -143,7 +143,7 @@ public class CustomerReturnService
 	}
 
 	private CustomerReturnLineCandidate buildCustomerReturnLineCandidate(@NonNull final JsonCreateCustomerReturnInfo customerReturnInfo,
-			@NonNull final CustomerReturnService.ReturnProductInfoProvider returnProductInfoProvider)
+			@NonNull final CustomerReturnRestService.ReturnProductInfoProvider returnProductInfoProvider)
 	{
 		final OrgId orgId = returnProductInfoProvider.getOrgId(customerReturnInfo.getOrgCode());
 
