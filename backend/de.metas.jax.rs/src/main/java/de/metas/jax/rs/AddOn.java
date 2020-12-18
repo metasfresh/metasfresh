@@ -39,31 +39,31 @@ public class AddOn implements IAddOn
 	@Override
 	public void beforeConnection()
 	{
-		// make sure that CConnection can query the server
-		CConnection.setStatusServiceEndPointProvider(new IStatusServiceEndPointProvider()
-		{
-			@Override
-			public IStatusService provide(final CConnection cConnection)
-			{
-				if (Ini.getRunMode() == RunMode.BACKEND)
-				{
-					// just return the "local" implementation, don't create a client endpoint, because
-					// often CConnection calls methods call other methods of themselves via this service.
-					// If the called instance is actually the same that makes the call (i.e. not on another machine)
-					// there are locking issues
-					return Services.get(IStatusService.class);
-				}
-
-				final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
-
-				final int timeOutMillis = 2000; // only let the user wait two seconds if there is no response
-				final CreateEndpointRequest<IStatusService> request = CreateEndpointRequest
-						.builder(IStatusService.class)
-						.setCconnection(cConnection)
-						.setTimeoutMillis(timeOutMillis)
-						.build();
-				return jaxRsBL.createClientEndpointsProgramatically(request).get(0);
-			}
-		});
+		// // make sure that CConnection can query the server
+		// CConnection.setStatusServiceEndPointProvider(new IStatusServiceEndPointProvider()
+		// {
+		// 	@Override
+		// 	public IStatusService provide(final CConnection cConnection)
+		// 	{
+		// 		if (Ini.getRunMode() == RunMode.BACKEND)
+		// 		{
+		// 			// just return the "local" implementation, don't create a client endpoint, because
+		// 			// often CConnection calls methods call other methods of themselves via this service.
+		// 			// If the called instance is actually the same that makes the call (i.e. not on another machine)
+		// 			// there are locking issues
+		// 			return Services.get(IStatusService.class);
+		// 		}
+		//
+		// 		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
+		//
+		// 		final int timeOutMillis = 2000; // only let the user wait two seconds if there is no response
+		// 		final CreateEndpointRequest<IStatusService> request = CreateEndpointRequest
+		// 				.builder(IStatusService.class)
+		// 				.setCconnection(cConnection)
+		// 				.setTimeoutMillis(timeOutMillis)
+		// 				.build();
+		// 		return jaxRsBL.createClientEndpointsProgramatically(request).get(0);
+		// 	}
+		// });
 	}
 }

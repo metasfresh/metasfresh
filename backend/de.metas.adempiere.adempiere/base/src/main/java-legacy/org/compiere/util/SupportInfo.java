@@ -207,15 +207,15 @@ public class SupportInfo
 				.append(" (");
 
 		// Server
-		if (cc.isAppsServerOK(false))
-		{
+		// if (cc.isAppsServerOK(false))
+		// {
 			final String serverVersion = cc.getServerVersionInfo();
 			sb.append("version ").append(serverVersion);
-		}
-		else
-		{
-			sb.append(getMsg("NotActive"));
-		}
+		// }
+		// else
+		// {
+		// 	sb.append(getMsg("NotActive"));
+		// }
 		//
 		sb.append(")");
 		//

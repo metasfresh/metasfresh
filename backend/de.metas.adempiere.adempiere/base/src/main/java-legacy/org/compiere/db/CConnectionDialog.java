@@ -117,11 +117,11 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private CLabel dbTypeLabel = new CLabel();
 	private CComboBox<String> dbTypeField = new CComboBox<>(ImmutableList.of(Database.DB_POSTGRESQL));
 
-	private CLabel appsHostLabel = new CLabel();
-	private CTextField appsHostField = new CTextField();
-	private CLabel appsPortLabel = new CLabel();
-	private CTextField appsPortField = new CTextField();
-	private CButton bTestApps = new CButton();
+	//private CLabel appsHostLabel = new CLabel();
+	//private CTextField appsHostField = new CTextField();
+	//private CLabel appsPortLabel = new CLabel();
+	//private CTextField appsPortField = new CTextField();
+	//private CButton bTestApps = new CButton();
 	// private CCheckBox cbOverwrite = new CCheckBox();
 	private CLabel dbUidLabel = new CLabel();
 	private CTextField dbUidField = new CTextField();
@@ -156,12 +156,12 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		dbTypeLabel.setText(res.getString("Type"));
 		sidField.setColumns(30);
 
-		appsHostLabel.setText(res.getString("AppsHost"));
-		appsHostField.setColumns(30);
-		appsPortLabel.setText(res.getString("AppsPort"));
-		appsPortField.setColumns(10);
-		bTestApps.setText(res.getString("TestApps"));
-		bTestApps.setHorizontalAlignment(JLabel.LEFT);
+		// appsHostLabel.setText(res.getString("AppsHost"));
+		// appsHostField.setColumns(30);
+		// appsPortLabel.setText(res.getString("AppsPort"));
+		// appsPortField.setColumns(10);
+		// bTestApps.setText(res.getString("TestApps"));
+		// bTestApps.setHorizontalAlignment(JLabel.LEFT);
 		// cbOverwrite.setText(res.getString("Overwrite"));
 		dbUidLabel.setText(res.getString("DBUidPwd"));
 		dbUidField.setColumns(10);
@@ -173,13 +173,13 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		//
 		centerPanel.add(nameLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(12, 12, 5, 5), 0, 0));
 		centerPanel.add(nameField, new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(12, 0, 5, 12), 0, 0));
-		centerPanel.add(appsHostLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
-		centerPanel.add(appsHostField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
-
-		centerPanel.add(appsPortLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
-		centerPanel.add(appsPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		// centerPanel.add(appsHostLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
+		// centerPanel.add(appsHostField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
 		//
-		centerPanel.add(bTestApps, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
+		// centerPanel.add(appsPortLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
+		// centerPanel.add(appsPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		// //
+		// centerPanel.add(bTestApps, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
 		// centerPanel.add(cbOverwrite, new GridBagConstraints(2, 4, 1, 1, 0.0, 0.0
 		// ,GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 5, 0, 12), 0, 0));
 		// DB
@@ -199,10 +199,10 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		centerPanel.add(bTestDB, new GridBagConstraints(1, 12, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
 		//
 		nameField.addActionListener(this);
-		appsHostField.addActionListener(this);
-		appsPortField.addActionListener(this);
-		// cbOverwrite.addActionListener(this);
-		bTestApps.addActionListener(this);
+		// appsHostField.addActionListener(this);
+		// appsPortField.addActionListener(this);
+		// // cbOverwrite.addActionListener(this);
+		// bTestApps.addActionListener(this);
 		//
 		dbTypeField.addActionListener(this);
 		hostField.addActionListener(this);
@@ -216,11 +216,11 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		// Server
 		if (!Ini.isSwingClient())
 		{
-			appsHostLabel.setVisible(false);
-			appsHostField.setVisible(false);
-			appsPortLabel.setVisible(false);
-			appsPortField.setVisible(false);
-			bTestApps.setVisible(false);
+			// appsHostLabel.setVisible(false);
+			// appsHostField.setVisible(false);
+			// appsPortLabel.setVisible(false);
+			// appsPortField.setVisible(false);
+			// bTestApps.setVisible(false);
 		}
 	}   // jbInit
 
@@ -342,12 +342,13 @@ public class CConnectionDialog extends CDialog implements ActionListener
 
 		updateCConnection();
 		//
-		if (src == bTestApps)
-		{
-			cmd_testApps();
-		}
+		// if (src == bTestApps)
+		// {
+		// 	cmd_testApps();
+		// }
 		// Database Selection Changed
-		else if (src == dbTypeField)
+		//else
+		if (src == dbTypeField)
 		{
 			m_cc.setType(dbTypeField.getSelectedItem());
 			dbPortField.setText(String.valueOf(m_cc.getDbPort()));
@@ -372,14 +373,14 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		if (Ini.isSwingClient())
 		{
 			// hengsin: avoid unnecessary requery of application server status
-			if (!appsHostField.getText().equals(m_cc.getAppsHost()))
-			{
-				m_cc.setAppsHost(appsHostField.getText());
-			}
-			if (!appsPortField.getText().equals(Integer.toString(m_cc.getAppsPort())))
-			{
-				m_cc.setAppsPort(appsPortField.getText());
-			}
+			// if (!appsHostField.getText().equals(m_cc.getAppsHost()))
+			// {
+			// 	m_cc.setAppsHost(appsHostField.getText());
+			// }
+			// if (!appsPortField.getText().equals(Integer.toString(m_cc.getAppsPort())))
+			// {
+			// 	m_cc.setAppsPort(appsPortField.getText());
+			// }
 		}
 		else
 		{
@@ -407,25 +408,25 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			nameField.setText(m_cc.getName());
 
 			final boolean dbSettingsWritable;
-			if (Ini.isSwingClient())
-			{
-				appsHostField.setReadWrite(true);
-				appsHostField.setText(m_cc.getAppsHost());
-
-				appsPortField.setReadWrite(true);
-				appsPortField.setText(String.valueOf(m_cc.getAppsPort()));
-
-				bTestApps.setReadWrite(true);
-				bTestApps.setIcon(getStatusIcon(m_cc.isAppsServerOK(false)));
-				// bTestApps.setToolTipText(m_cc.getRmiUri());
-
-				// cbOverwrite.setVisible(m_cc.isAppsServerOK(false));
-				dbSettingsWritable = !m_cc.isAppsServerOK(false);
-			}
-			else
-			{
-				dbSettingsWritable = true;
-			}
+			// if (Ini.isSwingClient())
+			// {
+			// 	appsHostField.setReadWrite(true);
+			// 	appsHostField.setText(m_cc.getAppsHost());
+			//
+			// 	appsPortField.setReadWrite(true);
+			// 	appsPortField.setText(String.valueOf(m_cc.getAppsPort()));
+			//
+			// 	bTestApps.setReadWrite(true);
+			// 	bTestApps.setIcon(getStatusIcon(m_cc.isAppsServerOK(false)));
+			// 	// bTestApps.setToolTipText(m_cc.getRmiUri());
+			//
+			// 	// cbOverwrite.setVisible(m_cc.isAppsServerOK(false));
+			// 	dbSettingsWritable = !m_cc.isAppsServerOK(false);
+			// }
+			// else
+			// {
+			dbSettingsWritable = true;
+			// }
 			//
 			dbTypeLabel.setReadWrite(dbSettingsWritable);
 			dbTypeField.setReadWrite(dbSettingsWritable);
@@ -502,29 +503,29 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		}
 	}   // cmd_testDB
 
-	/**
-	 * Test Application connection
-	 */
-	private void cmd_testApps()
-	{
-		setBusy(true);
-		try
-		{
-			if (!m_cc.isAppsServerOK(true))
-			{
-				return;
-			}
-			final Exception e = m_cc.testAppsServer();
-			if (e != null)
-			{
-				showError(res.getString("ServerNotActive") + " - " + m_cc.getAppsHost(), e.getLocalizedMessage());
-			}
-		}
-		finally
-		{
-			setBusy(false);
-		}
-	}   // cmd_testApps
+	// /**
+	//  * Test Application connection
+	//  */
+	// private void cmd_testApps()
+	// {
+	// 	setBusy(true);
+	// 	try
+	// 	{
+	// 		if (!m_cc.isAppsServerOK(true))
+	// 		{
+	// 			return;
+	// 		}
+	// 		final Exception e = m_cc.testAppsServer();
+	// 		if (e != null)
+	// 		{
+	// 			showError(res.getString("ServerNotActive") + " - " + m_cc.getAppsHost(), e.getLocalizedMessage());
+	// 		}
+	// 	}
+	// 	finally
+	// 	{
+	// 		setBusy(false);
+	// 	}
+	// }   // cmd_testApps
 
 	public boolean isCancel()
 	{

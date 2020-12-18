@@ -215,7 +215,7 @@ public final class CConnection implements Serializable, Cloneable
 	/** Had application server been query **/
 	private boolean m_appServerWasQueried = false;
 
-	private static IStatusServiceEndPointProvider m_statusServiceEndpointProvider = null;
+	//private static IStatusServiceEndPointProvider m_statusServiceEndpointProvider = null;
 
 	/**
 	 * don't access directly, but use {@link #getStatusServiceOrNull()} instead.
@@ -349,82 +349,82 @@ public final class CConnection implements Serializable, Cloneable
 		}
 	} 	// setAppsPort
 
-	/**
-	 * Is Application Server OK
-	 *
-	 * @param tryContactAgain try to contact again
-	 * @return true if Apps Server exists
-	 */
-	public boolean isAppsServerOK(boolean tryContactAgain)
-	{
-		if (Ini.isSwingClient() && !tryContactAgain && m_appServerWasQueried)
-		{
-			return m_okApps; // return the info that we already have
-		}
+	// /**
+	//  * Is Application Server OK
+	//  *
+	//  * @param tryContactAgain try to contact again
+	//  * @return true if Apps Server exists
+	//  */
+	// public boolean isAppsServerOK(boolean tryContactAgain)
+	// {
+	// 	if (Ini.isSwingClient() && !tryContactAgain && m_appServerWasQueried)
+	// 	{
+	// 		return m_okApps; // return the info that we already have
+	// 	}
+	//
+	// 	m_okApps = false;
+	// 	m_appServerWasQueried = true; // set this member to true, also if the invocation was not successful.
+	//
+	// 	if (Check.isEmpty(getAppsHost(), true) || attrs.isNoAppsHost())
+	// 	{
+	// 		// we don't even have an application server name set, so clearly the appServer is *not* OK.
+	// 		// note that we need to to also avoid a StackOverFlowError, because otherwise out status-server would try to get the getAppsHost() using
+	// 		// CConnection.get().getAppsHost(), resulting in another call to isAppsServerOK(), and so on.
+	// 		return m_okApps;
+	// 	}
+	//
+	// 	final IStatusService statusService = getStatusServiceOrNull();
+	// 	if (statusService == null)
+	// 	{
+	// 		return false; // can't get an endpoint to connect with.
+	// 	}
+	//
+	// 	// Contact it
+	// 	try
+	// 	{
+	// 		Services.get(IJMSService.class).updateConfiguration();
+	// 		final StatusServiceResult status = statusService.getStatus();
+	//
+	// 		m_version = status.getDateVersion();
+	// 		m_okApps = true;
+	// 	}
+	// 	catch (Throwable t)
+	// 	{
+	// 		m_okApps = false;
+	// 		String connect = toString();
+	// 		if (Check.isEmpty(connect, true))
+	// 		{
+	// 			connect = getAppsHost() + ":" + getAppsPort();
+	// 		}
+	// 		log.error("Caught this while trying to connect to application server {}: {}", connect, t.toString());
+	// 		t.printStackTrace();
+	// 	}
+	// 	return m_okApps;
+	// } 	// isAppsOK
 
-		m_okApps = false;
-		m_appServerWasQueried = true; // set this member to true, also if the invocation was not successful.
+	// private IStatusService getStatusServiceOrNull()
+	// {
+	// 	if (m_statusServiceEndpoint == null)
+	// 	{
+	// 		if (m_statusServiceEndpointProvider == null)
+	// 		{
+	// 			return null;
+	// 		}
+	// 		m_statusServiceEndpoint = m_statusServiceEndpointProvider.provide(this);
+	// 	}
+	// 	return m_statusServiceEndpoint;
+	// }
 
-		if (Check.isEmpty(getAppsHost(), true) || attrs.isNoAppsHost())
-		{
-			// we don't even have an application server name set, so clearly the appServer is *not* OK.
-			// note that we need to to also avoid a StackOverFlowError, because otherwise out status-server would try to get the getAppsHost() using
-			// CConnection.get().getAppsHost(), resulting in another call to isAppsServerOK(), and so on.
-			return m_okApps;
-		}
-
-		final IStatusService statusService = getStatusServiceOrNull();
-		if (statusService == null)
-		{
-			return false; // can't get an endpoint to connect with.
-		}
-
-		// Contact it
-		try
-		{
-			Services.get(IJMSService.class).updateConfiguration();
-			final StatusServiceResult status = statusService.getStatus();
-
-			m_version = status.getDateVersion();
-			m_okApps = true;
-		}
-		catch (Throwable t)
-		{
-			m_okApps = false;
-			String connect = toString();
-			if (Check.isEmpty(connect, true))
-			{
-				connect = getAppsHost() + ":" + getAppsPort();
-			}
-			log.error("Caught this while trying to connect to application server {}: {}", connect, t.toString());
-			t.printStackTrace();
-		}
-		return m_okApps;
-	} 	// isAppsOK
-
-	private IStatusService getStatusServiceOrNull()
-	{
-		if (m_statusServiceEndpoint == null)
-		{
-			if (m_statusServiceEndpointProvider == null)
-			{
-				return null;
-			}
-			m_statusServiceEndpoint = m_statusServiceEndpointProvider.provide(this);
-		}
-		return m_statusServiceEndpoint;
-	}
-
-	/**
-	 * Test ApplicationServer
-	 *
-	 * @return Exception or null
-	 */
-	public synchronized Exception testAppsServer()
-	{
-		queryAppsServerInfo();
-		return getAppsServerException();
-	} 	// testAppsServer
+	// /**
+	//  * Test ApplicationServer
+	//  *
+	//  * @return Exception or null
+	//  */
+	// public synchronized Exception testAppsServer()
+	// {
+	// 	queryAppsServerInfo();
+	// 	return getAppsServerException();
+	// } 	// testAppsServer
 
 	/**
 	 * Get Apps Server Version Info (user friendly)
@@ -997,7 +997,7 @@ public final class CConnection implements Serializable, Cloneable
 			sb.append("\n").append(database);
 		}
 
-		sb.append("\nAppsServerOK=").append(isAppsServerOK(false));
+		//sb.append("\nAppsServerOK=").append(isAppsServerOK(false));
 		sb.append(", DatabaseOK=").append(isDatabaseOK());
 		return sb.toString();
 	}	// getInfo
@@ -1188,68 +1188,68 @@ public final class CConnection implements Serializable, Cloneable
 //	}	// getInitialEnvironment
 	// @formatter:on
 
-	/**
-	 * Query Application Server Status.
-	 * update okApps
-	 *
-	 * @return true if OK
-	 */
-	private boolean queryAppsServerInfo()
-	{
-		log.trace(getAppsHost());
-		long start = System.currentTimeMillis();
+	// /**
+	//  * Query Application Server Status.
+	//  * update okApps
+	//  *
+	//  * @return true if OK
+	//  */
+	// private boolean queryAppsServerInfo()
+	// {
+	// 	log.trace(getAppsHost());
+	// 	long start = System.currentTimeMillis();
+	//
+	// 	m_appsException = null;
+	//
+	// 	try
+	// 	{
+	// 		final IStatusService statusService = getStatusServiceOrNull();
+	// 		if (statusService == null)
+	// 		{
+	// 			return false;
+	// 		}
+	// 		if (!isAppsServerOK(false))
+	// 		{
+	// 			return false;
+	// 		}
+	//
+	// 		updateInfoFromServer(statusService);
+	// 	}
+	// 	catch (CommunicationException ce)	// not a "real" error
+	// 	{
+	// 		m_appsException = ce;
+	// 		String connect = toString();
+	// 		if (Check.isEmpty(connect, true))
+	// 		{
+	// 			connect = getAppsHost() + ":" + getAppsPort();
+	// 		}
+	// 		log.warn(connect + "\n - " + ce.toString());
+	// 		ce.printStackTrace();
+	// 	}
+	// 	catch (Exception e)
+	// 	{
+	// 		m_appsException = e;
+	// 		String connect = toString();
+	// 		if (Check.isEmpty(connect, true))
+	// 		{
+	// 			connect = getAppsHost() + ":" + getAppsPort();
+	// 		}
+	// 		log.warn(connect + "\n - " + e.toString());
+	// 		e.printStackTrace();
+	// 	}
+	// 	log.debug("Success=" + m_okApps + " - " + (System.currentTimeMillis() - start) + "ms");
+	// 	return m_okApps;
+	// }	// setAppsServerInfo
 
-		m_appsException = null;
-
-		try
-		{
-			final IStatusService statusService = getStatusServiceOrNull();
-			if (statusService == null)
-			{
-				return false;
-			}
-			if (!isAppsServerOK(false))
-			{
-				return false;
-			}
-
-			updateInfoFromServer(statusService);
-		}
-		catch (CommunicationException ce)	// not a "real" error
-		{
-			m_appsException = ce;
-			String connect = toString();
-			if (Check.isEmpty(connect, true))
-			{
-				connect = getAppsHost() + ":" + getAppsPort();
-			}
-			log.warn(connect + "\n - " + ce.toString());
-			ce.printStackTrace();
-		}
-		catch (Exception e)
-		{
-			m_appsException = e;
-			String connect = toString();
-			if (Check.isEmpty(connect, true))
-			{
-				connect = getAppsHost() + ":" + getAppsPort();
-			}
-			log.warn(connect + "\n - " + e.toString());
-			e.printStackTrace();
-		}
-		log.debug("Success=" + m_okApps + " - " + (System.currentTimeMillis() - start) + "ms");
-		return m_okApps;
-	}	// setAppsServerInfo
-
-	/**
-	 * Get Last Exception of Apps Server Connection attempt
-	 *
-	 * @return Exception or null
-	 */
-	private Exception getAppsServerException()
-	{
-		return m_appsException;
-	} 	// getAppsServerException
+	// /**
+	//  * Get Last Exception of Apps Server Connection attempt
+	//  *
+	//  * @return Exception or null
+	//  */
+	// private Exception getAppsServerException()
+	// {
+	// 	return m_appsException;
+	// } 	// getAppsServerException
 
 	/**
 	 * Update Connection Info from Apps Server
@@ -1376,35 +1376,35 @@ public final class CConnection implements Serializable, Cloneable
 		IStatusService provide(CConnection cConnection);
 	}
 
-	public static void setStatusServiceEndPointProvider(final IStatusServiceEndPointProvider provider)
-	{
-		Check.errorIf(m_statusServiceEndpointProvider != null,
-				"CConnection already has m_statusServiceEndpointProvider={}",
-				m_statusServiceEndpointProvider);
+	// public static void setStatusServiceEndPointProvider(final IStatusServiceEndPointProvider provider)
+	// {
+	// 	Check.errorIf(m_statusServiceEndpointProvider != null,
+	// 			"CConnection already has m_statusServiceEndpointProvider={}",
+	// 			m_statusServiceEndpointProvider);
+	//
+	// 	m_statusServiceEndpointProvider = provider;
+	// }
 
-		m_statusServiceEndpointProvider = provider;
-	}
-
-	public Properties createRabbitmqSpringProperties()
-	{
-		final Properties rabbitMqProperties = new Properties();
-
-		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
-		{
-			queryAppsServerInfo();
-		}
-
-		if (Check.isEmpty(attrs.getRabbitmqHost(), true))
-		{
-			return rabbitMqProperties;
-		}
-
-		rabbitMqProperties.setProperty("spring.rabbitmq.host", attrs.getRabbitmqHost());
-		rabbitMqProperties.setProperty("spring.rabbitmq.port", attrs.getRabbitmqPort());
-		rabbitMqProperties.setProperty("spring.rabbitmq.username", attrs.getRabbitmqUsername());
-		rabbitMqProperties.setProperty("spring.rabbitmq.password", attrs.getRabbitmqPassword());
-
-		return rabbitMqProperties;
-	}
+	// public Properties createRabbitmqSpringProperties()
+	// {
+	// 	final Properties rabbitMqProperties = new Properties();
+	//
+	// 	if (Check.isEmpty(attrs.getRabbitmqHost(), true))
+	// 	{
+	// 		queryAppsServerInfo();
+	// 	}
+	//
+	// 	if (Check.isEmpty(attrs.getRabbitmqHost(), true))
+	// 	{
+	// 		return rabbitMqProperties;
+	// 	}
+	//
+	// 	rabbitMqProperties.setProperty("spring.rabbitmq.host", attrs.getRabbitmqHost());
+	// 	rabbitMqProperties.setProperty("spring.rabbitmq.port", attrs.getRabbitmqPort());
+	// 	rabbitMqProperties.setProperty("spring.rabbitmq.username", attrs.getRabbitmqUsername());
+	// 	rabbitMqProperties.setProperty("spring.rabbitmq.password", attrs.getRabbitmqPassword());
+	//
+	// 	return rabbitMqProperties;
+	// }
 
 }	// CConnection
