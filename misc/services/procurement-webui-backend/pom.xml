@@ -342,10 +342,10 @@
                                 <ignoreClass>javax.persistence.*</ignoreClass>
                                 <ignoreClass>javax.servlet.*</ignoreClass>
                                 <ignoreClass>javax.transaction.*</ignoreClass>
+                                <ignoreClass>javax.xml.*</ignoreClass>
                                 <ignoreClass>org.apache.commons.*</ignoreClass>
                                 <ignoreClass>org.apache.juli.*</ignoreClass>
                                 <ignoreClass>org.mozilla.*</ignoreClass>
-
                             </ignoreClasses>
                             <findAllDuplicates>true</findAllDuplicates>
                         </banDuplicateClasses>
