@@ -1,6 +1,6 @@
 -- 2020-12-16T13:17:59.005Z
 -- URL zum Konzept
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545019,0,TO_TIMESTAMP('2020-12-16 10:17:56','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Cannot add product due haddex check','E',TO_TIMESTAMP('2020-12-16 10:17:56','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order.producthadexerror')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545019,0,TO_TIMESTAMP('2020-12-16 10:17:56','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','The product''s haddex check has to be renewed','E',TO_TIMESTAMP('2020-12-16 10:17:56','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.order.producthadexerror')
 ;
 -- 2020-12-16T13:17:59.234Z
 -- URL zum Konzept
@@ -15,6 +15,11 @@ UPDATE AD_Message_Trl SET MsgText='Die Haddex-Prüfung für das Produkt muss ern
 -- 2020-12-16T13:21:51.881Z
 -- URL zum Konzept
 UPDATE AD_Message_Trl SET MsgText='Die Haddex-Prüfung für das Produkt muss erneuert werden.',Updated=TO_TIMESTAMP('2020-12-16 10:21:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545019
+;
+
+-- 2020-12-17T18:56:43.930Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='The product''s haddex check has to be renewed',Updated=TO_TIMESTAMP('2020-12-17 15:56:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545019
 ;
 
 -- 2020-12-16T13:22:30.034Z
@@ -41,4 +46,5 @@ UPDATE AD_Message_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2020-12-17 15:5
 -- URL zum Konzept
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2020-12-17 15:56:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545019
 ;
+
 
