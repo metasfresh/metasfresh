@@ -32,7 +32,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-a
+
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableJpaRepositories
