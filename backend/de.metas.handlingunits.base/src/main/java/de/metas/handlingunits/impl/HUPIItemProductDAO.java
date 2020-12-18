@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -234,6 +235,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	{
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName);
 		return queryBuilder
+				.orderByDescending(I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct)
 				.create()
 				.list(I_M_HU_PI_Item_Product.class);
 	}
@@ -487,6 +489,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				// Get specific Product first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, Direction.Descending, Nulls.Last) // Y first, N second
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct, Direction.Descending, Nulls.Last)
 				// Get latest valid record first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last);
 
@@ -694,5 +697,16 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		final I_M_HU_PI_Item_Product huPIItemProduct = retrieveFirst(Env.getCtx(), query, ITrx.TRXNAME_None);
 		return Optional.ofNullable(huPIItemProduct);
+	}
+
+	@Override
+	public Optional<HUPIItemProductId> retrieveDefaultIdForProduct(
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ZonedDateTime date)
+	{
+
+		final I_M_HU_PI_Item_Product hupiItemProduct = retrieveDefaultForProduct(productId, bpartnerId, date).get();
+		return Optional.of(HUPIItemProductId.ofRepoIdOrNull(hupiItemProduct != null ? hupiItemProduct.getM_HU_PI_Item_Product_ID() : null));
 	}
 }

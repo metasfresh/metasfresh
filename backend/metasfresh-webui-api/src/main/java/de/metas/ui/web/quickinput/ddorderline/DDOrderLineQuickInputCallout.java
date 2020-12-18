@@ -23,6 +23,7 @@
 package de.metas.ui.web.quickinput.ddorderline;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -72,7 +73,7 @@ public class DDOrderLineQuickInputCallout
 		}
 		final I_DD_Order ddOrder = quickInput.getRootDocumentAs(I_DD_Order.class);
 
-		ddOrderLineQuickInput.setM_HU_PI_Item_Product(getDefaultPI(ddOrder, productId));
+		ddOrderLineQuickInput.setM_HU_PI_Item_Product_ID(getDefaultPI(ddOrder, productId).getM_HU_PI_Item_Product_ID());
 	}
 
 	@Nullable

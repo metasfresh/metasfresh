@@ -1,12 +1,23 @@
 package de.metas.handlingunits.reservation.interceptor;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.model.I_C_Order;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.order.IOrderLineBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import lombok.NonNull;
+import java.util.Optional;
 
 /*
  * #%L
@@ -34,9 +45,22 @@ import lombok.NonNull;
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteReservation(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// TODO
+	}
+
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = I_C_Order.COLUMNNAME_M_Product_ID)
+	public void onProductSetOrChanged(final de.metas.interfaces.I_C_OrderLine orderLine)
+	{
+		final Optional<HUPIItemProductId> huPiItemProductId = hupiItemProductDAO.retrieveDefaultIdForProduct(ProductId.ofRepoId(orderLine.getM_Product_ID()),
+				BPartnerId.ofRepoId(orderLine.getC_BPartner_ID()),
+				TimeUtil.asZonedDateTime(orderLine.getDatePromised()));
+		orderLine.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPiItemProductId.orElse(null)));
 	}
 }
