@@ -156,7 +156,7 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
-		if (!Check.isEmpty(bpartner.getInvoiceRule()))
+		if (bpartner.getInvoiceRule() != null)
 		{
 			bpartnerRecord.setInvoiceRule(bpartner.getInvoiceRule().getCode());
 		}
