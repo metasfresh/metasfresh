@@ -72,6 +72,8 @@ public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IP
 						.cloneFromHuId(row.getHuId())
 						.build());
 
+		getResult().setCloseWebuiModalView(true);
+
 		return MSG_OK;
 	}
 
