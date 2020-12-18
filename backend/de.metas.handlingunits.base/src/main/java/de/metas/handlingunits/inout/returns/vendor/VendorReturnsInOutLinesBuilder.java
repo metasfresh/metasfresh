@@ -38,7 +38,7 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class VendorReturnsInOutLinesBuilder extends AbstractQualityReturnsInOutLinesBuilder
+class VendorReturnsInOutLinesBuilder extends AbstractQualityReturnsInOutLinesBuilder
 {
 	// services
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);

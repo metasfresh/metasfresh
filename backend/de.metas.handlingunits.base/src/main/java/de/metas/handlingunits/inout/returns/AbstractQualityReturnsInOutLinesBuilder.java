@@ -72,11 +72,8 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder
 	 */
 	private final Map<ArrayKey, I_M_InOutLine> _inOutLines = new LinkedHashMap<>();
 
-	protected AbstractQualityReturnsInOutLinesBuilder(final IReference<I_M_InOut> inoutRef)
+	protected AbstractQualityReturnsInOutLinesBuilder(@NonNull final IReference<I_M_InOut> inoutRef)
 	{
-		super();
-
-		Check.assumeNotNull(inoutRef, "inoutRef not null");
 		_inoutRef = inoutRef;
 	}
 

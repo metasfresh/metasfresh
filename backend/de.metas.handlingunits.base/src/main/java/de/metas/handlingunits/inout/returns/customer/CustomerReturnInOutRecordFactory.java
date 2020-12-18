@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inout.returns.customer;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.inout.returns.ReturnsInOutHeaderFiller;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -39,7 +40,8 @@ import static org.compiere.model.X_M_InOut.MOVEMENTTYPE_CustomerReturns;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
 @Repository
-class CustomerReturnInOutRecordFactory
+@VisibleForTesting
+public class CustomerReturnInOutRecordFactory
 {
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);

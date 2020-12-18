@@ -73,7 +73,7 @@ import java.util.Set;
  */
 public class MultiCustomerHUReturnsInOutProducer
 {
-	public static final MultiCustomerHUReturnsInOutProducer newInstance()
+	public static MultiCustomerHUReturnsInOutProducer newInstance()
 	{
 		return new MultiCustomerHUReturnsInOutProducer();
 	}
@@ -219,10 +219,9 @@ public class MultiCustomerHUReturnsInOutProducer
 			{
 				InterfaceWrapperHelper.refresh(_manualCustomerReturn);
 			}
-			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
-			// mark HUs as active and create movements to QualityReturnWarehouse for them
-			huInOutBL.moveHUsForCustomerReturn(ctx, getHUsToReturn());
 
+			// mark HUs as active and create movements to QualityReturnWarehouse for them
+			huInOutBL.moveHUsToQualityReturnWarehouse(getHUsToReturn());
 			huStatusBL.setHUStatusActive(_husToReturn);
 		}
 

@@ -56,7 +56,6 @@ import org.compiere.util.Util.ArrayKey;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -138,11 +137,9 @@ public class ManualCustomerReturnInOutProducer
 			ReturnInOutUserNotificationsProducer.newInstance()
 					.notify(returnInOuts);
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
 			// mark HUs as active and create movements to QualityReturnWarehouse for them
 			final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-			huInOutBL.moveHUsForCustomerReturn(ctx, getHUsToReturn());
-
+			huInOutBL.moveHUsToQualityReturnWarehouse(getHUsToReturn());
 		}
 	}
 

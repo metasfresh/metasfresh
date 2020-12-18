@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
@@ -14,6 +15,7 @@ import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -45,7 +47,7 @@ import de.metas.util.Services;
  */
 public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	private final IHUInOutBL inoutBL = Services.get(IHUInOutBL.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	private List<I_M_HU> husMoved = null;
 
@@ -74,7 +76,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		inoutBL.createCustomerReturnInOutForHUs(husToReturn);
+		returnsServiceFacade.createCustomerReturnInOutForHUs(husToReturn);
 		husMoved = husToReturn;
 
 		return MSG_OK;

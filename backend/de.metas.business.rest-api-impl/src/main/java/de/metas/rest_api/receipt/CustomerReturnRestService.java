@@ -31,9 +31,9 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate;
-import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
 import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
+import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -81,7 +81,7 @@ import java.util.function.Supplier;
 @Service
 public class CustomerReturnRestService
 {
-	private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
+	private final ReturnsServiceFacade returnsServiceFacade;
 	private final AttributeSetHelper attributeSetHelper;
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -94,9 +94,11 @@ public class CustomerReturnRestService
 
 	private static final String SYS_CONFIG_UNKNOWN_BPARTNER = "sysconfig.customerReturn.unknownBpartner";
 
-	public CustomerReturnRestService(final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer, final AttributeSetHelper attributeSetHelper)
+	public CustomerReturnRestService(
+			final ReturnsServiceFacade returnsServiceFacade,
+			final AttributeSetHelper attributeSetHelper)
 	{
-		this.customerReturnsWithoutHUsProducer = customerReturnsWithoutHUsProducer;
+		this.returnsServiceFacade = returnsServiceFacade;
 		this.attributeSetHelper = attributeSetHelper;
 	}
 
@@ -129,11 +131,11 @@ public class CustomerReturnRestService
 				.collect(ImmutableList.toImmutableList());
 
 		//3. generate returns
-		return customerReturnsWithoutHUsProducer.create(customerReturnLineCandidates);
+		return returnsServiceFacade.createCustomerReturnsFromCandidates(customerReturnLineCandidates);
 	}
 
 	private void validateRequestItem(@NonNull final JsonCreateCustomerReturnInfo customerReturnInfo,
-			@NonNull final CustomerReturnRestService.ReturnProductInfoProvider returnProductInfoProvider)
+									 @NonNull final CustomerReturnRestService.ReturnProductInfoProvider returnProductInfoProvider)
 	{
 		//will throw error if there is no product
 		returnProductInfoProvider.getOrgId(customerReturnInfo.getOrgCode());
@@ -143,7 +145,7 @@ public class CustomerReturnRestService
 	}
 
 	private CustomerReturnLineCandidate buildCustomerReturnLineCandidate(@NonNull final JsonCreateCustomerReturnInfo customerReturnInfo,
-			@NonNull final CustomerReturnRestService.ReturnProductInfoProvider returnProductInfoProvider)
+																		 @NonNull final CustomerReturnRestService.ReturnProductInfoProvider returnProductInfoProvider)
 	{
 		final OrgId orgId = returnProductInfoProvider.getOrgId(customerReturnInfo.getOrgCode());
 
@@ -172,7 +174,7 @@ public class CustomerReturnRestService
 				? ReturnedGoodsWarehouseType.ofCode(customerReturnInfo.getReturnedGoodsWarehouseType())
 				: ReturnedGoodsWarehouseType.getDefault();
 
-		final CustomerReturnLineCandidate candidate = CustomerReturnLineCandidate.builder()
+		return CustomerReturnLineCandidate.builder()
 				.orgId(orgId)
 				.bPartnerLocationId(bPartnerLocationId)
 				.orderId(orderId)
@@ -186,14 +188,12 @@ public class CustomerReturnRestService
 				.externalId(customerReturnInfo.getExternalId())
 				.returnedGoodsWarehouseType(returnedGoodsWarehouseType)
 				.build();
-
-		return candidate;
 	}
 
 	@Nullable
 	private I_C_Order getSalesOrder(@NonNull final OrgId orgId,
-			@Nullable final I_M_InOutLine originShipmentLine,
-			@Nullable final String shipmentDocumentNumber)
+									@Nullable final I_M_InOutLine originShipmentLine,
+									@Nullable final String shipmentDocumentNumber)
 	{
 		Optional<I_C_Order> order = Optional.empty();
 

@@ -74,8 +74,6 @@ import java.util.stream.Collectors;
  */
 class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
-
-
 	public static final VendorReturnsInOutProducer newInstance()
 	{
 		return new VendorReturnsInOutProducer();

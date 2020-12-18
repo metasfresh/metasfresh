@@ -65,7 +65,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
+class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
 
 	public static CustomerReturnsInOutProducer newInstance()

@@ -22,12 +22,7 @@
 
 package de.metas.servicerepair.customerreturns.process;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
-import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
@@ -37,7 +32,6 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
@@ -45,8 +39,7 @@ import javax.annotation.Nullable;
 
 public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final CustomerReturnsWithoutHUsProducer customerReturnService = SpringContextHolder.instance.getBean(CustomerReturnsWithoutHUsProducer.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -69,20 +62,17 @@ public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IP
 	protected String doIt()
 	{
 		final HUEditorRow row = getSingleSelectedRow();
-		final HuId huId = row.getHuId();
 		final HUsToReturnViewContext viewContext = getHUsToReturnViewContext();
-		System.out.println("huId=" + huId);
-		System.out.println("viewContext=" + viewContext);
 
-		final I_M_HU clonedPlaningHU = handlingUnitsBL.copyAsPlannedHU(huId);
+		returnsServiceFacade.cloneHUAndCreateCustomerReturnLineRequest(
+				ReturnsServiceFacade.CloneHUAndCreateCustomerReturnLineRequest.builder()
+						.customerReturnId(viewContext.getCustomerReturnsId())
+						.productId(row.getProductId())
+						.qtyReturned(row.getQtyCUAsQuantity())
+						.cloneFromHuId(row.getHuId())
+						.build());
 
-		final I_M_InOutLine returnLine = customerReturnService.createReturnLine(CreateCustomerReturnLineReq.builder()
-				.headerId(viewContext.getCustomerReturnsId())
-				.productId(row.getProductId())
-				.qtyReturned(row.getQtyCUAsQuantity())
-				.build());
-
-		throw new UnsupportedOperationException(); // TODO
+		return MSG_OK;
 	}
 
 	@Override

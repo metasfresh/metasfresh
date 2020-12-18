@@ -33,7 +33,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-public class CustomerReturnsInOutLinesBuilder extends AbstractQualityReturnsInOutLinesBuilder
+class CustomerReturnsInOutLinesBuilder extends AbstractQualityReturnsInOutLinesBuilder
 {
 	// services
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
