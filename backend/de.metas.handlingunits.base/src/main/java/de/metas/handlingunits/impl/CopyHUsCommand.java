@@ -198,6 +198,7 @@ public class CopyHUsCommand
 		final I_M_HU_Attribute newHUAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class);
 		InterfaceWrapperHelper.copyValues(oldHUAttribute, newHUAttribute);
 		newHUAttribute.setM_HU_ID(newHUId.getRepoId());
+		newHUAttribute.setValue(oldHUAttribute.getValue()); // programmatically setting this because the framework handles it as a search key and avoids copying it
 		InterfaceWrapperHelper.save(newHUAttribute);
 	}
 
