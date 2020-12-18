@@ -72,8 +72,11 @@ public class DDOrderLineQuickInputCallout
 			return;
 		}
 		final I_DD_Order ddOrder = quickInput.getRootDocumentAs(I_DD_Order.class);
-
-		ddOrderLineQuickInput.setM_HU_PI_Item_Product_ID(getDefaultPI(ddOrder, productId).getM_HU_PI_Item_Product_ID());
+		final I_M_HU_PI_Item_Product defaultPackingItem = getDefaultPI(ddOrder, productId);
+		if (defaultPackingItem != null)
+		{
+			ddOrderLineQuickInput.setM_HU_PI_Item_Product_ID(defaultPackingItem.getM_HU_PI_Item_Product_ID());
+		}
 	}
 
 	@Nullable
