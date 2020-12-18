@@ -1,27 +1,26 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.util.Services;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -52,21 +51,31 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		return (LabelsLookup)lookupDescriptor;
 	}
 
-	/** Labels table name (e.g. C_BPartner_Attribute) */
+	/**
+	 * Labels table name (e.g. C_BPartner_Attribute)
+	 */
 	@Getter
 	private final String labelsTableName;
-	/** Labels reference List column name (e.g. C_BPartner_Attribute's Attribute) */
+	/**
+	 * Labels reference List column name (e.g. C_BPartner_Attribute's Attribute)
+	 */
 	@Getter
 	private final String labelsValueColumnName;
 	private final LookupDataSource labelsValuesLookupDataSource;
 	@Getter
 	private final boolean labelsValuesUseNumericKey;
-	/** Labels tableName's link column name (e.g. C_BPartner_Attribute's C_BPartner_ID) */
+	/**
+	 * Labels tableName's link column name (e.g. C_BPartner_Attribute's C_BPartner_ID)
+	 */
 	@Getter
 	private final String labelsLinkColumnName;
-	/** Table name (e.g. C_BPartner) */
+	/**
+	 * Table name (e.g. C_BPartner)
+	 */
 	private final String tableName;
-	/** Table's link column name (e.g. C_BPartner's C_BPartner_ID) */
+	/**
+	 * Table's link column name (e.g. C_BPartner's C_BPartner_ID)
+	 */
 	@Getter
 	private final String linkColumnName;
 
@@ -221,5 +230,36 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	{
 		final String filter = evalCtx.getFilter();
 		return labelsValuesLookupDataSource.findEntities(evalCtx, filter);
+	}
+
+	public Set<Object> normalizeStringIds(final Set<String> stringIds)
+	{
+		if (stringIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		if (isLabelsValuesUseNumericKey())
+		{
+			return stringIds.stream()
+					.map(LabelsLookup::convertToInt)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			return ImmutableSet.<Object>copyOf(stringIds);
+		}
+	}
+
+	private static int convertToInt(final String stringId)
+	{
+		try
+		{
+			return Integer.parseInt(stringId);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + stringId + "` to int.", ex);
+		}
 	}
 }
