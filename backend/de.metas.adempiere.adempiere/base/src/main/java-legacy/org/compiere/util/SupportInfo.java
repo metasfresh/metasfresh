@@ -202,8 +202,10 @@ public class SupportInfo
 		}
 
 		// Host
-		sb.append(cc.getAppsHost()).append(" : ")
-				.append(cc.getAppsPort())
+		sb
+				// .append(cc.getAppsHost())
+				// .append(" : ")
+				// .append(cc.getAppsPort())
 				.append(" (");
 
 		// Server

@@ -163,7 +163,7 @@ public final class CConnection implements Serializable, Cloneable
 		if (ccTemplate == null)
 		{
 			ccTemplateToUse = new CConnection();
-			ccTemplateToUse.setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
+			// ccTemplateToUse.setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
 		}
 		else
 		{
@@ -250,33 +250,33 @@ public final class CConnection implements Serializable, Cloneable
 		attrs.setName(toString());
 	} 	// setName
 
-	/*************
-	 * Get Application Host
-	 *
-	 * @return apps host
-	 */
-	public String getAppsHost()
-	{
-		return attrs.getAppsHost();
-	}
+	// /*************
+	//  * Get Application Host
+	//  *
+	//  * @return apps host
+	//  */
+	// public String getAppsHost()
+	// {
+	// 	return attrs.getAppsHost();
+	// }
 
-	/**
-	 * Set Application Host
-	 *
-	 * @param apps_host apps host
-	 */
-	void setAppsHost(String apps_host)
-	{
-		if (Objects.equals(attrs.getAppsHost(), apps_host))
-		{
-			return;
-		}
-
-		attrs.setAppsHost(apps_host);
-		setName();
-
-		resetAppsServer(); // reset our cached infos about the apps server.
-	}
+	// /**
+	//  * Set Application Host
+	//  *
+	//  * @param apps_host apps host
+	//  */
+	// void setAppsHost(String apps_host)
+	// {
+	// 	if (Objects.equals(attrs.getAppsHost(), apps_host))
+	// 	{
+	// 		return;
+	// 	}
+	//
+	// 	attrs.setAppsHost(apps_host);
+	// 	setName();
+	//
+	// 	resetAppsServer(); // reset our cached infos about the apps server.
+	// }
 
 	private void resetAppsServer()
 	{
@@ -292,62 +292,62 @@ public final class CConnection implements Serializable, Cloneable
 		// m_iContext = null;
 	}
 
-	/**
-	 * Get Apps Port
-	 *
-	 * @return port
-	 */
-	public int getAppsPort()
-	{
-		final int appsPort = attrs.getAppsPort();
-		if (appsPort > 0)
-		{
-			return appsPort;
-		}
-		// appsPort<=0 never makes sense, so update it to our default.
-		setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
-		return attrs.getAppsPort();
-	}
+	// /**
+	//  * Get Apps Port
+	//  *
+	//  * @return port
+	//  */
+	// public int getAppsPort()
+	// {
+	// 	final int appsPort = attrs.getAppsPort();
+	// 	if (appsPort > 0)
+	// 	{
+	// 		return appsPort;
+	// 	}
+	// 	// appsPort<=0 never makes sense, so update it to our default.
+	// 	setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
+	// 	return attrs.getAppsPort();
+	// }
 
-	/**
-	 * Set Apps Port
-	 *
-	 * @param apps_port apps port
-	 */
-	public void setAppsPort(int apps_port)
-	{
-		if (Objects.equals(attrs.getAppsPort(), apps_port))
-		{
-			return;
-		}
-		attrs.setAppsPort(apps_port);
-		m_okApps = false;
-		m_appServerWasQueried = false;
+	// /**
+	//  * Set Apps Port
+	//  *
+	//  * @param apps_port apps port
+	//  */
+	// public void setAppsPort(int apps_port)
+	// {
+	// 	if (Objects.equals(attrs.getAppsPort(), apps_port))
+	// 	{
+	// 		return;
+	// 	}
+	// 	attrs.setAppsPort(apps_port);
+	// 	m_okApps = false;
+	// 	m_appServerWasQueried = false;
+	//
+	// 	resetAppsServer(); // reset our cached infos about the apps server.
+	// }
 
-		resetAppsServer(); // reset our cached infos about the apps server.
-	}
-
-	/**
-	 * Set Apps Port from string
-	 *
-	 * @param apps_portString appd port as String
-	 */
-	void setAppsPort(String apps_portString)
-	{
-		if (Check.isEmpty(apps_portString, true))
-		{
-			return;
-		}
-
-		try
-		{
-			setAppsPort(Integer.parseInt(apps_portString));
-		}
-		catch (Exception e)
-		{
-			log.error(e.toString());
-		}
-	} 	// setAppsPort
+	// /**
+	//  * Set Apps Port from string
+	//  *
+	//  * @param apps_portString appd port as String
+	//  */
+	// void setAppsPort(String apps_portString)
+	// {
+	// 	if (Check.isEmpty(apps_portString, true))
+	// 	{
+	// 		return;
+	// 	}
+	//
+	// 	try
+	// 	{
+	// 		setAppsPort(Integer.parseInt(apps_portString));
+	// 	}
+	// 	catch (Exception e)
+	// 	{
+	// 		log.error(e.toString());
+	// 	}
+	// } 	// setAppsPort
 
 	// /**
 	//  * Is Application Server OK
@@ -620,21 +620,21 @@ public final class CConnection implements Serializable, Cloneable
 		return Database.DB_POSTGRESQL;
 	}
 
-	synchronized void setType(final String type)
-	{
-		Database.assertThatTypeIsPostgres(type);
-
-		if (!Objects.equals(attrs.getDbType(), type))
-		{
-			attrs.setDbType(type);
-			closeDataSource();
-		}
-
-		if (getDbPort() != DB_PostgreSQL.DEFAULT_PORT)
-		{
-			setDbPort(DB_PostgreSQL.DEFAULT_PORT);
-		}
-	}
+	// synchronized void setType(final String type)
+	// {
+	// 	Database.assertThatTypeIsPostgres(type);
+	//
+	// 	if (!Objects.equals(attrs.getDbType(), type))
+	// 	{
+	// 		attrs.setDbType(type);
+	// 		closeDataSource();
+	// 	}
+	//
+	// 	if (getDbPort() != DB_PostgreSQL.DEFAULT_PORT)
+	// 	{
+	// 		setDbPort(DB_PostgreSQL.DEFAULT_PORT);
+	// 	}
+	// }
 
 	/**
 	 * Supports BLOB
@@ -652,10 +652,10 @@ public final class CConnection implements Serializable, Cloneable
 	 *
 	 * @return true if PostgreSQL
 	 */
-	public boolean isPostgreSQL()
-	{
-		return Database.DB_POSTGRESQL.equals(attrs.getDbType());
-	} 	// isPostgreSQL
+	// public boolean isPostgreSQL()
+	// {
+	// 	return Database.DB_POSTGRESQL.equals(attrs.getDbType());
+	// } 	// isPostgreSQL
 
 	/**
 	 * Is Database Connection OK.
@@ -827,7 +827,7 @@ public final class CConnection implements Serializable, Cloneable
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder(attrs.getAppsHost());
+		final StringBuilder sb = new StringBuilder(/*attrs.getAppsHost()*/);
 		sb.append("{").append(attrs.getDbHost())
 				.append("-").append(attrs.getDbName())
 				.append("-").append(attrs.getDbUid())
@@ -904,17 +904,17 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			final CConnectionAttributes connectionString = CConnectionAttributes.of(attributes);
 			setName(connectionString.getName());
-			setAppsHost(connectionString.getAppsHost());
-
-			int appsPort = connectionString.getAppsPort();
-			if (appsPort == 1099)
-			{
-				appsPort = SERVER_DEFAULT_APPSERVER_PORT; // this is a workaround, since older config files might still have 1099, but our new standard port is 61616
-			}
-			setAppsPort(appsPort);
+			// setAppsHost(connectionString.getAppsHost());
+			//
+			// int appsPort = connectionString.getAppsPort();
+			// if (appsPort == 1099)
+			// {
+			// 	appsPort = SERVER_DEFAULT_APPSERVER_PORT; // this is a workaround, since older config files might still have 1099, but our new standard port is 61616
+			// }
+			// setAppsPort(appsPort);
 
 			//
-			setType(connectionString.getDbType());
+			// setType(connectionString.getDbType());
 			setDbHost(connectionString.getDbHost());
 			setDbPort(connectionString.getDbPort());
 			setDbName(connectionString.getDbName());
@@ -949,12 +949,13 @@ public final class CConnection implements Serializable, Cloneable
 		if (o instanceof CConnection)
 		{
 			final CConnection cc = (CConnection)o;
-			if (cc.getAppsHost().equals(attrs.getAppsHost())
-					&& cc.getAppsPort() == attrs.getAppsPort()
+			if (true
+					// && cc.getAppsHost().equals(attrs.getAppsHost())
+					// && cc.getAppsPort() == attrs.getAppsPort()
 					&& cc.getDbHost().equals(attrs.getDbHost())
 					&& cc.getDbPort() == attrs.getDbPort()
 					&& cc.getDbName().equals(attrs.getDbName())
-					&& cc.getType().equals(attrs.getDbType())
+					// && cc.getType().equals(attrs.getDbType())
 					&& cc.getDbUid().equals(attrs.getDbUid())
 					&& cc.getDbPwd().equals(attrs.getDbPwd()))
 			{
@@ -1266,65 +1267,65 @@ public final class CConnection implements Serializable, Cloneable
 
 		final StatusServiceResult status = svr.getStatus();
 
-		setType(status.getDbType());
+		// setType(status.getDbType());
 		setDbHost(status.getDbHost());
 		setDbPort(status.getDbPort());
 		setDbName(status.getDbName());
 		setDbUid(status.getDbUid());
 		setDbPwd(status.getDbPwd());
 
-		final String rabbitmqHost = status.getRabbitmqHost();
-		if (StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME.equals(rabbitmqHost))
-		{
-			setRabbitmqHost(getAppsHost());
-		}
-		else
-		{
-			setRabbitmqHost(rabbitmqHost);
-		}
-		setRabbitmqPort(status.getRabbitmqPort());
-		setRabbitmqUsername(status.getRabbitmqUsername());
-		setRabbitmqPassword(status.getRabbitmqPassword());
+		// final String rabbitmqHost = status.getRabbitmqHost();
+		// if (StatusServiceResult.RABBITMQ_USE_APPSERVER_HOSTNAME.equals(rabbitmqHost))
+		// {
+		// 	setRabbitmqHost(getAppsHost());
+		// }
+		// else
+		// {
+		// 	setRabbitmqHost(rabbitmqHost);
+		// }
+		// setRabbitmqPort(status.getRabbitmqPort());
+		// setRabbitmqUsername(status.getRabbitmqUsername());
+		// setRabbitmqPassword(status.getRabbitmqPassword());
 
 		m_version = status.getDateVersion();
 		log.debug("Server=" + getDbHost() + ", DB=" + getDbName());
 	} 	// update Info
 
-	private void setRabbitmqHost(String rabbitmqHost)
-	{
-		if (Objects.equals(rabbitmqHost, attrs.getRabbitmqHost()))
-		{
-			return;
-		}
-		attrs.setRabbitmqHost(rabbitmqHost);
-	}
+	// private void setRabbitmqHost(String rabbitmqHost)
+	// {
+	// 	if (Objects.equals(rabbitmqHost, attrs.getRabbitmqHost()))
+	// 	{
+	// 		return;
+	// 	}
+	// 	attrs.setRabbitmqHost(rabbitmqHost);
+	// }
 
-	private void setRabbitmqPort(String rabbitmqPort)
-	{
-		if (Objects.equals(rabbitmqPort, attrs.getRabbitmqPort()))
-		{
-			return;
-		}
-		attrs.setRabbitmqPort(rabbitmqPort);
-	}
-
-	private void setRabbitmqUsername(String rabbitmqUsername)
-	{
-		if (Objects.equals(rabbitmqUsername, attrs.getRabbitmqUsername()))
-		{
-			return;
-		}
-		attrs.setRabbitmqUsername(rabbitmqUsername);
-	}
-
-	private void setRabbitmqPassword(String rabbitmqPassword)
-	{
-		if (Objects.equals(rabbitmqPassword, attrs.getRabbitmqPassword()))
-		{
-			return;
-		}
-		attrs.setRabbitmqPassword(rabbitmqPassword);
-	}
+	// private void setRabbitmqPort(String rabbitmqPort)
+	// {
+	// 	if (Objects.equals(rabbitmqPort, attrs.getRabbitmqPort()))
+	// 	{
+	// 		return;
+	// 	}
+	// 	attrs.setRabbitmqPort(rabbitmqPort);
+	// }
+	//
+	// private void setRabbitmqUsername(String rabbitmqUsername)
+	// {
+	// 	if (Objects.equals(rabbitmqUsername, attrs.getRabbitmqUsername()))
+	// 	{
+	// 		return;
+	// 	}
+	// 	attrs.setRabbitmqUsername(rabbitmqUsername);
+	// }
+	//
+	// private void setRabbitmqPassword(String rabbitmqPassword)
+	// {
+	// 	if (Objects.equals(rabbitmqPassword, attrs.getRabbitmqPassword()))
+	// 	{
+	// 		return;
+	// 	}
+	// 	attrs.setRabbitmqPassword(rabbitmqPassword);
+	// }
 
 	/**
 	 * Get Transaction Isolation Info
