@@ -43,6 +43,7 @@
     </dependencyManagement>
 
 
+
     <dependencies>
         <dependency>
             <groupId>de.metas.procurement</groupId>
@@ -61,9 +62,14 @@
         </dependency>
 
         <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-<!--            <scope>system</scope>-->
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>jakarta.activation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
