@@ -70,6 +70,7 @@ Here come the actual release notes:
   * [#10414](https://github.com/metasfresh/metasfresh/issues/10414) Guarantee/Service: Own window for Service Handling Units
   * [#10415](https://github.com/metasfresh/metasfresh/issues/10415) Action to open the Service HU Editor from "Service Annahme" window
   * [#10417](https://github.com/metasfresh/metasfresh/pull/10417) When splitting the HU in `QtyCU`=1 HUs, make sure the `PP_Order_Qty.Qty` is also ONE
+  * [#10433](https://github.com/metasfresh/metasfresh/pull/10433) Add property `skipIfIndirectlyCalled` to annotation `CalloutMethod`
 
 * metasfresh-webui-frontend-legacy
   * [#2656](https://github.com/metasfresh/metasfresh-webui-frontend-legacy/issues/2656) UX: Error Messages
