@@ -148,7 +148,8 @@ public class C_OrderLine
 	})
 	public void checkHaddexDate(final I_C_OrderLine orderLine)
 	{
-		if (!orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID())).isSOTrx())
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		if (!order.isSOTrx())
 		{
 			return;
 		}
@@ -160,7 +161,7 @@ public class C_OrderLine
 			final long differenceBetweenHaddexCheckDateAndPromisedDateInMonths = Math.abs(
 					ChronoUnit.MONTHS.between(
 							TimeUtil.asZonedDateTime(product.getDateHaddexCheck()),
-							TimeUtil.asZonedDateTime(orderLine.getDatePromised())
+							TimeUtil.asZonedDateTime(order.getDatePromised())
 							));
 
 
