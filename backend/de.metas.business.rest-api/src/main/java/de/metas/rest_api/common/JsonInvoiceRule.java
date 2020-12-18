@@ -32,7 +32,7 @@ public enum JsonInvoiceRule
 	@ApiEnum("Like `AfterDelivery`, but the invoicing date is also set according to the respective bill partner's invoicing schedule (e.g. once per month)")
 	CustomerScheduleAfterDelivery,
 
-	@ApiEnum("Specifies that no invoicing should take place until all quantities belonging to the same invoice have been shipped")
+	@ApiEnum("Specifies that no invoicing should take place until all quantities belonging to the same invoice have been shipped.\nNote: what belongs to one invoice is determined by the respective business partner's aggregation rule.")
 	OrderCompletelyDelivered,
 
 	@ApiEnum("Any ordered quantities - delivered or not - can be invoiced right away")
