@@ -235,7 +235,6 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	{
 		final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = createHU_PI_Item_Product_QueryBuilder(ctx, queryVO, trxName);
 		return queryBuilder
-				.orderByDescending(I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct)
 				.create()
 				.list(I_M_HU_PI_Item_Product.class);
 	}
