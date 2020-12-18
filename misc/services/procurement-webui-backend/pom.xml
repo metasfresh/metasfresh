@@ -42,12 +42,27 @@
         </dependencies>
     </dependencyManagement>
 
+
+<!--    <exclusions>-->
+<!--        <exclusion>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-api</artifactId>-->
+<!--        </exclusion>-->
+<!--    </exclusions>-->
+
+
     <dependencies>
 
         <dependency>
             <groupId>de.metas.procurement</groupId>
             <artifactId>de.metas.procurement.sync-api</artifactId>
             <version>${metasfresh.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.cxf</groupId>
+                    <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -149,6 +164,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter</artifactId>
+                </exclusion>
+            </exclusions>
+
         </dependency>
 
         <!-- Logging -->
