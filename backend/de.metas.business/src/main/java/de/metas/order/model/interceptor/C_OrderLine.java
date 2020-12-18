@@ -2,14 +2,18 @@ package de.metas.order.model.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -24,13 +28,17 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -66,6 +74,13 @@ public class C_OrderLine
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
+	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
+	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.producthadexerror");
+
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
 	{
@@ -124,6 +139,48 @@ public class C_OrderLine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
 		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void checkHaddexDate(final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+
+		final I_M_Product product = productDAO.getById(orderLine.getM_Product_ID());
+
+		if (product.isHaddexCheck() && product.getDateHaddexCheck() != null)
+		{
+			final long differenceBetweenHaddexCheckDateAndPromisedDateInMonths = Math.abs(
+					ChronoUnit.MONTHS.between(
+							TimeUtil.asZonedDateTime(product.getDateHaddexCheck()),
+							TimeUtil.asZonedDateTime(order.getDatePromised())
+							));
+
+
+			if (differenceBetweenHaddexCheckDateAndPromisedDateInMonths > getMaxHaddexAgeInMonths(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID()))
+			{
+				throw new AdempiereException(MSG_HADDEX_CHECK_ERROR).markAsUserValidationError();
+			}
+		}
+
+	}
+
+	private int getMaxHaddexAgeInMonths(int clientID, int orgID)
+	{
+		final int months = sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS, 24, clientID, orgID);
+		if (months > 0)
+		{
+			return months;
+		}
+		return Integer.MAX_VALUE;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
