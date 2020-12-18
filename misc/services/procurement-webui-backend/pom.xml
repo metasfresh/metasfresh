@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.sun.activation</groupId>
             <artifactId>jakarta.activation</artifactId>
-            <scope>system</scope>
+<!--            <scope>system</scope>-->
         </dependency>
 
         <dependency>
