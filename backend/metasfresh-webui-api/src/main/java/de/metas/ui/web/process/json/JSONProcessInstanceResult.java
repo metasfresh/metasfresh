@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.CloseViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
@@ -25,7 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
-import java.io.Serializable;
+import javax.annotation.Nullable;
 import java.util.Set;
 
 /*
@@ -50,11 +51,10 @@ import java.util.Set;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONProcessInstanceResult implements Serializable
+public final class JSONProcessInstanceResult
 {
-	public static final JSONProcessInstanceResult of(final ProcessInstanceResult result)
+	public static JSONProcessInstanceResult of(final ProcessInstanceResult result)
 	{
 		return new JSONProcessInstanceResult(result);
 	}
@@ -74,7 +74,7 @@ public final class JSONProcessInstanceResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONResultAction action;
 
-	private JSONProcessInstanceResult(final ProcessInstanceResult result)
+	private JSONProcessInstanceResult(@NonNull final ProcessInstanceResult result)
 	{
 		pinstanceId = result.getInstanceId().toJson();
 
@@ -87,7 +87,8 @@ public final class JSONProcessInstanceResult implements Serializable
 	/**
 	 * Converts {@link ResultAction} to JSON
 	 */
-	private static final JSONResultAction toJSONResultAction(final ResultAction resultAction)
+	@Nullable
+	private static JSONResultAction toJSONResultAction(@Nullable final ResultAction resultAction)
 	{
 		if (resultAction == null)
 		{
@@ -113,6 +114,10 @@ public final class JSONProcessInstanceResult implements Serializable
 			final OpenSingleDocument openDocumentAction = (OpenSingleDocument)resultAction;
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
 			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.getTargetTab());
+		}
+		else if(resultAction instanceof CloseViewAction)
+		{
+			return JSONCloseView.instance;
 		}
 		else if (resultAction instanceof SelectViewRowsAction)
 		{
@@ -175,7 +180,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final String profileId;
 		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab;
 
-		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId, final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab)
+		public JSONOpenViewAction(final ViewId viewId, @Nullable final ViewProfileId profileId, final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab)
 		{
 			super("openView");
 			this.windowId = viewId.getWindowId();
@@ -219,6 +224,17 @@ public final class JSONProcessInstanceResult implements Serializable
 			this.windowId = windowId;
 			this.documentId = documentId;
 			this.targetTab = targetTab;
+		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	public static class JSONCloseView extends JSONResultAction
+	{
+		public static final JSONCloseView instance = new JSONCloseView();
+
+		private JSONCloseView()
+		{
+			super("closeView");
 		}
 	}
 

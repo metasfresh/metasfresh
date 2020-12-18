@@ -15,6 +15,7 @@ import lombok.Setter;
 import lombok.Value;
 import org.compiere.util.Util;
 
+import javax.annotation.Nullable;
 import java.io.File;
 
 /*
@@ -40,46 +41,30 @@ import java.io.File;
  */
 
 @Value
-public final class ProcessInstanceResult
+public class ProcessInstanceResult
 {
-	public static final ProcessInstanceResultBuilder builder(@NonNull final DocumentId instanceId)
+	public static ProcessInstanceResultBuilder builder(@NonNull final DocumentId instanceId)
 	{
 		return new ProcessInstanceResultBuilder()
 				.instanceId(instanceId);
 	}
 
-	public static final ProcessInstanceResult ok(@NonNull final DocumentId instanceId)
-	{
-		return builder(instanceId).build();
-	}
-
-	public static final ProcessInstanceResult error(@NonNull final DocumentId instanceId, @NonNull final Throwable error)
-	{
-		return builder(instanceId)
-				.error(true)
-				.summary(error.getLocalizedMessage())
-				.build();
-	}
-
-	private final DocumentId instanceId;
-	private final String summary;
-	private final boolean error;
-	private final ResultAction action;
-	private final boolean openInNewTab;
+	DocumentId instanceId;
+	String summary;
+	boolean error;
+	@Nullable ResultAction action;
 
 	@Builder
 	private ProcessInstanceResult(
 			@NonNull final DocumentId instanceId,
 			final String summary,
 			final boolean error,
-			final ResultAction action,
-			final boolean openInNewTab)
+			@Nullable final ResultAction action)
 	{
 		this.instanceId = instanceId;
 		this.summary = summary;
 		this.error = error;
 		this.action = action;
-		this.openInNewTab = openInNewTab;
 	}
 
 	public boolean isSuccess()
@@ -87,7 +72,9 @@ public final class ProcessInstanceResult
 		return !isError();
 	}
 
-	/** @return action of given type; never returns null */
+	/**
+	 * @return action of given type; never returns null
+	 */
 	public <T extends ResultAction> T getAction(final Class<T> actionType)
 	{
 		final ResultAction action = getAction();
@@ -109,42 +96,46 @@ public final class ProcessInstanceResult
 	//
 	//
 
-	/** Base interface for all post-process actions */
-	public static interface ResultAction
+	/**
+	 * Base interface for all post-process actions
+	 */
+	public interface ResultAction
 	{
 	}
 
-
-
 	@lombok.Value
 	@lombok.Builder
-	public static final class OpenReportAction implements ResultAction
+	public static class OpenReportAction implements ResultAction
 	{
 		@NonNull
-		private final String filename;
+		String filename;
+
 		@NonNull
-		private final String contentType;
+		String contentType;
+
 		@NonNull
 		@Setter(AccessLevel.NONE)
 		@Getter(AccessLevel.NONE)
-		private final File tempFile;
+		File tempFile;
 
 		public byte[] getReportData()
 		{
 			return Util.readBytes(tempFile);
 		}
-
 	}
 
 	@lombok.Value
 	@lombok.Builder
-	public static final class OpenViewAction implements ResultAction
+	public static class OpenViewAction implements ResultAction
 	{
 		@NonNull
-		private final ViewId viewId;
-		private final ViewProfileId profileId;
+		ViewId viewId;
+
+		@Nullable
+		ViewProfileId profileId;
+
 		@Builder.Default
-		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB_OVERLAY;
+		ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB_OVERLAY;
 	}
 
 	@lombok.Value
@@ -152,41 +143,47 @@ public final class ProcessInstanceResult
 	public static class OpenIncludedViewAction implements ResultAction
 	{
 		@NonNull
-		private final ViewId viewId;
-		private final ViewProfileId profileId;
+		ViewId viewId;
+		ViewProfileId profileId;
 	}
 
 	@lombok.Value(staticConstructor = "of")
 	public static class CreateAndOpenIncludedViewAction implements ResultAction
 	{
 		@NonNull
-		private final CreateViewRequest createViewRequest;
+		CreateViewRequest createViewRequest;
+	}
+
+	public static final class CloseViewAction implements ResultAction
+	{
+		public static final CloseViewAction instance = new CloseViewAction();
+
+		private CloseViewAction() {}
 	}
 
 	@lombok.Value
 	@lombok.Builder
-	public static final class OpenSingleDocument implements ResultAction
+	public static class OpenSingleDocument implements ResultAction
 	{
 		@NonNull
-		private final DocumentPath documentPath;
+		DocumentPath documentPath;
 		@Builder.Default
-		private final ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB;
+		ProcessExecutionResult.RecordsToOpen.TargetTab targetTab = ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB;
 
 	}
 
 	@lombok.Value
 	@lombok.Builder
-	public static final class SelectViewRowsAction implements ResultAction
+	public static class SelectViewRowsAction implements ResultAction
 	{
-		private @NonNull final ViewId viewId;
-		private @NonNull final DocumentIdsSelection rowIds;
+		@NonNull ViewId viewId;
+		@NonNull DocumentIdsSelection rowIds;
 	}
 
 	@lombok.Value
 	@lombok.Builder
-	public static final class DisplayQRCodeAction implements ResultAction
+	public static class DisplayQRCodeAction implements ResultAction
 	{
-		private @NonNull final String code;
+		@NonNull String code;
 	}
-
 }
