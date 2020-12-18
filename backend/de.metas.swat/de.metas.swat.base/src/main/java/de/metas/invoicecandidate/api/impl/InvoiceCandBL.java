@@ -2361,8 +2361,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 *     <li>{@link I_C_Invoice_Candidate#getDateToInvoice()} is not null and not{@link Env#MAX_DATE}</li>
 	 * </ul>
 	 *
-	 * @param icRecord
-	 * @return
 	 */
 	public boolean isCandidateForRecalculate(final I_C_Invoice_Candidate icRecord)
 	{
