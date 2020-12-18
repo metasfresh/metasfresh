@@ -243,7 +243,9 @@ class TableWrapper extends PureComponent {
         return;
       }
 
-      onDeselectAll();
+      if (this.props.selected.length) {
+        onDeselectAll();
+      }
 
       // if view is an included view, we should deselect parent's selection as the included
       // view is only visible when an item is selected. At the same time we'll hide the
