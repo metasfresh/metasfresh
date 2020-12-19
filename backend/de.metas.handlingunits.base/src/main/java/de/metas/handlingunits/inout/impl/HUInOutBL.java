@@ -254,6 +254,7 @@ public class HUInOutBL implements IHUInOutBL
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docSubTypeAny()
 				.isSOTrx(true)
 				.build();
 
