@@ -40,14 +40,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ui.api.IGridTabSummaryInfo;
-import org.compiere.util.DisplayType;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.Properties;
-import java.util.Set;
 
 /** Represent a summary information (immutable) about a selection of invoice candidates */
 public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSummaryInfo
