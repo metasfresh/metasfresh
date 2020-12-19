@@ -83,7 +83,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * <b>Note: does not touch the PriceUOM</b>
 	 *
 	 * @param orderLine
-	 * @param optional, if <code>>= 0</code> then the result will be rounded to this precision. Otherwise the precision of the order's price list will be used.
+	 * @param precision, if <code>>= 0</code> then the result will be rounded to this precision. Otherwise the precision of the order's price list will be used.
 	 */
 	void updatePriceActual(I_C_OrderLine orderLine, CurrencyPrecision precision);
 
@@ -135,7 +135,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * Important note: what we do <b>not</b> set there is the price-UOM because that one is set only together with the price.
 	 *
 	 * @param orderLine
-	 * @param M_Product_ID
+	 * @param productId
 	 * @param setUomFromProduct
 	 */
 	void setProductId(org.compiere.model.I_C_OrderLine orderLine, ProductId productId, boolean setUomFromProduct);

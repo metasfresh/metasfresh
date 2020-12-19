@@ -17,7 +17,7 @@ const mainFilterClasses = `btn btn-filter btn-meta-outline-secondary btn-sm togg
  * @extends PureComponent
  */
 class FiltersNotIncluded extends PureComponent {
-  state = { openFilterId: null };
+  state = { openFilterIdx: -1 };
   deviceType = null;
 
   constructor(props) {
@@ -28,10 +28,10 @@ class FiltersNotIncluded extends PureComponent {
 
   /**
    * @method toggleFilter
-   * @summary Updates in the state the openFilterId with the given filter index (matched from the filtersActive)
+   * @summary Updates in the state the openFilterIdx with the given filter index (matched from the filtersActive)
    * @param {integer} index - position that corresponds to a filter in the filtersActive
    */
-  toggleFilter = (index) => this.setState({ openFilterId: index });
+  toggleFilter = (index) => this.setState({ openFilterIdx: index });
 
   /**
    * @method findActiveFilter
@@ -50,9 +50,13 @@ class FiltersNotIncluded extends PureComponent {
    */
   handleClickOutside = () => {
     const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
+    const { openFilterIdx } = this.state;
+
     if (allowOutsideClick) {
-      !widgetShown && this.toggleFilter(null);
-      dropdownToggled();
+      if (openFilterIdx > -1) {
+        !widgetShown && this.toggleFilter(-1);
+        dropdownToggled();
+      }
     }
   };
 
@@ -73,7 +77,7 @@ class FiltersNotIncluded extends PureComponent {
       activeFiltersCaptions,
       filterId,
     } = this.props;
-    const { openFilterId } = this.state;
+    const { openFilterIdx } = this.state;
 
     return (
       <div className="filter-wrapper filters-frequent">
@@ -109,9 +113,9 @@ class FiltersNotIncluded extends PureComponent {
                 )}
 
                 <button
-                  onClick={() => this.toggleFilter(item.filterId)}
+                  onClick={() => this.toggleFilter(index)}
                   className={cx(mainFilterClasses, {
-                    ['btn-select']: openFilterId === index,
+                    ['btn-select']: openFilterIdx === index,
                     ['btn-active']: isActive,
                     ['btn-distance']: !dateStepper,
                   })}
@@ -134,7 +138,7 @@ class FiltersNotIncluded extends PureComponent {
                   />
                 )}
 
-                {openFilterId === item.filterId && (
+                {openFilterIdx === index && (
                   <FiltersItem
                     captionValue={item.captionValue}
                     key={index}
