@@ -1,21 +1,20 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-
-/**
- * Generated Interface for C_DocType
- *
- * @author metasfresh (generated)
+/** Generated Interface for C_DocType
+ *  @author metasfresh (generated) 
  */
-public interface I_C_DocType
+@SuppressWarnings("unused")
+public interface I_C_DocType 
 {
 
 	String Table_Name = "C_DocType";
 
-	//	/** AD_Table_ID=217 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=217 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
 
 	/**
 	 * Set Emailtext.
@@ -25,7 +24,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_BoilerPlate_ID(int AD_BoilerPlate_ID);
+	void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
 
 	/**
 	 * Get Emailtext.
@@ -60,7 +59,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID(int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -82,7 +81,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_PrintFormat_ID(int AD_PrintFormat_ID);
+	void setAD_PrintFormat_ID (int AD_PrintFormat_ID);
 
 	/**
 	 * Get Druck - Format.
@@ -94,8 +93,7 @@ public interface I_C_DocType
 	 */
 	int getAD_PrintFormat_ID();
 
-	@Nullable
-	org.compiere.model.I_AD_PrintFormat getAD_PrintFormat();
+	@Nullable org.compiere.model.I_AD_PrintFormat getAD_PrintFormat();
 
 	void setAD_PrintFormat(@Nullable org.compiere.model.I_AD_PrintFormat AD_PrintFormat);
 
@@ -110,7 +108,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocType_ID(int C_DocType_ID);
+	void setC_DocType_ID (int C_DocType_ID);
 
 	/**
 	 * Get Document Type.
@@ -133,7 +131,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocTypeDifference_ID(int C_DocTypeDifference_ID);
+	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
 
 	/**
 	 * Get Difference Document.
@@ -155,7 +153,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocTypeInvoice_ID(int C_DocTypeInvoice_ID);
+	void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
 
 	/**
 	 * Get Rechnungs-Belegart.
@@ -177,7 +175,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocTypeProforma_ID(int C_DocTypeProforma_ID);
+	void setC_DocTypeProforma_ID (int C_DocTypeProforma_ID);
 
 	/**
 	 * Get Document Type for ProForma.
@@ -199,7 +197,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocTypeShipment_ID(int C_DocTypeShipment_ID);
+	void setC_DocTypeShipment_ID (int C_DocTypeShipment_ID);
 
 	/**
 	 * Get Document Type for Shipment.
@@ -245,7 +243,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDefiniteSequence_ID(int DefiniteSequence_ID);
+	void setDefiniteSequence_ID (int DefiniteSequence_ID);
 
 	/**
 	 * Get Definite Sequence.
@@ -256,8 +254,7 @@ public interface I_C_DocType
 	 */
 	int getDefiniteSequence_ID();
 
-	@Nullable
-	org.compiere.model.I_AD_Sequence getDefiniteSequence();
+	@Nullable org.compiere.model.I_AD_Sequence getDefiniteSequence();
 
 	void setDefiniteSequence(@Nullable org.compiere.model.I_AD_Sequence DefiniteSequence);
 
@@ -271,7 +268,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription(@Nullable java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -280,8 +277,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_C_DocType, Object> COLUMN_Description = new ModelColumn<>(I_C_DocType.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -294,7 +290,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocBaseType(java.lang.String DocBaseType);
+	void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
 	 * Get Document Base Type.
@@ -317,7 +313,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocNoSequence_ID(int DocNoSequence_ID);
+	void setDocNoSequence_ID (int DocNoSequence_ID);
 
 	/**
 	 * Get Nummernfolgen für Belege.
@@ -329,8 +325,7 @@ public interface I_C_DocType
 	 */
 	int getDocNoSequence_ID();
 
-	@Nullable
-	org.compiere.model.I_AD_Sequence getDocNoSequence();
+	@Nullable org.compiere.model.I_AD_Sequence getDocNoSequence();
 
 	void setDocNoSequence(@Nullable org.compiere.model.I_AD_Sequence DocNoSequence);
 
@@ -345,7 +340,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocSubType(@Nullable java.lang.String DocSubType);
+	void setDocSubType (@Nullable java.lang.String DocSubType);
 
 	/**
 	 * Get Doc Sub Type.
@@ -355,8 +350,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getDocSubType();
+	@Nullable java.lang.String getDocSubType();
 
 	ModelColumn<I_C_DocType, Object> COLUMN_DocSubType = new ModelColumn<>(I_C_DocType.class, "DocSubType", null);
 	String COLUMNNAME_DocSubType = "DocSubType";
@@ -369,7 +363,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentCopies(int DocumentCopies);
+	void setDocumentCopies (int DocumentCopies);
 
 	/**
 	 * Get Kopien.
@@ -392,7 +386,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNote(@Nullable java.lang.String DocumentNote);
+	void setDocumentNote (@Nullable java.lang.String DocumentNote);
 
 	/**
 	 * Get Notiz / Zeilentext.
@@ -402,8 +396,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
-	java.lang.String getDocumentNote();
+	@Nullable java.lang.String getDocumentNote();
 
 	ModelColumn<I_C_DocType, Object> COLUMN_DocumentNote = new ModelColumn<>(I_C_DocType.class, "DocumentNote", null);
 	String COLUMNNAME_DocumentNote = "DocumentNote";
@@ -411,18 +404,18 @@ public interface I_C_DocType
 	/**
 	 * Set Entitäts-Art.
 	 * Dictionary Entity Type;
-	 * Determines ownership and synchronization
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setEntityType(java.lang.String EntityType);
+	void setEntityType (java.lang.String EntityType);
 
 	/**
 	 * Get Entitäts-Art.
 	 * Dictionary Entity Type;
-	 * Determines ownership and synchronization
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -441,7 +434,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setGL_Category_ID(int GL_Category_ID);
+	void setGL_Category_ID (int GL_Category_ID);
 
 	/**
 	 * Get GL Category.
@@ -468,7 +461,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setHasCharges(boolean HasCharges);
+	void setHasCharges (boolean HasCharges);
 
 	/**
 	 * Get Charges.
@@ -491,7 +484,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setHasProforma(boolean HasProforma);
+	void setHasProforma (boolean HasProforma);
 
 	/**
 	 * Get Pro forma Invoice.
@@ -514,7 +507,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive(boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -536,7 +529,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCopyDescriptionToDocument(boolean IsCopyDescriptionToDocument);
+	void setIsCopyDescriptionToDocument (boolean IsCopyDescriptionToDocument);
 
 	/**
 	 * Get Copy description to document.
@@ -558,7 +551,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCreateCounter(boolean IsCreateCounter);
+	void setIsCreateCounter (boolean IsCreateCounter);
 
 	/**
 	 * Get Create Counter Document.
@@ -581,7 +574,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDefault(boolean IsDefault);
+	void setIsDefault (boolean IsDefault);
 
 	/**
 	 * Get Default.
@@ -604,7 +597,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDefaultCounterDoc(boolean IsDefaultCounterDoc);
+	void setIsDefaultCounterDoc (boolean IsDefaultCounterDoc);
 
 	/**
 	 * Get Default Counter Document.
@@ -627,7 +620,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDocNoControlled(boolean IsDocNoControlled);
+	void setIsDocNoControlled (boolean IsDocNoControlled);
 
 	/**
 	 * Get Document is Number Controlled.
@@ -650,7 +643,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsIndexed(boolean IsIndexed);
+	void setIsIndexed (boolean IsIndexed);
 
 	/**
 	 * Get Indexed.
@@ -673,7 +666,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsInTransit(boolean IsInTransit);
+	void setIsInTransit (boolean IsInTransit);
 
 	/**
 	 * Get In Transit.
@@ -696,7 +689,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsOverwriteDateOnComplete(boolean IsOverwriteDateOnComplete);
+	void setIsOverwriteDateOnComplete (boolean IsOverwriteDateOnComplete);
 
 	/**
 	 * Get Overwrite document date on complete.
@@ -718,7 +711,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsOverwriteSeqOnComplete(boolean IsOverwriteSeqOnComplete);
+	void setIsOverwriteSeqOnComplete (boolean IsOverwriteSeqOnComplete);
 
 	/**
 	 * Get Overwrite Sequence on Complete.
@@ -740,7 +733,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsPickQAConfirm(boolean IsPickQAConfirm);
+	void setIsPickQAConfirm (boolean IsPickQAConfirm);
 
 	/**
 	 * Get Pick/QA Confirmation.
@@ -763,7 +756,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsShipConfirm(boolean IsShipConfirm);
+	void setIsShipConfirm (boolean IsShipConfirm);
 
 	/**
 	 * Get Bestätigung Versand/Wareneingang.
@@ -786,7 +779,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSOTrx(boolean IsSOTrx);
+	void setIsSOTrx (boolean IsSOTrx);
 
 	/**
 	 * Get Sales Transaction.
@@ -809,7 +802,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSplitWhenDifference(boolean IsSplitWhenDifference);
+	void setIsSplitWhenDifference (boolean IsSplitWhenDifference);
 
 	/**
 	 * Get Split when Difference.
@@ -831,7 +824,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName(java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -853,7 +846,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPrintName(java.lang.String PrintName);
+	void setPrintName (java.lang.String PrintName);
 
 	/**
 	 * Get Drucktext.
@@ -876,7 +869,7 @@ public interface I_C_DocType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setR_RequestType_ID(int R_RequestType_ID);
+	void setR_RequestType_ID (int R_RequestType_ID);
 
 	/**
 	 * Get Request Type.
@@ -888,8 +881,7 @@ public interface I_C_DocType
 	 */
 	int getR_RequestType_ID();
 
-	@Nullable
-	org.compiere.model.I_R_RequestType getR_RequestType();
+	@Nullable org.compiere.model.I_R_RequestType getR_RequestType();
 
 	void setR_RequestType(@Nullable org.compiere.model.I_R_RequestType R_RequestType);
 
