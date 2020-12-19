@@ -1,19 +1,16 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.List;
-
+import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
+import de.metas.common.procurement.sync.IServerSync;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
-
-import de.metas.procurement.sync.IServerSync;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
+import java.util.List;
 
 /*
  * #%L
@@ -37,7 +34,6 @@ import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
  * #L%
  */
 
-@NoCxfServerBind
 public class NullServerSync implements IServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -57,13 +53,13 @@ public class NullServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportProductSupplies(final SyncProductSuppliesRequest request)
+	public void reportProductSupplies(final PutProductSuppliesRequest request)
 	{
 		logger.info("Got {}", request);
 	}
 
 	@Override
-	public void reportWeekSupply(final SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(final PutWeeklySupplyRequest request)
 	{
 		logger.info("Got {}", request);
 	}
@@ -76,7 +72,7 @@ public class NullServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportRfQChanges(SyncRfQChangeRequest request)
+	public void reportRfQChanges(PutRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);
 	}

@@ -336,7 +336,7 @@ export class RawLookup extends Component {
         newState.selected = values[0];
       }
 
-      if (!mandatory) {
+      if (!mandatory && placeholder) {
         list.push({
           caption: placeholder,
           key: null,

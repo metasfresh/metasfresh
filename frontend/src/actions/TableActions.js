@@ -557,19 +557,15 @@ export function updateTableSelection({
     });
 
     if (viewId) {
-      return Promise.all([
-        // show included view
-        dispatch(
-          handleToggleIncludedView({
-            windowId,
-            tableId: id,
-            selection,
-            isModal,
-          })
-        ),
-        // update quick actions
-        dispatch(fetchQuickActions({ windowId, viewId, isModal })),
-      ]);
+      return dispatch(
+        handleToggleIncludedView({
+          windowId,
+          viewId,
+          tableId: id,
+          selection,
+          isModal,
+        })
+      );
     }
 
     return Promise.resolve(selection);
@@ -600,17 +596,15 @@ export function deselectTableRows({
     });
 
     if (viewId) {
-      return Promise.all([
-        dispatch(
-          handleToggleIncludedView({
-            windowId,
-            tableId: id,
-            selection,
-            isModal,
-          })
-        ),
-        dispatch(fetchQuickActions({ windowId, viewId, isModal })),
-      ]);
+      return dispatch(
+        handleToggleIncludedView({
+          windowId,
+          viewId,
+          tableId: id,
+          selection,
+          isModal,
+        })
+      );
     }
 
     return Promise.resolve(selection);
@@ -623,11 +617,18 @@ export function deselectTableRows({
  * the included view.
  *
  * @param {number} windowId
+ * @param {string} viewId
  * @param {string} tableId
  * @param {array} selection - array of selected/deselected items
  * @param {boolean} isModal
  */
-function handleToggleIncludedView({ windowId, tableId, selection, isModal }) {
+function handleToggleIncludedView({
+  windowId,
+  viewId,
+  tableId,
+  selection,
+  isModal,
+}) {
   return (dispatch, getState) => {
     const state = getState();
     const includedView = state.viewHandler.includedView;
@@ -676,6 +677,8 @@ function handleToggleIncludedView({ windowId, tableId, selection, isModal }) {
           isModal,
         })
       );
+    } else {
+      dispatch(fetchQuickActions({ windowId, viewId, isModal }));
     }
 
     return Promise.resolve(openIncludedViewOnSelect);

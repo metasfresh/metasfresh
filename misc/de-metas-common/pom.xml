@@ -49,5 +49,6 @@
         <module>de-metas-common-shipping</module>
         <module>de-metas-common-util</module>
         <module>de-metas-common-manufacturing</module>
+        <module>de-metas-common-procurement</module>
     </modules>
 </project>

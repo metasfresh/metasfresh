@@ -1,17 +1,15 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.Date;
-
-import javax.transaction.Transactional;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.procurement.webui.model.SyncConfirm;
+import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.metas.procurement.sync.protocol.SyncConfirmation;
-import de.metas.procurement.webui.model.SyncConfirm;
-import de.metas.procurement.webui.repository.SyncConfirmRepository;
+import javax.transaction.Transactional;
+import java.util.Date;
 
 /*
  * #%L
