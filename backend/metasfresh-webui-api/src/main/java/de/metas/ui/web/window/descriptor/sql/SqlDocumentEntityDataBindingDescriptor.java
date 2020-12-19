@@ -38,6 +38,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -447,7 +449,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return this;
 		}
 
-		public Builder setTableAliasFromDetailId(final DetailId detailId)
+		public Builder setTableAliasFromDetailId(@Nullable final DetailId detailId)
 		{
 			if (detailId == null)
 			{
@@ -466,7 +468,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return _tableAlias;
 		}
 
-		public Builder setChildToParentLinkColumnNames(final IPair<String, String> childToParentLinkColumnNames)
+		public Builder setChildToParentLinkColumnNames(@Nullable final IPair<String, String> childToParentLinkColumnNames)
 		{
 			assertNotBuilt();
 

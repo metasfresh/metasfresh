@@ -79,9 +79,9 @@ final class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrde
 	}
 
 	@Override
-	protected void setAssignedHUs(final Collection<I_M_HU> hus)
+	protected void addAssignedHUs(final Collection<I_M_HU> hus)
 	{
 		final I_PP_Order ppOrder = getPP_Order();
-		huPPOrderBL.setAssignedHandlingUnits(ppOrder, hus);
+		huPPOrderBL.addAssignedHandlingUnits(ppOrder, hus);
 	}
 }

@@ -1,21 +1,21 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -40,8 +40,9 @@ import lombok.NonNull;
  */
 
 @ApiModel("element-line")
-@SuppressWarnings("serial")
-public class JSONDocumentLayoutElementLine implements Serializable
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@ToString
+public class JSONDocumentLayoutElementLine
 {
 	static List<JSONDocumentLayoutElementLine> ofList(
 			@NonNull final List<DocumentLayoutElementLineDescriptor> elementsLines,
@@ -61,6 +62,7 @@ public class JSONDocumentLayoutElementLine implements Serializable
 
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Getter
 	private final List<JSONDocumentLayoutElement> elements;
 
 	private JSONDocumentLayoutElementLine(
@@ -72,32 +74,22 @@ public class JSONDocumentLayoutElementLine implements Serializable
 	}
 
 	@JsonCreator
-	private JSONDocumentLayoutElementLine(@Nullable @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements)
+	private JSONDocumentLayoutElementLine(
+			@JsonProperty("elements") @Nullable final List<JSONDocumentLayoutElement> elements)
 	{
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
-	}
-
-	private JSONDocumentLayoutElementLine(final JSONDocumentLayoutElement element)
-	{
-		elements = ImmutableList.of(element);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("elements", elements)
-				.toString();
-	}
-
-	public List<JSONDocumentLayoutElement> getElements()
-	{
-		return elements;
 	}
 
 	@JsonIgnore
 	public boolean isEmpty()
 	{
-		return elements.isEmpty();
+		return getElements().isEmpty();
+	}
+
+	Stream<JSONDocumentLayoutElement> streamInlineTabElements()
+	{
+		return getElements()
+				.stream()
+				.filter(element -> element.getInlineTabId() != null);
 	}
 }

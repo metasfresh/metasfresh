@@ -67,9 +67,9 @@ public interface IHUPPOrderBL extends ISingletonService
 
 	boolean canChangePlanningStatus(PPOrderPlanningStatus fromPlanningStatus, PPOrderPlanningStatus toPlanningStatus);
 
-	void setAssignedHandlingUnits(I_PP_Order ppOrder, Collection<I_M_HU> hus);
+	void addAssignedHandlingUnits(I_PP_Order ppOrder, Collection<I_M_HU> hus);
 
-	void setAssignedHandlingUnits(I_PP_Order_BOMLine ppOrderBOMLine, Collection<I_M_HU> hus);
+	void addAssignedHandlingUnits(I_PP_Order_BOMLine ppOrderBOMLine, Collection<I_M_HU> hus);
 
 	void closeOrder(PPOrderId ppOrderId);
 }

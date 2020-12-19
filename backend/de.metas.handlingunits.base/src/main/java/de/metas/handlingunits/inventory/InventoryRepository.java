@@ -196,6 +196,9 @@ public class InventoryRepository
 		return docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 	}
 
+	/**
+	 * The method might not belong here, but we often need this from outside the repo
+	 */
 	public InventoryLine toInventoryLine(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
 		final InventoryLineId inventoryLineId = extractInventoryLineIdOrNull(inventoryLineRecord);

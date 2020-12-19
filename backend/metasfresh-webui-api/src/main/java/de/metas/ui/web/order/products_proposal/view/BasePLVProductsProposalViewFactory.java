@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
@@ -102,6 +103,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 				.priceListVersionId(basePriceListVersionId)
 				.productIdsToExclude(parentView.getProductIds())
 				.bpartnerId(parentView.getBpartnerId().orElse(null))
+				.currencyId(parentView.getCurrencyId())
 				.soTrx(parentView.getSoTrx())
 				//
 				.build().load();

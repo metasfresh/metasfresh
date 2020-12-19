@@ -180,6 +180,11 @@ public class OLCandRepository
 			olCandPO.setDiscount(request.getDiscount().toBigDecimal());
 		}
 
+		if (request.getWarehouseId() != null)
+		{
+			olCandPO.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		}
+
 		if (request.getWarehouseDestId() != null)
 		{
 			olCandPO.setM_Warehouse_Dest_ID(request.getWarehouseDestId().getRepoId());

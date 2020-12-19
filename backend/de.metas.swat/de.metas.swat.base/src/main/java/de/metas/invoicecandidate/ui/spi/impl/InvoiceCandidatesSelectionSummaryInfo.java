@@ -23,6 +23,15 @@ package de.metas.invoicecandidate.ui.spi.impl;
  */
 
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.Properties;
+import java.util.Set;
+
+import lombok.NonNull;
+import org.adempiere.ui.api.IGridTabSummaryInfo;
+import org.compiere.util.DisplayType;
+
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.Currency;
 import de.metas.currency.ICurrencyDAO;

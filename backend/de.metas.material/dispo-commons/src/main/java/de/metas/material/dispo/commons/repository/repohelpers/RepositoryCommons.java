@@ -88,6 +88,11 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
 		}
 
+		if (query.getBusinessCase() != null)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_BusinessCase, query.getBusinessCase().toString());
+		}
+
 		if (!query.getParentId().isUnspecified())
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId().getRepoId());
@@ -239,8 +244,7 @@ public class RepositoryCommons
 					addDateAndSeqNoToBuilder(builder, Operator.GREATER, timeRangeStart);
 					break;
 				default:
-					Check.fail("timeRangeStart has a unexpected dateOperator {}; query={}", timeRangeStart.getOperator(), materialDescriptorQuery);
-					break;
+					throw Check.fail("timeRangeStart has a unexpected dateOperator {}; query={}", timeRangeStart.getOperator(), materialDescriptorQuery);
 			}
 			atLeastOneFilterAdded = true;
 		}
@@ -257,8 +261,7 @@ public class RepositoryCommons
 					addDateAndSeqNoToBuilder(builder, Operator.LESS, timeRangeEnd);
 					break;
 				default:
-					Check.fail("timeRangeEnd has a unexpected dateOperator {}; query={}", timeRangeEnd.getOperator(), materialDescriptorQuery);
-					break;
+					throw Check.fail("timeRangeEnd has a unexpected dateOperator {}; query={}", timeRangeEnd.getOperator(), materialDescriptorQuery);
 			}
 			atLeastOneFilterAdded = true;
 		}

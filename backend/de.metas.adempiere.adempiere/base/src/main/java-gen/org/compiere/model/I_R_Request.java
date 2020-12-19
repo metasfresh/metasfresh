@@ -815,7 +815,7 @@ public interface I_R_Request
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateTrx(java.sql.Timestamp DateTrx);
+	public void setDateTrx(@Nullable java.sql.Timestamp DateTrx);
 
 	/**
 	 * Get Vorgangsdatum.

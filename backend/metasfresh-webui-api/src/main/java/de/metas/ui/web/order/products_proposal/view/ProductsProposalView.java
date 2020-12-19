@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.process.RelatedProcessDescriptor;
@@ -142,6 +143,12 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	public SOTrx getSoTrx()
 	{
 		return rowsData.getSoTrx();
+	}
+
+	public CurrencyId getCurrencyId()
+	{
+		
+		return rowsData.getCurrencyId();
 	}
 
 	public Set<ProductId> getProductIds()

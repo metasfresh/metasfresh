@@ -1,20 +1,8 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -25,7 +13,19 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -88,9 +88,9 @@ public final class DocumentLayoutElementDescriptor
 		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
 
 		final DocumentFieldDescriptor[] elementFields = Stream.of(fieldNames)
-				.map(fieldName -> entityDescriptor.getFieldOrNull(fieldName))
+				.map(entityDescriptor::getFieldOrNull)
 				.filter(Objects::nonNull)
-				.toArray(size -> new DocumentFieldDescriptor[size]);
+				.toArray(DocumentFieldDescriptor[]::new);
 
 		if (elementFields.length == 0)
 		{
@@ -100,33 +100,51 @@ public final class DocumentLayoutElementDescriptor
 	}
 
 	private final String internalName;
+	@Getter
 	private final boolean gridElement;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 
+	@Getter
 	private final DocumentFieldWidgetType widgetType;
+	@Getter
 	private final boolean allowShowPassword; // in case widgetType is Password
+	@Getter
 	private final boolean multilineText; // in case widgetType is Text
+	@Getter
 	private final int multilineTextLines; // in case widgetType is Text
+	@Getter
 	private final int maxLength;
+	@Getter
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
+	@Getter
 	private final BarcodeScannerType barcodeScannerType;
 
+	@Getter
 	private final LayoutType layoutType;
+	@Getter
 	private final WidgetSize widgetSize;
+	@Getter
 	private final boolean advancedField;
+	@Getter
 	private final ImmutableSet<MediaType> restrictToMediaTypes;
 
+	@Getter
 	private final LayoutAlign gridAlign;
+	@Getter
 	private final ViewEditorRenderMode viewEditorRenderMode;
+	@Getter
 	private final boolean viewAllowSorting;
 
-	private final Set<DocumentLayoutElementFieldDescriptor> fields;
+	@Getter
+	private final ImmutableSet<DocumentLayoutElementFieldDescriptor> fields;
 
 	private String _captionAsFieldNames; // lazy
-
 	private static final Joiner JOINER_FieldNames = Joiner.on(" | ").skipNulls();
+
+	@Getter
+	private final DetailId inlineTabId;
 
 	private DocumentLayoutElementDescriptor(final Builder builder)
 	{
@@ -156,6 +174,8 @@ public final class DocumentLayoutElementDescriptor
 		advancedField = builder.isAdvancedField();
 
 		fields = ImmutableSet.copyOf(builder.buildFields());
+
+		inlineTabId = builder.getInlineTabId();
 	}
 
 	@Override
@@ -172,11 +192,6 @@ public final class DocumentLayoutElementDescriptor
 				.toString();
 	}
 
-	public boolean isGridElement()
-	{
-		return gridElement;
-	}
-
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
@@ -188,8 +203,8 @@ public final class DocumentLayoutElementDescriptor
 		{
 			_captionAsFieldNames = fields
 					.stream()
-					.filter(field -> field.isPublicField()) // only those which are public
-					.map(field -> field.getField())
+					.filter(DocumentLayoutElementFieldDescriptor::isPublicField) // only those which are public
+					.map(DocumentLayoutElementFieldDescriptor::getField)
 					.collect(GuavaCollectors.toString(JOINER_FieldNames));
 		}
 		return _captionAsFieldNames;
@@ -200,90 +215,21 @@ public final class DocumentLayoutElementDescriptor
 		return description.translate(adLanguage);
 	}
 
-	public DocumentFieldWidgetType getWidgetType()
+	public boolean isEmpty()
 	{
-		return widgetType;
-	}
-
-	public Set<MediaType> getRestrictToMediaTypes()
-	{
-		return restrictToMediaTypes;
-	}
-
-	public boolean isAllowShowPassword()
-	{
-		return allowShowPassword;
-	}
-
-	public boolean isMultilineText()
-	{
-		return multilineText;
-	}
-
-	public int getMultilineTextLines()
-	{
-		return multilineTextLines;
-	}
-
-	public int getMaxLength()
-	{
-		return maxLength;
-	}
-
-	public LayoutType getLayoutType()
-	{
-		return layoutType;
-	}
-
-	public WidgetSize getWidgetSize()
-	{
-		return widgetSize;
-	}
-
-	public LayoutAlign getGridAlign()
-	{
-		return gridAlign;
-	}
-
-	public ViewEditorRenderMode getViewEditorRenderMode()
-	{
-		return viewEditorRenderMode;
-	}
-
-	public boolean isViewAllowSorting()
-	{
-		return viewAllowSorting;
-	}
-
-	public boolean isAdvancedField()
-	{
-		return advancedField;
-	}
-
-	public Set<DocumentLayoutElementFieldDescriptor> getFields()
-	{
-		return fields;
-	}
-
-	public boolean hasFields()
-	{
-		return !fields.isEmpty();
+		return getFields().isEmpty() && inlineTabId == null;
 	}
 
 	public String getFirstFieldName()
 	{
-		return fields.iterator().next().getField();
+		return getFields().iterator().next().getField();
 	}
 
-	public ButtonFieldActionDescriptor getButtonActionDescriptor()
-	{
-		return buttonActionDescriptor;
-	}
-
-	public BarcodeScannerType getBarcodeScannerType()
-	{
-		return barcodeScannerType;
-	}
+	//
+	//
+	//
+	//
+	//
 
 	public static final class Builder
 	{
@@ -301,9 +247,11 @@ public final class DocumentLayoutElementDescriptor
 		private ButtonFieldActionDescriptor buttonActionDescriptor;
 		private BarcodeScannerType barcodeScannerType;
 
+		@Nullable
 		private LayoutType _layoutType;
+		@Nullable
 		private WidgetSize _widgetSize;
-		private Set<MediaType> restrictToMediaTypes = new HashSet<>();
+		private final HashSet<MediaType> restrictToMediaTypes = new HashSet<>();
 
 		private boolean _gridElement = false;
 		private ViewEditorRenderMode viewEditorRenderMode = null;
@@ -311,6 +259,10 @@ public final class DocumentLayoutElementDescriptor
 
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
+
+		private DetailId inlineTabId;
+
+		// Builder internal state:
 		private boolean excludeSpecialFields = false;
 		private boolean consumed = false;
 
@@ -349,8 +301,8 @@ public final class DocumentLayoutElementDescriptor
 			return _fieldsBuilders
 					.values()
 					.stream()
-					.filter(fieldBuilder -> checkValid(fieldBuilder))
-					.map(fieldBuilder -> fieldBuilder.build())
+					.filter(this::checkValid)
+					.map(DocumentLayoutElementFieldDescriptor.Builder::build)
 					.collect(GuavaCollectors.toImmutableSet());
 		}
 
@@ -426,12 +378,6 @@ public final class DocumentLayoutElementDescriptor
 			return this;
 		}
 
-		public Builder setCaptionFromAD_Message(final String adMessage)
-		{
-			setCaption(Services.get(IMsgBL.class).translatable(adMessage));
-			return this;
-		}
-
 		public Builder setCaptionNone()
 		{
 			setCaption(TranslatableStrings.empty());
@@ -455,7 +401,7 @@ public final class DocumentLayoutElementDescriptor
 			return TranslatableStrings.empty();
 		}
 
-		public Builder setDescription(final ITranslatableString description)
+		public Builder setDescription(@Nullable final ITranslatableString description)
 		{
 			_description = TranslatableStrings.nullToEmpty(description);
 			return this;
@@ -505,7 +451,7 @@ public final class DocumentLayoutElementDescriptor
 			return ImmutableSet.copyOf(restrictToMediaTypes);
 		}
 
-		public Builder setAllowShowPassword(boolean allowShowPassword)
+		public Builder setAllowShowPassword(final boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
 			return this;
@@ -516,7 +462,7 @@ public final class DocumentLayoutElementDescriptor
 			return _allowShowPassword;
 		}
 
-		public Builder setMultilineText(boolean multilineText)
+		public Builder setMultilineText(final boolean multilineText)
 		{
 			this._multilineText = multilineText;
 			return this;
@@ -549,7 +495,7 @@ public final class DocumentLayoutElementDescriptor
 			return _maxLength;
 		}
 
-		public Builder setLayoutType(final LayoutType layoutType)
+		public Builder setLayoutType(@Nullable final LayoutType layoutType)
 		{
 			_layoutType = layoutType;
 			return this;
@@ -561,17 +507,19 @@ public final class DocumentLayoutElementDescriptor
 			return this;
 		}
 
+		@Nullable
 		private LayoutType getLayoutType()
 		{
 			return _layoutType;
 		}
 
-		public Builder setWidgetSize(final WidgetSize widgetSize)
+		public Builder setWidgetSize(@Nullable final WidgetSize widgetSize)
 		{
 			_widgetSize = widgetSize;
 			return this;
 		}
 
+		@Nullable
 		private WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
@@ -615,9 +563,12 @@ public final class DocumentLayoutElementDescriptor
 			return _fieldsBuilders.get(fieldName);
 		}
 
-		public DocumentLayoutElementFieldDescriptor.Builder getFirstField()
+		@Nullable
+		private DocumentLayoutElementFieldDescriptor.Builder getFirstField()
 		{
-			return _fieldsBuilders.values().iterator().next();
+			return !_fieldsBuilders.isEmpty()
+					? _fieldsBuilders.values().iterator().next()
+					: null;
 		}
 
 		public int getFieldsCount()
@@ -630,16 +581,20 @@ public final class DocumentLayoutElementDescriptor
 			return _fieldsBuilders.containsKey(fieldName);
 		}
 
+		public boolean isEmpty()
+		{
+			return getFieldsCount() <= 0 && getInlineTabId() == null;
+		}
+
 		public Builder setExcludeSpecialFields()
 		{
 			excludeSpecialFields = true;
 			return this;
 		}
 
-		private Builder setConsumed()
+		private void setConsumed()
 		{
 			consumed = true;
-			return this;
 		}
 
 		public boolean isConsumed()
@@ -647,7 +602,7 @@ public final class DocumentLayoutElementDescriptor
 			return consumed;
 		}
 
-		public boolean isGridElement()
+		private boolean isGridElement()
 		{
 			return _gridElement;
 		}
@@ -663,7 +618,7 @@ public final class DocumentLayoutElementDescriptor
 
 		/**
 		 * Reset the "grid element" flag.
-		 *
+		 * <p>
 		 * NOTE: this is false by default, but the main purpose of this method is intention revealing.
 		 *
 		 * @see #setGridElement()
@@ -674,6 +629,7 @@ public final class DocumentLayoutElementDescriptor
 			return this;
 		}
 
+		@Nullable
 		private LayoutAlign getGridAlign()
 		{
 			return isGridElement() ? getWidgetType().getGridAlign() : null;
@@ -690,7 +646,7 @@ public final class DocumentLayoutElementDescriptor
 			return viewEditorRenderMode;
 		}
 
-		public Builder setViewAllowSorting(boolean viewAllowSorting)
+		public Builder setViewAllowSorting(final boolean viewAllowSorting)
 		{
 			this.viewAllowSorting = viewAllowSorting;
 			return this;
@@ -707,7 +663,7 @@ public final class DocumentLayoutElementDescriptor
 			return this;
 		}
 
-		/* package */ ButtonFieldActionDescriptor getButtonActionDescriptor()
+		private ButtonFieldActionDescriptor getButtonActionDescriptor()
 		{
 			return buttonActionDescriptor;
 		}
@@ -721,6 +677,17 @@ public final class DocumentLayoutElementDescriptor
 		private BarcodeScannerType getBarcodeScannerType()
 		{
 			return barcodeScannerType;
+		}
+
+		public Builder setInlineTabId(final DetailId inlineTabId)
+		{
+			this.inlineTabId = inlineTabId;
+			return this;
+		}
+
+		private DetailId getInlineTabId()
+		{
+			return inlineTabId;
 		}
 	}
 }

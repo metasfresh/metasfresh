@@ -29,19 +29,11 @@ export default class SelectionDropdown extends Component {
     this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
@@ -314,10 +306,6 @@ export default class SelectionDropdown extends Component {
 
   setRef = (ref) => (this.wrapper = ref);
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
     const empty = this.size(options) === 0;

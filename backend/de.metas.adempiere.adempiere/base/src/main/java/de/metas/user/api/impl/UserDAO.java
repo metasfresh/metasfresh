@@ -73,11 +73,11 @@ public class UserDAO implements IUserDAO
 		if (users.size() > 1)
 		{
 			logger.info("More then one user found for UserId '{}': {}", userId, users);
-			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@");
+			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@").markAsUserValidationError();
 		}
 		if (users.size() == 0)
 		{
-			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@");
+			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@").markAsUserValidationError();
 		}
 
 		return users.get(0);
@@ -95,11 +95,11 @@ public class UserDAO implements IUserDAO
 
 		if (user == null)
 		{
-			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
+			throw new AdempiereException("@PasswordResetCodeNoLongerValid@").markAsUserValidationError();
 		}
 		if (!passwordResetCode.equals(user.getPasswordResetCode()))
 		{
-			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
+			throw new AdempiereException("@PasswordResetCodeNoLongerValid@").markAsUserValidationError();
 		}
 
 		return user;
@@ -144,7 +144,7 @@ public class UserDAO implements IUserDAO
 		final I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId());
 		if (user == null)
 		{
-			throw new AdempiereException("No user found for ID=" + adUserId);
+			throw new AdempiereException("No user found for ID=" + adUserId).markAsUserValidationError();
 		}
 		return user;
 	}
@@ -160,7 +160,7 @@ public class UserDAO implements IUserDAO
 				.firstOnlyNotNull(I_AD_User.class);
 		if (user == null)
 		{
-			throw new AdempiereException("No user found for ID=" + adUserId);
+			throw new AdempiereException("No user found for ID=" + adUserId).markAsUserValidationError();
 		}
 		return user;
 	}

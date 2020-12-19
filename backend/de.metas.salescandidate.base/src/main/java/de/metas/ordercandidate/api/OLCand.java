@@ -232,6 +232,11 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getM_AttributeSetInstance_ID();
 	}
 
+	public WarehouseId getWarehouseId()
+	{
+		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_ID());
+	}
+
 	public WarehouseId getWarehouseDestId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_Dest_ID());

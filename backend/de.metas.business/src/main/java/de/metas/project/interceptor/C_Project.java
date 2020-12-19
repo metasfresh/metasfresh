@@ -1,5 +1,11 @@
 package de.metas.project.interceptor;
 
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.project.ProjectType;
+import de.metas.project.ProjectTypeId;
+import de.metas.project.ProjectTypeRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -7,9 +13,7 @@ import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -37,8 +41,16 @@ import lombok.NonNull;
 @Callout(I_C_Project.class)
 public class C_Project
 {
-	public C_Project()
+	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	private final ProjectTypeRepository projectTypeRepository;
+
+	public C_Project(
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
+			@NonNull final ProjectTypeRepository projectTypeRepository)
 	{
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
+		this.projectTypeRepository = projectTypeRepository;
+
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programaticCalloutProvider.registerAnnotatedCallout(this);
@@ -46,19 +58,27 @@ public class C_Project
 	}
 
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
-	public void updateValue(@NonNull final I_C_Project projectRecord)
+	public void onC_ProjectType_ID(@NonNull final I_C_Project projectRecord)
 	{
-		if (projectRecord.getC_ProjectType_ID() <= 0)
+		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
+		if (projectTypeId == null)
 		{
 			return;
 		}
 
-		final IDocumentNoBuilderFactory documentNoBuilderFactory = Services.get(IDocumentNoBuilderFactory.class);
-		final String value = documentNoBuilderFactory
+		final String value = computeNextProjectValue(projectRecord);
+		projectRecord.setValue(value);
+
+		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
+		projectRecord.setProjectCategory(projectType.getProjectCategory());
+	}
+
+	@Nullable
+	private String computeNextProjectValue(final I_C_Project projectRecord)
+	{
+		return documentNoBuilderFactory
 				.createValueBuilderFor(projectRecord)
 				.setFailOnError(false)
 				.build();
-
-		projectRecord.setValue(value);
 	}
 }

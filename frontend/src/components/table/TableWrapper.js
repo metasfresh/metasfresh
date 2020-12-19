@@ -210,14 +210,14 @@ class TableWrapper extends PureComponent {
       isModal,
       parentView,
       deselectTableRows,
-      selected,
     } = this.props;
     const parentNode = event.target.parentNode;
     const closeIncluded =
-      limitOnClickOutside &&
-      (parentNode.className.includes('document-list-wrapper') ||
-        event.target.className.includes('document-list-wrapper'))
-        ? parentNode.className.includes('document-list-has-included')
+      // is modal
+      limitOnClickOutside
+        ? // user is clicking within the document list component
+          parentNode.className.includes('document-list-wrapper') ||
+          event.target.className.includes('document-list-wrapper')
         : true;
 
     if (
@@ -243,23 +243,26 @@ class TableWrapper extends PureComponent {
         return;
       }
 
-      if (selected.length) {
+      if (this.props.selected.length) {
         onDeselectAll();
+      }
 
-        if (parentView) {
-          const {
-            windowId: parentWindowId,
-            viewId: parentViewId,
-          } = this.props.parentView;
+      // if view is an included view, we should deselect parent's selection as the included
+      // view is only visible when an item is selected. At the same time we'll hide the
+      // included view.
+      if (parentView) {
+        const {
+          windowId: parentWindowId,
+          viewId: parentViewId,
+        } = this.props.parentView;
 
-          deselectTableRows({
-            id: getTableId({ windowId: parentWindowId, viewId: parentViewId }),
-            selection: [],
-            windowId: parentWindowId,
-            viewId: parentViewId,
-            isModal,
-          });
-        }
+        deselectTableRows({
+          id: getTableId({ windowId: parentWindowId, viewId: parentViewId }),
+          selection: [],
+          windowId: parentWindowId,
+          viewId: parentViewId,
+          isModal,
+        });
       }
     }
   };
@@ -441,9 +444,12 @@ class TableWrapper extends PureComponent {
         ) : null}
         {promptOpen && (
           <Prompt
-            title="Delete"
-            text="Are you sure?"
-            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+            title={counterpart.translate('window.Delete.caption')}
+            text={counterpart.translate('window.delete.message')}
+            buttons={{
+              submit: counterpart.translate('window.delete.confirm'),
+              cancel: counterpart.translate('window.delete.cancel'),
+            }}
             onCancelClick={this.handlePromptCancelClick}
             selected={selected}
             onSubmitClick={this.handlePromptSubmitClick}

@@ -22,12 +22,6 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -37,16 +31,19 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A lazy delegate implementation of {@link IAttributeStorageFactory}.
- *
+ * <p>
  * This object is instantiated with a {@link IAttributeStorageFactory} implementation class.
- *
+ * <p>
  * The implementation class will be instantiated only when needed and all methods will be redirected to that underlying implementation.
  *
  * @author tsa
- *
  */
 /* package */class ClassAttributeStorageFactory implements IAttributeStorageFactory
 {
@@ -159,7 +156,7 @@ import lombok.NonNull;
 
 	@Override
 	public final IHUAttributesDAO getHUAttributesDAO()
-	{
+	{     // TODO tbp: this exception is false: this.huAttributesDAO is NOT NULL!
 		throw new HUException("No IHUAttributesDAO found on " + this);
 	}
 
@@ -199,5 +196,25 @@ import lombok.NonNull;
 	public IHUStorageFactory getHUStorageFactory()
 	{
 		return huStorageFactory;
+	}
+
+	@Override
+	public void flush()
+	{
+		final IHUAttributesDAO huAttributesDAO = this.huAttributesDAO;
+		if (huAttributesDAO != null)
+		{
+			huAttributesDAO.flush();
+		}
+	}
+
+	@Override
+	public void flushAndClearCache()
+	{
+		final IHUAttributesDAO huAttributesDAO = this.huAttributesDAO;
+		if (huAttributesDAO != null)
+		{
+			huAttributesDAO.flushAndClearCache();
+		}
 	}
 }
