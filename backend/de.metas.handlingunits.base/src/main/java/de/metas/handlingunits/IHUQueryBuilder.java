@@ -527,7 +527,7 @@ public interface IHUQueryBuilder
 
 	/**
 	 * If true = include only the HUs which have a product with {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} = true
-	 * If false = all HUs are included (the field {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} is ignored when filtering the HUs)
+	 * If false or not set = all HUs are included (the field {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} is ignored when filtering the HUs)
 	 */
 	IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts);
 }
