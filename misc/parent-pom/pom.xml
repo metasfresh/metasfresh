@@ -726,7 +726,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                             <dependency>
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -767,7 +767,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
                                 <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -1045,7 +1045,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
                                 <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
