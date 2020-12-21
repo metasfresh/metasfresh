@@ -123,6 +123,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
@@ -213,7 +214,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
 
 	/**
-	 * Blueprint for a cache that is used by {@link #isAllCandidatesInGroupDelivered(I_C_Invoice_Candidate)}.
+	 * Blueprint for a cache that is used by {@link #isAllCandidatesInHeaderAggregationGroupDelivered(I_C_Invoice_Candidate)}.
 	 * It will be created and used per-transaction.
 	 */
 	private final static CCache.CCacheBuilder<String, Boolean> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED = CCache.<String, Boolean>builder().cacheName("isAllCandidatesInGroupDelivered")
@@ -254,6 +255,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -292,12 +294,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			case AfterDelivery:
 			case AfterOrderDelivered:
-				return computedateToInvoiceBasedOnDeliveryDate(icRecord);
+				return computeDateToInvoiceBasedOnDeliveryDate(icRecord);
 
 			case OrderCompletelyDelivered:
-				if (isCandidateDelivered(icRecord) && isAllCandidatesInGroupDelivered(icRecord))
+				if (isCandidateDelivered(icRecord) && isAllCandidatesInHeaderAggregationGroupDelivered(icRecord))
 				{
-					return computedateToInvoiceBasedOnDeliveryDate(icRecord);
+					return computeDateToInvoiceBasedOnDeliveryDate(icRecord);
 				}
 				else
 				{
@@ -330,7 +332,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	private boolean isAllCandidatesInGroupDelivered(@NonNull final I_C_Invoice_Candidate ic)
+	private boolean isAllCandidatesInHeaderAggregationGroupDelivered(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final CCache<String, Boolean> isAllCandidatesInGroupDeliveredCache = Services.get(ITrxManager.class)
 				.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone)
@@ -342,19 +344,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private boolean isAllCandidatesInGroupDelivered0(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(ic), ic.getHeaderAggregationKey(), getTrxName(ic));
-		boolean allCandidatesDelivered = true;
-		while (candidates.hasNext())
-		{
-			final I_C_Invoice_Candidate next = candidates.next();
-			if (!ic.equals((next)) && !isCandidateDelivered(next))
-			{
-				allCandidatesDelivered = false;
-				break;
-			}
-		}
-		return allCandidatesDelivered;
+		return IteratorUtils.stream(candidates).allMatch(candidate -> ic.equals(candidate) || isCandidateDelivered(candidate));
 	}
 
 	private boolean isCandidateDelivered(@NonNull final I_C_Invoice_Candidate icRecord)
@@ -362,7 +353,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return icRecord.getQtyOrdered().subtract(icRecord.getQtyDelivered()).compareTo(ZERO) <= 0;
 	}
 
-	private Timestamp computedateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate icRecord)
+	private Timestamp computeDateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final Timestamp deliveryDate = icRecord.getDeliveryDate();
 		if (deliveryDate != null)
@@ -392,7 +383,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// services
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final InvoiceRule invoiceRule = getInvoiceRule(ic);
 		if (!InvoiceRule.CustomerScheduleAfterDelivery.equals(invoiceRule))
@@ -531,8 +521,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return Optional.empty();
 		}
 
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
+		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDAO.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
@@ -692,7 +681,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean ignoreInvoiceSchedule,
 			final String trxName)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveIcForSelection(ctx, AD_PInstance_ID, trxName);
 
 		return generateInvoices()
@@ -870,7 +858,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void invalidateForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDAO.retrieveForInvoiceSchedule(invoiceSchedule);
 
 		for (final I_C_Invoice_Candidate ic : candsForBPartner)
@@ -882,7 +869,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void invalidateForPartnerIfInvoiceRuleDemandsIt(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final InvoiceRule invoiceRule = getInvoiceRule(ic);
 		if (InvoiceRule.CustomerScheduleAfterDelivery.equals(invoiceRule)
@@ -1223,7 +1209,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCand);
 		Check.assume(Env.getAD_Client_ID(ctx) == invoiceCand.getAD_Client_ID(), "AD_Client_ID of " + invoiceCand + " and of its CTX are the same");
 
-		final I_C_Invoice_Line_Alloc existingIla = Services.get(IInvoiceCandDAO.class).retrieveIlaForIcAndIl(invoiceCand, invoiceLine);
+		final I_C_Invoice_Line_Alloc existingIla = invoiceCandDAO.retrieveIlaForIcAndIl(invoiceCand, invoiceLine);
 
 		if (existingIla != null)
 		{
@@ -1393,7 +1379,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
@@ -1531,8 +1516,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
 			invoiceCandidate.setApprovalForInvoicing(approved);
@@ -1560,7 +1543,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final boolean isCreditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
 		final de.metas.invoicecandidate.model.I_C_Invoice invoiceExt = InterfaceWrapperHelper.create(invoice, de.metas.invoicecandidate.model.I_C_Invoice.class);
@@ -1704,9 +1686,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else
 		{
-			// services
-			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 			//
 			// if qtyInvoiced is >= qtyOrdered, then there is no further Qty to be invoiced
 			final BigDecimal qtyOrdered = getQtyOrderedInStockUOM(ic);
@@ -2037,8 +2016,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closeInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
 		closeInvoiceCandidates(invoiceCandidates.iterator());
 	}
 
@@ -2065,7 +2043,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return; // https://github.com/metasfresh/metasfresh/issues/3216
 		}
 
-		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);
+		invoiceCandDAO.invalidateCand(candidate);
 		InterfaceWrapperHelper.save(candidate);
 	}
 
@@ -2083,7 +2061,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		if (invoiceBL.isReversal(invoice))
 		{
@@ -2137,7 +2114,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void candidates_unProcess(final I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
 		{
@@ -2168,7 +2144,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void markInvoiceCandInDisputeForReceiptLine(final I_M_InOutLine receiptLine)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 		if (receiptLine.getM_InOut().isSOTrx())
@@ -2197,8 +2172,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	public void setQtyAndDateForFreightCost(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 		if (!icRecord.isFreightCost())
 		{
 			return;    // nothing to do
@@ -2296,8 +2269,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					.build());
 		}
 
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
 		return invoiceCandDAO.createSelectionByQuery(multiQuery.build(), pInstanceId);
 	}
 
@@ -2328,7 +2299,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		// first fetch invoice candidates
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
@@ -2337,7 +2307,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		for (final MInvoiceLine ilPO : invoicePO.getLines(true))
 		{
 			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(ilPO, I_C_InvoiceLine.class);
-			invoiceCands.addAll(invoiceCandDB.retrieveIcForIl(il));
+			invoiceCands.addAll(invoiceCandDAO.retrieveIcForIl(il));
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
