@@ -22,118 +22,57 @@
 
 package org.compiere.db;
 
+import de.metas.CommandLineParser;
+import de.metas.CommandLineParser.CommandLineOptions;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.stream.Stream;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @UtilityClass
 public class CConnectionUtil
 {
 	private final static transient Logger logger = LogManager.getLogger(CConnectionUtil.class);
 
-	private static final String OPTION_Help = "h";
-
 	/**
 	 * Can set up the database connection at an early state.
 	 * It's assumed that if this method does not set up the connection, it is done later (currently via {@link CConnection#createInstance(CConnectionAttributes)}).
 	 */
-	public void createInstanceFromArgs(@Nullable final String[] args)
+	public void createInstanceIfArgsProvided(@Nullable final CommandLineOptions commandLineOptions)
 	{
-		if (args == null)
+		if (commandLineOptions == null)
 		{
 			return;
 		}
 
-		final CommandLineParser parser = new DefaultParser();
-		final Options options = createOptions();
-		try
+		if (Check.isNotBlank(commandLineOptions.getDbHost()) || commandLineOptions.getDbPort() != null)
 		{
-			final CommandLine cmd = parser.parse(options, args);
+			final CConnectionAttributes connectionAttributes = CConnectionAttributes.builder()
+					.dbHost(commandLineOptions.getDbHost())
+					.dbPort(commandLineOptions.getDbPort())
+					.dbName(coalesce(commandLineOptions.getDbName(), "metasfresh"))
+					.dbUid(coalesce(commandLineOptions.getDbUser(), "metasfresh"))
+					.dbPwd(coalesce(commandLineOptions.getDbPassword(), "metasfresh"))
+					.build();
 
-			if (cmd.hasOption("dbHost") && cmd.hasOption("dbPort"))
-			{
-				final CConnectionAttributes connectionAttributes = CConnectionAttributes.builder()
-						.dbHost(cmd.getOptionValue("dbHost"))
-						.dbPort((Integer)cmd.getParsedOptionValue("dbPort"))
-						.dbName(cmd.getOptionValue("dbName", "metasfresh"))
-						.dbUid(cmd.getOptionValue("dbUser", "metasfresh"))
-						.dbPwd(cmd.getOptionValue("dbPassword", "metasfresh"))
-						.build();
-				CConnection.createInstance(connectionAttributes);
-			}
-		}
-		catch (final Exception e)
-		{
-			//logger.error(e);
-			final HelpFormatter formatter = new HelpFormatter();
-			formatter.printHelp("", options);
-
-			throw new RuntimeException(e);
+			logger.info("!!!!!!!!!!!!!!!!\n"
+					+ "!! dbHost and/or dbPort were set from cmdline; -> will ignore DB-Settings from metasfresh.properties and connect to DB with {}\n"
+					+ "!!!!!!!!!!!!!!!!", connectionAttributes);
+			CConnection.createInstance(connectionAttributes);
 		}
 	}
 
-	private Options createOptions()
-	{
-		final Options options = new Options();
-		// Help
-		{
-			final Option option = new Option(OPTION_Help, "Print this (h)elp message and exit");
-			option.setArgs(0);
-			option.setArgName("Help");
-			option.setRequired(false);
-			options.addOption(option);
-		}
-
-		{
-			final Option option = new Option("dbHost",
-					"");
-			option.setArgs(1);
-			option.setArgName("Database host name");
-			option.setRequired(false);
-			options.addOption(option);
-		}
-
-		{
-			final Option option = new Option("dbPort", "");
-			option.setArgs(1);
-			option.setArgName("Database port number");
-			option.setType(Integer.class);
-			option.setRequired(false);
-			options.addOption(option);
-		}
-
-		{
-			final Option option = new Option("dbName", "");
-			option.setArgs(1);
-			option.setArgName("Database name");
-			option.setRequired(false);
-			options.addOption(option);
-		}
-
-		{
-			final Option option = new Option("dbUser",
-					"");
-			option.setArgs(1);
-			option.setArgName("Database user name");
-			option.setRequired(false);
-			options.addOption(option);
-		}
-		{
-			final Option option = new Option("dbPassword", "");
-			option.setArgs(1);
-			option.setArgName("Database password");
-			option.setRequired(false);
-			options.addOption(option);
-		}
-
-		return options;
-	}
 }
