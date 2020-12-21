@@ -36,6 +36,14 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 								procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
 							}
 				}
+		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
+				{
+					dir('procurement-webui-backend')
+							{
+								def buildFile = load('buildfile.groovy')
+								buildFile.build(mvnConf, scmVars, forceBuild)
+							}
+				}
     } // stage
 } 
 
