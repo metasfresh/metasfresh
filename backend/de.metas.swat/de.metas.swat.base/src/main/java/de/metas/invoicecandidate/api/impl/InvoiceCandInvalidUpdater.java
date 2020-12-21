@@ -189,8 +189,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 						@Override
 						public void process(final I_C_Invoice_Candidate icRecord)
 						{
-							try (final MDCCloseable icMDC = TableRecordMDC.putTableRecordReference(icRecord))
+							try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(icRecord))
 							{
+
+
 								chunkInvoiceCandidateIds.add(icRecord.getC_Invoice_Candidate_ID());
 
 								updateInvalid(icRecord);

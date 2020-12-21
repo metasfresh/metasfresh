@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -39,6 +40,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -134,6 +136,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -169,7 +172,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -209,6 +211,42 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	private static final String SYS_Config_C_Invoice_Candidate_Close_IsToClear = "C_Invoice_Candidate_Close_IsToClear";
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
+
+	/**
+	 * Blueprint for a cache that is used by {@link #isAllCandidatesInGroupDelivered(I_C_Invoice_Candidate)}.
+	 * It will be created and used per-transaction.
+	 */
+	private final static CCache.CCacheBuilder<String, Boolean> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED = CCache.<String, Boolean>builder().cacheName("isAllCandidatesInGroupDelivered")
+			.tableName(I_C_Invoice_Candidate.Table_Name)
+			.invalidationKeysMapper(recordRef -> {
+
+				// figure out the header aggregations keys (=> cache keys) of the cache records that need to be invalidated
+				final I_C_Invoice_Candidate icRecord = recordRef.getModel(I_C_Invoice_Candidate.class);
+
+				final boolean headerAggregationKeyWasChanged = InterfaceWrapperHelper.isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey);
+				final boolean needToInvalidateAnything =
+						headerAggregationKeyWasChanged
+								|| InterfaceWrapperHelper.isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyOrdered)
+								|| InterfaceWrapperHelper.isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered);
+				if (!needToInvalidateAnything)
+				{
+					return ImmutableList.of();
+				}
+				if (!headerAggregationKeyWasChanged)
+				{
+					return ImmutableList.of(icRecord.getHeaderAggregationKey());
+				}
+
+				final String oldHeaderAggregationKey = InterfaceWrapperHelper.createOld(icRecord, I_C_Invoice_Candidate.class).getHeaderAggregationKey();
+				if(Check.isBlank(oldHeaderAggregationKey))
+				{
+					return ImmutableList.of(icRecord.getHeaderAggregationKey());
+				}
+
+				return ImmutableList.of(
+						icRecord.getHeaderAggregationKey(),
+						oldHeaderAggregationKey);
+			});
 
 	// task 08927
 	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS = new ModelDynAttributeAccessor<>(Boolean.class);
@@ -292,7 +330,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	private boolean isAllCandidatesInGroupDelivered(final @NonNull I_C_Invoice_Candidate ic)
+	private boolean isAllCandidatesInGroupDelivered(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final CCache<String, Boolean> isAllCandidatesInGroupDeliveredCache = Services.get(ITrxManager.class)
+				.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone)
+				.getProperty("InvoicecandBL#isAllCandidatesInGroupDeliveredCache",
+						() -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
+
+		return isAllCandidatesInGroupDeliveredCache.getOrLoad(ic.getHeaderAggregationKey(), () -> isAllCandidatesInGroupDelivered0(ic));
+	}
+
+	private boolean isAllCandidatesInGroupDelivered0(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(ic), ic.getHeaderAggregationKey(), getTrxName(ic));
@@ -309,7 +357,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return allCandidatesDelivered;
 	}
 
-	private boolean isCandidateDelivered(final I_C_Invoice_Candidate icRecord)
+	private boolean isCandidateDelivered(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		return icRecord.getQtyOrdered().subtract(icRecord.getQtyDelivered()).compareTo(ZERO) <= 0;
 	}
@@ -2360,7 +2408,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 *     <li>{@link I_C_Invoice_Candidate#getInvoiceRule()}  return {@link InvoiceRule#OrderCompletelyDelivered}</li>
 	 *     <li>{@link I_C_Invoice_Candidate#getDateToInvoice()} is not null and not{@link Env#MAX_DATE}</li>
 	 * </ul>
-	 *
 	 */
 	public boolean isCandidateForRecalculate(final I_C_Invoice_Candidate icRecord)
 	{

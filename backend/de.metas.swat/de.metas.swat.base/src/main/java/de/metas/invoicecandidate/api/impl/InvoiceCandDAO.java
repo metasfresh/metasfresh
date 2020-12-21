@@ -608,8 +608,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.iterate(I_C_Invoice_Candidate.class);
 	}
 
-	@Cached(cacheName = I_C_Invoice_Candidate.Table_Name + "#By#" + I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
-	final IQueryBuilder<I_C_Invoice_Candidate> retrieveForHeaderAggregationKeyQuery(
+	private IQueryBuilder<I_C_Invoice_Candidate> retrieveForHeaderAggregationKeyQuery(
 			@CacheCtx final Properties ctx,
 			final String headerAggregationKey,
 			@CacheTrx final String trxName)
