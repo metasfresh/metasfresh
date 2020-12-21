@@ -49,6 +49,8 @@ import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public @Cached// @Interceptor
 class CacheInterceptor implements Serializable
 {
@@ -64,7 +66,7 @@ class CacheInterceptor implements Serializable
 	 * 
 	 * @return an auto-closeable used to re-enable the caching 
 	 */
-	public static final IAutoCloseable temporaryDisableCaching()
+	public static IAutoCloseable temporaryDisableCaching()
 	{
 		final Boolean cacheDisabled = THREADLOCAL_CacheDisabled.get();
 		if(Boolean.TRUE.equals(cacheDisabled))
@@ -95,20 +97,13 @@ class CacheInterceptor implements Serializable
 	}
 	
 	/** @return true if the caching is disabled for this thread */
-	public static final boolean isCacheDisabled()
+	public static boolean isCacheDisabled()
 	{
 		final Boolean cacheDisabled = THREADLOCAL_CacheDisabled.get();
 		return Boolean.TRUE.equals(cacheDisabled);
 	}
 	
-	private static final ThreadLocal<Boolean> THREADLOCAL_CacheDisabled = new ThreadLocal<Boolean>()
-	{
-		@Override
-		protected Boolean initialValue()
-		{
-			return Boolean.FALSE;
-		};
-	};
+	private static final ThreadLocal<Boolean> THREADLOCAL_CacheDisabled = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(CacheInterceptor.class);
@@ -117,15 +112,14 @@ class CacheInterceptor implements Serializable
 	private static final LoadingCache<Method, CachedMethodDescriptor> cachedMethodsDescriptor = CacheBuilder.newBuilder()
 			.build(new CacheLoader<Method, CachedMethodDescriptor>()
 			{
-
 				@Override
-				public CachedMethodDescriptor load(final Method method) throws Exception
+				public CachedMethodDescriptor load(final Method method)
 				{
 					try
 					{
 						return new CachedMethodDescriptor(method);
 					}
-					catch (Exception e)
+					catch (final Exception e)
 					{
 						throw CacheIntrospectionException.wrapIfNeeded(e)
 								.setMethod(method);
@@ -147,11 +141,9 @@ class CacheInterceptor implements Serializable
 	};
 
 	/**
-	 * 
-	 * @param invCtx
-	 * @return
 	 * @throws Throwable could throw throwable as the cached method could also throw it.
 	 */
+	@Nullable
 	@AroundInvoke
 	public Object invokeCache(final IInvocationContext invCtx) throws Throwable
 	{
@@ -167,8 +159,7 @@ class CacheInterceptor implements Serializable
 			logger.trace("Caching is disabled for current thread. Invoking {} directly.", invCtx);
 			
 			// Invoke the cached method directly
-			final Object result = invCtx.proceed();
-			return result;
+			return invCtx.proceed();
 		}
 
 		//
@@ -179,7 +170,7 @@ class CacheInterceptor implements Serializable
 		{
 			methodDescriptor = cachedMethodsDescriptor.get(method);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			final CacheIntrospectionException cacheEx = CacheIntrospectionException.wrapIfNeeded(e);
 			if (JavaAssistInterceptor.FAIL_ON_ERROR)
@@ -192,8 +183,7 @@ class CacheInterceptor implements Serializable
 			}
 
 			// Invoke the cached method directly
-			final Object result = invCtx.proceed();
-			return result;
+			return invCtx.proceed();
 		}
 
 		//
@@ -202,8 +192,7 @@ class CacheInterceptor implements Serializable
 		if (cacheKeyBuilder.isSkipCaching())
 		{
 			// Invoke the cached method directly
-			final Object result = invCtx.proceed();
-			return result;
+			return invCtx.proceed();
 		}
 		
 		//
@@ -215,14 +204,13 @@ class CacheInterceptor implements Serializable
 			final CacheGetException ex = new CacheGetException("Could not get the cache storage, maybe because transaction was not found"
 					+ "\n TrxName: " + cacheKeyBuilder.getTrxName()
 					+ "\n Method: " + method
-					+ "\n Method arguments: " + (invCtx == null ? "-" : Arrays.asList(invCtx.getParameters()))
+					+ "\n Method arguments: " + Arrays.asList(invCtx.getParameters())
 					+ "\n Target Object: " + invCtx.getTarget()
 					+ "\n Method descriptor: " + methodDescriptor);
 			logger.warn("No cache storage found. Invoking cached method directly.", ex);
 
 			// Invoke the cached method directly
-			final Object result = invCtx.proceed();
-			return result;
+			return invCtx.proceed();
 		}
 
 		//
@@ -248,10 +236,10 @@ class CacheInterceptor implements Serializable
 	}
 
 	/**
-	 * @param trxName
 	 * @return cache storage or null if not found
 	 */
-	private final Cache<String, CCache<ArrayKey, Object>> getCacheStorage(final String trxName)
+	@Nullable
+	private Cache<String, CCache<ArrayKey, Object>> getCacheStorage(final String trxName)
 	{
 		//
 		// If we have a transaction, we shall use transaction's cache
@@ -262,7 +250,7 @@ class CacheInterceptor implements Serializable
 			{
 				// If it was about a thread inherited trxName, and no trx was found
 				// => we shall go with the local cache, for sure
-				if (ITrx.TRXNAME_ThreadInherited == trxName)
+				if (ITrx.TRXNAME_ThreadInherited.equals(trxName))
 				{
 					return _cacheStorage;
 				}
