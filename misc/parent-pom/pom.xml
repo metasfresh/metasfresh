@@ -613,7 +613,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <!-- org.jboss.client:jbossall-client and partially geronimo specs -->
                                         <ignoreClass>javax.annotation.*</ignoreClass>
                                         <ignoreClass>javax.ejb.*</ignoreClass>
-                                        <ignoreClass>javax.jms.*</ignoreClass>
                                         <ignoreClass>javax.management.j2ee.*</ignoreClass>
                                         <ignoreClass>javax.xml.*</ignoreClass>
                                         <ignoreClass>javax.transaction.*</ignoreClass>
@@ -903,7 +902,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
             </activation>
 
             <repositories>
-                <!-- this additional repo's parameters can be set from outside. It usually corresponds to a (task-)branch -->
+                <!-- these additional repo's parameters can be set from outside. They usually corresponds to a (task-)branch -->
                 <repository>
                     <id>${deploy-repo-id}</id>
                     <name>${deploy-repo-name}</name>

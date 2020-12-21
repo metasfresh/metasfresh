@@ -30,9 +30,6 @@
 		<poi.version>3.15</poi.version>
 		<zxing.version>2.3.0</zxing.version>
 
-		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
-		<activeMQ.version>5.12.1</activeMQ.version>
-
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 
 		<!-- 5.5.2 is the version used by elasticsearch:2.4.4 which is turn is used by spring-boot 1.5.3 -->
@@ -44,10 +41,6 @@
 		<spring.version>4.3.8.RELEASE</spring.version>
 
 		<guava.version>21.0</guava.version>
-
-		<!-- The version to be used by metasfresh, as opposed to the ESB's. The 
-			two versions might clash in ait modules -->
-		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
 		<!-- jackson-dataformat-xml:2.9.9 has two different version in its dependency tree -->
 		<woodstox.stax2-api.version>4.1</woodstox.stax2-api.version>
@@ -89,8 +82,6 @@
 
 		<module>de.metas.business.rest-api</module>
 		<module>de.metas.business.rest-api-impl</module>
-
-		<module>de.metas.jax.rs</module>
 
 		<module>de.metas.report</module>
 
@@ -143,7 +134,6 @@
 		<module>de.metas.printing.common</module>
 		<module>de.metas.printing.client</module>
 
-		<module>de.metas.procurement.sync-api</module>
 		<module>de.metas.procurement.base</module>
 
 		<module>de.metas.purchasecandidate.base</module>
@@ -162,9 +152,6 @@
 		<module>de.metas.shipper.gateway.derkurier</module>
 		<module>de.metas.shipper.gateway.dhl</module>
 		<module>de.metas.shipper.gateway.dpd</module>
-		<!-- commented out because we don't include it in any distribution
-		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
-		-->
 
 		<module>de.metas.ui.web.base</module>
 
@@ -283,35 +270,6 @@
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
 				<version>1.6</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>activemq-core</artifactId>
-				<version>${activeMQ.version}</version>
-			</dependency>
-			<!-- note: you probably don't want to use active-mq all, because it's 
-				likely that the enforcer plugin will fail with it. The reason is that it 
-				also includes 3rd-party classes which we already include otherwise. -->
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>activemq-all</artifactId>
-				<version>${activeMQ.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>activemq-broker</artifactId>
-				<version>${activeMQ.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>activemq-client</artifactId>
-				<version>${activeMQ.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>activemq-kahadb-store</artifactId>
-				<version>${activeMQ.version}</version>
 			</dependency>
 
 			<dependency>

@@ -213,7 +213,7 @@ public class CConnectionEditor extends JComponent
 	{
 		if (m_value == null)
 			return "";
-		return m_value.getName();
+		return m_value.getDbHost();
 	}   //  getDisplay
 
 	/**
@@ -240,8 +240,6 @@ public class CConnectionEditor extends JComponent
 
 	/**
 	 * Add Action Listener
-	 * 
-	 * @param l
 	 */
 	public synchronized void addActionListener(final ActionListener l)
 	{

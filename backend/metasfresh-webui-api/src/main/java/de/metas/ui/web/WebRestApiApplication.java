@@ -12,6 +12,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.db.CConnectionUtil;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -92,7 +93,9 @@ public class WebRestApiApplication
 		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
 		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 
-		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		CConnectionUtil.createInstanceFromArgs(args);
+
+		try (final IAutoCloseable ignored = ModelValidationEngine.postponeInit())
 		{
 			Ini.setRunMode(RunMode.WEBUI);
 			Adempiere.instance.startup(RunMode.WEBUI);

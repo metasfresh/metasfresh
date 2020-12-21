@@ -136,12 +136,6 @@
 			<type>jar</type>
 		</dependency>
 
-		<!-- needed to communicate with the app server via REST-over-JMS -->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -201,7 +195,6 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${dist.dir}/metasfresh/lib</outputDirectory>
-							<stripVersion>true</stripVersion>
 							<overwrite>true</overwrite>
 							<resources>
 								<resource>

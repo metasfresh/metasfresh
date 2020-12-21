@@ -16,6 +16,9 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
+import org.compiere.db.CConnection;
+import org.compiere.db.CConnectionAttributes;
+import org.compiere.db.CConnectionUtil;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -96,9 +99,11 @@ public class ServerBoot implements InitializingBean
 	public static void main(final String[] args)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		
+
 		// Make sure slf4j is used (by default, log4j is used)
 		ESLoggingInit.init();
+
+		CConnectionUtil.createInstanceFromArgs(args);
 
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{

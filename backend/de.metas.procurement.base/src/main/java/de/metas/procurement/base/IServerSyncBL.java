@@ -12,7 +12,6 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.util.ISingletonService;
 
-import javax.ws.rs.core.Response;
 import java.util.List;
 
 /*
@@ -84,15 +83,12 @@ public interface IServerSyncBL extends IServerSync, ISingletonService
 	 * <p>
 	 * <b>Important:</b> Make sure that each record is saved.
 	 *
-	 * @return {@link Response#ok()}
 	 * @see IServerSync#reportProductSupplies(PutProductSuppliesRequest)
 	 */
 	@Override
 	public void reportProductSupplies(PutProductSuppliesRequest request);
 
 	/**
-	 *
-	 * @return {@link Response#ok()}
 	 * @see IServerSync#reportWeekSupply(PutWeeklySupplyRequest)
 	 */
 	@Override

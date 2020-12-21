@@ -810,61 +810,8 @@ public final class AEnv
 	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(AEnv.class);
 
-	/**
-	 * Is AppsServer Active ?
-	 *
-	 * @return true if active
-	 */
-	// public static boolean isServerActive()
-	// {
-	// 	final boolean contactAgain = s_serverTries == 0;
-	// 	boolean ok = CConnection.get().isAppsServerOK(contactAgain);
-	// 	if (ok)
-	// 	{
-	// 		s_serverTries = 0;
-	// 		return true;
-	// 	}
-	// 	if (s_serverTries > 1)
-	// 	{
-	// 		return false;
-	// 	}
-	//
-	// 	// Try to connect
-	// 	// CLogMgt.enable(false);
-	// 	try
-	// 	{
-	// 		s_serverTries++;
-	// 		log.debug("try #{}", s_serverTries);
-	// 		ok = CConnection.get().isAppsServerOK(true);
-	// 		if (ok)
-	// 		{
-	// 			s_serverTries = 0;
-	// 		}
-	// 	}
-	// 	catch (final Exception ex)
-	// 	{
-	// 		ok = false;
-	// 	}
-	// 	finally
-	// 	{
-	// 		// CLogMgt.enable(true);
-	// 	}
-	// 	//
-	// 	return ok;
-	// }   // isServerActive
-
-	/**
-	 * Get Server Version
-	 *
-	 * @return Apps Server Version
-	 */
-	public static String getServerVersion()
-	{
-		return CConnection.get().getServerVersion();
-	}   // getServerVersion
-
 	/** Window Cache */
-	private static CCache<AdWindowId, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
+	private static final CCache<AdWindowId, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
 
 	/**
 	 * Get Window Model

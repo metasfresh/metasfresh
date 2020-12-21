@@ -31,9 +31,6 @@
 
 		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
 
-		<!-- note that we also use 3.1.6 in the metasfresh/de.metas.jaxrs module. -->
-		<cxf.version>3.1.6</cxf.version>
-
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
