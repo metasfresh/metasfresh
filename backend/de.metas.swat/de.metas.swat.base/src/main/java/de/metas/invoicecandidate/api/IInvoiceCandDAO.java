@@ -161,7 +161,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 *
 	 * @throws AdempiereException if the invoice candidate does not have the AD_Table_ID/Record_ID set
 	 */
-	void invalidateCandsWithSameReference(I_C_Invoice_Candidate ic);
+	void invalidateCandsWithSameTableReference(I_C_Invoice_Candidate ic);
 
 	void invalidateCandsForProductGroup(I_M_ProductGroup pg);
 
@@ -198,7 +198,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId)}, but updates the <code>DateAcct</code> column.
 	 *
 	 * @task 08437
 	 */
@@ -207,7 +207,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateNullDateAcctFromDateInvoiced(PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, String)}, but updates the <code>POReference</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId)}, but updates the <code>POReference</code> column.
 	 */
 	void updatePOReference(String poReference, PInstanceId selectionId);
 

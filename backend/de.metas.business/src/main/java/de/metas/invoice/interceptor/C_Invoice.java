@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import de.metas.order.OrderFactory;
+import de.metas.payment.PaymentId;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -300,7 +302,7 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final I_C_Payment payment = order.getC_Payment();
+			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			paymentDAO.save(payment);
 
@@ -314,7 +316,7 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final I_C_Payment payment = order.getC_Payment();
+			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
 			testAndMarkAsPaid(invoice);
 		}

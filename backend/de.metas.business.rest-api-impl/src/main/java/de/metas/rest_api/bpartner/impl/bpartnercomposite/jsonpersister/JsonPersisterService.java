@@ -27,7 +27,6 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -760,7 +759,7 @@ public class JsonPersisterService
 			}
 			else
 			{
-				bpartner.setInvoiceRule(InvoiceRule.ofCode(jsonBPartner.getInvoiceRule().toString()));
+				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
 			}
 		}
 		else if (isUpdateRemove)
