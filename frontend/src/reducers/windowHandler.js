@@ -819,6 +819,7 @@ export default function windowHandler(state = initialState, action) {
     case UPDATE_INLINE_TAB_WRAPPER_FIELDS: {
       let indexWD;
       const { inlineTabWrapperId, rowId, response } = action.payload;
+      if (!response) return { ...state };
       const { fieldsByName, saveStatus, validStatus } = response;
       state.inlineTab.wrapperData[inlineTabWrapperId].forEach((item, i) => {
         if (item.rowId === rowId) indexWD = i;

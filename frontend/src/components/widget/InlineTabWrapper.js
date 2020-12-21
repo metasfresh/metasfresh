@@ -18,7 +18,10 @@ import React, { PureComponent } from 'react';
 import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { createWindow } from '../../actions/WindowActions';
+import {
+  createWindow,
+  updateDataValidStatus,
+} from '../../actions/WindowActions';
 import {
   fetchInlineTabWrapperData,
   setInlineTabAddNew,
@@ -28,6 +31,8 @@ import SectionGroup from '../SectionGroup';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
 import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
+import { deleteRequest } from '../../api';
+import onClickOutside from 'react-onclickoutside';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
@@ -89,9 +94,32 @@ class InlineTabWrapper extends PureComponent {
       inlineTab: { windowId, tabId },
       dataId: docId,
       rowId,
+      inlineTabBranch,
+      updateDataValidStatus,
+      isDocumentValid,
     } = this.props;
-    setInlineTabAddNew({ visible: false, windowId, docId, tabId, rowId });
-    this.updateTable();
+    // if item is invalid we will remove it
+    const newEntry = inlineTabBranch[`${windowId}_${tabId}_${rowId}`];
+    if (newEntry) {
+      const {
+        data: {
+          validStatus: { valid },
+        },
+      } = newEntry;
+      setInlineTabAddNew({ visible: false, windowId, docId, tabId, rowId });
+      if (!valid && !isDocumentValid) {
+        // perform deletion
+        deleteRequest('window', windowId, docId, tabId, rowId).then(
+          (deleteResponse) => {
+            let { validStatus } = deleteResponse.data[0];
+            updateDataValidStatus('master', validStatus || { valid: true });
+            this.updateTable(true);
+          }
+        );
+      } else {
+        this.updateTable();
+      }
+    }
   };
 
   /**
@@ -129,6 +157,15 @@ class InlineTabWrapper extends PureComponent {
     return orderFields;
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary In case the form is open and you click outside it will execute the handleFormClose routine
+   */
+  handleClickOutside = () => {
+    const { addNewFormVisible } = this.props;
+    addNewFormVisible && this.handleFormClose();
+  };
+
   render() {
     const {
       tabData,
@@ -138,12 +175,16 @@ class InlineTabWrapper extends PureComponent {
       inlineTab: { caption, tabId },
       dataId,
       showMore,
-      inlineTab,
     } = this.props;
 
     if (!tabData) return false;
 
-    const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(inlineTab);
+    const inlineFieldsDisplayOrder = [
+      'Name',
+      'Address',
+      'Firstname',
+      'Lastname',
+    ]; // this.getFieldsDisplayOrder(inlineTab);
 
     return (
       <div
@@ -269,7 +310,10 @@ InlineTabWrapper.propTypes = {
   addNewFormVisible: PropTypes.bool,
   setInlineTabAddNew: PropTypes.func.isRequired,
   showMore: PropTypes.bool,
+  inlineTabBranch: PropTypes.object,
   setInlineTabShowMore: PropTypes.func.isRequired,
+  updateDataValidStatus: PropTypes.func.isRequired,
+  isDocumentValid: PropTypes.bool.isRequired,
 };
 
 /**
@@ -284,7 +328,7 @@ const mapStateToProps = (state, props) => {
   } = props;
 
   const {
-    windowHandler: { inlineTab },
+    windowHandler: { inlineTab, master },
   } = state;
 
   const selector = `${windowId}_${tabId}_${docId}`;
@@ -299,6 +343,8 @@ const mapStateToProps = (state, props) => {
   const addNewFormVisible = addNew ? addNew.visible : false;
   const rowId = addNew ? addNew.rowId : undefined;
   const addNewData = inlineTab[`${windowId}_${tabId}_${rowId}`];
+  const inlineTabBranch = inlineTab;
+  const isDocumentValid = master.validStatus ? master.validStatus.valid : false;
 
   return {
     tabData,
@@ -306,9 +352,10 @@ const mapStateToProps = (state, props) => {
     addNewData,
     rowId,
     showMore,
+    inlineTabBranch, // redux branch
+    isDocumentValid,
   };
 };
-
 export default connect(
   mapStateToProps,
   {
@@ -316,5 +363,6 @@ export default connect(
     createWindow,
     setInlineTabAddNew,
     setInlineTabShowMore,
+    updateDataValidStatus,
   }
-)(InlineTabWrapper);
+)(onClickOutside(InlineTabWrapper));
