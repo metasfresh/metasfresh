@@ -739,9 +739,9 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder setOnlyStockedProducts()
+	public IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts)
 	{
-		this.onlyStockedProducts = true;
+		this.onlyStockedProducts = onlyStockedProducts;
 		return this;
 	}
 

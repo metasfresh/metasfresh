@@ -148,10 +148,7 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 
 		huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
 		huQueryBuilder.addOnlyInLocatorIds(locatorIds);
-		if (onlyStockedProducts)
-		{
-			huQueryBuilder.setOnlyStockedProducts();
-		}
+		huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
 
 		huQueryBuilder.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 

@@ -97,12 +97,9 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	{
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyTopLevelHUs()
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.setOnlyStockedProducts(onlyStockedProducts);
 
-		if (onlyStockedProducts)
-		{
-			huQueryBuilder.setOnlyStockedProducts();
-		}
 		if (warehouseId != null)
 		{
 			huQueryBuilder.addOnlyInWarehouseId(warehouseId);
