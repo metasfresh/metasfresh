@@ -18,7 +18,10 @@ import React, { PureComponent } from 'react';
 import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { createWindow } from '../../actions/WindowActions';
+import {
+  createWindow,
+  updateDataValidStatus,
+} from '../../actions/WindowActions';
 import {
   fetchInlineTabWrapperData,
   setInlineTabAddNew,
@@ -138,12 +141,16 @@ class InlineTabWrapper extends PureComponent {
       inlineTab: { caption, tabId },
       dataId,
       showMore,
-      inlineTab,
     } = this.props;
 
     if (!tabData) return false;
 
-    const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(inlineTab);
+    const inlineFieldsDisplayOrder = [
+      'Name',
+      'Address',
+      'Firstname',
+      'Lastname',
+    ]; // this.getFieldsDisplayOrder(inlineTab);
 
     return (
       <div
@@ -270,6 +277,7 @@ InlineTabWrapper.propTypes = {
   setInlineTabAddNew: PropTypes.func.isRequired,
   showMore: PropTypes.bool,
   setInlineTabShowMore: PropTypes.func.isRequired,
+  updateDataValidStatus: PropTypes.func.isRequired,
 };
 
 /**
@@ -316,5 +324,6 @@ export default connect(
     createWindow,
     setInlineTabAddNew,
     setInlineTabShowMore,
+    updateDataValidStatus,
   }
 )(InlineTabWrapper);

@@ -227,19 +227,21 @@ export function inlineTabAfterGetLayout({ data, disconnectedData }) {
 export function patchInlineTab({ ret, windowId, tabId, docId, rowId }) {
   return (dispatch) => {
     ret.then((response) => {
-      dispatch(
-        updateInlineTabWrapperFields({
-          inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
-          rowId,
-          response: response[0],
-        })
-      );
-      dispatch(
-        updateInlineTabItemFields({
-          inlineTabId: `${windowId}_${tabId}_${rowId}`,
-          fieldsByName: response[0].fieldsByName,
-        })
-      );
+      if (response[0]) {
+        dispatch(
+          updateInlineTabWrapperFields({
+            inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
+            rowId,
+            response: response[0],
+          })
+        );
+        dispatch(
+          updateInlineTabItemFields({
+            inlineTabId: `${windowId}_${tabId}_${rowId}`,
+            fieldsByName: response[0].fieldsByName,
+          })
+        );
+      }
     });
   };
 }
