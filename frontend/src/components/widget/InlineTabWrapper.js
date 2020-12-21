@@ -32,7 +32,7 @@ import counterpart from 'counterpart';
 import classnames from 'classnames';
 import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
 import { deleteRequest } from '../../api';
-import onClickOutside from "react-onclickoutside";
+import onClickOutside from 'react-onclickoutside';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
@@ -157,6 +157,10 @@ class InlineTabWrapper extends PureComponent {
     return orderFields;
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary In case the form is open and you click outside it will execute the handleFormClose routine
+   */
   handleClickOutside = () => {
     const { addNewFormVisible } = this.props;
     addNewFormVisible && this.handleFormClose();
