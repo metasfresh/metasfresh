@@ -18,12 +18,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,21 +32,32 @@ import lombok.Value;
 
 @Value
 @Builder
-class WorkspaceMigrateConfig
+public class WorkspaceMigrateConfig
 {
+	public static final String PROP_DB_URL_DEFAULT = "jdbc:postgresql://localhost/metasfresh";
+	public static final String PROP_DB_USERNAME_DEFAULT = "metasfresh";
+	public static final String PROP_DB_PASSWORD_DEFAULT = "metasfresh";
+	public static final String PROP_LABELS_DEFAULT = "mf15,common";
+
 	@NonNull
 	File workspaceDir;
 
 	@NonNull
-	String dbUrl;
+	@Builder.Default
+	String dbUrl = PROP_DB_URL_DEFAULT;
+
 	@NonNull
-	String dbUsername;
+	@Builder.Default
+	String dbUsername = PROP_DB_USERNAME_DEFAULT;
+
 	@NonNull
-	String dbPassword;
+	@Builder.Default
+	String dbPassword = PROP_DB_PASSWORD_DEFAULT;
 
 	boolean dryRunMode;
 	boolean skipExecutingAfterScripts;
 
 	@NonNull
-	ImmutableSet<Label> labels;
+	@Builder.Default
+	ImmutableSet<Label> labels = Label.ofCommaSeparatedString(PROP_LABELS_DEFAULT);
 }

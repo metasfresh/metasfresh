@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import de.metas.CommandLineParser;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -93,7 +94,9 @@ public class WebRestApiApplication
 		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
 		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 
-		CConnectionUtil.createInstanceFromArgs(args);
+		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
+
+		CConnectionUtil.createInstanceIfArgsProvided(commandLineOptions);
 
 		try (final IAutoCloseable ignored = ModelValidationEngine.postponeInit())
 		{

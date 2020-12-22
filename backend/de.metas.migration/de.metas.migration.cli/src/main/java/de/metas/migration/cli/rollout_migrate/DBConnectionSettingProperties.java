@@ -37,9 +37,9 @@ import lombok.AllArgsConstructor;
  *
  */
 @AllArgsConstructor
-class Settings
+public class DBConnectionSettingProperties
 {
-	private final Properties settings;
+	private final Properties properties ;
 
 	@VisibleForTesting
 	static final String PROP_DB_NAME = "METASFRESH_DB_NAME";
@@ -61,12 +61,12 @@ class Settings
 
 	private String getProperty(final String propertyName, final String defaultValue)
 	{
-		if (settings == null)
+		if (properties == null)
 		{
 			throw new IllegalStateException("Settings were not configured");
 		}
 
-		return settings.getProperty(propertyName, defaultValue);
+		return properties.getProperty(propertyName, defaultValue);
 	}
 
 	public String getDbName()
@@ -86,30 +86,37 @@ class Settings
 
 	public String getDbHostname()
 	{
-		final String dbHostname = getProperty(PROP_DB_SERVER, "localhost");
-		return dbHostname;
+		return getProperty(PROP_DB_SERVER, "localhost");
 	}
 
 	public String getDbPort()
 	{
-		final String dbPort = getProperty(PROP_DB_PORT, "5432");
-		return dbPort;
+		return getProperty(PROP_DB_PORT, "5432");
 	}
 
 	public String getDbPassword()
 	{
-		final String dbPassword = getProperty(PROP_DB_PASSWORD,
+		return getProperty(PROP_DB_PASSWORD,
 				// Default value is null because in case is not configured we shall use other auth methods
 				IDatabase.PASSWORD_NA);
-		return dbPassword;
 	}
 
 	@Override
 	public String toString()
 	{
-		final HashMap<Object, Object> result = new HashMap<>(settings);
+		final HashMap<Object, Object> result = new HashMap<>(properties);
 		result.put(PROP_DB_PASSWORD, "******");
 		return result.toString();
 	}
 
+	public DBConnectionSettings toDBConnectionSettings()
+	{
+		return DBConnectionSettings.builder()
+				.dbHostname(getDbHostname())
+				.dbPort(getDbPort())
+				.dbName(getDbName())
+				.dbUser(getDbUser())
+				.dbPassword(getDbPassword())
+				.build();
+	}
 }

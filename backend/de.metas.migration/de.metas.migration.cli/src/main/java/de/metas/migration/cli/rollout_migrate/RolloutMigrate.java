@@ -13,10 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
 /**
- * This is the too's"main" class. To learn about the tool's command line parameters etc, check out {@link CommandlineParams}.
+ * This is the tool's "main" class. To learn about the tool's command line parameters etc, check out {@link CommandlineParams}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @AllArgsConstructor
 class RolloutMigrate
@@ -49,7 +48,7 @@ class RolloutMigrate
 	@NonNull
 	private final MigrationScriptApplier migrationScriptApplier;
 
-	public void run(@NonNull final Config config)
+	public void run(@NonNull final RolloutMigrationConfig config)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
@@ -65,10 +64,19 @@ class RolloutMigrate
 	}
 
 	@VisibleForTesting
-	void run0(@NonNull final Config config)
+	void run0(@NonNull final RolloutMigrationConfig config)
 	{
-		final Settings settings = settingsLoader.loadSettings(config);
-		logger.info("Settings=" + settings);
+		final DBConnectionSettings dbConnectionSettings;
+		if (config.getDbConnectionSettings() != null)
+		{
+			dbConnectionSettings = config.getDbConnectionSettings();
+		}
+		else
+		{
+			final DBConnectionSettingProperties settingProperties = settingsLoader.loadSettings(config);
+			dbConnectionSettings = settingProperties.toDBConnectionSettings();
+		}
+		logger.info("DBConnectionSettings=" + dbConnectionSettings);
 
 		final boolean copyTemplateToNewDB = config.getNewDBName() != null && !config.getNewDBName().isEmpty();
 		//
@@ -78,9 +86,9 @@ class RolloutMigrate
 			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString(config.getRolloutDirName());
 
 			// if we are asked to copy, then we check the version of the original (a.k.a. template) DB
-			final String dbName = copyTemplateToNewDB ? config.getTemplateDBName() : settings.getDbName();
+			final String dbName = copyTemplateToNewDB ? config.getTemplateDBName() : dbConnectionSettings.getDbName();
 
-			final String dbVersionStr = dbVersionGetter.retrieveDBVersion(settings, dbName);
+			final String dbVersionStr = dbVersionGetter.retrieveDBVersion(dbConnectionSettings, dbName);
 
 			final boolean dbNeedsMigration = VersionChecker.builder()
 					.dbVersionStr(dbVersionStr)
@@ -100,28 +108,28 @@ class RolloutMigrate
 		{
 			final String dbName = "postgres"; // connecting to the "maintainance-DB, since we can't be connected to the DB we want to clone
 			DBCopyMaker.builder()
-					.dbConnection(dbConnectionMaker.createDummyDatabase(settings, dbName))
+					.dbConnection(dbConnectionMaker.createDummyDatabase(dbConnectionSettings, dbName))
 					.orgiginalDbName(config.getTemplateDBName())
 					.copyDbName(config.getNewDBName())
-					.copyDbOwner(settings.getDbUser())
+					.copyDbOwner(dbConnectionSettings.getDbUser())
 					.build()
 					.prepareNewDBCopy();
 		}
 
 		//
 		// peform our "core" job, i.e. apply migration scripts
-		final String dbName = copyTemplateToNewDB ? config.getNewDBName() : settings.getDbName();
-		final IDatabase db = dbConnectionMaker.createDb(settings, dbName);
+		final String dbName = copyTemplateToNewDB ? config.getNewDBName() : dbConnectionSettings.getDbName();
+		final IDatabase db = dbConnectionMaker.createDb(dbConnectionSettings, dbName);
 
 		//
 		// update the DB's version info if that's wanted
 		if (config.isStoreVersion())
 		{
-			final String dBVersion = dbVersionGetter.retrieveDBVersion(settings, dbName);
+			final String dBVersion = dbVersionGetter.retrieveDBVersion(dbConnectionSettings, dbName);
 			updateDbVersion(db, dBVersion, UPDATE_IN_PROGRESS_VERSION_SUFFIX);
 		}
 
-		migrationScriptApplier.applyMigrationScripts(config, settings, dbName);
+		migrationScriptApplier.applyMigrationScripts(config, dbConnectionSettings, dbName);
 
 		//
 		// update the DB's version info if that's wanted

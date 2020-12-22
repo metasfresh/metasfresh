@@ -22,6 +22,7 @@
 
 package de.metas;
 
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.ToString;
@@ -47,9 +48,12 @@ public class CommandLineParser
 		try
 		{
 			final CommandLine cmd = parser.parse(options, args);
+			final String dbHost = cmd.getOptionValue("dbHost");
+			final String dbPort = cmd.getOptionValue("dbPort");
+
 			return CommandLineOptions.builder()
-					.dbHost(cmd.getOptionValue("dbHost"))
-					.dbPort(NumberUtils.asInteger(cmd.getOptionValue("dbPort"),-1))
+					.dbHost(dbHost)
+					.dbPort(NumberUtils.asInteger(dbPort, null))
 					.dbName(cmd.getOptionValue("dbName"))
 					.dbUser(cmd.getOptionValue("dbUser"))
 					.dbPassword(cmd.getOptionValue("dbPassword"))
@@ -77,7 +81,7 @@ public class CommandLineParser
 		}
 
 		{
-			final Option option = new Option("dbHost",					"");
+			final Option option = new Option("dbHost", "");
 			option.setArgs(1);
 			option.setArgName("Database host name");
 			option.setRequired(false);

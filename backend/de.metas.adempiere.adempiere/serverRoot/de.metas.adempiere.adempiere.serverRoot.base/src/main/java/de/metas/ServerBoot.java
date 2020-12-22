@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import de.metas.CommandLineParser.CommandLineOptions;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -16,8 +17,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
-import org.compiere.db.CConnection;
-import org.compiere.db.CConnectionAttributes;
 import org.compiere.db.CConnectionUtil;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
@@ -103,7 +102,9 @@ public class ServerBoot implements InitializingBean
 		// Make sure slf4j is used (by default, log4j is used)
 		ESLoggingInit.init();
 
-		CConnectionUtil.createInstanceFromArgs(args);
+		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
+
+		CConnectionUtil.createInstanceIfArgsProvided(commandLineOptions);
 
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{

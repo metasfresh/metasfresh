@@ -36,11 +36,11 @@ import lombok.Value;
  * This class holds the config from the command line tool's parameters
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Builder
 @Value
-class Config
+public
+class RolloutMigrationConfig
 {
 	public static final String DEFAULT_SETTINGS_FILENAME = "local_settings.properties";
 
@@ -48,10 +48,20 @@ class Config
 	boolean canRun = false;
 
 	@NonNull
-	String rolloutDirName;
-
 	@Default
-	String settingsFile = null;
+	String rolloutDirName = CommandlineParams.DEFAULT_RolloutDirectory;
+
+	/**
+	 * If specified, the tools shall load the {@link #dbConnectionSettings} from this file.
+	 */
+	@Default
+	String dataBaseSettingsFile = null;
+
+	/**
+	 * If specified, the tool shall ignore all files and use these settings.
+	 */
+	@Default
+	DBConnectionSettings dbConnectionSettings = null;
 
 	@Default
 	String scriptFileName = null;
