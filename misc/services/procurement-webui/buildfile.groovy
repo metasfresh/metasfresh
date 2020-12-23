@@ -46,7 +46,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
     // update the metasfresh-common.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
     final String mavenUpdateCommonPropertyParam = '-Dproperty=metasfresh-common.version -DallowDowngrade=true'
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
+    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdateCommonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
     // set the artifact version of everything below the webui's pom.xml
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
