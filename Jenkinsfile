@@ -27,34 +27,33 @@ properties([
         ]),
         pipelineTriggers([]),
         buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
-]);
+])
 
-currentBuild.description = currentBuild.description ?: '';
+currentBuild.description = currentBuild.description ?: ''
 
 try {
-    timestamps
-            {
-                // https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-                final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
-                currentBuild.displayName = "artifact-version ${MF_VERSION}";
+    timestamps {
+        // https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+        final String MF_VERSION = retrieveArtifactVersion(env.BRANCH_NAME, env.BUILD_NUMBER)
+        currentBuild.displayName = "artifact-version ${MF_VERSION}"
 
-                node('agent && linux')
-                        {
-                            configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
-                                    {
-                                        // create our config instance to be used further on
-                                        final MvnConf mvnConf = new MvnConf(
-                                                'pom.xml', // pomFile
-                                                MAVEN_SETTINGS, // settingsFile
-                                                "mvn-${env.BRANCH_NAME}".replace("/", "-"), // mvnRepoName
-                                                'https://repo.metasfresh.com' // mvnRepoBaseURL
-                                        )
-                                        echo "mvnConf=${mvnConf.toString()}"
+        node('agent && linux') {
 
-                                        final def scmVars = checkout scm
-                                        echo "git debug scmVars=>>>>>${scmVars}<<<<<"
+            configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
+                    {
+                        // create our config instance to be used further on
+                        final MvnConf mvnConf = new MvnConf(
+                                'pom.xml', // pomFile
+                                MAVEN_SETTINGS, // settingsFile
+                                "mvn-${env.BRANCH_NAME}".replace("/", "-"), // mvnRepoName
+                                'https://repo.metasfresh.com' // mvnRepoBaseURL
+                        )
+                        echo "mvnConf=${mvnConf.toString()}"
 
-                                        currentBuild.description = """${currentBuild.description}
+                        final def scmVars = checkout scm
+                        echo "git debug scmVars=>>>>>${scmVars}<<<<<"
+
+                        currentBuild.description = """${currentBuild.description}
 			<b>
 			<ul>
 			<li>This job builds commit <a href="https://github.com/metasfresh/metasfresh/commit/${scmVars.GIT_COMMIT}">${scmVars.GIT_COMMIT}</a></li>
@@ -62,17 +61,19 @@ try {
 			</ul>
 			</b>
 			"""
-                                        sh 'git clean -d --force -x' // clean the workspace
+                        sh 'git clean -d --force -x' // clean the workspace
 
-                                        // we need to provide MF_VERSION because otherwise the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
-                                        // and therefore, the jenkins information would not be added to the build.properties info file.
-                                        buildAll(MF_VERSION, mvnConf, scmVars) // withEnv
+                        // we need to provide MF_VERSION because otherwise the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
+                        // and therefore, the jenkins information would not be added to the build.properties info file.
+                        buildAll(MF_VERSION, mvnConf, scmVars) // withEnv
 
-                                    } // configFileProvider
+                    } // configFileProvider
 
-                            cleanWs cleanWhenAborted: false, cleanWhenFailure: false // clean up the workspace after (successfull) builds
-                        } // node
-            } // timestamps
+            cucumber failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '**/*.json', pendingStepsNumber: -1, skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
+
+            cleanWs cleanWhenAborted: false, cleanWhenFailure: false // clean up the workspace after (successfull) builds
+        } // node
+    } // timestamps
 } catch (all) {
     final String mattermostMsg = "This **${env.BRANCH_NAME}** build failed or was aborted: ${BUILD_URL}"
     if (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'release') {
@@ -134,12 +135,12 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                             dir('distribution')
                                     {
                                         def distributionBuildFile = load('buildfile.groovy')
-                                        distributionBuildFile.build(mvnConf);
+                                        distributionBuildFile.build(mvnConf)
                                     }
                             dir('cucumber')
                                     {
                                         def distributionBuildFile = load('buildfile.groovy')
-                                        distributionBuildFile.build(mvnConf);
+                                        distributionBuildFile.build(mvnConf)
                                     }
 
                             //junit '**/target/surefire-reports/*.xml'
