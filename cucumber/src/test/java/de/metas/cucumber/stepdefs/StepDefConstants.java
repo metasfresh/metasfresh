@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.procurement.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2020 metas GmbH
  * %%
@@ -20,27 +20,20 @@
  * #L%
  */
 
-package de.metas.procurement.base.rabbitmq;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.common.procurement.sync.Constants;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import de.metas.contracts.FlatrateTransitionId;
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 
-@Configuration
-@EnableRabbit
-public class ProcurementRabbitMQConfig
+public class StepDefConstants
 {
-	@Bean(name = Constants.QUEUE_NAME_MF_TO_PW)
-	public Queue metasfreshToProcurementWebQueue()
-	{
-		return new Queue(Constants.QUEUE_NAME_MF_TO_PW);
-	}
+	public static final String TABLECOLUMN_RECORD_IDENTIFIER = "RecordIdentifier";
 
-	@Bean(name = Constants.QUEUE_NAME_PW_TO_MF)
-	public Queue procurementWebTometasfreshQueue()
-	{
-		return new Queue(Constants.QUEUE_NAME_PW_TO_MF);
-	}
+	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(540008);
+	public static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
+	public static final CountryId COUNTRY_ID = CountryId.ofRepoId(101);
+
+	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
 }

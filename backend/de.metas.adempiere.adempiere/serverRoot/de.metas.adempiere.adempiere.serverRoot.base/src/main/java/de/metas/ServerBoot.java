@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import de.metas.CommandLineParser.CommandLineOptions;
+import jdk.nashorn.internal.objects.annotations.Setter;
+import lombok.Getter;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -17,7 +19,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
-import org.compiere.db.CConnectionUtil;
+import de.metas.util.ConnectionUtil;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -92,6 +94,9 @@ public class ServerBoot implements InitializingBean
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	@Getter
+	private CommandLineOptions commandLineOptions;
+
 	@Value("${metasfresh.query.clearQuerySelectionRateInSeconds:60}")
 	private int clearQuerySelectionsRateInSeconds;
 
@@ -104,7 +109,7 @@ public class ServerBoot implements InitializingBean
 
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
-		CConnectionUtil.createInstanceIfArgsProvided(commandLineOptions);
+ 		ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
 
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
@@ -129,6 +134,8 @@ public class ServerBoot implements InitializingBean
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
+
+		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
@@ -220,7 +227,7 @@ public class ServerBoot implements InitializingBean
 	public void afterPropertiesSet() throws Exception
 	{
 		if (clearQuerySelectionsRateInSeconds > 0)
-		{
+		{// the system properties were set when servermail was started by CucumberLifeCycleSupport
 			final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(
 					1, // corePoolSize
 					CustomizableThreadFactory.builder()

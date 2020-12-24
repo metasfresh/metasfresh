@@ -20,44 +20,36 @@
  * #L%
  */
 
-package org.compiere.db;
+package de.metas.util;
 
-import de.metas.CommandLineParser;
 import de.metas.CommandLineParser.CommandLineOptions;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
 import lombok.experimental.UtilityClass;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.compiere.db.CConnection;
+import org.compiere.db.CConnectionAttributes;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @UtilityClass
-public class CConnectionUtil
+public class ConnectionUtil
 {
-	private final static transient Logger logger = LogManager.getLogger(CConnectionUtil.class);
+	private final static transient Logger logger = LogManager.getLogger(ConnectionUtil.class);
 
 	/**
 	 * Can set up the database connection at an early state.
 	 * It's assumed that if this method does not set up the connection, it is done later (currently via {@link CConnection#createInstance(CConnectionAttributes)}).
 	 */
-	public void createInstanceIfArgsProvided(@Nullable final CommandLineOptions commandLineOptions)
+	public void configureConnectionsIfArgsProvided(@Nullable final CommandLineOptions commandLineOptions)
 	{
 		if (commandLineOptions == null)
 		{
 			return;
 		}
 
+		// CConnection
 		if (Check.isNotBlank(commandLineOptions.getDbHost()) || commandLineOptions.getDbPort() != null)
 		{
 			final CConnectionAttributes connectionAttributes = CConnectionAttributes.builder()
@@ -72,6 +64,24 @@ public class CConnectionUtil
 					+ "!! dbHost and/or dbPort were set from cmdline; -> will ignore DB-Settings from metasfresh.properties and connect to DB with {}\n"
 					+ "!!!!!!!!!!!!!!!!", connectionAttributes);
 			CConnection.createInstance(connectionAttributes);
+
+			// RabbitMQ
+			if (Check.isNotBlank(commandLineOptions.getRabbitHost()))
+			{
+				System.setProperty("spring.rabbitmq.host", commandLineOptions.getRabbitHost());
+			}
+			if (commandLineOptions.getRabbitPort() != null)
+			{
+				System.setProperty("spring.rabbitmq.port", Integer.toString(commandLineOptions.getRabbitPort()));
+			}
+			if (Check.isNotBlank(commandLineOptions.getRabbitUser()))
+			{
+				System.setProperty("spring.rabbitmq.username", commandLineOptions.getRabbitUser());
+			}
+			if (Check.isNotBlank(commandLineOptions.getRabbitPassword()))
+			{
+				System.setProperty("spring.rabbitmq.password", commandLineOptions.getRabbitPassword());
+			}
 		}
 	}
 

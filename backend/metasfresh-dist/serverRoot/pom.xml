@@ -14,7 +14,7 @@
 	<properties>
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
 			and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent -->
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh.version>10.0.0</metasfresh.version>
 
 		<start-class>de.metas.ServerBoot</start-class>
 	</properties>

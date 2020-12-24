@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -40,7 +41,7 @@ import javax.annotation.Nullable;
 @UtilityClass
 public class CommandLineParser
 {
-	public CommandLineOptions parse(@Nullable String[] args)
+	public CommandLineOptions parse(@Nullable final String[] args)
 	{
 		final Options options = createOptions();
 
@@ -57,6 +58,11 @@ public class CommandLineParser
 					.dbName(cmd.getOptionValue("dbName"))
 					.dbUser(cmd.getOptionValue("dbUser"))
 					.dbPassword(cmd.getOptionValue("dbPassword"))
+
+					.rabbitHost(cmd.getOptionValue("rabbitHost"))
+					.rabbitPort(NumberUtils.asInteger(cmd.getOptionValue("rabbitPort"), null))
+					.rabbitUser(cmd.getOptionValue("rabbitUser"))
+					.rabbitPassword(cmd.getOptionValue("rabbitPassword"))
 					.build();
 		}
 		catch (final ParseException e)
@@ -120,6 +126,38 @@ public class CommandLineParser
 			options.addOption(option);
 		}
 
+		{
+			final Option option = new Option("rabbitHost", "");
+			option.setArgs(1);
+			option.setArgName("RabbitMQ host name");
+			option.setRequired(false);
+			options.addOption(option);
+		}
+
+		{
+			final Option option = new Option("rabbitPort", "");
+			option.setArgs(1);
+			option.setArgName("RabbitMQ port number");
+			option.setRequired(false);
+			options.addOption(option);
+		}
+
+		{
+			final Option option = new Option("rabbitUser",
+					"");
+			option.setArgs(1);
+			option.setArgName("RabbitMQ user name");
+			option.setRequired(false);
+			options.addOption(option);
+		}
+		{
+			final Option option = new Option("rabbitPassword", "");
+			option.setArgs(1);
+			option.setArgName("RabbitMQ password");
+			option.setRequired(false);
+			options.addOption(option);
+		}
+
 		return options;
 	}
 
@@ -142,5 +180,17 @@ public class CommandLineParser
 
 		@Nullable
 		String dbPassword;
+
+		@Nullable
+		String rabbitHost;
+
+		@Nullable
+		Integer rabbitPort;
+
+		@Nullable
+		String rabbitUser;
+
+		@Nullable
+		String rabbitPassword;
 	}
 }

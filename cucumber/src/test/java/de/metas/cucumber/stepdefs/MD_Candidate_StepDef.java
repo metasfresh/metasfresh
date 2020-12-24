@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.cucumber.stepdefs.MaterialDispoTable.MaterialDispoTableRow;
+import de.metas.cucumber.stepdefs.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
@@ -35,8 +35,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -44,11 +42,9 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -61,10 +57,8 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-public class MaterialDispo
+public class MD_Candidate_StepDef
 {
-	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(540008);
-	public static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
 
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
@@ -98,12 +92,12 @@ public class MaterialDispo
 		final BigDecimal qty = new BigDecimal(map.get("Qty"));
 
 		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), ORG_ID.getRepoId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productId))
 						.date(preparationDate)
 						.quantity(qty)
-						.warehouseId(WAREHOUSE_ID)
+						.warehouseId(StepDefConstants.WAREHOUSE_ID)
 						.build())
 				.shipmentScheduleId(11)
 				.reservedQuantity(qty)
@@ -114,19 +108,17 @@ public class MaterialDispo
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
-	public void metasfresh_has_this_md_candidate_data1(@NonNull final MaterialDispoTable table)
+	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table)
 	{
 		truncateMDCandidateData();
-		//		Services.get(ITrxManager.class)
-		//				.runOutOfTransaction(trxName -> {
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
-			mdCandidateRecord.setAD_Org_ID(ORG_ID.getRepoId());
+			mdCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
 			mdCandidateRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 			mdCandidateRecord.setStorageAttributesKey(AttributesKey.NONE.getAsString());
-			mdCandidateRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+			mdCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 			mdCandidateRecord.setMD_Candidate_Type(tableRow.getType().getCode());
 			mdCandidateRecord.setMD_Candidate_BusinessCase(CandidateBusinessCase.toCode(tableRow.getBusinessCase()));
 			mdCandidateRecord.setQty(tableRow.getQty());
@@ -134,11 +126,11 @@ public class MaterialDispo
 			InterfaceWrapperHelper.saveRecord(mdCandidateRecord);
 
 			final I_MD_Candidate mdStockCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
-			mdStockCandidateRecord.setAD_Org_ID(ORG_ID.getRepoId());
+			mdStockCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdStockCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
 			mdStockCandidateRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 			mdStockCandidateRecord.setStorageAttributesKey(AttributesKey.NONE.getAsString());
-			mdStockCandidateRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+			mdStockCandidateRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 			mdStockCandidateRecord.setMD_Candidate_Type(CandidateType.STOCK.getCode());
 			final boolean isDemand = CandidateType.DEMAND.equals(tableRow.getType()) || CandidateType.INVENTORY_DOWN.equals(tableRow.getType());
 			if (isDemand)
@@ -161,11 +153,10 @@ public class MaterialDispo
 				fail("Unsupported type " + tableRow.getType());
 			}
 		}
-		//				});
 	}
 
 	@Then("metasfresh has this MD_Candidate data")
-	public void metasfresh_has_this_md_candidate_data(@NonNull final MaterialDispoTable table)
+	public void metasfresh_has_this_md_candidate_data(@NonNull final MD_Candidate_StepDefTable table)
 	{
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{

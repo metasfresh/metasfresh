@@ -39,6 +39,7 @@
     <properties>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
         <cucumber.version>6.8.1</cucumber.version>
+<testcontainers.version>1.15.1</testcontainers.version>
     </properties>
 
     <dependencies>
@@ -53,6 +54,20 @@
             <artifactId>metasfresh-dist-serverRoot</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.business</groupId>
+            <artifactId>de.metas.business</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>4.0.2</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -77,13 +92,26 @@
             <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-picocontainer</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.15.1</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>rabbitmq</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.migration</groupId>
             <artifactId>de.metas.migration.cli</artifactId>

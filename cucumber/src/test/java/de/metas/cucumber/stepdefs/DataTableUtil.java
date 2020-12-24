@@ -22,12 +22,15 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -36,6 +39,22 @@ import java.util.Map;
 @UtilityClass
 public class DataTableUtil
 {
+	/**
+	 * Used in case no RecordIdentifier is given.
+	 */
+	private static int recordIdentifierFallback = 0;
+
+	public String extractRecordIdentifier(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String fallbackPrefix)
+	{
+		return CoalesceUtil.coalesceSuppliers(() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_RECORD_IDENTIFIER), () -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
+	}
+
+	private String createFallbackRecordIdentifier(@NonNull final String prefix)
+	{
+		return prefix + '_' + (++recordIdentifierFallback);
+	}
 
 	public int extractIntForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
@@ -104,6 +123,21 @@ public class DataTableUtil
 		catch (final DateTimeParseException e)
 		{
 			throw new AdempiereException("Can't parse value=" + string + " of index=" + index, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+
+	public static Timestamp extractDateTimestampForColumnName(final Map<String, String> dataTableRow, final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+		try
+		{
+			return TimeUtil.parseTimestamp(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}

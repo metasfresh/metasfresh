@@ -39,16 +39,9 @@ import java.io.File;
  */
 public class CucumberLifeCycleSupport implements ConcurrentEventListener
 {
-	private final EventHandler<TestRunStarted> setup = event -> {
-		beforeAll();
-	};
+	private final EventHandler<TestRunStarted> setup = event -> beforeAll();
 
-	private final EventHandler<TestRunFinished> teardown = event -> {
-		afterAll();
-	};
-
-	private static String dbHost;
-	private static int dbPort;
+  	private final EventHandler<TestRunFinished> teardown = event -> afterAll();
 
 	@Override
 	public void setEventPublisher(@NonNull final EventPublisher eventPublisher)
@@ -59,21 +52,15 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 
 	private void beforeAll()
 	{
-		if (true)
-		{ // run agaist the dockerized postgrest
-			final MetasfreshDBSupport metasfreshDBSupport = new MetasfreshDBSupport();
-			metasfreshDBSupport.startMetasfreshDB();
-			dbHost = metasfreshDBSupport.getHost();
-			dbPort = metasfreshDBSupport.getPort();
-		}
-		else
-		{ // run against your local postgres
-			dbHost = "localhost";
-			dbPort = 5432;
-		}
+		final InfrastructureSupport infrastructureSupport = new InfrastructureSupport();
+		infrastructureSupport.start();
+
+		final String dbHost = infrastructureSupport.getDbHost();
+		final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
+
 		final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
 				.workspaceDir(new File("../.."))
-				.dbUrl("jdbc:postgresql://" + dbHost + ":" + Integer.toString(dbPort) + "/metasfresh")
+				.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
 				.build();
 		de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
 
@@ -81,7 +68,12 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		System.setProperty("server.port", Integer.toString(appServerPort));
 		final String[] args = { //
 				"-dbHost", dbHost,
-				"-dbPort", Integer.toString(dbPort) };
+				"-dbPort", dbPort,
+				"-rabbitHost", infrastructureSupport.getRabbitHost(),
+				"-rabbitPort", Integer.toString(infrastructureSupport.getRabbitPort()),
+				"-rabbitUser", infrastructureSupport.getRabbitUser(),
+				"-rabbitPassword", infrastructureSupport.getRabbitPassword()
+		};
 		ServerBoot.main(args);
 	}
 

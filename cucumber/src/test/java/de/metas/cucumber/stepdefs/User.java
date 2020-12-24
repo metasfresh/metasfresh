@@ -20,33 +20,8 @@
  * #L%
  */
 
-package de.metas.cucumber;
+package de.metas.cucumber.stepdefs;
 
-import lombok.Getter;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
-
-import java.time.Duration;
-
-public class MetasfreshDBSupport
+public class User
 {
-	private static GenericContainer db;
-
-	@Getter
-	private static String host;
-
-	@Getter
-	private static Integer port;
-
-	public void startMetasfreshDB()
-	{
-		db = new GenericContainer(DockerImageName.parse("metasfresh/metasfresh-db:latest"))
-				.withEnv("POSTGRES_PASSWORD", "password")
-				.withStartupTimeout(Duration.ofMinutes(3)) // the DB needs to be populated
-				.withExposedPorts(5432);
-		db.start();
-
-		host = db.getHost();
-		port = db.getFirstMappedPort();
-	}
 }

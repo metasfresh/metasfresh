@@ -40,12 +40,12 @@ import java.time.Instant;
 
 @Builder
 @Value
-public class MaterialDispoTable
+public class MD_Candidate_StepDefTable
 {
 	@Singular
 	ImmutableMap<String, MaterialDispoTableRow> rows;
 
-	public MaterialDispoTableRow getRow(@NonNull String identifier)
+	public MaterialDispoTableRow getRow(@NonNull final String identifier)
 	{
 		return rows.get(identifier);
 	}

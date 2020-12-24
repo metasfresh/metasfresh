@@ -38,24 +38,19 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MaterialDispoTableTransformer implements TableTransformer<MaterialDispoTable>
+public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
-	/**
-	 * Used in case no RecordIdentifier is given.
-	 */
-	private int recordIdentifierFallback = 0;
-
 	@DataTableType
 	@Override
-	public MaterialDispoTable transform(@NonNull final DataTable dataTable)
+	public MD_Candidate_StepDefTable transform(@NonNull final DataTable dataTable)
 	{
-		final MaterialDispoTable.MaterialDispoTableBuilder materialDispoTableBuilder = MaterialDispoTable.builder();
+		final MD_Candidate_StepDefTable.MD_Candidate_StepDefTableBuilder materialDispoTableBuilder = MD_Candidate_StepDefTable.builder();
 
 		final List<Map<String, String>> dataTableRows = dataTable.asMaps();
 
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
-			final String identifier = CoalesceUtil.coalesceSuppliers(() -> dataTableRow.get("RecordIdentifier"), () -> Integer.toString(++recordIdentifierFallback));
+			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow,"MD_Candidate");
 
 			final CandidateType type = CandidateType.ofCode(dataTableRow.get("Type"));
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("BusinessCase"));
@@ -66,7 +61,7 @@ public class MaterialDispoTableTransformer implements TableTransformer<MaterialD
 			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "Qty");
 			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "ATP");
 
-			final MaterialDispoTable.MaterialDispoTableRow tableRow = MaterialDispoTable.MaterialDispoTableRow.builder()
+			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()
 					.identifier(identifier)
 					.type(type)
 					.businessCase(businessCase)

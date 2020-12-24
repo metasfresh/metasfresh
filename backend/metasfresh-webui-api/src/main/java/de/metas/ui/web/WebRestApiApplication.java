@@ -13,7 +13,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
-import org.compiere.db.CConnectionUtil;
+import de.metas.util.ConnectionUtil;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -96,7 +96,7 @@ public class WebRestApiApplication
 
 		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
-		CConnectionUtil.createInstanceIfArgsProvided(commandLineOptions);
+		ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
 
 		try (final IAutoCloseable ignored = ModelValidationEngine.postponeInit())
 		{

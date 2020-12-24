@@ -1,4 +1,4 @@
-/*
+ /*
  * #%L
  * de.metas.procurement.base
  * %%
@@ -39,12 +39,16 @@ import de.metas.procurement.base.IServerSyncBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 import java.util.List;
 
+@Configuration
+@EnableRabbit
 @RabbitListener(queues = Constants.QUEUE_NAME_PW_TO_MF)
 public class ReceiverFromProcurementWeb
 {
