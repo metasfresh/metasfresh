@@ -74,7 +74,7 @@ public class PMM_Purchase_Candidate_CreatePurchaseOrder
 		final SqlViewRowsWhereClause sqlWhereClause = getView().getSqlWhereClause(DocumentIdsSelection.ALL, sqlOptions);
 
 		final ICompositeQueryFilter<I_PMM_PurchaseCandidate> i_pmm_purchaseCandidateICompositeQueryFilter = queryBL.createCompositeQueryFilter(I_PMM_PurchaseCandidate.class)
-				.addCompareFilter(I_PMM_PurchaseCandidate.COLUMNNAME_QtyOrdered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.addCompareFilter(I_PMM_PurchaseCandidate.COLUMNNAME_QtyToOrder, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.addFilter(sqlWhereClause.toQueryFilter());
 
 		recordsEnqueued = PMM_GenerateOrders.prepareEnqueuing()
