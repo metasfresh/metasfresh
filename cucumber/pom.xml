@@ -56,6 +56,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>de.metas.migration</groupId>
+            <artifactId>de.metas.migration.cli</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business</artifactId>
             <version>${metasfresh.version}</version>
@@ -109,13 +115,6 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>rabbitmq</artifactId>
             <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>de.metas.migration</groupId>
-            <artifactId>de.metas.migration.cli</artifactId>
-            <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>
 

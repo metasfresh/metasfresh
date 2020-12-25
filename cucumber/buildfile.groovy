@@ -10,7 +10,7 @@ import de.metas.jenkins.MvnConf
 def build(final MvnConf mvnConf) {
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
-    // set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
+    // set the root-pom's parent pom. Although the parent pom is available via relativePath, we need it to be this build's version when the root pom is deployed to our maven-repo
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
 
     // set the artifact version of everything below de.metas.esb/pom.xml
@@ -18,7 +18,7 @@ def build(final MvnConf mvnConf) {
 
     // Set the metasfresh.version property from 10.0.0 to our current build version
     // From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is too much in the eye of the beholder
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh-common.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
+    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
     // build and test
     // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
