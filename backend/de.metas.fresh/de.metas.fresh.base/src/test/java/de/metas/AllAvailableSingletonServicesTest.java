@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.procurement.base.impl.ServerSyncBL;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -83,6 +84,7 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class, "spring component")
 			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class,"spring component")
 			.skipServiceInterface(de.metas.banking.service.IBankStatementBL.class, "spring component")
+			.skipServiceInterface(de.metas.procurement.base.impl.ServerSyncBL.class, "spring component")
 	//
 	;
 

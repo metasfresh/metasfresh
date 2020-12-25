@@ -68,8 +68,8 @@ public class InfrastructureSupport
 		rabbitUser = rabbitMQContainer.getAdminUsername();
 		rabbitPassword = rabbitMQContainer.getAdminPassword();
 
-		final boolean runAgainstCannedDatabase = true;
-		if (runAgainstCannedDatabase)
+		final boolean runAgainstDockerizedDatabase = false;
+		if (runAgainstDockerizedDatabase)
 		{
 			db = new GenericContainer(DockerImageName.parse("metasfresh/metasfresh-db:latest"))
 					.withEnv("POSTGRES_PASSWORD", "password")

@@ -32,6 +32,7 @@ import io.cucumber.plugin.event.TestRunStarted;
 import lombok.NonNull;
 import org.springframework.util.SocketUtils;
 
+import java.awt.*;
 import java.io.File;
 
 /**
@@ -66,6 +67,10 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 
 		final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
 		System.setProperty("server.port", Integer.toString(appServerPort));
+
+		System.setProperty("java.awt.headless", "true"); // "simulate headless mode
+		System.setProperty("app-server-run-headless", "true"); //
+
 		final String[] args = { //
 				"-dbHost", dbHost,
 				"-dbPort", dbPort,

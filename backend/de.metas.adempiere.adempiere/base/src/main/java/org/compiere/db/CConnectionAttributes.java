@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 
+import javax.annotation.Nullable;
+
 /**
  * {@link CConnection}'s attributes.
  *
@@ -54,17 +56,17 @@ public final class CConnectionAttributes
 	{
 		// NOTE: keep in sync with toString()
 		final String dbPortString = attributesStr.substring(attributesStr.indexOf("DBport=") + 7, attributesStr.indexOf(",DBname="));
-		final CConnectionAttributes attrs = CConnectionAttributes.builder()
+
+		return CConnectionAttributes.builder()
 				.dbHost(attributesStr.substring(attributesStr.indexOf("DBhost=") + 7, attributesStr.indexOf(",DBport=")))
 				.dbPort(parseDbPort(dbPortString))
 				.dbName(getSubString(attributesStr, "DBname=", ","))
 				.dbUid(attributesStr.substring(attributesStr.indexOf("UID=") + 4, attributesStr.indexOf(",PWD=")))
 				.dbPwd(attributesStr.substring(attributesStr.indexOf("PWD=") + 4, attributesStr.indexOf("]")))
 				.build();
-
-		return attrs;
 	}
 
+	@Nullable
 	private static String getSubString(@NonNull final String attributesStr, @NonNull final String before, @NonNull final String after)
 	{
 		final int indexOfAppsPasswordStart = attributesStr.indexOf(before);
@@ -78,11 +80,13 @@ public final class CConnectionAttributes
 
 	private static final transient Logger logger = LogManager.getLogger(CConnectionAttributes.class);
 
+	@Builder.Default
 	private String dbHost = "localhost";
 
 	@Builder.Default
 	private int dbPort = 5432;
 
+	@Builder.Default
 	private String dbName = "metasfresh";
 	private String dbUid;
 	private String dbPwd;
@@ -101,7 +105,7 @@ public final class CConnectionAttributes
 
 		final StringBuilder sb = new StringBuilder("CConnection[");
 		sb
-				.append(",DBhost=").append(dbHost)
+				.append("DBhost=").append(dbHost)
 				.append(",DBport=").append(dbPort)
 				.append(",DBname=").append(dbName)
 				.append(",UID=").append(dbUid)

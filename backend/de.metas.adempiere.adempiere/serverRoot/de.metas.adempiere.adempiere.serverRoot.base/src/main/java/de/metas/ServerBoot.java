@@ -1,16 +1,16 @@
 package de.metas;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import de.metas.CommandLineParser.CommandLineOptions;
-import jdk.nashorn.internal.objects.annotations.Setter;
+import de.metas.dao.selection.QuerySelectionToDeleteHelper;
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.elasticsearch.ESLoggingInit;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ConnectionUtil;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
@@ -19,7 +19,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
-import de.metas.util.ConnectionUtil;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -38,16 +37,15 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Stopwatch;
-
-import de.metas.dao.selection.QuerySelectionToDeleteHelper;
-import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.elasticsearch.ESLoggingInit;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -107,6 +105,7 @@ public class ServerBoot implements InitializingBean
 		// Make sure slf4j is used (by default, log4j is used)
 		ESLoggingInit.init();
 
+		logger.info("Parse command line arguments (if any!)");
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
  		ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
@@ -149,14 +148,13 @@ public class ServerBoot implements InitializingBean
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
 	{
-		final ArrayList<String> activeProfiles = Services
+		return Services
 				.get(ISysConfigBL.class)
 				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, 0, 0)
 				.entrySet()
 				.stream()
 				.map(Entry::getValue)
 				.collect(Collectors.toCollection(ArrayList::new));
-		return activeProfiles;
 	}
 
 	@Configuration
@@ -164,6 +162,7 @@ public class ServerBoot implements InitializingBean
 	{
 		private static final Logger LOG = LogManager.getLogger(StaticResourceConfiguration.class);
 
+		@Nullable
 		@Value("${metasfresh.serverRoot.downloads:}")
 		private String downloadsPath;
 
@@ -192,6 +191,7 @@ public class ServerBoot implements InitializingBean
 			}
 		}
 
+		@Nullable
 		private String defaultDownloadsPath()
 		{
 			try
@@ -219,8 +219,7 @@ public class ServerBoot implements InitializingBean
 	public Adempiere adempiere()
 	{
 		// when this is done, Adempiere.getBean(...) is ready to use
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		return adempiere;
+		return Env.getSingleAdempiereInstance(applicationContext);
 	}
 
 	@Override
