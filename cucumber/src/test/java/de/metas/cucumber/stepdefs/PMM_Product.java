@@ -56,7 +56,7 @@ public class PMM_Product
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + ".RecordIdentifier");
+			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_M_Product productRecord = stepDefData.get(productIdentifier);
 
 			final I_PMM_Product pmmProduct = CoalesceUtil.coalesceSuppliers(

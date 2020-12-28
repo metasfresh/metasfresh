@@ -29,11 +29,10 @@ import org.adempiere.warehouse.WarehouseId;
 
 public class StepDefConstants
 {
-	public static final String TABLECOLUMN_RECORD_IDENTIFIER = "RecordIdentifier";
+	public static final String TABLECOLUMN_IDENTIFIER = "Identifier";
 
 	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(540008);
 	public static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
 	public static final CountryId COUNTRY_ID = CountryId.ofRepoId(101);
-
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
 }

@@ -1,6 +1,5 @@
 package de.metas.migration.cli.workspace_migrate;
 
-import com.sun.istack.internal.Nullable;
 import de.metas.migration.IDatabase;
 import de.metas.migration.applier.IScriptsApplierListener;
 import de.metas.migration.applier.impl.ConsoleScriptsApplierListener;
@@ -60,7 +59,7 @@ class WorkspaceScriptsApplier extends AbstractScriptsApplierTemplate
 	}
 
 	@Override
-	protected IScriptScanner createScriptScanner(@Nullable final IScriptScannerFactory IGNORED)
+	protected IScriptScanner createScriptScanner(final IScriptScannerFactory IGNORED)
 	{
 		final WorkspaceScriptScanner scanner = WorkspaceScriptScanner.builder()
 				.workspaceDir(config.getWorkspaceDir())

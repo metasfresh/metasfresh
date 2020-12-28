@@ -88,7 +88,7 @@ public class AD_User_StepDef
 				procurementUserRecord.setProcurementPassword(tableRow.get("OPT." + COLUMNNAME_ProcurementPassword));
 			}
 
-			final String bPartnerIdentifier = tableRow.get(COLUMNNAME_C_BPartner_ID + ".RecordIdentifier");
+			final String bPartnerIdentifier = tableRow.get(COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(bPartnerIdentifier))
 			{
 				final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);

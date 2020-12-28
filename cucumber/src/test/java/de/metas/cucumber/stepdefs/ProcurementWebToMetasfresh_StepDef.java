@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -44,13 +43,11 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
-import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.springframework.amqp.core.MessageProperties;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -112,7 +109,7 @@ public class ProcurementWebToMetasfresh_StepDef
 			final boolean deleted = DataTableUtil.extractBooleanForColumnName(tableRow, "Deleted");
 			assertThat(syncBPartner.isDeleted()).isEqualTo(deleted);
 
-			final String identifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_RECORD_IDENTIFIER);
+			final String identifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			syncBPartnerStepDefData.put(identifier, syncBPartner);
 		}
 	}
@@ -151,7 +148,7 @@ public class ProcurementWebToMetasfresh_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.<String, String>asMaps(String.class, String.class))
 		{
-			final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "BPartner." + StepDefConstants.TABLECOLUMN_RECORD_IDENTIFIER);
+			final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "BPartner." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final SyncBPartner syncBPartner = syncBPartnerStepDefData.get(identifier);
 
 			final ImmutableMap<String, SyncUser> email2User = Maps.uniqueIndex(syncBPartner.getUsers(), SyncUser::getEmail);

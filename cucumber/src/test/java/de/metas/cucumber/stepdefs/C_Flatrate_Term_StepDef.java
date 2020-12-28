@@ -91,7 +91,7 @@ public class C_Flatrate_Term_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String billPartnerIdentifier = tableRow.get(COLUMNNAME_Bill_BPartner_ID + ".RecordIdentifier");
+			final String billPartnerIdentifier = tableRow.get(COLUMNNAME_Bill_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			assertThat(billPartnerIdentifier).as("Bill_BPartner_ID.RecordIdentifier is mandatory").isNotBlank();
 			final I_C_BPartner billPartner = bpartnerTable.get(billPartnerIdentifier);
 
@@ -111,7 +111,7 @@ public class C_Flatrate_Term_StepDef
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
 
-			final String dropshipPartnerIdentifier = tableRow.get("OPT." + COLUMNNAME_DropShip_BPartner_ID + ".RecordIdentifier");
+			final String dropshipPartnerIdentifier = tableRow.get("OPT." + COLUMNNAME_DropShip_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(dropshipPartnerIdentifier))
 			{
 				final I_C_BPartner dropshipPartner = bpartnerTable.get(dropshipPartnerIdentifier);
@@ -124,7 +124,7 @@ public class C_Flatrate_Term_StepDef
 				contractRecord.setDropShip_Location_ID(dropshipLocation.getC_BPartner_Location_ID());
 			}
 
-			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + ".RecordIdentifier");
+			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			assertThat(productIdentifier).as("M_Product.RecordIdentifier is mandatory").isNotBlank();
 			final I_M_Product product = productTable.get(productIdentifier);
 			contractRecord.setM_Product_ID(product.getM_Product_ID());
