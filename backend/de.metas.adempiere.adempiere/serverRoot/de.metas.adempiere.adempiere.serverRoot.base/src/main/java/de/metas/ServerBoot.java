@@ -100,6 +100,8 @@ public class ServerBoot implements InitializingBean
 
 	public static void main(final String[] args)
 	{
+		logger.info("Begin of {} main-method ", ServerBoot.class);
+
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		// Make sure slf4j is used (by default, log4j is used)
@@ -108,7 +110,7 @@ public class ServerBoot implements InitializingBean
 		logger.info("Parse command line arguments (if any!)");
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
- 		ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
+		ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
 
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
@@ -128,12 +130,10 @@ public class ServerBoot implements InitializingBean
 					.web(true)
 					// consider removing the jasper profile
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
-					// same goes for PrintService
 					.profiles(activeProfiles.toArray(new String[0]))
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
-
 		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;
 
 		// now init the model validation engine
@@ -143,7 +143,9 @@ public class ServerBoot implements InitializingBean
 		final HouseKeepingService houseKeepingService = SpringContextHolder.instance.getBean(HouseKeepingService.class);
 		houseKeepingService.runStartupHouseKeepingTasks();
 
+
 		logger.info("Metasfresh Server started in {}", stopwatch);
+		logger.info("End of {} main-method ", ServerBoot.class);
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
