@@ -24,6 +24,7 @@ package de.metas.cucumber;
 
 import de.metas.ServerBoot;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
+import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
 import io.cucumber.plugin.ConcurrentEventListener;
 import io.cucumber.plugin.event.EventHandler;
 import io.cucumber.plugin.event.EventPublisher;
@@ -61,6 +62,7 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 
 		final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
 				.workspaceDir(new File("../.."))
+				.onScriptFailure(OnScriptFailure.FAIL)
 				.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
 				.build();
 		de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);

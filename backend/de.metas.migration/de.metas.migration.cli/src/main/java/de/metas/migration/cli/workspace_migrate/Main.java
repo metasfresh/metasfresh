@@ -3,6 +3,7 @@ package de.metas.migration.cli.workspace_migrate;
 import java.io.File;
 import java.time.ZonedDateTime;
 
+import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class Main
 
 	public static void main(@NonNull final WorkspaceMigrateConfig config)
 	{
-		System.out.println("Configuration: " + config);
+		System.out.println("WorkspaceMigrateConfig: " + config);
 
 		final WorkspaceScriptsApplier applier = new WorkspaceScriptsApplier(config);
 
@@ -71,6 +72,7 @@ public class Main
 				.dbPassword(getMandatoryProperty("db.password", WorkspaceMigrateConfig.PROP_DB_PASSWORD_DEFAULT))
 				.dryRunMode(getBooleanProperty("dryRunMode", false))
 				.skipExecutingAfterScripts(getBooleanProperty("skipExecutingAfterScripts", false))
+				.onScriptFailure(OnScriptFailure.valueOf(getMandatoryProperty("onScriptFailure", OnScriptFailure.ASK.toString())))
 				.labels(getLabels())
 				.build();
 	}

@@ -1,7 +1,10 @@
 package de.metas.migration.cli.workspace_migrate;
 
+import com.sun.istack.internal.Nullable;
 import de.metas.migration.IDatabase;
 import de.metas.migration.applier.IScriptsApplierListener;
+import de.metas.migration.applier.impl.ConsoleScriptsApplierListener;
+import de.metas.migration.applier.impl.NullScriptsApplierListener;
 import de.metas.migration.applier.impl.ScriptsApplier;
 import de.metas.migration.applier.impl.SwingUIScriptsApplierListener;
 import de.metas.migration.executor.IScriptExecutorFactory;
@@ -14,6 +17,8 @@ import de.metas.migration.scanner.IScriptScannerFactory;
 import de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator;
 import lombok.Builder;
 import lombok.NonNull;
+
+import java.awt.*;
 
 /*
  * #%L
@@ -55,7 +60,7 @@ class WorkspaceScriptsApplier extends AbstractScriptsApplierTemplate
 	}
 
 	@Override
-	protected IScriptScanner createScriptScanner(final IScriptScannerFactory scriptScannerFactory)
+	protected IScriptScanner createScriptScanner(@Nullable final IScriptScannerFactory IGNORED)
 	{
 		final WorkspaceScriptScanner scanner = WorkspaceScriptScanner.builder()
 				.workspaceDir(config.getWorkspaceDir())
@@ -95,7 +100,18 @@ class WorkspaceScriptsApplier extends AbstractScriptsApplierTemplate
 	@Override
 	protected IScriptsApplierListener createScriptsApplierListener()
 	{
-		return new SwingUIScriptsApplierListener();
+		switch (config.getOnScriptFailure())
+		{
+			case FAIL:
+				return NullScriptsApplierListener.instance;
+			case ASK:
+				if (GraphicsEnvironment.isHeadless())
+				{
+					return ConsoleScriptsApplierListener.instance;
+				}
+				return new SwingUIScriptsApplierListener();
+			default:
+				throw new RuntimeException("Unexpected WorkspaceMigrateConfig.onScriptFailure=" + config.getOnScriptFailure());
+		}
 	}
-
 }

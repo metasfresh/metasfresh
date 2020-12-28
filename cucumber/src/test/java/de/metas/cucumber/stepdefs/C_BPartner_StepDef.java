@@ -38,6 +38,10 @@ import org.compiere.util.Env;
 import java.util.List;
 import java.util.Map;
 
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+
 public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
@@ -68,8 +72,10 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setName(bPartnerName);
 			bPartnerRecord.setValue(bPartnerValue);
 			bPartnerRecord.setC_BP_Group_ID(BP_GROUP_ID);
-			bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + I_C_BPartner.COLUMNNAME_IsVendor), false));
-			bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + I_C_BPartner.COLUMNNAME_IsCustomer), false));
+			bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsVendor), false));
+			bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
+
+			bPartnerRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
 
 			final boolean alsoCreateLoction = InterfaceWrapperHelper.isNew(bPartnerRecord);
 			InterfaceWrapperHelper.saveRecord(bPartnerRecord);

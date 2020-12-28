@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
@@ -72,12 +73,12 @@ public class DataTableUtil
 		}
 	}
 
-	private String extractStringForColumnName(final Map<String, String> dataTableRow, final String columnName)
+	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		final String string = dataTableRow.get(columnName);
 		if (Check.isBlank(string))
 		{
-			throw new AdempiereException("missing value for columnName=" + columnName).appendParametersToMessage()
+			throw new AdempiereException("Missing value for columnName=" + columnName).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
 		return string;
@@ -127,7 +128,6 @@ public class DataTableUtil
 		}
 	}
 
-
 	public static Timestamp extractDateTimestampForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringForColumnName(dataTableRow, columnName);
@@ -168,7 +168,19 @@ public class DataTableUtil
 			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+	}
 
+	public static boolean extractBooleanForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+
+		final Boolean result = StringUtils.toBoolean(string, null);
+		if (result == null)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+		return result;
 	}
 
 	public String extractStringForIndex(final List<String> dataTableRow, final int index)

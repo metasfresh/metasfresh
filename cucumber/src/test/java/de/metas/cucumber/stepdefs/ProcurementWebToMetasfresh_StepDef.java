@@ -22,7 +22,10 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -33,6 +36,8 @@ import de.metas.ServerBoot;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
 import io.cucumber.datatable.DataTable;
@@ -57,6 +62,10 @@ public class ProcurementWebToMetasfresh_StepDef
 {
 	private final ConnectionFactory procurementWebuiFactory;
 
+	private final StepDefData<SyncBPartner> syncBPartnerStepDefData = new StepDefData<>();
+	private final StepDefData<SyncUser> syncUserStepDefData = new StepDefData<>();
+	private final StepDefData<SyncContract> syncContractStepDefData = new StepDefData<>();
+
 	public ProcurementWebToMetasfresh_StepDef()
 	{
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
@@ -77,7 +86,7 @@ public class ProcurementWebToMetasfresh_StepDef
 		try (final Connection connection = procurementWebuiFactory.newConnection())
 		{
 			final Channel channel = connection.createChannel();
-			final AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
+			final BasicProperties properties = new BasicProperties.Builder()
 					.contentEncoding(StandardCharsets.UTF_8.displayName())
 					.contentType(MessageProperties.CONTENT_TYPE_JSON)
 					.build();
@@ -91,11 +100,20 @@ public class ProcurementWebToMetasfresh_StepDef
 	public void metasfresh_responds_with_a_put_b_partners_request_that_contains_these_b_partners(@NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
 	{
 		final PutBPartnersRequest putBPartnersRequest = receiveRequest(PutBPartnersRequest.class);
-		final List<SyncBPartner> bpartners = putBPartnersRequest.getBpartners();
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
 
+		final ImmutableMap<String, SyncBPartner> name2bpartner = Maps.uniqueIndex(putBPartnersRequest.getBpartners(), SyncBPartner::getName);
+
+		for (final Map<String, String> tableRow : dataTable.<String, String>asMaps(String.class, String.class))
+		{
+			final String name = tableRow.get("Name");
+			assertThat(name2bpartner).as("Missing syncBPartner with name=%s", name).containsKey(name);
+			final SyncBPartner syncBPartner = name2bpartner.get(name);
+
+			final boolean deleted = DataTableUtil.extractBooleanForColumnName(tableRow, "Deleted");
+			assertThat(syncBPartner.isDeleted()).isEqualTo(deleted);
+
+			final String identifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_RECORD_IDENTIFIER);
+			syncBPartnerStepDefData.put(identifier, syncBPartner);
 		}
 	}
 
@@ -110,7 +128,7 @@ public class ProcurementWebToMetasfresh_StepDef
 		final DefaultConsumer consumer = new DefaultConsumer(channel)
 		{
 			@Override
-			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+			public void handleDelivery(final String consumerTag, final Envelope envelope, final BasicProperties properties, final byte[] body)
 			{
 				message[0] = new String(body, StandardCharsets.UTF_8);
 				System.out.println("\n[x] Received on queue '" + Constants.QUEUE_NAME_MF_TO_PW + "': message= '" + message[0] + "'");
@@ -129,17 +147,25 @@ public class ProcurementWebToMetasfresh_StepDef
 	}
 
 	@Then("the PutBPartnersRequest contains these Users:")
-	public void the_put_b_partners_request_contains_these_users(DataTable dataTable)
+	public void the_put_b_partners_request_contains_these_users(@NonNull final DataTable dataTable)
 	{
+		for (final Map<String, String> tableRow : dataTable.<String, String>asMaps(String.class, String.class))
+		{
+			final String identifier = DataTableUtil.extractStringForColumnName(tableRow, "BPartner." + StepDefConstants.TABLECOLUMN_RECORD_IDENTIFIER);
+			final SyncBPartner syncBPartner = syncBPartnerStepDefData.get(identifier);
 
-		// Write code here that turns the phrase above into concrete actions
-		// For automatic transformation, change DataTable to one of
-		// E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-		// Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-		// Double, Byte, Short, Long, BigInteger or BigDecimal.
-		//
-		// For other transformations you can register a DataTableType.
-		// throw new io.cucumber.java.PendingException();
+			final ImmutableMap<String, SyncUser> email2User = Maps.uniqueIndex(syncBPartner.getUsers(), SyncUser::getEmail);
+
+			final String email = DataTableUtil.extractStringForColumnName(tableRow, "Email");
+			assertThat(email2User).as("Missing syncUser with email=%s", email).containsKey(email);
+
+			final SyncUser syncUser = email2User.get(email);
+			final String password = DataTableUtil.extractStringForColumnName(tableRow, "Password");
+			final String language = DataTableUtil.extractStringForColumnName(tableRow, "Language");
+
+			assertThat(syncUser.getPassword()).isEqualTo(password);
+			assertThat(syncUser.getEmail()).isEqualTo(email);
+		}
 	}
 
 	@Then("the PutBPartnersRequest contains these Contracts:")

@@ -48,8 +48,7 @@ public class SenderToProcurementWeb
 
 	public void send(@NonNull final RequestToProcurementWeb procurementEvent)
 	{
-		final String message = convertToString(procurementEvent);
-		rabbitTemplate.convertAndSend(queue.getName(), message);
+		rabbitTemplate.convertAndSend(queue.getName(), procurementEvent);
 	}
 
 	private String convertToString(@NonNull final RequestToProcurementWeb procurementEvent)

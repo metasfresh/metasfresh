@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.migration.applier.IScriptsApplierListener;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,4 +61,13 @@ public class WorkspaceMigrateConfig
 	@NonNull
 	@Builder.Default
 	ImmutableSet<Label> labels = Label.ofCommaSeparatedString(PROP_LABELS_DEFAULT);
+
+	public enum OnScriptFailure
+	{
+		ASK, FAIL;
+	}
+
+	@NonNull
+	@Builder.Default
+	OnScriptFailure onScriptFailure = OnScriptFailure.ASK;
 }
