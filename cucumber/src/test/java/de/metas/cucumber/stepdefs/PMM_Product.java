@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.IPMMProductDAO;
+import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -32,6 +33,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_M_Product;
 
 import java.util.List;
@@ -69,7 +71,10 @@ public class PMM_Product
 			pmmProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			pmmProduct.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 
-			InterfaceWrapperHelper.save(pmmProduct);
+			try (final IAutoCloseable ignored = Services.get(IWebuiPush.class).disable())
+			{ // don't fire a message towards the procurement webui, because we don't want the queue be messed up with and unexpected message
+				InterfaceWrapperHelper.save(pmmProduct);
+			}
 		}
 	}
 }

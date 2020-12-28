@@ -5,6 +5,7 @@ import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.ISingletonService;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
@@ -40,6 +41,8 @@ import java.util.List;
  */
 public interface IWebuiPush extends ISingletonService
 {
+	IAutoCloseable disable();
+
 	/**
 	 * Push bpartner (without pushing the bpartner's contracts).
 	 */

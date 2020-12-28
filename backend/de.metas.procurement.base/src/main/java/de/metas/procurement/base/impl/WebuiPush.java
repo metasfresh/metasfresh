@@ -20,6 +20,7 @@ import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -58,6 +59,8 @@ public class WebuiPush implements IWebuiPush
 {
 	private static final Logger logger = LogManager.getLogger(WebuiPush.class);
 
+	private final ThreadLocal<Boolean> disabled = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
 	/**
 	 * Return an instance of {@link IAgentSync} that can be used to communicate with the procurement webUI.
 	 * If no such client endpoint is available, return <code>null</code>.
@@ -71,11 +74,24 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
+	public IAutoCloseable disable()
+	{
+		disabled.set(true);
+		return () -> disabled.set(false);
+	}
+
+	@Override
 	public void pushBPartnerAndUsers(final I_C_BPartner bpartner)
 	{
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
 		final IAgentSync agent = getAgentSync();
 		final SyncObjectsFactory syncFactory = SyncObjectsFactory.newFactory();
-// @formatter:off
+		// @formatter:off
 // FRESH-168: all users with IsMfProcurementUser='Y' are allowed to record a supply via procurement-webui,
 // even if they don't have a contract/flatrate term.
 //		if (!syncFactory.hasRunningContracts(bpartner))
@@ -97,6 +113,12 @@ public class WebuiPush implements IWebuiPush
 	@Override
 	public void pushBPartnerForContract(final I_C_Flatrate_Term contract)
 	{
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
 		final IAgentSync agent = getAgentSync();
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getDropShip_BPartner_ID());
@@ -127,6 +149,12 @@ public class WebuiPush implements IWebuiPush
 	@ManagedOperation(description = "Pushes/synchronizes all currently valid PMM_Products to the procurement webUI.")
 	public void pushAllProducts()
 	{
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
 		final IAgentSync agent = getAgentSync();
 
 		final IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
@@ -145,13 +173,18 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	@ManagedOperation(description="Pushes/synchronizes Businesspartners with their contracts to the procurement webUI.")
+	@ManagedOperation(description = "Pushes/synchronizes Businesspartners with their contracts to the procurement webUI.")
 	public void pushAllBPartners()
 	{
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
 		final IAgentSync agent = getAgentSync();
 
 		final List<SyncBPartner> allSyncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
-
 
 		final PutBPartnersRequest request = PutBPartnersRequest.builder().bpartners(allSyncBPartners).build();
 		agent.syncBPartners(request);
@@ -160,6 +193,12 @@ public class WebuiPush implements IWebuiPush
 	@Override
 	public void pushProduct(final I_PMM_Product pmmProduct)
 	{
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
 		final IAgentSync agent = getAgentSync();
 
 		final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
@@ -172,6 +211,12 @@ public class WebuiPush implements IWebuiPush
 	@ManagedOperation
 	public void pushAllInfoMessages()
 	{
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
 		final IAgentSync agent = getAgentSync();
 
 		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
@@ -181,7 +226,13 @@ public class WebuiPush implements IWebuiPush
 	@Override
 	public void pushRfQs(@Nullable final List<SyncRfQ> syncRfqs)
 	{
-		if(syncRfqs == null || syncRfqs.isEmpty())
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
+		if (syncRfqs == null || syncRfqs.isEmpty())
 		{
 			return;
 		}
@@ -191,9 +242,16 @@ public class WebuiPush implements IWebuiPush
 	}
 
 	@Override
-	public void pushRfQCloseEvents(@Nullable final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	public void pushRfQCloseEvents(
+			@Nullable final List<SyncRfQCloseEvent> syncRfQCloseEvents)
 	{
-		if(syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
+		if (syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
 		{
 			return;
 		}

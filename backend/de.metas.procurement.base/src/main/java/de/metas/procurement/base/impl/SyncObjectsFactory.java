@@ -233,9 +233,8 @@ public class SyncObjectsFactory
 		return syncBPartner.build();
 	}
 
-	public SyncBPartner createSyncBPartnerWithoutContracts(final I_C_BPartner bpartner)
+	public SyncBPartner createSyncBPartnerWithoutContracts(@NonNull final I_C_BPartner bpartner)
 	{
-		Check.assumeNotNull(bpartner, "bpartner not null");
 		return createSyncBPartnerWithoutContracts(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));
 	}
 
@@ -287,7 +286,7 @@ public class SyncObjectsFactory
 	}
 
 	@Nullable
-	private SyncUser createSyncUser(final I_AD_User contact, final String adLanguage)
+	private SyncUser createSyncUser(@NonNull final I_AD_User contact, final String adLanguage)
 	{
 		if (!contact.isActive() || !contact.isIsMFProcurementUser())
 		{

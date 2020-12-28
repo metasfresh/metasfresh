@@ -135,7 +135,7 @@ public class ProcurementWebToMetasfresh_StepDef
 		channel.basicConsume(Constants.QUEUE_NAME_MF_TO_PW, true, consumer);
 
 		System.out.print("Waiting for message receipt");
-		final boolean messageReceivedWithinTimeout = countDownLatch.await(5, TimeUnit.SECONDS);
+		final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS); // give us a bit of time while debugging
 		assertThat(messageReceivedWithinTimeout).isTrue();
 
 		final RequestToProcurementWeb requestToProcurementWeb = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message[0], RequestToProcurementWeb.class);
@@ -161,7 +161,7 @@ public class ProcurementWebToMetasfresh_StepDef
 			final String language = DataTableUtil.extractStringForColumnName(tableRow, "Language");
 
 			assertThat(syncUser.getPassword()).isEqualTo(password);
-			assertThat(syncUser.getEmail()).isEqualTo(email);
+			assertThat(syncUser.getLanguage()).isEqualTo(language);
 		}
 	}
 
