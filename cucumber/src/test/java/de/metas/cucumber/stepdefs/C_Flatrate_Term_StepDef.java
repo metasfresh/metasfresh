@@ -33,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.order.InvoiceRule;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -45,6 +46,9 @@ import org.compiere.util.Env;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Flatrate_Term_StepDef
@@ -87,27 +91,40 @@ public class C_Flatrate_Term_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String bPartnerIdentifier = tableRow.get("C_BPartner.RecordIdentifier");
-			assertThat(bPartnerIdentifier).as("C_BPartner.RecordIdentifier is mandatory").isNotBlank();
-			final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);
+			final String billPartnerIdentifier = tableRow.get(COLUMNNAME_Bill_BPartner_ID + ".RecordIdentifier");
+			assertThat(billPartnerIdentifier).as("Bill_BPartner_ID.RecordIdentifier is mandatory").isNotBlank();
+			final I_C_BPartner billPartner = bpartnerTable.get(billPartnerIdentifier);
 
-			final I_C_BPartner_Location bPartnerLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
+			final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
 					.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
 					.build());
-			assertThat(bPartnerLocation).isNotNull(); // guard
+			assertThat(billPartnerLocation).isNotNull(); // guard
 
-			final I_C_Flatrate_Data flatrateData = flatrateDAO.retriveOrCreateFlatrateData(bPartner);
+			final I_C_Flatrate_Data flatrateData = flatrateDAO.retriveOrCreateFlatrateData(billPartner);
 
 			final I_C_Flatrate_Term contractRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
+			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			contractRecord.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
 			contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 			contractRecord.setProcessed(true);
-			contractRecord.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
-			contractRecord.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
-			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
+			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
 
-			final String productIdentifier = tableRow.get("M_Product.RecordIdentifier");
+			final String dropshipPartnerIdentifier = tableRow.get("OPT." + COLUMNNAME_DropShip_BPartner_ID + ".RecordIdentifier");
+			if (Check.isNotBlank(dropshipPartnerIdentifier))
+			{
+				final I_C_BPartner dropshipPartner = bpartnerTable.get(dropshipPartnerIdentifier);
+				contractRecord.setDropShip_BPartner_ID(dropshipPartner.getC_BPartner_ID());
+
+				final I_C_BPartner_Location dropshipLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
+						.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+						.build());
+				assertThat(dropshipLocation).isNotNull(); // guard
+				contractRecord.setDropShip_Location_ID(dropshipLocation.getC_BPartner_Location_ID());
+			}
+
+			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + ".RecordIdentifier");
 			assertThat(productIdentifier).as("M_Product.RecordIdentifier is mandatory").isNotBlank();
 			final I_M_Product product = productTable.get(productIdentifier);
 			contractRecord.setM_Product_ID(product.getM_Product_ID());

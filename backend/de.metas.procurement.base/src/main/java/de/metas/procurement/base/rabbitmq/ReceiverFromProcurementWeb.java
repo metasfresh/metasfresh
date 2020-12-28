@@ -39,17 +39,18 @@ import de.metas.procurement.base.IServerSyncBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.handler.annotation.Payload;
 
 import java.io.IOException;
 import java.util.List;
 
 @Configuration
 @EnableRabbit
-@RabbitListener(queues = Constants.QUEUE_NAME_PW_TO_MF)
 public class ReceiverFromProcurementWeb
 {
 	private final SenderToProcurementWeb senderToProcurementWebUI;
@@ -59,20 +60,10 @@ public class ReceiverFromProcurementWeb
 		this.senderToProcurementWebUI = senderToProcurementWebUI;
 	}
 
-	@RabbitHandler
-	public void receiveMessage(@NonNull final String message)
+	@RabbitListener(queues = Constants.QUEUE_NAME_PW_TO_MF)
+	public void receiveMessage(@NonNull @Payload final RequestToMetasfresh request)
 	{
-		try
-		{
-			final RequestToMetasfresh procurementEvent = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message, RequestToMetasfresh.class);
-			invokeServerSyncBL(procurementEvent);
-		}
-		catch (final IOException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("message", message);
-		}
+		invokeServerSyncBL(request);
 	}
 
 	private void invokeServerSyncBL(@NonNull final RequestToMetasfresh procurementEvent)

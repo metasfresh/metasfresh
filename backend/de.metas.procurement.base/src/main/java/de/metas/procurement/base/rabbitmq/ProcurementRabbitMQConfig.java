@@ -25,6 +25,8 @@ package de.metas.procurement.base.rabbitmq;
 import de.metas.common.procurement.sync.Constants;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,7 +41,7 @@ public class ProcurementRabbitMQConfig
 	}
 
 	@Bean(name = Constants.QUEUE_NAME_PW_TO_MF)
-	public Queue procurementWebTometasfreshQueue()
+	public Queue procurementWebToMetasfreshQueue()
 	{
 		return new Queue(Constants.QUEUE_NAME_PW_TO_MF);
 	}

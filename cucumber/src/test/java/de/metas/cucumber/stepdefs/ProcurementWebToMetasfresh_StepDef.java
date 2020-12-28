@@ -22,19 +22,36 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 import de.metas.CommandLineParser.CommandLineOptions;
 import de.metas.ServerBoot;
 import de.metas.common.procurement.sync.Constants;
+import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import lombok.NonNull;
+import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
+import org.springframework.amqp.core.MessageProperties;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProcurementWebToMetasfresh_StepDef
 {
@@ -57,45 +74,62 @@ public class ProcurementWebToMetasfresh_StepDef
 	{
 		final String string = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsString(GetAllBPartnersRequest.INSTANCE);
 
-		Channel channel = null;
 		try (final Connection connection = procurementWebuiFactory.newConnection())
 		{
-			channel = connection.createChannel();
+			final Channel channel = connection.createChannel();
+			final AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
+					.contentEncoding(StandardCharsets.UTF_8.displayName())
+					.contentType(MessageProperties.CONTENT_TYPE_JSON)
+					.build();
 
-			channel.basicPublish("", Constants.QUEUE_NAME_PW_TO_MF, null, string.getBytes());
+			channel.basicPublish("", Constants.QUEUE_NAME_PW_TO_MF, properties, string.getBytes());
 			System.out.println("[x] Sent on queue '" + Constants.QUEUE_NAME_PW_TO_MF + "': message= '" + string + "'");
 		}
 	}
 
 	@Then("metasfresh responds with a PutBPartnersRequest that contains these BPartners:")
-	public void metasfresh_responds_with_a_put_b_partners_request_that_contains_these_b_partners(io.cucumber.datatable.DataTable dataTable) throws IOException, TimeoutException, InterruptedException
+	public void metasfresh_responds_with_a_put_b_partners_request_that_contains_these_b_partners(@NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
 	{
-		// final Connection connection = procurementWebuiFactory.newConnection();
-		// final Channel channel = connection.createChannel();
-		//
-		// final CountDownLatch countDownLatch = new CountDownLatch(1);
-		//
-		// final String[] message = { null };
-		// final DefaultConsumer consumer = new DefaultConsumer(channel)
-		// {
-		// 	@Override
-		// 	public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws IOException
-		// 	{
-		// 		message[0] = new String(body, StandardCharsets.UTF_8);
-		// 		System.out.println("\n[x] Received on queue '" + Constants.QUEUE_NAME_MF_TO_PW + "': message= '" + message[0] + "'");
-		// 		countDownLatch.countDown();
-		// 	}
-		// };
-		// channel.basicConsume(Constants.QUEUE_NAME_MF_TO_PW, true, consumer);
-		//
-		// System.out.print("Waiting for message receipt");
-		// countDownLatch.await(5, TimeUnit.SECONDS);
-		//
-		// assertThat(message[0]).isEqualTo("blah");
+		final PutBPartnersRequest putBPartnersRequest = receiveRequest(PutBPartnersRequest.class);
+		final List<SyncBPartner> bpartners = putBPartnersRequest.getBpartners();
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+
+		}
+	}
+
+	private <T extends RequestToProcurementWeb> T receiveRequest(@NonNull final Class<T> clazz) throws IOException, TimeoutException, InterruptedException
+	{
+		final Connection connection = procurementWebuiFactory.newConnection();
+		final Channel channel = connection.createChannel();
+
+		final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+		final String[] message = { null };
+		final DefaultConsumer consumer = new DefaultConsumer(channel)
+		{
+			@Override
+			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+			{
+				message[0] = new String(body, StandardCharsets.UTF_8);
+				System.out.println("\n[x] Received on queue '" + Constants.QUEUE_NAME_MF_TO_PW + "': message= '" + message[0] + "'");
+				countDownLatch.countDown();
+			}
+		};
+		channel.basicConsume(Constants.QUEUE_NAME_MF_TO_PW, true, consumer);
+
+		System.out.print("Waiting for message receipt");
+		final boolean messageReceivedWithinTimeout = countDownLatch.await(5, TimeUnit.SECONDS);
+		assertThat(messageReceivedWithinTimeout).isTrue();
+
+		final RequestToProcurementWeb requestToProcurementWeb = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message[0], RequestToProcurementWeb.class);
+		assertThat(requestToProcurementWeb).isInstanceOf(clazz);
+		return (T)requestToProcurementWeb;
 	}
 
 	@Then("the PutBPartnersRequest contains these Users:")
-	public void the_put_b_partners_request_contains_these_users(io.cucumber.datatable.DataTable dataTable)
+	public void the_put_b_partners_request_contains_these_users(DataTable dataTable)
 	{
 
 		// Write code here that turns the phrase above into concrete actions
@@ -109,7 +143,7 @@ public class ProcurementWebToMetasfresh_StepDef
 	}
 
 	@Then("the PutBPartnersRequest contains these Contracts:")
-	public void the_put_b_partners_request_contains_these_contracts(io.cucumber.datatable.DataTable dataTable)
+	public void the_put_b_partners_request_contains_these_contracts(DataTable dataTable)
 	{
 		// Write code here that turns the phrase above into concrete actions
 		// For automatic transformation, change DataTable to one of
@@ -122,7 +156,7 @@ public class ProcurementWebToMetasfresh_StepDef
 	}
 
 	@Then("the PutBPartnersRequest contains these ContractLines:")
-	public void the_put_b_partners_request_contains_these_contract_lines(io.cucumber.datatable.DataTable dataTable)
+	public void the_put_b_partners_request_contains_these_contract_lines(DataTable dataTable)
 	{
 		// Write code here that turns the phrase above into concrete actions
 		// For automatic transformation, change DataTable to one of

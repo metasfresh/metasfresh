@@ -23,7 +23,8 @@ def build(final MvnConf mvnConf) {
     // build and test
     // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
     // maven.test.failure.ignore=true: see metasfresh stage
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean test"
+    // trimStackTrace=false: thx to https://github.com/cucumber/cucumber-jvm/issues/1877#issuecomment-578685012
+    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean test"
 }
 
 return this

@@ -44,6 +44,7 @@ public class StepDefData<T>
 				.isNull();
 	}
 
+	@NonNull
 	public T get(@NonNull final String identifier)
 	{
 		final T record = records.get(identifier);

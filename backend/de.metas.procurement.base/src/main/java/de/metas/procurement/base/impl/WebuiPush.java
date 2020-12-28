@@ -1,5 +1,6 @@
 package de.metas.procurement.base.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
@@ -98,7 +99,7 @@ public class WebuiPush implements IWebuiPush
 	{
 		final IAgentSync agent = getAgentSync();
 
-		final int bpartnerId = contract.getDropShip_BPartner_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getDropShip_BPartner_ID());
 
 		final SyncObjectsFactory syncFactory = SyncObjectsFactory.newFactory();
 		final SyncBPartner syncBPartner = syncFactory.createSyncBPartner(bpartnerId);

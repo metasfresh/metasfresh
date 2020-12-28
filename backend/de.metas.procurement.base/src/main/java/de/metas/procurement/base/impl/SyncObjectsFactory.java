@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncContract;
@@ -35,6 +36,7 @@ import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -81,12 +83,12 @@ import java.util.concurrent.ExecutionException;
  */
 public class SyncObjectsFactory
 {
-	public static final SyncObjectsFactory newFactory(final Date date)
+	public static SyncObjectsFactory newFactory(final Date date)
 	{
 		return new SyncObjectsFactory(date);
 	}
 
-	public static final SyncObjectsFactory newFactory()
+	public static SyncObjectsFactory newFactory()
 	{
 		return new SyncObjectsFactory(SystemTime.asDayTimestamp());
 	}
@@ -109,16 +111,16 @@ public class SyncObjectsFactory
 	//
 	// state/cache
 
-	private final Map<Integer, I_C_BPartner> bpartners = new HashMap<>();
+	private final Map<BPartnerId, I_C_BPartner> bpartners = new HashMap<>();
 
 	/**
 	 * C_BPartner_ID to {@link I_C_Flatrate_Term}s
 	 */
-	private final Multimap<Integer, I_C_Flatrate_Term> _bpartnerId2contract = MultimapBuilder.hashKeys().arrayListValues().build();
+	private final Multimap<BPartnerId, I_C_Flatrate_Term> _bpartnerId2contract = MultimapBuilder.hashKeys().arrayListValues().build();
 	private boolean _bpartnerId2contract_fullyLoaded = false;
 	private boolean _bpartnerId2contract_fullyLoadedRequired = false;
 
-	private final Multimap<Integer, I_C_RfQResponseLine> _bpartnerId2activeRfqResponseLines = MultimapBuilder.hashKeys().arrayListValues().build();
+	private final Multimap<BPartnerId, I_C_RfQResponseLine> _bpartnerId2activeRfqResponseLines = MultimapBuilder.hashKeys().arrayListValues().build();
 	private boolean _bpartnerId2activeRfqResponseLines_fullyLoaded = false;
 	private boolean _bpartnerId2activeRfqResponseLines_fullyLoadedRequired = false;
 
@@ -145,7 +147,7 @@ public class SyncObjectsFactory
 		setActiveRfqResponsesFullyLoadedRequired();
 
 		final List<SyncBPartner> syncBPartners = new ArrayList<>();
-		for (final int bpartnerId : getAllBPartnerIds())
+		for (final BPartnerId bpartnerId : getAllBPartnerIds())
 		{
 			final SyncBPartner syncBPartner = createSyncBPartner(bpartnerId);
 			syncBPartners.add(syncBPartner);
@@ -154,6 +156,7 @@ public class SyncObjectsFactory
 		return syncBPartners;
 	}
 
+	@Nullable
 	private SyncContract createSyncContract(final I_C_Flatrate_Term term)
 	{
 		final String uuid = SyncUUIDs.toUUIDString(term);
@@ -195,7 +198,7 @@ public class SyncObjectsFactory
 		return syncContract.build();
 	}
 
-	public SyncBPartner createSyncBPartner(final int bpartnerId)
+	public SyncBPartner createSyncBPartner(@NonNull final BPartnerId bpartnerId)
 	{
 		//
 		// Create SyncBPartner with Users populated
@@ -233,10 +236,10 @@ public class SyncObjectsFactory
 	public SyncBPartner createSyncBPartnerWithoutContracts(final I_C_BPartner bpartner)
 	{
 		Check.assumeNotNull(bpartner, "bpartner not null");
-		return createSyncBPartnerWithoutContracts(bpartner.getC_BPartner_ID());
+		return createSyncBPartnerWithoutContracts(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));
 	}
 
-	private SyncBPartner createSyncBPartnerWithoutContracts(final int bpartnerId)
+	private SyncBPartner createSyncBPartnerWithoutContracts(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartner = getC_BPartnerById(bpartnerId);
 
@@ -312,7 +315,7 @@ public class SyncObjectsFactory
 		this._bpartnerId2contract_fullyLoadedRequired = true;
 	}
 
-	private Multimap<Integer, I_C_Flatrate_Term> getC_Flatrate_Terms_IndexedByBPartnerId()
+	private Multimap<BPartnerId, I_C_Flatrate_Term> getC_Flatrate_Terms_IndexedByBPartnerId()
 	{
 		if (_bpartnerId2contract_fullyLoadedRequired && !_bpartnerId2contract_fullyLoaded)
 		{
@@ -321,7 +324,12 @@ public class SyncObjectsFactory
 			final List<I_C_Flatrate_Term> terms = pmmContractsDAO.retrieveAllRunningContractsOnDate(date);
 			for (final I_C_Flatrate_Term term : terms)
 			{
-				final int bpartnerId = term.getDropShip_BPartner_ID();
+				final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID());
+				if (bpartnerId == null)
+				{
+					logger.warn("Procurement C_Flatrate_Term_ID={} has DropShip_BPartner_ID={}; -> ignoring the term", term.getC_Flatrate_Term_ID(), term.getDropShip_BPartner_ID());
+					continue;
+				}
 				_bpartnerId2contract.put(bpartnerId, term);
 			}
 
@@ -330,33 +338,33 @@ public class SyncObjectsFactory
 		return _bpartnerId2contract;
 	}
 
-	private Set<Integer> getAllBPartnerIds()
+	private Set<BPartnerId> getAllBPartnerIds()
 	{
 		final List<I_C_BPartner> bpartnersList = pmmbPartnerDAO.retrieveAllPartnersWithProcurementUsers();
 		for (final I_C_BPartner bpartner : bpartnersList)
 		{
-			bpartners.put(bpartner.getC_BPartner_ID(), bpartner);
+			bpartners.put(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()), bpartner);
 		}
 		return ImmutableSet.copyOf(bpartners.keySet());
 	}
 
-	private I_C_BPartner getC_BPartnerById(final int bpartnerId)
+	private I_C_BPartner getC_BPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
 		I_C_BPartner bpartner = bpartners.get(bpartnerId);
 		if (bpartner == null)
 		{
-			bpartner = InterfaceWrapperHelper.create(getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
+			bpartner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
 			bpartners.put(bpartnerId, bpartner);
 		}
 		return bpartner;
 	}
 
-	private List<I_C_Flatrate_Term> getC_Flatrate_Terms_ForBPartnerId(final int bpartnerId)
+	private List<I_C_Flatrate_Term> getC_Flatrate_Terms_ForBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		final Multimap<Integer, I_C_Flatrate_Term> bpartnerId2contract = getC_Flatrate_Terms_IndexedByBPartnerId();
+		final Multimap<BPartnerId, I_C_Flatrate_Term> bpartnerId2contract = getC_Flatrate_Terms_IndexedByBPartnerId();
 		if (!bpartnerId2contract.containsKey(bpartnerId))
 		{
-			final List<I_C_Flatrate_Term> contracts = pmmContractsDAO.retrieveRunningContractsOnDateForBPartner(date, bpartnerId);
+			final List<I_C_Flatrate_Term> contracts = pmmContractsDAO.retrieveRunningContractsOnDateForBPartner(date, bpartnerId.getRepoId());
 			bpartnerId2contract.putAll(bpartnerId, contracts);
 		}
 
@@ -472,12 +480,12 @@ public class SyncObjectsFactory
 		this._bpartnerId2activeRfqResponseLines_fullyLoadedRequired = true;
 	}
 
-	private List<I_C_RfQResponseLine> getActiveRfqResponseLines_ForBPartnerId(final int bpartnerId)
+	private List<I_C_RfQResponseLine> getActiveRfqResponseLines_ForBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		final Multimap<Integer, I_C_RfQResponseLine> bpartnerId2activeRfqResponseLines = getActiveRfqResponseLines_IndexedByBPartnerId();
+		final Multimap<BPartnerId, I_C_RfQResponseLine> bpartnerId2activeRfqResponseLines = getActiveRfqResponseLines_IndexedByBPartnerId();
 		if (!bpartnerId2activeRfqResponseLines.containsKey(bpartnerId))
 		{
-			final List<I_C_RfQResponseLine> rfqResponseLines = pmmRfQDAO.retrieveActiveResponseLines(getCtx(), bpartnerId);
+			final List<I_C_RfQResponseLine> rfqResponseLines = pmmRfQDAO.retrieveActiveResponseLines(getCtx(), bpartnerId.getRepoId());
 			bpartnerId2activeRfqResponseLines.putAll(bpartnerId, rfqResponseLines);
 		}
 		return ImmutableList.copyOf(bpartnerId2activeRfqResponseLines.get(bpartnerId));
@@ -490,7 +498,7 @@ public class SyncObjectsFactory
 		return pmmRfQDAO.retrieveResponseLines(rfqResponse);
 	}
 
-	private Multimap<Integer, I_C_RfQResponseLine> getActiveRfqResponseLines_IndexedByBPartnerId()
+	private Multimap<BPartnerId, I_C_RfQResponseLine> getActiveRfqResponseLines_IndexedByBPartnerId()
 	{
 		if (_bpartnerId2activeRfqResponseLines_fullyLoadedRequired && !_bpartnerId2activeRfqResponseLines_fullyLoaded)
 		{
@@ -499,7 +507,7 @@ public class SyncObjectsFactory
 			final List<I_C_RfQResponseLine> rfqResponseLines = pmmRfQDAO.retrieveAllActiveResponseLines(getCtx());
 			for (final I_C_RfQResponseLine rfqResponseLine : rfqResponseLines)
 			{
-				final int bpartnerId = rfqResponseLine.getC_BPartner_ID();
+				final BPartnerId bpartnerId = BPartnerId.ofRepoId(rfqResponseLine.getC_BPartner_ID());
 				_bpartnerId2activeRfqResponseLines.put(bpartnerId, rfqResponseLine);
 			}
 

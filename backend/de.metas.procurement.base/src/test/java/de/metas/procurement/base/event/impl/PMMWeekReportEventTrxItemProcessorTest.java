@@ -4,10 +4,12 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.procurement.base.IServerSyncBL;
+import de.metas.procurement.base.impl.ServerSyncBL;
 import de.metas.procurement.base.impl.SyncUUIDs;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.base.model.X_PMM_WeekReport_Event;
+import de.metas.procurement.base.rabbitmq.SenderToProcurementWeb;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -22,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,8 +72,11 @@ public class PMMWeekReportEventTrxItemProcessorTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final SenderToProcurementWeb senderToProcurementWeb = Mockito.mock(SenderToProcurementWeb.class);
 		nextSyncWeeklySupplyVersion = 0;
-		serverSyncBL = Services.get(IServerSyncBL.class);
+
+		serverSyncBL = new ServerSyncBL(senderToProcurementWeb);
+		Services.registerService(IServerSyncBL.class, serverSyncBL);
 	}
 
 	@Test
@@ -80,7 +86,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final I_M_Product product = createM_Product("P1");
 		final I_PMM_Product pmmProduct = createPMM_Product(product, createASI(), bpartner);
 		//
-		final Date dateWeek = date(2016, 03, 28);
+		final Date dateWeek = date(2016, 3, 28);
 
 		for (final String pmmTrend : ALL_TRENDS)
 		{
@@ -105,7 +111,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final List<I_C_BPartner> bpartners = createBPartners(count);
 		final List<I_M_Product> products = createM_Products(count);
 		final List<I_M_AttributeSetInstance> asis = createASIs(count);
-		final List<Date> weekDates = createWeekDates(date(2016, 03, 28), count);
+		final List<Date> weekDates = createWeekDates(date(2016, 3, 28), count);
 
 		PMM_Week_Expectations expectations = PMM_Week_Expectations.newExpectations();
 		for (final I_C_BPartner bpartner : bpartners)
@@ -152,7 +158,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final I_C_BPartner bpartner = createBPartner("BP1");
 		final I_M_Product product = createM_Product("P1");
 		final I_PMM_Product pmmProduct = createPMM_Product(product, createASI(), bpartner);
-		final Date weekDate = date(2016, 03, 28);
+		final Date weekDate = date(2016, 3, 28);
 
 		final SyncWeeklySupply syncWeeklySupply1 = createWeeklySupply(pmmProduct, bpartner, weekDate).toBuilder()
 				.trend(X_PMM_WeekReport_Event.PMM_TREND_Up)
