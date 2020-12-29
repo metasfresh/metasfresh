@@ -40,13 +40,13 @@ import java.util.Map;
 import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_M_Product_ID;
 import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_ProductName;
 
-public class PMM_Product
+public class PMM_Product_StepDef
 {
 	private final StepDefData<I_M_Product> stepDefData;
 	private final StepDefData<I_PMM_Product> pmmProductStepDefData;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public PMM_Product(
+	public PMM_Product_StepDef(
 			@NonNull final StepDefData<I_M_Product> stepDefData,
 			@NonNull final StepDefData<I_PMM_Product> pmmProductStepDefData)
 	{
@@ -70,9 +70,6 @@ public class PMM_Product
 					() -> InterfaceWrapperHelper.newInstance(I_PMM_Product.class));
 
 			pmmProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
-
-			final String productName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_ProductName);
-			pmmProductRecord.setProductName(productName);
 
 			pmmProductRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			pmmProductRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());

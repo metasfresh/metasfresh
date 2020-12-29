@@ -5,8 +5,8 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | Identifier | Name             |
       | p_1        | contractProduct1 |
     And metasfresh contains PMM_Products:
-      | Identifier | M_Product_ID.Identifier | ProductName |
-      | pmp_1      | p_1                     | pmmProduct1 |
+      | Identifier | M_Product_ID.Identifier |
+      | pmp_1      | p_1                     |
     And metasfresh contains C_BPartners:
       | Identifier | Name                   | OPT.IsVendor | OPT.IsCustomer | OPT.AD_Language |
       | bpartner_1 | ProcurementPartner1    | Y            | Y              | de_DE           |
@@ -37,4 +37,4 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | c_1        | bpartner_1          | 2020-01-01 | 2021-01-31 | false   |
     And the PutBPartnersRequest contains these ContractLines:
       | Contract.Identifier | Product.Name |
-      | c_1                 | pmmProduct1  |
+      | c_1                 | contractProduct1  |
