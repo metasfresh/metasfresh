@@ -26,7 +26,6 @@
 		<module>serverRoot</module>
 		<module>swingui</module>
 		<module>dist</module>
-		<module>cucumber</module>
 	</modules>
 
 	<build>
