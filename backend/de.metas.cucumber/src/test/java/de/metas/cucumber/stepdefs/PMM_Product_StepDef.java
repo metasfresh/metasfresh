@@ -38,19 +38,18 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_M_Product_ID;
-import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_ProductName;
 
 public class PMM_Product_StepDef
 {
-	private final StepDefData<I_M_Product> stepDefData;
+	private final StepDefData<I_M_Product> productStepDefData;
 	private final StepDefData<I_PMM_Product> pmmProductStepDefData;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PMM_Product_StepDef(
-			@NonNull final StepDefData<I_M_Product> stepDefData,
+			@NonNull final StepDefData<I_M_Product> productStepDefData,
 			@NonNull final StepDefData<I_PMM_Product> pmmProductStepDefData)
 	{
-		this.stepDefData = stepDefData;
+		this.productStepDefData = productStepDefData;
 		this.pmmProductStepDefData = pmmProductStepDefData;
 	}
 
@@ -61,7 +60,7 @@ public class PMM_Product_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_Product productRecord = stepDefData.get(productIdentifier);
+			final I_M_Product productRecord = productStepDefData.get(productIdentifier);
 
 			final I_PMM_Product pmmProductRecord = CoalesceUtil.coalesceSuppliers(
 					() -> queryBL.createQueryBuilder(I_PMM_Product.class)
