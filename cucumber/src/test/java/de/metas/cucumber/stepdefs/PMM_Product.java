@@ -23,8 +23,6 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.procurement.base.IPMMProductBL;
-import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
@@ -40,16 +38,20 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_M_Product_ID;
+import static de.metas.procurement.base.model.I_PMM_Product.COLUMNNAME_ProductName;
 
 public class PMM_Product
 {
 	private final StepDefData<I_M_Product> stepDefData;
-
+	private final StepDefData<I_PMM_Product> pmmProductStepDefData;
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public PMM_Product(@NonNull final StepDefData<I_M_Product> stepDefData)
+	public PMM_Product(
+			@NonNull final StepDefData<I_M_Product> stepDefData,
+			@NonNull final StepDefData<I_PMM_Product> pmmProductStepDefData)
 	{
 		this.stepDefData = stepDefData;
+		this.pmmProductStepDefData = pmmProductStepDefData;
 	}
 
 	@Given("metasfresh contains PMM_Products:")
@@ -61,20 +63,27 @@ public class PMM_Product
 			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_M_Product productRecord = stepDefData.get(productIdentifier);
 
-			final I_PMM_Product pmmProduct = CoalesceUtil.coalesceSuppliers(
+			final I_PMM_Product pmmProductRecord = CoalesceUtil.coalesceSuppliers(
 					() -> queryBL.createQueryBuilder(I_PMM_Product.class)
 							.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 							.create().firstOnly(I_PMM_Product.class),
 					() -> InterfaceWrapperHelper.newInstance(I_PMM_Product.class));
 
-			pmmProduct.setM_Product_ID(productRecord.getM_Product_ID());
-			pmmProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			pmmProduct.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
+			pmmProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
+
+			final String productName = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_ProductName);
+			pmmProductRecord.setProductName(productName);
+
+			pmmProductRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+			pmmProductRecord.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 
 			try (final IAutoCloseable ignored = Services.get(IWebuiPush.class).disable())
 			{ // don't fire a message towards the procurement webui, because we don't want the queue be messed up with and unexpected message
-				InterfaceWrapperHelper.save(pmmProduct);
+				InterfaceWrapperHelper.save(pmmProductRecord);
 			}
+			pmmProductStepDefData.put(
+					DataTableUtil.extractRecordIdentifier(tableRow, "PMM_Product"),
+					pmmProductRecord);
 		}
 	}
 }

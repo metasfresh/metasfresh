@@ -24,6 +24,7 @@ package de.metas.util;
 
 import de.metas.CommandLineParser.CommandLineOptions;
 import de.metas.logging.LogManager;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 import org.compiere.db.CConnection;
 import org.compiere.db.CConnectionAttributes;
@@ -42,14 +43,15 @@ public class ConnectionUtil
 	 * Can set up the database connection at an early state.
 	 * It's assumed that if this method does not set up the connection, it is done later (currently via {@link CConnection#createInstance(CConnectionAttributes)}).
 	 */
-	public void configureConnectionsIfArgsProvided(@Nullable final CommandLineOptions commandLineOptions)
+	public ConfigureConnectionsResult configureConnectionsIfArgsProvided(@Nullable final CommandLineOptions commandLineOptions)
 	{
 		if (commandLineOptions == null)
 		{
-			return;
+			return new ConfigureConnectionsResult(false);
 		}
 
 		// CConnection
+		ConfigureConnectionsResult result;
 		if (Check.isNotBlank(commandLineOptions.getDbHost()) || commandLineOptions.getDbPort() != null)
 		{
 			final CConnectionAttributes connectionAttributes = CConnectionAttributes.builder()
@@ -65,24 +67,36 @@ public class ConnectionUtil
 					+ "!!!!!!!!!!!!!!!!", connectionAttributes);
 			CConnection.createInstance(connectionAttributes);
 
-			// RabbitMQ
-			if (Check.isNotBlank(commandLineOptions.getRabbitHost()))
-			{
-				System.setProperty("spring.rabbitmq.host", commandLineOptions.getRabbitHost());
-			}
-			if (commandLineOptions.getRabbitPort() != null)
-			{
-				System.setProperty("spring.rabbitmq.port", Integer.toString(commandLineOptions.getRabbitPort()));
-			}
-			if (Check.isNotBlank(commandLineOptions.getRabbitUser()))
-			{
-				System.setProperty("spring.rabbitmq.username", commandLineOptions.getRabbitUser());
-			}
-			if (Check.isNotBlank(commandLineOptions.getRabbitPassword()))
-			{
-				System.setProperty("spring.rabbitmq.password", commandLineOptions.getRabbitPassword());
-			}
+			result = new ConfigureConnectionsResult(true);
 		}
+		else
+		{
+			result = new ConfigureConnectionsResult(false);
+		}
+
+		// RabbitMQ
+		if (Check.isNotBlank(commandLineOptions.getRabbitHost()))
+		{
+			System.setProperty("spring.rabbitmq.host", commandLineOptions.getRabbitHost());
+		}
+		if (commandLineOptions.getRabbitPort() != null)
+		{
+			System.setProperty("spring.rabbitmq.port", Integer.toString(commandLineOptions.getRabbitPort()));
+		}
+		if (Check.isNotBlank(commandLineOptions.getRabbitUser()))
+		{
+			System.setProperty("spring.rabbitmq.username", commandLineOptions.getRabbitUser());
+		}
+		if (Check.isNotBlank(commandLineOptions.getRabbitPassword()))
+		{
+			System.setProperty("spring.rabbitmq.password", commandLineOptions.getRabbitPassword());
+		}
+		return result;
 	}
 
+	@Value
+	public static class ConfigureConnectionsResult
+	{
+		boolean cconnectionConfigured;
+	}
 }

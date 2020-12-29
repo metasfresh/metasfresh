@@ -80,10 +80,10 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.edi.api.IDesadvBL.class, "spring component")
 			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component")
 			.skipServiceInterface(de.metas.banking.payment.IBankStatementPaymentBL.class, "spring component")
+			.skipServiceInterface(de.metas.banking.service.IBankStatementBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRBPBankAccountBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class, "spring component")
 			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class,"spring component")
-			.skipServiceInterface(de.metas.banking.service.IBankStatementBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.impl.ServerSyncBL.class, "spring component")
 	//
 	;

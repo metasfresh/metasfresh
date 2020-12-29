@@ -36,6 +36,8 @@ import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.dto.SyncUser;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
@@ -48,7 +50,11 @@ import org.springframework.amqp.core.MessageProperties;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -60,13 +66,13 @@ public class ProcurementWebToMetasfresh_StepDef
 	private final ConnectionFactory procurementWebuiFactory;
 
 	private final StepDefData<SyncBPartner> syncBPartnerStepDefData = new StepDefData<>();
-	private final StepDefData<SyncUser> syncUserStepDefData = new StepDefData<>();
 	private final StepDefData<SyncContract> syncContractStepDefData = new StepDefData<>();
 
 	public ProcurementWebToMetasfresh_StepDef()
 	{
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
 		final CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();
+		assertThat(commandLineOptions.getRabbitPort()).isNotNull(); // guard
 
 		procurementWebuiFactory = new ConnectionFactory();
 		procurementWebuiFactory.setHost(commandLineOptions.getRabbitHost());
@@ -166,28 +172,47 @@ public class ProcurementWebToMetasfresh_StepDef
 	}
 
 	@Then("the PutBPartnersRequest contains these Contracts:")
-	public void the_put_b_partners_request_contains_these_contracts(DataTable dataTable)
+	public void the_put_b_partners_request_contains_these_contracts(@NonNull final DataTable dataTable)
 	{
-		// Write code here that turns the phrase above into concrete actions
-		// For automatic transformation, change DataTable to one of
-		// E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-		// Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-		// Double, Byte, Short, Long, BigInteger or BigDecimal.
-		//
-		// For other transformations you can register a DataTableType.
-		// throw new io.cucumber.java.PendingException();
+		for (final Map<String, String> tableRow : dataTable.<String, String>asMaps(String.class, String.class))
+		{
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "BPartner." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final SyncBPartner syncBPartner = syncBPartnerStepDefData.get(bpartnerIdentifier);
+
+			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+
+			final String dateFrom = DataTableUtil.extractStringForColumnName(tableRow, "DateFrom");
+			final String dateTo = DataTableUtil.extractStringForColumnName(tableRow, "DateTo");
+
+			final Optional<SyncContract> syncContract = syncBPartner.getContracts().stream()
+					.filter(c -> dateFrom.equals(df.format(c.getDateFrom())))
+					.filter(c -> dateTo.equals(df.format(c.getDateTo())))
+					.findAny();
+			assertThat(syncContract).as("Missing SyncContract with DateFrom=%s and DateTo=%s", dateFrom, dateTo).isPresent();
+
+			final boolean deleted = DataTableUtil.extractBooleanForColumnName(tableRow, "Deleted");
+			assertThat(syncContract.get().isDeleted()).isEqualTo(deleted);
+
+			syncContractStepDefData.put(DataTableUtil.extractRecordIdentifier(tableRow, "Contract"), syncContract.get());
+		}
 	}
 
 	@Then("the PutBPartnersRequest contains these ContractLines:")
-	public void the_put_b_partners_request_contains_these_contract_lines(DataTable dataTable)
+	public void the_put_b_partners_request_contains_these_contract_lines(@NonNull final DataTable dataTable)
 	{
-		// Write code here that turns the phrase above into concrete actions
-		// For automatic transformation, change DataTable to one of
-		// E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-		// Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-		// Double, Byte, Short, Long, BigInteger or BigDecimal.
-		//
-		// For other transformations you can register a DataTableType.
-		// throw new io.cucumber.java.PendingException();
+		for (final Map<String, String> tableRow : dataTable.<String, String>asMaps(String.class, String.class))
+		{
+			final String contractIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "Contract." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final SyncContract syncContract = syncContractStepDefData.get(contractIdentifier);
+			final List<SyncContractLine> contractLines = syncContract.getContractLines();
+
+			final String productName = DataTableUtil.extractStringForColumnName(tableRow, "Product.Name");
+
+			final Optional<SyncContractLine> product = contractLines.stream()
+					.filter(l -> productName.equals(l.getProduct().getName()))
+					.findAny();
+
+			assertThat(product).as("Missing SyncContractLine with contractIdentifier=%s and product.name=%s", contractIdentifier, productName).isPresent();
+		}
 	}
 }

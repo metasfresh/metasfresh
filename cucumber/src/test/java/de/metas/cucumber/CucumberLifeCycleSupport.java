@@ -33,7 +33,6 @@ import io.cucumber.plugin.event.TestRunStarted;
 import lombok.NonNull;
 import org.springframework.util.SocketUtils;
 
-import java.awt.*;
 import java.io.File;
 
 /**

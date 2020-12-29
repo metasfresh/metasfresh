@@ -635,8 +635,7 @@ public class Adempiere
 		logger.info(getSummaryAscii());
 
 		// System properties
-		Ini.loadProperties(false); // reload=false
-
+		Ini.loadProperties();
 		// Update logging configuration from Ini file (applies only if we are running the swing client)
 		if (runmodeClient)
 		{

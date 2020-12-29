@@ -1,10 +1,16 @@
 package de.metas.ui.web;
 
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.CommandLineParser;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
+import de.metas.Profiles;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.session.WebRestApiContextProvider;
+import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
+import de.metas.util.Check;
+import de.metas.util.ConnectionUtil;
+import de.metas.util.Services;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,7 +19,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
-import de.metas.util.ConnectionUtil;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -33,16 +38,8 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.MetasfreshBeanNameGenerator;
-import de.metas.Profiles;
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.session.WebRestApiContextProvider;
-import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -96,11 +93,12 @@ public class WebRestApiApplication
 
 		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
-		ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
+		final ConnectionUtil.ConfigureConnectionsResult configureConnectionsResult = ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
 
 		try (final IAutoCloseable ignored = ModelValidationEngine.postponeInit())
 		{
 			Ini.setRunMode(RunMode.WEBUI);
+			Ini.setIfMissingMetasfreshProperties(configureConnectionsResult.isCconnectionConfigured() ? Ini.IfMissingMetasfreshProperties.IGNORE : Ini.IfMissingMetasfreshProperties.SHOW_DIALOG);
 			Adempiere.instance.startup(RunMode.WEBUI);
 
 			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
@@ -122,14 +120,12 @@ public class WebRestApiApplication
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
 	{
-		final ArrayList<String> activeProfiles = Services
+		return Services
 				.get(ISysConfigBL.class)
 				.getValuesForPrefix(SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE, 0, 0)
-				.entrySet()
+				.values()
 				.stream()
-				.map(Entry::getValue)
 				.collect(Collectors.toCollection(ArrayList::new));
-		return activeProfiles;
 	}
 
 	@Bean
@@ -150,8 +146,7 @@ public class WebRestApiApplication
 
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		return adempiere;
+		return Env.getSingleAdempiereInstance(applicationContext);
 	}
 
 	@Bean

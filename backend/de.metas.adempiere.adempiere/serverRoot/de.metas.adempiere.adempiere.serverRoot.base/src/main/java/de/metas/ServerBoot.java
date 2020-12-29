@@ -22,6 +22,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Ini.IfMissingMetasfreshProperties;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,6 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map.Entry;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -110,12 +110,14 @@ public class ServerBoot implements InitializingBean
 		logger.info("Parse command line arguments (if any!)");
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
-		ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
+		final ConnectionUtil.ConfigureConnectionsResult configureConnectionsResult = ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
 
-		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		try (final IAutoCloseable ignore = ModelValidationEngine.postponeInit())
 		{
 			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 			Ini.setRunMode(RunMode.BACKEND);
+			Ini.setIfMissingMetasfreshProperties(configureConnectionsResult.isCconnectionConfigured() ? IfMissingMetasfreshProperties.IGNORE : IfMissingMetasfreshProperties.SHOW_DIALOG);
+
 			Adempiere.instance.startup(RunMode.BACKEND);
 
 			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
@@ -143,7 +145,6 @@ public class ServerBoot implements InitializingBean
 		final HouseKeepingService houseKeepingService = SpringContextHolder.instance.getBean(HouseKeepingService.class);
 		houseKeepingService.runStartupHouseKeepingTasks();
 
-
 		logger.info("Metasfresh Server started in {}", stopwatch);
 		logger.info("End of {} main-method ", ServerBoot.class);
 	}
@@ -153,9 +154,8 @@ public class ServerBoot implements InitializingBean
 		return Services
 				.get(ISysConfigBL.class)
 				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, 0, 0)
-				.entrySet()
+				.values()
 				.stream()
-				.map(Entry::getValue)
 				.collect(Collectors.toCollection(ArrayList::new));
 	}
 

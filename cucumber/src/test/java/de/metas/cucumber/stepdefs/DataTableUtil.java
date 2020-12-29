@@ -73,6 +73,18 @@ public class DataTableUtil
 		}
 	}
 
+	@NonNull
+	public String extractStringOrNullForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		if (!dataTableRow.containsKey(columnName))
+		{
+			throw new AdempiereException("Missing column for columnName=" + columnName).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+		return dataTableRow.get(columnName);
+	}
+
+	@NonNull
 	public String extractStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		final String string = dataTableRow.get(columnName);

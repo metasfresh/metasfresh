@@ -33,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.order.InvoiceRule;
+import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.java.en.Given;
@@ -49,12 +50,14 @@ import java.util.Map;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
+import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Flatrate_Term_StepDef
 {
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_PMM_Product> pmmProductTable;
 	private final StepDefData<I_C_Flatrate_Term> contractTable;
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -62,10 +65,12 @@ public class C_Flatrate_Term_StepDef
 	public C_Flatrate_Term_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
 			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_PMM_Product> pmmProductTable,
 			@NonNull final StepDefData<I_C_Flatrate_Term> contractTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.productTable = productTable;
+		this.pmmProductTable = pmmProductTable;
 		this.contractTable = contractTable;
 	}
 
@@ -124,17 +129,30 @@ public class C_Flatrate_Term_StepDef
 				contractRecord.setDropShip_Location_ID(dropshipLocation.getC_BPartner_Location_ID());
 			}
 
-			final String productIdentifier = tableRow.get(COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			assertThat(productIdentifier).as("M_Product.RecordIdentifier is mandatory").isNotBlank();
-			final I_M_Product product = productTable.get(productIdentifier);
-			contractRecord.setM_Product_ID(product.getM_Product_ID());
+			final String productIdentifier = tableRow.get("OPT." + COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(productIdentifier))
+			{
+				final I_M_Product product = productTable.get(productIdentifier);
+				contractRecord.setM_Product_ID(product.getM_Product_ID());
+			}
+
+			final String pmmProductIdentifier = tableRow.get("OPT." + COLUMNNAME_PMM_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(pmmProductIdentifier))
+			{
+				final I_PMM_Product pmmProductRecord = pmmProductTable.get(pmmProductIdentifier);
+
+				final de.metas.procurement.base.model.I_C_Flatrate_Term prodcurementContractRecord = InterfaceWrapperHelper.create(contractRecord, de.metas.procurement.base.model.I_C_Flatrate_Term.class);
+				prodcurementContractRecord.setPMM_Product_ID(pmmProductRecord.getPMM_Product_ID());
+			}
 
 			contractRecord.setStartDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "StartDate"));
 			contractRecord.setEndDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "EndDate"));
 
 			InterfaceWrapperHelper.saveRecord(contractRecord);
 
-			contractTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_FlatrateTerm"), contractRecord);
+			contractTable.put(
+					DataTableUtil.extractRecordIdentifier(tableRow, "C_FlatrateTerm"),
+					contractRecord);
 		}
 	}
 }

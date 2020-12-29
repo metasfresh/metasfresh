@@ -38,6 +38,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
@@ -370,7 +371,7 @@ public class SyncObjectsFactory
 		return ImmutableList.copyOf(bpartnerId2contract.get(bpartnerId));
 	}
 
-	public SyncProduct createSyncProduct(final I_PMM_Product pmmProduct)
+	public SyncProduct createSyncProduct(@NonNull final I_PMM_Product pmmProduct)
 	{
 		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
 		try
@@ -380,12 +381,12 @@ public class SyncObjectsFactory
 		}
 		catch (final ExecutionException ex)
 		{
-			throw new RuntimeException("Failed creating " + SyncProduct.class + " for " + pmmProduct, ex.getCause());
+			throw new AdempiereException("Failed creating " + SyncProduct.class.getSimpleName() + " for PMM_Product_ID=" + pmmProduct.getPMM_Product_ID(), ex.getCause());
 		}
 
 	}
 
-	private SyncProduct createSyncProductNoCache(final I_PMM_Product pmmProduct)
+	private SyncProduct createSyncProductNoCache(@NonNull final I_PMM_Product pmmProduct)
 	{
 		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
 

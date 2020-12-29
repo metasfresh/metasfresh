@@ -37,8 +37,6 @@ public class InfrastructureSupport
 {
 	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
-	private GenericContainer db;
-
 	@Getter
 	private String dbHost;
 
@@ -78,7 +76,8 @@ public class InfrastructureSupport
 			final String fullImageName = "metasfresh/metasfresh-db:latest";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
-			db = new GenericContainer(DockerImageName.parse(fullImageName))
+			// the DB needs to be populated
+			final GenericContainer<?> db = new GenericContainer<>(DockerImageName.parse(fullImageName))
 					.withEnv("POSTGRES_PASSWORD", "password")
 					.withStartupTimeout(Duration.ofMinutes(3)) // the DB needs to be populated
 					.withExposedPorts(5432);

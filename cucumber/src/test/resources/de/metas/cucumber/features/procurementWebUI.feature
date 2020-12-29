@@ -5,8 +5,8 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | Identifier | Name             |
       | p_1        | contractProduct1 |
     And metasfresh contains PMM_Products:
-      | Identifier | M_Product_ID.Identifier |
-      | pmp_1      | p_1                     |
+      | Identifier | M_Product_ID.Identifier | ProductName |
+      | pmp_1      | p_1                     | pmmProduct1 |
     And metasfresh contains C_BPartners:
       | Identifier | Name                   | OPT.IsVendor | OPT.IsCustomer | OPT.AD_Language |
       | bpartner_1 | ProcurementPartner1    | Y            | Y              | de_DE           |
@@ -19,8 +19,8 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | bpartner_2               | user2_1_name | user2_1@email | password2_1  | en_US           | Y                       | procurementPW2_1        |
       | bpartner_3               | user3_1_name | user3_1@email | password3_1  | en_US           | Y                       | procurementPW3_1        |
     And metasfresh contains procurement C_Flatrate_Terms:
-      | Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | M_Product_ID.Identifier | StartDate  | EndDate    |
-      | c1         | bpartner_1                  | bpartner_1                          | p_1                     | 2020-01-01 | 2021-01-31 |
+      | Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.PMM_Product_ID.Identifier | StartDate  | EndDate    |
+      | c1         | bpartner_1                  | bpartner_1                          | p_1                         | pmp_1                         | 2020-01-01 | 2021-01-31 |
     When metasfresh receives a GetAllBPartnersRequest via RabbitMQ
     Then metasfresh responds with a PutBPartnersRequest that contains these BPartners:
       | Identifier | Name                   | Deleted |
@@ -33,8 +33,8 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | bpartner_1          | user1_2@email | procurementPW1_2 | de_DE    |
       | bpartner_2          | user2_1@email | procurementPW2_1 | de_DE    |
     And the PutBPartnersRequest contains these Contracts:
-      | BPartner.Identifier | DateFrom   | DateTo     |
-      | bpartner_1          | 2020-01-01 | 2021-01-31 |
+      | Identifier | BPartner.Identifier | DateFrom   | DateTo     | Deleted |
+      | c_1        | bpartner_1          | 2020-01-01 | 2021-01-31 | false   |
     And the PutBPartnersRequest contains these ContractLines:
-      | Identifier | Contract.Identifier | M_Product.Name   |
-      | cl_1_1     | c_1                 | contractProduct1 |
+      | Contract.Identifier | Product.Name |
+      | c_1                 | pmmProduct1  |
