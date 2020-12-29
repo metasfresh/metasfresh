@@ -28,6 +28,7 @@ import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,9 +92,6 @@ public class SpringIntegrationTest
 	}
 
 	@Autowired
-	private IServerSyncService serverSyncService;
-
-	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
@@ -120,12 +118,8 @@ public class SpringIntegrationTest
 
 	private final Random random = new Random();
 
-	// private MockedTestServerSync getMockedTestServerSync()
-	// {
-	// 	return (MockedTestServerSync)serverSync;
-	// }
-
 	@Test
+	@Ignore
 	public void testCreateProductSupply() throws Exception
 	{
 		// serverSyncService.awaitInitialSyncComplete(20, TimeUnit.SECONDS);
@@ -249,9 +243,7 @@ public class SpringIntegrationTest
 	}
 
 	/**
-	 * @param expected
-	 * @param actual
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-206
+	 * task https://metasfresh.atlassian.net/browse/FRESH-206
 	 */
 	private void assertConfirmOK(final AbstractSyncConfirmAwareEntity expected, final IConfirmableDTO actual)
 	{
@@ -263,5 +255,4 @@ public class SpringIntegrationTest
 		assertThat(confirmRecord.getEntryUuid(), is(expected.getUuid()));
 		assertThat(confirmRecord.getEntryType(), is(expected.getClass().getSimpleName()));
 	}
-
 }

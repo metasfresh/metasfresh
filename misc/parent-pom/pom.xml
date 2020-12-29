@@ -726,7 +726,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                             <dependency>
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -767,7 +767,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
                                 <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -896,14 +896,14 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                 </property>
             </activation>
 
-            <repositories>
-                <!-- these additional repo's parameters can be set from outside. They usually corresponds to a (task-)branch -->
-                <repository>
-                    <id>${deploy-repo-id}</id>
-                    <name>${deploy-repo-name}</name>
-                    <url>${deploy-repo-url}</url>
-                </repository>
-            </repositories>
+            <!-- these additional repo's parameters can be set from outside. They usually corresponds to a (task-)branch -->
+<!--            <repositories>-->
+<!--                <repository>-->
+<!--                    <id>${deploy-repo-id}</id>-->
+<!--                    <name>${deploy-repo-name}</name>-->
+<!--                    <url>${deploy-repo-url}</url>-->
+<!--                </repository>-->
+<!--            </repositories>-->
 
             <build>
                 <plugins>
@@ -1045,7 +1045,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
                                 <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>

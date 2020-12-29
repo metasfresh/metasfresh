@@ -91,7 +91,6 @@ public class MD_Candidate_StepDefTable
 					.businessCase(businessCase)
 					.materialDescriptorQuery(materialDescriptorQuery)
 					.build();
-
 		}
 	}
 }

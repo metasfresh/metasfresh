@@ -23,11 +23,15 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cucumber.stepdefs.MD_Candidate_StepDefTable.MaterialDispoTableRow;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
 import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
+import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
@@ -52,6 +56,7 @@ import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,6 +67,8 @@ public class MD_Candidate_StepDef
 
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
+
+	private StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
 
 	@Before
 	public void beforeEach()
@@ -87,6 +94,7 @@ public class MD_Candidate_StepDef
 	{
 		final Map<String, String> map = dataTable.asMaps().get(0);
 
+		final int shipmentScheduleId = Integer.parseInt(map.get("M_ShipmentSchedule_ID"));
 		final int productId = Integer.parseInt(map.get("M_Product_ID"));
 		final Instant preparationDate = Instant.parse(map.get("PreparationDate"));
 		final BigDecimal qty = new BigDecimal(map.get("Qty"));
@@ -99,7 +107,7 @@ public class MD_Candidate_StepDef
 						.quantity(qty)
 						.warehouseId(StepDefConstants.WAREHOUSE_ID)
 						.build())
-				.shipmentScheduleId(11)
+				.shipmentScheduleId(shipmentScheduleId)
 				.reservedQuantity(qty)
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
 				.build();
@@ -169,19 +177,27 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).isEqualTo(tableRow.getTime());
 			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
 			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
+
+			materialDispoDataItemStepDefData.put(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
 
 	@Then("metasfresh has this MD_Candidate_Demand_Detail data")
 	public void metasfresh_has_this_md_candidate_demand_detail_data(@NonNull final DataTable dataTable)
 	{
-		// Write code here that turns the phrase above into concrete actions
-		// For automatic transformation, change DataTable to one of
-		// E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-		// Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-		// Double, Byte, Short, Long, BigInteger or BigDecimal.
-		//
-		// For other transformations you can register a DataTableType.
-		//	throw new io.cucumber.java.PendingException();
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String materialDispoItemIdentifier = tableRow.get(I_MD_Candidate_Demand_Detail.COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(materialDispoItemIdentifier);
+			final BusinessCaseDetail businessCaseDetail = materialDispoDataItem.getBusinessCaseDetail();
+
+			assertThat(businessCaseDetail)
+					.as("Missing BusinessCaseDetail of MaterialDispoDataItem %s", materialDispoDataItem.toString())
+					.isNotNull();
+
+			final int shipmentScheduleId = DataTableUtil.extractIntForColumnName(tableRow, I_MD_Candidate_Demand_Detail.COLUMNNAME_M_ShipmentSchedule_ID);
+			assertThat(DemandDetail.cast(businessCaseDetail).getShipmentScheduleId()).isEqualTo(shipmentScheduleId);
+		}
 	}
 }

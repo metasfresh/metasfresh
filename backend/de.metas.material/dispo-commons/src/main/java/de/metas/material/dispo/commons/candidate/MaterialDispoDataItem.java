@@ -22,6 +22,7 @@
 
 package de.metas.material.dispo.commons.candidate;
 
+import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,6 +50,8 @@ public class MaterialDispoDataItem
 
 	BigDecimal atp;
 
+	BusinessCaseDetail businessCaseDetail;
+
 	public static MaterialDispoDataItem of(
 			@NonNull final Candidate dataCanddiate,
 			@NonNull final Candidate stockCandidate)
@@ -57,6 +60,7 @@ public class MaterialDispoDataItem
 				.materialDescriptor(dataCanddiate.getMaterialDescriptor())
 				.type(dataCanddiate.getType())
 				.businessCase(dataCanddiate.getBusinessCase())
+				.businessCaseDetail(dataCanddiate.getBusinessCaseDetail())
 				.atp(stockCandidate.getMaterialDescriptor().getQuantity())
 				.build();
 	}
