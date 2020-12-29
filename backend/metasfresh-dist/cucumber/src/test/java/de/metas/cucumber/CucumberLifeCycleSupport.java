@@ -41,7 +41,7 @@ import java.io.File;
 public class CucumberLifeCycleSupport implements ConcurrentEventListener
 {
 	// keep in sync when moving cucumber
-	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "..";
+	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
 
 	private final EventHandler<TestRunStarted> setup = event -> beforeAll();
 

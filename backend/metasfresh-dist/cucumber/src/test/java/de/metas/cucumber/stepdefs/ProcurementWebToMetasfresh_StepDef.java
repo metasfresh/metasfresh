@@ -37,7 +37,6 @@ import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncContract;
 import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
-import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.dto.SyncUser;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
@@ -212,7 +211,9 @@ public class ProcurementWebToMetasfresh_StepDef
 					.filter(l -> productName.equals(l.getProduct().getName()))
 					.findAny();
 
-			assertThat(product).as("Missing SyncContractLine with contractIdentifier=%s and product.name=%s", contractIdentifier, productName).isPresent();
+			assertThat(product)
+					.as("Missing SyncContractLine with contractIdentifier=%s and product.name=%s", contractIdentifier, productName)
+					.isPresent();
 		}
 	}
 }
