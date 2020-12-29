@@ -41,6 +41,9 @@ import java.io.File;
  */
 public class CucumberLifeCycleSupport implements ConcurrentEventListener
 {
+	// keep in sync when moving cucumber
+	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "..";
+
 	private final EventHandler<TestRunStarted> setup = event -> beforeAll();
 
   	private final EventHandler<TestRunFinished> teardown = event -> afterAll();
@@ -61,7 +64,7 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
 
 		final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
-				.workspaceDir(new File("../.."))
+				.workspaceDir(new File(RELATIVE_PATH_TO_METASFRESH_ROOT))
 				.onScriptFailure(OnScriptFailure.FAIL)
 				.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
 				.build();
