@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.material.dispo;
 
-import de.metas.cucumber.stepdefs.MD_Candidate_StepDefTable.MaterialDispoTableRow;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.material.dispo.MD_Candidate_StepDefTable.MaterialDispoTableRow;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
@@ -41,7 +43,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;

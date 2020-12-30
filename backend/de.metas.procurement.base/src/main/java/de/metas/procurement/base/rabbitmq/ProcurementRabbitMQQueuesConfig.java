@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableRabbit
-public class ProcurementRabbitMQConfig
+public class ProcurementRabbitMQQueuesConfig
 {
 	@Bean(name = Constants.QUEUE_NAME_MF_TO_PW)
 	public Queue metasfreshToProcurementWebQueue()

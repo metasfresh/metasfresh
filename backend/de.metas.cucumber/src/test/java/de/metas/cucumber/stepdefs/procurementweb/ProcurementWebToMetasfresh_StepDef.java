@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.procurementweb;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -40,6 +40,9 @@ import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
 import de.metas.common.procurement.sync.protocol.dto.SyncUser;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;

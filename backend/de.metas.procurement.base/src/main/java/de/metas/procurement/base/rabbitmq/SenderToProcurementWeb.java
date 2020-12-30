@@ -50,18 +50,4 @@ public class SenderToProcurementWeb
 	{
 		rabbitTemplate.convertAndSend(queue.getName(), procurementEvent);
 	}
-
-	private String convertToString(@NonNull final RequestToProcurementWeb procurementEvent)
-	{
-		try
-		{
-			return Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsString(procurementEvent);
-		}
-		catch (final JsonProcessingException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("procurementEvent", procurementEvent);
-		}
-	}
 }

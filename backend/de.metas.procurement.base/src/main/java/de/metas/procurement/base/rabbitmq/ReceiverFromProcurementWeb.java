@@ -22,6 +22,7 @@
 
 package de.metas.procurement.base.rabbitmq;
 
+import de.metas.Profiles;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
@@ -44,6 +45,7 @@ import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.messaging.handler.annotation.Payload;
 
 import java.io.IOException;
@@ -51,6 +53,7 @@ import java.util.List;
 
 @Configuration
 @EnableRabbit
+@Profile(Profiles.PROFILE_App)
 public class ReceiverFromProcurementWeb
 {
 	private final SenderToProcurementWeb senderToProcurementWebUI;
