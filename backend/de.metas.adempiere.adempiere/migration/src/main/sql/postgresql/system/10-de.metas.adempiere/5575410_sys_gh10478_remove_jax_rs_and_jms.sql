@@ -20,4 +20,12 @@ delete from ad_entitytype where entitytype='de.metas.jax.rs';
 delete from imp_processor_type where imp_processor_type_id=1000000; -- ActiveMQ
 delete from ad_entitytype where entitytype='de.metas.jms';
 
-
+delete from ad_Sysconfig where name in (
+                                          'de.metas.jms.Password',
+                                          'de.metas.jms.URL',
+                                          'de.metas.jms.UseEmbeddedBroker',
+                                          'de.metas.jms.User',
+                                          'de.metas.procurement.webui.jms.queue.request',
+                                          'de.metas.procurement.webui.jms.queue.response'
+    );
+    
