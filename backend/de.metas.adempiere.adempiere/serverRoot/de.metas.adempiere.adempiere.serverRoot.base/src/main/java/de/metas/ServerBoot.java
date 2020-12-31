@@ -228,7 +228,7 @@ public class ServerBoot implements InitializingBean
 	public void afterPropertiesSet() throws Exception
 	{
 		if (clearQuerySelectionsRateInSeconds > 0)
-		{// the system properties were set when servermail was started by CucumberLifeCycleSupport
+		{
 			final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(
 					1, // corePoolSize
 					CustomizableThreadFactory.builder()

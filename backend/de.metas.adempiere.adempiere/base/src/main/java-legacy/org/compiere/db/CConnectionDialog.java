@@ -32,6 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
+import lombok.NonNull;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.db.connectiondialog.i18n.DBRes;
@@ -91,7 +92,6 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private CConnection m_cc = null;
 	private CConnection m_ccResult = null;
 	private boolean m_updating = false;
-	// private boolean m_saved = false;
 
 	/** Logger */
 	private static Logger log = LogManager.getLogger(CConnectionDialog.class);
@@ -140,7 +140,6 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		sidLabel.setText(res.getString("DBName"));
 		bTestDB.setText(res.getString("TestConnection"));
 		bTestDB.setHorizontalAlignment(JLabel.LEFT);
-		// dbTypeLabel.setText(res.getString("Type"));
 		sidField.setColumns(30);
 
 		dbUidLabel.setText(res.getString("DBUidPwd"));
@@ -171,22 +170,10 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		bTestDB.addActionListener(this);
 		bOK.addActionListener(this);
 		bCancel.addActionListener(this);
-
-		// Server
-		if (!Ini.isSwingClient())
-		{
-			// appsHostLabel.setVisible(false);
-			// appsHostField.setVisible(false);
-			// appsPortLabel.setVisible(false);
-			// appsPortField.setVisible(false);
-			// bTestApps.setVisible(false);
-		}
 	}   // jbInit
 
 	/**
 	 * Set Busy - lock UI
-	 *
-	 * @param busy busy
 	 */
 	private void setBusy(boolean busy)
 	{
@@ -197,14 +184,8 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		m_updating = busy;
 	}   // setBusy
 
-	/**
-	 * Set Connection
-	 *
-	 * @param cc
-	 */
-	public void setConnection(final CConnection cc)
+	public void setConnection(@NonNull final CConnection cc)
 	{
-		Check.assumeNotNull(cc, "cc not null");
 		m_cc = cc;
 
 		// Should copy values
@@ -217,24 +198,9 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			// should not happen
 			e.printStackTrace();
 		}
-		//
-		// String type = m_cc.getType();
-		// if (type == null || type.length() == 0)
-		// {
-		// 	dbTypeField.setSelectedItem(null);
-		// }
-		// else
-		// {
-		// 	m_cc.setType(m_cc.getType());   // sets defaults
-		// }
 		updateInfo();
 	}   // setConnection
 
-	/**
-	 * Get Connection
-	 *
-	 * @return CConnection
-	 */
 	public CConnection getConnection()
 	{
 		return m_ccResult;
@@ -242,8 +208,6 @@ public class CConnectionDialog extends CDialog implements ActionListener
 
 	/**
 	 * ActionListener
-	 *
-	 * @param event event
 	 */
 	@Override
 	public void actionPerformed(final ActionEvent event)
@@ -292,26 +256,9 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			dispose();
 			return;
 		}
-		// else if (src == dbTypeField)
-		// {
-		// 	if (dbTypeField.getSelectedItem() == null)
-		// 		return;
-		// }
 
 		updateCConnection();
-		//
-		// if (src == bTestApps)
-		// {
-		// 	cmd_testApps();
-		// }
-		// Database Selection Changed
-		//else
-		// if (src == dbTypeField)
-		// {
-		// 	m_cc.setType(dbTypeField.getSelectedItem());
-		// 	dbPortField.setText(String.valueOf(m_cc.getDbPort()));
-		// }
-		// else
+
 		if (src == bTestDB)
 		{
 			cmd_testDB();
@@ -369,9 +316,6 @@ public class CConnectionDialog extends CDialog implements ActionListener
 
 	/**
 	 * Get Status Icon - ok or not
-	 *
-	 * @param ok ok
-	 * @return Icon
 	 */
 	private Icon getStatusIcon(boolean ok)
 	{
@@ -412,33 +356,8 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		}
 	}   // cmd_testDB
 
-	// /**
-	//  * Test Application connection
-	//  */
-	// private void cmd_testApps()
-	// {
-	// 	setBusy(true);
-	// 	try
-	// 	{
-	// 		if (!m_cc.isAppsServerOK(true))
-	// 		{
-	// 			return;
-	// 		}
-	// 		final Exception e = m_cc.testAppsServer();
-	// 		if (e != null)
-	// 		{
-	// 			showError(res.getString("ServerNotActive") + " - " + m_cc.getAppsHost(), e.getLocalizedMessage());
-	// 		}
-	// 	}
-	// 	finally
-	// 	{
-	// 		setBusy(false);
-	// 	}
-	// }   // cmd_testApps
-
 	public boolean isCancel()
 	{
 		return isCancel;
 	}
-
-}   // CConnectionDialog
+}

@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ProcurementRabbitMQConfig
+public class ProcurementRabbitMQQueueConfig
 {
 	@Bean(name = Constants.QUEUE_NAME_MF_TO_PW)
 	public Queue metasfreshToProcurementWebQueue()

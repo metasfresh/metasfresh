@@ -99,16 +99,4 @@ public class AD_User_StepDef
 			DataTableUtil.extractRecordIdentifier(tableRow, "AD_User");
 		}
 	}
-
-	// @After
-	// public void cleanup(@NonNull final Scenario scenario)
-	// {
-	// 	if (scenario.isFailed())
-	// 	{
-	// 		return; // leave the data for inspection
-	// 	}
-	//
-	// 	InterfaceWrapperHelper.deleteAll(userTable.getRecords());
-	// 	InterfaceWrapperHelper.deleteAll(bpartnerTable.getRecords());
-	// }
 }

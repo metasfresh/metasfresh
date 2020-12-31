@@ -200,7 +200,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 * <ul>
 	 * <li>belongs to a "refundable" contract which has the given <code>bPartner_ID</code> as <code>DropShip_BPartner</code> or (if the former is <code>null</code>) as <code>Bill_BPartner</code></li>
 	 * <li>has a <code>C_Period</code> that covers the given <code>movementDate</code></li>
-	 * <li>references the the given <code>product</mandatory: truecode> with its <code>M_Product_DataEntry_ID</code> column</li>
+	 * <li>references the the given <code>product</code> with its <code>M_Product_DataEntry_ID</code> column</li>
 	 * </ul>
 	 *
 	 * @return the matching entry or <code>null</code>

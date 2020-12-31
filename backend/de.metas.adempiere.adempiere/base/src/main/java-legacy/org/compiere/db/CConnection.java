@@ -185,7 +185,6 @@ public final class CConnection implements Serializable, Cloneable
 		if (ccTemplate == null)
 		{
 			ccTemplateToUse = new CConnection();
-			// ccTemplateToUse.setAppsPort(SERVER_DEFAULT_APPSERVER_PORT);
 		}
 		else
 		{
@@ -403,17 +402,6 @@ public final class CConnection implements Serializable, Cloneable
 	} // supportsBLOB
 
 	/**
-	 *
-	 * Is PostgreSQL DB
-	 *
-	 * @return true if PostgreSQL
-	 */
-	// public boolean isPostgreSQL()
-	// {
-	// 	return Database.DB_POSTGRESQL.equals(attrs.getDbType());
-	// } 	// isPostgreSQL
-
-	/**
 	 * Is Database Connection OK.
 	 *
 	 * @return true if database connection is OK
@@ -578,12 +566,12 @@ public final class CConnection implements Serializable, Cloneable
 	/*************************************************************************
 	 * Short String representation
 	 *
-	 * @return appsHost{dbHost-dbName-uid}
+	 * @return {dbHost-dbName-userid}
 	 */
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder(/*attrs.getAppsHost()*/);
+		final StringBuilder sb = new StringBuilder();
 		sb.append("{").append(attrs.getDbHost())
 				.append("-").append(attrs.getDbName())
 				.append("-").append(attrs.getDbUid())
@@ -699,12 +687,9 @@ public final class CConnection implements Serializable, Cloneable
 		{
 			final CConnection cc = (CConnection)o;
 			if (true
-					// && cc.getAppsHost().equals(attrs.getAppsHost())
-					// && cc.getAppsPort() == attrs.getAppsPort()
 					&& cc.getDbHost().equals(attrs.getDbHost())
 					&& cc.getDbPort() == attrs.getDbPort()
 					&& cc.getDbName().equals(attrs.getDbName())
-					// && cc.getType().equals(attrs.getDbType())
 					&& cc.getDbUid().equals(attrs.getDbUid())
 					&& cc.getDbPwd().equals(attrs.getDbPwd()))
 			{
@@ -712,18 +697,7 @@ public final class CConnection implements Serializable, Cloneable
 			}
 		}
 		return false;
-	}    // equals
-
-	/*************************************************************************
-	 * Hashcode
-	 *
-	 * @return hashcode of attrs
-	 */
-	@Override
-	public int hashCode()
-	{
-		return attrs.hashCode();
-	}    // hashCode
+	}
 
 	/**
 	 * Get Info.
@@ -747,10 +721,18 @@ public final class CConnection implements Serializable, Cloneable
 			sb.append("\n").append(database);
 		}
 
-		//sb.append("\nAppsServerOK=").append(isAppsServerOK(false));
 		sb.append(", DatabaseOK=").append(isDatabaseOK());
 		return sb.toString();
 	}    // getInfo
+
+	/**
+	 * @return hashcode of attrs
+	 */
+	@Override
+	public int hashCode()
+	{
+		return attrs.hashCode();
+	}    // hashCode
 
 	/**
 	 * Get Database

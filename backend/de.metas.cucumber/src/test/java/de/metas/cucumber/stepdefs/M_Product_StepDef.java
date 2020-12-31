@@ -75,15 +75,4 @@ public class M_Product_StepDef
 			productTable.put(recordIdentifier, productRecord);
 		}
 	}
-
-	// @After
-	// public void cleanup(@NonNull final Scenario scenario)
-	// {
-	// 	if (scenario.isFailed())
-	// 	{
-	// 		return; // leave the data for inspection
-	// 	}
-	//
-	// 	InterfaceWrapperHelper.deleteAll(productTable.getRecords());
-	// }
 }

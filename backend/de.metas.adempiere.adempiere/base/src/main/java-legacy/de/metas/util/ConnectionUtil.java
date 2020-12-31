@@ -40,8 +40,10 @@ public class ConnectionUtil
 	private final static transient Logger logger = LogManager.getLogger(ConnectionUtil.class);
 
 	/**
-	 * Can set up the database connection at an early state.
+	 * Can set up the database and rabbitmq connection at an early state, from commandline parameters.
 	 * It's assumed that if this method does not set up the connection, it is done later (currently via {@link CConnection#createInstance(CConnectionAttributes)}).
+	 *
+	 * Background: we use this to start metasfresh without a {@code }metasfresh.properties} file.
 	 */
 	public ConfigureConnectionsResult configureConnectionsIfArgsProvided(@Nullable final CommandLineOptions commandLineOptions)
 	{

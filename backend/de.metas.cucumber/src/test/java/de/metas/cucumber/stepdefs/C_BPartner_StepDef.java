@@ -98,15 +98,4 @@ public class C_BPartner_StepDef
 			bPartnerTable.put(recordIdentifier, bPartnerRecord);
 		}
 	}
-
-	// @After
-	// public void cleanup(@NonNull final Scenario scenario)
-	// {
-	// 	if (scenario.isFailed())
-	// 	{
-	// 		return; // leave the data for inspection
-	// 	}
-	//
-	// 	InterfaceWrapperHelper.deleteAll(bPartnerTable.getRecords());
-	// }
 }
