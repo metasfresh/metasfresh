@@ -9,4 +9,4 @@ The webui leans on the following components to do its job:
 
 * vaadin
 * spring-boot
-* cxf, using activeMQ for transport
+* rabbitmq
