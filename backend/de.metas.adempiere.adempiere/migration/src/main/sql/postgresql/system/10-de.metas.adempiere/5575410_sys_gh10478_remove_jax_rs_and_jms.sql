@@ -19,3 +19,5 @@ delete from ad_entitytype where entitytype='de.metas.jax.rs';
 
 delete from imp_processor_type where imp_processor_type_id=1000000; -- ActiveMQ
 delete from ad_entitytype where entitytype='de.metas.jms';
+
+

@@ -110,7 +110,6 @@ public final class ProcessInfo implements Serializable
 		sqlStatement = builder.getSQLStatement();
 		translateExcelHeaders = builder.isTranslateExcelHeaders();
 		adWorkflowId = builder.getWorkflowId();
-		serverProcess = builder.isServerProcess();
 		invokedByScheduler = builder.isInvokedByScheduler();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
 
@@ -196,9 +195,6 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean translateExcelHeaders;
 	private final WorkflowId adWorkflowId;
-
-	@Getter
-	private final boolean serverProcess;
 
 	@Getter
 	private final boolean invokedByScheduler;
@@ -338,15 +334,7 @@ public final class ProcessInfo implements Serializable
 		}
 		catch (final Throwable e)
 		{
-			if (isServerProcess() && Ini.isSwingClient())
-			{
-				// NOTE: in case of server process, it might be that the class is not present, which could be fine
-				logger.debug("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
-			else
-			{
-				logger.warn("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
+			logger.warn("Failed instantiating class '{}'. Skipped.", classname, e);
 			return null;
 		}
 	}
@@ -1595,12 +1583,6 @@ public final class ProcessInfo implements Serializable
 			}
 
 			return null;
-		}
-
-		private boolean isServerProcess()
-		{
-			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			return adProcess != null ? adProcess.isServerProcess() : false;
 		}
 
 		private boolean isReportingProcess()
