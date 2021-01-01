@@ -37,17 +37,9 @@ import org.testcontainers.containers.DockerComposeContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CountDownLatch;
@@ -55,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 /**
  * Test for the federated RabbitMQ setup.
@@ -138,7 +129,7 @@ public class FederatedRabbitMQTest
 		});
 
 		System.out.print("Waiting for message receipt");
-		countDownLatch.await(5, TimeUnit.SECONDS);
+		assertThat(countDownLatch.await(5, TimeUnit.SECONDS)).isTrue();
 
 		assertThat(message[0]).isEqualTo(createFromMetasfreshMessage());
 	}
@@ -186,7 +177,7 @@ public class FederatedRabbitMQTest
 		});
 		System.out.print("Waiting for message receipt");
 
-		countDownLatch.await(5, TimeUnit.SECONDS);
+		assertThat(countDownLatch.await(5, TimeUnit.SECONDS)).isTrue();
 		assertThat(message[0]).isEqualTo(createFromProcurementWebuiMessage());
 	}
 
@@ -201,17 +192,4 @@ public class FederatedRabbitMQTest
 	{
 		return "Hello from the procurement-webui! Timestamp=" + instant;
 	}
-
-	private int waitABit(int count) throws InterruptedException
-	{
-		System.out.print(".");
-		Thread.sleep(100);
-		count++;
-		if (count > 100)
-		{
-			fail("Did not receive the message");
-		}
-		return count;
-	}
-
 }
