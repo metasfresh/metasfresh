@@ -64,46 +64,46 @@ public class ReceiverFromProcurementWeb
 	}
 
 	@RabbitListener(queues = Constants.QUEUE_NAME_PW_TO_MF)
-	public void receiveMessage(@NonNull @Payload final RequestToMetasfresh request)
+	public void receiveMessage(@NonNull @Payload final RequestToMetasfresh requestToMetasfresh)
 	{
-		invokeServerSyncBL(request);
+		invokeServerSyncBL(requestToMetasfresh);
 	}
 
-	private void invokeServerSyncBL(@NonNull final RequestToMetasfresh procurementEvent)
+	private void invokeServerSyncBL(@NonNull final RequestToMetasfresh requestToMetasfresh)
 	{
 		final IServerSyncBL serverSyncBL = Services.get(IServerSyncBL.class);
-		if (procurementEvent instanceof PutWeeklySupplyRequest)
+		if (requestToMetasfresh instanceof PutWeeklySupplyRequest)
 		{
-			serverSyncBL.reportWeekSupply((PutWeeklySupplyRequest)procurementEvent);
+			serverSyncBL.reportWeekSupply((PutWeeklySupplyRequest)requestToMetasfresh);
 		}
-		else if (procurementEvent instanceof PutProductSuppliesRequest)
+		else if (requestToMetasfresh instanceof PutProductSuppliesRequest)
 		{
-			serverSyncBL.reportProductSupplies((PutProductSuppliesRequest)procurementEvent);
+			serverSyncBL.reportProductSupplies((PutProductSuppliesRequest)requestToMetasfresh);
 		}
-		else if (procurementEvent instanceof PutRfQChangeRequest)
+		else if (requestToMetasfresh instanceof PutRfQChangeRequest)
 		{
-			serverSyncBL.reportRfQChanges((PutRfQChangeRequest)procurementEvent);
+			serverSyncBL.reportRfQChanges((PutRfQChangeRequest)requestToMetasfresh);
 		}
-		else if (procurementEvent instanceof GetAllBPartnersRequest)
+		else if (requestToMetasfresh instanceof GetAllBPartnersRequest)
 		{
 			final List<SyncBPartner> allBPartners = serverSyncBL.getAllBPartners();
 			senderToProcurementWebUI.send(PutBPartnersRequest.of(allBPartners));
 		}
-		else if (procurementEvent instanceof GetAllProductsRequest)
+		else if (requestToMetasfresh instanceof GetAllProductsRequest)
 		{
 			final List<SyncProduct> allProducts = serverSyncBL.getAllProducts();
 			senderToProcurementWebUI.send(PutProductsRequest.of(allProducts));
 		}
-		else if(procurementEvent instanceof GetInfoMessageRequest)
+		else if(requestToMetasfresh instanceof GetInfoMessageRequest)
 		{
 			final String infoMessage = serverSyncBL.getInfoMessage();
 			senderToProcurementWebUI.send(PutInfoMessageRequest.of(infoMessage));
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported type " + procurementEvent.getClass().getName())
+			throw new AdempiereException("Unsupported type " + requestToMetasfresh.getClass().getName())
 					.appendParametersToMessage()
-					.setParameter("procurementEvent", procurementEvent);
+					.setParameter("requestToMetasfresh", requestToMetasfresh);
 		}
 	}
 }

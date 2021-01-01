@@ -27,10 +27,14 @@ import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class SenderToProcurementWeb
@@ -46,8 +50,23 @@ public class SenderToProcurementWeb
 		this.queue = queue;
 	}
 
-	public void send(@NonNull final RequestToProcurementWeb procurementEvent)
+	public void send(@NonNull final RequestToProcurementWeb requestToProcurementWeb)
 	{
-		rabbitTemplate.convertAndSend(queue.getName(), procurementEvent);
+		final byte[] messageAsBytes;
+		try
+		{
+			messageAsBytes = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsBytes(requestToProcurementWeb);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new AdempiereException("Exception serializing requestToProcurementWeb", e).appendParametersToMessage()
+					.setParameter("requestToProcurementWeb", requestToProcurementWeb);
+		}
+
+		final MessageProperties messageProperties = new MessageProperties();
+		messageProperties.setContentEncoding(StandardCharsets.UTF_8.displayName());
+		messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+
+		rabbitTemplate.convertAndSend(queue.getName(), new Message(messageAsBytes, messageProperties));
 	}
 }

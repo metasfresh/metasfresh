@@ -33,12 +33,16 @@ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRf
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQsRequest;
 import de.metas.procurement.webui.sync.exception.ReceiveSyncException;
 import lombok.NonNull;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.handler.annotation.Payload;
 
 import java.io.IOException;
 
-@RabbitListener(queues = Constants.QUEUE_NAME_PW_TO_MF)
+@Configuration
+@EnableRabbit
 public class ReceiverFromMetasfresh
 {
 	private final IAgentSync agentSync;
@@ -48,27 +52,23 @@ public class ReceiverFromMetasfresh
 		this.agentSync = agentSync;
 	}
 
-	@RabbitHandler
-	public void receiveMessage(@NonNull final String message)
+	/**
+	 * Note: i tried to get spring to convert the {@code byte[]} message to {@link RequestToProcurementWeb}, but failed.
+	 * Also, it might all be different with a later spring version, so, i'm now dowing it hardcoded in here.
+	 */
+	@RabbitListener(queues = Constants.QUEUE_NAME_MF_TO_PW)
+	public void receiveMessage(@NonNull @Payload final byte[] bytes)
 	{
-		final RequestToProcurementWeb procurementEvent;
+		final RequestToProcurementWeb requestToProcurementWeb;
 		try
 		{
-			procurementEvent = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(message, RequestToProcurementWeb.class);
+			requestToProcurementWeb = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.readValue(bytes, RequestToProcurementWeb.class);
 		}
-		catch (final IOException e)
+		catch (IOException e)
 		{
-			throw new ReceiveSyncException(message, e);
+			throw new ReceiveSyncException("Unable to deserialize requestToProcurementWeb", e);
 		}
-
-		try
-		{
-			invokeServerSyncBL(procurementEvent);
-		}
-		catch (final RuntimeException e)
-		{
-			throw new ReceiveSyncException(procurementEvent, e);
-		}
+		invokeServerSyncBL(requestToProcurementWeb);
 	}
 
 	private void invokeServerSyncBL(@NonNull final RequestToProcurementWeb procurementEvent)

@@ -56,7 +56,7 @@ public class MockedTestServerSync implements IServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired(required = true)
+	@Autowired
 	@Lazy
 	private DummyDataProducer dummyDataProducer;
 

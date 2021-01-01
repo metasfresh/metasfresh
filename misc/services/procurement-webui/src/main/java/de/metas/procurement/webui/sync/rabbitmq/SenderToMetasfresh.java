@@ -23,14 +23,19 @@
 package de.metas.procurement.webui.sync.rabbitmq;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.rabbitmq.client.AMQP;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import de.metas.procurement.webui.sync.exception.SendSyncException;
 import lombok.NonNull;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class SenderToMetasfresh
@@ -40,27 +45,28 @@ public class SenderToMetasfresh
 
 	public SenderToMetasfresh(
 			@NonNull final RabbitTemplate rabbitTemplate,
-			@NonNull @Qualifier(Constants.QUEUE_NAME_MF_TO_PW) final Queue queue)
+			@NonNull @Qualifier(Constants.QUEUE_NAME_PW_TO_MF) final Queue queue)
 	{
 		this.rabbitTemplate = rabbitTemplate;
 		this.queue = queue;
 	}
 
-	public void send(@NonNull final RequestToMetasfresh procurementEvent)
+	public void send(@NonNull final RequestToMetasfresh requestToMetasfresh)
 	{
-		final String message = convertToString(procurementEvent);
-		rabbitTemplate.convertAndSend(queue.getName(), message);
-	}
-
-	private String convertToString(@NonNull final RequestToMetasfresh procurementEvent)
-	{
+		final byte[] messageAsBytes;
 		try
 		{
-			return Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsString(procurementEvent);
+			messageAsBytes = Constants.PROCUREMENT_WEBUI_OBJECT_MAPPER.writeValueAsBytes(requestToMetasfresh);
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw new SendSyncException(procurementEvent, e);
+			throw new SendSyncException(requestToMetasfresh, e);
 		}
+
+		final MessageProperties messageProperties = new MessageProperties();
+		messageProperties.setContentEncoding(StandardCharsets.UTF_8.displayName());
+		messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+
+		rabbitTemplate.convertAndSend(queue.getName(), new Message(messageAsBytes, messageProperties));
 	}
 }

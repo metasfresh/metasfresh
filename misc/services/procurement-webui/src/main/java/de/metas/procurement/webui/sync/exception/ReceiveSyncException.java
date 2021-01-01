@@ -27,14 +27,14 @@ import lombok.NonNull;
 
 public class ReceiveSyncException extends RuntimeException
 {
-	public ReceiveSyncException(@NonNull final RequestToProcurementWeb event, @NonNull final Exception cause)
+	public ReceiveSyncException(@NonNull final RequestToProcurementWeb requestToProcurementWeb, @NonNull final Exception cause)
 	{
-		super("Error receiving procurementEvent=" + event, cause);
+		super("Error receiving procurementEvent=" + requestToProcurementWeb, cause);
 	}
 
-	public ReceiveSyncException(@NonNull final RequestToProcurementWeb event, @NonNull final String errorMessage)
+	public ReceiveSyncException(@NonNull final RequestToProcurementWeb requestToProcurementWeb, @NonNull final String errorMessage)
 	{
-		super("Error receiving procurementEvent; errorMessage=" + errorMessage + "; procurementEvent=" + event);
+		super("Error receiving procurementEvent; errorMessage=" + errorMessage + "; procurementEvent=" + requestToProcurementWeb);
 	}
 
 	public ReceiveSyncException(@NonNull final String message, @NonNull final Exception cause)

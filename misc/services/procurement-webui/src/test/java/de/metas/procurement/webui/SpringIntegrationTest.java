@@ -24,6 +24,7 @@ import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.IServerSyncService;
+import de.metas.procurement.webui.sync.ServerSyncService;
 import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
 import org.hamcrest.Matchers;
@@ -45,6 +46,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -114,6 +116,9 @@ public class SpringIntegrationTest
 	// private IServerSync serverSync;
 
 	@Autowired
+	private ServerSyncService serverSyncService;
+
+	@Autowired
 	private IAgentSync agentSync;
 
 	private final Random random = new Random();
@@ -122,7 +127,7 @@ public class SpringIntegrationTest
 	@Ignore
 	public void testCreateProductSupply() throws Exception
 	{
-		// serverSyncService.awaitInitialSyncComplete(20, TimeUnit.SECONDS);
+		serverSyncService.awaitInitialSyncComplete(20, TimeUnit.SECONDS);
 
 		final Date day = DateUtils.truncToDay(new Date());
 

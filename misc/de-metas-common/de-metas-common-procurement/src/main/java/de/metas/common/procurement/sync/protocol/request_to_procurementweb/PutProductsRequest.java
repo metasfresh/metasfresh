@@ -50,8 +50,7 @@ public class PutProductsRequest extends RequestToProcurementWeb
 
 	@Builder
 	@JsonCreator
-	private PutProductsRequest(
-			@JsonProperty("products") @Singular final List<SyncProduct> products)
+	private PutProductsRequest(@JsonProperty("products") @Singular final List<SyncProduct> products)
 	{
 		this.products = products;
 	}

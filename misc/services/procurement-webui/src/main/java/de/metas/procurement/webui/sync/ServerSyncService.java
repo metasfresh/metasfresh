@@ -6,6 +6,7 @@ import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.eventbus.AsyncEventBus;
 import com.google.gwt.thirdparty.guava.common.eventbus.DeadEvent;
 import com.google.gwt.thirdparty.guava.common.eventbus.Subscribe;
+import com.sun.istack.internal.Nullable;
 import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQPriceChangeEvent;
@@ -46,6 +47,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -79,8 +81,7 @@ public class ServerSyncService implements IServerSyncService
 {
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-	//@Autowired(required = true)
-	private TaskExecutor taskExecutor;
+	private final TaskExecutor taskExecutor;
 
 	private AsyncEventBus eventBus;
 
@@ -91,29 +92,15 @@ public class ServerSyncService implements IServerSyncService
 	// @Lazy
 	// private IServerSync serverSync;
 
-	// @Autowired(required = true)
-	// @Lazy
-	private SenderToMetasfresh senderToMetasfresh;
+	private final SenderToMetasfresh senderToMetasfresh;
 
-	// @Autowired(required = true)
-	// @Lazy
-	private IAgentSync agentSync;
+	private final ProductSupplyRepository productSuppliesRepo;
 
-	// @Autowired
-	// @Lazy
-	private ProductSupplyRepository productSuppliesRepo;
+	private final IProductSuppliesService productSuppliesService;
 
-	// @Autowired
-	// @Lazy
-	private IProductSuppliesService productSuppliesService;
+	private final RfqRepository rfqRepo;
 
-	// @Autowired
-	// @Lazy
-	private RfqRepository rfqRepo;
-
-	// @Autowired
-	// @Lazy
-	private SyncConfirmRepository syncConfirmRepo;
+	private final SyncConfirmRepository syncConfirmRepo;
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
 
@@ -128,7 +115,6 @@ public class ServerSyncService implements IServerSyncService
 	{
 		this.taskExecutor = taskExecutor;
 		this.senderToMetasfresh = senderToMetasfresh;
-		this.agentSync = agentSync;
 		this.productSuppliesRepo = productSuppliesRepo;
 		this.productSuppliesService = productSuppliesService;
 		this.rfqRepo = rfqRepo;
@@ -141,7 +127,8 @@ public class ServerSyncService implements IServerSyncService
 		eventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
 		eventBus.register(this);
 
-		syncAllAsync(() -> initialSync.countDown());
+		final Runnable callback = initialSync::countDown;
+		syncAllAsync(callback);
 	}
 
 	/**
@@ -240,7 +227,7 @@ public class ServerSyncService implements IServerSyncService
 			throw new RuntimeException("No product supply found for ID=" + product_supply_id);
 		}
 
-		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(Arrays.asList(productSupply));
+		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(Collections.singletonList(productSupply));
 		logger.debug("Pushing request: {}", request);
 		process(request);
 		logger.debug("Pushing request done");
@@ -265,7 +252,7 @@ public class ServerSyncService implements IServerSyncService
 			process(request);
 			logger.debug("Pushing request done");
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.error("Failed pushing product supplies for selection", e);
 			throw Throwables.propagate(e);
@@ -340,7 +327,7 @@ public class ServerSyncService implements IServerSyncService
 			process(request);
 			logger.debug("Pushing request done");
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.error("Failed pushing weekly supplies for selection", e);
 			throw Throwables.propagate(e);
@@ -405,9 +392,8 @@ public class ServerSyncService implements IServerSyncService
 
 		private final Runnable callback;
 
-		private SyncAllRequest(Runnable callback)
+		private SyncAllRequest(@Nullable final Runnable callback)
 		{
-			super();
 			this.callback = callback;
 		}
 
@@ -420,7 +406,6 @@ public class ServerSyncService implements IServerSyncService
 
 			callback.run();
 		}
-
 	}
 
 	private void reportRfQChangesAsync(final List<Rfq> rfqs, final List<RfqQty> rfqQuantities)
@@ -590,9 +575,6 @@ public class ServerSyncService implements IServerSyncService
 
 		/**
 		 * Creates a new local DB record for the given <code>abstractEntity</code>.
-		 *
-		 * @param abstractEntity
-		 * @return
 		 */
 		private SyncConfirm createAndStoreSyncConfirmRecord(AbstractSyncConfirmAwareEntity abstractEntity)
 		{
