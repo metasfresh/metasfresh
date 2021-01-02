@@ -1,73 +1,73 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
-<parent>
-		<groupId>de.metas.dlm</groupId>
-		<artifactId>metasfresh-dlm</artifactId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>de.metas.dlm</groupId>
+        <artifactId>metasfresh-dlm</artifactId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<artifactId>metasfresh-dlm-base</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>metasfresh-dlm-base</artifactId>
+    <packaging>jar</packaging>
 
-	<properties>
-		<!-- empty property because the sql migration dir already contains a list of base directories -->
-		<migration-sql-basedir>75-dlm</migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-	</properties>
+    <properties>
+        <!-- empty property because the sql migration dir already contains a list of base directories -->
+        <migration-sql-basedir>75-dlm</migration-sql-basedir>
+        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>de.metas.util</groupId>
-			<artifactId>de.metas.util</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.async</groupId>
-			<artifactId>de.metas.async</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.async</groupId>
+            <artifactId>de.metas.async</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.jgrapht</groupId>
-			<artifactId>jgrapht-core</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<!--
-			Those two are needed to visualize a partition-graph.
-			I played with a very rudimentory JFrame to show a graph, but it would need much more work in order to be any usefull for graphs of a non-trivial size.
-			Also see http://jgrapht.org/visualizations.html
-		<dependency>
-			<groupId>org.jgrapht</groupId>
-			<artifactId>jgrapht-ext</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>jgraph</groupId>
-			<artifactId>jgraph</artifactId>
-			<version>5.110.0.0</version>
-		</dependency>
-		-->
-		
-		<dependency>
-			<groupId>org.mockito</groupId>
-  			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!--
+            Those two are needed to visualize a partition-graph.
+            I played with a very rudimentory JFrame to show a graph, but it would need much more work in order to be any usefull for graphs of a non-trivial size.
+            Also see http://jgrapht.org/visualizations.html
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-ext</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>jgraph</groupId>
+            <artifactId>jgraph</artifactId>
+            <version>5.110.0.0</version>
+        </dependency>
+        -->
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

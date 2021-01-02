@@ -1,9 +1,5 @@
 package de.metas.procurement.base.balance;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-
-import org.apache.cxf.jaxrs.ext.Oneway;
 
 import de.metas.procurement.base.model.I_PMM_Balance;
 import de.metas.util.ISingletonService;
@@ -36,16 +32,10 @@ import de.metas.util.ISingletonService;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Path("/de.metas.procurement/balance")
 public interface IPMMBalanceChangeEventProcessor extends ISingletonService
 {
 	/**
 	 * Submit event to be processed
-	 * 
-	 * @param event
 	 */
-	@POST
-	@Path("event")
-	@Oneway
 	void addEvent(final PMMBalanceChangeEvent event);
 }

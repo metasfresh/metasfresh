@@ -1,15 +1,15 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
+import de.metas.procurement.webui.model.AbstractEntity;
+import de.metas.procurement.webui.model.AbstractTranslationEntity;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.metas.procurement.sync.protocol.AbstractSyncModel;
-import de.metas.procurement.webui.model.AbstractEntity;
-import de.metas.procurement.webui.model.AbstractTranslationEntity;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -21,12 +21,12 @@ import de.metas.procurement.webui.model.AbstractTranslationEntity;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -75,11 +75,8 @@ public abstract class AbstractSyncImportService
 
 	/**
 	 * Throws an {@link IllegalDeleteRequestException} if the given <code>syncModel</code> has <code>isDeleted</code>.
-	 *
-	 * @param syncModel
-	 * @param reason
 	 */
-	protected void assertNotDeleteRequest(final AbstractSyncModel syncModel, final String reason)
+	protected void assertNotDeleteRequest(final IConfirmableDTO syncModel, final String reason)
 	{
 		if (syncModel.isDeleted())
 		{
@@ -87,13 +84,14 @@ public abstract class AbstractSyncImportService
 		}
 	}
 
-	protected void assertNotDeleteRequest_WarnAndFix(final AbstractSyncModel syncModel, final String reason)
+	protected <T extends IConfirmableDTO> T assertNotDeleteRequest_WarnAndFix(@NonNull final T syncModel, final String reason)
 	{
 		if (syncModel.isDeleted())
 		{
-			logger.warn("Setting Deleted flag to " + syncModel + " is not allowed while: " + reason+". Unsetting the flag and going forward.");
-			syncModel.setDeleted(false);
+			logger.warn("Setting Deleted flag to " + syncModel + " is not allowed while: " + reason + ". Unsetting the flag and going forward.");
+			return (T)syncModel.withNotDeleted();
 		}
+		return syncModel;
 	}
 
 	private static class IllegalDeleteRequestException extends RuntimeException

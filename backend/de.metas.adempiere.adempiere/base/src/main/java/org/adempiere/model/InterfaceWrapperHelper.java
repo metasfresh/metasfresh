@@ -1487,7 +1487,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
+	public static IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
 	{
 		if (POWrapper.isHandled(model))
 		{
@@ -1500,7 +1500,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
 	 * @return true if model is a new record (not yet saved in database)
 	 */
 	public static boolean isNew(final Object model)

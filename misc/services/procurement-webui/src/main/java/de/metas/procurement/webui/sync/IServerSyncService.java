@@ -1,10 +1,10 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.WeekSupply;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L

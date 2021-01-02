@@ -64,8 +64,6 @@ public class SQLDatabase implements IDatabase
 
 	public SQLDatabase(final String dbUrl, final String dbUser, final String dbPassword)
 	{
-		super();
-
 		final URI url;
 		try
 		{

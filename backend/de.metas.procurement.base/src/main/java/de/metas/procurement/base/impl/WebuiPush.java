@@ -1,5 +1,15 @@
 package de.metas.procurement.base.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.procurement.sync.IAgentSync;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest.PutProductsRequestBuilder;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
@@ -7,18 +17,10 @@ import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.SyncRfQCloseEvent;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncInfoMessageRequest;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
@@ -26,6 +28,7 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -56,41 +59,39 @@ public class WebuiPush implements IWebuiPush
 {
 	private static final Logger logger = LogManager.getLogger(WebuiPush.class);
 
+	private final ThreadLocal<Boolean> disabled = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
 	/**
 	 * Return an instance of {@link IAgentSync} that can be used to communicate with the procurement webUI.
 	 * If no such client endpoint is available, return <code>null</code>.
 	 */
-	private IAgentSync getAgentSyncOrNull()
+	@NonNull
+	private IAgentSync getAgentSync()
 	{
 		// if (true) return NullAgentSync.instance; // DEBUGGING: mock the agent sync
 
-		final IAgentSyncBL agentSyncBL = Services.get(IAgentSyncBL.class);
-		if (agentSyncBL == null)
-		{
-			new AdempiereException("Unable to obtain IAgentSyncBL client endpoint proxy. Please check its AD_JAXRS_Endpoint config")
-					.throwOrLogSevere(Services.get(IDeveloperModeBL.class).isEnabled(), logger);
-		}
-		return agentSyncBL;
+		return Services.get(IAgentSyncBL.class);
 	}
 
 	@Override
-	@ManagedOperation(description="Checks if the local connection endpoint is available")
-	public boolean checkAvailable()
+	public IAutoCloseable disable()
 	{
-		return getAgentSyncOrNull() != null;
+		disabled.set(true);
+		return () -> disabled.set(false);
 	}
 
 	@Override
 	public void pushBPartnerAndUsers(final I_C_BPartner bpartner)
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
+		if (disabled.get())
 		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
 			return;
 		}
 
+		final IAgentSync agent = getAgentSync();
 		final SyncObjectsFactory syncFactory = SyncObjectsFactory.newFactory();
-// @formatter:off
+		// @formatter:off
 // FRESH-168: all users with IsMfProcurementUser='Y' are allowed to record a supply via procurement-webui,
 // even if they don't have a contract/flatrate term.
 //		if (!syncFactory.hasRunningContracts(bpartner))
@@ -105,20 +106,22 @@ public class WebuiPush implements IWebuiPush
 			return;
 		}
 
-		final SyncBPartnersRequest syncBPartnersRequest = SyncBPartnersRequest.of(syncBPartner);
+		final PutBPartnersRequest syncBPartnersRequest = PutBPartnersRequest.of(syncBPartner);
 		agent.syncBPartners(syncBPartnersRequest);
 	}
 
 	@Override
 	public void pushBPartnerForContract(final I_C_Flatrate_Term contract)
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
+		if (disabled.get())
 		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
 			return;
 		}
 
-		final int bpartnerId = contract.getDropShip_BPartner_ID();
+		final IAgentSync agent = getAgentSync();
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getDropShip_BPartner_ID());
 
 		final SyncObjectsFactory syncFactory = SyncObjectsFactory.newFactory();
 		final SyncBPartner syncBPartner = syncFactory.createSyncBPartner(bpartnerId);
@@ -127,7 +130,7 @@ public class WebuiPush implements IWebuiPush
 			return;
 		}
 
-		final SyncBPartnersRequest syncBPartnersRequest = SyncBPartnersRequest.of(syncBPartner);
+		final PutBPartnersRequest syncBPartnersRequest = PutBPartnersRequest.of(syncBPartner);
 		agent.syncBPartners(syncBPartnersRequest);
 	}
 
@@ -146,55 +149,60 @@ public class WebuiPush implements IWebuiPush
 	@ManagedOperation(description = "Pushes/synchronizes all currently valid PMM_Products to the procurement webUI.")
 	public void pushAllProducts()
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
+		if (disabled.get())
 		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
 			return;
 		}
+
+		final IAgentSync agent = getAgentSync();
 
 		final IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
 
 		final IQueryBuilder<I_PMM_Product> allPMMProductsQuery = pmmProductDAO.retrievePMMProductsValidOnDateQuery(SystemTime.asTimestamp());
 		final List<I_PMM_Product> allPMMProducts = allPMMProductsQuery.create().list();
-		final SyncProductsRequest syncProductsRequest = new SyncProductsRequest();
+
+		final PutProductsRequestBuilder syncProductsRequest = PutProductsRequest.builder();
 
 		for (final I_PMM_Product pmmProduct : allPMMProducts)
 		{
 			final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
-			syncProductsRequest.getProducts().add(syncProduct);
+			syncProductsRequest.product(syncProduct);
 		}
-		agent.syncProducts(syncProductsRequest);
+		agent.syncProducts(syncProductsRequest.build());
 	}
 
 	@Override
-	@ManagedOperation(description="Pushes/synchronizes Businesspartners with their contracts to the procurement webUI.")
+	@ManagedOperation(description = "Pushes/synchronizes Businesspartners with their contracts to the procurement webUI.")
 	public void pushAllBPartners()
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
+		if (disabled.get())
 		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
 			return;
 		}
 
+		final IAgentSync agent = getAgentSync();
+
 		final List<SyncBPartner> allSyncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
 
-		final SyncBPartnersRequest request = new SyncBPartnersRequest();
-		request.getBpartners().addAll(allSyncBPartners);
-
+		final PutBPartnersRequest request = PutBPartnersRequest.builder().bpartners(allSyncBPartners).build();
 		agent.syncBPartners(request);
 	}
 
 	@Override
 	public void pushProduct(final I_PMM_Product pmmProduct)
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
+		if (disabled.get())
 		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
 			return;
 		}
 
+		final IAgentSync agent = getAgentSync();
+
 		final SyncProduct syncProduct = SyncObjectsFactory.newFactory().createSyncProduct(pmmProduct);
-		final SyncProductsRequest syncProductsRequest = SyncProductsRequest.of(syncProduct);
+		final PutProductsRequest syncProductsRequest = PutProductsRequest.of(syncProduct);
 
 		agent.syncProducts(syncProductsRequest);
 	}
@@ -203,47 +211,53 @@ public class WebuiPush implements IWebuiPush
 	@ManagedOperation
 	public void pushAllInfoMessages()
 	{
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
+		if (disabled.get())
 		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
 			return;
 		}
 
+		final IAgentSync agent = getAgentSync();
+
 		final String infoMessage = SyncObjectsFactory.newFactory().createSyncInfoMessage();
-		agent.syncInfoMessage(SyncInfoMessageRequest.of(infoMessage));
+		agent.syncInfoMessage(PutInfoMessageRequest.of(infoMessage));
 	}
 
 	@Override
-	public void pushRfQs(final List<SyncRfQ> syncRfqs)
+	public void pushRfQs(@Nullable final List<SyncRfQ> syncRfqs)
 	{
-		if(syncRfqs == null || syncRfqs.isEmpty())
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
+		if (syncRfqs == null || syncRfqs.isEmpty())
 		{
 			return;
 		}
-		
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
-		
+
+		final IAgentSync agent = getAgentSync();
 		agent.syncRfQs(syncRfqs);
 	}
 
 	@Override
-	public void pushRfQCloseEvents(final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	public void pushRfQCloseEvents(
+			@Nullable final List<SyncRfQCloseEvent> syncRfQCloseEvents)
 	{
-		if(syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
+		if (disabled.get())
+		{
+			logger.info("Disabled is set to true in this thread; -> doing nothing");
+			return;
+		}
+
+		if (syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
 		{
 			return;
 		}
-		
-		final IAgentSync agent = getAgentSyncOrNull();
-		if (agent == null)
-		{
-			return;
-		}
-		
+
+		final IAgentSync agent = getAgentSync();
+
 		agent.closeRfQs(syncRfQCloseEvents);
 	}
 }

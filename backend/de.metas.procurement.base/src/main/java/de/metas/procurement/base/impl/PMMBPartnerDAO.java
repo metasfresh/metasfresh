@@ -40,14 +40,12 @@ public class PMMBPartnerDAO implements IPMMBPartnerDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<I_C_BPartner> bPartners = queryBL.createQueryBuilder(I_AD_User.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		return queryBL.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsMFProcurementUser, true)
 				.andCollect(I_AD_User.COLUMN_C_BPartner_ID)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();
-
-		return bPartners;
 	}
 }

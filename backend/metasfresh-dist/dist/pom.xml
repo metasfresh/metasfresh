@@ -289,20 +289,13 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.marketing</groupId>
 			<artifactId>marketing-base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
 		</dependency>
+
 		<dependency>
 			<groupId>de.metas.marketing</groupId>
 			<artifactId>marketing-cleverreach</artifactId>
@@ -686,7 +679,6 @@ note: when adding new records, please roughly order them by alphabet.
 							<goal>copy</goal>
 						</goals>
 						<configuration>
-							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
 							<artifactItems>
 								<artifactItem>

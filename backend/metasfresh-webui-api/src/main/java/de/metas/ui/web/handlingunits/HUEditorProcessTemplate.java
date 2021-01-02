@@ -11,7 +11,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
-import de.metas.util.stream.StreamUtils;
+import de.metas.util.StreamUtils;
 import lombok.NonNull;
 
 /*
@@ -89,9 +89,6 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	/**
 	 * Gets <b>all</b> selected {@link HUEditorRow}s and loads the top level-HUs from those.
 	 * I.e. this method does not rely on {@link HUEditorRow#isTopLevel()}, but checks the underlying HU.
-	 *
-	 * @param select
-	 * @return
 	 */
 	protected final Stream<I_M_HU> streamSelectedHUs(@NonNull final Select select)
 	{

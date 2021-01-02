@@ -13,15 +13,17 @@
 
 	<properties>
 		<migration-sql-basedir></migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh.version>10.0.0</metasfresh.version>
+		<metasfresh-common.version>10.0.0</metasfresh-common.version>
 	</properties>
 
 	<dependencies>
+
 		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${metasfresh.version}</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
@@ -33,9 +35,9 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.procurement</groupId>
-			<artifactId>de.metas.procurement.sync-api</artifactId>
-			<version>${metasfresh.version}</version>
+			<groupId>de.metas.common.procurement</groupId>
+			<artifactId>de-metas-common-procurement</artifactId>
+			<version>${metasfresh-common.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.rfq</groupId>
@@ -56,6 +58,7 @@
 			<scope>test</scope>
 			<classifier>tests</classifier>
 		</dependency>
+
 		<dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>

@@ -1,13 +1,30 @@
 package de.metas.procurement.base.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.Joiner;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQPriceChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQQtyChangeEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.procurement.base.IServerSyncBL;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
+import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
+import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
+import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
+import de.metas.procurement.base.rabbitmq.SenderToProcurementWeb;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -22,31 +39,15 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
-import com.google.common.base.Joiner;
-
-import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.procurement.base.IServerSyncBL;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
-import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
-import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
-import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncProductSupply;
-import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.procurement.sync.protocol.SyncRfQPriceChangeEvent;
-import de.metas.procurement.sync.protocol.SyncRfQQtyChangeEvent;
-import de.metas.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -70,9 +71,17 @@ import de.metas.common.util.CoalesceUtil;
  * #L%
  */
 
+@Service
 public class ServerSyncBL implements IServerSyncBL
 {
 	private static final Logger logger = LogManager.getLogger(ServerSyncBL.class);
+
+	private final SenderToProcurementWeb senderToProcurementWebUI;
+
+	public ServerSyncBL(@NonNull final SenderToProcurementWeb senderToProcurementWebUI)
+	{
+		this.senderToProcurementWebUI = senderToProcurementWebUI;
+	}
 
 	@Override
 	public List<SyncBPartner> getAllBPartners()
@@ -99,7 +108,7 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public void reportProductSupplies(final SyncProductSuppliesRequest request)
+	public void reportProductSupplies(final PutProductSuppliesRequest request)
 	{
 		logger.debug("Got request: {}", request);
 
@@ -125,7 +134,10 @@ public class ServerSyncBL implements IServerSyncBL
 				(context, pmmProduct) -> createQtyReportEvent(context, pmmProduct, syncProductSupply));
 	}
 
-	private void createQtyReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncProductSupply syncProductSupply)
+	private void createQtyReportEvent(
+			final IContextAware context,
+			final I_PMM_Product pmmProduct,
+			final SyncProductSupply syncProductSupply)
 	{
 		logger.debug("Creating QtyReport event from {} ({})", syncProductSupply, pmmProduct);
 
@@ -210,7 +222,9 @@ public class ServerSyncBL implements IServerSyncBL
 			if (!isInternalGenerated)
 			{
 				final String serverEventId = String.valueOf(qtyReportEvent.getPMM_QtyReport_Event_ID());
-				SyncConfirmationsSender.forCurrentTransaction().confirm(syncProductSupply, serverEventId);
+				SyncConfirmationsSender
+						.forCurrentTransaction(senderToProcurementWebUI)
+						.confirm(syncProductSupply, serverEventId);
 			}
 		}
 	}
@@ -279,7 +293,7 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public void reportWeekSupply(final SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(final PutWeeklySupplyRequest request)
 	{
 		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
 		{
@@ -357,14 +371,13 @@ public class ServerSyncBL implements IServerSyncBL
 
 		// Notify agent that we got the message
 		final String serverEventId = String.valueOf(event.getPMM_WeekReport_Event_ID());
-		SyncConfirmationsSender.forCurrentTransaction().confirm(syncWeeklySupply, serverEventId);
+		SyncConfirmationsSender
+				.forCurrentTransaction(senderToProcurementWebUI)
+				.confirm(syncWeeklySupply, serverEventId);
 	}
 
 	/**
 	 * Loads the {@link I_PMM_Product} for the given <code>product_uuid</code>, then creates and updates a temporary context and invokes the given <code>processor</code>.
-	 *
-	 * @param product_uuid
-	 * @param processor
 	 */
 	private void loadPMMProductAndProcess(final String product_uuid, final IEventProcessor processor)
 	{
@@ -401,7 +414,7 @@ public class ServerSyncBL implements IServerSyncBL
 	}
 
 	@Override
-	public void reportRfQChanges(final SyncRfQChangeRequest request)
+	public void reportRfQChanges(final PutRfQChangeRequest request)
 	{
 		for (final SyncRfQPriceChangeEvent priceChangeEvent : request.getPriceChangeEvents())
 		{
@@ -466,7 +479,9 @@ public class ServerSyncBL implements IServerSyncBL
 
 		// Notify agent that we got the message
 		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());
-		SyncConfirmationsSender.forCurrentTransaction().confirm(syncPriceChangeEvent, serverEventId);
+		SyncConfirmationsSender
+				.forCurrentTransaction(senderToProcurementWebUI)
+				.confirm(syncPriceChangeEvent, serverEventId);
 	}
 
 	private void createRfQQtyChangeEvent(final SyncRfQQtyChangeEvent qtyChangeEvent)
@@ -511,7 +526,9 @@ public class ServerSyncBL implements IServerSyncBL
 
 		// Notify agent that we got the message
 		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());
-		SyncConfirmationsSender.forCurrentTransaction().confirm(syncQtyChangeEvent, serverEventId);
+		SyncConfirmationsSender
+				.forCurrentTransaction(senderToProcurementWebUI)
+				.confirm(syncQtyChangeEvent, serverEventId);
 	}
 
 }

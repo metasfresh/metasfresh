@@ -1,20 +1,6 @@
 package de.metas.procurement.base.impl;
 
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.procurement.base.IPMMContractsDAO;
@@ -24,6 +10,19 @@ import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
 
 /*
  * #%L
@@ -66,11 +65,11 @@ public class PMMContractsDAO implements IPMMContractsDAO
 				.list(I_C_Flatrate_Term.class);
 	}
 
-	private IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(final Date date)
+	private IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> retrieveAllRunningContractsOnDateQuery(@Nullable final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.contracts.model.I_C_Flatrate_Term.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		final IQueryBuilder<de.metas.contracts.model.I_C_Flatrate_Term> queryBuilder = queryBL.createQueryBuilder(de.metas.contracts.model.I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, I_C_Flatrate_Conditions.TYPE_CONDITIONS_Procuremnt)
 
@@ -115,12 +114,12 @@ public class PMMContractsDAO implements IPMMContractsDAO
 				.anyMatch();
 	}
 
+	@Nullable
 	@Override
-	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(final de.metas.contracts.model.I_C_Flatrate_Term flatrateTerm, final Timestamp date)
+	public I_C_Flatrate_DataEntry retrieveFlatrateDataEntry(
+			@NonNull final de.metas.contracts.model.I_C_Flatrate_Term flatrateTerm,
+			@NonNull final Timestamp date)
 	{
-		Check.assumeNotNull(flatrateTerm, "flatrateTerm not null");
-		Check.assumeNotNull(date, "date not null");
-
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> dataEntries = InterfaceWrapperHelper.createList(
 				flatrateDAO.retrieveDataEntries(flatrateTerm, date, I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased, true),            // onlyNonSim = true
@@ -136,6 +135,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public I_C_Flatrate_Term retrieveTermForPartnerAndProduct(final Date date, final int bPartnerID, final int pmmProductId)
 	{

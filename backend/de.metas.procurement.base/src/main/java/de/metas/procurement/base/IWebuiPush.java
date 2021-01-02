@@ -1,15 +1,16 @@
 package de.metas.procurement.base;
 
-import java.util.List;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.util.ISingletonService;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.sync.SyncRfQCloseEvent;
-import de.metas.procurement.sync.protocol.SyncRfQ;
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -40,15 +41,10 @@ import de.metas.util.ISingletonService;
  */
 public interface IWebuiPush extends ISingletonService
 {
-	/**
-	 * @return true if the webui connection is available
-	 */
-	boolean checkAvailable();
+	IAutoCloseable disable();
 
 	/**
 	 * Push bpartner (without pushing the bpartner's contracts).
-	 *
-	 * @param bpartner
 	 */
 	void pushBPartnerAndUsers(I_C_BPartner bpartner);
 
@@ -58,8 +54,6 @@ public interface IWebuiPush extends ISingletonService
 
 	/**
 	 * Pushes/synchronizes the given <code>pmmProduct</code> to the procurement webUI.
-	 *
-	 * @param pmmProduct
 	 */
 	void pushProduct(I_PMM_Product pmmProduct);
 
@@ -76,7 +70,7 @@ public interface IWebuiPush extends ISingletonService
 	 */
 	void pushAllBPartners();
 
-	void pushRfQs(List<SyncRfQ> syncRfqs);
+	void pushRfQs(@Nullable List<SyncRfQ> syncRfqs);
 
-	void pushRfQCloseEvents(List<SyncRfQCloseEvent> syncRfQCloseEvents);
+	void pushRfQCloseEvents(@Nullable List<SyncRfQCloseEvent> syncRfQCloseEvents);
 }

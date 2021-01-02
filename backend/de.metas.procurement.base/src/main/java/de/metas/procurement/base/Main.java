@@ -1,7 +1,14 @@
 package de.metas.procurement.base;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.event.Topic;
+import de.metas.logging.LogManager;
+import de.metas.procurement.base.contracts.ProcurementFlatrateHandler;
+import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -9,18 +16,7 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.contracts.IFlatrateTermEventService;
-import de.metas.event.Topic;
-import de.metas.jax.rs.CreateEndpointRequest;
-import de.metas.jax.rs.IJaxRsBL;
-import de.metas.logging.LogManager;
-import de.metas.procurement.base.contracts.ProcurementFlatrateHandler;
-import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
-import de.metas.procurement.base.order.callout.PMM_PurchaseCandidate_TabCallout;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L
@@ -129,7 +125,6 @@ public class Main extends AbstractModuleInterceptor
 	private void setupJaxRs()
 	{		
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final IJaxRsBL jaxRsBL = Services.get(IJaxRsBL.class);
 
 		final String requestQueueName = sysConfigBL.getValue(SYSCONFIG_JMS_QUEUE_REQUEST, getAD_Client_ID());
 		final String responseQueueName = sysConfigBL.getValue(SYSCONFIG_JMS_QUEUE_RESPONSE, getAD_Client_ID());
@@ -146,14 +141,7 @@ public class Main extends AbstractModuleInterceptor
 		}
 		//
 		// create the client endpoint so we can reach the procurement webUI.
-		final CreateEndpointRequest<IAgentSyncBL> clientEndpointRequest = CreateEndpointRequest
-				.builder(IAgentSyncBL.class)
-				.setRequestQueue(requestQueueName)
-				.setResponseQueue(responseQueueName)
-				.build();
-
-		final IAgentSyncBL agentEndpointService = jaxRsBL.createClientEndpointsProgramatically(clientEndpointRequest).get(0);
-		Services.registerService(IAgentSyncBL.class, agentEndpointService);
+		// TODO ? register rabbitmq-stuff ?
 
 		// note: ServerSync will just be a "normal" server, listening no our default queues
 	}
