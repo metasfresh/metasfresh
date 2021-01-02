@@ -1,29 +1,18 @@
 package de.metas.procurement.webui.util;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import javax.transaction.Transactional;
-import javax.ws.rs.core.MediaType;
-
-import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncContract;
-import de.metas.procurement.sync.protocol.SyncContractLine;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.procurement.sync.protocol.SyncRfQ;
-import de.metas.procurement.sync.protocol.SyncUser;
+import de.metas.common.procurement.sync.IAgentSync;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner.SyncBPartnerBuilder;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract.SyncContractBuilder;
+import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest.PutBPartnersRequestBuilder;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest.PutProductsRequestBuilder;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.model.ContractLine;
@@ -31,6 +20,14 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /*
  * #%L
@@ -57,12 +54,13 @@ import de.metas.procurement.webui.service.IProductSuppliesService;
 @Service
 public class DummyDataProducer
 {
-	@Autowired
-	private BPartnerRepository bpartnersRepo;
-	@Autowired
-	private ContractRepository contractsRepo;
-	@Autowired
-	private IProductSuppliesService productSuppliesService;
+	private final BPartnerRepository bpartnersRepo;
+
+	private final ContractRepository contractsRepo;
+
+	private final IProductSuppliesService productSuppliesService;
+
+	private final IAgentSync agentSync;
 
 	private final Date contractDateFrom = DateUtils.toDayDate(2015, 04, 01);
 	private final Date contractDateTo = DateUtils.toDayDate(2016, 03, 31);
@@ -89,34 +87,30 @@ public class DummyDataProducer
 			//
 			);
 
-	@Value("${server.port}")
-	private int serverPort;
+	private PutBPartnersRequest _syncBPartnersRequest;
+	private PutProductsRequest _syncProductsRequest;
 
-	private SyncBPartnersRequest _syncBPartnersRequest;
-	private SyncProductsRequest _syncProductsRequest;
+	public DummyDataProducer(
+			final BPartnerRepository bpartnersRepo,
+			final ContractRepository contractsRepo,
+			final IProductSuppliesService productSuppliesService,
+			final IAgentSync agentSync)
+	{
+		this.bpartnersRepo = bpartnersRepo;
+		this.contractsRepo = contractsRepo;
+		this.productSuppliesService = productSuppliesService;
+		this.agentSync = agentSync;
+	}
 
 	public void createDummyData()
 	{
-		createDummyData(serverPort);
-	}
-
-	public void createDummyData(final int serverPort)
-	{
-		final SyncBPartnersRequest request = getSyncBPartnersRequest();
-
-		final int serverPortToUse = serverPort > 0 ? serverPort : this.serverPort;
-		if (serverPortToUse <= 0)
-		{
-			throw new RuntimeException("Server port could not be determined");
-		}
-		final IAgentSync client = JAXRSClientFactory.create("http://localhost:" + serverPortToUse + "/rest", IAgentSync.class);
-		WebClient.client(client).type(MediaType.APPLICATION_JSON_TYPE);
-		client.syncBPartners(request);
+		final PutBPartnersRequest request = getSyncBPartnersRequest();
+		agentSync.syncBPartners(request);
 
 		createDummyProductSupplies();
 	}
 
-	public SyncBPartnersRequest getSyncBPartnersRequest()
+	public PutBPartnersRequest getSyncBPartnersRequest()
 	{
 		if (_syncBPartnersRequest == null)
 		{
@@ -125,17 +119,18 @@ public class DummyDataProducer
 		return _syncBPartnersRequest;
 	}
 
-	private SyncBPartnersRequest createSyncBPartnersRequest()
+	private PutBPartnersRequest createSyncBPartnersRequest()
 	{
-		final SyncBPartnersRequest request = new SyncBPartnersRequest();
+		final PutBPartnersRequestBuilder request = PutBPartnersRequest.builder();
 
 		//
 		// BPartner
 		{
-			final SyncBPartner syncBPartner = new SyncBPartner();
-			syncBPartner.setUuid(randomUUID());
-			syncBPartner.setName("test-bp01");
-			syncBPartner.setUsers(Arrays.asList(
+			final String syncBPartnerUUID = randomUUID();
+			final SyncBPartnerBuilder syncBPartner = SyncBPartner.builder()
+					.uuid(syncBPartnerUUID)
+					.name("test-bp01")
+					.users(Arrays.asList(
 					createSyncUser("test", "q", null)
 					, createSyncUser("teo.sarca@gmail.com", "q", null)
 					, createSyncUser("test_en", "q", "en_US")
@@ -145,24 +140,24 @@ public class DummyDataProducer
 			//
 			// Contract
 			{
-				syncBPartner.setSyncContracts(true);
+				syncBPartner.syncContracts(true);
 				
-				final SyncContract syncContract = new SyncContract();
-				syncContract.setUuid(randomUUID());
-				syncContract.setDateFrom(contractDateFrom);
-				syncContract.setDateTo(contractDateTo);
+				final SyncContractBuilder syncContract = SyncContract.builder()
+						.uuid(randomUUID())
+						.dateFrom(contractDateFrom)
+						.dateTo(contractDateTo);
 
-				final SyncProductsRequest syncProductsRequest = getSyncProductsRequest();
+				final PutProductsRequest syncProductsRequest = getSyncProductsRequest();
 				for (final SyncProduct syncProduct : syncProductsRequest.getProducts().subList(0, 6))
 				{
-					final SyncContractLine syncContractLine = new SyncContractLine();
-					syncContractLine.setUuid(randomUUID());
-					syncContractLine.setProduct(syncProduct);
+					final SyncContractLine syncContractLine = SyncContractLine.builder()
+					.uuid(randomUUID())
+					.product(syncProduct).build();
 
-					syncContract.getContractLines().add(syncContractLine);
+					syncContract.contractLine(syncContractLine);
 				}
 
-				syncBPartner.getContracts().add(syncContract);
+				syncBPartner.contract(syncContract.build());
 			}
 			
 			//
@@ -174,33 +169,32 @@ public class DummyDataProducer
 				final Date dateEnd = DateUtils.addDays(dateStart, 14);
 				final Date dateClose = DateUtils.addDays(dateStart, -10);
 				
-				final SyncRfQ syncRfQ = new SyncRfQ();
-				syncRfQ.setUuid(randomUUID());
+				final SyncRfQ.SyncRfQBuilder syncRfQ = SyncRfQ.builder()
+						.uuid(randomUUID())
 				
-				syncRfQ.setDateStart(dateStart);
-				syncRfQ.setDateEnd(dateEnd);
+						.dateStart(dateStart)
+						.dateEnd(dateEnd)
 				
-				syncRfQ.setBpartner_uuid(syncBPartner.getUuid());
+						.bpartner_uuid(syncBPartnerUUID)
 				
-				syncRfQ.setDateClose(dateClose);
+						.dateClose(dateClose);
 
 				final SyncProduct syncProduct = syncProducts.get(rfqNo);
-				syncRfQ.setProduct(syncProduct);
+				syncRfQ.product(syncProduct)
+						.qtyRequested(BigDecimal.valueOf(100))
+						.qtyCUInfo("Kg")
+						.currencyCode("CHF");
 
-				syncRfQ.setQtyRequested(BigDecimal.valueOf(100));
-				syncRfQ.setQtyCUInfo("Kg");
-				syncRfQ.setCurrencyCode("CHF");
-				
-				syncBPartner.getRfqs().add(syncRfQ);
+				syncBPartner.rfq(syncRfQ.build());
 			}
 
-			request.getBpartners().add(syncBPartner);
+			request.bpartner(syncBPartner.build());
 		}
 
-		return request;
+		return request.build();
 	}
 
-	public SyncProductsRequest getSyncProductsRequest()
+	public PutProductsRequest getSyncProductsRequest()
 	{
 		if (_syncProductsRequest == null)
 		{
@@ -209,45 +203,45 @@ public class DummyDataProducer
 		return _syncProductsRequest;
 	}
 
-	private SyncProductsRequest createSyncProductsRequest()
+	private PutProductsRequest createSyncProductsRequest()
 	{
-		final SyncProductsRequest request = new SyncProductsRequest();
+		final PutProductsRequestBuilder request = PutProductsRequest.builder();
 
 		//
 		// Products
 		for (final String productName : productNames)
 		{
 			final SyncProduct syncProduct = createSyncProduct(productName, "10x1 Stk");
-			request.getProducts().add(syncProduct);
+			request.product(syncProduct);
 		}
 
-		return request;
+		return request.build();
 	}
 
 	public SyncUser createSyncUser(final String email, final String password, final String language)
 	{
-		final SyncUser syncUser = new SyncUser();
-		syncUser.setUuid(randomUUID());
-		syncUser.setEmail(email);
-		syncUser.setPassword(password);
-		syncUser.setLanguage(language);
-		return syncUser;
+		return SyncUser.builder()
+				.uuid(randomUUID())
+				.email(email)
+				.password(password)
+				.language(language)
+				.build();
 	}
 
 	public SyncProduct createSyncProduct(final String name, final String packingInfo)
 	{
-		final SyncProduct product = new SyncProduct();
-		product.setUuid(randomUUID());
-		product.setName(name);
-		product.setPackingInfo(packingInfo);
-		product.setShared(true);
+		final SyncProduct.SyncProductBuilder product = SyncProduct.builder()
+				.uuid(randomUUID())
+				.name(name)
+				.packingInfo(packingInfo)
+				.shared(true);
 
 		for (final String language : languages)
 		{
-			product.getNamesTrl().put(language, name + " " + language);
+			product.nameTrl(language, name + " " + language);
 		}
 
-		return product;
+		return product.build();
 	}
 
 	private static final String randomUUID()
