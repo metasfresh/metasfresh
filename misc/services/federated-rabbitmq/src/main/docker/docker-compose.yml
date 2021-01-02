@@ -5,7 +5,7 @@ services:
   metasfresh_rabbitmq:
     # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
     image: rabbitmq:3.8.9-management
-    #container_name: 'metasfresh_rabbitmq' - not having ir right now, because it's not supported by test containers
+    #container_name: 'metasfresh_rabbitmq' - not having it right now, because it's not supported by test containers
     environment:
       # default virtual host
       RABBITMQ_DEFAULT_VHOST: /
@@ -23,7 +23,7 @@ services:
   procurement_webui_rabbitmq:
     # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
     image: rabbitmq:3.8.9-management
-    #container_name: 'procurement_webui_rabbitmq' - not having ir right now, because it's not supported by test containers
+    #container_name: 'procurement_webui_rabbitmq' - not having it right now, because it's not supported by test containers
     environment:
       # default virtual host
       RABBITMQ_DEFAULT_VHOST: /

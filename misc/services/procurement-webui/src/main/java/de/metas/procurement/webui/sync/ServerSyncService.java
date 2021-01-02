@@ -85,13 +85,6 @@ public class ServerSyncService implements IServerSyncService
 
 	private AsyncEventBus eventBus;
 
-	// /**
-	//  * Server sync REST service client interface
-	//  */
-	// @Autowired(required = true)
-	// @Lazy
-	// private IServerSync serverSync;
-
 	private final SenderToMetasfresh senderToMetasfresh;
 
 	private final ProductSupplyRepository productSuppliesRepo;
