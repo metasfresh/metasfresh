@@ -6,8 +6,6 @@ import com.google.gwt.thirdparty.guava.common.collect.ImmutableList;
 import com.google.gwt.thirdparty.guava.common.eventbus.AsyncEventBus;
 import com.google.gwt.thirdparty.guava.common.eventbus.DeadEvent;
 import com.google.gwt.thirdparty.guava.common.eventbus.Subscribe;
-import com.sun.istack.internal.Nullable;
-import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQPriceChangeEvent;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQQtyChangeEvent;
@@ -44,9 +42,9 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -100,7 +98,6 @@ public class ServerSyncService implements IServerSyncService
 	public ServerSyncService(
 			final TaskExecutor taskExecutor,
 			final SenderToMetasfresh senderToMetasfresh,
-			final IAgentSync agentSync,
 			final ProductSupplyRepository productSuppliesRepo,
 			final IProductSuppliesService productSuppliesService,
 			final RfqRepository rfqRepo,
@@ -372,13 +369,13 @@ public class ServerSyncService implements IServerSyncService
 
 	public static final class SyncAllRequest
 	{
-		public static final SyncAllRequest of()
+		public static SyncAllRequest of()
 		{
 			final Runnable callback = null;
 			return new SyncAllRequest(callback);
 		}
 
-		public static final SyncAllRequest of(Runnable callback)
+		public static SyncAllRequest of(final Runnable callback)
 		{
 			return new SyncAllRequest(callback);
 		}
@@ -569,7 +566,7 @@ public class ServerSyncService implements IServerSyncService
 		/**
 		 * Creates a new local DB record for the given <code>abstractEntity</code>.
 		 */
-		private SyncConfirm createAndStoreSyncConfirmRecord(AbstractSyncConfirmAwareEntity abstractEntity)
+		private SyncConfirm createAndStoreSyncConfirmRecord(final AbstractSyncConfirmAwareEntity abstractEntity)
 		{
 			final SyncConfirm syncConfirmRecord = new SyncConfirm();
 			syncConfirmRecord.setEntryType(abstractEntity.getClass().getSimpleName());
@@ -621,5 +618,4 @@ public class ServerSyncService implements IServerSyncService
 			}
 		}
 	}
-
 }
