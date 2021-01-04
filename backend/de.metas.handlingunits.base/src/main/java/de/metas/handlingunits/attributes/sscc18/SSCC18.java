@@ -22,50 +22,52 @@ package de.metas.handlingunits.attributes.sscc18;
  * #L%
  */
 
-
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.util.lang.ObjectUtils;
 
 /**
  * Immutable POJO for Serial Shipping Container Code (SSCC-18)
- *
- * @See <a href="http://mdn.morovia.com/kb/Serial-Shipping-Container-Code-SSCC18-10601.html">SSCC18</a>
+ * <p>
+ * See <a href="http://mdn.morovia.com/kb/Serial-Shipping-Container-Code-SSCC18-10601.html">SSCC18</a>
  */
+@Value
 public class SSCC18
 {
 
 	/**
 	 * Extended digit and assigned by the company
 	 */
-	private final int extensionDigit;
+	int extensionDigit;
 
 	/**
 	 * The manufacturer code (or company code) is assigned by GS1 (formerly known as UCC/EAN organization)
 	 */
-	private final String manufacturerCode;
+	String manufacturerCode;
 
 	/**
 	 * Identifies this merchandise container and assigned by the manufacturer.
-	 *
+	 * <p>
 	 * The manufacturer should not reuse the serial number within a certain time frame, for example, 1 year.
-	 *
+	 * <p>
 	 * The company code normally comprises 7 or 8 digits. Therefore, the serial number can be 9 or 8 digits.
 	 */
-	private final String serialNumber;
+	String serialNumber;
 
 	/**
 	 * SSCC-18 check digit to ensure that the data is correctly entered. It is part of the data encoded into the barcode. A receiving system is required to validate this check digit, so you should get
 	 * it correct at the first place.
 	 */
-	private final int checkDigit;
+	int checkDigit;
 
-	public SSCC18(final int extensionDigit
-			, final String manufacturerCode
-			, final String serialNumber
-			, final int checkDigit)
+	public SSCC18(final int extensionDigit,
+			@NonNull final String manufacturerCode,
+			@NonNull final String serialNumber,
+			final int checkDigit)
 	{
 		this.extensionDigit = extensionDigit;
-		this.manufacturerCode = manufacturerCode;
-		this.serialNumber = serialNumber;
+		this.manufacturerCode = manufacturerCode.trim();
+		this.serialNumber = serialNumber.trim();
 		this.checkDigit = checkDigit;
 	}
 
@@ -93,5 +95,16 @@ public class SSCC18
 	public int getCheckDigit()
 	{
 		return checkDigit;
+	}
+
+	/**
+	 * @return SSCC18 string representation
+	 */
+	public String asString()
+	{
+		return getExtensionDigit()
+				+ getManufacturerCode()
+				+ getSerialNumber()
+				+ getCheckDigit();
 	}
 }
