@@ -176,9 +176,10 @@ public class DeliveryDayBL implements IDeliveryDayBL
 		return deliveryDayAlloc;
 	}
 
-	private PlainDeliveryDayQueryParams createDeliveryDayQueryParams(final IDeliveryDayAllocable deliveryDayAllocable)
+	private PlainDeliveryDayQueryParams createDeliveryDayQueryParams(@NonNull final IDeliveryDayAllocable deliveryDayAllocable)
 	{
 		final PlainDeliveryDayQueryParams params = new PlainDeliveryDayQueryParams();
+		params.setBPartnerId(deliveryDayAllocable.getBPartnerId());
 		params.setBPartnerLocationId(deliveryDayAllocable.getBPartnerLocationId());
 		params.setDeliveryDate(deliveryDayAllocable.getDeliveryDate());
 		params.setToBeFetched(deliveryDayAllocable.isToBeFetched());
@@ -259,6 +260,7 @@ public class DeliveryDayBL implements IDeliveryDayBL
 		//
 		// Create Delivery Day Query Parameters
 		final PlainDeliveryDayQueryParams deliveryDayQueryParams = new PlainDeliveryDayQueryParams();
+		deliveryDayQueryParams.setBPartnerId(bpartnerLocationId.getBpartnerId());
 		deliveryDayQueryParams.setBPartnerLocationId(bpartnerLocationId);
 		deliveryDayQueryParams.setDeliveryDate(datePromised);
 		deliveryDayQueryParams.setToBeFetched(soTrx.isPurchase());

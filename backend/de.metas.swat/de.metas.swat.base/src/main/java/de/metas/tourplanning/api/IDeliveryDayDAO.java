@@ -48,7 +48,6 @@ public interface IDeliveryDayDAO extends ISingletonService
 	/**
 	 * Gets the closest delivery day by partner, location, before given date/time.
 	 * 
-	 * @param context
 	 * @param params delivery day query parameters
 	 * @return the most suitable delivery day or null
 	 */
@@ -58,16 +57,12 @@ public interface IDeliveryDayDAO extends ISingletonService
 	 * Retrieve all (active) delivery days for given date and tour.
 	 * 
 	 * @param deliveryDate the search is done with this value truncated to "day"
-	 * @param tour
 	 * @return all {@link I_M_DeliveryDay} records for given day date
 	 */
 	List<I_M_DeliveryDay> retrieveDeliveryDays(I_M_Tour tour, Timestamp deliveryDate);
 
 	/**
 	 * Retrieve all (active or not, processed or not) delivery days for given tour instance
-	 * 
-	 * @param tourInstance
-	 * @return
 	 */
 	List<I_M_DeliveryDay> retrieveDeliveryDaysForTourInstance(I_M_Tour_Instance tourInstance);
 

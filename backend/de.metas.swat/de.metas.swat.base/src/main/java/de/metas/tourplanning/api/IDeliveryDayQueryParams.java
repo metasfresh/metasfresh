@@ -3,8 +3,13 @@ package de.metas.tourplanning.api;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
+import lombok.NonNull;
+import org.adempiere.util.lang.IContextAware;
+
+import javax.annotation.Nullable;
 
 /**
  * POJO used for grouping parameters when querying for {@link I_M_DeliveryDay} using {@link IDeliveryDayDAO}.
@@ -16,6 +21,13 @@ public interface IDeliveryDayQueryParams
 {
 	ZonedDateTime getDeliveryDate();
 
+	/**
+	 * Ignored if {@link #getBPartnerLocationId()} returns not-null.
+	 */
+	@NonNull
+	BPartnerId getBPartnerId();
+
+	@Nullable
 	BPartnerLocationId getBPartnerLocationId();
 
 	/**
@@ -32,17 +44,13 @@ public interface IDeliveryDayQueryParams
 
 	/**
 	 * The date+time when we calculate (e.g. the date+time when the order was created)
-	 * 
-	 * @return
 	 */
 	ZonedDateTime getCalculationTime();
 
 	/**
 	 * If the returned value is not <code>null</code>, then the system will retrieve the chronologically <b>first</b> delivery date that is after the returned timestamp.<br>
 	 * If the value is <code>null</code>, then it will return the chronologically <b>last</b> delivery date prior to {@link #getDeliveryDate()}.
-	 * Also see {@link IDeliveryDayDAO#retrieveDeliveryDay(org.adempiere.model.IContextAware, IDeliveryDayQueryParams)}.
-	 * 
-	 * @return
+	 * Also see {@link IDeliveryDayDAO#retrieveDeliveryDay(IContextAware, IDeliveryDayQueryParams)}
 	 */
 	LocalDate getPreparationDay();
 

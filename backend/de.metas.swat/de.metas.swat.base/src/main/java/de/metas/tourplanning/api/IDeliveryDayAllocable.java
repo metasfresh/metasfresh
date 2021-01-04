@@ -2,6 +2,7 @@ package de.metas.tourplanning.api;
 
 import java.time.ZonedDateTime;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 
@@ -22,6 +23,8 @@ public interface IDeliveryDayAllocable
 	int getAD_Org_ID();
 
 	ZonedDateTime getDeliveryDate();
+
+	BPartnerId getBPartnerId();
 
 	BPartnerLocationId getBPartnerLocationId();
 

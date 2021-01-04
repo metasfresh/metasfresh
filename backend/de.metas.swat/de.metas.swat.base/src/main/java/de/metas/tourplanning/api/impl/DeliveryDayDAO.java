@@ -54,24 +54,25 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-/**
- * @author cg
- *
- */
 public class DeliveryDayDAO implements IDeliveryDayDAO
 {
 	/**
 	 * Creates {@link I_M_DeliveryDay} filter which will match delivery days for given parameters.
-	 *
-	 * @param params
-	 * @return filter
 	 */
-	private final IQueryFilter<I_M_DeliveryDay> createDeliveryDayMatcher(@NonNull final IDeliveryDayQueryParams params)
+	private IQueryFilter<I_M_DeliveryDay> createDeliveryDayMatcher(@NonNull final IDeliveryDayQueryParams params)
 	{
-		Check.assumeNotNull(params, "params not null");
-
-		final BPartnerLocationId partnerLocationId = params.getBPartnerLocationId() == null ? null : params.getBPartnerLocationId();
-		final BPartnerId partnerId = partnerLocationId == null ? null : partnerLocationId.getBpartnerId();
+		final BPartnerId partnerId;
+		final BPartnerLocationId partnerLocationId;
+		if (params.getBPartnerLocationId() == null)
+		{
+			partnerId = params.getBPartnerId();
+			partnerLocationId = params.getBPartnerLocationId();
+		}
+		else
+		{
+			partnerId = params.getBPartnerLocationId().getBpartnerId();
+			partnerLocationId = params.getBPartnerLocationId();
+		}
 
 		final ICompositeQueryFilter<I_M_DeliveryDay> filter = Services.get(IQueryBL.class)
 				.createCompositeQueryFilter(I_M_DeliveryDay.class)

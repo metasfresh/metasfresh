@@ -1,14 +1,15 @@
 package de.metas.tourplanning.api.impl;
 
-import java.time.ZonedDateTime;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+
+import java.time.ZonedDateTime;
 
 /**
  * Wraps a {@link I_M_ShipmentSchedule} and behave like {@link IDeliveryDayAllocable}
@@ -25,9 +26,8 @@ import de.metas.util.Services;
 
 	private final I_M_ShipmentSchedule sched;
 
-	public ShipmentScheduleDeliveryDayAllocable(final I_M_ShipmentSchedule sched)
+	public ShipmentScheduleDeliveryDayAllocable(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		Check.assumeNotNull(sched, "sched not null");
 		this.sched = sched;
 	}
 
@@ -52,6 +52,12 @@ import de.metas.util.Services;
 	public ZonedDateTime getDeliveryDate()
 	{
 		return shipmentScheduleDeliveryDayBL.getDeliveryDateCurrent(sched);
+	}
+
+	@Override
+	public BPartnerId getBPartnerId()
+	{
+		return shipmentScheduleEffectiveBL.getBPartnerId(sched);
 	}
 
 	@Override

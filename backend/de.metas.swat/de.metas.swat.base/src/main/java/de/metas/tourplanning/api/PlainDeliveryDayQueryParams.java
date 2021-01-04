@@ -3,6 +3,7 @@ package de.metas.tourplanning.api;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.util.Check;
 
@@ -16,6 +17,7 @@ import javax.annotation.Nullable;
 public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParams
 {
 	private ZonedDateTime deliveryDate = null;
+	private BPartnerId bpartnerId = null;
 	private BPartnerLocationId bpartnerLocationId = null;
 	private Boolean toBeFetched = null;
 	private Boolean processed = null;
@@ -64,6 +66,18 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	}
 
 	@Override
+	public BPartnerId getBPartnerId()
+	{
+		return bpartnerId;
+	}
+
+	public void setBPartnerId(final BPartnerId bpartnerId)
+	{
+		this.bpartnerId = bpartnerId;
+	}
+
+
+	@Override
 	public boolean isToBeFetched()
 	{
 		Check.assumeNotNull(toBeFetched, "toBeFetched set");
@@ -71,7 +85,6 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	}
 
 	/**
-	 * @param toBeFetched
 	 * @see #isToBeFetched()
 	 */
 	public void setToBeFetched(final boolean toBeFetched)

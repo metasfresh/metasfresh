@@ -267,16 +267,18 @@ public abstract class TourPlanningTestBase
 	}
 
 	/**
-	 * sets the system time to a static value. Note that this is reset after each test by {@link #resetSystemTime()}.
-	 *
-	 * @param currentTime
+	 * sets the system time to a static value. Note that this is reset after each test by {@link SystemTime#resetTimeSource()} .
 	 */
 	protected void setSystemTime(final String currentTime)
 	{
 		SystemTime.setTimeSource(() -> toDateTimeTimestamp(currentTime).getTime());
 	}
 
-	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours, final int bPartnerId, final int bpLocationId)
+	protected I_M_DeliveryDay createDeliveryDay(
+			final String deliveryDateTimeStr,
+			final int bufferHours,
+			final int bPartnerId,
+			final int bpLocationId)
 	{
 		final I_M_DeliveryDay deliveryDay =newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setIsActive(true);
