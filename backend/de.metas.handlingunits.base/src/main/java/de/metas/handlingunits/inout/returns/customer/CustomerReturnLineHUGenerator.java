@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inout.returns.customer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
@@ -64,9 +65,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnableAdapter;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,12 +80,11 @@ public class CustomerReturnLineHUGenerator
 {
 
 	/**
-	 * 
 	 * @param context: the context to be used when creating the HUs. This context will also be used for the {@link IHUContext} the HU processing will have place with. <br>
-	 *            If its {@code trxName} is not {@link ITrx#TRXNAME_ThreadInherited}, then this method will create a new context that only has the given context's {@link IContextAware#getCtx()} but not trxName.<br>
-	 *            Because the {@link #generate()} method depends on the {@code trxName} being thread-inherited.
+	 *                 If its {@code trxName} is not {@link ITrx#TRXNAME_ThreadInherited}, then this method will create a new context that only has the given context's {@link IContextAware#getCtx()} but not trxName.<br>
+	 *                 Because the {@link #generate()} method depends on the {@code trxName} being thread-inherited.
 	 */
-	public static final CustomerReturnLineHUGenerator newInstance(final IContextAware context)
+	public static CustomerReturnLineHUGenerator newInstance(final IContextAware context)
 	{
 		final IContextAware contextToUse;
 		if (ITrx.TRXNAME_ThreadInherited.equals(context.getTrxName()))
@@ -99,6 +99,13 @@ public class CustomerReturnLineHUGenerator
 				.setContext(contextToUse);
 	}
 
+	public static List<I_M_HU> generateForReturnLine(@NonNull final I_M_InOutLine returnLine)
+	{
+		return newInstance(PlainContextAware.newWithThreadInheritedTrx())
+				.addM_InOutLine(returnLine)
+				.generate();
+	}
+
 	// services
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -111,7 +118,7 @@ public class CustomerReturnLineHUGenerator
 	private final List<I_M_InOutLine> _inOutLines = new ArrayList<>();
 	private final Map<Integer, IProductStorage> _inOutLine2productStorage = new HashMap<>();
 	private Quantity _qtyToAllocateTarget = null;
-	private List<IHUTrxListener> _customerListeners = new ArrayList<>(); //default value, to be set by de.metas.handlingunits.inout.returns.customer.CustomerReturnLineHUGenerator.setIHUTrxListeners
+	private ImmutableList<IHUTrxListener> _customerListeners = ImmutableList.of(); //default value, to be set by de.metas.handlingunits.inout.returns.customer.CustomerReturnLineHUGenerator.setIHUTrxListeners
 
 	//
 	// Status
@@ -124,23 +131,23 @@ public class CustomerReturnLineHUGenerator
 	{
 	}
 
-	private final void assertConfigurable()
+	private void assertConfigurable()
 	{
 		Check.assume(_configurable, "{} is still configurable", this);
 	}
 
-	private final void markNotConfigurable()
+	private void markNotConfigurable()
 	{
 		_configurable = false;
 	}
 
-	private final IContextAware getContextInitial()
+	private IContextAware getContextInitial()
 	{
 		Check.assumeNotNull(_contextInitial, "_contextInitial not null");
 		return _contextInitial;
 	}
 
-	private final CustomerReturnLineHUGenerator setContext(final IContextAware context)
+	private CustomerReturnLineHUGenerator setContext(final IContextAware context)
 	{
 		// needs to be threadInherited because we run in our own little TrxRunnable and everything created from the request shall be committed when we commit that runnable's local transaction.
 		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(context.getTrxName()),
@@ -151,7 +158,7 @@ public class CustomerReturnLineHUGenerator
 		return this;
 	}
 
-	private final Quantity getQtyToAllocateTarget()
+	private Quantity getQtyToAllocateTarget()
 	{
 		if (_qtyToAllocateTarget == null || _qtyToAllocateTarget.signum() <= 0)
 		{
@@ -160,13 +167,13 @@ public class CustomerReturnLineHUGenerator
 		return _qtyToAllocateTarget;
 	}
 
-	public CustomerReturnLineHUGenerator setQtyToAllocateTarget(final Quantity qtyToAllocateTarget)
+	private void setQtyToAllocateTarget(final Quantity qtyToAllocateTarget)
 	{
 		_qtyToAllocateTarget = qtyToAllocateTarget;
-		return this;
 	}
 
-	private final I_M_InOutLine getSingleInOutLineOrNull()
+	@Nullable
+	private I_M_InOutLine getSingleInOutLineOrNull()
 	{
 		final List<I_M_InOutLine> inOutLines = getInOutLines();
 		if (inOutLines.size() == 1)
@@ -179,7 +186,7 @@ public class CustomerReturnLineHUGenerator
 		}
 	}
 
-	private final List<I_M_InOutLine> getInOutLines()
+	private List<I_M_InOutLine> getInOutLines()
 	{
 		return _inOutLines;
 	}
@@ -202,13 +209,6 @@ public class CustomerReturnLineHUGenerator
 		final IDocumentLUTUConfigurationManager lutuConfigurationManager = getLUTUConfigurationManager();
 		final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.getCreateLUTUConfiguration();
 
-		//
-		// No configuration => user cancelled => don't open editor
-		if (lutuConfigurationEffective == null)
-		{
-			return null;
-		}
-
 		InterfaceWrapperHelper.save(lutuConfigurationEffective, ITrx.TRXNAME_None);
 		inOutLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
 
@@ -225,34 +225,6 @@ public class CustomerReturnLineHUGenerator
 		return this;
 	}
 
-	public CustomerReturnLineHUGenerator addM_InOutLines(final Collection<? extends I_M_InOutLine> inOutLines)
-	{
-		Check.assumeNotEmpty(inOutLines, "receiptSchedules not empty");
-		for (final I_M_InOutLine inOutLine : inOutLines)
-		{
-			addM_InOutLine(inOutLine);
-		}
-
-		return this;
-	}
-
-	/**
-	 * This method is important in getting precomputed HUs
-	 * 
-	 */
-	// private IHUAllocations getHUAllocations(final I_M_InOutLine inOutLine)
-	// {
-	// final int inOutLineId = inOutLine.getM_InOutLine_ID();
-	// IHUAllocations huAllocations = _inOutLine2huAllocations.get(inOutLineId);
-	// if (huAllocations == null)
-	// {
-	// final IProductStorage productStorage = getProductStorage(inOutLine);
-	// huAllocations = new CustomerReturnLineHUAllocations(inOutLine, productStorage);
-	// _inOutLine2huAllocations.put(inOutLineId, huAllocations);
-	// }
-	// return huAllocations;
-	// }
-
 	private IProductStorage getProductStorage(final I_M_InOutLine inOutLine)
 	{
 		final int inOutLineId = inOutLine.getM_InOutLine_ID();
@@ -267,14 +239,6 @@ public class CustomerReturnLineHUGenerator
 			_inOutLine2productStorage.put(inOutLineId, productStorage);
 		}
 		return productStorage;
-	}
-
-	public CustomerReturnLineHUGenerator setProductStorage(final I_M_InOutLine inOutLine, final IProductStorage productStorage)
-	{
-		assertConfigurable();
-		final int inOutLineId = inOutLine.getM_InOutLine_ID();
-		_inOutLine2productStorage.put(inOutLineId, productStorage);
-		return this;
 	}
 
 	private ProductId getSingleProductId()
@@ -309,16 +273,11 @@ public class CustomerReturnLineHUGenerator
 		Check.assume(!qtyCUsTotal.isInfinite(), "QtyToAllocate(target) shall not be infinite");
 
 		final IAllocationRequest request = createAllocationRequest(qtyCUsTotal);
-		final List<I_M_HU> hus = generateLUTUHandlingUnitsForQtyToAllocate(request);
-		// final List<I_M_HU> hus = generateAllPlanningHUs_InChunks();
-		return hus;
+		return generateLUTUHandlingUnitsForQtyToAllocate(request);
 	}
 
 	/**
 	 * Runs within a {@link TrxRunnable} with its own local transaction and commits on success.
-	 * 
-	 * @param request
-	 * @return
 	 */
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate(final IAllocationRequest request)
 	{
@@ -393,9 +352,7 @@ public class CustomerReturnLineHUGenerator
 
 		//
 		// Get the newly created HUs
-		final List<I_M_HU> handlingUnits = destination.getCreatedHUs();
-
-		return handlingUnits;
+		return destination.getCreatedHUs();
 	}
 
 	private IAllocationSource createAllocationSource()
@@ -414,7 +371,7 @@ public class CustomerReturnLineHUGenerator
 		return allocationSources;
 	}
 
-	private final IAllocationRequest createAllocationRequest(final Quantity qty)
+	private IAllocationRequest createAllocationRequest(final Quantity qty)
 	{
 		final IContextAware contextProvider = getContextInitial();
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing(contextProvider);
@@ -427,16 +384,9 @@ public class CustomerReturnLineHUGenerator
 		// * we really want to allocate unload this quantity
 		// * on loading side, HUItemStorage is considering our enforced capacity even if we do force allocation
 		final boolean forceQtyAllocation = true;
-		
+
 		//
 		// Create Allocation Request
-		IAllocationRequest request = AllocationUtils.createQtyRequest(
-				huContext,
-				getSingleProductId(),
-				qty,
-				SystemTime.asZonedDateTime(),
-				inOutLine, // referencedModel,
-				forceQtyAllocation);
 
 		// TODO: See about the initial attributes!!!
 		//
@@ -444,10 +394,16 @@ public class CustomerReturnLineHUGenerator
 		// final List<I_M_ReceiptSchedule> receiptSchedules = getReceiptSchedules();
 		// request = huReceiptScheduleBL.setInitialAttributeValueDefaults(request, receiptSchedules);
 
-		return request;
+		return AllocationUtils.createQtyRequest(
+				huContext,
+				getSingleProductId(),
+				qty,
+				SystemTime.asZonedDateTime(),
+				inOutLine, // referencedModel,
+				forceQtyAllocation);
 	}
 
-	public IDocumentLUTUConfigurationManager getLUTUConfigurationManager()
+	private IDocumentLUTUConfigurationManager getLUTUConfigurationManager()
 	{
 		if (_lutuConfigurationManager == null)
 		{
@@ -459,21 +415,9 @@ public class CustomerReturnLineHUGenerator
 	}
 
 	/**
-	 * Sets the LU/TU configuration to be used when generating HUs.
-	 */
-	public CustomerReturnLineHUGenerator setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
-	{
-		assertConfigurable();
-
-		Check.assumeNotNull(lutuConfiguration, "Parameter lutuConfiguration is not null");
-		_lutuConfiguration = lutuConfiguration;
-		return this;
-	}
-
-	/**
 	 * @return the LU/TU configuration to be used when generating HUs.
 	 */
-	public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
+	private I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
 	{
 		if (_lutuConfiguration != null)
 		{
@@ -487,7 +431,7 @@ public class CustomerReturnLineHUGenerator
 		return _lutuConfiguration;
 	}
 
-	public ILUTUProducerAllocationDestination getLUTUProducerAllocationDestination()
+	private ILUTUProducerAllocationDestination getLUTUProducerAllocationDestination()
 	{
 		if (_lutuProducer != null)
 		{
@@ -501,12 +445,11 @@ public class CustomerReturnLineHUGenerator
 		return _lutuProducer;
 	}
 
-	public CustomerReturnLineHUGenerator setIHUTrxListeners(@NonNull final List<IHUTrxListener> customerListeners)
+	CustomerReturnLineHUGenerator setIHUTrxListeners(@NonNull final List<IHUTrxListener> customerListeners)
 	{
 		assertConfigurable();
 
-		this._customerListeners = customerListeners;
+		this._customerListeners = ImmutableList.copyOf(customerListeners);
 		return this;
 	}
-
 }

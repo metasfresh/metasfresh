@@ -22,11 +22,11 @@
 
 package de.metas.servicerepair.customerreturns.process;
 
-import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewFactory;
+import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
 
 public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
+	private final RepairCustomerReturnsService repairCustomerReturnsService = SpringContextHolder.instance.getBean(RepairCustomerReturnsService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -64,13 +64,12 @@ public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IP
 		final HUEditorRow row = getSingleSelectedRow();
 		final HUsToReturnViewContext viewContext = getHUsToReturnViewContext();
 
-		returnsServiceFacade.cloneHUAndCreateCustomerReturnLineRequest(
-				ReturnsServiceFacade.CloneHUAndCreateCustomerReturnLineRequest.builder()
-						.customerReturnId(viewContext.getCustomerReturnsId())
-						.productId(row.getProductId())
-						.qtyReturned(row.getQtyCUAsQuantity())
-						.cloneFromHuId(row.getHuId())
-						.build());
+		repairCustomerReturnsService.prepareCloneHUAndCreateCustomerReturnLine()
+				.customerReturnId(viewContext.getCustomerReturnsId())
+				.productId(row.getProductId())
+				.qtyReturned(row.getQtyCUAsQuantity())
+				.cloneFromHuId(row.getHuId())
+				.build();
 
 		getResult().setCloseWebuiModalView(true);
 

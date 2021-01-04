@@ -22,45 +22,25 @@
 
 package de.metas.servicerepair.customerreturns.process;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewFactory;
-import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOut;
 
-public class CustomerReturns_OpenHUToReturn extends JavaProcess implements IProcessPrecondition
+public class CustomerReturns_OpenHUToReturn extends CustomerReturnsBasedProcess implements IProcessPrecondition
 {
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (!context.isSingleSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
-		final I_M_InOut customerReturns = inOutDAO.getById(InOutId.ofRepoId(context.getSingleSelectedRecordId()));
-		final DocStatus docStatus = DocStatus.ofCode(customerReturns.getDocStatus());
-		if (!docStatus.isDrafted())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("document status should be Drafted");
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		return checkSingleDraftedServiceRepairReturns(context);
 	}
 
 	@Override
@@ -73,13 +53,8 @@ public class CustomerReturns_OpenHUToReturn extends JavaProcess implements IProc
 
 	private ProcessExecutionResult.WebuiViewToOpen openServiceHUEditorView()
 	{
-		final InOutId customerReturnsId = InOutId.ofRepoId(getRecord_ID());
-
-		final IView view = viewsRepo.createView(CreateViewRequest.builder(HUsToReturnViewFactory.Window_ID)
-				.setParameter(HUsToReturnViewFactory.PARAM_HUsToReturnViewContext, HUsToReturnViewContext.builder()
-						.customerReturnsId(customerReturnsId)
-						.build())
-				.build());
+		final InOutId customerReturnsId = getCustomerReturnId();
+		final IView view = viewsRepo.createView(HUsToReturnViewFactory.createViewRequest(customerReturnsId));
 
 		return ProcessExecutionResult.WebuiViewToOpen.builder()
 				.viewId(view.getViewId().getViewId())

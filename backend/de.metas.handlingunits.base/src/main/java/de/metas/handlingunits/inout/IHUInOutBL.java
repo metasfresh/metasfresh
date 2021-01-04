@@ -6,7 +6,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.inout.InOutId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
@@ -36,6 +38,12 @@ import java.util.List;
 
 public interface IHUInOutBL extends ISingletonService
 {
+	I_M_InOut getById(InOutId inoutId);
+
+	<T extends I_M_InOut> T getById(InOutId inoutId, @NonNull Class<T> type);
+
+	<T extends org.compiere.model.I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
+
 	/**
 	 * Create a packing material line. i.e. updates a new inout line and sets all informations from <code>candidate</code>. At the end, <code>inoutLine</code> will be saved
 	 *

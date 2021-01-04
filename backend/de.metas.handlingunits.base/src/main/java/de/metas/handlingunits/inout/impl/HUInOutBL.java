@@ -46,6 +46,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -67,11 +68,30 @@ public class HUInOutBL implements IHUInOutBL
 {
 	private static final Logger logger = LogManager.getLogger(HUInOutBL.class);
 
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocumentLUTUConfigurationHandler<I_M_InOutLine> lutuConfigurationHandler = CustomerReturnLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_InOutLine>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
+
+	@Override
+	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	{
+		return inOutDAO.getById(inoutId);
+	}
+
+	@Override
+	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> type)
+	{
+		return inOutDAO.getById(inoutId, type);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_M_InOutLine> List<T> retrieveLines(final I_M_InOut inOut, final Class<T> inoutLineClass)
+	{
+		return inOutDAO.retrieveLines(inOut, inoutLineClass);
+	}
 
 	@Override
 	public void updatePackingMaterialInOutLine(
@@ -280,7 +300,6 @@ public class HUInOutBL implements IHUInOutBL
 				.adOrgId(inOut.getAD_Org_ID());
 	}
 
-
 	@Override
 	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
 	{
@@ -311,8 +330,6 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public void copyAssignmentsToReversal(@NonNull final org.compiere.model.I_M_InOut inOutRecord)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 		final List<I_M_InOutLine> lineRecords = inOutDAO.retrieveLines(inOutRecord, I_M_InOutLine.class);
 		for (final I_M_InOutLine lineRecord : lineRecords)
 		{

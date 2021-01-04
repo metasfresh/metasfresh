@@ -24,8 +24,6 @@ package de.metas.handlingunits.inout.returns;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate;
@@ -36,16 +34,11 @@ import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsInOut
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -62,8 +55,6 @@ import java.util.List;
 public class ReturnsServiceFacade
 {
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
 
 	public ReturnsServiceFacade(
@@ -95,9 +86,8 @@ public class ReturnsServiceFacade
 	public void createHUsForCustomerReturn(@NonNull final I_M_InOut customerReturn)
 	{
 		Check.assume(isCustomerReturn(customerReturn), "Inout {} is not a customer return ", customerReturn);
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(customerReturn);
 
-		final List<I_M_InOutLine> customerReturnLines = inOutDAO.retrieveLines(customerReturn, I_M_InOutLine.class);
+		final List<I_M_InOutLine> customerReturnLines = huInOutBL.retrieveLines(customerReturn, I_M_InOutLine.class);
 		if (customerReturnLines.isEmpty())
 		{
 			throw new AdempiereException("No customer return lines found");
@@ -105,14 +95,9 @@ public class ReturnsServiceFacade
 
 		final ArrayListMultimap<InOutLineId, I_M_HU> husByLineId = ArrayListMultimap.create();
 
-		// final List<I_M_HU> hus = new ArrayList<>();
 		for (final I_M_InOutLine customerReturnLine : customerReturnLines)
 		{
-			final CustomerReturnLineHUGenerator huGenerator = CustomerReturnLineHUGenerator.newInstance(ctxAware);
-			huGenerator.addM_InOutLine(customerReturnLine);
-			final List<I_M_HU> currentHUs = huGenerator.generate();
-			//hus.addAll(currentHUs);
-
+			final List<I_M_HU> currentHUs = CustomerReturnLineHUGenerator.generateForReturnLine(customerReturnLine);
 			husByLineId.putAll(InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()), currentHUs);
 		}
 
@@ -121,8 +106,13 @@ public class ReturnsServiceFacade
 				.husByLineId(husByLineId)
 				.build()
 				.create();
+	}
 
-		//return hus;
+	public List<I_M_HU> createHUsForCustomerReturnLine(@NonNull final I_M_InOutLine customerReturnLine)
+	{
+		final List<I_M_HU> hus = CustomerReturnLineHUGenerator.generateForReturnLine(customerReturnLine);
+		assignHandlingUnitsToHeaderAndLine(customerReturnLine, hus);
+		return hus;
 	}
 
 	public void createVendorReturnInOutForHUs(final List<I_M_HU> hus, final Timestamp movementDate)
@@ -138,31 +128,33 @@ public class ReturnsServiceFacade
 		return customerReturnsWithoutHUsProducer.create(candidates);
 	}
 
-	@Value
-	@Builder
-	public static class CloneHUAndCreateCustomerReturnLineRequest
+	public I_M_InOutLine createCustomerReturnLine(@NonNull final CreateCustomerReturnLineReq request)
 	{
-		@NonNull InOutId customerReturnId;
-		@NonNull ProductId productId;
-		@NonNull HuId cloneFromHuId;
-		@NonNull Quantity qtyReturned;
+		return customerReturnsWithoutHUsProducer.createReturnLine(request);
 	}
 
-	public void cloneHUAndCreateCustomerReturnLineRequest(@NonNull final CloneHUAndCreateCustomerReturnLineRequest request)
+	public void assignHandlingUnitToHeaderAndLine(
+			@NonNull final I_M_InOutLine customerReturnLine,
+			@NonNull final I_M_HU hu)
 	{
-		final I_M_HU clonedPlaningHU = handlingUnitsBL.copyAsPlannedHU(request.getCloneFromHuId());
+		final ImmutableList<I_M_HU> hus = ImmutableList.of(hu);
+		assignHandlingUnitsToHeaderAndLine(customerReturnLine, hus);
 
-		final I_M_InOutLine customerReturnLine = customerReturnsWithoutHUsProducer.createReturnLine(
-				CreateCustomerReturnLineReq.builder()
-						.headerId(request.getCustomerReturnId())
-						.productId(request.getProductId())
-						.qtyReturned(request.getQtyReturned())
-						.build());
+	}
 
-		final I_M_InOut customerReturn = inOutDAO.getById(request.getCustomerReturnId(), I_M_InOut.class);
+	public void assignHandlingUnitsToHeaderAndLine(
+			@NonNull final I_M_InOutLine customerReturnLine,
+			@NonNull final List<I_M_HU> hus)
+	{
+		if (hus.isEmpty())
+		{
+			return;
+		}
 
-		// Assign the cloned HU
-		huInOutBL.addAssignedHandlingUnits(customerReturn, ImmutableList.of(clonedPlaningHU));
-		huInOutBL.setAssignedHandlingUnits(customerReturnLine, ImmutableList.of(clonedPlaningHU));
+		final InOutId customerReturnId = InOutId.ofRepoId(customerReturnLine.getM_InOut_ID());
+		final I_M_InOut customerReturn = huInOutBL.getById(customerReturnId, I_M_InOut.class);
+
+		huInOutBL.addAssignedHandlingUnits(customerReturn, hus);
+		huInOutBL.setAssignedHandlingUnits(customerReturnLine, hus);
 	}
 }

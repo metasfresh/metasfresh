@@ -23,10 +23,12 @@
 package de.metas.servicerepair.customerreturns;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.inout.InOutId;
 import de.metas.servicerepair.customerreturns.process.HUsToReturn_SelectHU;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
+import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -48,6 +50,15 @@ public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 	protected HUsToReturnViewFactory()
 	{
 		super(ImmutableList.of());
+	}
+
+	public static CreateViewRequest createViewRequest(@NonNull final InOutId customerReturnsId)
+	{
+		return CreateViewRequest.builder(Window_ID)
+				.setParameter(PARAM_HUsToReturnViewContext, HUsToReturnViewContext.builder()
+						.customerReturnsId(customerReturnsId)
+						.build())
+				.build();
 	}
 
 	@Override
