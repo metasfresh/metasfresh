@@ -8,6 +8,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -147,7 +148,8 @@ public final class DateUtils
 		return "KW" + df.format(date);
 	}
 
-	private static final Locale getLocale()
+	@NonNull
+	private static Locale getLocale()
 	{
 		// UI currentUI = UI.getCurrent();
 		// Locale locale = (currentUI == null ? null : currentUI.getLocale());
@@ -156,7 +158,7 @@ public final class DateUtils
 		// 	locale = Locale.getDefault();
 		// }
 		// return locale;
-		return null;
+		return Locale.getDefault();
 	}
 
 	/**

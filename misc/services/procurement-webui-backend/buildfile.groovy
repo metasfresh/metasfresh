@@ -2,7 +2,6 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
@@ -45,17 +44,21 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		final String mavenUpdatePropertyParam='-Dproperty=metasfresh.version -DallowDowngrade=true'
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
+		// update the metasfresh-common.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
+		final String mavenUpdateCommonPropertyParam = '-Dproperty=metasfresh-common.version -DallowDowngrade=true'
+		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdateCommonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
+
 		// set the artifact version of everything below the webui's pom.xml
 		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
 
 		// do the actual building and deployment
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 		currentBuild.description="""${currentBuild.description}<p/>
 		artifacts (if not yet cleaned up)
 			<ul>
-<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/procurement/procurement-webui-backend/${MF_VERSION}/procurement-webui-backend-${MF_VERSION}.jar\">procurement-webui-backend-${MF_VERSION}.jar</a></li>
+<li><a href=\"https://repo.metasfresh.com/repository/${mvnConf.mvnRepoName}/de/metas/procurement/procurement-webui-backend/${MF_VERSION}/procurement-webui-backend-${MF_VERSION}.jar\">procurement-webui-backend-${MF_VERSION}.jar</a></li>
 </ul>""";
     //} // stage
 } 

@@ -1,37 +1,28 @@
 package de.metas.procurement.webui;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import de.metas.common.procurement.sync.IServerSync;
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.procurement.webui.util.DummyDataProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
-
-
-
-
-
-
-
-import de.metas.procurement.sync.IServerSync;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncProductSupply;
-import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
-import de.metas.procurement.webui.util.DummyDataProducer;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -61,12 +52,11 @@ import de.metas.procurement.webui.util.DummyDataProducer;
  * @author metas-dev <dev@metas-fresh.com>
  *
  */
-@NoCxfServerBind
 public class MockedTestServerSync implements IServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired(required = true)
+	@Autowired
 	@Lazy
 	private DummyDataProducer dummyDataProducer;
 
@@ -103,7 +93,7 @@ public class MockedTestServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportProductSupplies(final SyncProductSuppliesRequest request)
+	public void reportProductSupplies(final PutProductSuppliesRequest request)
 	{
 		logger.info("Got {}", request);
 
@@ -122,7 +112,7 @@ public class MockedTestServerSync implements IServerSync
 		}
 		catch (final ExecutionException e)
 		{
-			throw Throwables.propagate(e.getCause());
+			throw new RuntimeException(e.getCause());
 		}
 	}
 
@@ -136,12 +126,12 @@ public class MockedTestServerSync implements IServerSync
 		}
 		catch (final Exception e)
 		{
-			throw Throwables.propagate(e.getCause());
+			throw new RuntimeException(e.getCause());
 		}
 	}
 
 	@Override
-	public void reportWeekSupply(final SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(final PutWeeklySupplyRequest request)
 	{
 		logger.info("Got {}", request);
 		for (final SyncWeeklySupply syncWeeklySupply : request.getWeeklySupplies())
@@ -196,7 +186,7 @@ public class MockedTestServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportRfQChanges(SyncRfQChangeRequest request)
+	public void reportRfQChanges(PutRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);
 	}

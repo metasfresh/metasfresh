@@ -7,5 +7,6 @@ Those supply reports are transferred to metasfresh ERP and then transformed into
 
 The webui leans on the following components to do its job:
 
+* vaadin
 * spring-boot
 * rabbitmq
