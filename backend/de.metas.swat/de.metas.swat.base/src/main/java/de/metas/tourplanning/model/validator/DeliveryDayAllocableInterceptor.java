@@ -102,9 +102,9 @@ public class DeliveryDayAllocableInterceptor extends AbstractModelInterceptor
 		final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(model);
-		final IDeliveryDayAllocable deliveryDayAllocable = handler.asDeliveryDayAllocable(model);
+		final IDeliveryDayAllocable deliveryDayAllocatable = handler.asDeliveryDayAllocable(model);
 
-		final I_M_DeliveryDay_Alloc deliveryDayAlloc = deliveryDayBL.getCreateDeliveryDayAlloc(context, deliveryDayAllocable);
+		final I_M_DeliveryDay_Alloc deliveryDayAlloc = deliveryDayBL.getCreateDeliveryDayAlloc(context, deliveryDayAllocatable);
 		if (deliveryDayAlloc == null)
 		{
 			// Case: no delivery day allocation was found and no delivery day on which we could allocate was found
@@ -112,7 +112,7 @@ public class DeliveryDayAllocableInterceptor extends AbstractModelInterceptor
 		}
 
 		deliveryDayBL.getDeliveryDayHandlers()
-				.updateDeliveryDayAllocFromModel(deliveryDayAlloc, deliveryDayAllocable);
+				.updateDeliveryDayAllocFromModel(deliveryDayAlloc, deliveryDayAllocatable);
 
 		InterfaceWrapperHelper.save(deliveryDayAlloc);
 	}

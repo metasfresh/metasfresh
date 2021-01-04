@@ -23,9 +23,6 @@ public interface IDeliveryDayBL extends ISingletonService
 	IDeliveryDayHandler getDeliveryDayHandlers();
 
 	/**
-	 * @param tourVersionLine
-	 * @param deliveryDate
-	 * @param trxName
 	 * @return created {@link I_M_DeliveryDay} or null
 	 */
 	I_M_DeliveryDay createDeliveryDay(I_M_TourVersionLine tourVersionLine, Date deliveryDate, String trxName);
@@ -40,8 +37,6 @@ public interface IDeliveryDayBL extends ISingletonService
 	 * <li>if there is an allocation and delivery day is matching, that allocation will be kept
 	 * </ul>
 	 *
-	 * @param context
-	 * @param model
 	 * @return delivery day allocation or null
 	 */
 	I_M_DeliveryDay_Alloc getCreateDeliveryDayAlloc(final IContextAware context, final IDeliveryDayAllocable model);
@@ -50,9 +45,6 @@ public interface IDeliveryDayBL extends ISingletonService
 	 * Mark given delivery day as no longer needed.
 	 * <p>
 	 * The implementation will decide if it will just set IsActive flag to <code>false</code> or it will also delete the record.
-	 *
-	 * @param deliveryDay
-	 * @param trxName
 	 */
 	void inactivate(I_M_DeliveryDay deliveryDay, String trxName);
 
@@ -60,8 +52,6 @@ public interface IDeliveryDayBL extends ISingletonService
 	 * Invalidates given {@link I_M_DeliveryDay}.
 	 * <p>
 	 * As a effect, given delivery day will be revalidated (synchronously or asynchronously, depends on implementation).
-	 *
-	 * @param deliveryDay
 	 */
 	void invalidate(I_M_DeliveryDay deliveryDay);
 
@@ -74,13 +64,8 @@ public interface IDeliveryDayBL extends ISingletonService
 	 * If there are no deliveryDay entries for the given date that are before the promised date/time,
 	 * select the last available deliveryDay that is before the promised date/time
 	 *
-	 * @param context            - object from where the context is taken
-	 * @param soTrx
 	 * @param calculationTime    the date+time when the calculation is made.
 	 *                           It will usually be when the date+time when the order was created, or the system time
-	 * @param datePromised
-	 * @param bpartnerLocationId
-	 * @return
 	 */
 	@NonNull
 	ImmutablePair<TourId, ZonedDateTime> calculateTourAndPreparationDate(
@@ -92,8 +77,6 @@ public interface IDeliveryDayBL extends ISingletonService
 
 	/**
 	 * Sets DeliveryDateTimeMax = DeliveryDate + BufferHours.
-	 *
-	 * @param deliveryDay
 	 */
 	void setDeliveryDateTimeMax(I_M_DeliveryDay deliveryDay);
 }
