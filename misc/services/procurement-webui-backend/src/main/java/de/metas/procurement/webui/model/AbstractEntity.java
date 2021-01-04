@@ -43,7 +43,6 @@ import javax.persistence.Version;
  */
 
 @MappedSuperclass
-@SuppressWarnings("serial")
 public abstract class AbstractEntity implements Serializable
 {
 	@Id
@@ -84,7 +83,7 @@ public abstract class AbstractEntity implements Serializable
 	}
 
 	@Override
-	public final String toString()
+	public String toString()
 	{
 		final MoreObjects.ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
 		toString(toStringHelper);
@@ -101,38 +100,38 @@ public abstract class AbstractEntity implements Serializable
 		// nothing at this level
 	}
 
-	public final Long getId()
+	public Long getId()
 	{
 		return id;
 	}
 
-	public final String getUuid()
+	public String getUuid()
 	{
 		return uuid;
 	}
 
-	public final void setUuid(final String uuid)
+	public void setUuid(final String uuid)
 	{
 		this.uuid = uuid;
 	}
 
-	public final int getVersion()
+	public int getVersion()
 	{
 		return version;
 	}
 
-	public final void setDeleted(final boolean deleted)
+	public void setDeleted(final boolean deleted)
 	{
 		this.deleted = deleted;
 	}
 
-	public final boolean isDeleted()
+	public boolean isDeleted()
 	{
 		return deleted;
 	}
 
 	@Override
-	public final int hashCode()
+	public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
@@ -141,7 +140,7 @@ public abstract class AbstractEntity implements Serializable
 	}
 
 	@Override
-	public final boolean equals(final Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
