@@ -1,17 +1,16 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.Date;
-
-import javax.transaction.Transactional;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.procurement.webui.model.SyncConfirm;
+import de.metas.procurement.webui.repository.SyncConfirmRepository;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.metas.procurement.sync.protocol.SyncConfirmation;
-import de.metas.procurement.webui.model.SyncConfirm;
-import de.metas.procurement.webui.repository.SyncConfirmRepository;
+import javax.transaction.Transactional;
+import java.util.Date;
 
 /*
  * #%L
@@ -46,32 +45,30 @@ public class SyncConfirmationsImportService extends AbstractSyncImportService
 
 	/**
 	 * Loads and updates the {@link SyncConfirm} record that is identified by the given <code>syncConfirmation</code>'s {@link SyncConfirmation#getConfirmId()}.
-	 *
-	 * @param syncConfirmation
 	 */
 	@Transactional
-	public void importConfirmation(final SyncConfirmation syncConfirmation)
+	public void importConfirmation(@NonNull final SyncConfirmation syncConfirmation)
 	{
-		// SyncConfirm confirmRecord = null;
-		// if (syncConfirmation.getConfirmId() > 0)
-		// {
-		// 	confirmRecord = syncConfirmRepo.findOne(syncConfirmation.getConfirmId());
-		// }
-		//
-		// if (confirmRecord == null)
-		// {
-		// 	// something is actually wrong. Either the given syncConfirm has no ID, or there is no record with this ID.
-		// 	// Since the whole syncConfirm thing is about stability and diagnosibility, we shall now try to make the best of the situation.
-		// 	confirmRecord = new SyncConfirm();
-		// 	confirmRecord.setEntryType("UNKNOWN ID " + syncConfirmation.getConfirmId());
-		// 	logger.error("Found no record for {}", syncConfirmation);
-		//
-		// }
-		//
-		// confirmRecord.setServerEventId(syncConfirmation.getServerEventId());
-		// confirmRecord.setDateConfirmed(syncConfirmation.getDateConfirmed());
-		// confirmRecord.setDateConfirmReceived(new Date());
-		//
-		// syncConfirmRepo.save(confirmRecord);
+		SyncConfirm confirmRecord = null;
+		if (syncConfirmation.getConfirmId() > 0)
+		{
+			confirmRecord = syncConfirmRepo.getOne(syncConfirmation.getConfirmId());
+		}
+
+		if (confirmRecord == null)
+		{
+			// something is actually wrong. Either the given syncConfirm has no ID, or there is no record with this ID.
+			// Since the whole syncConfirm thing is about stability and diagnosibility, we shall now try to make the best of the situation.
+			confirmRecord = new SyncConfirm();
+			confirmRecord.setEntryType("UNKNOWN ID " + syncConfirmation.getConfirmId());
+			logger.error("Found no record for {}", syncConfirmation);
+
+		}
+
+		confirmRecord.setServerEventId(syncConfirmation.getServerEventId());
+		confirmRecord.setDateConfirmed(syncConfirmation.getDateConfirmed());
+		confirmRecord.setDateConfirmReceived(new Date());
+
+		syncConfirmRepo.save(confirmRecord);
 	}
 }

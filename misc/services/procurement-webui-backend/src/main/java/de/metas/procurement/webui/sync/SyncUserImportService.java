@@ -1,19 +1,18 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
+import de.metas.procurement.webui.model.BPartner;
+import de.metas.procurement.webui.model.User;
+import de.metas.procurement.webui.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.metas.procurement.sync.protocol.SyncUser;
-import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.User;
-import de.metas.procurement.webui.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -47,31 +46,31 @@ public class SyncUserImportService extends AbstractSyncImportService
 
 	public void importUsers(final BPartner bpartner, final List<SyncUser> syncUsers)
 	{
-		// final Map<String, User> users = mapByUuid(usersRepo.findByBpartner(bpartner));
-		// final List<User> usersToSave = new ArrayList<>();
-		// for (final SyncUser syncUser : syncUsers)
-		// {
-		// 	if (syncUser.isDeleted())
-		// 	{
-		// 		continue;
-		// 	}
+		final Map<String, User> users = mapByUuid(usersRepo.findByBpartner(bpartner));
+		final List<User> usersToSave = new ArrayList<>();
+		for (final SyncUser syncUser : syncUsers)
+		{
+			if (syncUser.isDeleted())
+			{
+				continue;
+			}
+
+			User user = users.remove(syncUser.getUuid());
+			user = importUserNoSave(bpartner, syncUser, user);
+			if (user != null)
+			{
+				usersToSave.add(user);
+			}
+		}
 		//
-		// 	User user = users.remove(syncUser.getUuid());
-		// 	user = importUserNoSave(bpartner, syncUser, user);
-		// 	if (user != null)
-		// 	{
-		// 		usersToSave.add(user);
-		// 	}
-		// }
-		// //
-		// // Delete remaining users
-		// for (final User user : users.values())
-		// {
-		// 	deleteUser(user);
-		// }
-		// //
-		// // Save users
-		// usersRepo.save(usersToSave);
+		// Delete remaining users
+		for (final User user : users.values())
+		{
+			deleteUser(user);
+		}
+		//
+		// Save users
+		usersRepo.saveAll(usersToSave);
 	}
 
 	private User importUserNoSave(final BPartner bpartner, final SyncUser syncUser, User user)

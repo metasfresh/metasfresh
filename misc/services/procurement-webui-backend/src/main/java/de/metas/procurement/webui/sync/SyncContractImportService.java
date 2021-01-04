@@ -1,25 +1,24 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import de.metas.procurement.sync.protocol.SyncContract;
-import de.metas.procurement.sync.protocol.SyncContractLine;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.webui.event.ContractChangedEvent;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.common.procurement.sync.protocol.dto.SyncContractLine;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.ContractLineRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -56,41 +55,42 @@ public class SyncContractImportService extends AbstractSyncImportService
 	@Autowired
 	@Lazy
 	private SyncProductImportService productsImportService;
+
 	// @Autowired
 	// private MFEventBus applicationEventBus;
 
 	public Contract importContract(final BPartner bpartner, final SyncContract syncContract, Contract contract)
 	{
 		contract = importContractNoCascade(bpartner, syncContract, contract);
-		// if (contract == null)
-		// {
-		// 	return null;
-		// }
+		if (contract == null)
+		{
+			return null;
+		}
+
 		//
-		// //
-		// // Contract Line
-		// final List<ContractLine> contractLinesToSave = new ArrayList<>();
-		// final Map<String, ContractLine> contractLines = mapByUuid(contract.getContractLines());
-		// for (final SyncContractLine syncContractLine : syncContract.getContractLines())
-		// {
-		// 	final ContractLine contractLine = importContractLineNoSave(contract, syncContractLine, contractLines);
-		// 	if (contractLine == null)
-		// 	{
-		// 		continue;
-		// 	}
+		// Contract Line
+		final List<ContractLine> contractLinesToSave = new ArrayList<>();
+		final Map<String, ContractLine> contractLines = mapByUuid(contract.getContractLines());
+		for (final SyncContractLine syncContractLine : syncContract.getContractLines())
+		{
+			final ContractLine contractLine = importContractLineNoSave(contract, syncContractLine, contractLines);
+			if (contractLine == null)
+			{
+				continue;
+			}
+			
+			contractLinesToSave.add(contractLine);
+		}
 		//
-		// 	contractLinesToSave.add(contractLine);
-		// }
-		// //
-		// // Delete remaining lines
-		// for (final ContractLine contractLine : contractLines.values())
-		// {
-		// 	deleteContractLine(contractLine);
-		// }
-		// //
-		// // Save created/updated lines
-		// contractLinesRepo.save(contractLinesToSave);
+		// Delete remaining lines
+		for (final ContractLine contractLine : contractLines.values())
+		{
+			deleteContractLine(contractLine);
+		}
 		//
+		// Save created/updated lines
+		contractLinesRepo.saveAll(contractLinesToSave);
+		
 		// applicationEventBus.post(ContractChangedEvent.of(contract.getBpartner().getUuid(), contract.getId()));
 		
 		return contract;
@@ -120,6 +120,7 @@ public class SyncContractImportService extends AbstractSyncImportService
 		return contract;
 	}
 	
+	@Nullable
 	private ContractLine importContractLineNoSave(final Contract contract, final SyncContractLine syncContractLine, final Map<String, ContractLine> contractLines)
 	{
 		// If delete request, skip importing the contract line.
@@ -133,10 +134,9 @@ public class SyncContractImportService extends AbstractSyncImportService
 
 		//
 		// Product
-		final SyncProduct syncProduct = syncContractLine.getProduct();
-		assertNotDeleteRequest_WarnAndFix(syncProduct, "importing contract lines");
+		final SyncProduct syncProductNoDelete = assertNotDeleteRequest_WarnAndFix(syncContractLine.getProduct(), "importing contract lines");
 		Product product = contractLine == null ? null : contractLine.getProduct();
-		product = productsImportService.importProduct(syncProduct, product);
+		product = productsImportService.importProduct(syncProductNoDelete, product);
 
 		//
 		// Contract Line

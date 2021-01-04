@@ -1,18 +1,17 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.Map;
-import java.util.Objects;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.procurement.webui.model.Product;
+import de.metas.procurement.webui.model.ProductTrl;
+import de.metas.procurement.webui.repository.ProductRepository;
+import de.metas.procurement.webui.repository.ProductTrlRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.webui.model.Product;
-import de.metas.procurement.webui.model.ProductTrl;
-import de.metas.procurement.webui.repository.ProductRepository;
-import de.metas.procurement.webui.repository.ProductTrlRepository;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -106,7 +105,7 @@ public class SyncProductImportService extends AbstractSyncImportService
 		//
 		// Import product translations
 		final Map<String, ProductTrl> productTrls = mapByLanguage(productTrlsRepo.findByRecord(product));
-		for (final Map.Entry<String, String> lang2nameTrl : syncProduct.getNamesTrl().entrySet())
+		for (final Map.Entry<String, String> lang2nameTrl : syncProduct.getNameTrls().entrySet())
 		{
 			final String language = lang2nameTrl.getKey();
 			final String nameTrl = lang2nameTrl.getValue();

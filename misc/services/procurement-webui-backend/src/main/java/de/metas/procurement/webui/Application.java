@@ -50,8 +50,6 @@ public class Application
 
 	public Application()
 	{
-		super();
-
 		instance = this;
 	}
 
