@@ -107,13 +107,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.7.0</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Logging -->
@@ -208,7 +208,8 @@
                         </requirePluginVersions>
 
                         <!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
-                        <dependencyConvergence/>
+                        <!-- Disabling it because most proven libraries run into dependency conversion errors -->
+                        <!-- <dependencyConvergence/>-->
 
                         <!-- if you want to avoid duplicate class names in your dependency tree, then good luck with vaadin ;-)  -->
                         <banDuplicateClasses>
