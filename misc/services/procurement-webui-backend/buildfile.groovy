@@ -53,12 +53,12 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 
 		// do the actual building and deployment
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 		currentBuild.description="""${currentBuild.description}<p/>
 		artifacts (if not yet cleaned up)
 			<ul>
-<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/procurement/procurement-webui-backend/${MF_VERSION}/procurement-webui-backend-${MF_VERSION}.jar\">procurement-webui-backend-${MF_VERSION}.jar</a></li>
+<li><a href=\"https://repo.metasfresh.com/repository/${mvnConf.mvnRepoName}/de/metas/procurement/procurement-webui-backend/${MF_VERSION}/procurement-webui-backend-${MF_VERSION}.jar\">procurement-webui-backend-${MF_VERSION}.jar</a></li>
 </ul>""";
     //} // stage
 } 

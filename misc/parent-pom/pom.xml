@@ -401,8 +401,9 @@
                 </plugin>
 
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.0</version>
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <!-- Jacoco prepare-agent builds some command-line params without which jacoco will not instrument.
                              Hence it is important to add those command-line params where @{argLine} holds those params.
@@ -422,6 +423,8 @@
                              Again, see Spring boot related tests fail on jenkins sometimes https://github.com/metasfresh/metasfresh/issues/2988 -->
                         <runOrder>filesystem</runOrder>
                         <!-- runOrder>random</runOrder -->
+
+                        <trimStackTrace>false</trimStackTrace>
 
                         <systemPropertyVariables>
                             <concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
@@ -803,7 +806,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                 </property>
             </activation>
             <properties>
-                <!-- This property is set by jacoco and used in the surefire config fourther down
+                <!-- This property is set by jacoco and used in the surefire config further down
                     Set it to empty to avoid JVM startup error Could not find or load main class @{argLine} when run without jacoco
                     thx to
                     * https://github.com/metasfresh/metasfresh/issues/3073
