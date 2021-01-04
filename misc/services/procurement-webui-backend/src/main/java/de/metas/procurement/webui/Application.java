@@ -49,8 +49,8 @@ public class Application
 	/**
 	 * @return default task executor used by {@link Async} calls
 	 */
-	@Bean
-	public TaskExecutor taskExecutor()
+	@Bean("asyncCallsTaskExecutor")
+	public TaskExecutor asyncCallsTaskExecutor()
 	{
 		final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(1);

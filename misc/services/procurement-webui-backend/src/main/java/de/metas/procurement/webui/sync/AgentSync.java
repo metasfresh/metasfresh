@@ -9,7 +9,6 @@ import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
-import de.metas.procurement.webui.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +66,6 @@ public class AgentSync implements IAgentSync
 
 	public AgentSync()
 	{
-		//Application.autowire(this); // IDK what this was supposed to be, but right now, it causes an NPE when running AgentSyncIntegrationTest
 	}
 
 	@Override
@@ -83,7 +81,7 @@ public class AgentSync implements IAgentSync
 				bpartnersImportService.importBPartner(syncBpartner);
 				countImported++;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				countError++;
 				logger.error("Failed importing {}. Skipped.", syncBpartner, e);
@@ -105,7 +103,7 @@ public class AgentSync implements IAgentSync
 				productsImportService.importProduct(syncProduct);
 				countImported++;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				countError++;
 				logger.error("Failed importing {}. Skipped.", syncProduct, e);
@@ -122,7 +120,7 @@ public class AgentSync implements IAgentSync
 		{
 			settingsImportService.importSyncInfoMessage(request);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.error("Failed importing {}. Skipped.", request, e);
 		}
@@ -139,7 +137,7 @@ public class AgentSync implements IAgentSync
 			{
 				confirmationsImportService.importConfirmation(syncConfirmation);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error("Failed importing confirmation: {}", syncConfirmation, e);
 			}
@@ -161,7 +159,7 @@ public class AgentSync implements IAgentSync
 			{
 				rfqImportService.importRfQ(syncRfq);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error("Failed importing RfQ: {}", syncRfq, e);
 			}
@@ -183,7 +181,7 @@ public class AgentSync implements IAgentSync
 			{
 				rfqImportService.importRfQCloseEvent(syncRfQCloseEvent);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error("Failed importing: {}", syncRfQCloseEvent, e);
 			}

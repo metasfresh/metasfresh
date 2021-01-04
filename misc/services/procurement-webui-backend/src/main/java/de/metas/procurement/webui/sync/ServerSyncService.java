@@ -3,6 +3,7 @@ package de.metas.procurement.webui.sync;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.DeadEvent;
 import com.google.common.eventbus.Subscribe;
 import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
@@ -30,8 +31,11 @@ import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.rabbitmq.SenderToMetasfresh;
 import de.metas.procurement.webui.util.DateUtils;
+import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
@@ -76,9 +80,8 @@ public class ServerSyncService implements IServerSyncService
 {
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-	// private final TaskExecutor taskExecutor;
-	//
-	// private AsyncEventBus eventBus;
+	private final TaskExecutor taskExecutor;
+	private AsyncEventBus eventBus;
 
 	private final SenderToMetasfresh senderToMetasfresh;
 
@@ -93,14 +96,14 @@ public class ServerSyncService implements IServerSyncService
 	private final CountDownLatch initialSync = new CountDownLatch(1);
 
 	public ServerSyncService(
-			//final TaskExecutor taskExecutor,
+			@Qualifier("asyncCallsTaskExecutor") final TaskExecutor taskExecutor,
 			final SenderToMetasfresh senderToMetasfresh,
 			final ProductSupplyRepository productSuppliesRepo,
 			final IProductSuppliesService productSuppliesService,
 			final RfqRepository rfqRepo,
 			final SyncConfirmRepository syncConfirmRepo)
 	{
-		//this.taskExecutor = taskExecutor;
+		this.taskExecutor = taskExecutor;
 		this.senderToMetasfresh = senderToMetasfresh;
 		this.productSuppliesRepo = productSuppliesRepo;
 		this.productSuppliesService = productSuppliesService;
@@ -111,8 +114,8 @@ public class ServerSyncService implements IServerSyncService
 	@PostConstruct
 	private void init()
 	{
-		// eventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
-		// eventBus.register(this);
+		eventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
+		eventBus.register(this);
 
 		final Runnable callback = initialSync::countDown;
 		syncAllAsync(callback);
@@ -133,11 +136,11 @@ public class ServerSyncService implements IServerSyncService
 	 *
 	 * @param callback instance whose <code>run()</code> method shall be executed after the sync, also if the sync failed.
 	 */
-	public void syncAllAsync(final Runnable callback)
+	public void syncAllAsync(@Nullable final Runnable callback)
 	{
 		final SyncAllRequest request = SyncAllRequest.of(callback);
 		logger.debug("Enqueuing: {}", request);
-		// eventBus.post(request);
+		eventBus.post(request);
 	}
 
 	@Override
@@ -202,7 +205,7 @@ public class ServerSyncService implements IServerSyncService
 
 		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
 		logger.debug("Enqueuing: {}", request);
-		//eventBus.post(request);
+		eventBus.post(request);
 	}
 
 	@ManagedOperation(description = "Pushes a particular product supply, identified by ID, from webui server to metasfresh server")
@@ -292,7 +295,7 @@ public class ServerSyncService implements IServerSyncService
 
 		final PutWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
 		logger.debug("Enqueuing: {}", request);
-		//eventBus.post(request);
+		eventBus.post(request);
 	}
 
 	@ManagedOperation(description = "Pushes all weekly supply reports, identified by selection, from webui server to metasfresh server")
@@ -372,7 +375,7 @@ public class ServerSyncService implements IServerSyncService
 			return new SyncAllRequest(callback);
 		}
 
-		public static SyncAllRequest of(final Runnable callback)
+		public static SyncAllRequest of(@Nullable final Runnable callback)
 		{
 			return new SyncAllRequest(callback);
 		}
@@ -405,7 +408,7 @@ public class ServerSyncService implements IServerSyncService
 		}
 
 		logger.debug("Enqueuing: {}", request);
-		// eventBus.post(request);
+		eventBus.post(request);
 	}
 
 	@Subscribe
@@ -519,7 +522,7 @@ public class ServerSyncService implements IServerSyncService
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 */
-	private final class SyncAfterCommit extends TransactionSynchronizationAdapter implements ISyncAfterCommitCollector
+	private final class SyncAfterCommit implements TransactionSynchronization, ISyncAfterCommitCollector
 	{
 		private final List<ProductSupply> productSupplies = new ArrayList<>();
 		private final List<WeekSupply> weeklySupplies = new ArrayList<>();
