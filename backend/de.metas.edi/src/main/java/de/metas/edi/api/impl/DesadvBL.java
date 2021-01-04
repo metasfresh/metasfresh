@@ -541,7 +541,7 @@ public class DesadvBL implements IDesadvBL
 	private String computeSSCC18(@NonNull final OrgId orgId)
 	{
 		final SSCC18 sscc18 = sscc18CodeService.generate(orgId);
-		return sscc18CodeService.toString(sscc18, false);
+		return sscc18.asString();
 	}
 
 	private StockQtyAndUOMQty addPackRecordToLineUsingHU(
@@ -674,7 +674,7 @@ public class DesadvBL implements IDesadvBL
 	private String computeSSCC18ForHUId(@NonNull final OrgId orgId, @NonNull final HuId huId)
 	{
 		final SSCC18 sscc18 = sscc18CodeService.generate(orgId, huId.getRepoId());
-		return sscc18CodeService.toString(sscc18, false);
+		return sscc18.asString();
 	}
 
 	private I_EDI_DesadvLine_Pack createNewPackRecord(@NonNull final I_EDI_DesadvLine desadvLineRecord)
