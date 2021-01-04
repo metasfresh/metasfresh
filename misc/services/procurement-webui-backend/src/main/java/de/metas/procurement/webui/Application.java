@@ -3,7 +3,6 @@ package de.metas.procurement.webui;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -45,26 +44,6 @@ public class Application
 	public static void main(final String[] args)
 	{
 		SpringApplication.run(Application.class, args);
-	}
-
-	private static Application instance;
-
-	private final ApplicationContext context;
-
-	public Application(final ApplicationContext context)
-	{
-		this.context = context;
-		instance = this;
-	}
-
-	public static ApplicationContext getContext()
-	{
-		return instance.context;
-	}
-
-	public static void autowire(final Object bean)
-	{
-		getContext().getAutowireCapableBeanFactory().autowireBean(bean);
 	}
 
 	/**

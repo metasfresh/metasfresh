@@ -1,10 +1,11 @@
 package de.metas.procurement.webui.service.impl;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contracts;
+import de.metas.procurement.webui.repository.ContractRepository;
 import de.metas.procurement.webui.service.IContractsService;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -31,9 +32,16 @@ import de.metas.procurement.webui.service.IContractsService;
 @Service
 public class ContractsService implements IContractsService
 {
-	@Override
-	public Contracts getContracts(final BPartner bpartner)
+	private final ContractRepository contractRepository;
+
+	public ContractsService(@NonNull final ContractRepository contractRepository)
 	{
-		return new Contracts(bpartner);
+		this.contractRepository = contractRepository;
+	}
+
+	@Override
+	public Contracts getContracts(@NonNull final BPartner bpartner)
+	{
+		return new Contracts(contractRepository, bpartner);
 	}
 }
