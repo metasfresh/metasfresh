@@ -366,7 +366,7 @@ class Modal extends Component {
 
   /**
    * @method handleStart
-   * @summary ToDo: Describe the method
+   * @summary Handler for starting process from a modal
    */
   handleStart = () => {
     const { dispatch, layout, windowId, indicator, parentId } = this.props;
