@@ -139,7 +139,7 @@ public class DeliveryDayBL implements IDeliveryDayBL
 	}
 
 	@Override
-	public I_M_DeliveryDay_Alloc getCreateDeliveryDayAlloc(final IContextAware context, final IDeliveryDayAllocable model)
+	public I_M_DeliveryDay_Alloc getCreateDeliveryDayAlloc(final IContextAware context, @NonNull final IDeliveryDayAllocable model)
 	{
 		final IDeliveryDayDAO deliveryDayDAO = Services.get(IDeliveryDayDAO.class);
 
@@ -226,8 +226,6 @@ public class DeliveryDayBL implements IDeliveryDayBL
 
 	/**
 	 * Sets DeliveryDateTimeMax = DeliveryDate + BufferHours.
-	 *
-	 * @param deliveryDay
 	 */
 	@Override
 	public void setDeliveryDateTimeMax(final I_M_DeliveryDay deliveryDay)
