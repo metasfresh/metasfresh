@@ -2,6 +2,7 @@ package de.metas.procurement.webui.model;
 
 import java.util.Date;
 
+import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -41,7 +42,6 @@ import org.springframework.context.annotation.Lazy;
 @Table(name = "week_supply" //
 , uniqueConstraints = @UniqueConstraint(name = "week_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })     //
 )
-@SuppressWarnings("serial")
 @SelectBeforeUpdate
 public class WeekSupply extends AbstractSyncConfirmAwareEntity
 {
@@ -57,6 +57,7 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 	@NonNull
 	private Date day;
 
+	@Nullable
 	private String trend;
 
 	public WeekSupply()
@@ -79,7 +80,7 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 		return bpartner;
 	}
 
-	public void setBpartner(BPartner bpartner)
+	public void setBpartner(final BPartner bpartner)
 	{
 		this.bpartner = bpartner;
 	}
@@ -89,7 +90,7 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 		return product;
 	}
 
-	public void setProduct(Product product)
+	public void setProduct(final Product product)
 	{
 		this.product = product;
 	}
@@ -99,17 +100,18 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 		return day;
 	}
 
-	public void setDay(Date day)
+	public void setDay(final Date day)
 	{
 		this.day = day;
 	}
 
+	@Nullable
 	public String getTrend()
 	{
 		return trend;
 	}
 
-	public void setTrend(String trend)
+	public void setTrend(@Nullable final String trend)
 	{
 		this.trend = trend;
 	}

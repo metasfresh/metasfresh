@@ -6,7 +6,6 @@ import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -38,10 +37,13 @@ import java.util.Date;
 @Transactional
 public class SyncConfirmationsImportService extends AbstractSyncImportService
 {
-	private static final transient Logger logger = LoggerFactory.getLogger(SyncConfirmationsImportService.class);
+	private static final Logger logger = LoggerFactory.getLogger(SyncConfirmationsImportService.class);
+	private final SyncConfirmRepository syncConfirmRepo;
 
-	@Autowired
-	private SyncConfirmRepository syncConfirmRepo;
+	public SyncConfirmationsImportService(@NonNull final SyncConfirmRepository syncConfirmRepo)
+	{
+		this.syncConfirmRepo = syncConfirmRepo;
+	}
 
 	/**
 	 * Loads and updates the {@link SyncConfirm} record that is identified by the given <code>syncConfirmation</code>'s {@link SyncConfirmation#getConfirmId()}.

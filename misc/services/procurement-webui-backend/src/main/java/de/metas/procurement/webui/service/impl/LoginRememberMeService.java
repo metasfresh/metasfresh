@@ -6,6 +6,7 @@ import javax.servlet.http.Cookie;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Throwables;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ import de.metas.procurement.webui.service.ILoginService;
 /**
  *
  * @author metas-dev <dev@metas-fresh.com>
- * @task https://metasfresh.atlassian.net/browse/FRESH-197
+ * Task https://metasfresh.atlassian.net/browse/FRESH-197
  */
 @Service
 public class LoginRememberMeService
@@ -63,14 +64,16 @@ public class LoginRememberMeService
 	private long cookieMaxAgeDays;
 
 	private static final Logger logger = LoggerFactory.getLogger(LoginRememberMeService.class);
+	private final ObjectMapper jsonObjectMapper;
+	private final ILoginService loginService;
 
-	@Autowired
-	@Lazy
-	private ObjectMapper jsonObjectMapper;
-
-	@Autowired
-	@Lazy
-	private ILoginService loginService;
+	public LoginRememberMeService(
+			@NonNull final ObjectMapper jsonObjectMapper,
+			@NonNull final ILoginService loginService)
+	{
+		this.jsonObjectMapper = jsonObjectMapper;
+		this.loginService = loginService;
+	}
 
 	public boolean isEnabled()
 	{

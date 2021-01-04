@@ -15,10 +15,9 @@ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProduc
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.procurement.webui.util.DummyDataProducer;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -54,31 +53,34 @@ import java.util.concurrent.TimeUnit;
  */
 public class MockedTestServerSync implements IServerSync
 {
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(MockedTestServerSync.class);
 
-	@Autowired
-	@Lazy
-	private DummyDataProducer dummyDataProducer;
+	private final DummyDataProducer dummyDataProducer;
 
 	private final LoadingCache<String, SettableFuture<SyncProductSupply>> productSupplies = CacheBuilder.newBuilder()
-			.build(new CacheLoader<String, SettableFuture<SyncProductSupply>>()
+			.build(new CacheLoader<>()
 			{
 				@Override
-				public SettableFuture<SyncProductSupply> load(final String uuid) throws Exception
+				public SettableFuture<SyncProductSupply> load(final String uuid)
 				{
 					return SettableFuture.create();
 				}
 			});
 
 	private final LoadingCache<String, SettableFuture<SyncWeeklySupply>> weeklySupplies = CacheBuilder.newBuilder()
-			.build(new CacheLoader<String, SettableFuture<SyncWeeklySupply>>()
+			.build(new CacheLoader<>()
 			{
 				@Override
-				public SettableFuture<SyncWeeklySupply> load(final String uuid) throws Exception
+				public SettableFuture<SyncWeeklySupply> load(final String uuid)
 				{
 					return SettableFuture.create();
 				}
 			});
+
+	public MockedTestServerSync(@NonNull final DummyDataProducer dummyDataProducer)
+	{
+		this.dummyDataProducer = dummyDataProducer;
+	}
 
 	@Override
 	public List<SyncBPartner> getAllBPartners()
@@ -103,7 +105,7 @@ public class MockedTestServerSync implements IServerSync
 		}
 	}
 
-	private final void setReportedProductSupply(final SyncProductSupply syncProductSupply)
+	private void setReportedProductSupply(final SyncProductSupply syncProductSupply)
 	{
 		try
 		{
@@ -186,7 +188,7 @@ public class MockedTestServerSync implements IServerSync
 	}
 
 	@Override
-	public void reportRfQChanges(PutRfQChangeRequest request)
+	public void reportRfQChanges(final PutRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);
 	}

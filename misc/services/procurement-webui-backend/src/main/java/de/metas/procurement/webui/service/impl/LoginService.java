@@ -5,6 +5,7 @@ import com.google.common.hash.Hashing;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.ILoginService;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,21 +42,20 @@ import java.util.UUID;
 @Service
 public class LoginService implements ILoginService
 {
-	// @Autowired
-    // private I18N i18n;
-	
-	@Autowired
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
+	// @Autowired @Lazy private JavaMailSender emailSender;
+	// @Autowired private I18N i18n;
 
-	// @Autowired
-	// @Lazy
-	// private JavaMailSender emailSender;
-	
 	@Value("${mfprocurement.mail.from:}")
 	private String emailFrom;
 	
 	private static final String PASSWORD_CHARS = "0123456789";
-	private static final int PASSWORD_Length = 4; 
+	private static final int PASSWORD_Length = 4;
+
+	public LoginService(@NonNull final UserRepository userRepository)
+	{
+		this.userRepository = userRepository;
+	}
 
 	private final User getUserByMail(final String email)
 	{

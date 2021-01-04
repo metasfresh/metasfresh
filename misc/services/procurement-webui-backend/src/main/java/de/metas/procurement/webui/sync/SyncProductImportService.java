@@ -5,8 +5,7 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductTrl;
 import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductTrlRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,12 +38,16 @@ import java.util.Objects;
 @Transactional
 public class SyncProductImportService extends AbstractSyncImportService
 {
-	@Autowired
-	@Lazy
-	private ProductRepository productsRepo;
-	@Autowired
-	@Lazy
-	private ProductTrlRepository productTrlsRepo;
+	private final ProductRepository productsRepo;
+	private final ProductTrlRepository productTrlsRepo;
+
+	public SyncProductImportService(
+			@NonNull final ProductRepository productsRepo,
+			@NonNull final ProductTrlRepository productTrlsRepo)
+	{
+		this.productsRepo = productsRepo;
+		this.productTrlsRepo = productTrlsRepo;
+	}
 
 	public Product importProduct(final SyncProduct syncProduct)
 	{
@@ -58,7 +61,7 @@ public class SyncProductImportService extends AbstractSyncImportService
 	 * If there is no such existing product, the method creates a new one.
 	 *
 	 * @param syncProduct
-	 * @param product the product to be updated. If <code>null</code> or if its UUID doesn't match the given <code>syncProduct</code>'s UUID, then this parameter is ignored.
+	 * @param product     the product to be updated. If <code>null</code> or if its UUID doesn't match the given <code>syncProduct</code>'s UUID, then this parameter is ignored.
 	 * @return
 	 */
 	public Product importProduct(final SyncProduct syncProduct, Product product)

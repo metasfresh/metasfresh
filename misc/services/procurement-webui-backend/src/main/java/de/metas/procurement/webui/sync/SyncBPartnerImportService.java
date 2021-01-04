@@ -4,6 +4,7 @@ import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.repository.BPartnerRepository;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -37,18 +38,22 @@ import java.util.List;
 @Transactional
 public class SyncBPartnerImportService extends AbstractSyncImportService
 {
-	@Autowired
-	@Lazy
-	private BPartnerRepository bpartnersRepo;
-	@Autowired
-	@Lazy
-	private SyncContractListImportService contractsListImportService;
-	@Autowired
-	@Lazy
-	private SyncUserImportService usersImportService;
-	@Autowired
-	@Lazy
-	private SyncRfqImportService rfqImportService;
+	private final BPartnerRepository bpartnersRepo;
+	private final SyncContractListImportService contractsListImportService;
+	private final SyncUserImportService usersImportService;
+	private final SyncRfqImportService rfqImportService;
+
+	public SyncBPartnerImportService(
+			@NonNull final BPartnerRepository bpartnersRepo,
+			@NonNull final SyncContractListImportService contractsListImportService,
+			@NonNull final SyncUserImportService usersImportService,
+			@NonNull final SyncRfqImportService rfqImportService)
+	{
+		this.bpartnersRepo = bpartnersRepo;
+		this.contractsListImportService = contractsListImportService;
+		this.usersImportService = usersImportService;
+		this.rfqImportService = rfqImportService;
+	}
 
 	public BPartner importBPartner(final SyncBPartner syncBpartner)
 	{

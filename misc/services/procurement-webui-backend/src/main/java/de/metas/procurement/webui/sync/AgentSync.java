@@ -9,10 +9,9 @@ import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -42,30 +41,25 @@ import java.util.List;
 @Component
 public class AgentSync implements IAgentSync
 {
-	private static final transient Logger logger = LoggerFactory.getLogger(AgentSync.class);
+	private static final Logger logger = LoggerFactory.getLogger(AgentSync.class);
+	private final SyncBPartnerImportService bpartnersImportService;
+	private final SyncProductImportService productsImportService;
+	private final SyncSettingsImportService settingsImportService;
+	private final SyncConfirmationsImportService confirmationsImportService;
+	private final SyncRfqImportService rfqImportService;
 
-	@Autowired
-	@Lazy
-	private SyncBPartnerImportService bpartnersImportService;
-
-	@Autowired
-	@Lazy
-	private SyncProductImportService productsImportService;
-
-	@Autowired
-	@Lazy
-	private SyncSettingsImportService settingsImportService;
-
-	@Autowired
-	@Lazy
-	private SyncConfirmationsImportService confirmationsImportService;
-
-	@Autowired
-	@Lazy
-	private SyncRfqImportService rfqImportService;
-
-	public AgentSync()
+	public AgentSync(
+			@NonNull final SyncBPartnerImportService bpartnersImportService,
+			@NonNull final SyncProductImportService productsImportService,
+			@NonNull final SyncSettingsImportService settingsImportService,
+			@NonNull final SyncConfirmationsImportService confirmationsImportService,
+			@NonNull final SyncRfqImportService rfqImportService)
 	{
+		this.bpartnersImportService = bpartnersImportService;
+		this.productsImportService = productsImportService;
+		this.settingsImportService = settingsImportService;
+		this.confirmationsImportService = confirmationsImportService;
+		this.rfqImportService = rfqImportService;
 	}
 
 	@Override

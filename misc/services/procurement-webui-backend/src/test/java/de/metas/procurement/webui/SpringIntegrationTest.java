@@ -24,6 +24,7 @@ import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.IServerSyncService;
 import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
+import de.metas.procurement.webui.util.DummyDataProducer;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -75,29 +76,27 @@ public class SpringIntegrationTest
 	@Import(Application.class)
 	public static class TestConfig
 	{
+		@Autowired
+		DummyDataProducer dummyDataProducer;
+
 		@Bean
 		public IServerSync serverSync()
 		{
-			return new MockedTestServerSync();
+			return new MockedTestServerSync(dummyDataProducer);
 		}
 
 	}
 
 	@Autowired
 	private IServerSyncService serverSyncService;
-
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private IProductSuppliesService productSuppliesService;
 	@Autowired
-
 	private ProductSupplyRepository productSupplyRepository;
-
 	@Autowired
 	private ProductRepository productsRepo;
-
 	@Autowired
 	private SyncConfirmRepository syncConfirmRepository;
 
@@ -170,7 +169,7 @@ public class SpringIntegrationTest
 			}
 			agentSync.syncProducts(request.build());
 
-			Assert.assertEquals(ImmutableList.<Product> of(), productSuppliesService.getAllProducts());
+			Assert.assertEquals(ImmutableList.<Product>of(), productSuppliesService.getAllProducts());
 		}
 
 		//

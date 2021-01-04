@@ -20,6 +20,7 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -55,11 +56,8 @@ import java.util.UUID;
 public class DummyDataProducer
 {
 	private final BPartnerRepository bpartnersRepo;
-
 	private final ContractRepository contractsRepo;
-
 	private final IProductSuppliesService productSuppliesService;
-
 	private final IAgentSync agentSync;
 
 	private final Date contractDateFrom = DateUtils.toDayDate(2015, 04, 01);
@@ -91,10 +89,10 @@ public class DummyDataProducer
 	private PutProductsRequest _syncProductsRequest;
 
 	public DummyDataProducer(
-			final BPartnerRepository bpartnersRepo,
-			final ContractRepository contractsRepo,
-			final IProductSuppliesService productSuppliesService,
-			final IAgentSync agentSync)
+			@NonNull final BPartnerRepository bpartnersRepo,
+			@NonNull final ContractRepository contractsRepo,
+			@NonNull final IProductSuppliesService productSuppliesService,
+			@NonNull final IAgentSync agentSync)
 	{
 		this.bpartnersRepo = bpartnersRepo;
 		this.contractsRepo = contractsRepo;

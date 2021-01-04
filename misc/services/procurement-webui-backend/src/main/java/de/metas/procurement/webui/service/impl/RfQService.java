@@ -27,12 +27,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class RfQService //implements IRfQService
 {
-	// @Autowired
-	// private RfqRepository rfqRepo;
-	// @Autowired
-	// private RfqQtyRepository rfqQuantityRepo;
-	// @Autowired
-	// private IServerSyncService syncService;
+	// @Autowired private RfqRepository rfqRepo;
+	// @Autowired private RfqQtyRepository rfqQuantityRepo;
+	// @Autowired private IServerSyncService syncService;
 	//
 	// @Override
 	// public List<RfqHeader> getActiveRfqHeaders(final User user)

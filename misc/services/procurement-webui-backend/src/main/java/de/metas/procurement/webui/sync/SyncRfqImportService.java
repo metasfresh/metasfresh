@@ -18,6 +18,7 @@ import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.util.DateUtils;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -54,26 +55,29 @@ import java.util.Objects;
 @Transactional
 public class SyncRfqImportService extends AbstractSyncImportService
 {
-	@Autowired
-	private RfqRepository rfqRepo;
-	@Autowired
-	private ProductRepository productRepo;
-	@Autowired
-	@Lazy
-	private SyncProductImportService productImportService;
-	@Autowired
-	@Lazy
-	private BPartnerRepository bpartnerRepo;
-	@Autowired
-	@Lazy
-	private ContractLineRepository contractLineRepo;
-	@Autowired
-	@Lazy
-	private ProductSupplyRepository productSupplyRepo;
-	
-	// @Autowired
-	// @Lazy
-	// private MFEventBus applicationEventBus;
+	private final RfqRepository rfqRepo;
+	private final ProductRepository productRepo;
+	private final SyncProductImportService productImportService;
+	private final BPartnerRepository bpartnerRepo;
+	private final ContractLineRepository contractLineRepo;
+	private final ProductSupplyRepository productSupplyRepo;
+	// @Autowired @Lazy private MFEventBus applicationEventBus;
+
+	public SyncRfqImportService(
+			@NonNull final RfqRepository rfqRepo,
+			@NonNull final ProductRepository productRepo,
+			@NonNull final SyncProductImportService productImportService,
+			@NonNull final BPartnerRepository bpartnerRepo,
+			@NonNull final ContractLineRepository contractLineRepo,
+			@NonNull final ProductSupplyRepository productSupplyRepo)
+	{
+		this.rfqRepo = rfqRepo;
+		this.productRepo = productRepo;
+		this.productImportService = productImportService;
+		this.bpartnerRepo = bpartnerRepo;
+		this.contractLineRepo = contractLineRepo;
+		this.productSupplyRepo = productSupplyRepo;
+	}
 
 	public void importRfQs(final BPartner bpartner, final List<SyncRfQ> syncRfQs)
 	{
