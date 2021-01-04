@@ -99,9 +99,8 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 	@NonNull
 	private Date day;
 
-	ProductSupply()
+	protected ProductSupply()
 	{
-		super();
 	}
 
 	@Override

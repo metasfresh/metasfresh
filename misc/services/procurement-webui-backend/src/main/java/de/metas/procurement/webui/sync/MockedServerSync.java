@@ -1,20 +1,17 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.List;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.procurement.webui.util.DummyDataProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 
-import de.metas.procurement.sync.IServerSync;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncRfQChangeRequest;
-import de.metas.procurement.sync.protocol.SyncWeeklySupplyRequest;
-import de.metas.procurement.webui.sync.annotation.NoCxfServerBind;
-import de.metas.procurement.webui.util.DummyDataProducer;
+import java.util.List;
 
 /*
  * #%L
@@ -38,8 +35,7 @@ import de.metas.procurement.webui.util.DummyDataProducer;
  * #L%
  */
 
-@NoCxfServerBind
-public class MockedServerSync implements IServerSync
+public class MockedServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -47,38 +43,32 @@ public class MockedServerSync implements IServerSync
 	@Lazy
 	private DummyDataProducer dummyDataProducer;
 
-	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
 		return dummyDataProducer.getSyncBPartnersRequest().getBpartners();
 	}
 
-	@Override
 	public List<SyncProduct> getAllProducts()
 	{
 		return dummyDataProducer.getSyncProductsRequest().getProducts();
 	}
 
-	@Override
-	public void reportProductSupplies(SyncProductSuppliesRequest request)
+	public void reportProductSupplies(PutProductSuppliesRequest request)
 	{
 		logger.info("Got {}", request);
 	}
 
-	@Override
-	public void reportWeekSupply(SyncWeeklySupplyRequest request)
+	public void reportWeekSupply(PutWeeklySupplyRequest request)
 	{
 		logger.info("Got {}", request);
 	}
 
-	@Override
 	public String getInfoMessage()
 	{
 		return "";
 	}
 
-	@Override
-	public void reportRfQChanges(SyncRfQChangeRequest request)
+	public void reportRfQChanges(PutRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);
 	}

@@ -1,17 +1,30 @@
 package de.metas.procurement.webui;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
 import com.google.common.collect.ImmutableList;
+import de.metas.common.procurement.sync.IAgentSync;
+import de.metas.common.procurement.sync.IServerSync;
+import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
+import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
+import de.metas.procurement.webui.model.BPartner;
+import de.metas.procurement.webui.model.ContractLine;
+import de.metas.procurement.webui.model.Product;
+import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.model.Trend;
+import de.metas.procurement.webui.model.User;
+import de.metas.procurement.webui.model.WeekSupply;
+import de.metas.procurement.webui.repository.ProductRepository;
+import de.metas.procurement.webui.repository.ProductSupplyRepository;
+import de.metas.procurement.webui.repository.SyncConfirmRepository;
+import de.metas.procurement.webui.repository.UserRepository;
+import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.sync.IServerSyncService;
+import de.metas.procurement.webui.util.DateRange;
+import de.metas.procurement.webui.util.DateUtils;
+import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,33 +37,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-
-
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.IServerSync;
-import de.metas.procurement.sync.protocol.AbstractSyncModel;
-import de.metas.procurement.sync.protocol.SyncProduct;
-import de.metas.procurement.sync.protocol.SyncProductSupply;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
-import de.metas.procurement.sync.protocol.SyncWeeklySupply;
-import de.metas.procurement.webui.SpringIntegrationTest.TestConfig;
-import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
-import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.ContractLine;
-import de.metas.procurement.webui.model.Product;
-import de.metas.procurement.webui.model.ProductSupply;
-import de.metas.procurement.webui.model.SyncConfirm;
-import de.metas.procurement.webui.model.Trend;
-import de.metas.procurement.webui.model.User;
-import de.metas.procurement.webui.model.WeekSupply;
-import de.metas.procurement.webui.repository.ProductRepository;
-import de.metas.procurement.webui.repository.ProductSupplyRepository;
-import de.metas.procurement.webui.repository.SyncConfirmRepository;
-import de.metas.procurement.webui.repository.UserRepository;
-import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.sync.IServerSyncService;
-import de.metas.procurement.webui.util.DateRange;
-import de.metas.procurement.webui.util.DateUtils;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -168,15 +159,16 @@ public class SpringIntegrationTest
 		//
 		// Test delete all product
 		{
-			final SyncProductsRequest request = new SyncProductsRequest();
+			final PutProductsRequest.PutProductsRequestBuilder request = PutProductsRequest.builder();
 			for (final Product product : productsRepo.findAll())
 			{
-				final SyncProduct syncProduct = new SyncProduct();
-				syncProduct.setUuid(product.getUuid());
-				syncProduct.setDeleted(true);
-				request.getProducts().add(syncProduct);
+				final SyncProduct syncProduct = SyncProduct.builder()
+						.uuid(product.getUuid())
+						.deleted(true)
+						.build();
+				request.product(syncProduct);
 			}
-			agentSync.syncProducts(request);
+			agentSync.syncProducts(request.build());
 
 			Assert.assertEquals(ImmutableList.<Product> of(), productSuppliesService.getAllProducts());
 		}
@@ -248,15 +240,11 @@ public class SpringIntegrationTest
 	}
 
 	/**
-	 *
-	 * @param expected
-	 * @param actual
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-206
+	 * task https://metasfresh.atlassian.net/browse/FRESH-206
 	 */
-	private void assertConfirmOK(final AbstractSyncConfirmAwareEntity expected, final AbstractSyncModel actual)
+	private void assertConfirmOK(final AbstractSyncConfirmAwareEntity expected, final IConfirmableDTO actual)
 	{
-		assertThat(actual.getSyncConfirmationId(), greaterThan(0L));
-
+		Assertions.assertThat(actual.getSyncConfirmationId()).isGreaterThan(0L);
 		// final SyncConfirm confirmRecord = syncConfirmRepository.findOne(actual.getSyncConfirmationId());
 		// assertThat(confirmRecord, notNullValue());
 		// assertThat(confirmRecord.getEntryId(), is(expected.getId()));

@@ -1,22 +1,19 @@
 package de.metas.procurement.webui.sync;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.google.common.collect.Maps;
+import de.metas.common.procurement.sync.protocol.dto.SyncContract;
+import de.metas.procurement.webui.model.BPartner;
+import de.metas.procurement.webui.model.Contract;
+import de.metas.procurement.webui.repository.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-
-import de.metas.procurement.sync.protocol.SyncContract;
-import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.Contract;
-import de.metas.procurement.webui.repository.ContractRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /*
  * #%L
@@ -76,7 +73,7 @@ public class SyncContractListImportService extends AbstractSyncImportService
 			{
 				contractsImportService.deleteContract(contract);
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				logger.error("Failed deleting contract {}. Ignored.", contract, ex);
 			}
@@ -91,7 +88,7 @@ public class SyncContractListImportService extends AbstractSyncImportService
 			{
 				contractsImportService.importContract(bpartner, syncContract, contract);
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				logger.error("Failed importing contract {} for {}. Skipped.", contract, bpartner, ex);
 			}
