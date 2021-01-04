@@ -1,6 +1,5 @@
 package de.metas.procurement.webui;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -10,6 +9,10 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /*
  * #%L
@@ -36,29 +39,30 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableJpaRepositories
+@EnableSwagger2
 public class Application
 {
-	public static final void main(final String[] args)
+	public static void main(final String[] args)
 	{
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Autowired
-	private ApplicationContext context;
-
 	private static Application instance;
 
-	public Application()
+	private final ApplicationContext context;
+
+	public Application(final ApplicationContext context)
 	{
+		this.context = context;
 		instance = this;
 	}
 
-	public static final ApplicationContext getContext()
+	public static ApplicationContext getContext()
 	{
 		return instance.context;
 	}
 
-	public static final void autowire(final Object bean)
+	public static void autowire(final Object bean)
 	{
 		getContext().getAutowireCapableBeanFactory().autowireBean(bean);
 	}
@@ -74,5 +78,14 @@ public class Application
 		executor.setMaxPoolSize(10);
 		executor.setQueueCapacity(100);
 		return executor;
+	}
+
+	@Bean
+	public Docket docket()
+	{
+		return new Docket(DocumentationType.SWAGGER_2)
+				.select()
+				.paths(PathSelectors.any())
+				.build();
 	}
 }
