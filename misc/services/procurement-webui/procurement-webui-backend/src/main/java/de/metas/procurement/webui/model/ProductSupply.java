@@ -1,26 +1,20 @@
 package de.metas.procurement.webui.model;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import lombok.NonNull;
-
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SelectBeforeUpdate;
 import org.springframework.context.annotation.Lazy;
 
-
-
-
-import de.metas.procurement.webui.util.DateUtils;
+import javax.annotation.Nullable;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -46,13 +40,12 @@ import de.metas.procurement.webui.util.DateUtils;
 
 @Entity
 @Table(name = "product_supply"//
-, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })           //
+		, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })           //
 )
-@SuppressWarnings("serial")
 @SelectBeforeUpdate
 public class ProductSupply extends AbstractSyncConfirmAwareEntity
 {
-	public static ProductSupply build(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day)
+	public static ProductSupply build(final BPartner bpartner, final Product product, final ContractLine contractLine, final LocalDate day)
 	{
 		//
 		// Validate
@@ -74,7 +67,7 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 		productSupply.setBpartner(bpartner);
 		productSupply.setProduct(product);
 		productSupply.setContractLine(contractLine);
-		productSupply.setDay(DateUtils.truncToDay(day));
+		productSupply.setDay(day);
 		return productSupply;
 	}
 
@@ -91,13 +84,14 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 	@NotFound(action = NotFoundAction.IGNORE)        // don't fail if the record was not found
 	@SuppressWarnings("deprecation")
 	@org.hibernate.annotations.ForeignKey(name = "none")         // deprecated but see http://stackoverflow.com/questions/27040735/jpa-association-without-foreign-key
+	@Nullable
 	private ContractLine contractLine;
 
 	@NonNull
 	private BigDecimal qty = BigDecimal.ZERO;
 
 	@NonNull
-	private Date day;
+	private java.sql.Date day;
 
 	protected ProductSupply()
 	{
@@ -134,12 +128,13 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 		this.product = product;
 	}
 
+	@Nullable
 	public ContractLine getContractLine()
 	{
 		return contractLine;
 	}
 
-	public void setContractLine(final ContractLine contractLine)
+	public void setContractLine(@Nullable final ContractLine contractLine)
 	{
 		this.contractLine = contractLine;
 	}
@@ -154,13 +149,14 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 		this.qty = qty;
 	}
 
-	public Date getDay()
+	@Nullable
+	public LocalDate getDay()
 	{
-		return (Date)day.clone();
+		return day != null ? day.toLocalDate() : null;
 	}
 
-	private void setDay(final Date day)
+	private void setDay(@NonNull final LocalDate day)
 	{
-		this.day = day;
+		this.day = java.sql.Date.valueOf(day);
 	}
 }

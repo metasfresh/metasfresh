@@ -1,16 +1,19 @@
 package de.metas.procurement.webui.util;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import lombok.Getter;
+import lombok.NonNull;
+
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 
 /*
  * #%L
@@ -34,7 +37,6 @@ import com.google.common.base.Preconditions;
  * #L%
  */
 
-@SuppressWarnings("serial")
 public final class DateRange implements Serializable, Cloneable
 {
 	private static final int DAY_OF_WEEK_First = Calendar.MONDAY;
@@ -43,10 +45,9 @@ public final class DateRange implements Serializable, Cloneable
 	/**
 	 * Creates the week {@link DateRange} which includes the given date, but makes sure that the date range shall be in same month as given date.
 	 *
-	 * @param date
 	 * @return week range in same month as given date
 	 */
-	public static final DateRange createWeekInMonthForDay(final Date date)
+	public static DateRange createWeekInMonthForDay(final Date date)
 	{
 		Preconditions.checkNotNull(date, "date not null");
 
@@ -88,47 +89,55 @@ public final class DateRange implements Serializable, Cloneable
 		return of(dateWeekStart, dateWeekEnd);
 	}
 
-	public static final DateRange createWeek(final Date date)
+	public static DateRange createWeek(final Date date)
 	{
 		final Date dateFrom = DateUtils.truncToWeek(date);
 		final Date dateTo = DateUtils.addDays(dateFrom, 6);
 		return of(dateFrom, dateTo);
 	}
 
+	public static DateRange createWeek(final LocalDate date)
+	{
+		return createWeek(DateUtils.toDate(date));
+	}
+
 	public static DateRange of(final Date dateFrom, final Date dateTo)
+	{
+		return of(DateUtils.toLocalDate(dateFrom), DateUtils.toLocalDate(dateTo));
+	}
+
+	public static DateRange of(final LocalDate dateFrom, final LocalDate dateTo)
 	{
 		return new DateRange(dateFrom, dateTo);
 	}
 
-	private final Date dateFrom;
-	private final Date dateTo;
+	@Getter
+	private final LocalDate dateFrom;
+	@Getter
+	private final LocalDate dateTo;
 
-	private Integer _daysBetween;
-	private Integer _daysInCurrentMonth;
+	private transient Integer _daysBetween;
+	private transient Integer _daysInCurrentMonth;
 
-	private DateRange(Date dateFrom, Date dateTo)
+	private DateRange(@NonNull final LocalDate dateFrom, @NonNull final LocalDate dateTo)
 	{
-		super();
-		Preconditions.checkNotNull(dateFrom, "dateFrom");
-		Preconditions.checkNotNull(dateTo, "dateTo");
-
-		// Invert dateFrom and dateTo if they are not in order
 		if (dateFrom.compareTo(dateTo) > 0)
 		{
-			final Date tmp = dateFrom;
-			dateFrom = dateTo;
-			dateTo = tmp;
+			this.dateFrom = dateTo;
+			this.dateTo = dateFrom;
+		}
+		else
+		{
+			this.dateFrom = dateFrom;
+			this.dateTo = dateTo;
 		}
 
-		this.dateFrom = (Date)dateFrom.clone();
-		this.dateTo = (Date)dateTo.clone();
 	}
 
 	private DateRange(final DateRange from)
 	{
-		super();
-		dateFrom = (Date)from.dateFrom.clone();
-		dateTo = (Date)from.dateTo.clone();
+		dateFrom = from.dateFrom;
+		dateTo = from.dateTo;
 	}
 
 	@Override
@@ -170,90 +179,69 @@ public final class DateRange implements Serializable, Cloneable
 		return new DateRange(this);
 	}
 
-	public Date getDateFrom()
-	{
-		return (Date)dateFrom.clone();
-	}
-
-	public Date getDateTo()
-	{
-		return (Date)dateTo.clone();
-	}
-
 	public int getDaysBetween()
 	{
-		if (_daysBetween == null)
+		Integer daysBetween = _daysBetween;
+		if (daysBetween == null)
 		{
-			final long durationMillis = dateTo.getTime() - dateFrom.getTime();
-			_daysBetween = 1 + (int)TimeUnit.DAYS.convert(durationMillis, TimeUnit.MILLISECONDS);
+			daysBetween = _daysBetween = Math.toIntExact(Duration.between(dateFrom, dateTo).toDays());
 		}
-		return _daysBetween;
+		return daysBetween;
 	}
 
 	public int getDaysInCurrentMonth()
 	{
-		if (_daysInCurrentMonth == null)
+		Integer daysInCurrentMonth = _daysInCurrentMonth;
+		if (daysInCurrentMonth == null)
 		{
-			final Calendar cal = new GregorianCalendar();
-			cal.setTime(dateTo);
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-			cal.add(Calendar.MONTH, 1);
-			cal.add(Calendar.DAY_OF_YEAR, -1);
-			_daysInCurrentMonth = cal.get(Calendar.DAY_OF_MONTH);
+			daysInCurrentMonth = _daysInCurrentMonth = computeDaysInCurrentMonth();
 		}
-		return _daysInCurrentMonth;
+		return daysInCurrentMonth;
 	}
 
-	public Iterable<Date> daysIterable()
+	private int computeDaysInCurrentMonth()
 	{
-		return new Iterable<Date>()
-		{
-			@Override
-			public Iterator<Date> iterator()
-			{
-				return new DayIterator(dateFrom, dateTo);
-			}
-		};
+		final Calendar cal = new GregorianCalendar();
+		cal.setTime(DateUtils.toDate(dateTo));
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.add(Calendar.MONTH, 1);
+		cal.add(Calendar.DAY_OF_YEAR, -1);
+		return cal.get(Calendar.DAY_OF_MONTH);
 	}
-	
-	public boolean contains(final Date date)
-	{
-		Preconditions.checkNotNull(date, "date not null");
 
+	public Iterable<LocalDate> daysIterable()
+	{
+		return () -> new DayIterator(dateFrom, dateTo);
+	}
+
+	public boolean contains(@NonNull final LocalDate date)
+	{
 		if (dateFrom.compareTo(date) > 0)
 		{
 			return false;
 		}
-		if (date.compareTo(dateTo) > 0)
-		{
-			return false;
-		}
-
-		return true;
+		return date.compareTo(dateTo) <= 0;
 	}
 
-	/** @return next week {@link DateRange} */
+	/**
+	 * @return next week {@link DateRange}
+	 */
 	public DateRange getNextWeek()
 	{
-		final Date dateFrom = DateUtils.addDays(getDateFrom(), 7);
-		final Date dateTo = DateUtils.addDays(dateFrom, 6);
+		final LocalDate dateFrom = getDateFrom().plusDays(7);
+		final LocalDate dateTo = dateFrom.plusDays(6);
 		return of(dateFrom, dateTo);
 	}
 
-	private static final class DayIterator implements Iterator<Date>
+	private static final class DayIterator implements Iterator<LocalDate>
 	{
-		private final Calendar dateTo;
-		private final Calendar current;
+		private LocalDate current;
+		private final LocalDate dateTo;
 
-		private DayIterator(final Date dateFrom, final Date dateTo)
+		private DayIterator(@NonNull final LocalDate dateFrom, @NonNull final LocalDate dateTo)
 		{
-			super();
-			this.dateTo = new GregorianCalendar();
-			this.dateTo.setTime(dateTo);
-
-			current = new GregorianCalendar();
-			current.setTime(dateFrom);
-			current.add(Calendar.DAY_OF_MONTH, -1);
+			this.current = dateFrom.minusDays(1);
+			this.dateTo = dateTo;
 		}
 
 		@Override
@@ -263,14 +251,15 @@ public final class DateRange implements Serializable, Cloneable
 		}
 
 		@Override
-		public Date next()
+		public LocalDate next()
 		{
 			if (current.compareTo(dateTo) >= 0)
 			{
 				throw new NoSuchElementException();
 			}
-			current.add(Calendar.DAY_OF_MONTH, 1);
-			return current.getTime();
+
+			current = current.plusDays(1);
+			return current;
 		}
 
 		@Override

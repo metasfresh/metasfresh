@@ -28,7 +28,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Value
 public class SyncProductSupply implements IConfirmableDTO
@@ -41,7 +41,7 @@ public class SyncProductSupply implements IConfirmableDTO
 	String product_uuid;
 	String contractLine_uuid;
 	BigDecimal qty;
-	Date day;
+	LocalDate day;
 	boolean weekPlanning;
 	int version;
 
@@ -55,7 +55,7 @@ public class SyncProductSupply implements IConfirmableDTO
 			@JsonProperty("product_uuid") final String product_uuid,
 			@JsonProperty("contractLine_uuid") final String contractLine_uuid,
 			@JsonProperty("qty") final BigDecimal qty,
-			@JsonProperty("day") final Date day,
+			@JsonProperty("day") final LocalDate day,
 			@JsonProperty("weekPlanning") final boolean weekPlanning,
 			@JsonProperty("version") final int version)
 	{

@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -177,7 +178,7 @@ public class JsonSerializeDeserializeTests
 	{
 		final PutWeeklySupplyRequest syncWeeklySupplyRequest = PutWeeklySupplyRequest.builder()
 				.weeklySupply(SyncWeeklySupply.builder()
-						.weekDay(new Date())
+						.weekDay(LocalDate.parse("2021-01-05"))
 						.trend("trend")
 						.bpartner_uuid("bpartner_uuid")
 						.product_uuid("product_uuid")

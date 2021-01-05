@@ -190,7 +190,7 @@ public class SpringIntegrationTest
 		productSuppliesService.reportSupply(bpartner, product, contractLine, day, qty);
 
 		// Make sure it's saved in database
-		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, day);
+		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
 		Assert.assertThat("Invalid Qty", productSupply.getQty(), Matchers.comparesEqualTo(qty));
 
 		// Make sure it was reported
@@ -206,7 +206,7 @@ public class SpringIntegrationTest
 		Assert.assertEquals(expected.getBpartner().getUuid(), actual.getBpartner_uuid());
 		Assert.assertEquals(expected.getProduct().getUuid(), actual.getProduct_uuid());
 		Assert.assertEquals(expectedContractLineUUID, actual.getContractLine_uuid());
-		Assert.assertEquals(expected.getDay().getTime(), actual.getDay().getTime());
+		Assert.assertEquals(expected.getDay(), actual.getDay());
 		Assert.assertThat(actual.getQty(), Matchers.comparesEqualTo(expected.getQty()));
 
 		assertConfirmOK(expected, actual);
@@ -232,7 +232,7 @@ public class SpringIntegrationTest
 		Assert.assertEquals(expected.getUuid(), actual.getUuid());
 		Assert.assertEquals(expected.getBpartner().getUuid(), actual.getBpartner_uuid());
 		Assert.assertEquals(expected.getProduct().getUuid(), actual.getProduct_uuid());
-		Assert.assertEquals(expected.getDay().getTime(), actual.getWeekDay().getTime());
+		Assert.assertEquals(expected.getDay(), actual.getWeekDay());
 		Assert.assertEquals(expected.getTrend(), actual.getTrend());
 
 		assertConfirmOK(expected, actual);

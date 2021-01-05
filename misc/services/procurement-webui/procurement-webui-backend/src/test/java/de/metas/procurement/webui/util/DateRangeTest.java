@@ -3,6 +3,7 @@ package de.metas.procurement.webui.util;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -37,32 +38,32 @@ public class DateRangeTest
 	{
 		// Last day of year
 		test_createWeekInMonthForDay(215, 12, 28, 31)
-				.assertDaysBeetween(4)
+				.assertDaysBetween(4)
 				.assertDaysInCurrentMonth(31);
 		// First week of year
 		test_createWeekInMonthForDay(216, 1, 1, 3)
-				.assertDaysBeetween(3)
+				.assertDaysBetween(3)
 				.assertDaysInCurrentMonth(31);
 
 		// Straight forward test: complete week
 		test_createWeekInMonthForDay(216, 1, 18, 24)
-				.assertDaysBeetween(7)
+				.assertDaysBetween(7)
 				.assertDaysInCurrentMonth(31);
 		test_createWeekInMonthForDay(216, 1, 25, 31)
-				.assertDaysBeetween(7)
+				.assertDaysBetween(7)
 				.assertDaysInCurrentMonth(31);
 
 		// Straight forward test: incomplete week, February
 		test_createWeekInMonthForDay(216, 2, 22, 28)
-				.assertDaysBeetween(7)
+				.assertDaysBetween(7)
 				.assertDaysInCurrentMonth(29);
 		test_createWeekInMonthForDay(216, 2, 29, 29)
-				.assertDaysBeetween(1)
+				.assertDaysBetween(1)
 				.assertDaysInCurrentMonth(29);
 
 		// Straight forward test: incomplete week
 		test_createWeekInMonthForDay(216, 3, 28, 31)
-				.assertDaysBeetween(4)
+				.assertDaysBetween(4)
 				.assertDaysInCurrentMonth(31);
 	}
 
@@ -106,17 +107,17 @@ public class DateRangeTest
 	void test_DaysIterable()
 	{
 		final DateRange dateRange = DateRange.of(DateUtils.toDayDate(216, 2, 22), DateUtils.toDayDate(216, 2, 29));
-		final List<Date> daysExpected = ImmutableList.of(
-				DateUtils.toDayDate(216, 2, 22)
-				, DateUtils.toDayDate(216, 2, 23)
-				, DateUtils.toDayDate(216, 2, 24)
-				, DateUtils.toDayDate(216, 2, 25)
-				, DateUtils.toDayDate(216, 2, 26)
-				, DateUtils.toDayDate(216, 2, 27)
-				, DateUtils.toDayDate(216, 2, 28)
-				, DateUtils.toDayDate(216, 2, 29)
+		final List<LocalDate> daysExpected = ImmutableList.of(
+				LocalDate.of(216, 2, 22)
+				, LocalDate.of(216, 2, 23)
+				, LocalDate.of(216, 2, 24)
+				, LocalDate.of(216, 2, 25)
+				, LocalDate.of(216, 2, 26)
+				, LocalDate.of(216, 2, 27)
+				, LocalDate.of(216, 2, 28)
+				, LocalDate.of(216, 2, 29)
 		);
-		final List<Date> daysActual = ImmutableList.copyOf(dateRange.daysIterable());
+		final List<LocalDate> daysActual = ImmutableList.copyOf(dateRange.daysIterable());
 
 		assertThat(daysActual).isEqualTo(daysExpected);
 	}
@@ -124,9 +125,11 @@ public class DateRangeTest
 	@Test
 	void test_DaysIterable_OneDay()
 	{
-		final DateRange dateRange = DateRange.of(DateUtils.toDayDate(216, 2, 22), DateUtils.toDayDate(216, 2, 22));
-		final List<Date> daysExpected = ImmutableList.of(DateUtils.toDayDate(216, 2, 22));
-		final List<Date> daysActual = ImmutableList.copyOf(dateRange.daysIterable());
+		final DateRange dateRange = DateRange.of(
+				LocalDate.of(216, 2, 22),
+				LocalDate.of(216, 2, 22));
+		final List<LocalDate> daysExpected = ImmutableList.of(LocalDate.of(216, 2, 22));
+		final List<LocalDate> daysActual = ImmutableList.copyOf(dateRange.daysIterable());
 
 		assertThat(daysActual).isEqualTo(daysExpected);
 	}
@@ -146,18 +149,17 @@ public class DateRangeTest
 			this.dateRange = dateRange;
 		}
 
-		public DateRangeExpectation assertDaysBeetween(final int expectedDaysBetween)
+		public DateRangeExpectation assertDaysBetween(final int expectedDaysBetween)
 		{
 			final int daysBetween = dateRange.getDaysBetween();
 			assertThat(daysBetween).as("DaysBetween for %s", dateRange).isEqualTo(expectedDaysBetween);
 			return this;
 		}
 
-		public DateRangeExpectation assertDaysInCurrentMonth(final int expectedDaysInCurrentMonth)
+		public void assertDaysInCurrentMonth(final int expectedDaysInCurrentMonth)
 		{
 			final int daysInCurrentMonth = dateRange.getDaysInCurrentMonth();
 			assertThat(daysInCurrentMonth).as("DaysInCurrentMonth for %s", dateRange).isEqualTo(expectedDaysInCurrentMonth);
-			return this;
 		}
 	}
 }

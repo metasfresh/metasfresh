@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -134,12 +135,17 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Override
 	@Transactional
-	public void reportSupply(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day, final BigDecimal qty)
+	public void reportSupply(
+			final BPartner bpartner,
+			final Product product,
+			final ContractLine contractLine,
+			final Date day,
+			final BigDecimal qty)
 	{
-		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, day);
+		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
 		if (productSupply == null)
 		{
-			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
+			productSupply = ProductSupply.build(bpartner, product, contractLine, DateUtils.toLocalDate(day));
 		}
 
 		productSupply.setQty(qty);
@@ -215,8 +221,11 @@ public class ProductSuppliesService implements IProductSuppliesService
 	@Override
 	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week)
 	{
-		final Date weekDay = week.getNextWeek().getDateFrom();
-		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, weekDay);
+		final LocalDate weekDay = week.getNextWeek().getDateFrom();
+		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toDate(weekDay));
 		if (weekSupply == null)
 		{
 			return null;
@@ -229,10 +238,10 @@ public class ProductSuppliesService implements IProductSuppliesService
 	@Transactional
 	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week, final Trend trend)
 	{
-		final Date weekDay = week.getNextWeek().getDateFrom();
+		final LocalDate weekDay = week.getNextWeek().getDateFrom();
 		final String trendCode = trend == null ? null : trend.getCode();
 
-		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, weekDay);
+		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toDate(weekDay));
 		if (weeklySupply == null)
 		{
 			weeklySupply = new WeekSupply();

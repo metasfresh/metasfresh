@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -104,7 +105,7 @@ public class Contracts
 	}
 
 	@Nullable
-	public ContractLine getContractLineOrNull(final Product product, final Date date)
+	public ContractLine getContractLineOrNull(final Product product, final LocalDate date)
 	{
 		final List<ContractLine> matchingLinesWithRfq = new LinkedList<>();
 		final List<ContractLine> matchingLinesOthers = new LinkedList<>();

@@ -1,18 +1,16 @@
 package de.metas.procurement.webui.model;
 
-import java.util.Date;
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
+import org.hibernate.annotations.SelectBeforeUpdate;
+import org.springframework.context.annotation.Lazy;
 
 import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import com.google.common.base.MoreObjects;
-import lombok.NonNull;
-
-import org.hibernate.annotations.SelectBeforeUpdate;
-import org.springframework.context.annotation.Lazy;
+import java.time.LocalDate;
 
 
 
@@ -40,7 +38,7 @@ import org.springframework.context.annotation.Lazy;
 
 @Entity
 @Table(name = "week_supply" //
-, uniqueConstraints = @UniqueConstraint(name = "week_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })     //
+		, uniqueConstraints = @UniqueConstraint(name = "week_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })     //
 )
 @SelectBeforeUpdate
 public class WeekSupply extends AbstractSyncConfirmAwareEntity
@@ -55,7 +53,7 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 	private Product product;
 
 	@NonNull
-	private Date day;
+	private java.sql.Date day;
 
 	@Nullable
 	private String trend;
@@ -95,14 +93,14 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 		this.product = product;
 	}
 
-	public Date getDay()
+	public LocalDate getDay()
 	{
-		return day;
+		return day.toLocalDate();
 	}
 
-	public void setDay(final Date day)
+	public void setDay(final LocalDate day)
 	{
-		this.day = day;
+		this.day = java.sql.Date.valueOf(day);
 	}
 
 	@Nullable
