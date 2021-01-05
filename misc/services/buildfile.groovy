@@ -15,6 +15,12 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			<h2>misc services</h2>
 		"""
 
+		dir('procurement-webui/procurement-webui-frontend')
+		{
+			def ediBuildFile = load('buildfile.groovy')
+			ediBuildFile.build(scmVars, forceBuild)
+		}
+
 		withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
 					dir('camel/de-metas-camel-edi') // todo: modernize and move to camel
@@ -30,7 +36,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 				}
 		withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
 				{
-//					dir('procurement-webui')
+//					dir('procurement-webui-legacy')
 //							{
 //								def procurementWebuiBuildFile = load('buildfile.groovy')
 //								procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)
