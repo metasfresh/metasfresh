@@ -1,6 +1,5 @@
 package de.metas.procurement.webui.service.impl;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
 import de.metas.procurement.webui.exceptions.LoginFailedException;
@@ -204,6 +203,15 @@ public class LoginService implements ILoginService
 		return loggedIn != null && loggedIn;
 	}
 
+	@Override
+	public void assertLoggedIn()
+	{
+		if (!isLoggedIn())
+		{
+			throw new IllegalStateException("Not logged in");
+		}
+	}
+
 	public Optional<User> getLoggedInUser()
 	{
 		if (!isLoggedIn())
@@ -237,6 +245,11 @@ public class LoginService implements ILoginService
 		try
 		{
 			final User user = getUserByMail(email);
+			if (user == null)
+			{
+				throw new PasswordResetFailedException(email, "No user found");
+			}
+
 			final LanguageKey language = user.getLanguageKeyOrDefault();
 
 			final URI passwordResetURI = new URI(passwordResetUrl + "?token=" + passwordResetToken);
@@ -299,8 +312,6 @@ public class LoginService implements ILoginService
 
 	private String generatePassword()
 	{
-		Preconditions.checkArgument(PASSWORD_Length >= 4, "paswordLength shall be at least 4");
-
 		final StringBuilder password = new StringBuilder();
 		final SecureRandom random = new SecureRandom();
 		final int poolLength = PASSWORD_CHARS.length();

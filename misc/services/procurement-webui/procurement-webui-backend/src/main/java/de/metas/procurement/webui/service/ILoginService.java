@@ -57,5 +57,7 @@ public interface ILoginService
 
 	void logout();
 
+	void assertLoggedIn();
+
 	String createPasswordHash(String password);
 }
