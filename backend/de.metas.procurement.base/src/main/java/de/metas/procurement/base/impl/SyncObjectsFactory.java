@@ -37,7 +37,6 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -287,7 +286,7 @@ public class SyncObjectsFactory
 	}
 
 	@Nullable
-	private SyncUser createSyncUser(@NonNull final I_AD_User contact, final String adLanguage)
+	private SyncUser createSyncUser(@NonNull final I_AD_User contact, @Nullable final String bpartnerLanguage)
 	{
 		if (!contact.isActive() || !contact.isIsMFProcurementUser())
 		{
@@ -301,6 +300,9 @@ public class SyncObjectsFactory
 		{
 			return null;
 		}
+
+		final String contactLanguage = contact.getAD_Language();
+		final String adLanguage = !Check.isBlank(contactLanguage) ? contactLanguage : bpartnerLanguage;
 
 		return SyncUser.builder()
 				.language(adLanguage)
