@@ -2,3 +2,4 @@
 /build
 .git
 .gitignore
+buildfile.groovy
