@@ -226,8 +226,8 @@ class PPOrderIssueServiceProductCommand
 					//.topLevelHUId(...)
 					;
 
-			// Extract CUs of 1 item each,
-			// but leave one item in the original HU
+			// Extract CUs of 1 item each.
+			// The original HU will also be replaced.
 			for (int i = 1; i <= huQty; i++)
 			{
 				final I_M_HU extractedHU = CollectionUtils.singleElement(
