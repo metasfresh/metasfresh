@@ -1,26 +1,64 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { 
+  Route, 
+  Switch, 
+  BrowserRouter,
+} from 'react-router-dom';
+import { 
+  CSSTransition, 
+  TransitionGroup 
+} from 'react-transition-group';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+import Nav from './components/Nav';
+import Home from './components/Home';
+import About from './components/About';
+import Error404 from './components/Error404';
+
+const App = () => (
+  <BrowserRouter>
+    <div>
+      <Nav />
+      <main>
+        <Route
+          render={({ location }) => {
+            const { pathname } = location;
+            return (
+              <TransitionGroup>
+                <CSSTransition 
+                  key={pathname}
+                  classNames="view"
+                  timeout={{
+                    enter: 200,
+                    exit: 200,
+                  }}
+                >
+                  <Route
+                    location={location}
+                    render={() => (
+                      <Switch>
+                        <Route
+                          exact
+                          path="/"
+                          component={Home}
+                        />
+                        <Route
+                          path="/view2"
+                          component={About}
+                        />
+                        <Route
+                          component={Error404}
+                        />
+                      </Switch>
+                    )}
+                  />
+                </CSSTransition>
+              </TransitionGroup>
+            );
+          }}
+        />
+      </main>
     </div>
-  );
-}
+  </BrowserRouter>
+);
 
 export default App;
