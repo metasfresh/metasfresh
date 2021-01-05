@@ -22,7 +22,7 @@
 
 package de.metas.procurement.webui.rest;
 
-import de.metas.procurement.webui.Constants;
+import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.sync.IServerSyncService;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(ServerSyncRestController.ENDPOINT)
 public class ServerSyncRestController
 {
-	public static final String ENDPOINT = Constants.ENDPOINT_ROOT + "/serverSync";
+	public static final String ENDPOINT = Application.ENDPOINT_ROOT + "/serverSync";
 	private final IServerSyncService serverSyncService;
 
 	public ServerSyncRestController(@NonNull final IServerSyncService serverSyncService)

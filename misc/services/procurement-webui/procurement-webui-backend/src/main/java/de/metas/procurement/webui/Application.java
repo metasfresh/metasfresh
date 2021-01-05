@@ -41,6 +41,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class Application
 {
+	public static final String ENDPOINT_ROOT = "/rest";
+
 	public static void main(final String[] args)
 	{
 		SpringApplication.run(Application.class, args);

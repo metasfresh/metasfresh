@@ -22,7 +22,7 @@
 
 package de.metas.procurement.webui.rest;
 
-import de.metas.procurement.webui.Constants;
+import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.service.I18N;
 import de.metas.procurement.webui.util.LanguageKey;
 import lombok.NonNull;
@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 @RequestMapping(I18NRestController.ENDPOINT)
 public class I18NRestController
 {
-	static final String ENDPOINT = Constants.ENDPOINT_ROOT + "/i18n";
+	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/i18n";
 
 	private final I18N i18n;
 

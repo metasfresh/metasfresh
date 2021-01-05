@@ -22,7 +22,7 @@
 
 package de.metas.procurement.webui.rest;
 
-import de.metas.procurement.webui.Constants;
+import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
 import lombok.NonNull;
@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(LoginRestController.ENDPOINT)
 public class LoginRestController
 {
-	static final String ENDPOINT = Constants.ENDPOINT_ROOT + "/login";
+	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/login";
 
 	//private final static Logger logger = LoggerFactory.getLogger(LoginRestController.class);
 	private final ILoginService loginService;

@@ -42,7 +42,6 @@ public class LanguageKey
 				: null;
 	}
 
-	@Nullable
 	public static Optional<LanguageKey> optionalOfNullableString(@Nullable final String languageInfo)
 	{
 		return Optional.ofNullable(ofNullableString(languageInfo));
