@@ -16,7 +16,7 @@ import Error404 from './components/Error404';
 
 const App = () => (
   <BrowserRouter>
-    <div>
+    <div className="app">
       <Nav />
       <main>
         <Route
