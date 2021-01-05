@@ -1,6 +1,7 @@
 FROM node:10-alpine as build-step
 
-#RUN npm install yarn
+LABEL maintainer="info@metasfresh.com"
+LABEL runinfo="Run this image with -e PUBLIC_URL=https://yourdomain.org"
 
 COPY . /
 
