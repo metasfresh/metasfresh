@@ -38,7 +38,7 @@ public class JsonLoginRequest
 {
 	// NOTE: Tolerate null/empty values; we will validate them later and we will throw nice error messages
 
-	String username;
+	String email;
 	String password;
 
 	@JsonPOJOBuilder(withPrefix = "")

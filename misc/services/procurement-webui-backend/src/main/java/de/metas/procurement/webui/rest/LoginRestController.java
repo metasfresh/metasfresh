@@ -23,25 +23,72 @@
 package de.metas.procurement.webui.rest;
 
 import de.metas.procurement.webui.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.metas.procurement.webui.model.User;
+import de.metas.procurement.webui.service.ILoginService;
+import lombok.NonNull;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = LoginRestController.ENDPOINT)
+@RequestMapping(LoginRestController.ENDPOINT)
 public class LoginRestController
 {
-	public static final String ENDPOINT = Constants.ENDPOINT_ROOT + "/login";
+	static final String ENDPOINT = Constants.ENDPOINT_ROOT + "/login";
 
-	private final static Logger logger = LoggerFactory.getLogger(LoginRestController.class);
+	//private final static Logger logger = LoggerFactory.getLogger(LoginRestController.class);
+	private final ILoginService loginService;
 
-	@PostMapping("/authenticate")
-	public JsonLoginResponse authenticate(@RequestBody final JsonLoginRequest request)
+	public LoginRestController(
+			@NonNull final ILoginService loginService)
 	{
-		// TODO
-		throw new UnsupportedOperationException();
+		this.loginService = loginService;
+	}
+
+	@PostMapping("/login")
+	public JsonLoginResponse login(@RequestBody @NonNull final JsonLoginRequest request)
+	{
+		try
+		{
+			final User user = loginService.login(request.getEmail(), request.getPassword());
+
+			return JsonLoginResponse.builder()
+					.ok(true)
+					.language(user.getLanguageKeyOrDefault().getAsString())
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			return JsonLoginResponse.error(ex);
+		}
+	}
+
+	@GetMapping("/logout")
+	public void logout()
+	{
+		loginService.logout();
+	}
+
+	@GetMapping("/resetPassword")
+	public void resetPasswordRequest(@RequestParam("email") final String email)
+	{
+		final String passwordResetToken = loginService.generatePasswordResetKey(email);
+		loginService.sendPasswordResetKey(email, passwordResetToken);
+	}
+
+	@GetMapping("/resetPasswordConfirm")
+	public JsonPasswordResetResponse resetPasswordConfirm(@RequestParam("token") final String token)
+	{
+		final User user = loginService.resetPassword(token);
+		loginService.login(user);
+
+		return JsonPasswordResetResponse.builder()
+				.email(user.getEmail())
+				.language(user.getLanguageKeyOrDefault().getAsString())
+				.newPassword(user.getPassword())
+				.build();
 	}
 }

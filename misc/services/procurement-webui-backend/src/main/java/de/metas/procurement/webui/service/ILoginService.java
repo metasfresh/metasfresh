@@ -3,6 +3,7 @@ package de.metas.procurement.webui.service;
 import java.net.URI;
 
 import de.metas.procurement.webui.model.User;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,8 +30,6 @@ import de.metas.procurement.webui.model.User;
 public interface ILoginService
 {
 	/**
-	 * @param email
-	 * @param password
 	 * @return logged in user
 	 */
 	User login(String email, String password);
@@ -38,26 +37,25 @@ public interface ILoginService
 	/**
 	 * Generate a password reset key and link it to the user.
 	 * 
-	 * @param email
 	 * @return generated password reset key
 	 */
 	String generatePasswordResetKey(String email);
 
 	/**
 	 * Send an email to given user about how he/she can reset his/her password.
-	 * 
-	 * @param email
-	 * @param passwordResetURI
 	 */
-	void sendPasswordResetKey(String email, URI passwordResetURI);
+	void sendPasswordResetKey(String email, String passwordResetToken);
 
 	/**
 	 * Reset user's password for given password reset key.
 	 * 
-	 * @param resetKey
 	 * @return user of which password was reset.
 	 */
 	User resetPassword(String resetKey);
+
+	void login(@NonNull User user);
+
+	void logout();
 
 	String createPasswordHash(String password);
 }

@@ -36,8 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -74,7 +72,6 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Service
-@ManagedResource(description = "Server synchronization service")
 public class ServerSyncService implements IServerSyncService
 {
 	private final transient Logger logger = LoggerFactory.getLogger(getClass());
@@ -123,7 +120,7 @@ public class ServerSyncService implements IServerSyncService
 	/**
 	 * Sends a {@link SyncAllRequest} to metasfresh. The request will be processed by {@link #process(SyncAllRequest)}.
 	 */
-	@ManagedOperation
+	@Override
 	public void syncAllAsync()
 	{
 		final Runnable callback = null;
@@ -207,14 +204,14 @@ public class ServerSyncService implements IServerSyncService
 		eventBus.post(request);
 	}
 
-	@ManagedOperation(description = "Pushes a particular product supply, identified by ID, from webui server to metasfresh server")
+	/**
+	 * Pushes a particular product supply, identified by ID, from webui server to metasfresh server
+	 */
+	@Override
 	public void pushReportProductSupplyById(final long product_supply_id)
 	{
 		final ProductSupply productSupply = productSuppliesRepo.getOne(product_supply_id);
-		if (productSupply == null)
-		{
-			throw new RuntimeException("No product supply found for ID=" + product_supply_id);
-		}
+		// if (productSupply == null) { throw new RuntimeException("No product supply found for ID=" + product_supply_id); }
 
 		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(Collections.singletonList(productSupply));
 		logger.debug("Pushing request: {}", request);
@@ -222,7 +219,7 @@ public class ServerSyncService implements IServerSyncService
 		logger.debug("Pushing request done");
 	}
 
-	@ManagedOperation(description = "Pushes all product supply reports, identified by selection, from webui server to metasfresh server")
+	//@ManagedOperation(description = "Pushes all product supply reports, identified by selection, from webui server to metasfresh server")
 	public void pushReportProductSupplyForSelection(final long bpartner_id, final long product_id, final String dayFromStr, final String dayToStr)
 	{
 		try
@@ -244,7 +241,8 @@ public class ServerSyncService implements IServerSyncService
 		catch (final Exception e)
 		{
 			logger.error("Failed pushing product supplies for selection", e);
-			throw Throwables.propagate(e);
+			Throwables.throwIfUnchecked(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -297,7 +295,7 @@ public class ServerSyncService implements IServerSyncService
 		eventBus.post(request);
 	}
 
-	@ManagedOperation(description = "Pushes all weekly supply reports, identified by selection, from webui server to metasfresh server")
+	//@ManagedOperation(description = "Pushes all weekly supply reports, identified by selection, from webui server to metasfresh server")
 	public void pushWeeklySuppliesForSelection(final long bpartner_id, final long product_id, final String dayFromStr, final String dayToStr)
 	{
 		try
@@ -319,7 +317,8 @@ public class ServerSyncService implements IServerSyncService
 		catch (final Exception e)
 		{
 			logger.error("Failed pushing weekly supplies for selection", e);
-			throw Throwables.propagate(e);
+			Throwables.throwIfUnchecked(e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -472,14 +471,11 @@ public class ServerSyncService implements IServerSyncService
 				.build();
 	}
 
-	@ManagedOperation(description = "Pushes a particular RfQ, identified by ID, from webui server to metasfresh server")
+	//@ManagedOperation(description = "Pushes a particular RfQ, identified by ID, from webui server to metasfresh server")
 	public void pushRfqById(final long rfq_id)
 	{
 		final Rfq rfq = rfqRepo.getOne(rfq_id);
-		if (rfq == null)
-		{
-			throw new RuntimeException("No RfQ found for ID=" + rfq_id);
-		}
+		// if (rfq == null) { throw new RuntimeException("No RfQ found for ID=" + rfq_id); }
 
 		final PutRfQChangeRequest request = createSyncRfQChangeRequest(ImmutableList.of(rfq), rfq.getQuantities());
 		logger.debug("Pushing request: {}", request);
