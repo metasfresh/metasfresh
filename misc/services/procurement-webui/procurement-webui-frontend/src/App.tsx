@@ -41,6 +41,39 @@ const childRoutes = (
 );
 
 class Index extends Component {
+
+  installApp = async ()=>{
+    if(!this.installPrompt) return false;
+    this.installPrompt.prompt();
+    let outcome = await this.installPrompt.userChoice;
+    if(outcome.outcome === 'accepted'){
+      console.log('App is already installed')
+    }
+    else{
+      console.log('App is not installed');
+    }
+    // Remove the event reference
+    this.installPrompt = null;
+    // Hide the button
+    this.setState({ installButton: false })
+  }
+
+  installPrompt = null;
+
+  componentDidMount() {
+     window.addEventListener('beforeinstallprompt', (e) =>{
+      e.preventDefault();
+      console.log('Install Prompt fired');
+      this.installPrompt = e;
+      // See if the app is already installed, in that case, do nothing
+      if((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)){
+        console.log('Already installed')
+        return false;
+      }
+      // Set the state variable to make button visible
+      this.setState({ installButton: true })
+    })
+  }
   // shouldComponentUpdate(nextProps) {
   //   const { location } = this.props;
   //   const { location: nextLocation } = nextProps;
