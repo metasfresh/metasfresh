@@ -54,7 +54,8 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 Example: to connect a debugger on port 8793, you can run the docker image like this:<br>
 <code>
 docker run --rm\\<br/>
- -e "JAVA_TOOL_OPTIONS='agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:8793'"\\<br/>
+ -p 8082:8082\\<br/>
+ -e "JAVA_TOOL_OPTIONS='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8793'"\\<br/>
  ${dockerInfo.image}
 </code><br/>
 <p/>
