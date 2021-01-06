@@ -6,22 +6,34 @@
 import de.metas.jenkins.Misc
 import de.metas.jenkins.DockerConf
 
-def build(final Map scmVars, final boolean forceBuild=false)
-{
-	final misc = new Misc()
-	if(!misc.isAnyFileChanged(scmVars) && !forceBuild)
-	{
-		return
-	}
+def build(final Map scmVars, final boolean forceBuild = false) {
+    currentBuild.description = """${currentBuild.description}<p/>
+			<h4>procurement-webui-frontend</h4>
+		"""
 
-	final DockerConf materialDispoDockerConf = new DockerConf(
-			'procurement-webui-frontend', // artifactName
-			env.BRANCH_NAME, // branchName
-			env.MF_VERSION, // versionSuffix
-			'.' // workDir
-	)
-	final String publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
-	echo "Build and pushed docker image ${publishedDockerImageName}"
-} 
+    final misc = new Misc()
+    if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
+        currentBuild.description = """${currentBuild.description}<p/>
+					No changes happened in procurement-webui-frontend.
+					"""
+        echo "no changes happened in procurement-webui-frontend; skip building procurement-webui-frontend";
+        return
+    }
+
+    final DockerConf materialDispoDockerConf = new DockerConf(
+            'procurement-webui-frontend', // artifactName
+            env.BRANCH_NAME, // branchName
+            env.MF_VERSION, // versionSuffix
+            '.' // workDir
+    )
+    final String publishedDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
+    echo "Build and pushed docker image ${publishedDockerImageName}"
+
+    currentBuild.description = """${currentBuild.description}<p/>
+		artifacts (if not yet cleaned up)
+			<ul>
+<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST</code></li>
+</ul>""";
+}
 
 return this

@@ -10,10 +10,8 @@ import de.metas.jenkins.Misc
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
-    // stage('Build procurement-webui-backend')  // too many stages clutter the build info
-    //{
     currentBuild.description = """${currentBuild.description}<p/>
-			<h3>procurement-webui-backend</h3>
+			<h4>procurement-webui-backend</h4>
 		"""
 
     final misc = new Misc()
@@ -47,8 +45,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 		artifacts (if not yet cleaned up)
 			<ul>
 <li><a href=\"https://repo.metasfresh.com/repository/${mvnConf.mvnRepoName}/de/metas/procurement/procurement-webui-backend/${MF_VERSION}/procurement-webui-backend-${MF_VERSION}.jar\">procurement-webui-backend-${MF_VERSION}.jar</a></li>
-</ul>""";
-    //} // stage
+</ul>"""
 }
 
 return this
