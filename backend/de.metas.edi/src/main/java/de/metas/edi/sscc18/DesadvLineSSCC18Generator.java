@@ -48,7 +48,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
- * Producer which is used to generate {@link I_EDI_DesadvLine_SSCC} labels and print them.
+ * Producer which is used to generate {@link I_EDI_DesadvLine_Pack}s labels and print them.
  *
  * @author tsa
  *
@@ -69,7 +69,7 @@ public class DesadvLineSSCC18Generator
 
 	//
 	// status
-	/** {@link I_EDI_DesadvLine_SSCC} IDs to print */
+	/** {@link I_EDI_DesadvLine_Pack} IDs to print */
 	private final Set<Integer> desadvLineSSCC_IDs_ToPrint = new LinkedHashSet<>();
 
 	public DesadvLineSSCC18Generator(@NonNull final SSCC18CodeBL sscc18CodeService)
@@ -78,7 +78,7 @@ public class DesadvLineSSCC18Generator
 	}
 
 	/**
-	 * Generates {@link I_EDI_DesadvLine_SSCC} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fulfilled.
+	 * Generates {@link I_EDI_DesadvLine_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fulfilled.
 	 *
 	 * It will enqueue the SSCC18 labels to be printed.
 	 * To actually print the labels, call {@link #printAll()}.
@@ -126,7 +126,7 @@ public class DesadvLineSSCC18Generator
 	}
 
 	/**
-	 * Generates {@link I_EDI_DesadvLine_SSCC} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fullfilled.
+	 * Generates {@link I_EDI_DesadvLine_Pack} records until {@link IPrintableDesadvLineSSCC18Labels#getRequiredSSCC18sCount()} is fullfilled.
 	 *
 	 * It will enqueue the SSCC18 labels to be printed.
 	 * To actually print the labels, call {@link #printAll()}.
@@ -214,12 +214,9 @@ public class DesadvLineSSCC18Generator
 	}
 
 	/**
-	 * Creates a new {@link I_EDI_DesadvLine_SSCC} record.
+	 * Creates a new {@link I_EDI_DesadvLine_Pack} record.
 	 *
 	 * The SSCC18 code will be generated.
-	 *
-	 * @param desadvLineLabels
-	 * @return created {@link I_EDI_DesadvLine_SSCC}.
 	 */
 	private final I_EDI_DesadvLine_Pack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
 	{
@@ -230,7 +227,7 @@ public class DesadvLineSSCC18Generator
 		//
 		// Generate the actual SSCC18 number and update the SSCC record
 		final SSCC18 sscc18 = sscc18CodeBL.generate(OrgId.ofRepoId(desadvLine.getAD_Org_ID()));
-		final String ipaSSCC18 = sscc18CodeBL.toString(sscc18, false); // humanReadable=false
+		final String ipaSSCC18 = sscc18.asString(); // humanReadable=false
 
 		//
 		// Create SSCC record
