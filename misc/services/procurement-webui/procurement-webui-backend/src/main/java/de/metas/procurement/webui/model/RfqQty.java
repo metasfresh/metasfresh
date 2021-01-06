@@ -1,16 +1,16 @@
 package de.metas.procurement.webui.model;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import com.google.common.base.MoreObjects;
+import de.metas.procurement.webui.util.DateUtils;
+import lombok.NonNull;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import com.google.common.base.MoreObjects;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 
@@ -38,9 +38,8 @@ import lombok.NonNull;
 
 @Entity
 @Table(name = RfqQty.TABLE_NAME //
-, uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "datePromised" })   //
+		, uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "date_promised" })   //
 )
-@SuppressWarnings("serial")
 public class RfqQty extends AbstractSyncConfirmAwareEntity
 {
 	/* package */static final String TABLE_NAME = "rfq_qty";
@@ -50,7 +49,7 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 	private Rfq rfq;
 
 	@NonNull
-	private Date datePromised;
+	private java.sql.Date datePromised;
 
 	@NonNull
 	private BigDecimal qtyPromised;
@@ -73,14 +72,14 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 		this.rfq = rfq;
 	}
 
-	public Date getDatePromised()
+	public LocalDate getDatePromised()
 	{
-		return datePromised;
+		return DateUtils.toLocalDate(datePromised);
 	}
 
-	public void setDatePromised(final Date datePromised)
+	public void setDatePromised(final LocalDate datePromised)
 	{
-		this.datePromised = datePromised;
+		this.datePromised = DateUtils.toSqlDate(datePromised);
 	}
 
 	public BigDecimal getQtyPromised()

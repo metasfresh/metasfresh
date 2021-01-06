@@ -67,6 +67,13 @@ public final class DateUtils
 				: null;
 	}
 
+	@Deprecated
+	@Nullable
+	public static LocalDate toLocalDate(@Nullable final LocalDate date)
+	{
+		return date;
+	}
+
 	@Nullable
 	public static java.sql.Date toSqlDate(@Nullable final java.util.Date date)
 	{

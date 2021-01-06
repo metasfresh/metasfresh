@@ -23,6 +23,9 @@
 package de.metas.procurement.webui.rest.rfq;
 
 import de.metas.procurement.webui.Application;
+import de.metas.procurement.webui.service.ILoginService;
+import de.metas.procurement.webui.service.impl.RfQService;
+import lombok.NonNull;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,4 +36,20 @@ public class RfQRestController
 	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/rfq";
 
 	// TODO: implement RfQRestController
+
+	private final ILoginService loginService;
+	private final RfQService rfqService;
+
+	public RfQRestController(
+			@NonNull final ILoginService loginService,
+			@NonNull final RfQService rfqService)
+	{
+		this.loginService = loginService;
+		this.rfqService = rfqService;
+	}
+
+	public void get()
+	{
+	}
+
 }
