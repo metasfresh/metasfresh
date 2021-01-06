@@ -1,5 +1,16 @@
 package de.metas.procurement.webui.model;
 
+import com.google.common.base.MoreObjects;
+import de.metas.procurement.webui.util.DateUtils;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,22 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import lombok.NonNull;
-
-
-
-
-import de.metas.procurement.webui.util.DateUtils;
 
 /*
  * #%L
@@ -49,7 +44,6 @@ import de.metas.procurement.webui.util.DateUtils;
 
 @Entity
 @Table(name = "contract")
-@SuppressWarnings("serial")
 public class Contract extends AbstractEntity
 {
 	@NonNull
@@ -60,10 +54,10 @@ public class Contract extends AbstractEntity
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NonNull
 	private BPartner bpartner;
-	
+
 	private String rfq_uuid;
-	
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "contract", cascade=CascadeType.REMOVE)
+
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "contract", cascade = CascadeType.REMOVE)
 	private List<ContractLine> contractLines = new ArrayList<>();
 
 	@Override
@@ -106,16 +100,13 @@ public class Contract extends AbstractEntity
 		this.dateTo = dateTo;
 	}
 
-	public void setRfq_uuid(String rfq_uuid)
+	public void setRfq_uuid(final String rfq_uuid)
 	{
-		this.rfq_uuid =rfq_uuid;
+		this.rfq_uuid = rfq_uuid;
 	}
-	
-	public String getRfq_uuid()
-	{
-		return rfq_uuid;
-	}
-	
+
+	// public String getRfq_uuid() { return rfq_uuid; }
+
 	public boolean isRfq()
 	{
 		return rfq_uuid != null;
@@ -126,6 +117,7 @@ public class Contract extends AbstractEntity
 		return Collections.unmodifiableList(contractLines);
 	}
 
+	@Nullable
 	public ContractLine getContractLineForProductOrNull(final Product product)
 	{
 		for (final ContractLine contractLine : getContractLines())
@@ -139,11 +131,6 @@ public class Contract extends AbstractEntity
 		}
 
 		return null;
-	}
-
-	public void setContractLines(final List<ContractLine> contractLines)
-	{
-		this.contractLines = ImmutableList.copyOf(contractLines);
 	}
 
 	public Collection<Product> getProducts()
@@ -172,5 +159,4 @@ public class Contract extends AbstractEntity
 	{
 		return DateUtils.between(date, getDateFrom(), getDateTo());
 	}
-
 }

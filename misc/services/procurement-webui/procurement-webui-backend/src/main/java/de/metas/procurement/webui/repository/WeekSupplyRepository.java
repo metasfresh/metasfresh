@@ -3,6 +3,7 @@ package de.metas.procurement.webui.repository;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.Query;
@@ -48,5 +49,9 @@ public interface WeekSupplyRepository extends AbstractRepository<WeekSupply>
 			+ " and (s.product = :product or :product is null)"
 			+ " and (s.day >= :dayFrom)"
 			+ " and (s.day <= :dayTo)")
-	List<WeekSupply> findBySelector(@Param("bpartner") BPartner bpartner, @Param("product") Product product, @Param("dayFrom") Date dayFrom, @Param("dayTo") Date dayTo);
+	List<WeekSupply> findBySelector(
+			@Param("bpartner") @Nullable BPartner bpartner,
+			@Param("product") @Nullable Product product,
+			@Param("dayFrom") Date dayFrom,
+			@Param("dayTo") Date dayTo);
 }

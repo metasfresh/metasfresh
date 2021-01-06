@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
@@ -49,8 +50,8 @@ public interface ProductSupplyRepository extends AbstractRepository<ProductSuppl
 			+ " and (s.day >= :dayFrom)"
 			+ " and (s.day <= :dayTo)")
 	List<ProductSupply> findBySelector(
-			@Param("bpartner") BPartner bpartner,
-			@Param("product") Product product,
+			@Param("bpartner") @Nullable BPartner bpartner,
+			@Param("product") @Nullable Product product,
 			@Param("dayFrom") Date dayFrom,
 			@Param("dayTo") Date dayTo);
 }

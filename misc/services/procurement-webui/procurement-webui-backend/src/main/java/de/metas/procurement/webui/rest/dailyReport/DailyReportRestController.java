@@ -42,6 +42,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -75,9 +77,8 @@ public class DailyReportRestController
 		final User user = loginService.getLoggedInUser();
 		final Locale locale = loginService.getLocale();
 
-		final JsonDailyReport.JsonDailyReportBuilder resultBuilder = JsonDailyReport.builder()
-				.date(date);
 		final HashSet<String> addedProductIds = new HashSet<>();
+		final ArrayList<JsonDailyReportItem> resultItems = new ArrayList<>();
 
 		final List<ProductSupply> dailySupplies = productSuppliesService.getProductSupplies(user.getBpartner(), date);
 		for (final ProductSupply productSupply : dailySupplies)
@@ -91,7 +92,7 @@ public class DailyReportRestController
 					.sent(true)
 					.build();
 
-			resultBuilder.product(item);
+			resultItems.add(item);
 			addedProductIds.add(item.getProductId());
 		}
 
@@ -103,7 +104,7 @@ public class DailyReportRestController
 				continue;
 			}
 
-			resultBuilder.product(JsonDailyReportItem.builder()
+			resultItems.add(JsonDailyReportItem.builder()
 					.productId(product.getIdAsString())
 					.productName(product.getName(locale))
 					.packingInfo(product.getPackingInfo(locale))
@@ -112,7 +113,12 @@ public class DailyReportRestController
 					.build());
 		}
 
-		return resultBuilder.build();
+		resultItems.sort(Comparator.comparing(JsonDailyReportItem::getProductName));
+
+		return JsonDailyReport.builder()
+				.date(date)
+				.products(resultItems)
+				.build();
 	}
 
 	@PostMapping

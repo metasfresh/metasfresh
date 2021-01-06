@@ -1,10 +1,5 @@
 package de.metas.procurement.webui.service;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
@@ -13,8 +8,13 @@ import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.util.DateRange;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
 
 /*
  * #%L
@@ -41,11 +41,11 @@ import javax.annotation.Nullable;
 public interface IProductSuppliesService
 {
 	void reportSupply(
-			final BPartner bpartner,
-			final Product product,
-			final ContractLine contractLine,
-			final LocalDate day,
-			final BigDecimal qty);
+			@NonNull final BPartner bpartner,
+			@NonNull final Product product,
+			@Nullable final ContractLine contractLine,
+			@NonNull final LocalDate day,
+			@NonNull final BigDecimal qty);
 
 	List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date);
 
