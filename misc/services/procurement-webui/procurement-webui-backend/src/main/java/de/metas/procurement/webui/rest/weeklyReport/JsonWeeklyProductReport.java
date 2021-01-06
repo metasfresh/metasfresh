@@ -20,23 +20,21 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest.dailyReport;
+package de.metas.procurement.webui.rest.weeklyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Value
-@Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonDailyReportItem.JsonDailyReportItemBuilder.class)
-public class JsonDailyReportItem
+public class JsonWeeklyProductReport
 {
 	@NonNull
 	String productId;
@@ -50,8 +48,23 @@ public class JsonDailyReportItem
 	@NonNull
 	BigDecimal qty;
 
-	boolean sent;
+	@NonNull
+	List<JsonDailyProductQtyReport> dailyQuantities;
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonDailyReportItemBuilder {}
+	@Builder
+	private JsonWeeklyProductReport(
+			@NonNull final String productId,
+			@NonNull final String productName,
+			@Nullable final String packingInfo,
+			@NonNull final List<JsonDailyProductQtyReport> dailyQuantities)
+	{
+		this.productId = productId;
+		this.productName = productName;
+		this.packingInfo = packingInfo;
+		this.dailyQuantities = ImmutableList.copyOf(dailyQuantities);
+
+		this.qty = dailyQuantities.stream()
+				.map(JsonDailyProductQtyReport::getQty)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
 }

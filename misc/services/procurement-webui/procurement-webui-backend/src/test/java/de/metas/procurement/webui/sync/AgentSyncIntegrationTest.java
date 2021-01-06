@@ -129,8 +129,8 @@ public class AgentSyncIntegrationTest
 	@Autowired
 	ProductSupplyRepository productSuppliesRepo;
 
-	private final Date contractDateFrom = DateUtils.toDayDate(2015, 4, 1);
-	private final Date contractDateTo = DateUtils.toDayDate(2016, 3, 31);
+	private final LocalDate contractDateFrom = LocalDate.of(2015, 4, 1);
+	private final LocalDate contractDateTo = LocalDate.of(2016, 3, 31);
 
 	@Test
 	public void test_ImportContracts_ReportQty()
@@ -155,8 +155,8 @@ public class AgentSyncIntegrationTest
 					.syncContracts(true);
 
 			syncContract1.uuid(newUUID())
-					.dateFrom(contractDateFrom)
-					.dateTo(contractDateTo);
+					.dateFrom(DateUtils.toDate(contractDateFrom))
+					.dateTo(DateUtils.toDate(contractDateTo));
 
 			syncContractLine1
 					.uuid(syncContractLine1_UUID)

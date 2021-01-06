@@ -30,7 +30,6 @@ import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.rabbitmq.SenderToMetasfresh;
-import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +41,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -224,8 +223,8 @@ public class ServerSyncService implements IServerSyncService
 	{
 		try
 		{
-			final Date dayFrom = DateUtils.parseDayDate(dayFromStr);
-			final Date dayTo = DateUtils.parseDayDate(dayToStr);
+			final LocalDate dayFrom = LocalDate.parse(dayFromStr);
+			final LocalDate dayTo = LocalDate.parse(dayToStr);
 
 			final List<ProductSupply> productSupplies = productSuppliesService.getProductSupplies(bpartner_id, product_id, dayFrom, dayTo);
 			if (productSupplies.isEmpty())
@@ -300,8 +299,8 @@ public class ServerSyncService implements IServerSyncService
 	{
 		try
 		{
-			final Date dayFrom = DateUtils.parseDayDate(dayFromStr);
-			final Date dayTo = DateUtils.parseDayDate(dayToStr);
+			final LocalDate dayFrom = LocalDate.parse(dayFromStr);
+			final LocalDate dayTo = LocalDate.parse(dayToStr);
 
 			final List<WeekSupply> weeklySupplies = productSuppliesService.getWeeklySupplies(bpartner_id, product_id, dayFrom, dayTo);
 			if (weeklySupplies.isEmpty())

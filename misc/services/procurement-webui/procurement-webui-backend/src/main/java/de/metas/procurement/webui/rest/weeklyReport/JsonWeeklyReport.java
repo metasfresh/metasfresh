@@ -20,38 +20,30 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest.dailyReport;
+package de.metas.procurement.webui.rest.weeklyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
+import java.util.List;
 
-@Value
+@Data
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonDailyReportItem.JsonDailyReportItemBuilder.class)
-public class JsonDailyReportItem
+public class JsonWeeklyReport
 {
 	@NonNull
-	String productId;
+	private final String week;
+	@NonNull
+	private final String weekCaption;
 
 	@NonNull
-	String productName;
-
-	@Nullable
-	String packingInfo;
+	private final String nextWeek;
+	@NonNull
+	private final String previousWeek;
 
 	@NonNull
-	BigDecimal qty;
-
-	boolean sent;
-
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonDailyReportItemBuilder {}
+	private final List<JsonWeeklyProductReport> products;
 }

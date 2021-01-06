@@ -52,6 +52,6 @@ public interface WeekSupplyRepository extends AbstractRepository<WeekSupply>
 	List<WeekSupply> findBySelector(
 			@Param("bpartner") @Nullable BPartner bpartner,
 			@Param("product") @Nullable Product product,
-			@Param("dayFrom") Date dayFrom,
-			@Param("dayTo") Date dayTo);
+			@Param("dayFrom") java.sql.Date dayFrom,
+			@Param("dayTo") java.sql.Date dayTo);
 }

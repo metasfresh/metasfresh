@@ -62,8 +62,8 @@ public class DummyDataProducer
 	private final IProductSuppliesService productSuppliesService;
 	private final IAgentSync agentSync;
 
-	private final Date contractDateFrom = DateUtils.toDayDate(2015, 4, 1);
-	private final Date contractDateTo = DateUtils.toDayDate(2016, 3, 31);
+	private final LocalDate contractDateFrom = LocalDate.of(2015, 4, 1);
+	private final LocalDate contractDateTo = LocalDate.of(2016, 3, 31);
 
 	private final List<String> languages = Arrays.asList(
 			"en_US"
@@ -144,8 +144,8 @@ public class DummyDataProducer
 
 				final SyncContractBuilder syncContract = SyncContract.builder()
 						.uuid(randomUUID())
-						.dateFrom(contractDateFrom)
-						.dateTo(contractDateTo);
+						.dateFrom(DateUtils.toDate(contractDateFrom))
+						.dateTo(DateUtils.toDate(contractDateTo));
 
 				final PutProductsRequest syncProductsRequest = getSyncProductsRequest();
 				for (final SyncProduct syncProduct : syncProductsRequest.getProducts().subList(0, 6))

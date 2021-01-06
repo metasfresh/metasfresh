@@ -49,7 +49,7 @@ public interface IProductSuppliesService
 
 	List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date);
 
-	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
 
 	List<Product> getUserFavoriteProducts(final User user);
 
@@ -66,7 +66,7 @@ public interface IProductSuppliesService
 
 	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, DateRange week, Trend trend);
 
-	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
 
 	Product getProductById(Long productId);
 }

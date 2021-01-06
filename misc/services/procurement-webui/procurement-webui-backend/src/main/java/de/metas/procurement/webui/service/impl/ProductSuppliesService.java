@@ -28,7 +28,6 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /*
@@ -161,7 +160,11 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public List<ProductSupply> getProductSupplies(final long bpartner_id, final long product_id, Date dayFrom, Date dayTo)
+	public List<ProductSupply> getProductSupplies(
+			final long bpartner_id,
+			final long product_id,
+			@NonNull final LocalDate dayFrom,
+			@NonNull final LocalDate dayTo)
 	{
 		final BPartner bpartner;
 		if (bpartner_id > 0)
@@ -185,19 +188,12 @@ public class ProductSuppliesService implements IProductSuppliesService
 			product = null;
 		}
 
-		dayFrom = DateUtils.truncToDay(dayFrom);
-		if (dayFrom == null)
-		{
-			throw new RuntimeException("No DayFrom specified");
-		}
-		dayTo = DateUtils.truncToDay(dayTo);
-		if (dayTo == null)
-		{
-			throw new RuntimeException("No DayTo specified");
-		}
-
 		logger.debug("Querying product supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		final List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		final List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(
+				bpartner,
+				product,
+				DateUtils.toSqlDate(dayFrom),
+				DateUtils.toSqlDate(dayTo));
 		logger.debug("Got {} product supplies", productSupplies.size());
 
 		return productSupplies;
@@ -258,7 +254,11 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public List<WeekSupply> getWeeklySupplies(final long bpartner_id, final long product_id, Date dayFrom, Date dayTo)
+	public List<WeekSupply> getWeeklySupplies(
+			final long bpartner_id,
+			final long product_id,
+			@NonNull final LocalDate dayFrom,
+			@NonNull final LocalDate dayTo)
 	{
 		final BPartner bpartner;
 		if (bpartner_id > 0)
@@ -282,19 +282,12 @@ public class ProductSuppliesService implements IProductSuppliesService
 			product = null;
 		}
 
-		dayFrom = DateUtils.truncToDay(dayFrom);
-		if (dayFrom == null)
-		{
-			throw new RuntimeException("No DayFrom specified");
-		}
-		dayTo = DateUtils.truncToDay(dayTo);
-		if (dayTo == null)
-		{
-			throw new RuntimeException("No DayTo specified");
-		}
-
 		logger.debug("Querying weekly supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(
+				bpartner,
+				product,
+				DateUtils.toSqlDate(dayFrom),
+				DateUtils.toSqlDate(dayTo));
 		logger.debug("Got {} weekly supplies", weeklySupplies.size());
 
 		return weeklySupplies;

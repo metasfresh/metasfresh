@@ -5,8 +5,6 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -40,17 +38,16 @@ import java.util.Locale;
 @UtilityClass
 public final class DateUtils
 {
-	private static final DateTimeFormatter weekDateTimeFormatter = DateTimeFormatter.ofPattern("ww");
 
 	@Nullable
 	public static Date truncToDay(@Nullable final Date date)
 	{
 		if (date == null)
 		{
-			return date;
+			return null;
 		}
 
-		final GregorianCalendar cal = new GregorianCalendar(getLocale());
+		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
 		cal.setTimeInMillis(date.getTime());
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -94,10 +91,10 @@ public final class DateUtils
 	{
 		if (date == null)
 		{
-			return date;
+			return null;
 		}
 
-		final GregorianCalendar cal = new GregorianCalendar(getLocale());
+		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
 		cal.setTimeInMillis(date.getTime());
 		cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -112,10 +109,10 @@ public final class DateUtils
 	{
 		if (date == null)
 		{
-			return date;
+			return null;
 		}
 
-		final GregorianCalendar cal = new GregorianCalendar(getLocale());
+		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
 		cal.setTimeInMillis(date.getTime());
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -123,24 +120,6 @@ public final class DateUtils
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
-	}
-
-	public static Date toDayDate(final int year, final int month, final int day)
-	{
-		final GregorianCalendar cal = new GregorianCalendar(getLocale());
-		cal.set(Calendar.YEAR, year);
-		cal.set(Calendar.MONTH, month - 1);
-		cal.set(Calendar.DAY_OF_MONTH, day);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-
-	public static Date getToday()
-	{
-		return truncToDay(new Date());
 	}
 
 	public static boolean between(
@@ -168,7 +147,7 @@ public final class DateUtils
 	{
 		Preconditions.checkNotNull(date, "date not null");
 
-		final GregorianCalendar cal = new GregorianCalendar(getLocale());
+		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
 		cal.setTimeInMillis(date.getTime());
 		cal.add(Calendar.DAY_OF_MONTH, daysToAdd);
 		return cal.getTime();
@@ -178,74 +157,14 @@ public final class DateUtils
 	{
 		Preconditions.checkNotNull(date, "date not null");
 
-		final GregorianCalendar cal = new GregorianCalendar(getLocale());
+		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
 		cal.setTimeInMillis(date.getTime());
 		cal.add(Calendar.MONTH, monthsToAdd);
 		return cal.getTime();
 	}
 
-	/**
-	 * @return week number string formated as "KWxx"
-	 */
-	@Deprecated
-	public static String formatWeekNumberWithPrefix(final Date date)
+	public static String getDayName(@NonNull final LocalDate date, @NonNull final Locale locale)
 	{
-		final SimpleDateFormat df = new SimpleDateFormat("ww", getLocale());
-		return "KW" + df.format(date);
-	}
-
-	/**
-	 * @return week number string formated as "KWxx"
-	 */
-	public static String formatWeekNumberWithPrefix(@NonNull final LocalDate date)
-	{
-		return "KW" + date.format(weekDateTimeFormatter);
-	}
-
-	@NonNull
-	private static Locale getLocale()
-	{
-		// UI currentUI = UI.getCurrent();
-		// Locale locale = (currentUI == null ? null : currentUI.getLocale());
-		// if (locale == null)
-		// {
-		// 	locale = Locale.getDefault();
-		// }
-		// return locale;
-		return Locale.getDefault();
-	}
-
-	/**
-	 * Parse given day string
-	 *
-	 * @param dayStr day string (yyyy-MM-dd)
-	 * @return parsed day or null if the string is <code>null</code> or empty.
-	 */
-	public static Date parseDayDate(String dayStr)
-	{
-		if (dayStr == null)
-		{
-			return null;
-		}
-
-		dayStr = dayStr.trim();
-		if (dayStr.isEmpty())
-		{
-			return null;
-		}
-
-		final String dayPattern = "yyyy-MM-dd";
-
-		try
-		{
-			final SimpleDateFormat dateFormat = new SimpleDateFormat(dayPattern);
-			final Date date = dateFormat.parse(dayStr);
-			final Date day = truncToDay(date);
-			return day;
-		}
-		catch (ParseException e)
-		{
-			throw new RuntimeException("Failed parsing day string '" + dayStr + "' using pattern '" + dayPattern + "'");
-		}
+		return date.format(DateTimeFormatter.ofPattern("EEEE", locale));
 	}
 }

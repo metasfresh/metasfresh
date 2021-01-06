@@ -20,38 +20,46 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest.dailyReport;
+package de.metas.procurement.webui.rest.weeklyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
+import de.metas.procurement.webui.util.DateUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Locale;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonDailyReportItem.JsonDailyReportItemBuilder.class)
-public class JsonDailyReportItem
+public class JsonDailyProductQtyReport
 {
 	@NonNull
-	String productId;
-
+	LocalDate date;
 	@NonNull
-	String productName;
-
-	@Nullable
-	String packingInfo;
+	String dayCaption;
 
 	@NonNull
 	BigDecimal qty;
 
-	boolean sent;
+	public static JsonDailyProductQtyReport zero(@NonNull final LocalDate date, @NonNull final Locale locale)
+	{
+		return JsonDailyProductQtyReport.builder()
+				.date(date)
+				.dayCaption(DateUtils.getDayName(date, locale))
+				.qty(BigDecimal.ZERO)
+				.build();
+	}
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonDailyReportItemBuilder {}
+	public static ImmutableList<JsonDailyProductQtyReport> zero(@NonNull final List<LocalDate> dateList, @NonNull final Locale locale)
+	{
+		return dateList.stream()
+				.map(date -> zero(date, locale))
+				.collect(ImmutableList.toImmutableList());
+	}
 }
