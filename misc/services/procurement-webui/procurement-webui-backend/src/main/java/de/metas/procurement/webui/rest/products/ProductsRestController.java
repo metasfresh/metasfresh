@@ -61,7 +61,7 @@ public class ProductsRestController
 		this.contractsService = contractsService;
 	}
 
-	@PostMapping("/addToFavorite")
+	@PostMapping("/favorite/add")
 	public void addToFavorite(@RequestBody @NonNull final JsonAddProductsToFavoriteRequest request)
 	{
 		final User user = loginService.getLoggedInUser();
@@ -69,6 +69,17 @@ public class ProductsRestController
 		{
 			final Product product = productSuppliesService.getProductById(Long.parseLong(productIdStr));
 			productSuppliesService.addUserFavoriteProduct(user, product);
+		}
+	}
+
+	@PostMapping("/favorite/remove")
+	public void removeFromFavorite(@RequestBody @NonNull final JsonRemoveProductsFromFavoriteRequest request)
+	{
+		final User user = loginService.getLoggedInUser();
+		for (final String productIdStr : request.getProductIds())
+		{
+			final Product product = productSuppliesService.getProductById(Long.parseLong(productIdStr));
+			productSuppliesService.removeUserFavoriteProduct(user, product);
 		}
 	}
 
