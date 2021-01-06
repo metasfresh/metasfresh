@@ -26,10 +26,6 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
 
-    // update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
-    final String mavenUpdatePropertyParam = '-Dproperty=metasfresh.version -DallowDowngrade=true'
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
-
     // update the metasfresh-common.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
     final String mavenUpdateCommonPropertyParam = '-Dproperty=metasfresh-common.version -DallowDowngrade=true'
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdateCommonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
@@ -37,15 +33,34 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // set the artifact version of everything below the webui's pom.xml
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
 
+    withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
+
+        withCredentials([usernamePassword(credentialsId: 'nexus.metasfresh.com_jenkins', passwordVariable: 'DOCKER_PUSH_REGISTRY_PASSWORD', usernameVariable: 'DOCKER_PUSH_REGISTRY_USERNAME')]) {
     // do the actual building and deployment
     // maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+        }
+    }
+    final def dockerInfo = readJSON file: 'target/jib-image.json'
 
     currentBuild.description = """${currentBuild.description}<p/>
-		artifacts (if not yet cleaned up)
-			<ul>
-<li><a href=\"https://repo.metasfresh.com/repository/${mvnConf.mvnRepoName}/de/metas/procurement/procurement-webui-backend/${MF_VERSION}/procurement-webui-backend-${MF_VERSION}.jar\">procurement-webui-backend-${MF_VERSION}.jar</a></li>
-</ul>"""
+		This build's main artifact (if not yet cleaned up) is
+<ul>
+<li>a docker image with name<br>
+<code>${dockerInfo.image}</code></li>
+<li>Alternative tag: <code>${dockerInfo.tags.last()}</code></li>
+<li>Image-Id: <code>${dockerInfo.imageId}</code></li>
+</ul>
+Example: to connect a debugger on port 8793, you can run the docker image like this:<br>
+<code>
+docker run --rm\\<br/>
+ -p 8082:8082\\<br/>
+ -e "JAVA_TOOL_OPTIONS='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8793'"\\<br/>
+ ${dockerInfo.image}
+</code><br/>
+<p/>
+To run with your <code>application.properties</code>, include something as <code>-v /tmp/my-own-resources:/app/resources</code> in the <code>docker run</code> command.
+"""
 }
 
 return this

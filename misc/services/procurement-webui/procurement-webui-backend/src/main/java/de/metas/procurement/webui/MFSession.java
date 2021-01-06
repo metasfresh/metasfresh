@@ -1,12 +1,11 @@
 package de.metas.procurement.webui;
 
-
-import com.google.common.base.Preconditions;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contracts;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.IContractsService;
-import de.metas.procurement.webui.service.ISendService;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,50 +31,29 @@ import de.metas.procurement.webui.service.ISendService;
 
 public final class MFSession
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
+	@Getter
 	private final User user;
+	@Getter
 	private final String bpartner_uuid;
-
+	@Getter
 	private final Contracts contracts;
 	// private final ProductQtyReportRepository productQtyReportRepository;
 	// private RfqHeaderContainer _activeRfqsContainer; // lazy
 	//
 	// private final ISendService sendService = new SendService();
 
-	private MFSession(final Builder builder)
+	@lombok.Builder
+	private MFSession(
+			@NonNull final IContractsService contractsRepository,
+			@NonNull final User user)
 	{
-		super();
-		Application.autowire(this);
-
-		user = builder.getUser();
+		this.user = user;
 		bpartner_uuid = user.getBpartner().getUuid();
 
 		final BPartner bpartner = user.getBpartner();
-		contracts = builder.getContractsRepository().getContracts(bpartner);
+		contracts = contractsRepository.getContracts(bpartner);
 
 		// productQtyReportRepository = new ProductQtyReportRepository(user, contracts);
-	}
-
-	/**
-	 * @return current logged user; never returns null
-	 */
-	public User getUser()
-	{
-		return user;
-	}
-
-	public String getBpartner_uuid()
-	{
-		return bpartner_uuid;
-	}
-
-	public Contracts getContracts()
-	{
-		return contracts;
 	}
 
 	// public ProductQtyReportRepository getProductQtyReportRepository()
@@ -104,45 +82,4 @@ public final class MFSession
 	// {
 	// 	return sendService;
 	// }
-
-	public static final class Builder
-	{
-		private User user;
-		private IContractsService contractsRepository;
-
-		private Builder()
-		{
-			super();
-		}
-
-		public MFSession build()
-		{
-			return new MFSession(this);
-		}
-
-		public Builder setUser(final User user)
-		{
-			this.user = user;
-			return this;
-		}
-
-		private User getUser()
-		{
-			Preconditions.checkNotNull(user, "user is null");
-			return user;
-		}
-
-		public Builder setContractsRepository(final IContractsService contractsRepository)
-		{
-			this.contractsRepository = contractsRepository;
-			return this;
-		}
-
-		public IContractsService getContractsRepository()
-		{
-			Preconditions.checkNotNull(contractsRepository, "contractsRepository is null");
-			return contractsRepository;
-		}
-
-	}
 }

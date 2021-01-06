@@ -6,6 +6,7 @@ import java.util.Date;
 import com.google.common.base.MoreObjects;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.util.DateUtils;
 
 /*
  * #%L
@@ -32,7 +33,7 @@ import de.metas.procurement.webui.model.ProductSupply;
 public class ProductSupplyChangedEvent implements IApplicationEvent
 {
 
-	public static final ProductSupplyChangedEvent of(final ProductSupply productSupply)
+	public static ProductSupplyChangedEvent of(final ProductSupply productSupply)
 	{
 		return new ProductSupplyChangedEvent(productSupply);
 	}
@@ -47,7 +48,7 @@ public class ProductSupplyChangedEvent implements IApplicationEvent
 		super();
 		this.bpartner_uuid = productSupply.getBpartner().getUuid();
 		this.product = productSupply.getProduct();
-		this.day = (Date)productSupply.getDay().clone();
+		this.day = DateUtils.toDate(productSupply.getDay());
 		this.qty = productSupply.getQty();
 	}
 

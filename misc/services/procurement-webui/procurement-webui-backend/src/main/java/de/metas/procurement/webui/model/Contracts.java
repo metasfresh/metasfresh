@@ -1,23 +1,20 @@
 package de.metas.procurement.webui.model;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.procurement.webui.repository.ContractRepository;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-
-
-
-import de.metas.procurement.webui.Application;
-import de.metas.procurement.webui.repository.ContractRepository;
 
 /*
  * #%L
@@ -45,17 +42,16 @@ public class Contracts
 {
 	// services
 	private static final transient Logger logger = LoggerFactory.getLogger(Contracts.class);
-	@Autowired
-	private ContractRepository contractRepository;
+	private final ContractRepository contractRepository;
 
 	private final BPartner bpartner;
 	private List<Contract> _contracts;
 
-	public Contracts(final BPartner bpartner)
+	public Contracts(
+			@NonNull final ContractRepository contractRepository,
+			@NonNull final BPartner bpartner)
 	{
-		super();
-		Application.autowire(this);
-
+		this.contractRepository = contractRepository;
 		this.bpartner = bpartner;
 	}
 
@@ -105,11 +101,11 @@ public class Contracts
 			products.addAll(contract.getProducts());
 		}
 
-		final List<Product> productsList = new ArrayList<>(products);
-		return productsList;
+		return new ArrayList<>(products);
 	}
 
-	public ContractLine getContractLineOrNull(final Product product, final Date date)
+	@Nullable
+	public ContractLine getContractLineOrNull(final Product product, final LocalDate date)
 	{
 		final List<ContractLine> matchingLinesWithRfq = new LinkedList<>();
 		final List<ContractLine> matchingLinesOthers = new LinkedList<>();

@@ -2,6 +2,7 @@ package de.metas.procurement.webui.service.impl;
 
 import javax.transaction.Transactional;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +37,12 @@ public class SettingsService implements ISettingsService
 {
 	private static final String NAME_InfoMessage = "infoMessage";
 
-	@Autowired
-	SettingsRepository settingsRepo;
+	private final SettingsRepository settingsRepo;
+
+	public SettingsService(@NonNull final SettingsRepository settingsRepo)
+	{
+		this.settingsRepo = settingsRepo;
+	}
 
 	@Override
 	public String getValue(final String name)

@@ -37,12 +37,12 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -84,11 +84,6 @@ import java.util.concurrent.ExecutionException;
  */
 public class SyncObjectsFactory
 {
-	public static SyncObjectsFactory newFactory(final Date date)
-	{
-		return new SyncObjectsFactory(date);
-	}
-
 	public static SyncObjectsFactory newFactory()
 	{
 		return new SyncObjectsFactory(SystemTime.asDayTimestamp());
@@ -125,8 +120,7 @@ public class SyncObjectsFactory
 	private boolean _bpartnerId2activeRfqResponseLines_fullyLoaded = false;
 	private boolean _bpartnerId2activeRfqResponseLines_fullyLoadedRequired = false;
 
-	private Cache<String, SyncProduct> syncProductsCache = CacheBuilder.newBuilder()
-			.build();
+	private final Cache<String, SyncProduct> syncProductsCache = CacheBuilder.newBuilder().build();
 
 	private SyncObjectsFactory(final Date date)
 	{
@@ -287,7 +281,7 @@ public class SyncObjectsFactory
 	}
 
 	@Nullable
-	private SyncUser createSyncUser(@NonNull final I_AD_User contact, final String adLanguage)
+	private SyncUser createSyncUser(@NonNull final I_AD_User contact, @Nullable final String bpartnerLanguage)
 	{
 		if (!contact.isActive() || !contact.isIsMFProcurementUser())
 		{
@@ -301,6 +295,9 @@ public class SyncObjectsFactory
 		{
 			return null;
 		}
+
+		final String contactLanguage = contact.getAD_Language();
+		final String adLanguage = !Check.isBlank(contactLanguage) ? contactLanguage : bpartnerLanguage;
 
 		return SyncUser.builder()
 				.language(adLanguage)
@@ -621,7 +618,7 @@ public class SyncObjectsFactory
 					.bpartner_uuid(bpartner_uuid)
 					.contractLine_uuid(contractLine_uuid)
 					.product_uuid(product_uuid)
-					.day(rfqResponseLineQty.getDatePromised())
+					.day(TimeUtil.asLocalDate(rfqResponseLineQty.getDatePromised()))
 					.qty(rfqResponseLineQty.getQtyPromised())
 					.build();
 			plannedSyncProductSupplies.add(syncProductSupply);

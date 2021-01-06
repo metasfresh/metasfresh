@@ -272,7 +272,7 @@ public class ServerSyncService implements IServerSyncService
 					.bpartner_uuid(productSupply.getBpartner().getUuid())
 					.contractLine_uuid(productSupply.getContractLine() == null ? null : productSupply.getContractLine().getUuid())
 					.product_uuid(productSupply.getProduct().getUuid())
-					.day(productSupply.getDay())
+					.day(DateUtils.toLocalDate(productSupply.getDay()))
 					.qty(productSupply.getQty())
 					.version(productSupply.getVersion())
 					.syncConfirmationId(productSupply.getSyncConfirmId())
@@ -351,7 +351,7 @@ public class ServerSyncService implements IServerSyncService
 					.version(weeklySupply.getVersion())
 					.bpartner_uuid(weeklySupply.getBpartner().getUuid())
 					.product_uuid(weeklySupply.getProduct().getUuid())
-					.weekDay(weeklySupply.getDay())
+					.weekDay(DateUtils.toLocalDate(weeklySupply.getDay()))
 					.trend(weeklySupply.getTrend())
 					.syncConfirmationId(weeklySupply.getSyncConfirmId())
 					.build();

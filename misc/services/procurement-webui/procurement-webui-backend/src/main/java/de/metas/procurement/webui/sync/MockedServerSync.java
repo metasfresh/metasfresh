@@ -6,10 +6,9 @@ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProduc
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.procurement.webui.util.DummyDataProducer;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 import java.util.List;
 
@@ -39,9 +38,12 @@ public class MockedServerSync
 {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired(required=true)
-	@Lazy
-	private DummyDataProducer dummyDataProducer;
+	private final DummyDataProducer dummyDataProducer;
+
+	public MockedServerSync(@NonNull final DummyDataProducer dummyDataProducer)
+	{
+		this.dummyDataProducer = dummyDataProducer;
+	}
 
 	public List<SyncBPartner> getAllBPartners()
 	{

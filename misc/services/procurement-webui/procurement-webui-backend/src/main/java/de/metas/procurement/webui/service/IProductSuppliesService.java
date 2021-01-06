@@ -13,6 +13,8 @@ import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.util.DateRange;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.procurement.webui
@@ -53,6 +55,7 @@ public interface IProductSuppliesService
 
 	List<Product> getAllSharedProducts();
 
+	@Nullable
 	Trend getNextWeekTrend(BPartner bpartner, Product product, DateRange week);
 
 	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, DateRange week, Trend trend);

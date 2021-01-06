@@ -33,7 +33,7 @@ public class Locales
 
 	/**
 	 * Gets Locale
-	 * 
+	 *
 	 * @param languageAndCountry language and country (e.g. de_CH)
 	 * @param defaultLocale default locale to return if no locale were found
 	 * @return locale

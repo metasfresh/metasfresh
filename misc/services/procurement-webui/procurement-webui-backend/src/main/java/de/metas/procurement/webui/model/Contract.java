@@ -1,5 +1,6 @@
 package de.metas.procurement.webui.model;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -167,7 +168,7 @@ public class Contract extends AbstractEntity
 		return products;
 	}
 
-	public boolean matchesDate(final Date date)
+	public boolean matchesDate(final LocalDate date)
 	{
 		return DateUtils.between(date, getDateFrom(), getDateTo());
 	}

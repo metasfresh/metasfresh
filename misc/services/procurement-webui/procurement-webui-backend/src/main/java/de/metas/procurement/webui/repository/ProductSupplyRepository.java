@@ -1,17 +1,15 @@
 package de.metas.procurement.webui.repository;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
+import de.metas.procurement.webui.model.BPartner;
+import de.metas.procurement.webui.model.Product;
+import de.metas.procurement.webui.model.ProductSupply;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.Product;
-import de.metas.procurement.webui.model.ProductSupply;
+import javax.transaction.Transactional;
+import java.util.Date;
+import java.util.List;
 
 /*
  * #%L
@@ -39,7 +37,7 @@ import de.metas.procurement.webui.model.ProductSupply;
 @Transactional
 public interface ProductSupplyRepository extends AbstractRepository<ProductSupply>
 {
-	ProductSupply findByProductAndBpartnerAndDay(final Product product, final BPartner bpartner, final Date day);
+	ProductSupply findByProductAndBpartnerAndDay(final Product product, final BPartner bpartner, final java.sql.Date day);
 
 	List<ProductSupply> findByBpartnerAndDay(BPartner bpartner, Date day);
 

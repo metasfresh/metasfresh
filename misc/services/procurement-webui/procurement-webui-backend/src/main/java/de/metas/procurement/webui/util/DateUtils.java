@@ -1,14 +1,19 @@
 package de.metas.procurement.webui.util;
 
+import com.google.common.base.Preconditions;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-
-import com.google.common.base.Preconditions;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -32,9 +37,13 @@ import lombok.NonNull;
  * #L%
  */
 
+@UtilityClass
 public final class DateUtils
 {
-	public static Date truncToDay(final Date date)
+	private static final DateTimeFormatter weekDateTimeFormatter = DateTimeFormatter.ofPattern("ww");
+
+	@Nullable
+	public static Date truncToDay(@Nullable final Date date)
 	{
 		if (date == null)
 		{
@@ -50,7 +59,30 @@ public final class DateUtils
 		return cal.getTime();
 	}
 
-	public static Date truncToWeek(final Date date)
+	@SuppressWarnings("deprecation")
+	@Nullable
+	public static LocalDate toLocalDate(@Nullable final java.util.Date date)
+	{
+		return date != null
+				? LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, date.getDate())
+				: null;
+	}
+
+	@Nullable
+	public static java.sql.Date toSqlDate(@Nullable final java.util.Date date)
+	{
+		return date != null
+				? java.sql.Date.valueOf(toLocalDate(date))
+				: null;
+	}
+
+	public static java.util.Date toDate(final LocalDate date)
+	{
+		return java.util.Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+	}
+
+	@Nullable
+	public static Date truncToWeek(@Nullable final Date date)
 	{
 		if (date == null)
 		{
@@ -67,7 +99,8 @@ public final class DateUtils
 		return cal.getTime();
 	}
 
-	public static Date truncToMonth(final Date date)
+	@Nullable
+	public static Date truncToMonth(@Nullable final Date date)
 	{
 		if (date == null)
 		{
@@ -102,20 +135,25 @@ public final class DateUtils
 		return truncToDay(new Date());
 	}
 
-	public static boolean between(final Date date, final Date dateFrom, final Date dateTo)
+	public static boolean between(
+			@NonNull final LocalDate date,
+			@Nullable final Date dateFrom,
+			@Nullable final Date dateTo)
 	{
-		Preconditions.checkNotNull(date, "date not null");
+		return between(toDate(date), dateFrom, dateTo);
+	}
 
+	public static boolean between(
+			@NonNull final Date date,
+			@Nullable final Date dateFrom,
+			@Nullable final Date dateTo)
+	{
 		if (dateFrom != null && dateFrom.compareTo(date) > 0)
 		{
 			return false;
 		}
-		if (dateTo != null && date.compareTo(dateTo) > 0)
-		{
-			return false;
-		}
 
-		return true;
+		return dateTo == null || date.compareTo(dateTo) <= 0;
 	}
 
 	public static Date addDays(final Date date, final int daysToAdd)
@@ -139,13 +177,21 @@ public final class DateUtils
 	}
 
 	/**
-	 * @param date
 	 * @return week number string formated as "KWxx"
 	 */
+	@Deprecated
 	public static String formatWeekNumberWithPrefix(final Date date)
 	{
 		final SimpleDateFormat df = new SimpleDateFormat("ww", getLocale());
 		return "KW" + df.format(date);
+	}
+
+	/**
+	 * @return week number string formated as "KWxx"
+	 */
+	public static String formatWeekNumberWithPrefix(@NonNull final LocalDate date)
+	{
+		return "KW" + date.format(weekDateTimeFormatter);
 	}
 
 	@NonNull
@@ -163,7 +209,7 @@ public final class DateUtils
 
 	/**
 	 * Parse given day string
-	 * 
+	 *
 	 * @param dayStr day string (yyyy-MM-dd)
 	 * @return parsed day or null if the string is <code>null</code> or empty.
 	 */

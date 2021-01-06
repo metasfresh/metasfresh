@@ -1,19 +1,5 @@
 package de.metas.procurement.webui.service.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
@@ -32,6 +18,18 @@ import de.metas.procurement.webui.sync.IServerSyncService;
 import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
 import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /*
  * #%L
@@ -56,35 +54,36 @@ import de.metas.procurement.webui.util.DateUtils;
  */
 
 /**
- * Creates/Updates both {@link ProductSupply} and {@link WeekSupply} records, and also makes sure they are synchronized with the remote endpoint, see {@link SyncAfterCommit}.
+ * Creates/Updates both {@link ProductSupply} and {@link WeekSupply} records, and also makes sure they are synchronized with the remote endpoint, see SyncAfterCommit.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class ProductSuppliesService implements IProductSuppliesService
 {
-	private final transient Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(ProductSuppliesService.class);
+	private final UserProductRepository userProductRepository;
+	private final ProductSupplyRepository productSupplyRepository;
+	private final WeekSupplyRepository weekSupplyRepository;
+	private final ProductRepository productRepository;
+	private final BPartnerRepository bpartnersRepository;
+	private final IServerSyncService syncService;
 
-
-	@Autowired
-	private UserProductRepository userProductRepository;
-
-	@Autowired
-	private ProductSupplyRepository productSupplyRepository;
-
-	@Autowired
-	private WeekSupplyRepository weekSupplyRepository;
-
-	@Autowired
-	private ProductRepository productRepository;
-
-	@Autowired
-	@Lazy
-	private BPartnerRepository bpartnersRepository;
-
-	@Autowired
-	private IServerSyncService syncService;
+	public ProductSuppliesService(
+			@NonNull final UserProductRepository userProductRepository,
+			@NonNull final ProductSupplyRepository productSupplyRepository,
+			@NonNull final WeekSupplyRepository weekSupplyRepository,
+			@NonNull final ProductRepository productRepository,
+			@NonNull final BPartnerRepository bpartnersRepository,
+			@Lazy @NonNull final IServerSyncService syncService)
+	{
+		this.userProductRepository = userProductRepository;
+		this.productSupplyRepository = productSupplyRepository;
+		this.weekSupplyRepository = weekSupplyRepository;
+		this.productRepository = productRepository;
+		this.bpartnersRepository = bpartnersRepository;
+		this.syncService = syncService;
+	}
 
 	@Override
 	public List<Product> getUserFavoriteProducts(final User user)
@@ -136,12 +135,17 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Override
 	@Transactional
-	public void reportSupply(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day, final BigDecimal qty)
+	public void reportSupply(
+			final BPartner bpartner,
+			final Product product,
+			final ContractLine contractLine,
+			final Date day,
+			final BigDecimal qty)
 	{
-		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, day);
+		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
 		if (productSupply == null)
 		{
-			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
+			productSupply = ProductSupply.build(bpartner, product, contractLine, DateUtils.toLocalDate(day));
 		}
 
 		productSupply.setQty(qty);
@@ -163,12 +167,8 @@ public class ProductSuppliesService implements IProductSuppliesService
 		final BPartner bpartner;
 		if (bpartner_id > 0)
 		{
-			// bpartner = bpartnersRepository.findOne(bpartner_id);
-			bpartner = null;
-			if (bpartner == null)
-			{
-				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
-			}
+			bpartner = bpartnersRepository.getOne(bpartner_id);
+			// if (bpartner == null) { throw new RuntimeException("No BPartner found for ID=" + bpartner_id); }
 		}
 		else
 		{
@@ -178,12 +178,8 @@ public class ProductSuppliesService implements IProductSuppliesService
 		final Product product;
 		if (product_id > 0)
 		{
-			// product = productRepository.findOne(product_id);
-			product = null;
-			if (product == null)
-			{
-				throw new RuntimeException("No Product found for ID=" + product_id);
-			}
+			product = productRepository.getOne(product_id);
+			//if (product == null) { throw new RuntimeException("No Product found for ID=" + product_id); }
 		}
 		else
 		{
@@ -202,7 +198,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 		}
 
 		logger.debug("Querying product supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		final List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
 		logger.debug("Got {} product supplies", productSupplies.size());
 
 		return productSupplies;
@@ -225,8 +221,11 @@ public class ProductSuppliesService implements IProductSuppliesService
 	@Override
 	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week)
 	{
-		final Date weekDay = week.getNextWeek().getDateFrom();
-		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, weekDay);
+		final LocalDate weekDay = week.getNextWeek().getDateFrom();
+		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toDate(weekDay));
 		if (weekSupply == null)
 		{
 			return null;
@@ -239,10 +238,10 @@ public class ProductSuppliesService implements IProductSuppliesService
 	@Transactional
 	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week, final Trend trend)
 	{
-		final Date weekDay = week.getNextWeek().getDateFrom();
+		final LocalDate weekDay = week.getNextWeek().getDateFrom();
 		final String trendCode = trend == null ? null : trend.getCode();
 
-		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, weekDay);
+		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toDate(weekDay));
 		if (weeklySupply == null)
 		{
 			weeklySupply = new WeekSupply();
@@ -260,35 +259,29 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo)
+	public List<WeekSupply> getWeeklySupplies(final long bpartner_id, final long product_id, Date dayFrom, Date dayTo)
 	{
-		final BPartner bpartner = null;
-		// if (bpartner_id > 0)
-		// {
-		// 	 bpartner = bpartnersRepository.findOne(bpartner_id);
-		// 	if (bpartner == null)
-		// 	{
-		// 		throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
-		// 	}
-		// }
-		// else
-		// {
-		// 	bpartner = null;
-		// }
+		final BPartner bpartner;
+		if (bpartner_id > 0)
+		{
+			bpartner = bpartnersRepository.getOne(bpartner_id);
+			// if (bpartner == null) { throw new RuntimeException("No BPartner found for ID=" + bpartner_id); }
+		}
+		else
+		{
+			bpartner = null;
+		}
 
-		final Product product = null;
-		// if (product_id > 0)
-		// {
-		// 	product = productRepository.findOne(product_id);
-		// 	if (product == null)
-		// 	{
-		// 		throw new RuntimeException("No Product found for ID=" + product_id);
-		// 	}
-		// }
-		// else
-		// {
-		// 	product = null;
-		// }
+		final Product product;
+		if (product_id > 0)
+		{
+			product = productRepository.getOne(product_id);
+			// if (product == null) { throw new RuntimeException("No Product found for ID=" + product_id); }
+		}
+		else
+		{
+			product = null;
+		}
 
 		dayFrom = DateUtils.truncToDay(dayFrom);
 		if (dayFrom == null)

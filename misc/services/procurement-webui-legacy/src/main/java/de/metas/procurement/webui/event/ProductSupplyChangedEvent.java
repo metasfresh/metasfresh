@@ -7,6 +7,7 @@ import com.google.gwt.thirdparty.guava.common.base.Objects;
 
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.util.DateUtils;
 
 /*
  * #%L
@@ -48,7 +49,7 @@ public class ProductSupplyChangedEvent implements IApplicationEvent
 		super();
 		this.bpartner_uuid = productSupply.getBpartner().getUuid();
 		this.product = productSupply.getProduct();
-		this.day = (Date)productSupply.getDay().clone();
+		this.day = productSupply.getDay();
 		this.qty = productSupply.getQty();
 	}
 

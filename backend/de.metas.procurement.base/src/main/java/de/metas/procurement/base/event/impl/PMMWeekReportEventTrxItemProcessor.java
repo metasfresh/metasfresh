@@ -203,7 +203,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 				.contractLine_uuid(null) // unknown
 				.qty(BigDecimal.ZERO)
 				.weekPlanning(true)
-				.day(dateTwoWeeksAgo)
+				.day(TimeUtil.asLocalDate(dateTwoWeeksAgo))
 				.build();
 
 		Services.get(IServerSyncBL.class).reportProductSupplies(PutProductSuppliesRequest.of(syncProductSupply_TwoWeeksAgo));

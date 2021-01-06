@@ -1,8 +1,6 @@
 package de.metas.procurement.webui.sync;
 
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
@@ -18,13 +16,12 @@ import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.util.DateUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,26 +51,29 @@ import java.util.Objects;
 @Transactional
 public class SyncRfqImportService extends AbstractSyncImportService
 {
-	@Autowired
-	private RfqRepository rfqRepo;
-	@Autowired
-	private ProductRepository productRepo;
-	@Autowired
-	@Lazy
-	private SyncProductImportService productImportService;
-	@Autowired
-	@Lazy
-	private BPartnerRepository bpartnerRepo;
-	@Autowired
-	@Lazy
-	private ContractLineRepository contractLineRepo;
-	@Autowired
-	@Lazy
-	private ProductSupplyRepository productSupplyRepo;
-	
-	// @Autowired
-	// @Lazy
-	// private MFEventBus applicationEventBus;
+	private final RfqRepository rfqRepo;
+	private final ProductRepository productRepo;
+	private final SyncProductImportService productImportService;
+	private final BPartnerRepository bpartnerRepo;
+	private final ContractLineRepository contractLineRepo;
+	private final ProductSupplyRepository productSupplyRepo;
+	// @Autowired @Lazy private MFEventBus applicationEventBus;
+
+	public SyncRfqImportService(
+			@NonNull final RfqRepository rfqRepo,
+			@NonNull final ProductRepository productRepo,
+			@NonNull final SyncProductImportService productImportService,
+			@NonNull final BPartnerRepository bpartnerRepo,
+			@NonNull final ContractLineRepository contractLineRepo,
+			@NonNull final ProductSupplyRepository productSupplyRepo)
+	{
+		this.rfqRepo = rfqRepo;
+		this.productRepo = productRepo;
+		this.productImportService = productImportService;
+		this.bpartnerRepo = bpartnerRepo;
+		this.contractLineRepo = contractLineRepo;
+		this.productSupplyRepo = productSupplyRepo;
+	}
 
 	public void importRfQs(final BPartner bpartner, final List<SyncRfQ> syncRfQs)
 	{
@@ -119,7 +119,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		final Product product = productImportService.importProduct(syncProduct);
 		if (product == null)
 		{
-			throw new RuntimeException("No product found for "+syncProduct);
+			throw new RuntimeException("No product found for " + syncProduct);
 		}
 		rfq.setProduct(product);
 
@@ -127,18 +127,18 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		// Quantity
 		rfq.setQtyRequested(syncRfQ.getQtyRequested());
 		rfq.setQtyCUInfo(syncRfQ.getQtyCUInfo());
-		
+
 		//
 		// Price & currency
 		rfq.setCurrencyCode(syncRfQ.getCurrencyCode());
-		
+
 		//
 		// Save & return
 		rfqRepo.save(rfq);
 		logger.debug("Imported: {} -> {}", syncRfQ, rfq);
 
 		// applicationEventBus.post(RfqChangedEvent.of(rfq));
-		
+
 		return rfq;
 	}
 
@@ -166,7 +166,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 			rfq.setWinnerKnown(true);
 			rfq.setWinner(syncRfQCloseEvent.isWinner());
 		}
-		
+
 		rfqRepo.save(rfq);
 		// applicationEventBus.post(RfqChangedEvent.of(rfq));
 
@@ -176,7 +176,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 			if (plannedSupplies != null && !plannedSupplies.isEmpty())
 			{
 				final BPartner bpartner = rfq.getBpartner();
-				
+
 				for (final SyncProductSupply syncProductSupply : plannedSupplies)
 				{
 					importPlannedProductSupply(syncProductSupply, bpartner);
@@ -193,10 +193,10 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		final String contractLine_uuid = syncProductSupply.getContractLine_uuid();
 		final ContractLine contractLine = contractLineRepo.findByUuid(contractLine_uuid);
 		//
-		final Date day = DateUtils.truncToDay(syncProductSupply.getDay());
+		final LocalDate day = syncProductSupply.getDay();
 		final BigDecimal qty = MoreObjects.firstNonNull(syncProductSupply.getQty(), BigDecimal.ZERO);
-		
-		ProductSupply productSupply = productSupplyRepo.findByProductAndBpartnerAndDay(product, bpartner, day);
+
+		ProductSupply productSupply = productSupplyRepo.findByProductAndBpartnerAndDay(product, bpartner, java.sql.Date.valueOf(day));
 		final boolean isNew;
 		if (productSupply == null)
 		{
@@ -207,10 +207,10 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		{
 			isNew = false;
 		}
-		
+
 		//
 		// Contract line
-		if(!isNew)
+		if (!isNew)
 		{
 			final ContractLine contractLineOld = productSupply.getContractLine();
 			if (!Objects.equals(contractLine, contractLineOld))
@@ -219,10 +219,10 @@ public class SyncRfqImportService extends AbstractSyncImportService
 			}
 			productSupply.setContractLine(contractLine);
 		}
-		
+
 		//
 		// Quantity
-		if(!isNew)
+		if (!isNew)
 		{
 			final BigDecimal qtyOld = productSupply.getQty();
 			if (qty.compareTo(qtyOld) != 0)
@@ -235,7 +235,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		//
 		// Save the product supply
 		productSupplyRepo.save(productSupply);
-		
+
 		// applicationEventBus.post(ProductSupplyChangedEvent.of(productSupply));
 	}
 }

@@ -9,11 +9,9 @@ import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
-import de.metas.procurement.webui.Application;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -43,31 +41,25 @@ import java.util.List;
 @Component
 public class AgentSync implements IAgentSync
 {
-	private static final transient Logger logger = LoggerFactory.getLogger(AgentSync.class);
+	private static final Logger logger = LoggerFactory.getLogger(AgentSync.class);
+	private final SyncBPartnerImportService bpartnersImportService;
+	private final SyncProductImportService productsImportService;
+	private final SyncSettingsImportService settingsImportService;
+	private final SyncConfirmationsImportService confirmationsImportService;
+	private final SyncRfqImportService rfqImportService;
 
-	@Autowired
-	@Lazy
-	private SyncBPartnerImportService bpartnersImportService;
-
-	@Autowired
-	@Lazy
-	private SyncProductImportService productsImportService;
-
-	@Autowired
-	@Lazy
-	private SyncSettingsImportService settingsImportService;
-
-	@Autowired
-	@Lazy
-	private SyncConfirmationsImportService confirmationsImportService;
-
-	@Autowired
-	@Lazy
-	private SyncRfqImportService rfqImportService;
-
-	public AgentSync()
+	public AgentSync(
+			@NonNull final SyncBPartnerImportService bpartnersImportService,
+			@NonNull final SyncProductImportService productsImportService,
+			@NonNull final SyncSettingsImportService settingsImportService,
+			@NonNull final SyncConfirmationsImportService confirmationsImportService,
+			@NonNull final SyncRfqImportService rfqImportService)
 	{
-		//Application.autowire(this); // IDK what this was supposed to be, but right now, it causes an NPE when running AgentSyncIntegrationTest
+		this.bpartnersImportService = bpartnersImportService;
+		this.productsImportService = productsImportService;
+		this.settingsImportService = settingsImportService;
+		this.confirmationsImportService = confirmationsImportService;
+		this.rfqImportService = rfqImportService;
 	}
 
 	@Override
@@ -83,7 +75,7 @@ public class AgentSync implements IAgentSync
 				bpartnersImportService.importBPartner(syncBpartner);
 				countImported++;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				countError++;
 				logger.error("Failed importing {}. Skipped.", syncBpartner, e);
@@ -105,7 +97,7 @@ public class AgentSync implements IAgentSync
 				productsImportService.importProduct(syncProduct);
 				countImported++;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				countError++;
 				logger.error("Failed importing {}. Skipped.", syncProduct, e);
@@ -122,7 +114,7 @@ public class AgentSync implements IAgentSync
 		{
 			settingsImportService.importSyncInfoMessage(request);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.error("Failed importing {}. Skipped.", request, e);
 		}
@@ -139,7 +131,7 @@ public class AgentSync implements IAgentSync
 			{
 				confirmationsImportService.importConfirmation(syncConfirmation);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error("Failed importing confirmation: {}", syncConfirmation, e);
 			}
@@ -161,7 +153,7 @@ public class AgentSync implements IAgentSync
 			{
 				rfqImportService.importRfQ(syncRfq);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error("Failed importing RfQ: {}", syncRfq, e);
 			}
@@ -183,7 +175,7 @@ public class AgentSync implements IAgentSync
 			{
 				rfqImportService.importRfQCloseEvent(syncRfQCloseEvent);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error("Failed importing: {}", syncRfQCloseEvent, e);
 			}

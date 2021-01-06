@@ -2,6 +2,7 @@ package de.metas.procurement.webui.model;
 
 import com.google.common.collect.ImmutableMap;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -89,7 +90,7 @@ public enum Trend
 		code2value = code2valueBuilder.build();
 	}
 	
-	public static Trend ofCodeOrNull(final String code)
+	public static Trend ofCodeOrNull(@Nullable final String code)
 	{
 		if (code == null)
 		{

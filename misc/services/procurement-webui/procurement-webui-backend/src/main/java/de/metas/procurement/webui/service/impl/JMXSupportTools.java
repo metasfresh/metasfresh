@@ -1,18 +1,16 @@
 package de.metas.procurement.webui.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.stereotype.Service;
-
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ProductRepository;
+import lombok.NonNull;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -40,13 +38,16 @@ import de.metas.procurement.webui.repository.ProductRepository;
 @ManagedResource(description = "JMX support tools")
 public class JMXSupportTools
 {
-	@Autowired
-	@Lazy
-	private ProductRepository productRepository;
+	private final ProductRepository productRepository;
+	private final BPartnerRepository bpartnersRepository;
 
-	@Autowired
-	@Lazy
-	private BPartnerRepository bpartnersRepository;
+	public JMXSupportTools(
+			@NonNull final ProductRepository productRepository,
+			@NonNull final BPartnerRepository bpartnersRepository)
+	{
+		this.productRepository = productRepository;
+		this.bpartnersRepository = bpartnersRepository;
+	}
 
 	@ManagedOperation(description = "Finds all products which have a name like given parameter")
 	public List<String> getProductsByNameLike(final String productNameLike)
