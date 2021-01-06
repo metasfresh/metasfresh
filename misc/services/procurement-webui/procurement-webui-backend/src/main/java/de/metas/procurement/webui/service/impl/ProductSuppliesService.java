@@ -16,16 +16,17 @@ import de.metas.procurement.webui.repository.WeekSupplyRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.IServerSyncService;
 import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
-import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.threeten.extra.YearWeek;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -214,29 +215,27 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week)
+	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final YearWeek week)
 	{
-		final LocalDate weekDay = week.getNextWeek().getDateFrom();
+		final LocalDate weekDay = week.plusWeeks(1).atDay(DayOfWeek.MONDAY);
 		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
 				product,
 				bpartner,
-				DateUtils.toDate(weekDay));
-		if (weekSupply == null)
-		{
-			return null;
-		}
+				DateUtils.toSqlDate(weekDay));
 
-		return Trend.ofCodeOrNull(weekSupply.getTrend());
+		return weekSupply != null ? weekSupply.getTrend() : null;
 	}
 
 	@Override
 	@Transactional
-	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week, final Trend trend)
+	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final YearWeek week, final Trend trend)
 	{
-		final LocalDate weekDay = week.getNextWeek().getDateFrom();
-		final String trendCode = trend == null ? null : trend.getCode();
+		final LocalDate weekDay = week.plusWeeks(1).atDay(DayOfWeek.MONDAY);
 
-		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toDate(weekDay));
+		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toSqlDate(weekDay));
 		if (weeklySupply == null)
 		{
 			weeklySupply = new WeekSupply();
@@ -245,7 +244,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 			weeklySupply.setDay(weekDay);
 		}
 
-		weeklySupply.setTrend(trendCode);
+		weeklySupply.setTrend(trend);
 		weekSupplyRepository.save(weeklySupply);
 
 		syncAfterCommit().add(weeklySupply);
@@ -291,6 +290,20 @@ public class ProductSuppliesService implements IProductSuppliesService
 		logger.debug("Got {} weekly supplies", weeklySupplies.size());
 
 		return weeklySupplies;
+	}
+
+	@Override
+	public List<WeekSupply> getWeeklySupplies(
+			@NonNull final BPartner bpartner,
+			@NonNull final YearWeek week)
+	{
+		final LocalDate weekDay = week.atDay(DayOfWeek.MONDAY);
+
+		return weekSupplyRepository.findBySelector(
+				bpartner,
+				null, // product
+				DateUtils.toSqlDate(weekDay),
+				DateUtils.toSqlDate(weekDay));
 	}
 
 	private ISyncAfterCommitCollector syncAfterCommit()

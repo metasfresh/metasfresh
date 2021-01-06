@@ -42,6 +42,9 @@ public class JsonWeeklyReport
 	@NonNull
 	private final String nextWeek;
 	@NonNull
+	private final String nextWeekCaption;
+
+	@NonNull
 	private final String previousWeek;
 
 	@NonNull

@@ -1,9 +1,11 @@
 package de.metas.procurement.webui.model;
 
 import com.google.common.base.MoreObjects;
+import de.metas.procurement.webui.util.YearWeekUtil;
 import lombok.NonNull;
 import org.hibernate.annotations.SelectBeforeUpdate;
 import org.springframework.context.annotation.Lazy;
+import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
 import javax.persistence.Entity;
@@ -103,14 +105,25 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 		this.day = java.sql.Date.valueOf(day);
 	}
 
+	public YearWeek getWeek()
+	{
+		return YearWeekUtil.ofJULDate(day);
+	}
+
 	@Nullable
-	public String getTrend()
+	public Trend getTrend()
+	{
+		return Trend.ofNullableCode(trend);
+	}
+
+	@Nullable
+	public String getTrendAsString()
 	{
 		return trend;
 	}
 
-	public void setTrend(@Nullable final String trend)
+	public void setTrend(@Nullable final Trend trend)
 	{
-		this.trend = trend;
+		this.trend = trend != null ? trend.getCode() : null;
 	}
 }

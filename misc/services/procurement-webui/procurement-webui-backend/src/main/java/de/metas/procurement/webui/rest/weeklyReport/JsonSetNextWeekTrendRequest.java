@@ -23,54 +23,28 @@
 package de.metas.procurement.webui.rest.weeklyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.procurement.webui.model.Trend;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.List;
-
 @Value
+@Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class JsonWeeklyProductReport
+@JsonDeserialize(builder = JsonSetNextWeekTrendRequest.JsonSetNextWeekTrendRequestBuilder.class)
+public class JsonSetNextWeekTrendRequest
 {
 	@NonNull
 	String productId;
 
 	@NonNull
-	String productName;
-
-	@Nullable
-	String packingInfo;
+	String week;
 
 	@NonNull
-	BigDecimal qty;
+	Trend trend;
 
-	@NonNull
-	List<JsonDailyProductQtyReport> dailyQuantities;
-
-	@Nullable
-	Trend nextWeekTrend;
-
-	@Builder
-	private JsonWeeklyProductReport(
-			@NonNull final String productId,
-			@NonNull final String productName,
-			@Nullable final String packingInfo,
-			@NonNull final List<JsonDailyProductQtyReport> dailyQuantities,
-			@Nullable final Trend nextWeekTrend)
-	{
-		this.productId = productId;
-		this.productName = productName;
-		this.packingInfo = packingInfo;
-		this.dailyQuantities = ImmutableList.copyOf(dailyQuantities);
-		this.nextWeekTrend = nextWeekTrend;
-
-		this.qty = dailyQuantities.stream()
-				.map(JsonDailyProductQtyReport::getQty)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JsonSetNextWeekTrendRequestBuilder {}
 }

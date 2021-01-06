@@ -32,14 +32,18 @@ import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
+import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.util.DateUtils;
-import de.metas.procurement.webui.util.YearWeekFormatter;
+import de.metas.procurement.webui.util.YearWeekUtil;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.threeten.extra.YearWeek;
@@ -75,14 +79,16 @@ public class WeeklyReportRestController
 		final BPartner bpartner = user.getBpartner();
 		final Locale locale = loginService.getLocale();
 
-		final YearWeek yearWeek = YearWeekFormatter.parse(weekYearStr);
-		final LocalDate startDate = yearWeek.atDay(DayOfWeek.MONDAY);
-		final LocalDate endDate = yearWeek.atDay(DayOfWeek.SUNDAY);
-		final List<LocalDate> days = getDays(startDate, endDate);
+		final YearWeek week = YearWeekUtil.parse(weekYearStr);
+		final LocalDate startDate = week.atDay(DayOfWeek.MONDAY);
+		final LocalDate endDate = week.atDay(DayOfWeek.SUNDAY);
+		final List<LocalDate> days = DateUtils.getDaysList(startDate, endDate);
 
+		//
 		final List<Product> favoriteProducts = productSuppliesService.getUserFavoriteProducts(user);
 		final ImmutableMap<Long, Product> favoriteProductsById = Maps.uniqueIndex(favoriteProducts, Product::getId);
 
+		//
 		final List<ProductSupply> dailySupplies = productSuppliesService.getProductSupplies(
 				bpartner.getId(),
 				-1, // all products
@@ -90,14 +96,21 @@ public class WeeklyReportRestController
 				endDate);
 		final ImmutableListMultimap<Long, ProductSupply> dailySuppliesByProductId = Multimaps.index(dailySupplies, dailySupply -> dailySupply.getProduct().getId());
 
+		//
+		final ImmutableMap<Long, WeekSupply> nextWeekForcastsByProductId = Maps.uniqueIndex(
+				productSuppliesService.getWeeklySupplies(bpartner, week.plusWeeks(1)),
+				weekSupply -> weekSupply.getProduct().getId());
+
 		final ImmutableSet<Long> productIds = ImmutableSet.<Long>builder()
 				.addAll(dailySuppliesByProductId.keySet())
 				.addAll(favoriteProductsById.keySet())
 				.build();
-
 		final ArrayList<JsonWeeklyProductReport> resultProducts = new ArrayList<>(productIds.size());
 		for (final Long productId : productIds)
 		{
+			final WeekSupply nextWeekForecast = nextWeekForcastsByProductId.get(productId);
+			final Trend nextWeekTrend = nextWeekForecast != null ? nextWeekForecast.getTrend() : null;
+
 			final ImmutableList<ProductSupply> productDailySupplies = dailySuppliesByProductId.get(productId);
 			if (productDailySupplies.isEmpty())
 			{
@@ -107,6 +120,7 @@ public class WeeklyReportRestController
 						.productName(product.getName(locale))
 						.packingInfo(product.getPackingInfo(locale))
 						.dailyQuantities(JsonDailyProductQtyReport.zero(days, locale))
+						.nextWeekTrend(nextWeekTrend)
 						.build());
 			}
 			else
@@ -136,6 +150,7 @@ public class WeeklyReportRestController
 						.productName(product.getName(locale))
 						.packingInfo(product.getPackingInfo(locale))
 						.dailyQuantities(resultDailyQtys)
+						.nextWeekTrend(nextWeekTrend)
 						.build());
 			}
 		}
@@ -143,22 +158,32 @@ public class WeeklyReportRestController
 		resultProducts.sort(Comparator.comparing(JsonWeeklyProductReport::getProductName));
 
 		return JsonWeeklyReport.builder()
-				.week(YearWeekFormatter.toJsonString(yearWeek))
-				.weekCaption(YearWeekFormatter.toDisplayName(yearWeek))
-				.previousWeek(YearWeekFormatter.toJsonString(yearWeek.minusWeeks(1)))
-				.nextWeek(YearWeekFormatter.toJsonString(yearWeek.plusWeeks(1)))
+				.week(YearWeekUtil.toJsonString(week))
+				.weekCaption(YearWeekUtil.toDisplayName(week))
+				.previousWeek(YearWeekUtil.toJsonString(week.minusWeeks(1)))
+				.nextWeek(YearWeekUtil.toJsonString(week.plusWeeks(1)))
+				.nextWeekCaption(YearWeekUtil.toDisplayName(week.plusWeeks(1)))
 				.products(resultProducts)
 				.build();
 	}
 
-	private static List<LocalDate> getDays(final LocalDate startDate, final LocalDate endDate)
+	@PostMapping("/nextWeekTrend")
+	public JsonSetNextWeekTrendResponse setNextWeekTrend(@RequestBody @NonNull final JsonSetNextWeekTrendRequest request)
 	{
-		final ArrayList<LocalDate> result = new ArrayList<>();
-		for (LocalDate date = startDate; date.compareTo(endDate) <= 0; date = date.plusDays(1))
-		{
-			result.add(date);
-		}
+		final User user = loginService.getLoggedInUser();
+		final Product product = productSuppliesService.getProductById(Long.parseLong(request.getProductId()));
+		final YearWeek week = YearWeekUtil.parse(request.getWeek());
+		final @NonNull Trend trend = request.getTrend();
+		final WeekSupply weeklyForecast = productSuppliesService.setNextWeekTrend(
+				user.getBpartner(),
+				product,
+				week,
+				trend);
 
-		return result;
+		return JsonSetNextWeekTrendResponse.builder()
+				.productId(weeklyForecast.getProduct().getIdAsString())
+				.week(YearWeekUtil.toJsonString(weeklyForecast.getWeek()))
+				.trend(weeklyForecast.getTrend())
+				.build();
 	}
 }

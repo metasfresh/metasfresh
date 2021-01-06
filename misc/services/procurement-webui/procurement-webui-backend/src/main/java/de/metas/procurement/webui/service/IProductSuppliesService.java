@@ -7,13 +7,12 @@ import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
-import de.metas.procurement.webui.util.DateRange;
 import lombok.NonNull;
+import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 /*
@@ -62,11 +61,13 @@ public interface IProductSuppliesService
 	List<Product> getAllSharedProducts();
 
 	@Nullable
-	Trend getNextWeekTrend(BPartner bpartner, Product product, DateRange week);
+	Trend getNextWeekTrend(BPartner bpartner, Product product, YearWeek week);
 
-	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, DateRange week, Trend trend);
+	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, YearWeek week, Trend trend);
 
 	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
+
+	List<WeekSupply> getWeeklySupplies(BPartner bpartner, YearWeek week);
 
 	Product getProductById(Long productId);
 }

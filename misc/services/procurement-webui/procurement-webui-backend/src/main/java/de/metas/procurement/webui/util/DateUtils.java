@@ -8,9 +8,11 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 
 /*
@@ -167,4 +169,16 @@ public final class DateUtils
 	{
 		return date.format(DateTimeFormatter.ofPattern("EEEE", locale));
 	}
+
+	public static List<LocalDate> getDaysList(final LocalDate startDate, final LocalDate endDate)
+	{
+		final ArrayList<LocalDate> result = new ArrayList<>();
+		for (LocalDate date = startDate; date.compareTo(endDate) <= 0; date = date.plusDays(1))
+		{
+			result.add(date);
+		}
+
+		return result;
+	}
+
 }

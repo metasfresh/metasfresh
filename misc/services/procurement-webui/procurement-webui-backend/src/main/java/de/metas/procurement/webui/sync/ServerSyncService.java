@@ -349,7 +349,7 @@ public class ServerSyncService implements IServerSyncService
 					.bpartner_uuid(weeklySupply.getBpartner().getUuid())
 					.product_uuid(weeklySupply.getProduct().getUuid())
 					.weekDay(weeklySupply.getDay())
-					.trend(weeklySupply.getTrend())
+					.trend(weeklySupply.getTrendAsString())
 					.syncConfirmationId(weeklySupply.getSyncConfirmId())
 					.build();
 

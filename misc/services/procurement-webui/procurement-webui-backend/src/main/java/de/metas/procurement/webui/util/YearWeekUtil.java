@@ -26,8 +26,11 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.threeten.extra.YearWeek;
 
+import java.time.LocalDate;
+import java.time.temporal.IsoFields;
+
 @UtilityClass
-public class YearWeekFormatter
+public class YearWeekUtil
 {
 	/**
 	 * @param str ww.YYYY format
@@ -50,6 +53,16 @@ public class YearWeekFormatter
 		{
 			throw new IllegalArgumentException("Invalid format: " + str, ex);
 		}
+	}
+
+	public static YearWeek ofLocalDate(@NonNull final LocalDate date)
+	{
+		return YearWeek.of(date.get(IsoFields.WEEK_BASED_YEAR), date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR));
+	}
+
+	public static YearWeek ofJULDate(@NonNull final java.util.Date date)
+	{
+		return ofLocalDate(DateUtils.toLocalDate(date));
 	}
 
 	public static String toJsonString(@NonNull final YearWeek yearWeek)
