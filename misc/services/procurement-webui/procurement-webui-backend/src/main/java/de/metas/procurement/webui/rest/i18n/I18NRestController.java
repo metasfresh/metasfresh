@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.i18n;
 
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.service.I18N;

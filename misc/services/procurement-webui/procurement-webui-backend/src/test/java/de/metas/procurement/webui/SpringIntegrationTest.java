@@ -187,7 +187,7 @@ public class SpringIntegrationTest
 	{
 		// Report the product supply
 		final ContractLine contractLine = null;
-		productSuppliesService.reportSupply(bpartner, product, contractLine, day, qty);
+		productSuppliesService.reportSupply(bpartner, product, contractLine, DateUtils.toLocalDate(day), qty);
 
 		// Make sure it's saved in database
 		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));

@@ -139,13 +139,13 @@ public class ProductSuppliesService implements IProductSuppliesService
 			final BPartner bpartner,
 			final Product product,
 			final ContractLine contractLine,
-			final Date day,
+			final LocalDate day,
 			final BigDecimal qty)
 	{
 		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
 		if (productSupply == null)
 		{
-			productSupply = ProductSupply.build(bpartner, product, contractLine, DateUtils.toLocalDate(day));
+			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
 		}
 
 		productSupply.setQty(qty);
@@ -155,10 +155,9 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date)
+	public List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date)
 	{
-		final Date day = DateUtils.truncToDay(date);
-		return productSupplyRepository.findByBpartnerAndDay(bpartner, day);
+		return productSupplyRepository.findByBpartnerAndDay(bpartner, DateUtils.toSqlDate(date));
 	}
 
 	@Override
@@ -306,4 +305,9 @@ public class ProductSuppliesService implements IProductSuppliesService
 		return syncService.syncAfterCommit();
 	}
 
+	@Override
+	public Product getProductById(final Long productId)
+	{
+		return productRepository.getOne(productId);
+	}
 }

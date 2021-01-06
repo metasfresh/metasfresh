@@ -29,8 +29,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 /*
@@ -212,20 +212,25 @@ public class LoginService implements ILoginService
 		}
 	}
 
-	public Optional<User> getLoggedInUser()
+	@Override
+	public User getLoggedInUser()
 	{
-		if (!isLoggedIn())
-		{
-			return Optional.empty();
-		}
+		assertLoggedIn();
 		final HttpSession httpSession = getCurrentHttpSession();
 		final Long loggedInUserId = (Long)httpSession.getAttribute(HTTP_SESSION_loggedUserId);
 		if (loggedInUserId == null || loggedInUserId <= 0)
 		{
-			return Optional.empty();
+			// shall not happen
+			throw new IllegalStateException("Not logged in");
 		}
 
-		return Optional.of(userRepository.getOne(loggedInUserId));
+		return userRepository.getOne(loggedInUserId);
+	}
+
+	@Override
+	public Locale getLocale()
+	{
+		return i18n.getCurrentLocale();
 	}
 
 	@Override

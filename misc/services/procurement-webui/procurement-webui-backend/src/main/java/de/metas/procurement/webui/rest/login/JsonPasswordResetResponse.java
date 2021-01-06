@@ -20,33 +20,32 @@
  * #L%
  */
 
-package de.metas.procurement.webui.dailyReport;
+package de.metas.procurement.webui.rest.login;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.procurement.webui.model.Product;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonProductQtyReport.JsonProductQtyReportBuilder.class)
-public class JsonProductQtyReport
+@JsonDeserialize(builder = JsonPasswordResetResponse.JsonPasswordResetResponseBuilder.class)
+public class JsonPasswordResetResponse
 {
-	String id;
-	Product product;
-	LocalDate day;
-	BigDecimal qty;
-	BigDecimal qtySent;
-	boolean sent;
+	@NonNull
+	String email;
+
+	@NonNull
+	String language;
+
+	@NonNull
+	String newPassword;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonProductQtyReportBuilder
+	public static class JsonPasswordResetResponseBuilder
 	{
 	}
 }

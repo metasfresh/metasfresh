@@ -1,6 +1,7 @@
 package de.metas.procurement.webui.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -39,9 +40,14 @@ import javax.annotation.Nullable;
 
 public interface IProductSuppliesService
 {
-	void reportSupply(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day, final BigDecimal qty);
+	void reportSupply(
+			final BPartner bpartner,
+			final Product product,
+			final ContractLine contractLine,
+			final LocalDate day,
+			final BigDecimal qty);
 
-	List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date);
+	List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date);
 
 	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
 
@@ -61,4 +67,6 @@ public interface IProductSuppliesService
 	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, DateRange week, Trend trend);
 
 	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+
+	Product getProductById(Long productId);
 }

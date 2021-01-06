@@ -20,45 +20,32 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.dailyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonLoginResponse.JsonLoginResponseBuilder.class)
-public class JsonLoginResponse
+@JsonDeserialize(builder = JsonDailyReport.JsonDailyReportBuilder.class)
+public class JsonDailyReport
 {
-	public static JsonLoginResponse ok()
-	{
-		return JsonLoginResponse.builder()
-				.ok(true)
-				.build();
-	}
+	@NonNull
+	LocalDate date;
 
-	public static JsonLoginResponse error(final Exception ex)
-	{
-		return JsonLoginResponse.builder()
-				.ok(false)
-				.errorMessage(ex.getLocalizedMessage())
-				.build();
-	}
-
-	boolean ok;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String errorMessage;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String language;
+	@NonNull
+	@Singular
+	List<JsonDailyReportItem> products;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonLoginResponseBuilder
-	{
-	}
+	public static class JsonDailyReportBuilder {}
 }

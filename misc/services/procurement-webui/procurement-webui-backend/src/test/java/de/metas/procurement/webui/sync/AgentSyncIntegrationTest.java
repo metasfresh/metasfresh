@@ -43,6 +43,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -180,7 +181,7 @@ public class AgentSyncIntegrationTest
 			final BPartner bpartner = bpartnerRepo.findByUuid(syncBPartner1_UUID);
 			final Product product = productsRepo.findByUuid(syncProduct1.getUuid());
 			final ContractLine contractLine = contractLinesRepo.findByUuid(syncContractLine1_UUID);
-			final Date day = DateUtils.truncToDay(new Date());
+			final LocalDate day = LocalDate.now();
 			final BigDecimal qty = new BigDecimal("10");
 			productSuppliesService.reportSupply(bpartner, product, contractLine, day, qty);
 		}

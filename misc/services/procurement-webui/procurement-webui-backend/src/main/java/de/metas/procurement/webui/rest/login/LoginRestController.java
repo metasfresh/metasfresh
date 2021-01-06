@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.login;
 
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.model.User;

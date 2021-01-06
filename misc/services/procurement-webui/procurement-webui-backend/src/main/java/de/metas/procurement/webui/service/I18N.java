@@ -91,6 +91,22 @@ public class I18N
 				: LanguageKey.ofLocale(Locale.getDefault());
 	}
 
+	public Locale getCurrentLocale()
+	{
+		final HttpSession httpSession = getCurrentHttpSessionOrNull();
+		if (httpSession == null)
+		{
+			return Locale.getDefault();
+		}
+
+		final LanguageKey languageKey = (LanguageKey)httpSession.getAttribute(HTTP_SESSION_language);
+
+		return languageKey != null
+				? languageKey.toLocale()
+				: Locale.getDefault();
+	}
+
+
 	@Nullable
 	private HttpSession getCurrentHttpSessionOrNull()
 	{

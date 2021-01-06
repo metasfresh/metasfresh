@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.i18n;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -29,23 +29,20 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Map;
+
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonPasswordResetResponse.JsonPasswordResetResponseBuilder.class)
-public class JsonPasswordResetResponse
+@JsonDeserialize(builder = JsonMessages.JsonMessagesBuilder.class)
+public class JsonMessages
 {
-	@NonNull
-	String email;
-
 	@NonNull
 	String language;
 
 	@NonNull
-	String newPassword;
+	Map<String, String> messages;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonPasswordResetResponseBuilder
-	{
-	}
+	public static class JsonMessagesBuilder {}
 }

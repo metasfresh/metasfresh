@@ -76,6 +76,14 @@ public final class DateUtils
 				: null;
 	}
 
+	@Nullable
+	public static java.sql.Date toSqlDate(@Nullable final LocalDate date)
+	{
+		return date != null
+				? java.sql.Date.valueOf(date)
+				: null;
+	}
+
 	public static java.util.Date toDate(final LocalDate date)
 	{
 		return java.util.Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());

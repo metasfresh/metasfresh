@@ -20,29 +20,45 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.login;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-
-import java.util.Map;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonMessages.JsonMessagesBuilder.class)
-public class JsonMessages
+@JsonDeserialize(builder = JsonLoginResponse.JsonLoginResponseBuilder.class)
+public class JsonLoginResponse
 {
-	@NonNull
+	public static JsonLoginResponse ok()
+	{
+		return JsonLoginResponse.builder()
+				.ok(true)
+				.build();
+	}
+
+	public static JsonLoginResponse error(final Exception ex)
+	{
+		return JsonLoginResponse.builder()
+				.ok(false)
+				.errorMessage(ex.getLocalizedMessage())
+				.build();
+	}
+
+	boolean ok;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String errorMessage;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String language;
 
-	@NonNull
-	Map<String, String> messages;
-
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonMessagesBuilder {}
+	public static class JsonLoginResponseBuilder
+	{
+	}
 }
