@@ -3,36 +3,24 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Misc
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
-    // stage('Build procurement-webui-backend')  // too many stages clutter the build info
-    //{
     currentBuild.description = """${currentBuild.description}<p/>
-			<h3>procurement-webui-backend</h3>
+			<h4>procurement-webui-backend</h4>
 		"""
 
-    def anyFileChanged
-    try {
-        def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
-        echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
-        anyFileChanged = !vgitout.isEmpty()
-        // see if anything at all changed in this folder
-        echo "Any file changed compared to last build: ${anyFileChanged}"
-    } catch (ignored) {
-        echo "git diff error => assume something must have changed"
-        anyFileChanged = true
-    }
-
-    if (scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild) {
+    final misc = new Misc()
+    if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
         currentBuild.description = """${currentBuild.description}<p/>
 					No changes happened in procurement-webui-backend.
 					"""
         echo "no changes happened in procurement-webui-backend; skip building procurement-webui-backend";
-        return;
+        return
     }
 
     // set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
@@ -76,8 +64,6 @@ docker run --rm\\<br/>
 <p/>
 To run with your <code>application.properties</code>, include something as <code>-v /tmp/my-own-resources:/app/resources</code> in the <code>docker run</code> command.
 """
-
-    //} // stage
 }
 
 return this
