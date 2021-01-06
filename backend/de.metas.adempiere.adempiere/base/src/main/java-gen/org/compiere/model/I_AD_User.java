@@ -1,5 +1,8 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_User
  *  @author Adempiere (generated) 
@@ -1897,4 +1900,29 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 }
