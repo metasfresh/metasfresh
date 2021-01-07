@@ -3,6 +3,7 @@ package de.metas.procurement.webui.service.impl;
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
 import de.metas.procurement.webui.exceptions.LoginFailedException;
+import de.metas.procurement.webui.exceptions.NotLoggedInException;
 import de.metas.procurement.webui.exceptions.PasswordResetFailedException;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.repository.UserRepository;
@@ -208,7 +209,7 @@ public class LoginService implements ILoginService
 	{
 		if (!isLoggedIn())
 		{
-			throw new IllegalStateException("Not logged in");
+			throw new NotLoggedInException();
 		}
 	}
 
@@ -221,7 +222,7 @@ public class LoginService implements ILoginService
 		if (loggedInUserId == null || loggedInUserId <= 0)
 		{
 			// shall not happen
-			throw new IllegalStateException("Not logged in");
+			throw new NotLoggedInException();
 		}
 
 		return userRepository.getOne(loggedInUserId);
