@@ -82,7 +82,7 @@ public class WeeklyReportRestController
 				trend);
 
 		return JsonSetNextWeekTrendResponse.builder()
-				.productId(weeklyForecast.getProduct().getIdAsString())
+				.productId(weeklyForecast.getProductIdAsString())
 				.week(YearWeekUtil.toJsonString(weeklyForecast.getWeek()))
 				.trend(weeklyForecast.getTrend())
 				.build();

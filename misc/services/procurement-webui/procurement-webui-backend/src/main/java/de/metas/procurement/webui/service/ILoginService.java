@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Locale;
 
 import de.metas.procurement.webui.model.User;
+import de.metas.procurement.webui.util.LanguageKey;
 import lombok.NonNull;
 
 /*
@@ -61,6 +62,8 @@ public interface ILoginService
 	void assertLoggedIn();
 
 	User getLoggedInUser();
+
+	LanguageKey getLanguage();
 
 	Locale getLocale();
 

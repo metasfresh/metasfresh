@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest.login;
+package de.metas.procurement.webui.rest.session;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

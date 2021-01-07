@@ -82,12 +82,10 @@ public final class DateUtils
 				: null;
 	}
 
-	@Nullable
-	public static java.sql.Date toSqlDate(@Nullable final LocalDate date)
+	@NonNull
+	public static java.sql.Date toSqlDate(@NonNull final LocalDate date)
 	{
-		return date != null
-				? java.sql.Date.valueOf(date)
-				: null;
+		return java.sql.Date.valueOf(date);
 	}
 
 	public static java.util.Date toDate(final LocalDate date)
@@ -95,32 +93,8 @@ public final class DateUtils
 		return java.util.Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
 	}
 
-	@Nullable
-	public static Date truncToWeek(@Nullable final Date date)
+	public static Date truncToMonth(@NonNull final Date date)
 	{
-		if (date == null)
-		{
-			return null;
-		}
-
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-
-	@Nullable
-	public static Date truncToMonth(@Nullable final Date date)
-	{
-		if (date == null)
-		{
-			return null;
-		}
-
 		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
 		cal.setTimeInMillis(date.getTime());
 		cal.set(Calendar.DAY_OF_MONTH, 1);
@@ -151,6 +125,20 @@ public final class DateUtils
 
 		return dateTo == null || date.compareTo(dateTo) <= 0;
 	}
+
+	public static boolean between(
+			@NonNull final LocalDate date,
+			@Nullable final LocalDate dateFrom,
+			@Nullable final LocalDate dateTo)
+	{
+		if (dateFrom != null && dateFrom.compareTo(date) > 0)
+		{
+			return false;
+		}
+
+		return dateTo == null || date.compareTo(dateTo) <= 0;
+	}
+
 
 	public static Date addDays(final Date date, final int daysToAdd)
 	{

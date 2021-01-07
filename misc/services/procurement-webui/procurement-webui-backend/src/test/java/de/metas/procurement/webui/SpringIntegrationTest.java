@@ -10,7 +10,6 @@ import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
 import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Trend;
@@ -193,11 +192,12 @@ public class SpringIntegrationTest
 				.productId(product.getId())
 				.date(DateUtils.toLocalDate(day))
 				.qty(qty)
+				.qtyConfirmedByUser(true)
 				.build());
 
 		// Make sure it's saved in database
 		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
-		Assert.assertThat("Invalid Qty", productSupply.getQty(), Matchers.comparesEqualTo(qty));
+		Assertions.assertThat(productSupply.getQty()).isEqualByComparingTo(qty);
 
 		// Make sure it was reported
 		final SyncProductSupply syncProductSupply = getMockedTestServerSync().getAndRemoveReportedProductSupply(productSupply.getUuid());
@@ -209,11 +209,11 @@ public class SpringIntegrationTest
 		final String expectedContractLineUUID = expected.getContractLine() == null ? null : expected.getContractLine().getUuid();
 
 		Assert.assertEquals(expected.getUuid(), actual.getUuid());
-		Assert.assertEquals(expected.getBpartner().getUuid(), actual.getBpartner_uuid());
-		Assert.assertEquals(expected.getProduct().getUuid(), actual.getProduct_uuid());
+		Assert.assertEquals(expected.getBpartnerUUID(), actual.getBpartner_uuid());
+		Assert.assertEquals(expected.getProductUUID(), actual.getProduct_uuid());
 		Assert.assertEquals(expectedContractLineUUID, actual.getContractLine_uuid());
 		Assert.assertEquals(expected.getDay(), actual.getDay());
-		Assert.assertThat(actual.getQty(), Matchers.comparesEqualTo(expected.getQty()));
+		Assertions.assertThat(actual.getQty()).isEqualByComparingTo(expected.getQty());
 
 		assertConfirmOK(expected, actual);
 	}
@@ -236,8 +236,8 @@ public class SpringIntegrationTest
 	private void assertEquals(final WeekSupply expected, final SyncWeeklySupply actual)
 	{
 		Assert.assertEquals(expected.getUuid(), actual.getUuid());
-		Assert.assertEquals(expected.getBpartner().getUuid(), actual.getBpartner_uuid());
-		Assert.assertEquals(expected.getProduct().getUuid(), actual.getProduct_uuid());
+		Assert.assertEquals(expected.getBpartnerUUID(), actual.getBpartner_uuid());
+		Assert.assertEquals(expected.getProductUUID(), actual.getProduct_uuid());
 		Assert.assertEquals(expected.getDay(), actual.getWeekDay());
 		Assert.assertEquals(expected.getTrend(), actual.getTrend());
 

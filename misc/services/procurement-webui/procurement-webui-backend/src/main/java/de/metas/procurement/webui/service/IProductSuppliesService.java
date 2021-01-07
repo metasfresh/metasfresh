@@ -41,6 +41,10 @@ import java.util.List;
 
 public interface IProductSuppliesService
 {
+	void confirmUserEnteredQtys(@NonNull BPartner bpartner);
+
+	long countUnconfirmedUserEnteredQtys(@NonNull BPartner bpartner);
+
 	@Value
 	@Builder
 	class ReportDailySupplyRequest
@@ -51,6 +55,9 @@ public interface IProductSuppliesService
 		@NonNull long productId;
 		@NonNull LocalDate date;
 		@NonNull BigDecimal qty;
+
+		@Builder.Default
+		boolean qtyConfirmedByUser = false;
 	}
 
 	void reportSupply(ReportDailySupplyRequest request);
@@ -80,7 +87,7 @@ public interface IProductSuppliesService
 
 	List<WeekSupply> getWeeklySupplies(BPartner bpartner, YearWeek week);
 
-	Product getProductById(Long productId);
+	Product getProductById(long productId);
 
 	@Value
 	@Builder

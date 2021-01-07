@@ -72,15 +72,7 @@ class JsonDailyReportProducer
 		final List<ProductSupply> dailySupplies = productSuppliesService.getProductSupplies(user.getBpartner(), date);
 		for (final ProductSupply productSupply : dailySupplies)
 		{
-			final Product product = productSupply.getProduct();
-			final JsonDailyReportItem item = JsonDailyReportItem.builder()
-					.productId(product.getIdAsString())
-					.productName(product.getName(locale))
-					.packingInfo(product.getPackingInfo(locale))
-					.qty(productSupply.getQty())
-					.sent(true)
-					.build();
-
+			final JsonDailyReportItem item = toJsonDailyReportItem(productSupply);
 			resultItems.add(item);
 			addedProductIds.add(item.getProductId());
 		}
@@ -93,13 +85,7 @@ class JsonDailyReportProducer
 				continue;
 			}
 
-			resultItems.add(JsonDailyReportItem.builder()
-					.productId(product.getIdAsString())
-					.productName(product.getName(locale))
-					.packingInfo(product.getPackingInfo(locale))
-					.qty(BigDecimal.ZERO)
-					.sent(false)
-					.build());
+			resultItems.add(toZeroJsonDailyReportItem(product));
 		}
 
 		resultItems.sort(Comparator.comparing(JsonDailyReportItem::getProductName));
@@ -107,6 +93,29 @@ class JsonDailyReportProducer
 		return JsonDailyReport.builder()
 				.date(date)
 				.products(resultItems)
+				.build();
+	}
+
+	private JsonDailyReportItem toJsonDailyReportItem(final ProductSupply productSupply)
+	{
+		final Product product = productSuppliesService.getProductById(productSupply.getProductId());
+		return JsonDailyReportItem.builder()
+				.productId(product.getIdAsString())
+				.productName(product.getName(locale))
+				.packingInfo(product.getPackingInfo(locale))
+				.qty(productSupply.getQtyUserEntered())
+				.confirmedByUser(productSupply.isQtyConfirmedByUser())
+				.build();
+	}
+
+	private JsonDailyReportItem toZeroJsonDailyReportItem(final Product product)
+	{
+		return JsonDailyReportItem.builder()
+				.productId(product.getIdAsString())
+				.productName(product.getName(locale))
+				.packingInfo(product.getPackingInfo(locale))
+				.qty(BigDecimal.ZERO)
+				.confirmedByUser(true)
 				.build();
 	}
 

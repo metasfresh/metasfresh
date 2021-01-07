@@ -47,12 +47,15 @@ public class JsonDailyProductQtyReport
 	@NonNull
 	BigDecimal qty;
 
+	boolean confirmedByUser;
+
 	public static JsonDailyProductQtyReport zero(@NonNull final LocalDate date, @NonNull final Locale locale)
 	{
 		return JsonDailyProductQtyReport.builder()
 				.date(date)
 				.dayCaption(DateUtils.getDayName(date, locale))
 				.qty(BigDecimal.ZERO)
+				.confirmedByUser(true)
 				.build();
 	}
 

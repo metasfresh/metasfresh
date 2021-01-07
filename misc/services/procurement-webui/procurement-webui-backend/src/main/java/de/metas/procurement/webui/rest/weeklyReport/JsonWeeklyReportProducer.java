@@ -96,21 +96,21 @@ class JsonWeeklyReportProducer
 				-1, // all products
 				startDate,
 				endDate);
-		final ImmutableListMultimap<Long, ProductSupply> dailySuppliesByProductId = Multimaps.index(dailySupplies, dailySupply -> dailySupply.getProduct().getId());
+		final ImmutableListMultimap<Long, ProductSupply> dailySuppliesByProductId = Multimaps.index(dailySupplies, ProductSupply::getProductId);
 
 		//
-		final ImmutableMap<Long, WeekSupply> nextWeekForcastsByProductId = Maps.uniqueIndex(
+		final ImmutableMap<Long, WeekSupply> nextWeekForecastByProductId = Maps.uniqueIndex(
 				productSuppliesService.getWeeklySupplies(bpartner, week.plusWeeks(1)),
-				weekSupply -> weekSupply.getProduct().getId());
+				WeekSupply::getProductId);
 
 		final ImmutableSet<Long> productIds = ImmutableSet.<Long>builder()
 				.addAll(dailySuppliesByProductId.keySet())
 				.addAll(favoriteProductsById.keySet())
 				.build();
 		final ArrayList<JsonWeeklyProductReport> resultProducts = new ArrayList<>(productIds.size());
-		for (final Long productId : productIds)
+		for (final long productId : productIds)
 		{
-			final WeekSupply nextWeekForecast = nextWeekForcastsByProductId.get(productId);
+			final WeekSupply nextWeekForecast = nextWeekForecastByProductId.get(productId);
 			final Trend nextWeekTrend = nextWeekForecast != null ? nextWeekForecast.getTrend() : null;
 
 			final ImmutableList<ProductSupply> productDailySupplies = dailySuppliesByProductId.get(productId);
@@ -134,11 +134,7 @@ class JsonWeeklyReportProducer
 					final ProductSupply productSupply = productDailySuppliesByDate.get(date);
 					if (productSupply != null)
 					{
-						resultDailyQtys.add(JsonDailyProductQtyReport.builder()
-								.date(date)
-								.dayCaption(DateUtils.getDayName(date, locale))
-								.qty(productSupply.getQty())
-								.build());
+						resultDailyQtys.add(toJsonDailyProductQtyReport(productSupply));
 					}
 					else
 					{
@@ -146,7 +142,7 @@ class JsonWeeklyReportProducer
 					}
 				}
 
-				final Product product = productDailySupplies.get(0).getProduct();
+				final Product product = productSuppliesService.getProductById(productId);
 				resultProducts.add(JsonWeeklyProductReport.builder()
 						.productId(product.getIdAsString())
 						.productName(product.getName(locale))
@@ -168,4 +164,15 @@ class JsonWeeklyReportProducer
 				.products(resultProducts)
 				.build();
 	}
+
+	private JsonDailyProductQtyReport toJsonDailyProductQtyReport(@NonNull final ProductSupply productSupply)
+	{
+		return JsonDailyProductQtyReport.builder()
+				.date(productSupply.getDay())
+				.dayCaption(DateUtils.getDayName(productSupply.getDay(), locale))
+				.qty(productSupply.getQtyUserEntered())
+				.confirmedByUser(productSupply.isQtyConfirmedByUser())
+				.build();
+	}
+
 }

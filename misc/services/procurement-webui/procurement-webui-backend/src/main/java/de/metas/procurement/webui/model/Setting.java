@@ -1,12 +1,15 @@
 package de.metas.procurement.webui.model;
 
+import com.google.common.base.MoreObjects;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+
+import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import com.google.common.base.MoreObjects;
-import lombok.NonNull;
 
 
 
@@ -34,42 +37,26 @@ import lombok.NonNull;
 
 @Entity
 @Table(name = "settings" //
-, uniqueConstraints = @UniqueConstraint(name = "settings_uq", columnNames = { "name" })       //
+		, uniqueConstraints = @UniqueConstraint(name = "settings_uq", columnNames = { "name" })       //
 )
-@SuppressWarnings("serial")
 public class Setting extends AbstractEntity
 {
 	@NonNull
+	@Getter
+	@Setter
 	private String name;
 
 	@Lob
+	@Nullable
+	@Getter
+	@Setter
 	private String value;
 
 	@Override
-	protected void toString(MoreObjects.ToStringHelper toStringHelper)
+	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("name", name)
 				.add("value", value);
-	}
-
-	public String getName()
-	{
-		return name;
-	}
-
-	public void setName(String name)
-	{
-		this.name = name;
-	}
-
-	public String getValue()
-	{
-		return value;
-	}
-
-	public void setValue(String value)
-	{
-		this.value = value;
 	}
 }

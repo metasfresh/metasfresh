@@ -3,6 +3,7 @@ package de.metas.procurement.webui.repository;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
+import lombok.NonNull;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -55,4 +56,21 @@ public interface ProductSupplyRepository extends AbstractRepository<ProductSuppl
 			@Param("product") @Nullable Product product,
 			@Param("dayFrom") Date dayFrom,
 			@Param("dayTo") Date dayTo);
+
+	@Query("select s from ProductSupply s"
+			+ " where "
+			+ " (s.deleted=false)"
+			+ " and (s.bpartner = :bpartner)"
+			+ " and (s.qty <> s.qtyUserEntered)")
+	List<ProductSupply> findUnconfirmed(
+			@Param("bpartner") @NonNull BPartner bpartner);
+
+	@Query("select count(s) from ProductSupply s"
+			+ " where "
+			+ " (s.deleted=false)"
+			+ " and (s.bpartner = :bpartner)"
+			+ " and (s.qty <> s.qtyUserEntered)")
+	long countUnconfirmed(
+			@Param("bpartner") @NonNull BPartner bpartner);
+
 }

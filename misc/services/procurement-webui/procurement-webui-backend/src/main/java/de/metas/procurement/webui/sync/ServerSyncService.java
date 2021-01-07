@@ -25,7 +25,6 @@ import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.RfqQty;
 import de.metas.procurement.webui.model.SyncConfirm;
 import de.metas.procurement.webui.model.WeekSupply;
-import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
@@ -256,9 +255,9 @@ public class ServerSyncService implements IServerSyncService
 		{
 			final SyncProductSupply syncProductSupply = SyncProductSupply.builder()
 					.uuid(productSupply.getUuid())
-					.bpartner_uuid(productSupply.getBpartner().getUuid())
+					.bpartner_uuid(productSupply.getBpartnerUUID())
 					.contractLine_uuid(productSupply.getContractLine() == null ? null : productSupply.getContractLine().getUuid())
-					.product_uuid(productSupply.getProduct().getUuid())
+					.product_uuid(productSupply.getProductUUID())
 					.day(productSupply.getDay())
 					.qty(productSupply.getQty())
 					.version(productSupply.getVersion())
@@ -337,8 +336,8 @@ public class ServerSyncService implements IServerSyncService
 			final SyncWeeklySupply syncWeeklySupply = SyncWeeklySupply.builder()
 					.uuid(weeklySupply.getUuid())
 					.version(weeklySupply.getVersion())
-					.bpartner_uuid(weeklySupply.getBpartner().getUuid())
-					.product_uuid(weeklySupply.getProduct().getUuid())
+					.bpartner_uuid(weeklySupply.getBpartnerUUID())
+					.product_uuid(weeklySupply.getProductUUID())
 					.weekDay(weeklySupply.getDay())
 					.trend(weeklySupply.getTrendAsString())
 					.syncConfirmationId(weeklySupply.getSyncConfirmId())

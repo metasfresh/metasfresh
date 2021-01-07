@@ -20,11 +20,13 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest.login;
+package de.metas.procurement.webui.rest.session;
 
 import de.metas.procurement.webui.Application;
+import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
+import de.metas.procurement.webui.service.IProductSuppliesService;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,35 +36,51 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(LoginRestController.ENDPOINT)
-public class LoginRestController
+@RequestMapping(SessionRestController.ENDPOINT)
+public class SessionRestController
 {
-	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/login";
+	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/session";
 
-	//private final static Logger logger = LoggerFactory.getLogger(LoginRestController.class);
 	private final ILoginService loginService;
+	private final IProductSuppliesService productSuppliesService;
 
-	public LoginRestController(
-			@NonNull final ILoginService loginService)
+	public SessionRestController(
+			@NonNull final ILoginService loginService,
+			@NonNull final IProductSuppliesService productSuppliesService)
 	{
 		this.loginService = loginService;
+		this.productSuppliesService = productSuppliesService;
+	}
+
+	@GetMapping("/")
+	public JsonSessionInfo getSessionInfo()
+	{
+		final User user = loginService.getLoggedInUser();
+
+		final long countUnconfirmedDailyReports = productSuppliesService.countUnconfirmedUserEnteredQtys(user.getBpartner());
+
+		return JsonSessionInfo.builder()
+				.loggedIn(true)
+				.email(user.getEmail())
+				.language(loginService.getLanguage().getAsString())
+				.countUnconfirmed(countUnconfirmedDailyReports)
+				.build();
 	}
 
 	@PostMapping("/login")
-	public JsonLoginResponse login(@RequestBody @NonNull final JsonLoginRequest request)
+	public JsonSessionInfo login(@RequestBody @NonNull final JsonLoginRequest request)
 	{
 		try
 		{
-			final User user = loginService.login(request.getEmail(), request.getPassword());
-
-			return JsonLoginResponse.builder()
-					.ok(true)
-					.language(user.getLanguageKeyOrDefault().getAsString())
-					.build();
+			loginService.login(request.getEmail(), request.getPassword());
+			return getSessionInfo();
 		}
 		catch (final Exception ex)
 		{
-			return JsonLoginResponse.error(ex);
+			return JsonSessionInfo.builder()
+					.loggedIn(false)
+					.loginError(ex.getLocalizedMessage())
+					.build();
 		}
 	}
 
@@ -72,15 +90,15 @@ public class LoginRestController
 		loginService.logout();
 	}
 
-	@GetMapping("/resetPassword")
-	public void resetPasswordRequest(@RequestParam("email") final String email)
+	@GetMapping("/resetUserPassword")
+	public void resetUserPasswordRequest(@RequestParam("email") final String email)
 	{
 		final String passwordResetToken = loginService.generatePasswordResetKey(email);
 		loginService.sendPasswordResetKey(email, passwordResetToken);
 	}
 
-	@GetMapping("/resetPasswordConfirm")
-	public JsonPasswordResetResponse resetPasswordConfirm(@RequestParam("token") final String token)
+	@GetMapping("/resetUserPasswordConfirm")
+	public JsonPasswordResetResponse resetUserPasswordConfirm(@RequestParam("token") final String token)
 	{
 		final User user = loginService.resetPassword(token);
 		loginService.login(user);
@@ -90,5 +108,12 @@ public class LoginRestController
 				.language(user.getLanguageKeyOrDefault().getAsString())
 				.newPassword(user.getPassword())
 				.build();
+	}
+
+	@PostMapping("/confirmDataEntry")
+	public void confirmDataEntry()
+	{
+		final BPartner bpartner = loginService.getLoggedInUser().getBpartner();
+		productSuppliesService.confirmUserEnteredQtys(bpartner);
 	}
 }

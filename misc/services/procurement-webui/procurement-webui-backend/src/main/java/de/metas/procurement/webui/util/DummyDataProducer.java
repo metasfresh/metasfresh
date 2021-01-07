@@ -271,6 +271,7 @@ public class DummyDataProducer
 						.productId(product.getId())
 						.date(LocalDate.now()) // today
 						.qty(new BigDecimal("10"))
+						.qtyConfirmedByUser(true)
 						.build());
 				productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
 						.bpartner(bpartner)
@@ -278,6 +279,7 @@ public class DummyDataProducer
 						.productId(product.getId())
 						.date(LocalDate.now().plusDays(1)) // tomorrow
 						.qty(new BigDecimal("3"))
+						.qtyConfirmedByUser(true)
 						.build());
 			}
 		}

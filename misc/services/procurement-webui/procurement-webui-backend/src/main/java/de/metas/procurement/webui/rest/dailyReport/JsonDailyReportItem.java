@@ -50,7 +50,7 @@ public class JsonDailyReportItem
 	@NonNull
 	BigDecimal qty;
 
-	boolean sent;
+	boolean confirmedByUser;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonDailyReportItemBuilder {}

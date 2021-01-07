@@ -20,45 +20,26 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest.login;
+package de.metas.procurement.webui.rest.session;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.Value;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonLoginResponse.JsonLoginResponseBuilder.class)
-public class JsonLoginResponse
+public class JsonSessionInfo
 {
-	public static JsonLoginResponse ok()
-	{
-		return JsonLoginResponse.builder()
-				.ok(true)
-				.build();
-	}
-
-	public static JsonLoginResponse error(final Exception ex)
-	{
-		return JsonLoginResponse.builder()
-				.ok(false)
-				.errorMessage(ex.getLocalizedMessage())
-				.build();
-	}
-
-	boolean ok;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String errorMessage;
+	boolean loggedIn;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String loginError;
+
+	String email;
 	String language;
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonLoginResponseBuilder
-	{
-	}
+	@Builder.Default
+	long countUnconfirmed = 0;
 }

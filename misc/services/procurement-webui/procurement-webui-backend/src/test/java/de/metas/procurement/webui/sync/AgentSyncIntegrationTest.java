@@ -42,7 +42,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -167,7 +167,7 @@ public class AgentSyncIntegrationTest
 			Assert.assertEquals(
 					"only our contract line shall be present in database"
 					// expected
-					, Arrays.asList(contractLinesRepo.findByUuid(syncContractLine1_UUID))
+					, Collections.singletonList(contractLinesRepo.findByUuid(syncContractLine1_UUID))
 					// actual
 					, contractLinesRepo.findAll());
 		}
@@ -180,6 +180,7 @@ public class AgentSyncIntegrationTest
 				.productId(productsRepo.findByUuid(syncProduct1.getUuid()).getId())
 				.date(LocalDate.now())
 				.qty(new BigDecimal("10"))
+				.qtyConfirmedByUser(true)
 				.build());
 
 		//
@@ -202,7 +203,7 @@ public class AgentSyncIntegrationTest
 			Assert.assertEquals(
 					"Expect only our second line to be present in database"
 					// expected
-					, Arrays.asList(contractLinesRepo.findByUuid(syncContractLine2.getUuid()))
+					, Collections.singletonList(contractLinesRepo.findByUuid(syncContractLine2.getUuid()))
 					// actual
 					, contractLinesRepo.findAll());
 		}
@@ -212,8 +213,8 @@ public class AgentSyncIntegrationTest
 		{
 			syncBPartner1.clearContracts();
 			agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner1.build()));
-			Assert.assertEquals("No contracts", Arrays.asList(), contractLinesRepo.findAll());
-			Assert.assertEquals("No contract lines", Arrays.asList(), contractLinesRepo.findAll());
+			Assert.assertEquals("No contracts", Collections.emptyList(), contractLinesRepo.findAll());
+			Assert.assertEquals("No contract lines", Collections.emptyList(), contractLinesRepo.findAll());
 		}
 
 		// //
@@ -250,11 +251,11 @@ public class AgentSyncIntegrationTest
 			final User user1 = usersRepo.findByUuid(syncUser1_UUID);
 			Assert.assertNotNull("User1 was imported", user1);
 			Assert.assertEquals("User1 - BPartner", syncBPartner_UUID, user1.getBpartner().getUuid());
-			Assert.assertEquals("User1 - Deleted", false, user1.isDeleted());
-			Assert.assertEquals("User1 - Deleted_ID", null, user1.getDeleted_id());
+			Assert.assertFalse("User1 - Deleted", user1.isDeleted());
+			Assert.assertNull("User1 - Deleted_ID", user1.getDeleted_id());
 			Assert.assertEquals("User1 - EMail", email, user1.getEmail());
 			//
-			Assert.assertEquals("Database shall contain only that user", Arrays.asList(user1), usersRepo.findAll());
+			Assert.assertEquals("Database shall contain only that user", Collections.singletonList(user1), usersRepo.findAll());
 		}
 
 		//
@@ -276,15 +277,15 @@ public class AgentSyncIntegrationTest
 			final User user1 = usersRepo.findByUuid(syncUser1_UUID);
 			Assert.assertNotNull("User1 was imported", user1);
 			Assert.assertEquals("User1 - BPartner", syncBPartner_UUID, user1.getBpartner().getUuid());
-			Assert.assertEquals("User1 - Deleted", true, user1.isDeleted());
+			Assert.assertTrue("User1 - Deleted", user1.isDeleted());
 			Assert.assertEquals("User1 - Deleted_ID", user1.getId(), user1.getDeleted_id());
 			Assert.assertEquals("User1 - EMail", email, user1.getEmail());
 			//
 			final User user2 = usersRepo.findByUuid(syncUser2_UUID);
 			Assert.assertNotNull("User2 was imported", user2);
 			Assert.assertEquals("User2 - BPartner", syncBPartner_UUID, user2.getBpartner().getUuid());
-			Assert.assertEquals("User2 - Deleted", false, user2.isDeleted());
-			Assert.assertEquals("User1 - Deleted_ID", null, user2.getDeleted_id());
+			Assert.assertFalse("User2 - Deleted", user2.isDeleted());
+			Assert.assertNull("User1 - Deleted_ID", user2.getDeleted_id());
 			Assert.assertEquals("User2 - EMail", email, user1.getEmail());
 			//
 			assertThat("Database shall contain only that user", usersRepo.findAll(), containsInAnyOrder(user1, user2));
@@ -308,7 +309,7 @@ public class AgentSyncIntegrationTest
 		assertThat(bpartnerRepo.findByUuid(bpartnerUUID), is(bpartner)); // just to gain confidence :-)
 
 		final String userUUID = newUUID();
-		User user = new User();
+		final User user = new User();
 		user.setUuid(userUUID);
 		user.setEmail("userEmail");
 		user.setBpartner(bpartner);
@@ -366,7 +367,7 @@ public class AgentSyncIntegrationTest
 		bpartnerRepo.save(bpartner);
 
 		final String userUUID = newUUID();
-		User user = new User();
+		final User user = new User();
 		user.setUuid(userUUID);
 		user.setEmail("userEmail");
 		user.setBpartner(bpartner);
@@ -393,12 +394,12 @@ public class AgentSyncIntegrationTest
 		assertThat(usersRepo.findByUuid(userUUID), is(user)); // other user shall still exist
 	}
 
-	private static final String newUUID()
+	private static String newUUID()
 	{
 		return UUID.randomUUID().toString();
 	}
 
-	private final void dump(final String msg, final List<?> entries)
+	private void dump(final String msg, final List<?> entries)
 	{
 		System.out.println(msg + ": ");
 		if (entries == null || entries.isEmpty())
@@ -414,7 +415,7 @@ public class AgentSyncIntegrationTest
 		}
 	}
 
-	private final void dumpAll(final String msg)
+	private void dumpAll(final String msg)
 	{
 		dump(msg + " - BPartners", bpartnerRepo.findAll());
 		dump(msg + " - Users", usersRepo.findAll());

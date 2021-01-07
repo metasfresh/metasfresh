@@ -1,14 +1,13 @@
 package de.metas.procurement.webui.service.impl;
 
-import javax.transaction.Transactional;
-
-import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import de.metas.procurement.webui.model.Setting;
 import de.metas.procurement.webui.repository.SettingsRepository;
 import de.metas.procurement.webui.service.ISettingsService;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
 
 /*
  * #%L
@@ -45,20 +44,27 @@ public class SettingsService implements ISettingsService
 	}
 
 	@Override
-	public String getValue(final String name)
+	public String getInfoMessage()
+	{
+		return getValue(NAME_InfoMessage);
+	}
+
+	@Override
+	public void setInfoMessage(@Nullable final String infoMessage)
+	{
+		setValue(NAME_InfoMessage, infoMessage);
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	@Nullable
+	private String getValue(@NonNull final String name)
 	{
 		final Setting setting = settingsRepo.findByName(name);
-		if (setting == null)
-		{
-			return null;
-		}
-
-		return setting.getValue();
+		return setting != null ? setting.getValue() : null;
 	}
 
 	@Transactional
-	@Override
-	public void setValue(final String name, final String value)
+	public void setValue(@NonNull final String name, @Nullable final String value)
 	{
 		Setting setting = settingsRepo.findByName(name);
 		if (setting == null)
@@ -69,17 +75,5 @@ public class SettingsService implements ISettingsService
 
 		setting.setValue(value);
 		settingsRepo.saveAndFlush(setting);
-	}
-
-	@Override
-	public String getInfoMessage()
-	{
-		return getValue(NAME_InfoMessage);
-	}
-
-	@Override
-	public void setInfoMessage(String infoMessage)
-	{
-		setValue(NAME_InfoMessage, infoMessage);
 	}
 }

@@ -155,13 +155,21 @@ public class ProductSuppliesService implements IProductSuppliesService
 				DateUtils.toSqlDate(date));
 		if (productSupply == null)
 		{
-			productSupply = ProductSupply.build(bpartner, product, contractLine, date);
+			productSupply = ProductSupply.builder()
+					.bpartner(bpartner)
+					.contractLine(contractLine)
+					.product(product)
+					.day(date)
+					.build();
 		}
 
-		productSupply.setQty(qty);
-		productSupplyRepository.save(productSupply);
+		productSupply.setQtyUserEntered(qty);
+		if (request.isQtyConfirmedByUser())
+		{
+			productSupply.setQty(qty);
+		}
 
-		syncAfterCommit().add(productSupply);
+		saveAndPush(productSupply);
 	}
 
 	@Override
@@ -177,29 +185,10 @@ public class ProductSuppliesService implements IProductSuppliesService
 			@NonNull final LocalDate dayFrom,
 			@NonNull final LocalDate dayTo)
 	{
-		final BPartner bpartner;
-		if (bpartner_id > 0)
-		{
-			bpartner = bpartnersRepository.getOne(bpartner_id);
-			// if (bpartner == null) { throw new RuntimeException("No BPartner found for ID=" + bpartner_id); }
-		}
-		else
-		{
-			bpartner = null;
-		}
-
-		final Product product;
-		if (product_id > 0)
-		{
-			product = productRepository.getOne(product_id);
-			//if (product == null) { throw new RuntimeException("No Product found for ID=" + product_id); }
-		}
-		else
-		{
-			product = null;
-		}
-
+		final BPartner bpartner = bpartner_id > 0 ? bpartnersRepository.getOne(bpartner_id) : null;
+		final Product product = product_id > 0 ? productRepository.getOne(product_id) : null;
 		logger.debug("Querying product supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
+
 		final List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(
 				bpartner,
 				product,
@@ -248,16 +237,16 @@ public class ProductSuppliesService implements IProductSuppliesService
 				DateUtils.toSqlDate(weekDay));
 		if (weeklySupply == null)
 		{
-			weeklySupply = new WeekSupply();
-			weeklySupply.setBpartner(bpartner);
-			weeklySupply.setProduct(product);
-			weeklySupply.setDay(weekDay);
+			weeklySupply = WeekSupply.builder()
+					.bpartner(bpartner)
+					.product(product)
+					.day(weekDay)
+					.build();
 		}
 
 		weeklySupply.setTrend(trend);
-		weekSupplyRepository.save(weeklySupply);
 
-		syncAfterCommit().add(weeklySupply);
+		saveAndPush(weeklySupply);
 
 		return weeklySupply;
 	}
@@ -269,29 +258,10 @@ public class ProductSuppliesService implements IProductSuppliesService
 			@NonNull final LocalDate dayFrom,
 			@NonNull final LocalDate dayTo)
 	{
-		final BPartner bpartner;
-		if (bpartner_id > 0)
-		{
-			bpartner = bpartnersRepository.getOne(bpartner_id);
-			// if (bpartner == null) { throw new RuntimeException("No BPartner found for ID=" + bpartner_id); }
-		}
-		else
-		{
-			bpartner = null;
-		}
-
-		final Product product;
-		if (product_id > 0)
-		{
-			product = productRepository.getOne(product_id);
-			// if (product == null) { throw new RuntimeException("No Product found for ID=" + product_id); }
-		}
-		else
-		{
-			product = null;
-		}
-
+		final BPartner bpartner = bpartner_id > 0 ? bpartnersRepository.getOne(bpartner_id) : null;
+		final Product product = product_id > 0 ? productRepository.getOne(product_id) : null;
 		logger.debug("Querying weekly supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
+
 		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(
 				bpartner,
 				product,
@@ -316,13 +286,25 @@ public class ProductSuppliesService implements IProductSuppliesService
 				DateUtils.toSqlDate(weekDay));
 	}
 
+	private void saveAndPush(@NonNull final ProductSupply productSupply)
+	{
+		productSupplyRepository.save(productSupply);
+		syncAfterCommit().add(productSupply);
+	}
+
+	private void saveAndPush(@NonNull final WeekSupply weeklySupply)
+	{
+		weekSupplyRepository.save(weeklySupply);
+		syncAfterCommit().add(weeklySupply);
+	}
+
 	private ISyncAfterCommitCollector syncAfterCommit()
 	{
 		return syncService.syncAfterCommit();
 	}
 
 	@Override
-	public Product getProductById(final Long productId)
+	public Product getProductById(final long productId)
 	{
 		return productRepository.getOne(productId);
 	}
@@ -341,7 +323,12 @@ public class ProductSuppliesService implements IProductSuppliesService
 		if (productSupply == null)
 		{
 			isNew = true;
-			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
+			productSupply = ProductSupply.builder()
+					.bpartner(bpartner)
+					.contractLine(contractLine)
+					.product(product)
+					.day(day)
+					.build();
 		}
 		else
 		{
@@ -370,11 +357,29 @@ public class ProductSuppliesService implements IProductSuppliesService
 				logger.warn("Changing quantity {}->{} for {} because of planning supply: {}", qtyOld, qty, productSupply, request);
 			}
 		}
+
+		productSupply.setQtyUserEntered(qty);
 		productSupply.setQty(qty);
 
 		//
 		// Save the product supply
-		productSupplyRepository.save(productSupply);
+		saveAndPush(productSupply);
 	}
 
+	@Override
+	public void confirmUserEnteredQtys(@NonNull final BPartner bpartner)
+	{
+		final List<ProductSupply> productSupplies = productSupplyRepository.findUnconfirmed(bpartner);
+		for (final ProductSupply productSupply : productSupplies)
+		{
+			productSupply.setQty(productSupply.getQtyUserEntered());
+			saveAndPush(productSupply);
+		}
+	}
+
+	@Override
+	public long countUnconfirmedUserEnteredQtys(@NonNull final BPartner bpartner)
+	{
+		return productSupplyRepository.countUnconfirmed(bpartner);
+	}
 }

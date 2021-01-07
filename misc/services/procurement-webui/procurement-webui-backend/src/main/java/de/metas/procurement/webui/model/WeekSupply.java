@@ -1,7 +1,9 @@
 package de.metas.procurement.webui.model;
 
 import com.google.common.base.MoreObjects;
+import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.YearWeekUtil;
+import lombok.Builder;
 import lombok.NonNull;
 import org.hibernate.annotations.SelectBeforeUpdate;
 import org.springframework.context.annotation.Lazy;
@@ -60,9 +62,19 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 	@Nullable
 	private String trend;
 
-	public WeekSupply()
+	protected WeekSupply()
 	{
-		super();
+	}
+
+	@Builder
+	private WeekSupply(
+			@NonNull final BPartner bpartner,
+			@NonNull final Product product,
+			@NonNull final LocalDate day)
+	{
+		this.bpartner = bpartner;
+		this.product = product;
+		this.day = DateUtils.toSqlDate(day);
 	}
 
 	@Override
@@ -75,34 +87,29 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 				.add("trend", trend);
 	}
 
-	public BPartner getBpartner()
+	public Long getProductId()
 	{
-		return bpartner;
+		return product.getId();
 	}
 
-	public void setBpartner(final BPartner bpartner)
+	public String getProductIdAsString()
 	{
-		this.bpartner = bpartner;
+		return product.getIdAsString();
 	}
 
-	public Product getProduct()
+	public String getProductUUID()
 	{
-		return product;
+		return product.getUuid();
 	}
 
-	public void setProduct(final Product product)
+	public String getBpartnerUUID()
 	{
-		this.product = product;
+		return bpartner.getUuid();
 	}
 
 	public LocalDate getDay()
 	{
 		return day.toLocalDate();
-	}
-
-	public void setDay(final LocalDate day)
-	{
-		this.day = java.sql.Date.valueOf(day);
 	}
 
 	public YearWeek getWeek()
