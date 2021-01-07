@@ -22,34 +22,31 @@
 
 package de.metas.procurement.base.rabbitmq;
 
-import de.metas.Profiles;
-import de.metas.common.procurement.sync.Constants;
-import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
-import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
-import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
-import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllProductsRequest;
-import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
-import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
-import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
-import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
-import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
-import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
-import de.metas.procurement.base.IServerSyncBL;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.RabbitHandler;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.messaging.handler.annotation.Payload;
+ import de.metas.Profiles;
+ import de.metas.common.procurement.sync.Constants;
+ import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+ import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+ import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
+ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllBPartnersRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllProductsRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetInfoMessageRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+ import de.metas.procurement.base.IServerSyncBL;
+ import de.metas.util.Services;
+ import lombok.NonNull;
+ import org.adempiere.exceptions.AdempiereException;
+ import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+ import org.springframework.amqp.rabbit.annotation.RabbitListener;
+ import org.springframework.context.annotation.Configuration;
+ import org.springframework.context.annotation.Profile;
+ import org.springframework.messaging.handler.annotation.Payload;
 
-import java.io.IOException;
-import java.util.List;
+ import java.util.List;
 
 @Configuration
 @EnableRabbit
