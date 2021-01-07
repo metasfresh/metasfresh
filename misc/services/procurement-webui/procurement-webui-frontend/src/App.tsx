@@ -20,7 +20,12 @@ const childRoutes = (
       {routes.map(({ path, Component }) => (
         <Route key={path} exact path={path}>
           {({ match }) => (
-            <CSSTransition in={match != null} classNames="view" timeout={300} unmountOnExit>
+            <CSSTransition
+              in={match != null}
+              classNames="view"
+              timeout={300}
+              unmountOnExit
+            >
               <Component />
             </CSSTransition>
           )}
@@ -50,18 +55,24 @@ class Index extends Component {
   installPrompt = null;
 
   componentDidMount() {
-    window.addEventListener('beforeinstallprompt', (e: { preventDefault: () => void }) => {
-      e.preventDefault();
-      console.log('Install Prompt fired');
-      this.installPrompt = e;
-      // See if the app is already installed, in that case, do nothing
-      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-        console.log('Already installed');
-        return false;
+    window.addEventListener(
+      'beforeinstallprompt',
+      (e: { preventDefault: () => void }) => {
+        // e.preventDefault(); - this is going to disable the prompt if uncommented !
+        console.log('Install Prompt fired');
+        this.installPrompt = e;
+        // See if the app is already installed, in that case, do nothing
+        if (
+          window.matchMedia &&
+          window.matchMedia('(display-mode: standalone)').matches
+        ) {
+          console.log('Already installed');
+          return false;
+        }
+        // Set the state variable to make button visible
+        this.setState({ installButton: true });
       }
-      // Set the state variable to make button visible
-      this.setState({ installButton: true });
-    });
+    );
   }
   // shouldComponentUpdate(nextProps) {
   //   const { location } = this.props;
@@ -85,11 +96,15 @@ const App = () => (
         <Route path="/login" component={({ location }) => <Login />} />
         <Route
           path="/forgottenPassword"
-          component={({ location }) => <Login splat={location.pathname.replace('/', '')} />}
+          component={({ location }) => (
+            <Login splat={location.pathname.replace('/', '')} />
+          )}
         />
         <Route
           path="/resetPassword"
-          component={({ location }) => <Login splat={location.pathname.replace('/', '')} />}
+          component={({ location }) => (
+            <Login splat={location.pathname.replace('/', '')} />
+          )}
         />
         <Route path="/" component={Index} />
       </Switch>
