@@ -1,10 +1,8 @@
-package de.metas.procurement.webui.service;
-
 /*
  * #%L
- * metasfresh-procurement-webui
+ * procurement-webui-backend
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +20,27 @@ package de.metas.procurement.webui.service;
  * #L%
  */
 
-import de.metas.procurement.webui.model.Rfq;
-import de.metas.procurement.webui.model.User;
-import de.metas.procurement.webui.rest.rfq.JsonChangeRfqRequest;
+package de.metas.procurement.webui.rest.rfq;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
-public interface IRfQService
+@Value
+@Builder
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+public class JsonRfqQty
 {
-	List<Rfq> getUserActiveRfqs(User user);
+	@NonNull
+	LocalDate date;
 
-	Rfq getUserActiveRfq(@NonNull User user, long rfqId);
+	@NonNull
+	String dayCaption;
 
-	Rfq getRfqById(long rfq_id);
-
-	Rfq changeActiveRfq(final JsonChangeRfqRequest request, final User loggedUser);
+	@NonNull
+	BigDecimal qtyPromised;
 }

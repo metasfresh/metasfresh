@@ -1,19 +1,23 @@
 package de.metas.procurement.webui.model;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.procurement.webui.util.DateUtils;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
+import javax.annotation.Nullable;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import com.google.common.base.MoreObjects;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 
@@ -41,45 +45,60 @@ import lombok.NonNull;
 
 @Entity
 @Table(name = Rfq.TABLE_NAME)
-@SuppressWarnings("serial")
 public class Rfq extends AbstractSyncConfirmAwareEntity
 {
 	/* package */static final String TABLE_NAME = "rfq";
 
 	@NonNull
-	private Date dateStart;
+	private java.sql.Date dateStart;
 	@NonNull
-	private Date dateEnd;
+	private java.sql.Date dateEnd;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NonNull
 	private BPartner bpartner;
 
 	@NonNull
-	private Date dateClose;
+	private java.sql.Date dateClose;
+
+	@Getter
+	@Setter
 	private boolean closed;
+
+	@Getter
+	@Setter
 	private boolean winnerKnown;
+
+	@Setter
 	private boolean winner;
 
 	@ManyToOne
 	@NonNull
+	@Getter
+	@Setter
 	private Product product;
 
 	@NonNull
+	@Getter
+	@Setter
 	private BigDecimal qtyRequested = BigDecimal.ZERO;
+
 	@NonNull
+	@Getter
+	@Setter
 	private String qtyCUInfo;
 
 	@NonNull
+	@Getter
+	@Setter
 	private BigDecimal pricePromised = BigDecimal.ZERO;
 	@NonNull
+	@Getter
+	@Setter
 	private String currencyCode;
 
-	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "rfq", cascade = CascadeType.REMOVE)
 	private final List<RfqQty> quantities = new ArrayList<>();
-
-
-
 
 	@Override
 	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
@@ -105,29 +124,34 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 				//
 				.add("pricePromised", pricePromised)
 				.add("currency", currencyCode)
-				//
-				;
-		
+		//
+		;
+
 	}
 
-	public Date getDateStart()
+	public LocalDate getDateStart()
 	{
-		return dateStart;
+		return DateUtils.toLocalDate(dateStart);
 	}
 
-	public void setDateStart(final Date dateStart)
+	public void setDateStart(final LocalDate dateStart)
 	{
-		this.dateStart = dateStart;
+		this.dateStart = DateUtils.toSqlDate(dateStart);
 	}
 
-	public Date getDateEnd()
+	public LocalDate getDateEnd()
 	{
-		return dateEnd;
+		return DateUtils.toLocalDate(dateEnd);
 	}
 
-	public void setDateEnd(final Date dateEnd)
+	public void setDateEnd(final LocalDate dateEnd)
 	{
-		this.dateEnd = dateEnd;
+		this.dateEnd = DateUtils.toSqlDate(dateEnd);
+	}
+
+	public Long getBpartnerId()
+	{
+		return getBpartner().getId();
 	}
 
 	public BPartner getBpartner()
@@ -140,74 +164,14 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 		this.bpartner = bpartner;
 	}
 
-	public Date getDateClose()
+	public LocalDate getDateClose()
 	{
-		return dateClose;
+		return DateUtils.toLocalDate(dateClose);
 	}
 
-	public void setDateClose(final Date dateClose)
+	public void setDateClose(final LocalDate dateClose)
 	{
-		this.dateClose = dateClose;
-	}
-
-	public boolean isClosed()
-	{
-		return closed;
-	}
-
-	public void setClosed(final boolean closed)
-	{
-		this.closed = closed;
-	}
-	
-	public boolean isWinnerKnown()
-	{
-		return winnerKnown;
-	}
-	
-	public void setWinnerKnown(boolean winnerKnown)
-	{
-		this.winnerKnown = winnerKnown;
-	}
-
-	public boolean isWinner()
-	{
-		return winner;
-	}
-
-	public void setWinner(final boolean winner)
-	{
-		this.winner = winner;
-	}
-
-	public Product getProduct()
-	{
-		return product;
-	}
-
-	public void setProduct(final Product product)
-	{
-		this.product = product;
-	}
-
-	public BigDecimal getQtyRequested()
-	{
-		return qtyRequested;
-	}
-
-	public void setQtyRequested(final BigDecimal qtyRequested)
-	{
-		this.qtyRequested = qtyRequested;
-	}
-
-	public BigDecimal getPricePromised()
-	{
-		return pricePromised;
-	}
-
-	public void setPricePromised(final BigDecimal pricePromised)
-	{
-		this.pricePromised = pricePromised;
+		this.dateClose = DateUtils.toSqlDate(dateClose);
 	}
 
 	public List<RfqQty> getQuantities()
@@ -215,23 +179,60 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 		return quantities;
 	}
 
-	public String getCurrencyCode()
+	public ImmutableSet<LocalDate> generateAllDaysSet()
 	{
-		return currencyCode;
+		final ArrayList<LocalDate> dates = DateUtils.getDaysList(getDateStart(), getDateEnd());
+		dates.addAll(quantities.stream()
+				.map(RfqQty::getDatePromised)
+				.collect(ImmutableSet.toImmutableSet()));
+
+		dates.sort(LocalDate::compareTo);
+
+		return ImmutableSet.copyOf(dates);
 	}
 
-	public void setCurrencyCode(final String currencyCode)
+	public BigDecimal getQtyPromised()
 	{
-		this.currencyCode = currencyCode;
-	}
-	
-	public String getQtyCUInfo()
-	{
-		return qtyCUInfo;
+		return getQuantities().stream()
+				.map(RfqQty::getQtyPromised)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
-	public void setQtyCUInfo(String qtyCUInfo)
+	public void setQtyPromised(@NonNull final LocalDate date, @NonNull final BigDecimal qtyPromised)
 	{
-		this.qtyCUInfo = qtyCUInfo;
+		final RfqQty rfqQty = getOrCreateQty(date);
+		rfqQty.setQtyPromised(qtyPromised);
+	}
+
+	private RfqQty getOrCreateQty(@NonNull final LocalDate date)
+	{
+		final RfqQty existingRfqQty = getRfqQtyByDate(date);
+		if (existingRfqQty != null)
+		{
+			return existingRfqQty;
+		}
+		else
+		{
+			final RfqQty rfqQty = RfqQty.builder()
+					.rfq(this)
+					.datePromised(date)
+					.build();
+			quantities.add(rfqQty);
+			return rfqQty;
+		}
+	}
+
+	@Nullable
+	public RfqQty getRfqQtyByDate(@NonNull final LocalDate date)
+	{
+		for (final RfqQty rfqQty : quantities)
+		{
+			if (date.equals(rfqQty.getDatePromised()))
+			{
+				return rfqQty;
+			}
+		}
+
+		return null;
 	}
 }

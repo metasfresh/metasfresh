@@ -1,6 +1,5 @@
 package de.metas.procurement.webui.util;
 
-import com.google.common.base.Preconditions;
 import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner.SyncBPartnerBuilder;
@@ -29,11 +28,7 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 /*
@@ -169,9 +164,9 @@ public class DummyDataProducer
 			final List<SyncProduct> syncProducts = getSyncProductsRequest().getProducts();
 			for (int rfqNo = 0; rfqNo < 4 && rfqNo < syncProducts.size(); rfqNo++)
 			{
-				final Date dateStart = addMonths(truncToMonth(new Date()), 2);
-				final Date dateEnd = addDays(dateStart, 14);
-				final Date dateClose = addDays(dateStart, -10);
+				final LocalDate dateStart = LocalDate.now().withDayOfMonth(1).plusMonths(2);
+				final LocalDate dateEnd = dateStart.plusDays(14);
+				final LocalDate dateClose = dateStart.plusDays(-10);
 
 				final SyncRfQ.SyncRfQBuilder syncRfQ = SyncRfQ.builder()
 						.uuid(randomUUID())
@@ -287,37 +282,5 @@ public class DummyDataProducer
 						.build());
 			}
 		}
-	}
-
-	private static Date addDays(final Date date, final int daysToAdd)
-	{
-		Preconditions.checkNotNull(date, "date not null");
-
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.add(Calendar.DAY_OF_MONTH, daysToAdd);
-		return cal.getTime();
-	}
-
-	private static Date addMonths(final Date date, final int monthsToAdd)
-	{
-		Preconditions.checkNotNull(date, "date not null");
-
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.add(Calendar.MONTH, monthsToAdd);
-		return cal.getTime();
-	}
-
-	private static Date truncToMonth(@NonNull final Date date)
-	{
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.set(Calendar.DAY_OF_MONTH, 1);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
 	}
 }

@@ -2,8 +2,12 @@ package de.metas.procurement.webui.model;
 
 import com.google.common.base.MoreObjects;
 import de.metas.procurement.webui.util.DateUtils;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
+import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
@@ -46,13 +50,30 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NonNull
+	@Getter
 	private Rfq rfq;
 
 	@NonNull
 	private java.sql.Date datePromised;
 
 	@NonNull
+	@Getter
+	@Setter
 	private BigDecimal qtyPromised;
+
+	protected RfqQty() {}
+
+	@Builder
+	private RfqQty(
+			@NonNull final Rfq rfq,
+			@NonNull final LocalDate datePromised,
+			@Nullable final BigDecimal qtyPromised)
+	{
+		this.rfq = rfq;
+		this.datePromised = DateUtils.toSqlDate(datePromised);
+		this.qtyPromised = qtyPromised;
+		this.qtyPromised = qtyPromised != null ? qtyPromised : BigDecimal.ZERO;
+	}
 
 	@Override
 	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
@@ -62,33 +83,8 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 				.add("qtyPromised", qtyPromised);
 	}
 
-	public Rfq getRfq()
-	{
-		return rfq;
-	}
-
-	public void setRfq(final Rfq rfq)
-	{
-		this.rfq = rfq;
-	}
-
 	public LocalDate getDatePromised()
 	{
 		return DateUtils.toLocalDate(datePromised);
-	}
-
-	public void setDatePromised(final LocalDate datePromised)
-	{
-		this.datePromised = DateUtils.toSqlDate(datePromised);
-	}
-
-	public BigDecimal getQtyPromised()
-	{
-		return qtyPromised;
-	}
-
-	public void setQtyPromised(final BigDecimal qtyPromised)
-	{
-		this.qtyPromised = qtyPromised;
 	}
 }

@@ -14,7 +14,6 @@ import de.metas.procurement.webui.repository.ContractLineRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.service.impl.ProductSuppliesService;
-import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,13 +77,12 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		}
 	}
 
-	public Rfq importRfQ(final SyncRfQ syncRfQ)
+	public void importRfQ(final SyncRfQ syncRfQ)
 	{
-		final BPartner bpartner = null;
-		return importRfQ(bpartner, syncRfQ);
+		importRfQ(null, syncRfQ);
 	}
 
-	public Rfq importRfQ(@Nullable BPartner bpartner, final SyncRfQ syncRfQ)
+	public void importRfQ(@Nullable BPartner bpartner, @NonNull final SyncRfQ syncRfQ)
 	{
 		final String rfq_uuid = syncRfQ.getUuid();
 		Rfq rfq = rfqRepo.findByUuid(rfq_uuid);
@@ -104,9 +102,9 @@ public class SyncRfqImportService extends AbstractSyncImportService
 
 		//
 		// Dates
-		rfq.setDateStart(DateUtils.truncToDay(syncRfQ.getDateStart()));
-		rfq.setDateEnd(DateUtils.truncToDay(syncRfQ.getDateEnd()));
-		rfq.setDateClose(DateUtils.truncToDay(syncRfQ.getDateClose()));
+		rfq.setDateStart(syncRfQ.getDateStart());
+		rfq.setDateEnd(syncRfQ.getDateEnd());
+		rfq.setDateClose(syncRfQ.getDateClose());
 
 		//
 		// Product
@@ -134,7 +132,6 @@ public class SyncRfqImportService extends AbstractSyncImportService
 
 		// applicationEventBus.post(RfqChangedEvent.of(rfq));
 
-		return rfq;
 	}
 
 	public void importRfQCloseEvent(final SyncRfQCloseEvent syncRfQCloseEvent)

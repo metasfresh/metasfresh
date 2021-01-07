@@ -12,7 +12,6 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.util.Locale;
 
 
 
@@ -79,6 +78,11 @@ public class User extends AbstractEntity
 				.add("language", language)
 		// WARNING: never ever output the password
 		;
+	}
+
+	public Long getBpartnerId()
+	{
+		return getBpartner().getId();
 	}
 
 	public BPartner getBpartner()

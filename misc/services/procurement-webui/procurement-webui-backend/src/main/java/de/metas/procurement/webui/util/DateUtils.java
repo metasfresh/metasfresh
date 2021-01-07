@@ -104,7 +104,7 @@ public final class DateUtils
 		return date.format(DateTimeFormatter.ofPattern("EEEE", locale));
 	}
 
-	public static List<LocalDate> getDaysList(final LocalDate startDate, final LocalDate endDate)
+	public static ArrayList<LocalDate> getDaysList(final LocalDate startDate, final LocalDate endDate)
 	{
 		final ArrayList<LocalDate> result = new ArrayList<>();
 		for (LocalDate date = startDate; date.compareTo(endDate) <= 0; date = date.plusDays(1))

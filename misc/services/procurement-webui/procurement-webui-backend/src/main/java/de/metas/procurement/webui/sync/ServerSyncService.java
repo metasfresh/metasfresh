@@ -28,6 +28,7 @@ import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.IRfQService;
 import de.metas.procurement.webui.sync.rabbitmq.SenderToMetasfresh;
 import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 import org.slf4j.Logger;
@@ -79,7 +80,7 @@ public class ServerSyncService implements IServerSyncService
 
 	private final SenderToMetasfresh senderToMetasfresh;
 	private final IProductSuppliesService productSuppliesService;
-	private final RfqRepository rfqRepo;
+	private final IRfQService rfqService;
 	private final SyncConfirmRepository syncConfirmRepo;
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
@@ -88,13 +89,13 @@ public class ServerSyncService implements IServerSyncService
 			@Qualifier("asyncCallsTaskExecutor") final TaskExecutor taskExecutor,
 			final SenderToMetasfresh senderToMetasfresh,
 			final IProductSuppliesService productSuppliesService,
-			final RfqRepository rfqRepo,
+			final IRfQService rfqService,
 			final SyncConfirmRepository syncConfirmRepo)
 	{
 		this.taskExecutor = taskExecutor;
 		this.senderToMetasfresh = senderToMetasfresh;
 		this.productSuppliesService = productSuppliesService;
-		this.rfqRepo = rfqRepo;
+		this.rfqService = rfqService;
 		this.syncConfirmRepo = syncConfirmRepo;
 	}
 
@@ -463,7 +464,7 @@ public class ServerSyncService implements IServerSyncService
 	//@ManagedOperation(description = "Pushes a particular RfQ, identified by ID, from webui server to metasfresh server")
 	public void pushRfqById(final long rfq_id)
 	{
-		final Rfq rfq = rfqRepo.getOne(rfq_id);
+		final Rfq rfq = rfqService.getRfqById(rfq_id);
 		// if (rfq == null) { throw new RuntimeException("No RfQ found for ID=" + rfq_id); }
 
 		final PutRfQChangeRequest request = createSyncRfQChangeRequest(ImmutableList.of(rfq), rfq.getQuantities());

@@ -22,12 +22,29 @@
 
 package de.metas.procurement.webui.rest.rfq;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.procurement.webui.Application;
+import de.metas.procurement.webui.model.Product;
+import de.metas.procurement.webui.model.Rfq;
+import de.metas.procurement.webui.model.RfqQty;
+import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
-import de.metas.procurement.webui.service.impl.RfQService;
+import de.metas.procurement.webui.service.IRfQService;
+import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping(RfQRestController.ENDPOINT)
@@ -35,21 +52,121 @@ public class RfQRestController
 {
 	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/rfq";
 
-	// TODO: implement RfQRestController
-
 	private final ILoginService loginService;
-	private final RfQService rfqService;
+	private final IRfQService rfqService;
 
 	public RfQRestController(
 			@NonNull final ILoginService loginService,
-			@NonNull final RfQService rfqService)
+			@NonNull final IRfQService rfqService)
 	{
 		this.loginService = loginService;
 		this.rfqService = rfqService;
 	}
 
-	public void get()
+	@GetMapping
+	public JsonRfqsList getRfqs()
 	{
+		final User user = loginService.getLoggedInUser();
+		final Locale locale = loginService.getLocale();
+		final List<Rfq> rfqsList = rfqService.getUserActiveRfqs(user);
+		return toJsonRfqsList(rfqsList, locale);
 	}
 
+	@GetMapping("/{rfqId}")
+	public JsonRfq getRfq(@PathVariable("rfqId") final long rfqId)
+	{
+		final User user = loginService.getLoggedInUser();
+		final Locale locale = loginService.getLocale();
+		final Rfq rfq = rfqService.getUserActiveRfq(user, rfqId);
+		return toJsonRfq(rfq, locale);
+	}
+
+	@PostMapping
+	public JsonRfq changeRfq(@RequestBody @NonNull final JsonChangeRfqRequest request)
+	{
+		final User loggedUser = loginService.getLoggedInUser();
+		final Rfq rfq = rfqService.changeActiveRfq(request, loggedUser);
+		return toJsonRfq(rfq, loginService.getLocale());
+	}
+
+	private JsonRfqsList toJsonRfqsList(final List<Rfq> rfqsList, @NonNull final Locale locale)
+	{
+		return JsonRfqsList.builder()
+				.rfqs(rfqsList.stream()
+						.map(rfq -> toJsonRfq(rfq, locale))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	private static JsonRfq toJsonRfq(@NonNull final Rfq rfq, @NonNull final Locale locale)
+	{
+		final Product product = rfq.getProduct();
+
+		return JsonRfq.builder()
+				.rfqId(rfq.getIdAsString())
+				.productName(product.getName(locale))
+				.packingInfo(product.getPackingInfo(locale))
+				.dateStart(rfq.getDateStart())
+				.dateEnd(rfq.getDateEnd())
+				.dateClose(rfq.getDateClose())
+				.qtyRequested(renderQty(rfq.getQtyRequested(), rfq.getQtyCUInfo(), locale))
+				.qtyPromised(renderQty(rfq.getQtyPromised(), rfq.getQtyCUInfo(), locale))
+				.price(rfq.getPricePromised())
+				.priceRendered(renderPrice(rfq.getPricePromised(), rfq.getCurrencyCode(), locale))
+				.quantities(toJsonRfqQtysList(rfq, locale))
+				.build();
+	}
+
+	private static ArrayList<JsonRfqQty> toJsonRfqQtysList(final Rfq rfq, final Locale locale)
+	{
+		final ArrayList<JsonRfqQty> jsonRfqQtys = new ArrayList<>();
+
+		for (final LocalDate date : rfq.generateAllDaysSet())
+		{
+			final RfqQty rfqQty = rfq.getRfqQtyByDate(date);
+
+			final JsonRfqQty jsonRfqQty = rfqQty != null
+					? toJsonRfqQty(rfqQty, locale)
+					: toZeroJsonRfqQty(date, locale);
+
+			jsonRfqQtys.add(jsonRfqQty);
+		}
+		return jsonRfqQtys;
+	}
+
+	private static JsonRfqQty toJsonRfqQty(@NonNull final RfqQty rfqQty, @NonNull final Locale locale)
+	{
+		return JsonRfqQty.builder()
+				.date(rfqQty.getDatePromised())
+				.dayCaption(DateUtils.getDayName(rfqQty.getDatePromised(), locale))
+				.qtyPromised(rfqQty.getQtyPromised())
+				.build();
+	}
+
+	private static JsonRfqQty toZeroJsonRfqQty(@NonNull final LocalDate date, @NonNull final Locale locale)
+	{
+		return JsonRfqQty.builder()
+				.date(date)
+				.dayCaption(DateUtils.getDayName(date, locale))
+				.qtyPromised(BigDecimal.ZERO)
+				.build();
+	}
+
+	private static String renderQty(
+			@NonNull final BigDecimal qty,
+			@NonNull final String uom,
+			@NonNull final Locale locale)
+	{
+		final NumberFormat formatter = NumberFormat.getNumberInstance(locale);
+		return formatter.format(qty) + " " + uom;
+	}
+
+	private static String renderPrice(
+			@NonNull final BigDecimal price,
+			@NonNull final String currencyCode,
+			@NonNull final Locale locale)
+	{
+		final NumberFormat formatter = NumberFormat.getNumberInstance(locale);
+		return formatter.format(price) + " " + currencyCode;
+	}
 }

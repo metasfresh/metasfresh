@@ -52,7 +52,7 @@ public interface IProductSuppliesService
 		@NonNull BPartner bpartner;
 		ContractLine contractLine;
 
-		@NonNull long productId;
+		long productId;
 		@NonNull LocalDate date;
 		@NonNull BigDecimal qty;
 

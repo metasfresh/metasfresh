@@ -32,6 +32,8 @@ import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Check;
@@ -94,6 +96,7 @@ public class SyncObjectsFactory
 	private static final Logger logger = LogManager.getLogger(SyncObjectsFactory.class);
 
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
 	private final transient IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
 	private final transient IPMMBPartnerDAO pmmbPartnerDAO = Services.get(IPMMBPartnerDAO.class);
@@ -387,7 +390,7 @@ public class SyncObjectsFactory
 	{
 		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
 
-		final I_M_Product product = pmmProduct.getM_Product();
+		final I_M_Product product = productBL.getById(ProductId.ofRepoId(pmmProduct.getM_Product_ID()));
 
 		String productName = pmmProduct.getProductName();
 		// Fallback to M_Product.Name (shall not happen)
@@ -545,9 +548,9 @@ public class SyncObjectsFactory
 
 		return SyncRfQ.builder()
 				.uuid(SyncUUIDs.toUUIDString(rfqResponseLine))
-				.dateStart(rfqResponseLine.getDateWorkStart())
-				.dateEnd(rfqResponseLine.getDateWorkComplete())
-				.dateClose(rfqResponseLine.getDateResponse())
+				.dateStart(TimeUtil.asLocalDate(rfqResponseLine.getDateWorkStart()))
+				.dateEnd(TimeUtil.asLocalDate(rfqResponseLine.getDateWorkComplete()))
+				.dateClose(TimeUtil.asLocalDate(rfqResponseLine.getDateResponse()))
 				.bpartner_uuid(SyncUUIDs.toUUIDString(rfqResponseLine.getC_BPartner()))
 				.product(syncProduct)
 				.qtyRequested(rfqResponseLine.getQtyRequiered())
