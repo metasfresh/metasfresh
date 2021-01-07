@@ -10,7 +10,7 @@ export default function Nav() {
 
   return (
     <nav className="nav">
-      <Link 
+      <Link
         to={{
           pathname: '/',
           state: { prev: false },

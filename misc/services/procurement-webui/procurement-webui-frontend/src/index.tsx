@@ -16,7 +16,6 @@ const Todo = types
   })
   .actions((self) => ({
     remove() {
-      // @ts-ignore: Not sure how to fix this yet
       getRoot(self).removeTodo(self);
     },
     edit(text) {
