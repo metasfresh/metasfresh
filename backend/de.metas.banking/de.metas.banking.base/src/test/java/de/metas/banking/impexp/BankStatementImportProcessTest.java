@@ -349,7 +349,7 @@ public class BankStatementImportProcessTest
 		void integrationAllAmtFormats()
 		{
 			importRecords(
-					mkRecord().debitOrCreditIndicator("S").debitOrCreditAmt("123.456").lineDescription("1. A+I").build(),
+					mkRecord().debitOrCreditIndicator("H").debitOrCreditAmt("123.456").lineDescription("1. A+I").build(),
 					mkRecord().debitStmtAmt("223.456").lineDescription("2. D+C").build(),
 					mkRecord().creditStmtAmt("323.456").lineDescription("3. D+C").build(),
 					mkRecord().trxAmt("423.456").lineDescription("4. S").build()
