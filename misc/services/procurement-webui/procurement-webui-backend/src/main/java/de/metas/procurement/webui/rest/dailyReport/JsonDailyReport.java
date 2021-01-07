@@ -43,6 +43,9 @@ public class JsonDailyReport
 	LocalDate date;
 
 	@NonNull
+	String dayCaption;
+
+	@NonNull
 	@Singular
 	List<JsonDailyReportItem> products;
 

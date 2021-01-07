@@ -367,6 +367,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
+	@Transactional
 	public void confirmUserEnteredQtys(@NonNull final BPartner bpartner)
 	{
 		final List<ProductSupply> productSupplies = productSupplyRepository.findUnconfirmed(bpartner);

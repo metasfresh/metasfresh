@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.LocalDate;
+
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -39,6 +41,11 @@ public class JsonSessionInfo
 
 	String email;
 	String language;
+
+	LocalDate date;
+	String dayCaption;
+	String week;
+	String weekCaption;
 
 	@Builder.Default
 	long countUnconfirmed = 0;

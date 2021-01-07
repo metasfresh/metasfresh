@@ -27,6 +27,9 @@ import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.util.DateUtils;
+import de.metas.procurement.webui.util.LanguageKey;
+import de.metas.procurement.webui.util.YearWeekUtil;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +37,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.threeten.extra.YearWeek;
+
+import java.time.LocalDate;
+import java.util.Locale;
 
 @RestController
 @RequestMapping(SessionRestController.ENDPOINT)
@@ -56,13 +63,23 @@ public class SessionRestController
 	public JsonSessionInfo getSessionInfo()
 	{
 		final User user = loginService.getLoggedInUser();
+		final Locale locale = loginService.getLocale();
 
 		final long countUnconfirmedDailyReports = productSuppliesService.countUnconfirmedUserEnteredQtys(user.getBpartner());
+
+		final LocalDate today = LocalDate.now();
+		final YearWeek week = YearWeekUtil.ofLocalDate(today);
 
 		return JsonSessionInfo.builder()
 				.loggedIn(true)
 				.email(user.getEmail())
-				.language(loginService.getLanguage().getAsString())
+				.language(LanguageKey.ofLocale(locale).getAsString())
+				//
+				.date(today)
+				.dayCaption(DateUtils.getDayName(today, locale))
+				.week(YearWeekUtil.toJsonString(week))
+				.weekCaption(YearWeekUtil.toDisplayName(week))
+				//
 				.countUnconfirmed(countUnconfirmedDailyReports)
 				.build();
 	}

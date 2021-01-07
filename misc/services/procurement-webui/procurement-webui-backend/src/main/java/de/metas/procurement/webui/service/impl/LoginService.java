@@ -229,12 +229,6 @@ public class LoginService implements ILoginService
 	}
 
 	@Override
-	public LanguageKey getLanguage()
-	{
-		return i18n.getCurrentLang();
-	}
-
-	@Override
 	public Locale getLocale()
 	{
 		return i18n.getCurrentLocale();

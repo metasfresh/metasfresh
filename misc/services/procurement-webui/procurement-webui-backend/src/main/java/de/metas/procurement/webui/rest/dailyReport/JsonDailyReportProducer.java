@@ -26,6 +26,7 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.util.DateUtils;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -92,6 +93,7 @@ class JsonDailyReportProducer
 
 		return JsonDailyReport.builder()
 				.date(date)
+				.dayCaption(DateUtils.getDayName(date, locale))
 				.products(resultItems)
 				.build();
 	}

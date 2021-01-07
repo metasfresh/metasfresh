@@ -1,11 +1,9 @@
 package de.metas.procurement.webui.service;
 
-import java.net.URI;
-import java.util.Locale;
-
 import de.metas.procurement.webui.model.User;
-import de.metas.procurement.webui.util.LanguageKey;
 import lombok.NonNull;
+
+import java.util.Locale;
 
 /*
  * #%L
@@ -17,12 +15,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +36,7 @@ public interface ILoginService
 
 	/**
 	 * Generate a password reset key and link it to the user.
-	 * 
+	 *
 	 * @return generated password reset key
 	 */
 	String generatePasswordResetKey(String email);
@@ -50,7 +48,7 @@ public interface ILoginService
 
 	/**
 	 * Reset user's password for given password reset key.
-	 * 
+	 *
 	 * @return user of which password was reset.
 	 */
 	User resetPassword(String resetKey);
@@ -62,8 +60,6 @@ public interface ILoginService
 	void assertLoggedIn();
 
 	User getLoggedInUser();
-
-	LanguageKey getLanguage();
 
 	Locale getLocale();
 
