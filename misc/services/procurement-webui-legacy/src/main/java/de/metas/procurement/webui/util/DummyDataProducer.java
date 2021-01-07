@@ -145,8 +145,8 @@ public class DummyDataProducer
 
 				final SyncContractBuilder syncContract = SyncContract.builder()
 						.uuid(randomUUID())
-						.dateFrom(contractDateFrom)
-						.dateTo(contractDateTo);
+						.dateFrom(DateUtils.toLocalDate(contractDateFrom))
+						.dateTo(DateUtils.toLocalDate(contractDateTo));
 
 				final PutProductsRequest syncProductsRequest = getSyncProductsRequest();
 				for (final SyncProduct syncProduct : syncProductsRequest.getProducts().subList(0, 6))

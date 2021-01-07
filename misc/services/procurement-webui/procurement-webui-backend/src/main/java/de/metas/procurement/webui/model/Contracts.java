@@ -57,7 +57,7 @@ public class Contracts
 
 	public List<Product> getProducts()
 	{
-		final Set<Product> products = new TreeSet<>(Product.COMPARATOR_Id);
+		final TreeSet<Product> products = new TreeSet<>(Product.COMPARATOR_Id);
 		for (final Contract contract : getContracts())
 		{
 			products.addAll(contract.getProducts());

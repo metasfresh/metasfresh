@@ -158,8 +158,8 @@ public class SyncObjectsFactory
 
 		final SyncContract.SyncContractBuilder syncContract = SyncContract.builder()
 				.uuid(uuid)
-				.dateFrom(term.getStartDate())
-				.dateTo(term.getEndDate());
+				.dateFrom(TimeUtil.asLocalDate(term.getStartDate()))
+				.dateTo(TimeUtil.asLocalDate(term.getEndDate()));
 
 		final int rfqResponseLineId = term.getC_RfQResponseLine_ID();
 		if (rfqResponseLineId > 0)

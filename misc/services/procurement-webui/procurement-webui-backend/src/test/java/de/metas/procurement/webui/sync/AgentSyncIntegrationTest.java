@@ -152,8 +152,8 @@ public class AgentSyncIntegrationTest
 					.syncContracts(true);
 
 			syncContract1.uuid(newUUID())
-					.dateFrom(DateUtils.toDate(contractDateFrom))
-					.dateTo(DateUtils.toDate(contractDateTo));
+					.dateFrom(contractDateFrom)
+					.dateTo(contractDateTo);
 
 			syncContractLine1
 					.uuid(syncContractLine1_UUID)

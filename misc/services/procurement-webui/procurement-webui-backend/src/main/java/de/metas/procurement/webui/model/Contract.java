@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -47,9 +46,9 @@ import java.util.TreeSet;
 public class Contract extends AbstractEntity
 {
 	@NonNull
-	private Date dateFrom;
+	private java.sql.Date dateFrom;
 	@NonNull
-	private Date dateTo;
+	private java.sql.Date dateTo;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NonNull
@@ -59,6 +58,10 @@ public class Contract extends AbstractEntity
 
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "contract", cascade = CascadeType.REMOVE)
 	private List<ContractLine> contractLines = new ArrayList<>();
+
+	public Contract()
+	{
+	}
 
 	@Override
 	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
@@ -80,32 +83,30 @@ public class Contract extends AbstractEntity
 		this.bpartner = bpartner;
 	}
 
-	public Date getDateFrom()
+	public LocalDate getDateFrom()
 	{
-		return dateFrom;
+		return DateUtils.toLocalDate(dateFrom);
 	}
 
-	public void setDateFrom(final Date dateFrom)
+	public void setDateFrom(@NonNull final LocalDate dateFrom)
 	{
-		this.dateFrom = dateFrom;
+		this.dateFrom = DateUtils.toSqlDate(dateFrom);
 	}
 
-	public Date getDateTo()
+	public LocalDate getDateTo()
 	{
-		return dateTo;
+		return DateUtils.toLocalDate(dateTo);
 	}
 
-	public void setDateTo(final Date dateTo)
+	public void setDateTo(@NonNull final LocalDate dateTo)
 	{
-		this.dateTo = dateTo;
+		this.dateTo = DateUtils.toSqlDate(dateTo);
 	}
 
 	public void setRfq_uuid(final String rfq_uuid)
 	{
 		this.rfq_uuid = rfq_uuid;
 	}
-
-	// public String getRfq_uuid() { return rfq_uuid; }
 
 	public boolean isRfq()
 	{

@@ -82,7 +82,7 @@ public class JsonSerializeDeserializeTests
 				.name("name")
 				.uuid("uuid")
 				.contract(SyncContract.builder()
-						.dateFrom(new Date())
+						.dateFrom(LocalDate.now())
 						.rfq_uuid("rfq_uuid")
 						.contractLine(SyncContractLine.builder().build())
 						.build())

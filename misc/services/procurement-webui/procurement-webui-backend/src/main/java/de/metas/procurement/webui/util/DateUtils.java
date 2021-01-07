@@ -1,12 +1,10 @@
 package de.metas.procurement.webui.util;
 
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -88,44 +86,6 @@ public final class DateUtils
 		return java.sql.Date.valueOf(date);
 	}
 
-	public static java.util.Date toDate(final LocalDate date)
-	{
-		return java.util.Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
-	}
-
-	public static Date truncToMonth(@NonNull final Date date)
-	{
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.set(Calendar.DAY_OF_MONTH, 1);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-
-	public static boolean between(
-			@NonNull final LocalDate date,
-			@Nullable final Date dateFrom,
-			@Nullable final Date dateTo)
-	{
-		return between(toDate(date), dateFrom, dateTo);
-	}
-
-	public static boolean between(
-			@NonNull final Date date,
-			@Nullable final Date dateFrom,
-			@Nullable final Date dateTo)
-	{
-		if (dateFrom != null && dateFrom.compareTo(date) > 0)
-		{
-			return false;
-		}
-
-		return dateTo == null || date.compareTo(dateTo) <= 0;
-	}
-
 	public static boolean between(
 			@NonNull final LocalDate date,
 			@Nullable final LocalDate dateFrom,
@@ -137,27 +97,6 @@ public final class DateUtils
 		}
 
 		return dateTo == null || date.compareTo(dateTo) <= 0;
-	}
-
-
-	public static Date addDays(final Date date, final int daysToAdd)
-	{
-		Preconditions.checkNotNull(date, "date not null");
-
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.add(Calendar.DAY_OF_MONTH, daysToAdd);
-		return cal.getTime();
-	}
-
-	public static Date addMonths(final Date date, final int monthsToAdd)
-	{
-		Preconditions.checkNotNull(date, "date not null");
-
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.add(Calendar.MONTH, monthsToAdd);
-		return cal.getTime();
 	}
 
 	public static String getDayName(@NonNull final LocalDate date, @NonNull final Locale locale)
