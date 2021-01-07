@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export default function Nav() {
+const BottomNav: FunctionComponent = (): ReactElement => {
   const location = useLocation();
 
   if (['login', 'password'].indexOf(location.pathname) >= 0) {
@@ -21,7 +21,7 @@ export default function Nav() {
       </Link>
       <Link
         to={{
-          pathname: '/view2',
+          pathname: '/daily',
           state: { prev: true },
         }}
         className="nav-link"
@@ -30,4 +30,6 @@ export default function Nav() {
       </Link>
     </nav>
   );
-}
+};
+
+export default BottomNav;
