@@ -8,22 +8,20 @@ import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
-import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractLineRepository;
-import de.metas.procurement.webui.repository.ProductRepository;
-import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
+import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.impl.ProductSuppliesService;
 import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 
 /*
  * #%L
@@ -52,27 +50,24 @@ import java.util.Objects;
 public class SyncRfqImportService extends AbstractSyncImportService
 {
 	private final RfqRepository rfqRepo;
-	private final ProductRepository productRepo;
 	private final SyncProductImportService productImportService;
 	private final BPartnerRepository bpartnerRepo;
 	private final ContractLineRepository contractLineRepo;
-	private final ProductSupplyRepository productSupplyRepo;
+	private final ProductSuppliesService productSuppliesService;
 	// @Autowired @Lazy private MFEventBus applicationEventBus;
 
 	public SyncRfqImportService(
 			@NonNull final RfqRepository rfqRepo,
-			@NonNull final ProductRepository productRepo,
 			@NonNull final SyncProductImportService productImportService,
 			@NonNull final BPartnerRepository bpartnerRepo,
 			@NonNull final ContractLineRepository contractLineRepo,
-			@NonNull final ProductSupplyRepository productSupplyRepo)
+			@NonNull final ProductSuppliesService productSuppliesService)
 	{
 		this.rfqRepo = rfqRepo;
-		this.productRepo = productRepo;
 		this.productImportService = productImportService;
 		this.bpartnerRepo = bpartnerRepo;
 		this.contractLineRepo = contractLineRepo;
-		this.productSupplyRepo = productSupplyRepo;
+		this.productSuppliesService = productSuppliesService;
 	}
 
 	public void importRfQs(final BPartner bpartner, final List<SyncRfQ> syncRfQs)
@@ -89,7 +84,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		return importRfQ(bpartner, syncRfQ);
 	}
 
-	public Rfq importRfQ(BPartner bpartner, final SyncRfQ syncRfQ)
+	public Rfq importRfQ(@Nullable BPartner bpartner, final SyncRfQ syncRfQ)
 	{
 		final String rfq_uuid = syncRfQ.getUuid();
 		Rfq rfq = rfqRepo.findByUuid(rfq_uuid);
@@ -187,54 +182,17 @@ public class SyncRfqImportService extends AbstractSyncImportService
 
 	private void importPlannedProductSupply(final SyncProductSupply syncProductSupply, final BPartner bpartner)
 	{
-		final String product_uuid = syncProductSupply.getProduct_uuid();
-		final Product product = productRepo.findByUuid(product_uuid);
-		//
 		final String contractLine_uuid = syncProductSupply.getContractLine_uuid();
 		final ContractLine contractLine = contractLineRepo.findByUuid(contractLine_uuid);
-		//
-		final LocalDate day = syncProductSupply.getDay();
-		final BigDecimal qty = MoreObjects.firstNonNull(syncProductSupply.getQty(), BigDecimal.ZERO);
 
-		ProductSupply productSupply = productSupplyRepo.findByProductAndBpartnerAndDay(product, bpartner, java.sql.Date.valueOf(day));
-		final boolean isNew;
-		if (productSupply == null)
-		{
-			isNew = true;
-			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
-		}
-		else
-		{
-			isNew = false;
-		}
-
-		//
-		// Contract line
-		if (!isNew)
-		{
-			final ContractLine contractLineOld = productSupply.getContractLine();
-			if (!Objects.equals(contractLine, contractLineOld))
-			{
-				logger.warn("Changing contract line {}->{} for {} because of planning supply: {}", contractLineOld, contractLine, productSupply, syncProductSupply);
-			}
-			productSupply.setContractLine(contractLine);
-		}
-
-		//
-		// Quantity
-		if (!isNew)
-		{
-			final BigDecimal qtyOld = productSupply.getQty();
-			if (qty.compareTo(qtyOld) != 0)
-			{
-				logger.warn("Changing quantity {}->{} for {} because of planning supply: {}", qtyOld, qty, productSupply, syncProductSupply);
-			}
-		}
-		productSupply.setQty(qty);
-
-		//
-		// Save the product supply
-		productSupplyRepo.save(productSupply);
+		productSuppliesService.importPlanningSupply(
+				IProductSuppliesService.ImportPlanningSupplyRequest.builder()
+						.bpartner(bpartner)
+						.contractLine(contractLine)
+						.product_uuid(syncProductSupply.getProduct_uuid())
+						.date(syncProductSupply.getDay())
+						.qty(MoreObjects.firstNonNull(syncProductSupply.getQty(), BigDecimal.ZERO))
+						.build());
 
 		// applicationEventBus.post(ProductSupplyChangedEvent.of(productSupply));
 	}

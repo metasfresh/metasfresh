@@ -27,7 +27,6 @@ import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Contracts;
 import de.metas.procurement.webui.model.Product;
-import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.IContractsService;
 import de.metas.procurement.webui.service.ILoginService;
@@ -42,11 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
 
 @RestController
 @RequestMapping(DailyReportRestController.ENDPOINT)
@@ -71,61 +65,18 @@ public class DailyReportRestController
 	@GetMapping("/{date}")
 	public JsonDailyReport getDailyReport(@PathVariable("date") @NonNull final String dateStr)
 	{
-		loginService.assertLoggedIn();
-
-		final LocalDate date = LocalDate.parse(dateStr);
-		final User user = loginService.getLoggedInUser();
-		final Locale locale = loginService.getLocale();
-
-		final HashSet<String> addedProductIds = new HashSet<>();
-		final ArrayList<JsonDailyReportItem> resultItems = new ArrayList<>();
-
-		final List<ProductSupply> dailySupplies = productSuppliesService.getProductSupplies(user.getBpartner(), date);
-		for (final ProductSupply productSupply : dailySupplies)
-		{
-			final Product product = productSupply.getProduct();
-			final JsonDailyReportItem item = JsonDailyReportItem.builder()
-					.productId(product.getIdAsString())
-					.productName(product.getName(locale))
-					.packingInfo(product.getPackingInfo(locale))
-					.qty(productSupply.getQty())
-					.sent(true)
-					.build();
-
-			resultItems.add(item);
-			addedProductIds.add(item.getProductId());
-		}
-
-		final List<Product> favoriteProducts = productSuppliesService.getUserFavoriteProducts(user);
-		for (final Product product : favoriteProducts)
-		{
-			if (!addedProductIds.add(product.getIdAsString()))
-			{
-				continue;
-			}
-
-			resultItems.add(JsonDailyReportItem.builder()
-					.productId(product.getIdAsString())
-					.productName(product.getName(locale))
-					.packingInfo(product.getPackingInfo(locale))
-					.qty(BigDecimal.ZERO)
-					.sent(false)
-					.build());
-		}
-
-		resultItems.sort(Comparator.comparing(JsonDailyReportItem::getProductName));
-
-		return JsonDailyReport.builder()
-				.date(date)
-				.products(resultItems)
-				.build();
+		return JsonDailyReportProducer.builder()
+				.productSuppliesService(productSuppliesService)
+				.user(loginService.getLoggedInUser())
+				.locale(loginService.getLocale())
+				.date(LocalDate.parse(dateStr))
+				.build()
+				.execute();
 	}
 
 	@PostMapping
 	public void postDailyReport(@RequestBody @NonNull final JsonDailyReportRequest request)
 	{
-		loginService.assertLoggedIn();
-
 		final User user = loginService.getLoggedInUser();
 		final BPartner bpartner = user.getBpartner();
 		final Contracts contracts = contractsService.getContracts(bpartner);
@@ -137,7 +88,13 @@ public class DailyReportRestController
 			final Product product = productSuppliesService.getProductById(productId);
 			final ContractLine contractLine = contracts.getContractLineOrNull(product, date);
 			final BigDecimal qty = requestItem.getQty();
-			productSuppliesService.reportSupply(bpartner, product, contractLine, date, qty);
+			productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+					.bpartner(bpartner)
+					.contractLine(contractLine)
+					.productId(productId)
+					.date(date)
+					.qty(qty)
+					.build());
 		}
 	}
 }

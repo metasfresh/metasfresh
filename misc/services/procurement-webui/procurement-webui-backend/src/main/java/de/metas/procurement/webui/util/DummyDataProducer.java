@@ -265,18 +265,20 @@ public class DummyDataProducer
 				final ContractLine contractLine = contractLines.get(0);
 				final Product product = contractLine.getProduct();
 
-				productSuppliesService.reportSupply(
-						bpartner,
-						product,
-						contractLine,
-						LocalDate.now(), // today
-						new BigDecimal("10"));
-				productSuppliesService.reportSupply(
-						bpartner,
-						product,
-						contractLine,
-						LocalDate.now().plusDays(1), // tomorrow
-						new BigDecimal("3"));
+				productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+						.bpartner(bpartner)
+						.contractLine(contractLine)
+						.productId(product.getId())
+						.date(LocalDate.now()) // today
+						.qty(new BigDecimal("10"))
+						.build());
+				productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+						.bpartner(bpartner)
+						.contractLine(contractLine)
+						.productId(product.getId())
+						.date(LocalDate.now().plusDays(1)) // tomorrow
+						.qty(new BigDecimal("3"))
+						.build());
 			}
 		}
 	}

@@ -38,6 +38,7 @@ import java.util.List;
 @Transactional
 public interface ProductSupplyRepository extends AbstractRepository<ProductSupply>
 {
+	@Nullable
 	ProductSupply findByProductAndBpartnerAndDay(final Product product, final BPartner bpartner, final java.sql.Date day);
 
 	List<ProductSupply> findByBpartnerAndDay(BPartner bpartner, java.sql.Date day);

@@ -30,6 +30,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -86,6 +87,12 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
+	public ProductSupply getProductSupplyById(final long product_supply_id)
+	{
+		return productSupplyRepository.getOne(product_supply_id);
+	}
+
+	@Override
 	public List<Product> getUserFavoriteProducts(final User user)
 	{
 		final List<UserProduct> userProducts = userProductRepository.findByUser(user);
@@ -121,31 +128,34 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Override
 	@Transactional
-	public boolean removeUserFavoriteProduct(final User user, final Product product)
+	public void removeUserFavoriteProduct(final User user, final Product product)
 	{
 		final UserProduct existingUserProduct = userProductRepository.findByUserAndProduct(user, product);
 		if (existingUserProduct == null)
 		{
-			return false;
+			return;
 		}
 
 		userProductRepository.delete(existingUserProduct);
-		return true;
 	}
 
 	@Override
 	@Transactional
-	public void reportSupply(
-			final BPartner bpartner,
-			final Product product,
-			final ContractLine contractLine,
-			final LocalDate day,
-			final BigDecimal qty)
+	public void reportSupply(@NonNull final ReportDailySupplyRequest request)
 	{
-		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
+		final BPartner bpartner = request.getBpartner();
+		final ContractLine contractLine = request.getContractLine();
+		final Product product = productRepository.getOne(request.getProductId());
+		final LocalDate date = request.getDate();
+		final BigDecimal qty = request.getQty();
+
+		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toSqlDate(date));
 		if (productSupply == null)
 		{
-			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
+			productSupply = ProductSupply.build(bpartner, product, contractLine, date);
 		}
 
 		productSupply.setQty(qty);
@@ -316,4 +326,55 @@ public class ProductSuppliesService implements IProductSuppliesService
 	{
 		return productRepository.getOne(productId);
 	}
+
+	@Override
+	public void importPlanningSupply(@NonNull final ImportPlanningSupplyRequest request)
+	{
+		final BPartner bpartner = request.getBpartner();
+		final ContractLine contractLine = request.getContractLine();
+		final Product product = productRepository.findByUuid(request.getProduct_uuid());
+		final LocalDate day = request.getDate();
+		final BigDecimal qty = request.getQty();
+
+		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
+		final boolean isNew;
+		if (productSupply == null)
+		{
+			isNew = true;
+			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
+		}
+		else
+		{
+			isNew = false;
+		}
+
+		//
+		// Contract line
+		if (!isNew)
+		{
+			final ContractLine contractLineOld = productSupply.getContractLine();
+			if (!Objects.equals(contractLine, contractLineOld))
+			{
+				logger.warn("Changing contract line {}->{} for {} because of planning supply: {}", contractLineOld, contractLine, productSupply, request);
+			}
+			productSupply.setContractLine(contractLine);
+		}
+
+		//
+		// Quantity
+		if (!isNew)
+		{
+			final BigDecimal qtyOld = productSupply.getQty();
+			if (qty.compareTo(qtyOld) != 0)
+			{
+				logger.warn("Changing quantity {}->{} for {} because of planning supply: {}", qtyOld, qty, productSupply, request);
+			}
+		}
+		productSupply.setQty(qty);
+
+		//
+		// Save the product supply
+		productSupplyRepository.save(productSupply);
+	}
+
 }

@@ -14,8 +14,6 @@ import de.metas.common.procurement.sync.protocol.dto.SyncUser.SyncUserBuilder;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.ContractLine;
-import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractLineRepository;
@@ -45,7 +43,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -177,14 +174,13 @@ public class AgentSyncIntegrationTest
 
 		//
 		// Report a supply on this contract line
-		{
-			final BPartner bpartner = bpartnerRepo.findByUuid(syncBPartner1_UUID);
-			final Product product = productsRepo.findByUuid(syncProduct1.getUuid());
-			final ContractLine contractLine = contractLinesRepo.findByUuid(syncContractLine1_UUID);
-			final LocalDate day = LocalDate.now();
-			final BigDecimal qty = new BigDecimal("10");
-			productSuppliesService.reportSupply(bpartner, product, contractLine, day, qty);
-		}
+		productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+				.bpartner(bpartnerRepo.findByUuid(syncBPartner1_UUID))
+				.contractLine(contractLinesRepo.findByUuid(syncContractLine1_UUID))
+				.productId(productsRepo.findByUuid(syncProduct1.getUuid()).getId())
+				.date(LocalDate.now())
+				.qty(new BigDecimal("10"))
+				.build());
 
 		//
 		// Create a new contract line with same product and send the partner with this new line and without the old one

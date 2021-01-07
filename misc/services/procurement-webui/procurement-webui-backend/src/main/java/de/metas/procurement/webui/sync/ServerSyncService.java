@@ -79,13 +79,8 @@ public class ServerSyncService implements IServerSyncService
 	private AsyncEventBus eventBus;
 
 	private final SenderToMetasfresh senderToMetasfresh;
-
-	private final ProductSupplyRepository productSuppliesRepo;
-
 	private final IProductSuppliesService productSuppliesService;
-
 	private final RfqRepository rfqRepo;
-
 	private final SyncConfirmRepository syncConfirmRepo;
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
@@ -93,14 +88,12 @@ public class ServerSyncService implements IServerSyncService
 	public ServerSyncService(
 			@Qualifier("asyncCallsTaskExecutor") final TaskExecutor taskExecutor,
 			final SenderToMetasfresh senderToMetasfresh,
-			final ProductSupplyRepository productSuppliesRepo,
 			final IProductSuppliesService productSuppliesService,
 			final RfqRepository rfqRepo,
 			final SyncConfirmRepository syncConfirmRepo)
 	{
 		this.taskExecutor = taskExecutor;
 		this.senderToMetasfresh = senderToMetasfresh;
-		this.productSuppliesRepo = productSuppliesRepo;
 		this.productSuppliesService = productSuppliesService;
 		this.rfqRepo = rfqRepo;
 		this.syncConfirmRepo = syncConfirmRepo;
@@ -209,9 +202,7 @@ public class ServerSyncService implements IServerSyncService
 	@Override
 	public void pushReportProductSupplyById(final long product_supply_id)
 	{
-		final ProductSupply productSupply = productSuppliesRepo.getOne(product_supply_id);
-		// if (productSupply == null) { throw new RuntimeException("No product supply found for ID=" + product_supply_id); }
-
+		final ProductSupply productSupply = productSuppliesService.getProductSupplyById(product_supply_id);
 		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(Collections.singletonList(productSupply));
 		logger.debug("Pushing request: {}", request);
 		process(request);

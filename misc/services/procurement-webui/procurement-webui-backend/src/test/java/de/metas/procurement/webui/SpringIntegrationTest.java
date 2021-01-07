@@ -187,8 +187,13 @@ public class SpringIntegrationTest
 	private void reportProductSupplyAndTest(final BPartner bpartner, final Product product, final Date day, final BigDecimal qty) throws Exception
 	{
 		// Report the product supply
-		final ContractLine contractLine = null;
-		productSuppliesService.reportSupply(bpartner, product, contractLine, DateUtils.toLocalDate(day), qty);
+		productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+				.bpartner(bpartner)
+				.contractLine(null)
+				.productId(product.getId())
+				.date(DateUtils.toLocalDate(day))
+				.qty(qty)
+				.build());
 
 		// Make sure it's saved in database
 		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));

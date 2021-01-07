@@ -7,7 +7,9 @@ import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
@@ -39,22 +41,31 @@ import java.util.List;
 
 public interface IProductSuppliesService
 {
-	void reportSupply(
-			@NonNull final BPartner bpartner,
-			@NonNull final Product product,
-			@Nullable final ContractLine contractLine,
-			@NonNull final LocalDate day,
-			@NonNull final BigDecimal qty);
+	@Value
+	@Builder
+	class ReportDailySupplyRequest
+	{
+		@NonNull BPartner bpartner;
+		ContractLine contractLine;
+
+		@NonNull long productId;
+		@NonNull LocalDate date;
+		@NonNull BigDecimal qty;
+	}
+
+	void reportSupply(ReportDailySupplyRequest request);
 
 	List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date);
 
 	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
 
+	ProductSupply getProductSupplyById(long product_supply_id);
+
 	List<Product> getUserFavoriteProducts(final User user);
 
 	void addUserFavoriteProduct(final User user, final Product product);
 
-	boolean removeUserFavoriteProduct(final User user, final Product product);
+	void removeUserFavoriteProduct(final User user, final Product product);
 
 	List<Product> getAllProducts();
 
@@ -70,4 +81,18 @@ public interface IProductSuppliesService
 	List<WeekSupply> getWeeklySupplies(BPartner bpartner, YearWeek week);
 
 	Product getProductById(Long productId);
+
+	@Value
+	@Builder
+	class ImportPlanningSupplyRequest
+	{
+		@NonNull BPartner bpartner;
+		ContractLine contractLine;
+
+		@NonNull String product_uuid;
+		@NonNull LocalDate date;
+		@NonNull BigDecimal qty;
+	}
+
+	void importPlanningSupply(ImportPlanningSupplyRequest request);
 }
