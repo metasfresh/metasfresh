@@ -7,7 +7,7 @@ interface Props {
   splat?: string;
 }
 
-const Login: FunctionComponent<Props> = ({ splat }) => {
+const Login: FunctionComponent<Props> = ({}) => {
   const history = useHistory();
 
   const handleSubmit = (event) => {
