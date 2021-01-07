@@ -5,7 +5,8 @@ const DailyView: FunctionComponent = (): ReactElement => {
   return (
     <View>
       <div className="container">
-      Daily view
+        <h1 className="title">Daily view</h1>
+        <p className="subtitle">Some content</p>
       </div>
     </View>
   );
