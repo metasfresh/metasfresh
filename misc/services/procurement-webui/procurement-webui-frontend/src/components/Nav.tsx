@@ -14,12 +14,12 @@ export default function Nav() {
         to={{
           pathname: '/',
           state: { prev: false },
-        }} 
+        }}
         className="nav-link"
       >
         Home
       </Link>
-      <Link 
+      <Link
         to={{
           pathname: '/view2',
           state: { prev: true },
