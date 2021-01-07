@@ -10,16 +10,16 @@ export default function Nav() {
 
   return (
     <nav className="nav">
-      <Link 
+      <Link
         to={{
           pathname: '/',
           state: { prev: false },
-        }} 
+        }}
         className="nav-link"
       >
         Home
       </Link>
-      <Link 
+      <Link
         to={{
           pathname: '/view2',
           state: { prev: true },

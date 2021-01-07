@@ -1,29 +1,25 @@
 import React, { FunctionComponent } from 'react';
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'react-router-dom';
 
 import View from './View';
 
 interface Props {
-  splat?: string
+  splat?: string;
 }
 
-const Login: FunctionComponent<Props> = ({
-  splat
-}) => {
+const Login: FunctionComponent<Props> = ({}) => {
   const history = useHistory();
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    history.push("/");
-  }
+    history.push('/');
+  };
 
   return (
     <View>
       <div className="container">
-        <h1 className="title">
-          Login
-        </h1>
+        <h1 className="title">Login</h1>
         <form>
           <div className="field">
             <p className="control has-icons-left has-icons-right">
@@ -55,6 +51,6 @@ const Login: FunctionComponent<Props> = ({
       </div>
     </View>
   );
-}
+};
 
 export default Login;
