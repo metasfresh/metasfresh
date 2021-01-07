@@ -7,20 +7,20 @@ import {
 } from 'react-router-dom';
 import { CSSTransition } from 'react-transition-group';
 
-import TopNav from './components/TopNav';
-import Home from './components/Home';
+import Header from './components/Header';
+import Weekly from './components/Weekly';
 import Daily from './components/Daily';
 import Error404 from './components/Error404';
 import Login from './components/Login';
+import BottomNav from './components/BottomNav';
 
 const routes = [
-  { path: '/', name: 'Home', Component: Home },
-  { path: '/daily', name: 'Daily', Component: Daily },
+  { path: '/', name: 'Daily Reporting', Component: Daily },
+  { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
 ];
 
 const childRoutes = (
   <main>
-    <TopNav />
     {routes.map(({ path, Component }) => (
       <Route key={path} exact path={path}>
         {({ match }) => (
@@ -30,11 +30,15 @@ const childRoutes = (
             timeout={200}
             unmountOnExit
           >
-            <Component />
+            <div className="view is-flex is-flex-direction-column is-align-items-center">
+              <Header />
+              <Component />
+              <BottomNav />
+            </div>
           </CSSTransition>
         )}
       </Route>
-    ))}
+    ))}  
   </main>
 );
 

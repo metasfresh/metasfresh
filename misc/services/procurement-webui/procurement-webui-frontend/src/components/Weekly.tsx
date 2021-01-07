@@ -1,15 +1,15 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import View from './View';
 
-const About: FunctionComponent = (): ReactElement => {
+const Weekly: FunctionComponent = (): ReactElement => {
   return (
     <View>
       <div className="container">
-        <h1 className="title">Page 1</h1>
+        <h1 className="title">Weekly view</h1>
         <p className="subtitle">Some content</p>
       </div>
     </View>
   );
 };
 
-export default About;
+export default Weekly;

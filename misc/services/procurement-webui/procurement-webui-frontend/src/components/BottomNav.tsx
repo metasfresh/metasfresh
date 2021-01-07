@@ -9,7 +9,7 @@ const BottomNav: FunctionComponent = (): ReactElement => {
   }
 
   return (
-    <nav className="nav">
+    <nav className="navbar">
       <Link
         to={{
           pathname: '/',
@@ -17,16 +17,16 @@ const BottomNav: FunctionComponent = (): ReactElement => {
         }}
         className="nav-link"
       >
-        Home
+        Daily
       </Link>
       <Link
         to={{
-          pathname: '/daily',
+          pathname: '/weekly',
           state: { prev: true },
         }}
         className="nav-link"
       >
-        About
+        Weekly
       </Link>
     </nav>
   );
