@@ -20,33 +20,57 @@
  * #L%
  */
 
-package de.metas.procurement.webui.dailyReport;
+package de.metas.procurement.webui.rest.weeklyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.procurement.webui.model.Product;
+import com.google.common.collect.ImmutableList;
+import de.metas.procurement.webui.model.Trend;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.List;
 
 @Value
-@Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonProductQtyReport.JsonProductQtyReportBuilder.class)
-public class JsonProductQtyReport
+public class JsonWeeklyProductReport
 {
-	String id;
-	Product product;
-	LocalDate day;
-	BigDecimal qty;
-	BigDecimal qtySent;
-	boolean sent;
+	@NonNull
+	String productId;
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonProductQtyReportBuilder
+	@NonNull
+	String productName;
+
+	@Nullable
+	String packingInfo;
+
+	@NonNull
+	BigDecimal qty;
+
+	@NonNull
+	List<JsonDailyProductQtyReport> dailyQuantities;
+
+	@Nullable
+	Trend nextWeekTrend;
+
+	@Builder
+	private JsonWeeklyProductReport(
+			@NonNull final String productId,
+			@NonNull final String productName,
+			@Nullable final String packingInfo,
+			@NonNull final List<JsonDailyProductQtyReport> dailyQuantities,
+			@Nullable final Trend nextWeekTrend)
 	{
+		this.productId = productId;
+		this.productName = productName;
+		this.packingInfo = packingInfo;
+		this.dailyQuantities = ImmutableList.copyOf(dailyQuantities);
+		this.nextWeekTrend = nextWeekTrend;
+
+		this.qty = dailyQuantities.stream()
+				.map(JsonDailyProductQtyReport::getQty)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

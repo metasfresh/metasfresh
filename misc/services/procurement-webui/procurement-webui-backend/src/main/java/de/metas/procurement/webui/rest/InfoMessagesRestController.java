@@ -20,49 +20,37 @@
  * #L%
  */
 
-package de.metas.procurement.webui.dailyReport;
+package de.metas.procurement.webui.rest;
 
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.service.ILoginService;
-import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.ISettingsService;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-
 @RestController
-@RequestMapping(DailyReportRestController.ENDPOINT)
-public class DailyReportRestController
+@RequestMapping(InfoMessagesRestController.ENDPOINT)
+public class InfoMessagesRestController
 {
-	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/dailyReport";
+	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/infoMessages";
 
 	private final ILoginService loginService;
-	private final IProductSuppliesService productSuppliesRepository;
+	private final ISettingsService settingsService;
 
-	public DailyReportRestController(
+	public InfoMessagesRestController(
 			@NonNull final ILoginService loginService,
-			@NonNull final IProductSuppliesService productSuppliesRepository)
+			@NonNull final ISettingsService settingsService)
 	{
 		this.loginService = loginService;
-		this.productSuppliesRepository = productSuppliesRepository;
+		this.settingsService = settingsService;
 	}
 
-	@GetMapping("/{date}")
-	public void getDailyReport(@PathVariable("date") @NonNull final String dateStr)
+	@GetMapping
+	public String getInfoMessages()
 	{
 		loginService.assertLoggedIn();
-
-		final LocalDate date = LocalDate.parse(dateStr);
-		// productSuppliesRepository.get
-	}
-
-	@PostMapping
-	public void postDailyReport()
-	{
-		// TODO
+		return settingsService.getInfoMessage();
 	}
 }

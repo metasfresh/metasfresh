@@ -1,5 +1,9 @@
 package de.metas.procurement.webui;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -46,6 +50,21 @@ public class Application
 	public static void main(final String[] args)
 	{
 		SpringApplication.run(Application.class, args);
+	}
+
+	@Bean
+	public static ObjectMapper jsonObjectMapper()
+	{
+		// important to register the jackson-datatype-jsr310 module which we have in our pom and
+		// which is needed to serialize/deserialize java.time.Instant
+		//noinspection ConstantConditions
+		assert com.fasterxml.jackson.datatype.jsr310.JavaTimeModule.class != null; // just to get a compile error if not present
+
+		return new ObjectMapper()
+				.findAndRegisterModules()
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+				.enable(MapperFeature.USE_ANNOTATIONS);
 	}
 
 	/**

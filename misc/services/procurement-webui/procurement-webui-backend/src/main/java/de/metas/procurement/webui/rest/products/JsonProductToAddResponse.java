@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.products;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -29,20 +29,20 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Map;
+import java.util.List;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonMessages.JsonMessagesBuilder.class)
-public class JsonMessages
+@JsonDeserialize(builder = JsonProductToAddResponse.JsonProductToAddResponseBuilder.class)
+public class JsonProductToAddResponse
 {
 	@NonNull
-	String language;
+	List<JsonProduct> products;
 
 	@NonNull
-	Map<String, String> messages;
+	List<JsonProduct> moreProducts;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonMessagesBuilder {}
+	public static class JsonProductToAddResponseBuilder {}
 }

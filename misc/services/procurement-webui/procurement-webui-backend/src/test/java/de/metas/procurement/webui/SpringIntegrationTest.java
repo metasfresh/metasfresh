@@ -22,9 +22,9 @@ import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.IServerSyncService;
-import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.DummyDataProducer;
+import de.metas.procurement.webui.util.YearWeekUtil;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.threeten.extra.YearWeek;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -187,7 +188,7 @@ public class SpringIntegrationTest
 	{
 		// Report the product supply
 		final ContractLine contractLine = null;
-		productSuppliesService.reportSupply(bpartner, product, contractLine, day, qty);
+		productSuppliesService.reportSupply(bpartner, product, contractLine, DateUtils.toLocalDate(day), qty);
 
 		// Make sure it's saved in database
 		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
@@ -215,7 +216,7 @@ public class SpringIntegrationTest
 	private void reportNextWeekTrend(final BPartner bpartner, final Product product, final Date day, final Trend trend) throws Exception
 	{
 		// Report the trend
-		final DateRange week = DateRange.createWeek(day);
+		final YearWeek week = YearWeekUtil.ofJULDate(day);
 		final WeekSupply weeklySupply = productSuppliesService.setNextWeekTrend(bpartner, product, week, trend);
 
 		// Make sure it's saved in database

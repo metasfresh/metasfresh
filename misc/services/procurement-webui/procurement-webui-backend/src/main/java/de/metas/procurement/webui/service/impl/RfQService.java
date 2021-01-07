@@ -1,5 +1,6 @@
 package de.metas.procurement.webui.service.impl;
 
+import de.metas.procurement.webui.service.IRfQService;
 import org.springframework.stereotype.Service;
 
 /*
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
-public class RfQService //implements IRfQService
+public class RfQService implements IRfQService
 {
 	// @Autowired private RfqRepository rfqRepo;
 	// @Autowired private RfqQtyRepository rfqQuantityRepo;
@@ -74,7 +75,7 @@ public class RfQService //implements IRfQService
 	// 	return rfqHeader;
 	// }
 	//
-	// private List<RfqQuantityReport> retrieveRfqQuantityReports(final Rfq rfq)
+	// private List<RfqQuantityReport> retrieveRfqQuantityReports(@NonNull final Rfq rfq)
 	// {
 	// 	Preconditions.checkNotNull(rfq, "rfq is null");
 	// 	final Map<Date, RfqQty> day2qtyExisting = getRfQQuantitiesIndexedByDatePromised(rfq);
@@ -84,7 +85,7 @@ public class RfQService //implements IRfQService
 	// 	final List<RfqQuantityReport> rfqQuantityReports = new ArrayList<>();
 	// 	final Date dateStart = DateUtils.truncToDay(rfq.getDateStart());
 	// 	final Date dateEnd = DateUtils.truncToDay(rfq.getDateEnd());
-	// 	for (final Date day : DateRange.of(dateStart, dateEnd).daysIterable())
+	// 	for (final LocalDate day : DateRange.of(dateStart, dateEnd).daysIterable())
 	// 	{
 	// 		final RfqQty rfqQty = day2qtyExisting.get(day);
 	// 		final RfqQuantityReport rfqQuantityReport;
@@ -103,12 +104,12 @@ public class RfQService //implements IRfQService
 	// 	return rfqQuantityReports;
 	// }
 	//
-	// private Map<Date, RfqQty> getRfQQuantitiesIndexedByDatePromised(final Rfq rfq)
+	// private Map<LocalDate, RfqQty> getRfQQuantitiesIndexedByDatePromised(final Rfq rfq)
 	// {
-	// 	final Map<Date, RfqQty> day2qty = new HashMap<>();
+	// 	final Map<LocalDate, RfqQty> day2qty = new HashMap<>();
 	// 	for (final RfqQty qty : rfqQuantityRepo.findByRfq(rfq))
 	// 	{
-	// 		final Date day = DateUtils.truncToDay(qty.getDatePromised());
+	// 		final LocalDate day = qty.getDatePromised();
 	// 		day2qty.put(day, qty);
 	// 	}
 	//
@@ -143,10 +144,10 @@ public class RfQService //implements IRfQService
 	//
 	// 	//
 	// 	// Save lines
-	// 	final Map<Date, RfqQty> rfqQuantityRecords = getRfQQuantitiesIndexedByDatePromised(rfqRecord);
+	// 	final Map<LocalDate, RfqQty> rfqQuantityRecords = getRfQQuantitiesIndexedByDatePromised(rfqRecord);
 	// 	for (final RfqQuantityReport rfqQuantityReport : rfqHeader.getQuantities())
 	// 	{
-	// 		final Date day = rfqQuantityReport.getDay();
+	// 		final LocalDate day = rfqQuantityReport.getDay();
 	// 		RfqQty rfqQtyRecord = rfqQuantityRecords.get(day);
 	// 		if (rfqQtyRecord == null)
 	// 		{

@@ -70,7 +70,7 @@ public class DateRangeTest
 	@Test
 	void test_clone()
 	{
-		final DateRange dateRange = DateRange.of(DateUtils.toDayDate(216, 2, 22), DateUtils.toDayDate(216, 2, 29));
+		final DateRange dateRange = DateRange.of(LocalDate.of(216, 2, 22), LocalDate.of(216, 2, 29));
 		final DateRange dateRangeClone = dateRange.clone();
 
 		assertThat(dateRange)
@@ -81,21 +81,21 @@ public class DateRangeTest
 	@Test
 	void test_DateFrom_biggerThan_DateTo()
 	{
-		final DateRange dateRange = DateRange.of(DateUtils.toDayDate(216, 2, 29), DateUtils.toDayDate(216, 2, 22));
-		final DateRange dateRangeExpected = DateRange.of(DateUtils.toDayDate(216, 2, 22), DateUtils.toDayDate(216, 2, 29));
+		final DateRange dateRange = DateRange.of(LocalDate.of(216, 2, 29), LocalDate.of(216, 2, 22));
+		final DateRange dateRangeExpected = DateRange.of(LocalDate.of(216, 2, 22), LocalDate.of(216, 2, 29));
 
 		assertThat(dateRange).isEqualTo(dateRangeExpected);
 	}
 
 	private DateRangeExpectation test_createWeekInMonthForDay(final int year, final int month, final int weekFirstDay, final int weekLastDay)
 	{
-		final Date dateFrom = DateUtils.toDayDate(year, month, weekFirstDay);
-		final Date dateTo = DateUtils.toDayDate(year, month, weekLastDay);
+		final LocalDate dateFrom = LocalDate.of(year, month, weekFirstDay);
+		final LocalDate dateTo = LocalDate.of(year, month, weekLastDay);
 		final DateRange expectedDateRange = DateRange.of(dateFrom, dateTo);
 		for (int day = weekFirstDay; day <= weekLastDay; day++)
 		{
-			final Date date = DateUtils.toDayDate(year, month, day);
-			final DateRange dateRange = DateRange.createWeekInMonthForDay(date);
+			final LocalDate date = LocalDate.of(year, month, day);
+			final DateRange dateRange = DateRange.createWeekInMonthForDay(DateUtils.toDate(date));
 
 			assertThat(dateRange).as("DateRange for %s", date).isEqualTo(expectedDateRange);
 		}
@@ -106,7 +106,7 @@ public class DateRangeTest
 	@Test
 	void test_DaysIterable()
 	{
-		final DateRange dateRange = DateRange.of(DateUtils.toDayDate(216, 2, 22), DateUtils.toDayDate(216, 2, 29));
+		final DateRange dateRange = DateRange.of(LocalDate.of(216, 2, 22), LocalDate.of(216, 2, 29));
 		final List<LocalDate> daysExpected = ImmutableList.of(
 				LocalDate.of(216, 2, 22)
 				, LocalDate.of(216, 2, 23)

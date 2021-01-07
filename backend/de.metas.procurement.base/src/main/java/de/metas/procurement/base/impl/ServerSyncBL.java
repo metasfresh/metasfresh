@@ -513,8 +513,8 @@ public class ServerSyncBL implements IServerSyncBL
 		
 		//
 		// Date
-		final Timestamp datePromised = syncQtyChangeEvent.getDay() == null ? null : TimeUtil.trunc(syncQtyChangeEvent.getDay(), TimeUtil.TRUNC_DAY);
-		event.setDatePromised(datePromised);
+		final LocalDate datePromised = syncQtyChangeEvent.getDay();
+		event.setDatePromised(TimeUtil.asTimestamp(datePromised));
 
 		// Product
 		event.setPMM_Product(pmmProduct);

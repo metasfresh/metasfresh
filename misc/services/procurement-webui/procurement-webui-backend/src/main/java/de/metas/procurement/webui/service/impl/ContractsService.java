@@ -1,11 +1,14 @@
 package de.metas.procurement.webui.service.impl;
 
 import de.metas.procurement.webui.model.BPartner;
+import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.model.Contracts;
 import de.metas.procurement.webui.repository.ContractRepository;
 import de.metas.procurement.webui.service.IContractsService;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /*
  * #%L
@@ -42,6 +45,7 @@ public class ContractsService implements IContractsService
 	@Override
 	public Contracts getContracts(@NonNull final BPartner bpartner)
 	{
-		return new Contracts(contractRepository, bpartner);
+		final List<Contract> contracts = contractRepository.findByBpartnerAndDeletedFalse(bpartner);
+		return new Contracts(bpartner, contracts);
 	}
 }

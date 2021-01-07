@@ -1,6 +1,7 @@
 package de.metas.procurement.webui.service;
 
 import java.net.URI;
+import java.util.Locale;
 
 import de.metas.procurement.webui.model.User;
 import lombok.NonNull;
@@ -58,6 +59,10 @@ public interface ILoginService
 	void logout();
 
 	void assertLoggedIn();
+
+	User getLoggedInUser();
+
+	Locale getLocale();
 
 	String createPasswordHash(String password);
 }

@@ -221,7 +221,7 @@ public class JsonSerializeDeserializeTests
 						.rfq_uuid("rfq_uuid")
 						.build())
 				.qtyChangeEvent(SyncRfQQtyChangeEvent.builder()
-						.day(new Date())
+						.day(LocalDate.now())
 						.qty(BigDecimal.TEN)
 						.product_uuid("product_uuid")
 						.rfq_uuid("rfq_uuid")
