@@ -52,18 +52,6 @@ body {
   transform: translate(-100%, 0);
 }
 
-.view--prev.view-enter {
-  transform: translate(100%, 0);
-}
-
-.view--prev.view-enter-active {
-  transform: translate(0, 0);
-}
-
-.view--prev.view-exit {
-  transform: translate(100%, 0);
-}
-
-.view h1 {
-  margin-top: 0;
+.view-exit-active {
+  transform: translate(-90%, 0);
 }

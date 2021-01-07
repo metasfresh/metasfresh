@@ -1,7 +1,7 @@
-import React, { ReactElement } from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 import View from './View';
 
-export default function Home(): ReactElement {
+const Home: FunctionComponent = (): ReactElement => {
   return (
     <View>
       <div className="container">
@@ -10,4 +10,6 @@ export default function Home(): ReactElement {
       </div>
     </View>
   );
-}
+};
+
+export default Home;

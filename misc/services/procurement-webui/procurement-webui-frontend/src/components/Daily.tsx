@@ -1,15 +1,14 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import View from './View';
 
-const About: FunctionComponent = (): ReactElement => {
+const DailyView: FunctionComponent = (): ReactElement => {
   return (
     <View>
       <div className="container">
-        <h1 className="title">Page 1</h1>
-        <p className="subtitle">Some content</p>
+      Daily view
       </div>
     </View>
   );
 };
 
-export default About;
+export default DailyView;
