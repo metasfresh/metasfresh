@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from "mobx-react";
-import { observable } from "mobx";
-import { types, getEnv, getRoot, destroy } from "mobx-state-tree";
+import { Provider } from 'mobx-react';
+import { observable } from 'mobx';
+import { types, getEnv, getRoot, destroy } from 'mobx-state-tree';
 
 import './static/index.scss';
 import App from './App';
@@ -11,52 +11,55 @@ import reportWebVitals from './reportWebVitals';
 
 const Todo = types
   .model({
-      text: types.string,
-      id: types.identifierNumber
+    text: types.string,
+    id: types.identifierNumber,
   })
   .actions((self) => ({
     remove() {
       // @ts-ignore: Not sure how to fix this yet
-      getRoot(self).removeTodo(self)
+      getRoot(self).removeTodo(self);
     },
     edit(text) {
-      self.text = text
+      self.text = text;
     },
-  }))
+  }));
 
 const Store = types
-  .model("Store", {
-    todos: types.array(Todo)
+  .model('Store', {
+    todos: types.array(Todo),
   })
   .views((self) => ({
-      get fetch() {
-        return getEnv(self).fetch;
-      },
-      get alert() {
-        return getEnv(self).alert;
-      },
+    get fetch() {
+      return getEnv(self).fetch;
+    },
+    get alert() {
+      return getEnv(self).alert;
+    },
   }))
   .actions((self) => ({
     addTodo(text) {
-      const id = self.todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1
+      const id =
+        self.todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1;
       self.todos.unshift({
         id,
-        text
-      })
+        text,
+      });
     },
     removeTodo(todo) {
-      destroy(todo)
-    }
+      destroy(todo);
+    },
   }));
 
 const fetcher = (url) => window.fetch(url).then((response) => response.json());
-const store = Store.create({
-  todos: [
-    {
-      text: "Get coffee",
-      id: 0,
-    }
-  ]},
+const store = Store.create(
+  {
+    todos: [
+      {
+        text: 'Get coffee',
+        id: 0,
+      },
+    ],
+  },
   {
     fetch: fetcher,
     alert: (m) => console.log(m), // Noop for demo: window.alert(m)
