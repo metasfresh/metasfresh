@@ -5,6 +5,7 @@ import de.metas.procurement.webui.util.DateUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -46,9 +47,9 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 {
 	/* package */static final String TABLE_NAME = "rfq_qty";
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@NonNull
-	@Getter
+	@Setter
 	private Rfq rfq;
 
 	@NonNull
@@ -78,6 +79,7 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 	{
 		toStringHelper
 				.add("datePromised", datePromised)
+				.add("qtyPromisedUserEntered", qtyPromisedUserEntered)
 				.add("qtyPromised", qtyPromised);
 	}
 

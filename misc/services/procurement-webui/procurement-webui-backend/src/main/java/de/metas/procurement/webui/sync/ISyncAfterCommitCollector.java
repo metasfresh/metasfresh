@@ -35,7 +35,4 @@ public interface ISyncAfterCommitCollector
 	ISyncAfterCommitCollector add(WeekSupply weeklySupply);
 
 	ISyncAfterCommitCollector add(Rfq rfq);
-
-	ISyncAfterCommitCollector add(RfqQty rfqQty);
-
 }

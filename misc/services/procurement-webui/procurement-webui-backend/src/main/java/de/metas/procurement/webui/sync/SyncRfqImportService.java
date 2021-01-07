@@ -114,7 +114,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		{
 			throw new RuntimeException("No product found for " + syncProduct);
 		}
-		rfq.setProduct(product);
+		rfq.setProduct_id(product.getId());
 
 		//
 		// Quantity

@@ -29,6 +29,7 @@ import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.RfqQty;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
+import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.service.IRfQService;
 import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
@@ -54,13 +55,16 @@ public class RfQRestController
 
 	private final ILoginService loginService;
 	private final IRfQService rfqService;
+	private final IProductSuppliesService productSuppliesService;
 
 	public RfQRestController(
 			@NonNull final ILoginService loginService,
-			@NonNull final IRfQService rfqService)
+			@NonNull final IRfQService rfqService,
+			@NonNull final IProductSuppliesService productSuppliesService)
 	{
 		this.loginService = loginService;
 		this.rfqService = rfqService;
+		this.productSuppliesService = productSuppliesService;
 	}
 
 	@GetMapping
@@ -98,9 +102,9 @@ public class RfQRestController
 				.build();
 	}
 
-	private static JsonRfq toJsonRfq(@NonNull final Rfq rfq, @NonNull final Locale locale)
+	private JsonRfq toJsonRfq(@NonNull final Rfq rfq, @NonNull final Locale locale)
 	{
-		final Product product = rfq.getProduct();
+		final Product product = productSuppliesService.getProductById(rfq.getProduct_id());
 		final BigDecimal pricePromisedUserEntered = rfq.getPricePromisedUserEntered();
 
 		return JsonRfq.builder()

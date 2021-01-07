@@ -73,11 +73,9 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 	@Setter
 	private boolean winner;
 
-	@ManyToOne
-	@NonNull
 	@Getter
 	@Setter
-	private Product product;
+	private long product_id;
 
 	@NonNull
 	@Getter
@@ -102,7 +100,7 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 	@Setter
 	private String currencyCode;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "rfq", cascade = CascadeType.REMOVE)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "rfq", cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private final List<RfqQty> quantities = new ArrayList<>();
 
 	@Getter
@@ -131,7 +129,7 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 				.add("winnerKnown", winnerKnown)
 				.add("winner", winner)
 				//
-				.add("product", product)
+				.add("product_id", product_id)
 				//
 				.add("qtyRequested", qtyRequested)
 				.add("CU Info", qtyCUInfo)
@@ -188,7 +186,8 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 	public ImmutableSet<LocalDate> generateAllDaysSet()
 	{
 		final ArrayList<LocalDate> dates = DateUtils.getDaysList(getDateStart(), getDateEnd());
-		dates.addAll(quantities.stream()
+		dates.addAll(quantities
+				.stream()
 				.map(RfqQty::getDatePromised)
 				.collect(ImmutableSet.toImmutableSet()));
 
@@ -204,7 +203,7 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 
 	public BigDecimal getQtyPromisedUserEntered()
 	{
-		return getQuantities().stream()
+		return quantities.stream()
 				.map(RfqQty::getQtyPromisedUserEntered)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
@@ -229,9 +228,15 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 					.rfq(this)
 					.datePromised(date)
 					.build();
-			quantities.add(rfqQty);
+			addRfqQty(rfqQty);
 			return rfqQty;
 		}
+	}
+
+	private void addRfqQty(final RfqQty rfqQty)
+	{
+		rfqQty.setRfq(this);
+		quantities.add(rfqQty);
 	}
 
 	@Nullable

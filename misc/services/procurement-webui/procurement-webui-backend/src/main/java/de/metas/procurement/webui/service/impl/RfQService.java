@@ -8,6 +8,8 @@ import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.rest.rfq.JsonChangeRfqQtyRequest;
 import de.metas.procurement.webui.rest.rfq.JsonChangeRfqRequest;
 import de.metas.procurement.webui.service.IRfQService;
+import de.metas.procurement.webui.sync.IServerSyncService;
+import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -43,13 +45,16 @@ public class RfQService implements IRfQService
 {
 	private final RfqRepository rfqRepo;
 	private final RfqQtyRepository rfqQuantityRepo;
+	private final IServerSyncService syncService;
 
 	public RfQService(
 			@NonNull final RfqRepository rfqRepo,
-			@NonNull final RfqQtyRepository rfqQuantityRepo)
+			@NonNull final RfqQtyRepository rfqQuantityRepo,
+			@NonNull final IServerSyncService syncService)
 	{
 		this.rfqRepo = rfqRepo;
 		this.rfqQuantityRepo = rfqQuantityRepo;
+		this.syncService = syncService;
 	}
 
 	@Override
@@ -90,14 +95,27 @@ public class RfQService implements IRfQService
 		return rfqRepo.findByUuid(rfq_uuid);
 	}
 
-	@Override
-	public void saveRecursively(@NonNull final Rfq rfq)
+	private void saveRecursivelyAndPush(@NonNull final Rfq rfq)
 	{
-		rfqQuantityRepo.saveAll(rfq.getQuantities());
-		rfqRepo.save(rfq);
+		saveRecursively(rfq);
+		pushToMetasfresh(rfq);
 	}
 
 	@Override
+	public void saveRecursively(@NonNull final Rfq rfq)
+	{
+		//rfqQuantityRepo.saveAll(rfq.getQuantities());
+		rfqRepo.save(rfq);
+	}
+
+	private void pushToMetasfresh(@NonNull final Rfq rfq)
+	{
+		final ISyncAfterCommitCollector syncAfterCommitCollector = syncService.syncAfterCommit();
+		syncAfterCommitCollector.add(rfq);
+	}
+
+	@Override
+	@Transactional
 	public Rfq changeActiveRfq(
 			@NonNull final JsonChangeRfqRequest request,
 			@NonNull final User loggedUser)
@@ -135,7 +153,7 @@ public class RfQService implements IRfQService
 		for (final Rfq rfq : rfqs)
 		{
 			rfq.confirmByUser();
-			saveRecursively(rfq);
+			saveRecursivelyAndPush(rfq);
 		}
 	}
 

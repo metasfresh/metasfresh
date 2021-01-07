@@ -1,7 +1,6 @@
 package de.metas.procurement.webui.sync;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.DeadEvent;
@@ -25,10 +24,8 @@ import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.RfqQty;
 import de.metas.procurement.webui.model.SyncConfirm;
 import de.metas.procurement.webui.model.WeekSupply;
-import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.service.IRfQService;
 import de.metas.procurement.webui.sync.rabbitmq.SenderToMetasfresh;
 import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
 import org.slf4j.Logger;
@@ -41,7 +38,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,7 +76,6 @@ public class ServerSyncService implements IServerSyncService
 
 	private final SenderToMetasfresh senderToMetasfresh;
 	private final IProductSuppliesService productSuppliesService;
-	private final IRfQService rfqService;
 	private final SyncConfirmRepository syncConfirmRepo;
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
@@ -89,13 +84,11 @@ public class ServerSyncService implements IServerSyncService
 			@Qualifier("asyncCallsTaskExecutor") final TaskExecutor taskExecutor,
 			final SenderToMetasfresh senderToMetasfresh,
 			final IProductSuppliesService productSuppliesService,
-			final IRfQService rfqService,
 			final SyncConfirmRepository syncConfirmRepo)
 	{
 		this.taskExecutor = taskExecutor;
 		this.senderToMetasfresh = senderToMetasfresh;
 		this.productSuppliesService = productSuppliesService;
-		this.rfqService = rfqService;
 		this.syncConfirmRepo = syncConfirmRepo;
 	}
 
@@ -134,6 +127,7 @@ public class ServerSyncService implements IServerSyncService
 	@Override
 	public void awaitInitialSyncComplete(final long timeout, final TimeUnit unit) throws InterruptedException
 	{
+		//noinspection ResultOfMethodCallIgnored
 		initialSync.await(timeout, unit);
 	}
 
@@ -209,33 +203,6 @@ public class ServerSyncService implements IServerSyncService
 		logger.debug("Pushing request done");
 	}
 
-	//@ManagedOperation(description = "Pushes all product supply reports, identified by selection, from webui server to metasfresh server")
-	public void pushReportProductSupplyForSelection(final long bpartner_id, final long product_id, final String dayFromStr, final String dayToStr)
-	{
-		try
-		{
-			final LocalDate dayFrom = LocalDate.parse(dayFromStr);
-			final LocalDate dayTo = LocalDate.parse(dayToStr);
-
-			final List<ProductSupply> productSupplies = productSuppliesService.getProductSupplies(bpartner_id, product_id, dayFrom, dayTo);
-			if (productSupplies.isEmpty())
-			{
-				throw new RuntimeException("No supplies found");
-			}
-
-			final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
-			logger.debug("Pushing request: {}", request);
-			process(request);
-			logger.debug("Pushing request done");
-		}
-		catch (final Exception e)
-		{
-			logger.error("Failed pushing product supplies for selection", e);
-			Throwables.throwIfUnchecked(e);
-			throw new RuntimeException(e);
-		}
-	}
-
 	@Subscribe
 	public void process(final PutProductSuppliesRequest request)
 	{
@@ -283,33 +250,6 @@ public class ServerSyncService implements IServerSyncService
 		final PutWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
-	}
-
-	//@ManagedOperation(description = "Pushes all weekly supply reports, identified by selection, from webui server to metasfresh server")
-	public void pushWeeklySuppliesForSelection(final long bpartner_id, final long product_id, final String dayFromStr, final String dayToStr)
-	{
-		try
-		{
-			final LocalDate dayFrom = LocalDate.parse(dayFromStr);
-			final LocalDate dayTo = LocalDate.parse(dayToStr);
-
-			final List<WeekSupply> weeklySupplies = productSuppliesService.getWeeklySupplies(bpartner_id, product_id, dayFrom, dayTo);
-			if (weeklySupplies.isEmpty())
-			{
-				throw new RuntimeException("No supplies found");
-			}
-
-			final PutWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
-			logger.debug("Pushing request: {}", request);
-			process(request);
-			logger.debug("Pushing request done");
-		}
-		catch (final Exception e)
-		{
-			logger.error("Failed pushing weekly supplies for selection", e);
-			Throwables.throwIfUnchecked(e);
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Subscribe
@@ -386,9 +326,9 @@ public class ServerSyncService implements IServerSyncService
 		}
 	}
 
-	private void reportRfQChangesAsync(final List<Rfq> rfqs, final List<RfqQty> rfqQuantities)
+	private void reportRfQChangesAsync(final List<Rfq> rfqs)
 	{
-		final PutRfQChangeRequest request = createSyncRfQChangeRequest(rfqs, rfqQuantities);
+		final PutRfQChangeRequest request = createSyncRfQChangeRequest(rfqs);
 		if (PutRfQChangeRequest.isEmpty(request))
 		{
 			logger.debug("No RfQ change requests to enqueue");
@@ -414,7 +354,7 @@ public class ServerSyncService implements IServerSyncService
 
 	}
 
-	private PutRfQChangeRequest createSyncRfQChangeRequest(final List<Rfq> rfqs, final List<RfqQty> rfqQuantities)
+	private PutRfQChangeRequest createSyncRfQChangeRequest(final List<Rfq> rfqs)
 	{
 		final PutRfQChangeRequestBuilder changeRequest = PutRfQChangeRequest.builder();
 
@@ -422,12 +362,13 @@ public class ServerSyncService implements IServerSyncService
 		{
 			final SyncRfQPriceChangeEvent priceChangeEvent = createSyncRfQPriceChangeEvent(rfq);
 			changeRequest.priceChangeEvent(priceChangeEvent);
-		}
 
-		for (final RfqQty rfqQty : rfqQuantities)
-		{
-			final SyncRfQQtyChangeEvent qtyChangeEvent = createSyncRfQQtyChangeEvent(rfqQty);
-			changeRequest.qtyChangeEvent(qtyChangeEvent);
+			for (final RfqQty rfqQty : rfq.getQuantities())
+			{
+				final SyncRfQQtyChangeEvent qtyChangeEvent = createSyncRfQQtyChangeEvent(rfq, rfqQty);
+				changeRequest.qtyChangeEvent(qtyChangeEvent);
+			}
+
 		}
 
 		return changeRequest.build();
@@ -436,20 +377,20 @@ public class ServerSyncService implements IServerSyncService
 	private SyncRfQPriceChangeEvent createSyncRfQPriceChangeEvent(final Rfq rfqRecord)
 	{
 		final String rfq_uuid = rfqRecord.getUuid();
+		final Product product = productSuppliesService.getProductById(rfqRecord.getProduct_id());
 
 		return SyncRfQPriceChangeEvent.builder()
 				.uuid(rfq_uuid)
 				.rfq_uuid(rfq_uuid)
-				.product_uuid(rfqRecord.getProduct().getUuid())
+				.product_uuid(product.getUuid())
 				.price(rfqRecord.getPricePromised())
 				.syncConfirmationId(rfqRecord.getSyncConfirmId())
 				.build();
 	}
 
-	private SyncRfQQtyChangeEvent createSyncRfQQtyChangeEvent(final RfqQty rfqQtyReport)
+	private SyncRfQQtyChangeEvent createSyncRfQQtyChangeEvent(final Rfq rfq, final RfqQty rfqQtyReport)
 	{
-		final Rfq rfq = rfqQtyReport.getRfq();
-		final Product product = rfq.getProduct();
+		final Product product = productSuppliesService.getProductById(rfq.getProduct_id());
 
 		return SyncRfQQtyChangeEvent.builder()
 				.uuid(rfqQtyReport.getUuid())
@@ -459,18 +400,6 @@ public class ServerSyncService implements IServerSyncService
 				.qty(rfqQtyReport.getQtyPromised())
 				.syncConfirmationId(rfqQtyReport.getSyncConfirmId())
 				.build();
-	}
-
-	//@ManagedOperation(description = "Pushes a particular RfQ, identified by ID, from webui server to metasfresh server")
-	public void pushRfqById(final long rfq_id)
-	{
-		final Rfq rfq = rfqService.getRfqById(rfq_id);
-		// if (rfq == null) { throw new RuntimeException("No RfQ found for ID=" + rfq_id); }
-
-		final PutRfQChangeRequest request = createSyncRfQChangeRequest(ImmutableList.of(rfq), rfq.getQuantities());
-		logger.debug("Pushing request: {}", request);
-		process(request);
-		logger.debug("Pushing request done");
 	}
 
 	@Override
@@ -512,7 +441,6 @@ public class ServerSyncService implements IServerSyncService
 		private final List<ProductSupply> productSupplies = new ArrayList<>();
 		private final List<WeekSupply> weeklySupplies = new ArrayList<>();
 		private final List<Rfq> rfqs = new ArrayList<>();
-		private final List<RfqQty> rfqQuantities = new ArrayList<>();
 
 		@Override
 		public ISyncAfterCommitCollector add(final ProductSupply productSupply)
@@ -540,18 +468,10 @@ public class ServerSyncService implements IServerSyncService
 			return this;
 		}
 
-		@Override
-		public ISyncAfterCommitCollector add(final RfqQty rfqQty)
-		{
-			createAndStoreSyncConfirmRecord(rfqQty);
-			rfqQuantities.add(rfqQty);
-			return this;
-		}
-
 		/**
 		 * Creates a new local DB record for the given <code>abstractEntity</code>.
 		 */
-		private SyncConfirm createAndStoreSyncConfirmRecord(final AbstractSyncConfirmAwareEntity abstractEntity)
+		private void createAndStoreSyncConfirmRecord(final AbstractSyncConfirmAwareEntity abstractEntity)
 		{
 			final SyncConfirm syncConfirmRecord = new SyncConfirm();
 			syncConfirmRecord.setEntryType(abstractEntity.getClass().getSimpleName());
@@ -562,7 +482,6 @@ public class ServerSyncService implements IServerSyncService
 
 			abstractEntity.setSyncConfirmId(syncConfirmRecord.getId());
 
-			return syncConfirmRecord;
 		}
 
 		@Override
@@ -596,10 +515,8 @@ public class ServerSyncService implements IServerSyncService
 			// Sync RfQ changes
 			{
 				final List<Rfq> rfqs = ImmutableList.copyOf(this.rfqs);
-				final List<RfqQty> rfqQuantities = ImmutableList.copyOf(this.rfqQuantities);
 				this.rfqs.clear();
-				this.rfqQuantities.clear();
-				reportRfQChangesAsync(rfqs, rfqQuantities);
+				reportRfQChangesAsync(rfqs);
 			}
 		}
 	}
