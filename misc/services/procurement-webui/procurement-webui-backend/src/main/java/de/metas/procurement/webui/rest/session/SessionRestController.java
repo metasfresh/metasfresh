@@ -27,6 +27,7 @@ import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.IRfQService;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.LanguageKey;
 import de.metas.procurement.webui.util.YearWeekUtil;
@@ -50,13 +51,16 @@ public class SessionRestController
 
 	private final ILoginService loginService;
 	private final IProductSuppliesService productSuppliesService;
+	private final IRfQService rfqService;
 
 	public SessionRestController(
 			@NonNull final ILoginService loginService,
-			@NonNull final IProductSuppliesService productSuppliesService)
+			@NonNull final IProductSuppliesService productSuppliesService,
+			@NonNull final IRfQService rfqService)
 	{
 		this.loginService = loginService;
 		this.productSuppliesService = productSuppliesService;
+		this.rfqService = rfqService;
 	}
 
 	@GetMapping("/")
@@ -65,7 +69,8 @@ public class SessionRestController
 		final User user = loginService.getLoggedInUser();
 		final Locale locale = loginService.getLocale();
 
-		final long countUnconfirmedDailyReports = productSuppliesService.countUnconfirmedUserEnteredQtys(user.getBpartner());
+		final long countUnconfirmed = productSuppliesService.countUnconfirmedUserEnteredQtys(user.getBpartner())
+				+ rfqService.countUnconfirmed(user.getBpartner());
 
 		final LocalDate today = LocalDate.now();
 		final YearWeek week = YearWeekUtil.ofLocalDate(today);
@@ -80,7 +85,7 @@ public class SessionRestController
 				.week(YearWeekUtil.toJsonString(week))
 				.weekCaption(YearWeekUtil.toDisplayName(week))
 				//
-				.countUnconfirmed(countUnconfirmedDailyReports)
+				.countUnconfirmed(countUnconfirmed)
 				.build();
 	}
 
@@ -132,5 +137,6 @@ public class SessionRestController
 	{
 		final BPartner bpartner = loginService.getLoggedInUser().getBpartner();
 		productSuppliesService.confirmUserEnteredQtys(bpartner);
+		rfqService.confirmUserChanges(bpartner);
 	}
 }

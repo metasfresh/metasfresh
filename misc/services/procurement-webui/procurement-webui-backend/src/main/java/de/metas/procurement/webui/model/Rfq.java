@@ -3,6 +3,7 @@ package de.metas.procurement.webui.model;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import de.metas.procurement.webui.util.DateUtils;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -56,13 +57,13 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NonNull
+	@Getter
 	private BPartner bpartner;
 
 	@NonNull
 	private java.sql.Date dateClose;
 
 	@Getter
-	@Setter
 	private boolean closed;
 
 	@Getter
@@ -90,8 +91,12 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 
 	@NonNull
 	@Getter
-	@Setter
 	private BigDecimal pricePromised = BigDecimal.ZERO;
+
+	@NonNull
+	@Getter
+	private BigDecimal pricePromisedUserEntered = BigDecimal.ZERO;
+
 	@NonNull
 	@Getter
 	@Setter
@@ -99,6 +104,17 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "rfq", cascade = CascadeType.REMOVE)
 	private final List<RfqQty> quantities = new ArrayList<>();
+
+	@Getter
+	private boolean confirmedByUser = true;
+
+	protected Rfq() {}
+
+	@Builder
+	private Rfq(@NonNull final BPartner bpartner)
+	{
+		this.bpartner = bpartner;
+	}
 
 	@Override
 	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
@@ -154,16 +170,6 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 		return getBpartner().getId();
 	}
 
-	public BPartner getBpartner()
-	{
-		return bpartner;
-	}
-
-	public void setBpartner(final BPartner bpartner)
-	{
-		this.bpartner = bpartner;
-	}
-
 	public LocalDate getDateClose()
 	{
 		return DateUtils.toLocalDate(dateClose);
@@ -191,17 +197,23 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 		return ImmutableSet.copyOf(dates);
 	}
 
-	public BigDecimal getQtyPromised()
+	public void setPricePromisedUserEntered(@NonNull final BigDecimal pricePromisedUserEntered)
+	{
+		this.pricePromisedUserEntered = pricePromisedUserEntered;
+	}
+
+	public BigDecimal getQtyPromisedUserEntered()
 	{
 		return getQuantities().stream()
-				.map(RfqQty::getQtyPromised)
+				.map(RfqQty::getQtyPromisedUserEntered)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	public void setQtyPromised(@NonNull final LocalDate date, @NonNull final BigDecimal qtyPromised)
 	{
 		final RfqQty rfqQty = getOrCreateQty(date);
-		rfqQty.setQtyPromised(qtyPromised);
+		rfqQty.setQtyPromisedUserEntered(qtyPromised);
+		updateConfirmedByUser();
 	}
 
 	private RfqQty getOrCreateQty(@NonNull final LocalDate date)
@@ -234,5 +246,40 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 		}
 
 		return null;
+	}
+
+	private void updateConfirmedByUser()
+	{
+		this.confirmedByUser = computeConfirmedByUser();
+	}
+
+	private boolean computeConfirmedByUser()
+	{
+		if (pricePromised.compareTo(pricePromisedUserEntered) != 0)
+		{
+			return false;
+		}
+
+		for (final RfqQty rfqQty : quantities)
+		{
+			if (!rfqQty.isConfirmedByUser())
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public void closeIt()
+	{
+		this.closed = true;
+	}
+
+	public void confirmByUser()
+	{
+		this.pricePromised = getPricePromisedUserEntered();
+		quantities.forEach(RfqQty::confirmByUser);
+		updateConfirmedByUser();
 	}
 }

@@ -5,9 +5,7 @@ import de.metas.procurement.webui.util.DateUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
-import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
@@ -41,8 +39,8 @@ import java.time.LocalDate;
  */
 
 @Entity
-@Table(name = RfqQty.TABLE_NAME //
-		, uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "datePromised" })   //
+@Table(name = RfqQty.TABLE_NAME,
+		uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "datePromised" })
 )
 public class RfqQty extends AbstractSyncConfirmAwareEntity
 {
@@ -58,21 +56,21 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 
 	@NonNull
 	@Getter
-	@Setter
-	private BigDecimal qtyPromised;
+	private BigDecimal qtyPromised = BigDecimal.ZERO;
+
+	@NonNull
+	@Getter
+	private BigDecimal qtyPromisedUserEntered = BigDecimal.ZERO;
 
 	protected RfqQty() {}
 
 	@Builder
 	private RfqQty(
 			@NonNull final Rfq rfq,
-			@NonNull final LocalDate datePromised,
-			@Nullable final BigDecimal qtyPromised)
+			@NonNull final LocalDate datePromised)
 	{
 		this.rfq = rfq;
 		this.datePromised = DateUtils.toSqlDate(datePromised);
-		this.qtyPromised = qtyPromised;
-		this.qtyPromised = qtyPromised != null ? qtyPromised : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -86,5 +84,20 @@ public class RfqQty extends AbstractSyncConfirmAwareEntity
 	public LocalDate getDatePromised()
 	{
 		return DateUtils.toLocalDate(datePromised);
+	}
+
+	public void setQtyPromisedUserEntered(@NonNull final BigDecimal qtyPromisedUserEntered)
+	{
+		this.qtyPromisedUserEntered = qtyPromisedUserEntered;
+	}
+
+	public boolean isConfirmedByUser()
+	{
+		return getQtyPromised().compareTo(getQtyPromisedUserEntered()) == 0;
+	}
+
+	public void confirmByUser()
+	{
+		this.qtyPromised = getQtyPromisedUserEntered();
 	}
 }

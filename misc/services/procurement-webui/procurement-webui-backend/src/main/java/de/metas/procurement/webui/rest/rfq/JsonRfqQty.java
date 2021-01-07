@@ -43,4 +43,6 @@ public class JsonRfqQty
 
 	@NonNull
 	BigDecimal qtyPromised;
+
+	boolean confirmedByUser;
 }

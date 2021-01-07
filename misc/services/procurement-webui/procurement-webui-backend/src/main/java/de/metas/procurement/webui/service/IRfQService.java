@@ -22,11 +22,14 @@ package de.metas.procurement.webui.service;
  * #L%
  */
 
+import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.rest.rfq.JsonChangeRfqRequest;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
 import java.util.List;
 
 public interface IRfQService
@@ -37,5 +40,15 @@ public interface IRfQService
 
 	Rfq getRfqById(long rfq_id);
 
+	@Nullable
+	Rfq getRfqByUUID(@NonNull String rfq_uuid);
+
+	void saveRecursively(@NonNull Rfq rfq);
+
 	Rfq changeActiveRfq(final JsonChangeRfqRequest request, final User loggedUser);
+
+	long countUnconfirmed(@NonNull BPartner bpartner);
+
+	@Transactional
+	void confirmUserChanges(@NonNull BPartner bpartner);
 }

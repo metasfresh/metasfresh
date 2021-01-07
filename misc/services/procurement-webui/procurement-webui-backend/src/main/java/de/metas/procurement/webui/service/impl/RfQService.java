@@ -11,6 +11,8 @@ import de.metas.procurement.webui.service.IRfQService;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 
@@ -82,6 +84,20 @@ public class RfQService implements IRfQService
 	}
 
 	@Override
+	@Nullable
+	public Rfq getRfqByUUID(@NonNull final String rfq_uuid)
+	{
+		return rfqRepo.findByUuid(rfq_uuid);
+	}
+
+	@Override
+	public void saveRecursively(@NonNull final Rfq rfq)
+	{
+		rfqQuantityRepo.saveAll(rfq.getQuantities());
+		rfqRepo.save(rfq);
+	}
+
+	@Override
 	public Rfq changeActiveRfq(
 			@NonNull final JsonChangeRfqRequest request,
 			@NonNull final User loggedUser)
@@ -97,12 +113,30 @@ public class RfQService implements IRfQService
 
 		if (request.getPrice() != null)
 		{
-			rfq.setPricePromised(request.getPrice());
+			rfq.setPricePromisedUserEntered(request.getPrice());
 		}
 
-		rfqQuantityRepo.saveAll(rfq.getQuantities());
-		rfqRepo.save(rfq);
+		saveRecursively(rfq);
 
 		return rfq;
 	}
+
+	@Override
+	public long countUnconfirmed(@NonNull final BPartner bpartner)
+	{
+		return rfqRepo.countUnconfirmed(bpartner);
+	}
+
+	@Override
+	@Transactional
+	public void confirmUserChanges(@NonNull final BPartner bpartner)
+	{
+		final List<Rfq> rfqs = rfqRepo.findUnconfirmed(bpartner);
+		for (final Rfq rfq : rfqs)
+		{
+			rfq.confirmByUser();
+			saveRecursively(rfq);
+		}
+	}
+
 }

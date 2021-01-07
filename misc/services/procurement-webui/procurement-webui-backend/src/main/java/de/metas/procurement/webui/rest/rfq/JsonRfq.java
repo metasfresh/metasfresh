@@ -45,12 +45,9 @@ public class JsonRfq
 	@NonNull
 	String packingInfo;
 
-	@NonNull
-	private LocalDate dateStart;
-	@NonNull
-	private LocalDate dateEnd;
-	@NonNull
-	private LocalDate dateClose;
+	@NonNull LocalDate dateStart;
+	@NonNull LocalDate dateEnd;
+	@NonNull LocalDate dateClose;
 
 	@NonNull
 	String qtyRequested;
@@ -66,4 +63,6 @@ public class JsonRfq
 	@NonNull
 	@Singular
 	List<JsonRfqQty> quantities;
+
+	boolean confirmedByUser;
 }

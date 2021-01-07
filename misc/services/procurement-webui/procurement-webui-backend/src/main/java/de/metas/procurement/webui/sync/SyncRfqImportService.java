@@ -11,8 +11,8 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractLineRepository;
-import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.IRfQService;
 import de.metas.procurement.webui.service.impl.ProductSuppliesService;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -48,7 +48,7 @@ import java.util.List;
 @Transactional
 public class SyncRfqImportService extends AbstractSyncImportService
 {
-	private final RfqRepository rfqRepo;
+	private final IRfQService rfqService;
 	private final SyncProductImportService productImportService;
 	private final BPartnerRepository bpartnerRepo;
 	private final ContractLineRepository contractLineRepo;
@@ -56,13 +56,13 @@ public class SyncRfqImportService extends AbstractSyncImportService
 	// @Autowired @Lazy private MFEventBus applicationEventBus;
 
 	public SyncRfqImportService(
-			@NonNull final RfqRepository rfqRepo,
+			@NonNull final IRfQService rfqService,
 			@NonNull final SyncProductImportService productImportService,
 			@NonNull final BPartnerRepository bpartnerRepo,
 			@NonNull final ContractLineRepository contractLineRepo,
 			@NonNull final ProductSuppliesService productSuppliesService)
 	{
-		this.rfqRepo = rfqRepo;
+		this.rfqService = rfqService;
 		this.productImportService = productImportService;
 		this.bpartnerRepo = bpartnerRepo;
 		this.contractLineRepo = contractLineRepo;
@@ -82,20 +82,20 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		importRfQ(null, syncRfQ);
 	}
 
-	public void importRfQ(@Nullable BPartner bpartner, @NonNull final SyncRfQ syncRfQ)
+	public void importRfQ(@Nullable final BPartner bpartner, @NonNull final SyncRfQ syncRfQ)
 	{
 		final String rfq_uuid = syncRfQ.getUuid();
-		Rfq rfq = rfqRepo.findByUuid(rfq_uuid);
+		Rfq rfq = rfqService.getRfqByUUID(rfq_uuid);
 		if (rfq == null)
 		{
-			rfq = new Rfq();
-			rfq.setUuid(rfq_uuid);
+			final BPartner bpartnerEffective = bpartner != null
+					? bpartner
+					: bpartnerRepo.findByUuid(syncRfQ.getBpartner_uuid());
 
-			if (bpartner == null)
-			{
-				bpartner = bpartnerRepo.findByUuid(syncRfQ.getBpartner_uuid());
-			}
-			rfq.setBpartner(bpartner);
+			rfq = Rfq.builder()
+					.bpartner(bpartnerEffective)
+					.build();
+			rfq.setUuid(rfq_uuid);
 		}
 
 		rfq.setDeleted(false);
@@ -127,7 +127,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 
 		//
 		// Save & return
-		rfqRepo.save(rfq);
+		rfqService.saveRecursively(rfq);
 		logger.debug("Imported: {} -> {}", syncRfQ, rfq);
 
 		// applicationEventBus.post(RfqChangedEvent.of(rfq));
@@ -137,7 +137,7 @@ public class SyncRfqImportService extends AbstractSyncImportService
 	public void importRfQCloseEvent(final SyncRfQCloseEvent syncRfQCloseEvent)
 	{
 		final String rfq_uuid = syncRfQCloseEvent.getRfq_uuid();
-		final Rfq rfq = rfqRepo.findByUuid(rfq_uuid);
+		final Rfq rfq = rfqService.getRfqByUUID(rfq_uuid);
 		if (rfq == null)
 		{
 			logger.warn("No RfQ found for {}. Skip importing the event.", syncRfQCloseEvent);
@@ -152,14 +152,14 @@ public class SyncRfqImportService extends AbstractSyncImportService
 
 		//
 		// Update the RfQ
-		rfq.setClosed(true);
+		rfq.closeIt();
 		if (syncRfQCloseEvent.isWinnerKnown())
 		{
 			rfq.setWinnerKnown(true);
 			rfq.setWinner(syncRfQCloseEvent.isWinner());
 		}
 
-		rfqRepo.save(rfq);
+		rfqService.saveRecursively(rfq);
 		// applicationEventBus.post(RfqChangedEvent.of(rfq));
 
 		if (syncRfQCloseEvent.isWinnerKnown() && syncRfQCloseEvent.isWinner())

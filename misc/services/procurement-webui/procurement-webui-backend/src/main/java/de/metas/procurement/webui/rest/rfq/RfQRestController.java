@@ -101,6 +101,7 @@ public class RfQRestController
 	private static JsonRfq toJsonRfq(@NonNull final Rfq rfq, @NonNull final Locale locale)
 	{
 		final Product product = rfq.getProduct();
+		final BigDecimal pricePromisedUserEntered = rfq.getPricePromisedUserEntered();
 
 		return JsonRfq.builder()
 				.rfqId(rfq.getIdAsString())
@@ -110,10 +111,11 @@ public class RfQRestController
 				.dateEnd(rfq.getDateEnd())
 				.dateClose(rfq.getDateClose())
 				.qtyRequested(renderQty(rfq.getQtyRequested(), rfq.getQtyCUInfo(), locale))
-				.qtyPromised(renderQty(rfq.getQtyPromised(), rfq.getQtyCUInfo(), locale))
-				.price(rfq.getPricePromised())
-				.priceRendered(renderPrice(rfq.getPricePromised(), rfq.getCurrencyCode(), locale))
+				.qtyPromised(renderQty(rfq.getQtyPromisedUserEntered(), rfq.getQtyCUInfo(), locale))
+				.price(pricePromisedUserEntered)
+				.priceRendered(renderPrice(pricePromisedUserEntered, rfq.getCurrencyCode(), locale))
 				.quantities(toJsonRfqQtysList(rfq, locale))
+				.confirmedByUser(rfq.isConfirmedByUser())
 				.build();
 	}
 
@@ -139,7 +141,8 @@ public class RfQRestController
 		return JsonRfqQty.builder()
 				.date(rfqQty.getDatePromised())
 				.dayCaption(DateUtils.getDayName(rfqQty.getDatePromised(), locale))
-				.qtyPromised(rfqQty.getQtyPromised())
+				.qtyPromised(rfqQty.getQtyPromisedUserEntered())
+				.confirmedByUser(rfqQty.isConfirmedByUser())
 				.build();
 	}
 
@@ -149,6 +152,7 @@ public class RfQRestController
 				.date(date)
 				.dayCaption(DateUtils.getDayName(date, locale))
 				.qtyPromised(BigDecimal.ZERO)
+				.confirmedByUser(true)
 				.build();
 	}
 
