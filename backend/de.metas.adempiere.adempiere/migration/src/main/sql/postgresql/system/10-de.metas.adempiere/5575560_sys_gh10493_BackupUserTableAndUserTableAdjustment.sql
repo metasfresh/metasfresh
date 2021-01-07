@@ -1,9 +1,3 @@
--- backup of ad_user and populating c_title
-
-
-CREATE TABLE backup.AD_User_gh1140 as select * from ad_user;
-
--- backup
 
 -- New column in ad_user
 

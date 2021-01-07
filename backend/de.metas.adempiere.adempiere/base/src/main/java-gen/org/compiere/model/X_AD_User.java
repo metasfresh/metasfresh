@@ -1669,31 +1669,4 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
-
-	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1)
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
-	}
 }
