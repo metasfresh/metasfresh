@@ -10,7 +10,7 @@ interface Props {
 const Login: FunctionComponent<Props> = ({
   splat
 }) => {
-  let history = useHistory();
+  const history = useHistory();
 
   const handleSubmit = (event) => {
     event.preventDefault();

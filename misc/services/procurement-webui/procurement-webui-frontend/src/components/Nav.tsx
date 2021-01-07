@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function Nav() {
-  let location = useLocation();
+  const location = useLocation();
 
   if (['login', 'password'].indexOf(location.pathname) >= 0) {
     return null;

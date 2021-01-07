@@ -45,7 +45,7 @@ class Index extends Component {
   installApp = async ()=>{
     if(!this.installPrompt) return false;
     this.installPrompt.prompt();
-    let outcome = await this.installPrompt.userChoice;
+    const outcome = await this.installPrompt.userChoice;
     if(outcome.outcome === 'accepted'){
       console.log('App is already installed')
     }
@@ -61,7 +61,7 @@ class Index extends Component {
   installPrompt = null;
 
   componentDidMount() {
-     window.addEventListener('beforeinstallprompt', (e) =>{
+     window.addEventListener('beforeinstallprompt', (e: { preventDefault: () => void; }) =>{
       e.preventDefault();
       console.log('Install Prompt fired');
       this.installPrompt = e;
