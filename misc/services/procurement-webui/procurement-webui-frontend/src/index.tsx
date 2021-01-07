@@ -16,6 +16,7 @@ const Todo = types
   })
   .actions((self) => ({
     remove() {
+      // @ts-ignore: Not sure how to fix this yet
       getRoot(self).removeTodo(self);
     },
     edit(text) {
@@ -37,7 +38,8 @@ const Store = types
   }))
   .actions((self) => ({
     addTodo(text) {
-      const id = self.todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1;
+      const id =
+        self.todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1;
       self.todos.unshift({
         id,
         text,

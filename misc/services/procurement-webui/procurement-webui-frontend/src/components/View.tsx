@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom';
 
 interface Props {
   children?: unknown;
-  location?: unknown;
+  location?: any;
 }
 
 const View: FunctionComponent<Props> = ({ children, location: { state } }) => {
