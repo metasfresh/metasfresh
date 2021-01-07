@@ -20,45 +20,33 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.products;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonLoginResponse.JsonLoginResponseBuilder.class)
-public class JsonLoginResponse
+@JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
+public class JsonProduct
 {
-	public static JsonLoginResponse ok()
-	{
-		return JsonLoginResponse.builder()
-				.ok(true)
-				.build();
-	}
+	@NonNull
+	String productId;
 
-	public static JsonLoginResponse error(final Exception ex)
-	{
-		return JsonLoginResponse.builder()
-				.ok(false)
-				.errorMessage(ex.getLocalizedMessage())
-				.build();
-	}
+	@NonNull
+	String productName;
 
-	boolean ok;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String errorMessage;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String language;
+	@Nullable
+	String packingInfo;
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonLoginResponseBuilder
-	{
-	}
+	public static class JsonProductBuilder {}
+
 }

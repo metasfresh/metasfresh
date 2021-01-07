@@ -43,6 +43,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -128,8 +129,8 @@ public class AgentSyncIntegrationTest
 	@Autowired
 	ProductSupplyRepository productSuppliesRepo;
 
-	private final Date contractDateFrom = DateUtils.toDayDate(2015, 4, 1);
-	private final Date contractDateTo = DateUtils.toDayDate(2016, 3, 31);
+	private final LocalDate contractDateFrom = LocalDate.of(2015, 4, 1);
+	private final LocalDate contractDateTo = LocalDate.of(2016, 3, 31);
 
 	@Test
 	public void test_ImportContracts_ReportQty()
@@ -154,8 +155,8 @@ public class AgentSyncIntegrationTest
 					.syncContracts(true);
 
 			syncContract1.uuid(newUUID())
-					.dateFrom(contractDateFrom)
-					.dateTo(contractDateTo);
+					.dateFrom(DateUtils.toDate(contractDateFrom))
+					.dateTo(DateUtils.toDate(contractDateTo));
 
 			syncContractLine1
 					.uuid(syncContractLine1_UUID)
@@ -180,7 +181,7 @@ public class AgentSyncIntegrationTest
 			final BPartner bpartner = bpartnerRepo.findByUuid(syncBPartner1_UUID);
 			final Product product = productsRepo.findByUuid(syncProduct1.getUuid());
 			final ContractLine contractLine = contractLinesRepo.findByUuid(syncContractLine1_UUID);
-			final Date day = DateUtils.truncToDay(new Date());
+			final LocalDate day = LocalDate.now();
 			final BigDecimal qty = new BigDecimal("10");
 			productSuppliesService.reportSupply(bpartner, product, contractLine, day, qty);
 		}

@@ -1,16 +1,15 @@
 package de.metas.procurement.webui.model;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import de.metas.procurement.webui.repository.ContractRepository;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -38,59 +37,22 @@ import java.util.TreeSet;
  * #L%
  */
 
+@ToString
 public class Contracts
 {
-	// services
-	private static final transient Logger logger = LoggerFactory.getLogger(Contracts.class);
-	private final ContractRepository contractRepository;
+	private static final Logger logger = LoggerFactory.getLogger(Contracts.class);
 
+	@Getter
 	private final BPartner bpartner;
-	private List<Contract> _contracts;
+	@Getter
+	private final ImmutableList<Contract> contracts;
 
 	public Contracts(
-			@NonNull final ContractRepository contractRepository,
-			@NonNull final BPartner bpartner)
+			@NonNull final BPartner bpartner,
+			@NonNull final List<Contract> contracts)
 	{
-		this.contractRepository = contractRepository;
 		this.bpartner = bpartner;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("bpartner", bpartner)
-				.add("contracts", _contracts)
-				.toString();
-	}
-
-	public BPartner getBPartner()
-	{
-		return bpartner;
-	}
-
-	public List<Contract> getContracts()
-	{
-		if (_contracts == null)
-		{
-			synchronized (this)
-			{
-				if (_contracts == null)
-				{
-					final List<Contract> contractsList = contractRepository.findByBpartnerAndDeletedFalse(bpartner);
-					_contracts = ImmutableList.copyOf(contractsList);
-				}
-			}
-		}
-		return _contracts;
-	}
-
-	public void resetContractsCache()
-	{
-		synchronized (this)
-		{
-			_contracts = null;
-		}
+		this.contracts = ImmutableList.copyOf(contracts);
 	}
 
 	public List<Product> getProducts()

@@ -16,19 +16,19 @@ import de.metas.procurement.webui.repository.WeekSupplyRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.IServerSyncService;
 import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
-import de.metas.procurement.webui.util.DateRange;
 import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.threeten.extra.YearWeek;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /*
@@ -139,13 +139,13 @@ public class ProductSuppliesService implements IProductSuppliesService
 			final BPartner bpartner,
 			final Product product,
 			final ContractLine contractLine,
-			final Date day,
+			final LocalDate day,
 			final BigDecimal qty)
 	{
 		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
 		if (productSupply == null)
 		{
-			productSupply = ProductSupply.build(bpartner, product, contractLine, DateUtils.toLocalDate(day));
+			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
 		}
 
 		productSupply.setQty(qty);
@@ -155,14 +155,17 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date)
+	public List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date)
 	{
-		final Date day = DateUtils.truncToDay(date);
-		return productSupplyRepository.findByBpartnerAndDay(bpartner, day);
+		return productSupplyRepository.findByBpartnerAndDay(bpartner, DateUtils.toSqlDate(date));
 	}
 
 	@Override
-	public List<ProductSupply> getProductSupplies(final long bpartner_id, final long product_id, Date dayFrom, Date dayTo)
+	public List<ProductSupply> getProductSupplies(
+			final long bpartner_id,
+			final long product_id,
+			@NonNull final LocalDate dayFrom,
+			@NonNull final LocalDate dayTo)
 	{
 		final BPartner bpartner;
 		if (bpartner_id > 0)
@@ -186,19 +189,12 @@ public class ProductSuppliesService implements IProductSuppliesService
 			product = null;
 		}
 
-		dayFrom = DateUtils.truncToDay(dayFrom);
-		if (dayFrom == null)
-		{
-			throw new RuntimeException("No DayFrom specified");
-		}
-		dayTo = DateUtils.truncToDay(dayTo);
-		if (dayTo == null)
-		{
-			throw new RuntimeException("No DayTo specified");
-		}
-
 		logger.debug("Querying product supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		final List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		final List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(
+				bpartner,
+				product,
+				DateUtils.toSqlDate(dayFrom),
+				DateUtils.toSqlDate(dayTo));
 		logger.debug("Got {} product supplies", productSupplies.size());
 
 		return productSupplies;
@@ -219,29 +215,27 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week)
+	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final YearWeek week)
 	{
-		final LocalDate weekDay = week.getNextWeek().getDateFrom();
+		final LocalDate weekDay = week.plusWeeks(1).atDay(DayOfWeek.MONDAY);
 		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
 				product,
 				bpartner,
-				DateUtils.toDate(weekDay));
-		if (weekSupply == null)
-		{
-			return null;
-		}
+				DateUtils.toSqlDate(weekDay));
 
-		return Trend.ofCodeOrNull(weekSupply.getTrend());
+		return weekSupply != null ? weekSupply.getTrend() : null;
 	}
 
 	@Override
 	@Transactional
-	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week, final Trend trend)
+	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final YearWeek week, final Trend trend)
 	{
-		final LocalDate weekDay = week.getNextWeek().getDateFrom();
-		final String trendCode = trend == null ? null : trend.getCode();
+		final LocalDate weekDay = week.plusWeeks(1).atDay(DayOfWeek.MONDAY);
 
-		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toDate(weekDay));
+		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toSqlDate(weekDay));
 		if (weeklySupply == null)
 		{
 			weeklySupply = new WeekSupply();
@@ -250,7 +244,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 			weeklySupply.setDay(weekDay);
 		}
 
-		weeklySupply.setTrend(trendCode);
+		weeklySupply.setTrend(trend);
 		weekSupplyRepository.save(weeklySupply);
 
 		syncAfterCommit().add(weeklySupply);
@@ -259,7 +253,11 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public List<WeekSupply> getWeeklySupplies(final long bpartner_id, final long product_id, Date dayFrom, Date dayTo)
+	public List<WeekSupply> getWeeklySupplies(
+			final long bpartner_id,
+			final long product_id,
+			@NonNull final LocalDate dayFrom,
+			@NonNull final LocalDate dayTo)
 	{
 		final BPartner bpartner;
 		if (bpartner_id > 0)
@@ -283,22 +281,29 @@ public class ProductSuppliesService implements IProductSuppliesService
 			product = null;
 		}
 
-		dayFrom = DateUtils.truncToDay(dayFrom);
-		if (dayFrom == null)
-		{
-			throw new RuntimeException("No DayFrom specified");
-		}
-		dayTo = DateUtils.truncToDay(dayTo);
-		if (dayTo == null)
-		{
-			throw new RuntimeException("No DayTo specified");
-		}
-
 		logger.debug("Querying weekly supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(
+				bpartner,
+				product,
+				DateUtils.toSqlDate(dayFrom),
+				DateUtils.toSqlDate(dayTo));
 		logger.debug("Got {} weekly supplies", weeklySupplies.size());
 
 		return weeklySupplies;
+	}
+
+	@Override
+	public List<WeekSupply> getWeeklySupplies(
+			@NonNull final BPartner bpartner,
+			@NonNull final YearWeek week)
+	{
+		final LocalDate weekDay = week.atDay(DayOfWeek.MONDAY);
+
+		return weekSupplyRepository.findBySelector(
+				bpartner,
+				null, // product
+				DateUtils.toSqlDate(weekDay),
+				DateUtils.toSqlDate(weekDay));
 	}
 
 	private ISyncAfterCommitCollector syncAfterCommit()
@@ -306,4 +311,9 @@ public class ProductSuppliesService implements IProductSuppliesService
 		return syncService.syncAfterCommit();
 	}
 
+	@Override
+	public Product getProductById(final Long productId)
+	{
+		return productRepository.getOne(productId);
+	}
 }

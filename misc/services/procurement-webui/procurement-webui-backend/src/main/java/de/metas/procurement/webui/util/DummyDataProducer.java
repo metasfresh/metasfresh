@@ -23,8 +23,10 @@ import de.metas.procurement.webui.service.IProductSuppliesService;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -60,14 +62,14 @@ public class DummyDataProducer
 	private final IProductSuppliesService productSuppliesService;
 	private final IAgentSync agentSync;
 
-	private final Date contractDateFrom = DateUtils.toDayDate(2015, 04, 01);
-	private final Date contractDateTo = DateUtils.toDayDate(2016, 03, 31);
+	private final LocalDate contractDateFrom = LocalDate.of(2015, 4, 1);
+	private final LocalDate contractDateTo = LocalDate.of(2016, 3, 31);
 
-	private List<String> languages = Arrays.asList(
+	private final List<String> languages = Arrays.asList(
 			"en_US"
 			, "de_DE"
 			, "de_CH"
-			);
+	);
 
 	private final List<String> productNames = Arrays.asList(
 			"Batavia"
@@ -83,7 +85,7 @@ public class DummyDataProducer
 			, "Knollensellerie"
 			, "Karotten ungewaschen"
 			//
-			);
+	);
 
 	private PutBPartnersRequest _syncBPartnersRequest;
 	private PutProductsRequest _syncProductsRequest;
@@ -129,35 +131,35 @@ public class DummyDataProducer
 					.uuid(syncBPartnerUUID)
 					.name("test-bp01")
 					.users(Arrays.asList(
-					createSyncUser("test", "q", null)
-					, createSyncUser("teo.sarca@gmail.com", "q", null)
-					, createSyncUser("test_en", "q", "en_US")
-					, createSyncUser("test_de", "q", "de_DE")
+							createSyncUser("test", "q", null)
+							, createSyncUser("teo.sarca@gmail.com", "q", null)
+							, createSyncUser("test_en", "q", "en_US")
+							, createSyncUser("test_de", "q", "de_DE")
 					));
 
 			//
 			// Contract
 			{
 				syncBPartner.syncContracts(true);
-				
+
 				final SyncContractBuilder syncContract = SyncContract.builder()
 						.uuid(randomUUID())
-						.dateFrom(contractDateFrom)
-						.dateTo(contractDateTo);
+						.dateFrom(DateUtils.toDate(contractDateFrom))
+						.dateTo(DateUtils.toDate(contractDateTo));
 
 				final PutProductsRequest syncProductsRequest = getSyncProductsRequest();
 				for (final SyncProduct syncProduct : syncProductsRequest.getProducts().subList(0, 6))
 				{
 					final SyncContractLine syncContractLine = SyncContractLine.builder()
-					.uuid(randomUUID())
-					.product(syncProduct).build();
+							.uuid(randomUUID())
+							.product(syncProduct).build();
 
 					syncContract.contractLine(syncContractLine);
 				}
 
 				syncBPartner.contract(syncContract.build());
 			}
-			
+
 			//
 			// RfQ
 			final List<SyncProduct> syncProducts = getSyncProductsRequest().getProducts();
@@ -166,15 +168,15 @@ public class DummyDataProducer
 				final Date dateStart = DateUtils.addMonths(DateUtils.truncToMonth(new Date()), 2);
 				final Date dateEnd = DateUtils.addDays(dateStart, 14);
 				final Date dateClose = DateUtils.addDays(dateStart, -10);
-				
+
 				final SyncRfQ.SyncRfQBuilder syncRfQ = SyncRfQ.builder()
 						.uuid(randomUUID())
-				
+
 						.dateStart(dateStart)
 						.dateEnd(dateEnd)
-				
+
 						.bpartner_uuid(syncBPartnerUUID)
-				
+
 						.dateClose(dateClose);
 
 				final SyncProduct syncProduct = syncProducts.get(rfqNo);
@@ -216,7 +218,7 @@ public class DummyDataProducer
 		return request.build();
 	}
 
-	public SyncUser createSyncUser(final String email, final String password, final String language)
+	public SyncUser createSyncUser(final String email, final String password, @Nullable final String language)
 	{
 		return SyncUser.builder()
 				.uuid(randomUUID())
@@ -242,13 +244,13 @@ public class DummyDataProducer
 		return product.build();
 	}
 
-	private static final String randomUUID()
+	private static String randomUUID()
 	{
 		return UUID.randomUUID().toString();
 	}
 
 	@Transactional
-	 void createDummyProductSupplies()
+	void createDummyProductSupplies()
 	{
 		for (final BPartner bpartner : bpartnersRepo.findAll())
 		{
@@ -263,14 +265,18 @@ public class DummyDataProducer
 				final ContractLine contractLine = contractLines.get(0);
 				final Product product = contractLine.getProduct();
 
-				productSuppliesService.reportSupply(bpartner, product, contractLine
-						, DateUtils.getToday()
-						, new BigDecimal("10") // today
-						);
-				productSuppliesService.reportSupply(bpartner, product, contractLine
-						, DateUtils.addDays(DateUtils.getToday(), 1) // tomorrow
-						, new BigDecimal("3")
-						);
+				productSuppliesService.reportSupply(
+						bpartner,
+						product,
+						contractLine,
+						LocalDate.now(), // today
+						new BigDecimal("10"));
+				productSuppliesService.reportSupply(
+						bpartner,
+						product,
+						contractLine,
+						LocalDate.now().plusDays(1), // tomorrow
+						new BigDecimal("3"));
 			}
 		}
 	}

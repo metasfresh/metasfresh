@@ -1,9 +1,5 @@
 package de.metas.procurement.webui.service;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
@@ -11,9 +7,13 @@ import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
-import de.metas.procurement.webui.util.DateRange;
+import lombok.NonNull;
+import org.threeten.extra.YearWeek;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 /*
  * #%L
@@ -39,11 +39,16 @@ import javax.annotation.Nullable;
 
 public interface IProductSuppliesService
 {
-	void reportSupply(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day, final BigDecimal qty);
+	void reportSupply(
+			@NonNull final BPartner bpartner,
+			@NonNull final Product product,
+			@Nullable final ContractLine contractLine,
+			@NonNull final LocalDate day,
+			@NonNull final BigDecimal qty);
 
-	List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date);
+	List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date);
 
-	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
 
 	List<Product> getUserFavoriteProducts(final User user);
 
@@ -56,9 +61,13 @@ public interface IProductSuppliesService
 	List<Product> getAllSharedProducts();
 
 	@Nullable
-	Trend getNextWeekTrend(BPartner bpartner, Product product, DateRange week);
+	Trend getNextWeekTrend(BPartner bpartner, Product product, YearWeek week);
 
-	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, DateRange week, Trend trend);
+	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, YearWeek week, Trend trend);
 
-	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
+
+	List<WeekSupply> getWeeklySupplies(BPartner bpartner, YearWeek week);
+
+	Product getProductById(Long productId);
 }

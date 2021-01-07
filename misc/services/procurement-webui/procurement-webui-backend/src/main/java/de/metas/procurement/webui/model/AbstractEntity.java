@@ -1,12 +1,7 @@
 package de.metas.procurement.webui.model;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import lombok.NonNull;
-
-import java.io.Serializable;
-import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,6 +11,10 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Objects;
+import java.util.UUID;
 
 
 
@@ -69,7 +68,7 @@ public abstract class AbstractEntity implements Serializable
 	{
 		super();
 	}
-	
+
 	@PreUpdate
 	@PrePersist
 	public void updateCreatedUpdated()
@@ -103,6 +102,11 @@ public abstract class AbstractEntity implements Serializable
 	public Long getId()
 	{
 		return id;
+	}
+
+	public String getIdAsString()
+	{
+		return String.valueOf(getId());
 	}
 
 	public String getUuid()
@@ -157,14 +161,14 @@ public abstract class AbstractEntity implements Serializable
 		}
 
 		final AbstractEntity other = (AbstractEntity)obj;
-		return Objects.equal(id, other.id);
+		return Objects.equals(id, other.id);
 	}
-	
+
 	protected Date getDateCreated()
 	{
 		return dateCreated;
 	}
-	
+
 	protected Date getDateUpdated()
 	{
 		return dateUpdated;

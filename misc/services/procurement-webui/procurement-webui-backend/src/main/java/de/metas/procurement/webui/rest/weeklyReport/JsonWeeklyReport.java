@@ -20,29 +20,33 @@
  * #L%
  */
 
-package de.metas.procurement.webui.rest;
+package de.metas.procurement.webui.rest.weeklyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
-import lombok.ToString;
-import lombok.Value;
+import lombok.Data;
+import lombok.NonNull;
 
-@Value
+import java.util.List;
+
+@Data
 @Builder
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonLoginRequest.JsonLoginRequestBuilder.class)
-@ToString(exclude = "password")
-public class JsonLoginRequest
+public class JsonWeeklyReport
 {
-	// NOTE: Tolerate null/empty values; we will validate them later and we will throw nice error messages
+	@NonNull
+	private final String week;
+	@NonNull
+	private final String weekCaption;
 
-	String email;
-	String password;
+	@NonNull
+	private final String nextWeek;
+	@NonNull
+	private final String nextWeekCaption;
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class JsonLoginRequestBuilder
-	{
-	}
+	@NonNull
+	private final String previousWeek;
+
+	@NonNull
+	private final List<JsonWeeklyProductReport> products;
 }
