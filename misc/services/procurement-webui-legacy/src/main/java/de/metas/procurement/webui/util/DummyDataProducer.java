@@ -173,12 +173,12 @@ public class DummyDataProducer
 				final SyncRfQ.SyncRfQBuilder syncRfQ = SyncRfQ.builder()
 						.uuid(randomUUID())
 
-						.dateStart(dateStart)
-						.dateEnd(dateEnd)
+						.dateStart(DateUtils.toLocalDate(dateStart))
+						.dateEnd(DateUtils.toLocalDate(dateEnd))
 
 						.bpartner_uuid(syncBPartnerUUID)
 
-						.dateClose(dateClose);
+						.dateClose(DateUtils.toLocalDate(dateClose));
 
 				final SyncProduct syncProduct = syncProducts.get(rfqNo);
 				syncRfQ.product(syncProduct)
