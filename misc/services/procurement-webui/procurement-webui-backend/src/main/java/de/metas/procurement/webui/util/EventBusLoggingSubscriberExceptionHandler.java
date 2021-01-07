@@ -2,8 +2,8 @@ package de.metas.procurement.webui.util;
 
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
+import lombok.NonNull;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -37,19 +37,16 @@ import org.slf4j.LoggerFactory;
  */
 public class EventBusLoggingSubscriberExceptionHandler implements SubscriberExceptionHandler
 {
-	private static final Logger defaultLogger = LoggerFactory.getLogger(EventBusLoggingSubscriberExceptionHandler.class);
-
-	public static EventBusLoggingSubscriberExceptionHandler of(final Logger logger)
+	public static EventBusLoggingSubscriberExceptionHandler of(@NonNull final Logger logger)
 	{
 		return new EventBusLoggingSubscriberExceptionHandler(logger);
 	}
 
 	private final Logger logger;
 
-	public EventBusLoggingSubscriberExceptionHandler(final Logger logger)
+	private EventBusLoggingSubscriberExceptionHandler(@NonNull final Logger logger)
 	{
-		super();
-		this.logger = logger == null ? defaultLogger : logger;
+		this.logger = logger;
 	}
 
 	@Override

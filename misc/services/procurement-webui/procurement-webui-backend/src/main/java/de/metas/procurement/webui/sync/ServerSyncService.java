@@ -69,7 +69,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ServerSyncService implements IServerSyncService
 {
-	private final transient Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(ServerSyncService.class);
 
 	private final TaskExecutor taskExecutor;
 	private AsyncEventBus eventBus;
