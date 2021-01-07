@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-export default function Nav() {
+export default function Nav(): ReactElement {
   const location = useLocation();
 
   if (['login', 'password'].indexOf(location.pathname) >= 0) {

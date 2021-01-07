@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import View from './View';
 
-export default function About() {
+export default function About(): ReactElement {
   return (
     <View>
       <div className="container">
