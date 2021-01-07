@@ -9,6 +9,7 @@ import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvi
 import { SET_PROCESS_STATE_PENDING } from '../../../constants/ActionTypes';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import { initialState as viewHandlerState } from '../../../reducers/viewHandler';
 
 import Modal, { DisconnectedModal } from '../../../components/app/Modal';
 import fixtures from '../../../../test_setup/fixtures/modal/modal.json';
@@ -30,6 +31,7 @@ const getInitialState = function(state = {}) {
         ...windowHandlerState,
         modal: testModal,
       },
+      viewHandler: { ...viewHandlerState },
     },
     state
   );
