@@ -38,7 +38,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = RfqQty.TABLE_NAME //
-		, uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "date_promised" })   //
+		, uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "datePromised" })   //
 )
 public class RfqQty extends AbstractSyncConfirmAwareEntity
 {
