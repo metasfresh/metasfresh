@@ -1,5 +1,8 @@
 @import 'bulma/css/bulma.css';
 
+$base-color: #000000;
+$base-elements: green;
+
 * {
   box-sizing: border-box;
 }
@@ -54,4 +57,19 @@ body {
 
 .section {
   width: 100%;
+}
+
+.daily-nav {
+  width: 100%;
+  color: $base-color;
+
+    .rows {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      font-size: 20px;
+    }
+    .arrow-navigation {
+      color: $base-elements;
+    }
 }
