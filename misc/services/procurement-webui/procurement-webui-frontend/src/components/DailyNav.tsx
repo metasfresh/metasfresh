@@ -17,14 +17,18 @@ class DailyNav extends React.Component<Props> {
     return (
       <div className="daily-nav">
         <div className="columns is-mobile">
-          <div className="column is-3">&#8592;</div>
+          <div className="column is-3">
+            <i className="fas fa-arrow-left fa-3x"></i>
+          </div>
           <div className="column is-6">
             <div className="rows">
               <div className="row is-full"> Freitag </div>
               <div className="row is-full"> {day.currentDay} </div>
             </div>
           </div>
-          <div className="column is-3">&#8594;</div>
+          <div className="column is-3 has-text-right">
+            <i className="fas fa-arrow-right fa-3x"></i>
+          </div>
         </div>
       </div>
     );
