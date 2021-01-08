@@ -182,14 +182,14 @@ public class ProcurementWebToMetasfresh_StepDef
 
 			final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-			final String dateFrom = DataTableUtil.extractStringForColumnName(tableRow, "DateFrom");
-			final String dateTo = DataTableUtil.extractStringForColumnName(tableRow, "DateTo");
+			final String dateFromStr = DataTableUtil.extractStringForColumnName(tableRow, "DateFrom");
+			final String dateToStr = DataTableUtil.extractStringForColumnName(tableRow, "DateTo");
 
 			final Optional<SyncContract> syncContract = syncBPartner.getContracts().stream()
-					.filter(c -> dateFrom.equals(df.format(c.getDateFrom())))
-					.filter(c -> dateTo.equals(df.format(c.getDateTo())))
+					.filter(c -> dateFromStr.equals(c == null ? "" : df.format(c.getDateFrom())))
+					.filter(c -> dateToStr.equals(c == null ? "" : df.format(c.getDateTo())))
 					.findAny();
-			assertThat(syncContract).as("Missing SyncContract with DateFrom=%s and DateTo=%s", dateFrom, dateTo).isPresent();
+			assertThat(syncContract).as("Missing SyncContract with DateFrom=%s and DateTo=%s", dateFromStr, dateToStr).isPresent();
 
 			final boolean deleted = DataTableUtil.extractBooleanForColumnName(tableRow, "Deleted");
 			assertThat(syncContract.get().isDeleted()).isEqualTo(deleted);
