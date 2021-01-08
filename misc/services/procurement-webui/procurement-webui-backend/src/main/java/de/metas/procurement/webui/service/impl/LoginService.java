@@ -136,7 +136,7 @@ public class LoginService implements ILoginService
 	{
 		if (isLoggedIn())
 		{
-			throw new IllegalStateException("Already logged in"); // TODO i18n
+			throw new IllegalStateException("Already logged in");
 		}
 
 		final User user = authenticate(email, password);
@@ -150,7 +150,7 @@ public class LoginService implements ILoginService
 		final User user = getUserByMail(email);
 		if (user == null)
 		{
-			throw new LoginFailedException(email);
+			throw new LoginFailedException(i18n.get("LoginService.error.userOrPasswordInvalid"));
 		}
 
 		//
@@ -159,13 +159,13 @@ public class LoginService implements ILoginService
 		if (Strings.isNullOrEmpty(userPassword))
 		{
 			// empty user passwords are considered as no password was set
-			throw new LoginFailedException(email);
+			throw new LoginFailedException(i18n.get("LoginService.error.userOrPasswordInvalid"));
 		}
 		if (!Objects.equals(userPassword, password)
 				&& !Objects.equals(createPasswordHash(userPassword), password) // support for hashed password (also used by remember-me functionality)
 		)
 		{
-			throw new LoginFailedException(email);
+			throw new LoginFailedException(i18n.get("LoginService.error.userOrPasswordInvalid"));
 		}
 
 		return user;
@@ -208,7 +208,7 @@ public class LoginService implements ILoginService
 	{
 		if (!isLoggedIn())
 		{
-			throw new NotLoggedInException();
+			throw new NotLoggedInException(i18n.get("LoginService.error.notLoggedIn"));
 		}
 	}
 
@@ -221,7 +221,7 @@ public class LoginService implements ILoginService
 		if (loggedInUserId == null || loggedInUserId <= 0)
 		{
 			// shall not happen
-			throw new NotLoggedInException();
+			throw new NotLoggedInException(i18n.get("LoginService.error.notLoggedIn"));
 		}
 
 		return userRepository.getOne(loggedInUserId);
@@ -252,7 +252,7 @@ public class LoginService implements ILoginService
 			final User user = getUserByMail(email);
 			if (user == null)
 			{
-				throw new PasswordResetFailedException(email, "No user found");
+				throw new PasswordResetFailedException(i18n.get("LoginService.error.emailNotRegistered"));
 			}
 
 			final LanguageKey language = user.getLanguageKeyOrDefault();
@@ -285,7 +285,7 @@ public class LoginService implements ILoginService
 		final User user = getUserByMail(email);
 		if (user == null)
 		{
-			throw new PasswordResetFailedException(email, i18n.get("LoginService.error.emailNotRegistered"));
+			throw new PasswordResetFailedException(i18n.get("LoginService.error.emailNotRegistered"));
 		}
 
 		//
@@ -304,7 +304,7 @@ public class LoginService implements ILoginService
 		final User user = getUserByPasswordResetKey(passwordResetKey);
 		if (user == null)
 		{
-			throw new PasswordResetFailedException("-", i18n.get("LoginService.error.invalidPasswordResetKey"));
+			throw new PasswordResetFailedException(i18n.get("LoginService.error.invalidPasswordResetKey"));
 		}
 
 		final String passwordNew = generatePassword();

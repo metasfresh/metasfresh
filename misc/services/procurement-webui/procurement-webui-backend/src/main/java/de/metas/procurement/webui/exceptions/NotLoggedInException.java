@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
 public class NotLoggedInException extends RuntimeException
 {
-	public NotLoggedInException()
+	public NotLoggedInException(final String message)
 	{
-		super("not logged in");
+		super(message);
 	}
 }

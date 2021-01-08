@@ -106,7 +106,6 @@ public class Product extends AbstractEntity
 	@Nullable
 	public String getPackingInfo(final Locale locale)
 	{
-		// TODO: implement
 		return packingInfo;
 	}
 

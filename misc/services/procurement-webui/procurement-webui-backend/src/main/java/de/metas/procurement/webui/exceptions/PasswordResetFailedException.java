@@ -24,7 +24,7 @@ package de.metas.procurement.webui.exceptions;
 
 public class PasswordResetFailedException extends RuntimeException
 {
-	public PasswordResetFailedException(final String email, final String message)
+	public PasswordResetFailedException(final String message)
 	{
 		super(message);
 	}

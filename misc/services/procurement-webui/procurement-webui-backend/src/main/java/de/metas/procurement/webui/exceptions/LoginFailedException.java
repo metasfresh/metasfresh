@@ -24,8 +24,8 @@ package de.metas.procurement.webui.exceptions;
 
 public class LoginFailedException extends RuntimeException
 {
-	public LoginFailedException(final String email)
+	public LoginFailedException(final String message)
 	{
-		super("Invalid user or password"); // TODO i18n
+		super(message);
 	}
 }

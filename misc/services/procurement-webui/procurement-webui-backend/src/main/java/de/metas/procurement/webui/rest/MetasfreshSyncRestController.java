@@ -30,6 +30,7 @@ import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.repository.BPartnerRepository;
+import de.metas.procurement.webui.service.I18N;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.service.IRfQService;
 import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
@@ -52,11 +53,13 @@ public class MetasfreshSyncRestController
 {
 	public static final String ENDPOINT = Application.ENDPOINT_ROOT + "/metasfreshSync";
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private final Logger logger = LoggerFactory.getLogger(MetasfreshSyncRestController.class);
 	private final ISenderToMetasfreshService senderToMetasfreshService;
 	private final IProductSuppliesService productSuppliesService;
 	private final IRfQService rfqService;
 	private final BPartnerRepository bpartnersRepository;
+	private final I18N i18n;
 
 	private final String apiKey;
 
@@ -65,12 +68,14 @@ public class MetasfreshSyncRestController
 			@NonNull final ISenderToMetasfreshService senderToMetasfreshService,
 			@NonNull final IProductSuppliesService productSuppliesService,
 			@NonNull final IRfQService rfqService,
-			@NonNull final BPartnerRepository bpartnersRepository)
+			@NonNull final BPartnerRepository bpartnersRepository,
+			@NonNull final I18N i18n)
 	{
 		this.senderToMetasfreshService = senderToMetasfreshService;
 		this.productSuppliesService = productSuppliesService;
 		this.rfqService = rfqService;
 		this.bpartnersRepository = bpartnersRepository;
+		this.i18n = i18n;
 
 		this.apiKey = config.getMetasfreshSync().getApiKey();
 		logger.info("API Key: {}", apiKey);
@@ -80,7 +85,7 @@ public class MetasfreshSyncRestController
 	{
 		if (!Objects.equals(this.apiKey, apiKey))
 		{
-			throw new NotLoggedInException();
+			throw new NotLoggedInException(i18n.get("LoginService.error.notLoggedIn"));
 		}
 	}
 
