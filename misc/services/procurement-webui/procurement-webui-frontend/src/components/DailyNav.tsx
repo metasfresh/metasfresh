@@ -15,9 +15,13 @@ class DailyNav extends React.Component<Props> {
     if (!store) return null;
     const { day } = store;
     return (
-      <div className="daily-nav">
-        Daily Nav
-        {day.currentDay}
+      <div className="columns">
+        <div className="column">&#8592;</div>
+        <div className="column">
+          Daily Nav
+          {day.currentDay}
+        </div>
+        <div className="column">&#8594;</div>
       </div>
     );
   }
