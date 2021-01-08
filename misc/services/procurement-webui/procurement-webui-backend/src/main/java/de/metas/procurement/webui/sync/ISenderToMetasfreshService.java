@@ -1,8 +1,8 @@
 package de.metas.procurement.webui.sync;
 
 import de.metas.procurement.webui.model.ProductSupply;
+import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.WeekSupply;
-import org.springframework.jmx.export.annotation.ManagedOperation;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -29,18 +29,20 @@ import java.util.concurrent.TimeUnit;
  * #L%
  */
 
-public interface IServerSyncService
+/**
+ * Sends requests to metasfresh server
+ */
+public interface ISenderToMetasfreshService
 {
-	@ManagedOperation
-	void syncAllAsync();
-
 	void awaitInitialSyncComplete(long timeout, TimeUnit unit) throws InterruptedException;
 
-	void reportProductSuppliesAsync(List<ProductSupply> productSupplies);
+	void requestFromMetasfreshAllMasterdataAsync();
 
-	void pushReportProductSupplyById(long product_supply_id);
+	void pushDailyReportsAsync(List<ProductSupply> productSupplies);
 
-	void reportWeeklySupplyAsync(List<WeekSupply> weeklySupplies);
+	void pushWeeklyReportsAsync(List<WeekSupply> weeklySupplies);
+
+	void pushRfqsAsync(List<Rfq> rfqs);
 
 	ISyncAfterCommitCollector syncAfterCommit();
 }

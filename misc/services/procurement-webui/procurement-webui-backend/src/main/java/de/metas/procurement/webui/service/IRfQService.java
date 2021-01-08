@@ -34,7 +34,9 @@ import java.util.List;
 
 public interface IRfQService
 {
-	List<Rfq> getUserActiveRfqs(User user);
+	List<Rfq> getActiveRfqs(@Nullable User user);
+
+	List<Rfq> getActiveRfqs(@Nullable BPartner bpartner);
 
 	Rfq getUserActiveRfq(@NonNull User user, long rfqId);
 

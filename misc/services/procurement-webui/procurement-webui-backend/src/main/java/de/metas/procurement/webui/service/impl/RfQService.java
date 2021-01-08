@@ -3,12 +3,11 @@ package de.metas.procurement.webui.service.impl;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.User;
-import de.metas.procurement.webui.repository.RfqQtyRepository;
 import de.metas.procurement.webui.repository.RfqRepository;
 import de.metas.procurement.webui.rest.rfq.JsonChangeRfqQtyRequest;
 import de.metas.procurement.webui.rest.rfq.JsonChangeRfqRequest;
 import de.metas.procurement.webui.service.IRfQService;
-import de.metas.procurement.webui.sync.IServerSyncService;
+import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
 import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -44,24 +43,27 @@ import java.util.Objects;
 public class RfQService implements IRfQService
 {
 	private final RfqRepository rfqRepo;
-	private final RfqQtyRepository rfqQuantityRepo;
-	private final IServerSyncService syncService;
+	private final ISenderToMetasfreshService senderToMetasfreshService;
 
 	public RfQService(
 			@NonNull final RfqRepository rfqRepo,
-			@NonNull final RfqQtyRepository rfqQuantityRepo,
-			@NonNull final IServerSyncService syncService)
+			@NonNull final ISenderToMetasfreshService senderToMetasfreshService)
 	{
 		this.rfqRepo = rfqRepo;
-		this.rfqQuantityRepo = rfqQuantityRepo;
-		this.syncService = syncService;
+		this.senderToMetasfreshService = senderToMetasfreshService;
 	}
 
 	@Override
-	public List<Rfq> getUserActiveRfqs(@NonNull final User user)
+	public List<Rfq> getActiveRfqs(@Nullable final User user)
 	{
-		final BPartner bpartner = user.getBpartner();
-		return rfqRepo.findByBpartnerAndClosedFalse(bpartner);
+		final BPartner bpartner = user != null ? user.getBpartner() : null;
+		return getActiveRfqs(bpartner);
+	}
+
+	@Override
+	public List<Rfq> getActiveRfqs(@Nullable final BPartner bpartner)
+	{
+		return rfqRepo.findActive(bpartner);
 	}
 
 	@Override
@@ -104,13 +106,13 @@ public class RfQService implements IRfQService
 	@Override
 	public void saveRecursively(@NonNull final Rfq rfq)
 	{
-		//rfqQuantityRepo.saveAll(rfq.getQuantities());
+		//rfqQuantityRepo.saveAll(rfq.getQuantities()); // not needed
 		rfqRepo.save(rfq);
 	}
 
 	private void pushToMetasfresh(@NonNull final Rfq rfq)
 	{
-		final ISyncAfterCommitCollector syncAfterCommitCollector = syncService.syncAfterCommit();
+		final ISyncAfterCommitCollector syncAfterCommitCollector = senderToMetasfreshService.syncAfterCommit();
 		syncAfterCommitCollector.add(rfq);
 	}
 

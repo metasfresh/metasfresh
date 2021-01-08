@@ -20,12 +20,11 @@ import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.sync.IServerSyncService;
+import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.DummyDataProducer;
 import de.metas.procurement.webui.util.YearWeekUtil;
 import org.assertj.core.api.Assertions;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -88,7 +87,7 @@ public class SpringIntegrationTest
 	}
 
 	@Autowired
-	private IServerSyncService serverSyncService;
+	private ISenderToMetasfreshService serverSyncService;
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired

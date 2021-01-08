@@ -1,6 +1,5 @@
 package de.metas.procurement.webui.sync;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.DeadEvent;
@@ -14,7 +13,6 @@ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetAllPro
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.GetInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
-import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest.PutWeeklySupplyRequestBuilder;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest.PutRfQChangeRequestBuilder;
 import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
@@ -39,7 +37,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -67,9 +64,9 @@ import java.util.concurrent.TimeUnit;
  */
 
 @Service
-public class ServerSyncService implements IServerSyncService
+public class SenderToMetasfreshService implements ISenderToMetasfreshService
 {
-	private static final Logger logger = LoggerFactory.getLogger(ServerSyncService.class);
+	private static final Logger logger = LoggerFactory.getLogger(SenderToMetasfreshService.class);
 
 	private final TaskExecutor taskExecutor;
 	private AsyncEventBus eventBus;
@@ -80,7 +77,7 @@ public class ServerSyncService implements IServerSyncService
 
 	private final CountDownLatch initialSync = new CountDownLatch(1);
 
-	public ServerSyncService(
+	public SenderToMetasfreshService(
 			@Qualifier("asyncCallsTaskExecutor") final TaskExecutor taskExecutor,
 			final SenderToMetasfresh senderToMetasfresh,
 			final IProductSuppliesService productSuppliesService,
@@ -99,29 +96,7 @@ public class ServerSyncService implements IServerSyncService
 		eventBus.register(this);
 
 		final Runnable callback = initialSync::countDown;
-		syncAllAsync(callback);
-	}
-
-	/**
-	 * Sends a {@link SyncAllRequest} to metasfresh. The request will be processed by {@link #process(SyncAllRequest)}.
-	 */
-	@Override
-	public void syncAllAsync()
-	{
-		final Runnable callback = null;
-		syncAllAsync(callback);
-	}
-
-	/**
-	 * Like {@link #syncAllAsync()}, with a callback instance to be invoked when the sync is complete.
-	 *
-	 * @param callback instance whose <code>run()</code> method shall be executed after the sync, also if the sync failed.
-	 */
-	public void syncAllAsync(@Nullable final Runnable callback)
-	{
-		final SyncAllRequest request = SyncAllRequest.of(callback);
-		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		requestFromMetasfreshAllMasterdataAsync(callback);
 	}
 
 	@Override
@@ -129,6 +104,27 @@ public class ServerSyncService implements IServerSyncService
 	{
 		//noinspection ResultOfMethodCallIgnored
 		initialSync.await(timeout, unit);
+	}
+
+	/**
+	 * Sends a {@link SyncAllRequest} to metasfresh. The request will be processed by {@link #process(SyncAllRequest)}.
+	 */
+	@Override
+	public void requestFromMetasfreshAllMasterdataAsync()
+	{
+		requestFromMetasfreshAllMasterdataAsync(null);
+	}
+
+	/**
+	 * Like {@link #requestFromMetasfreshAllMasterdataAsync()}, with a callback instance to be invoked when the sync is complete.
+	 *
+	 * @param callback instance whose <code>run()</code> method shall be executed after the sync, also if the sync failed.
+	 */
+	public void requestFromMetasfreshAllMasterdataAsync(@Nullable final Runnable callback)
+	{
+		final SyncAllRequest request = SyncAllRequest.of(callback);
+		logger.debug("Enqueuing: {}", request);
+		eventBus.post(request);
 	}
 
 	@Subscribe
@@ -177,7 +173,7 @@ public class ServerSyncService implements IServerSyncService
 	}
 
 	@Override
-	public void reportProductSuppliesAsync(final List<ProductSupply> productSupplies)
+	public void pushDailyReportsAsync(final List<ProductSupply> productSupplies)
 	{
 		if (productSupplies == null || productSupplies.isEmpty())
 		{
@@ -185,22 +181,9 @@ public class ServerSyncService implements IServerSyncService
 			return;
 		}
 
-		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(productSupplies);
+		final PutProductSuppliesRequest request = toPutProductSuppliesRequest(productSupplies);
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
-	}
-
-	/**
-	 * Pushes a particular product supply, identified by ID, from webui server to metasfresh server
-	 */
-	@Override
-	public void pushReportProductSupplyById(final long product_supply_id)
-	{
-		final ProductSupply productSupply = productSuppliesService.getProductSupplyById(product_supply_id);
-		final PutProductSuppliesRequest request = createSyncProductSuppliesRequest(Collections.singletonList(productSupply));
-		logger.debug("Pushing request: {}", request);
-		process(request);
-		logger.debug("Pushing request done");
 	}
 
 	@Subscribe
@@ -216,30 +199,31 @@ public class ServerSyncService implements IServerSyncService
 		}
 	}
 
-	private PutProductSuppliesRequest createSyncProductSuppliesRequest(final List<ProductSupply> productSupplies)
+	private static PutProductSuppliesRequest toPutProductSuppliesRequest(final List<ProductSupply> productSupplies)
 	{
-		final PutProductSuppliesRequest.PutProductSuppliesRequestBuilder request = PutProductSuppliesRequest.builder();
-		for (final ProductSupply productSupply : productSupplies)
-		{
-			final SyncProductSupply syncProductSupply = SyncProductSupply.builder()
-					.uuid(productSupply.getUuid())
-					.bpartner_uuid(productSupply.getBpartnerUUID())
-					.contractLine_uuid(productSupply.getContractLine() == null ? null : productSupply.getContractLine().getUuid())
-					.product_uuid(productSupply.getProductUUID())
-					.day(productSupply.getDay())
-					.qty(productSupply.getQty())
-					.version(productSupply.getVersion())
-					.syncConfirmationId(productSupply.getSyncConfirmId())
-					.build();
+		return PutProductSuppliesRequest.builder()
+				.productSupplies(productSupplies.stream()
+						.map(SenderToMetasfreshService::toSyncProductSupply)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
 
-			request.productSupply(syncProductSupply);
-		}
-
-		return request.build();
+	private static SyncProductSupply toSyncProductSupply(final ProductSupply productSupply)
+	{
+		return SyncProductSupply.builder()
+				.uuid(productSupply.getUuid())
+				.bpartner_uuid(productSupply.getBpartnerUUID())
+				.contractLine_uuid(productSupply.getContractLine() == null ? null : productSupply.getContractLine().getUuid())
+				.product_uuid(productSupply.getProductUUID())
+				.day(productSupply.getDay())
+				.qty(productSupply.getQty())
+				.version(productSupply.getVersion())
+				.syncConfirmationId(productSupply.getSyncConfirmId())
+				.build();
 	}
 
 	@Override
-	public void reportWeeklySupplyAsync(final List<WeekSupply> weeklySupplies)
+	public void pushWeeklyReportsAsync(final List<WeekSupply> weeklySupplies)
 	{
 		if (weeklySupplies.isEmpty())
 		{
@@ -247,7 +231,7 @@ public class ServerSyncService implements IServerSyncService
 			return;
 		}
 
-		final PutWeeklySupplyRequest request = creatSyncWeekSupplyRequest(weeklySupplies);
+		final PutWeeklySupplyRequest request = toPutWeeklySupplyRequest(weeklySupplies);
 		logger.debug("Enqueuing: {}", request);
 		eventBus.post(request);
 	}
@@ -265,28 +249,26 @@ public class ServerSyncService implements IServerSyncService
 		}
 	}
 
-	private PutWeeklySupplyRequest creatSyncWeekSupplyRequest(final List<WeekSupply> weekSupplies)
+	private static PutWeeklySupplyRequest toPutWeeklySupplyRequest(final List<WeekSupply> weekSupplies)
 	{
-		final PutWeeklySupplyRequestBuilder request = PutWeeklySupplyRequest.builder();
+		return PutWeeklySupplyRequest.builder()
+				.weeklySupplies(weekSupplies.stream()
+						.map(SenderToMetasfreshService::toSyncWeeklySupply)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
 
-		for (final WeekSupply weeklySupply : weekSupplies)
-		{
-			Preconditions.checkNotNull(weeklySupply, "week supply not null");
-			Preconditions.checkNotNull(weeklySupply.getId(), "week supply is saved");
-
-			final SyncWeeklySupply syncWeeklySupply = SyncWeeklySupply.builder()
-					.uuid(weeklySupply.getUuid())
-					.version(weeklySupply.getVersion())
-					.bpartner_uuid(weeklySupply.getBpartnerUUID())
-					.product_uuid(weeklySupply.getProductUUID())
-					.weekDay(weeklySupply.getDay())
-					.trend(weeklySupply.getTrendAsString())
-					.syncConfirmationId(weeklySupply.getSyncConfirmId())
-					.build();
-
-			request.weeklySupply(syncWeeklySupply);
-		}
-		return request.build();
+	private static SyncWeeklySupply toSyncWeeklySupply(final WeekSupply weeklySupply)
+	{
+		return SyncWeeklySupply.builder()
+				.uuid(weeklySupply.getUuid())
+				.version(weeklySupply.getVersion())
+				.bpartner_uuid(weeklySupply.getBpartnerUUID())
+				.product_uuid(weeklySupply.getProductUUID())
+				.weekDay(weeklySupply.getDay())
+				.trend(weeklySupply.getTrendAsString())
+				.syncConfirmationId(weeklySupply.getSyncConfirmId())
+				.build();
 	}
 
 	@Subscribe
@@ -299,8 +281,7 @@ public class ServerSyncService implements IServerSyncService
 	{
 		public static SyncAllRequest of()
 		{
-			final Runnable callback = null;
-			return new SyncAllRequest(callback);
+			return new SyncAllRequest(null);
 		}
 
 		public static SyncAllRequest of(@Nullable final Runnable callback)
@@ -326,9 +307,15 @@ public class ServerSyncService implements IServerSyncService
 		}
 	}
 
-	private void reportRfQChangesAsync(final List<Rfq> rfqs)
+	@Override
+	public void pushRfqsAsync(final List<Rfq> rfqs)
 	{
-		final PutRfQChangeRequest request = createSyncRfQChangeRequest(rfqs);
+		if (rfqs.isEmpty())
+		{
+			return;
+		}
+
+		final PutRfQChangeRequest request = toPutRfQChangeRequest(rfqs);
 		if (PutRfQChangeRequest.isEmpty(request))
 		{
 			logger.debug("No RfQ change requests to enqueue");
@@ -354,18 +341,18 @@ public class ServerSyncService implements IServerSyncService
 
 	}
 
-	private PutRfQChangeRequest createSyncRfQChangeRequest(final List<Rfq> rfqs)
+	private PutRfQChangeRequest toPutRfQChangeRequest(final List<Rfq> rfqs)
 	{
 		final PutRfQChangeRequestBuilder changeRequest = PutRfQChangeRequest.builder();
 
 		for (final Rfq rfq : rfqs)
 		{
-			final SyncRfQPriceChangeEvent priceChangeEvent = createSyncRfQPriceChangeEvent(rfq);
+			final SyncRfQPriceChangeEvent priceChangeEvent = toSyncRfQPriceChangeEvent(rfq);
 			changeRequest.priceChangeEvent(priceChangeEvent);
 
 			for (final RfqQty rfqQty : rfq.getQuantities())
 			{
-				final SyncRfQQtyChangeEvent qtyChangeEvent = createSyncRfQQtyChangeEvent(rfq, rfqQty);
+				final SyncRfQQtyChangeEvent qtyChangeEvent = toSyncRfQPriceChangeEvent(rfq, rfqQty);
 				changeRequest.qtyChangeEvent(qtyChangeEvent);
 			}
 
@@ -374,7 +361,7 @@ public class ServerSyncService implements IServerSyncService
 		return changeRequest.build();
 	}
 
-	private SyncRfQPriceChangeEvent createSyncRfQPriceChangeEvent(final Rfq rfqRecord)
+	private SyncRfQPriceChangeEvent toSyncRfQPriceChangeEvent(final Rfq rfqRecord)
 	{
 		final String rfq_uuid = rfqRecord.getUuid();
 		final Product product = productSuppliesService.getProductById(rfqRecord.getProduct_id());
@@ -388,7 +375,7 @@ public class ServerSyncService implements IServerSyncService
 				.build();
 	}
 
-	private SyncRfQQtyChangeEvent createSyncRfQQtyChangeEvent(final Rfq rfq, final RfqQty rfqQtyReport)
+	private SyncRfQQtyChangeEvent toSyncRfQPriceChangeEvent(final Rfq rfq, final RfqQty rfqQtyReport)
 	{
 		final Product product = productSuppliesService.getProductById(rfq.getProduct_id());
 
@@ -432,15 +419,15 @@ public class ServerSyncService implements IServerSyncService
 	}
 
 	/**
-	 * Creates {@link SyncConfirm} records and invokes {@link IServerSyncService}.
+	 * Creates {@link SyncConfirm} records and invokes {@link ISenderToMetasfreshService}.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 */
 	private final class SyncAfterCommit implements TransactionSynchronization, ISyncAfterCommitCollector
 	{
-		private final List<ProductSupply> productSupplies = new ArrayList<>();
-		private final List<WeekSupply> weeklySupplies = new ArrayList<>();
-		private final List<Rfq> rfqs = new ArrayList<>();
+		private final ArrayList<ProductSupply> productSupplies = new ArrayList<>();
+		private final ArrayList<WeekSupply> weeklySupplies = new ArrayList<>();
+		private final ArrayList<Rfq> rfqs = new ArrayList<>();
 
 		@Override
 		public ISyncAfterCommitCollector add(final ProductSupply productSupply)
@@ -487,6 +474,11 @@ public class ServerSyncService implements IServerSyncService
 		@Override
 		public void afterCommit()
 		{
+			publishToMetasfreshAsync();
+		}
+
+		public void publishToMetasfreshAsync()
+		{
 			logger.debug("Synchronizing: {}", this);
 
 			//
@@ -494,10 +486,7 @@ public class ServerSyncService implements IServerSyncService
 			{
 				final List<ProductSupply> productSupplies = ImmutableList.copyOf(this.productSupplies);
 				this.productSupplies.clear();
-				if (!productSupplies.isEmpty())
-				{
-					reportProductSuppliesAsync(productSupplies);
-				}
+				pushDailyReportsAsync(productSupplies);
 			}
 
 			//
@@ -505,10 +494,7 @@ public class ServerSyncService implements IServerSyncService
 			{
 				final List<WeekSupply> weeklySupplies = ImmutableList.copyOf(this.weeklySupplies);
 				this.weeklySupplies.clear();
-				if (!weeklySupplies.isEmpty())
-				{
-					reportWeeklySupplyAsync(weeklySupplies);
-				}
+				pushWeeklyReportsAsync(weeklySupplies);
 			}
 
 			//
@@ -516,7 +502,7 @@ public class ServerSyncService implements IServerSyncService
 			{
 				final List<Rfq> rfqs = ImmutableList.copyOf(this.rfqs);
 				this.rfqs.clear();
-				reportRfQChangesAsync(rfqs);
+				pushRfqsAsync(rfqs);
 			}
 		}
 	}

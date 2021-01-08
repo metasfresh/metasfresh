@@ -14,8 +14,7 @@ import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.UserProductRepository;
 import de.metas.procurement.webui.repository.WeekSupplyRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.sync.IServerSyncService;
-import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
+import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
 import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -68,7 +67,7 @@ public class ProductSuppliesService implements IProductSuppliesService
 	private final WeekSupplyRepository weekSupplyRepository;
 	private final ProductRepository productRepository;
 	private final BPartnerRepository bpartnersRepository;
-	private final IServerSyncService syncService;
+	private final ISenderToMetasfreshService senderToMetasfreshService;
 
 	public ProductSuppliesService(
 			@NonNull final UserProductRepository userProductRepository,
@@ -76,14 +75,14 @@ public class ProductSuppliesService implements IProductSuppliesService
 			@NonNull final WeekSupplyRepository weekSupplyRepository,
 			@NonNull final ProductRepository productRepository,
 			@NonNull final BPartnerRepository bpartnersRepository,
-			@Lazy @NonNull final IServerSyncService syncService)
+			@Lazy @NonNull final ISenderToMetasfreshService senderToMetasfreshService)
 	{
 		this.userProductRepository = userProductRepository;
 		this.productSupplyRepository = productSupplyRepository;
 		this.weekSupplyRepository = weekSupplyRepository;
 		this.productRepository = productRepository;
 		this.bpartnersRepository = bpartnersRepository;
-		this.syncService = syncService;
+		this.senderToMetasfreshService = senderToMetasfreshService;
 	}
 
 	@Override
@@ -289,18 +288,13 @@ public class ProductSuppliesService implements IProductSuppliesService
 	private void saveAndPush(@NonNull final ProductSupply productSupply)
 	{
 		productSupplyRepository.save(productSupply);
-		syncAfterCommit().add(productSupply);
+		senderToMetasfreshService.syncAfterCommit().add(productSupply);
 	}
 
 	private void saveAndPush(@NonNull final WeekSupply weeklySupply)
 	{
 		weekSupplyRepository.save(weeklySupply);
-		syncAfterCommit().add(weeklySupply);
-	}
-
-	private ISyncAfterCommitCollector syncAfterCommit()
-	{
-		return syncService.syncAfterCommit();
+		senderToMetasfreshService.syncAfterCommit().add(weeklySupply);
 	}
 
 	@Override

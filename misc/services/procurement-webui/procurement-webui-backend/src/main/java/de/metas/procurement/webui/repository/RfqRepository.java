@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -36,7 +37,13 @@ import java.util.List;
 @Transactional
 public interface RfqRepository extends AbstractRepository<Rfq>
 {
-	List<Rfq> findByBpartnerAndClosedFalse(final BPartner bpartner);
+	@Query("select rfq from Rfq rfq"
+			+ " where "
+			+ " rfq.deleted = false"
+			+ " and rfq.closed = false"
+			+ " and (rfq.bpartner = :bpartner or :bpartner is null)")
+	List<Rfq> findActive(
+			@Param("bpartner") @Nullable final BPartner bpartner);
 
 	@Query("select rfq from Rfq rfq"
 			+ " where "

@@ -72,7 +72,7 @@ public class RfQRestController
 	{
 		final User user = loginService.getLoggedInUser();
 		final Locale locale = loginService.getLocale();
-		final List<Rfq> rfqsList = rfqService.getUserActiveRfqs(user);
+		final List<Rfq> rfqsList = rfqService.getActiveRfqs(user);
 		return toJsonRfqsList(rfqsList, locale);
 	}
 
