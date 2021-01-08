@@ -22,7 +22,10 @@
 
 package de.metas.procurement.webui.service;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import de.metas.procurement.webui.util.LanguageKey;
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -33,7 +36,6 @@ import javax.servlet.http.HttpSession;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +45,7 @@ public class I18N
 {
 	private static final String HTTP_SESSION_language = "language";
 
-	private final ConcurrentHashMap<String, ResourceBundle> bundles = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<LanguageKey, LanguageData> cache = new ConcurrentHashMap<>();
 
 	public String get(
 			@NonNull final String messageKey,
@@ -58,7 +60,7 @@ public class I18N
 			@NonNull final String messageKey,
 			@Nullable final Object... args)
 	{
-		final ResourceBundle bundle = getResourceBundle(language);
+		final ResourceBundle bundle = getLanguageData(language).getResourceBundle();
 		final String message = bundle.containsKey(messageKey)
 				? bundle.getString(messageKey)
 				: messageKey;
@@ -106,7 +108,6 @@ public class I18N
 				: Locale.getDefault();
 	}
 
-
 	@Nullable
 	private HttpSession getCurrentHttpSessionOrNull()
 	{
@@ -119,24 +120,49 @@ public class I18N
 		return servletRequestAttributes.getRequest().getSession();
 	}
 
-	private ResourceBundle getResourceBundle(@Nullable final LanguageKey language)
+	private LanguageData getLanguageData(@Nullable final LanguageKey language)
 	{
-		final Locale locale = language != null ? language.toLocale() : Locale.getDefault();
-		final String langNorm = locale.toLanguageTag();
-		return bundles.computeIfAbsent(langNorm, k -> ResourceBundle.getBundle("messages", locale));
+		final LanguageKey languageEffective = language != null ? language : LanguageKey.getDefault();
+		return cache.computeIfAbsent(languageEffective, LanguageData::new);
 	}
 
-	public Map<String, String> getMessagesMap(@NonNull final LanguageKey language)
+	public ImmutableMap<String, String> getMessagesMap(@NonNull final LanguageKey language)
 	{
-		final ResourceBundle bundle = getResourceBundle(language);
-		final Set<String> keys = bundle.keySet();
+		return getLanguageData(language).getFrontendMessagesMap();
+	}
 
-		final HashMap<String, String> map = new HashMap<>(keys.size());
-		for (final String key : keys)
+	private static class LanguageData
+	{
+		@Getter
+		private final ResourceBundle resourceBundle;
+		@Getter
+		private final ImmutableMap<String, String> frontendMessagesMap;
+
+		private LanguageData(final @NonNull LanguageKey language)
 		{
-			map.put(key, bundle.getString(key));
+			resourceBundle = ResourceBundle.getBundle("messages", language.toLocale());
+			frontendMessagesMap = computeMessagesMap(resourceBundle);
 		}
 
-		return map;
+		private static ImmutableMap<String, String> computeMessagesMap(@NonNull final ResourceBundle bundle)
+		{
+			final Set<String> keys = bundle.keySet();
+
+			final HashMap<String, String> map = new HashMap<>(keys.size());
+			for (final String key : keys)
+			{
+				// shall not happen
+				if (key == null || key.isBlank())
+				{
+					continue;
+				}
+
+				final String value = Strings.nullToEmpty(bundle.getString(key));
+				map.put(key, value);
+			}
+
+			return ImmutableMap.copyOf(map);
+		}
+
 	}
 }
