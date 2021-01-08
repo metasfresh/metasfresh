@@ -93,7 +93,6 @@ public class CustomerReturns_AddSpareParts
 	private Quantity getQtyReturned()
 	{
 		final I_C_UOM uom = uomDAO.getById(uomId);
-		final Quantity qtyReturned = Quantity.of(qtyBD, uom);
-		return qtyReturned;
+		return Quantity.of(qtyBD, uom);
 	}
 }
