@@ -1,7 +1,7 @@
 import { types, getEnv, destroy } from 'mobx-state-tree';
 import { Todo } from './Todo';
 
-export const Store = types
+const Store = types
   .model('Store', {
     todos: types.array(Todo),
   })
@@ -25,3 +25,20 @@ export const Store = types
       destroy(todo);
     },
   }));
+
+const fetcher = (url) => window.fetch(url).then((response) => response.json());
+
+export const store = Store.create(
+  {
+    todos: [
+      {
+        text: 'Get coffee',
+        id: 0,
+      },
+    ],
+  },
+  {
+    fetch: fetcher,
+    alert: (m) => console.log(m), // Noop for demo: window.alert(m)
+  }
+);

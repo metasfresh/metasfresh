@@ -7,23 +7,7 @@ import './static/index.scss';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
-import { Store } from './models/Store';
-
-const fetcher = (url) => window.fetch(url).then((response) => response.json());
-const store = Store.create(
-  {
-    todos: [
-      {
-        text: 'Get coffee',
-        id: 0,
-      },
-    ],
-  },
-  {
-    fetch: fetcher,
-    alert: (m) => console.log(m), // Noop for demo: window.alert(m)
-  }
-);
+import { store } from './models/Store';
 
 const history = {
   snapshots: observable.array([], { deep: false }),
