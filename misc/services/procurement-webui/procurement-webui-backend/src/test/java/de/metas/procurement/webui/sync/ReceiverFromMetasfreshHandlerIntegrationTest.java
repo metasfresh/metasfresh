@@ -79,17 +79,6 @@ import static org.junit.Assert.assertThat;
 @SpringBootTest//(classes = { DummyDataProducer.class })
 public class ReceiverFromMetasfreshHandlerIntegrationTest
 {
-	@Configuration
-	@Import(Application.class)
-	public static class AgentSyncTestConfig
-	{
-		@Bean
-		public IServerSync serverSync()
-		{
-			return new NullServerSync();
-		}
-	}
-
 	@Rule
 	public TestWatcher testWatcher = new TestWatcher()
 	{

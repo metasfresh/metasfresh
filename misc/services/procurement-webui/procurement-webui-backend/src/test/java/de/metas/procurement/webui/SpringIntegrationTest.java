@@ -1,7 +1,6 @@
 package de.metas.procurement.webui;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.procurement.sync.IServerSync;
 import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
@@ -22,7 +21,6 @@ import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
 import de.metas.procurement.webui.sync.ReceiverFromMetasfreshHandler;
 import de.metas.procurement.webui.util.DateUtils;
-import de.metas.procurement.webui.util.DummyDataProducer;
 import de.metas.procurement.webui.util.YearWeekUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -30,15 +28,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.threeten.extra.YearWeek;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -71,21 +66,6 @@ import java.util.concurrent.TimeUnit;
 // @IntegrationTest("server.port:0")
 public class SpringIntegrationTest
 {
-	@Configuration
-	@Import(Application.class)
-	public static class TestConfig
-	{
-		@Autowired
-		DummyDataProducer dummyDataProducer;
-
-		@Bean
-		public IServerSync serverSync()
-		{
-			return new MockedTestServerSync(dummyDataProducer);
-		}
-
-	}
-
 	@Autowired
 	private ISenderToMetasfreshService serverSyncService;
 	@Autowired
@@ -104,7 +84,7 @@ public class SpringIntegrationTest
 	private int serverPort;
 
 	@Autowired
-	private IServerSync serverSync;
+	private MockedTestServerSync serverSync;
 
 	@Autowired
 	private ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler;
@@ -113,7 +93,7 @@ public class SpringIntegrationTest
 
 	private MockedTestServerSync getMockedTestServerSync()
 	{
-		return (MockedTestServerSync)serverSync;
+		return serverSync;
 	}
 
 	@Test
@@ -121,7 +101,7 @@ public class SpringIntegrationTest
 	{
 		serverSyncService.awaitInitialSyncComplete(20, TimeUnit.SECONDS);
 
-		final Date day = DateUtils.truncToDay(new Date());
+		final LocalDate day = LocalDate.now();
 
 		final List<User> users = userRepository.findAll();
 		Assert.assertFalse("Users shall not be empty", users.isEmpty());
@@ -182,14 +162,14 @@ public class SpringIntegrationTest
 		}
 	}
 
-	private void reportProductSupplyAndTest(final BPartner bpartner, final Product product, final Date day, final BigDecimal qty) throws Exception
+	private void reportProductSupplyAndTest(final BPartner bpartner, final Product product, final LocalDate day, final BigDecimal qty) throws Exception
 	{
 		// Report the product supply
 		productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
 				.bpartner(bpartner)
 				.contractLine(null)
 				.productId(product.getId())
-				.date(DateUtils.toLocalDate(day))
+				.date(day)
 				.qty(qty)
 				.qtyConfirmedByUser(true)
 				.build());
@@ -217,10 +197,10 @@ public class SpringIntegrationTest
 		assertConfirmOK(expected, actual);
 	}
 
-	private void reportNextWeekTrend(final BPartner bpartner, final Product product, final Date day, final Trend trend) throws Exception
+	private void reportNextWeekTrend(final BPartner bpartner, final Product product, final LocalDate day, final Trend trend) throws Exception
 	{
 		// Report the trend
-		final YearWeek week = YearWeekUtil.ofJULDate(day);
+		final YearWeek week = YearWeekUtil.ofLocalDate(day);
 		final WeekSupply weeklySupply = productSuppliesService.setNextWeekTrend(bpartner, product, week, trend);
 
 		// Make sure it's saved in database
@@ -238,7 +218,7 @@ public class SpringIntegrationTest
 		Assert.assertEquals(expected.getBpartnerUUID(), actual.getBpartner_uuid());
 		Assert.assertEquals(expected.getProductUUID(), actual.getProduct_uuid());
 		Assert.assertEquals(expected.getDay(), actual.getWeekDay());
-		Assert.assertEquals(expected.getTrend(), actual.getTrend());
+		Assert.assertEquals(expected.getTrend(), Trend.ofNullableCode(actual.getTrend()));
 
 		assertConfirmOK(expected, actual);
 	}

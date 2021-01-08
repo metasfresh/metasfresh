@@ -60,11 +60,6 @@ public class YearWeekUtil
 		return YearWeek.of(date.get(IsoFields.WEEK_BASED_YEAR), date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR));
 	}
 
-	public static YearWeek ofJULDate(@NonNull final java.util.Date date)
-	{
-		return ofLocalDate(DateUtils.toLocalDate(date));
-	}
-
 	public static String toJsonString(@NonNull final YearWeek yearWeek)
 	{
 		return (yearWeek.getWeek() <= 9 ? "0" : "") + yearWeek.getWeek()
