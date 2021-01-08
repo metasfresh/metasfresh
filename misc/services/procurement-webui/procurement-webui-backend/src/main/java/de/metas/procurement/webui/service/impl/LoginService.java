@@ -2,6 +2,7 @@ package de.metas.procurement.webui.service.impl;
 
 import com.google.common.base.Strings;
 import com.google.common.hash.Hashing;
+import de.metas.procurement.webui.config.ProcurementWebuiProperties;
 import de.metas.procurement.webui.exceptions.LoginFailedException;
 import de.metas.procurement.webui.exceptions.NotLoggedInException;
 import de.metas.procurement.webui.exceptions.PasswordResetFailedException;
@@ -13,7 +14,6 @@ import de.metas.procurement.webui.util.LanguageKey;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -73,20 +73,19 @@ public class LoginService implements ILoginService
 	private static final int PASSWORD_Length = 4;
 
 	public LoginService(
+			@NonNull final ProcurementWebuiProperties config,
 			@NonNull final UserRepository userRepository,
 			@NonNull final JavaMailSender emailSender,
-			@NonNull final I18N i18n,
-			@Value("${mfprocurement.mail.from:}") final String emailFrom,
-			@Value("${mfprocurement.passwordResetUrl:}") final String passwordResetUrl)
+			@NonNull final I18N i18n)
 	{
 		this.userRepository = userRepository;
 		this.emailSender = emailSender;
 		this.i18n = i18n;
 
-		this.emailFrom = emailFrom;
+		this.emailFrom = config.getMail().getFrom();
 		logger.info("emailFrom={}", emailFrom);
 
-		this.passwordResetUrl = passwordResetUrl;
+		this.passwordResetUrl = config.getPasswordResetUrl();
 		logger.info("passwordResetUrl={}", passwordResetUrl);
 	}
 
