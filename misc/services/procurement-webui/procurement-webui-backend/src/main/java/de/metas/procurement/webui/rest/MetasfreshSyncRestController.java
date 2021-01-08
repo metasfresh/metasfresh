@@ -23,6 +23,7 @@
 package de.metas.procurement.webui.rest;
 
 import de.metas.procurement.webui.Application;
+import de.metas.procurement.webui.config.ProcurementWebuiProperties;
 import de.metas.procurement.webui.exceptions.NotLoggedInException;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ProductSupply;
@@ -35,14 +36,12 @@ import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -62,18 +61,18 @@ public class MetasfreshSyncRestController
 	private final String apiKey;
 
 	public MetasfreshSyncRestController(
-			@Value("${mfprocurement.metasfreshSync.apiKey:}") @Nullable final String apiKey,
+			@NonNull final ProcurementWebuiProperties config,
 			@NonNull final ISenderToMetasfreshService senderToMetasfreshService,
 			@NonNull final IProductSuppliesService productSuppliesService,
 			@NonNull final IRfQService rfqService,
 			@NonNull final BPartnerRepository bpartnersRepository)
 	{
-		this.apiKey = apiKey;
 		this.senderToMetasfreshService = senderToMetasfreshService;
 		this.productSuppliesService = productSuppliesService;
 		this.rfqService = rfqService;
 		this.bpartnersRepository = bpartnersRepository;
 
+		this.apiKey = config.getMetasfreshSync().getApiKey();
 		logger.info("API Key: {}", apiKey);
 	}
 

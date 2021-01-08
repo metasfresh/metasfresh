@@ -1,20 +1,20 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutConfirmationToProcurementWebRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutInfoMessageRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQCloseEventsRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQsRequest;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /*
  * #%L
@@ -38,17 +38,20 @@ import java.util.List;
  * #L%
  */
 
+/**
+ * Handles various {@link de.metas.common.procurement.sync.protocol.RequestToProcurementWeb}.
+ */
 @Component
-public class AgentSync implements IAgentSync
+public class ReceiverFromMetasfreshHandler
 {
-	private static final Logger logger = LoggerFactory.getLogger(AgentSync.class);
+	private static final Logger logger = LoggerFactory.getLogger(ReceiverFromMetasfreshHandler.class);
 	private final SyncBPartnerImportService bpartnersImportService;
 	private final SyncProductImportService productsImportService;
 	private final SyncSettingsImportService settingsImportService;
 	private final SyncConfirmationsImportService confirmationsImportService;
 	private final SyncRfqImportService rfqImportService;
 
-	public AgentSync(
+	public ReceiverFromMetasfreshHandler(
 			@NonNull final SyncBPartnerImportService bpartnersImportService,
 			@NonNull final SyncProductImportService productsImportService,
 			@NonNull final SyncSettingsImportService settingsImportService,
@@ -62,8 +65,7 @@ public class AgentSync implements IAgentSync
 		this.rfqImportService = rfqImportService;
 	}
 
-	@Override
-	public void syncBPartners(final PutBPartnersRequest request)
+	public void handlePutBPartnersRequest(final PutBPartnersRequest request)
 	{
 		logger.debug("Importing bpartners: {}", request);
 		int countImported = 0;
@@ -84,8 +86,7 @@ public class AgentSync implements IAgentSync
 		logger.info("{} bpartners imported, got {} errors", countImported, countError);
 	}
 
-	@Override
-	public void syncProducts(final PutProductsRequest request)
+	public void handlePutProductsRequest(final PutProductsRequest request)
 	{
 		logger.debug("Importing: {}", request);
 		int countImported = 0;
@@ -106,8 +107,7 @@ public class AgentSync implements IAgentSync
 		logger.info("{} products imported, got {} errors", countImported, countError);
 	}
 
-	@Override
-	public void syncInfoMessage(final PutInfoMessageRequest request)
+	public void handlePutInfoMessageRequest(final PutInfoMessageRequest request)
 	{
 		logger.debug("Importing: {}", request);
 		try
@@ -120,12 +120,11 @@ public class AgentSync implements IAgentSync
 		}
 	}
 
-	@Override
-	public void confirm(final List<SyncConfirmation> syncConfirmations)
+	public void handlePutConfirmationToProcurementWebRequest(final PutConfirmationToProcurementWebRequest request)
 	{
-		logger.debug("Got confirmations: {}", syncConfirmations);
+		logger.debug("Importing: {}", request);
 
-		for (final SyncConfirmation syncConfirmation : syncConfirmations)
+		for (final SyncConfirmation syncConfirmation : request.getSyncConfirmations())
 		{
 			try
 			{
@@ -138,16 +137,15 @@ public class AgentSync implements IAgentSync
 		}
 	}
 
-	@Override
-	public void syncRfQs(final List<SyncRfQ> syncRfqs)
+	public void handlePutRfQsRequest(@NonNull final PutRfQsRequest request)
 	{
-		logger.debug("Got: {}", syncRfqs);
-		if (syncRfqs == null || syncRfqs.isEmpty())
+		logger.debug("Importing: {}", request);
+		if (request.isEmpty())
 		{
 			return;
 		}
 
-		for (final SyncRfQ syncRfq : syncRfqs)
+		for (final SyncRfQ syncRfq : request.getSyncRfqs())
 		{
 			try
 			{
@@ -160,16 +158,15 @@ public class AgentSync implements IAgentSync
 		}
 	}
 
-	@Override
-	public void closeRfQs(final List<SyncRfQCloseEvent> syncRfQCloseEvents)
+	public void handlePutRfQCloseEventsRequest(final PutRfQCloseEventsRequest request)
 	{
-		logger.debug("Got: {}", syncRfQCloseEvents);
-		if (syncRfQCloseEvents == null || syncRfQCloseEvents.isEmpty())
+		logger.debug("Importing: {}", request);
+		if (request.isEmpty())
 		{
 			return;
 		}
 
-		for (final SyncRfQCloseEvent syncRfQCloseEvent : syncRfQCloseEvents)
+		for (final SyncRfQCloseEvent syncRfQCloseEvent : request.getSyncRfQCloseEvents())
 		{
 			try
 			{

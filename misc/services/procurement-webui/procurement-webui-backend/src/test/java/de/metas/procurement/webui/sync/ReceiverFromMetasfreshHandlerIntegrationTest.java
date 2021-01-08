@@ -1,6 +1,5 @@
 package de.metas.procurement.webui.sync;
 
-import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.IServerSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner.SyncBPartnerBuilder;
@@ -22,7 +21,6 @@ import de.metas.procurement.webui.repository.ProductRepository;
 import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.DummyDataProducer;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -79,19 +77,8 @@ import static org.junit.Assert.assertThat;
 // @IntegrationTest("server.port:0")
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest//(classes = { DummyDataProducer.class })
-public class AgentSyncIntegrationTest
+public class ReceiverFromMetasfreshHandlerIntegrationTest
 {
-	@Configuration
-	@Import(Application.class)
-	public static class AgentSyncTestConfig
-	{
-		@Bean
-		public IServerSync serverSync()
-		{
-			return new NullServerSync();
-		}
-	}
-
 	@Rule
 	public TestWatcher testWatcher = new TestWatcher()
 	{
@@ -105,7 +92,7 @@ public class AgentSyncIntegrationTest
 	//
 	// Services
 	@Autowired
-	IAgentSync agentSync;
+	ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler;
 	@Autowired
 	DummyDataProducer dummyDataProducer;
 	@Autowired
@@ -162,7 +149,7 @@ public class AgentSyncIntegrationTest
 			syncContract1.contractLine(syncContractLine1.build());
 			syncBPartner1.contract(syncContract1.build());
 
-			agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner1.build()));
+			receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner1.build()));
 
 			Assert.assertEquals(
 					"only our contract line shall be present in database"
@@ -198,7 +185,7 @@ public class AgentSyncIntegrationTest
 
 			syncBPartner1.clearContracts().contract(syncContract1.build());
 			//
-			agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner1.build()));
+			receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner1.build()));
 
 			Assert.assertEquals(
 					"Expect only our second line to be present in database"
@@ -212,7 +199,7 @@ public class AgentSyncIntegrationTest
 		// Delete the contract
 		{
 			syncBPartner1.clearContracts();
-			agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner1.build()));
+			receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner1.build()));
 			Assert.assertEquals("No contracts", Collections.emptyList(), contractLinesRepo.findAll());
 			Assert.assertEquals("No contract lines", Collections.emptyList(), contractLinesRepo.findAll());
 		}
@@ -246,7 +233,7 @@ public class AgentSyncIntegrationTest
 					.deleted(false);
 			syncBPartner.user(syncUser1.build());
 
-			agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner.build()));
+			receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner.build()));
 
 			final User user1 = usersRepo.findByUuid(syncUser1_UUID);
 			Assert.assertNotNull("User1 was imported", user1);
@@ -272,7 +259,7 @@ public class AgentSyncIntegrationTest
 					.user(syncUser1.build())
 					.user(syncUser2.build());
 
-			agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner.build()));
+			receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner.build()));
 
 			final User user1 = usersRepo.findByUuid(syncUser1_UUID);
 			Assert.assertNotNull("User1 was imported", user1);
@@ -323,7 +310,7 @@ public class AgentSyncIntegrationTest
 				.syncContracts(false)
 				.deleted(true);
 
-		agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner.build()));
+		receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner.build()));
 
 		final BPartner deletedBPartner = bpartnerRepo.findByUuid(bpartnerUUID);
 		assertThat(deletedBPartner.isDeleted(), is(true));
@@ -351,7 +338,7 @@ public class AgentSyncIntegrationTest
 				.syncContracts(false)
 				.deleted(true);
 
-		agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner.build()));
+		receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner.build()));
 	}
 
 	@Test
@@ -388,7 +375,7 @@ public class AgentSyncIntegrationTest
 
 		syncBPartner.user(syncUser.build());
 
-		agentSync.syncBPartners(PutBPartnersRequest.of(syncBPartner.build()));
+		receiverFromMetasfreshHandler.handlePutBPartnersRequest(PutBPartnersRequest.of(syncBPartner.build()));
 
 		assertThat(bpartnerRepo.findByUuid(bpartnerUUID), is(bpartner)); // bpartner shall still exist
 		assertThat(usersRepo.findByUuid(userUUID), is(user)); // other user shall still exist

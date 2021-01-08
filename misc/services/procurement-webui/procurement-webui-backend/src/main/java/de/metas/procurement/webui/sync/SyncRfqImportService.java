@@ -46,7 +46,7 @@ import java.util.List;
 
 @Service
 @Transactional
-public class SyncRfqImportService extends AbstractSyncImportService
+class SyncRfqImportService extends AbstractSyncImportService
 {
 	private final IRfQService rfqService;
 	private final SyncProductImportService productImportService;
@@ -109,11 +109,8 @@ public class SyncRfqImportService extends AbstractSyncImportService
 		//
 		// Product
 		final SyncProduct syncProduct = syncRfQ.getProduct();
-		final Product product = productImportService.importProduct(syncProduct);
-		if (product == null)
-		{
-			throw new RuntimeException("No product found for " + syncProduct);
-		}
+		final Product product = productImportService.importProduct(syncProduct)
+				.orElseThrow(() -> new RuntimeException("Deleted product cannot be used in " + syncRfQ));
 		rfq.setProduct_id(product.getId());
 
 		//

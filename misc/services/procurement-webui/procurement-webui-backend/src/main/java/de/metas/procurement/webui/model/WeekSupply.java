@@ -114,7 +114,7 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 
 	public YearWeek getWeek()
 	{
-		return YearWeekUtil.ofJULDate(day);
+		return YearWeekUtil.ofLocalDate(day.toLocalDate());
 	}
 
 	@Nullable

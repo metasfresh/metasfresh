@@ -7,10 +7,6 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.Locale;
 
 /*
@@ -38,45 +34,11 @@ import java.util.Locale;
 @UtilityClass
 public final class DateUtils
 {
-
 	@Nullable
-	public static Date truncToDay(@Nullable final Date date)
-	{
-		if (date == null)
-		{
-			return null;
-		}
-
-		final GregorianCalendar cal = new GregorianCalendar(Locale.getDefault());
-		cal.setTimeInMillis(date.getTime());
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal.getTime();
-	}
-
-	@SuppressWarnings("deprecation")
-	@Nullable
-	public static LocalDate toLocalDate(@Nullable final java.util.Date date)
+	public static LocalDate toLocalDate(@Nullable final java.sql.Date date)
 	{
 		return date != null
-				? LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, date.getDate())
-				: null;
-	}
-
-	@Deprecated
-	@Nullable
-	public static LocalDate toLocalDate(@Nullable final LocalDate date)
-	{
-		return date;
-	}
-
-	@Nullable
-	public static java.sql.Date toSqlDate(@Nullable final java.util.Date date)
-	{
-		return date != null
-				? java.sql.Date.valueOf(toLocalDate(date))
+				? date.toLocalDate()
 				: null;
 	}
 

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.procurement.base
+ * procurement-webui-backend
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.procurement.webui.sync.rabbitmq;
+package de.metas.procurement.webui.config;
 
 import de.metas.common.procurement.sync.Constants;
 import org.springframework.amqp.core.Queue;

@@ -6,7 +6,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import de.metas.common.procurement.sync.IServerSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
@@ -46,12 +45,9 @@ import java.util.concurrent.TimeUnit;
  */
 
 /**
- * An mocked {@link IServerSync} implementation which records what was reported.
- *
- * @author metas-dev <dev@metas-fresh.com>
- *
+ * An mocked implementation which records what was reported.
  */
-public class MockedTestServerSync implements IServerSync
+public class MockedTestServerSync
 {
 	private static final Logger logger = LoggerFactory.getLogger(MockedTestServerSync.class);
 
@@ -82,19 +78,16 @@ public class MockedTestServerSync implements IServerSync
 		this.dummyDataProducer = dummyDataProducer;
 	}
 
-	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
 		return dummyDataProducer.getSyncBPartnersRequest().getBpartners();
 	}
 
-	@Override
 	public List<SyncProduct> getAllProducts()
 	{
 		return dummyDataProducer.getSyncProductsRequest().getProducts();
 	}
 
-	@Override
 	public void reportProductSupplies(final PutProductSuppliesRequest request)
 	{
 		logger.info("Got {}", request);
@@ -132,7 +125,6 @@ public class MockedTestServerSync implements IServerSync
 		}
 	}
 
-	@Override
 	public void reportWeekSupply(final PutWeeklySupplyRequest request)
 	{
 		logger.info("Got {}", request);
@@ -181,13 +173,11 @@ public class MockedTestServerSync implements IServerSync
 		}
 	}
 
-	@Override
 	public String getInfoMessage()
 	{
 		return "";
 	}
 
-	@Override
 	public void reportRfQChanges(final PutRfQChangeRequest request)
 	{
 		logger.info("Got {}", request);
