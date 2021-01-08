@@ -1,5 +1,6 @@
 package de.metas.ui.web.devtools;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +16,6 @@ import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.activemq.util.ByteArrayOutputStream;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

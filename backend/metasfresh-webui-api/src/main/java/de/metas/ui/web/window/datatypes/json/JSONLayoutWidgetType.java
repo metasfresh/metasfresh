@@ -46,7 +46,9 @@ public enum JSONLayoutWidgetType
 
 	Image, Color, BinaryData,
 
-	Button, ActionButton, ProcessButton, ZoomIntoButton;
+	Button, ActionButton, ProcessButton, ZoomIntoButton,
+
+	InlineTab;
 
 	@Nullable
 	public static JSONLayoutWidgetType fromNullable(@Nullable final DocumentFieldWidgetType widgetType)
@@ -95,6 +97,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.ActionButton, JSONLayoutWidgetType.ActionButton)
 			.put(DocumentFieldWidgetType.ProcessButton, JSONLayoutWidgetType.ProcessButton)
 			.put(DocumentFieldWidgetType.ZoomIntoButton, JSONLayoutWidgetType.ZoomIntoButton)
+			.put(DocumentFieldWidgetType.InlineTab, JSONLayoutWidgetType.InlineTab)
 			.build();
 
 }

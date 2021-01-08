@@ -181,15 +181,15 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public void setAssignedHandlingUnits(@NonNull final I_PP_Order ppOrder, @NonNull final Collection<I_M_HU> hus)
+	public void addAssignedHandlingUnits(@NonNull final I_PP_Order ppOrder, @NonNull final Collection<I_M_HU> hus)
 	{
-		huAssignmentBL.setAssignedHandlingUnits(ppOrder, hus);
+		huAssignmentBL.addAssignedHandlingUnits(ppOrder, hus);
 	}
 
 	@Override
-	public void setAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
+	public void addAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
 	{
-		huAssignmentBL.setAssignedHandlingUnits(ppOrderBOMLine, hus);
+		huAssignmentBL.addAssignedHandlingUnits(ppOrderBOMLine, hus);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ export function fetchQuickActions({
   viewProfileId = null,
 }) {
   return (dispatch, getState) => {
-    let actionPromises = null;
+    let actionPromises = [null];
     const state = getState();
     const includedView = state.viewHandler.includedView.windowId
       ? state.viewHandler.includedView

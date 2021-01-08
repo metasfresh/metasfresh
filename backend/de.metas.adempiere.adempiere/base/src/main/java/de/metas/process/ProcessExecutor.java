@@ -18,7 +18,6 @@ import de.metas.script.ScriptExecutor;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
-import de.metas.session.jaxrs.IServerService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -138,17 +137,10 @@ public final class ProcessExecutor
 	private void executeSync()
 	{
 		//
-		// Case: the process requires to be executed on server, but we are not running on server
-		// => execute the process remotely
-		if (pi.isServerProcess() && Ini.isSwingClient())
-		{
-			executeSync_Remote();
-		}
-		//
 		// Case: our process has some parts that requires to be executed out of transaction
 		// but we are currently running in a transaction.
 		// => spawn a new thread, run the process there and wait for the thread to finish
-		else if (pi.getProcessClassInfo().isRunOutOfTransaction()
+		if (pi.getProcessClassInfo().isRunOutOfTransaction()
 				&& trxManager.hasThreadInheritedTrx())
 		{
 			final Thread thread = new Thread(() -> executeNow());
@@ -179,35 +171,6 @@ public final class ProcessExecutor
 		else
 		{
 			executeNow();
-		}
-	}
-
-	private void executeSync_Remote()
-	{
-		// Make sure process info is persisted
-		adPInstanceDAO.saveProcessInfoOnly(pi);
-
-		try
-		{
-			lock(false);
-
-			final ProcessExecutionResult result = pi.getResult();
-
-			final ProcessExecutionResult remoteResult = Services.get(IServerService.class).process(pi.getPinstanceId().getRepoId());
-			result.updateFrom(remoteResult);
-		}
-		catch (final Exception e)
-		{
-			final Throwable cause = AdempiereException.extractCause(e);
-			logger.warn("Got error", cause);
-
-			final ProcessExecutionResult result = pi.getResult();
-			result.markAsError(cause);
-			result.markLogsAsStale();
-		}
-		finally
-		{
-			unlock(false);
 		}
 	}
 

@@ -22,16 +22,34 @@ package de.metas.handlingunits.attribute.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import de.metas.dimension.DimensionSpec;
+import de.metas.dimension.IDimensionspecDAO;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
+import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -49,41 +67,23 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.IDimensionspecDAO;
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
-import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 {
 	private static final transient Logger logger = LogManager.getLogger(PPOrderProductAttributeBL.class);
 
 	@Override
-	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, @NonNull final PPOrderId fromPPOrderId)
+	public void updateHUAttributes(@NonNull final Collection<I_M_HU> husToUpdate, @NonNull final PPOrderId fromPPOrderId, @Nullable final PPOrderBOMLineId coByProductOrderBOMLineId)
 	{
 		// Skip it if there are no HUs to update
 		if (husToUpdate.isEmpty())
@@ -91,7 +91,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			return;
 		}
 
-		logger.trace("updateHUAttributes: fromPPOrderId={}, husToUpdate={}", fromPPOrderId, husToUpdate);
+		logger.trace("updateHUAttributes: fromPPOrderId={}, husToUpdate={}, coByProductOrderBOMLineId={}", fromPPOrderId, husToUpdate, coByProductOrderBOMLineId);
 
 		//
 		// Fetch PP_Order's attributes that shall be propagated to HUs
@@ -102,7 +102,16 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		//
 		// SerialNo info (if any)
-		final Optional<SerialNoContext> serialNoContext = extractSerialNoContext(fromPPOrder);
+		// SerialNo is calculated only for MainProducts, and not for lines (By or Co Products)
+		final Optional<SerialNoContext> serialNoContext;
+		if (coByProductOrderBOMLineId == null)
+		{
+			serialNoContext = extractSerialNoContext(fromPPOrder);
+		}
+		else
+		{
+			serialNoContext = Optional.empty();
+		}
 		logger.trace("Using {}", serialNoContext);
 
 		//
@@ -200,12 +209,14 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		return Optional.of(serialNoContext);
 	}
 
-	/** @return M_Attribute_IDs to be transferred from PP_Order to HUs */
+	/**
+	 * @return M_Attribute_IDs to be transferred from PP_Order to HUs
+	 */
 	private static Set<Integer> getAttributeIdsToBeTransferred()
 	{
 		final DimensionSpec dimPPOrderProductAttributesToTransfer = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
 		Check.errorIf(dimPPOrderProductAttributesToTransfer == null,
-				"Unable to load DIM_Dimension_Spec record with InternalName={}", HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
+					  "Unable to load DIM_Dimension_Spec record with InternalName={}", HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
 
 		final Set<Integer> attributeIdsToBeTransferred = dimPPOrderProductAttributesToTransfer.retrieveAttributes()
 				.stream()
@@ -358,11 +369,11 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		}
 
 		/**
-		 * This method inserts or updates the given map for the given {@code ppOrderAttribute}. See {@link PPOrderProductAttributeBL_putOrMergeInMap_Tests} for how it shall behave.
+		 * This method inserts or updates the given map for the given {@code ppOrderAttribute}. See {@link PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests} for how it shall behave.
 		 *
-		 * @param attributesMap
 		 * @param ppOrderAttribute
 		 */
+		@SuppressWarnings("JavadocReference")
 		public void putOrMerge(final I_PP_Order_ProductAttribute ppOrderAttribute)
 		{
 			final AttributeWithValue attributeWithValueToMerge = createAttributeWithValue(ppOrderAttribute);
@@ -462,7 +473,9 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			return valueNumber == null && valueString == null;
 		}
 
-		/** @return true if this attribute and <code>other</code> have the values equal */
+		/**
+		 * @return true if this attribute and <code>other</code> have the values equal
+		 */
 		private boolean valueEquals(final AttributeWithValue other)
 		{
 			// Shortcut: same instance
@@ -504,11 +517,10 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		 * Combine(merge) given attribute into this attribute.
 		 *
 		 * @param from
-		 * @return
-		 *         <ul>
-		 *         <li>a new {@link AttributeWithValue} instance containing current values, merged with given <code>ppOrderAttribute</code> values
-		 *         <li>this if there is no change
-		 *         </ul>
+		 * @return <ul>
+		 * <li>a new {@link AttributeWithValue} instance containing current values, merged with given <code>ppOrderAttribute</code> values
+		 * <li>this if there is no change
+		 * </ul>
 		 */
 		private AttributeWithValue combineToNew(final AttributeWithValue from)
 		{

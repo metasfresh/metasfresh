@@ -1,17 +1,23 @@
 package de.metas.handlingunits.callout;
 
+import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.adempiere.gui.search.IHUPackingAwareBL;
+import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.gui.search.IHUPackingAware;
-import de.metas.adempiere.gui.search.IHUPackingAwareBL;
-import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
-import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.order.api.IHUOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.util.Services;
+import java.util.Optional;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine

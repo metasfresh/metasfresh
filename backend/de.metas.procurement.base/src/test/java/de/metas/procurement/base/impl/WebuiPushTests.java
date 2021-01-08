@@ -1,9 +1,11 @@
 package de.metas.procurement.base.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
+import de.metas.common.procurement.sync.protocol.dto.SyncUser;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBPartnersRequest;
+import de.metas.procurement.base.IAgentSyncBL;
+import de.metas.procurement.base.model.I_AD_User;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -14,12 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import de.metas.procurement.base.IAgentSyncBL;
-import de.metas.procurement.base.model.I_AD_User;
-import de.metas.procurement.sync.protocol.SyncBPartner;
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncUser;
-import de.metas.util.Services;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -137,8 +136,6 @@ public class WebuiPushTests
 
 	/**
 	 * Invokes {@link WebuiPush#pushBPartnerAndUsers(I_C_BPartner)} and verifies, that only a delete-bpartner-sync without users is submitted.
-	 *
-	 * @param bpartner
 	 */
 	private void performTestNoUsersDeletePartner(final I_C_BPartner bpartner)
 	{
@@ -146,10 +143,10 @@ public class WebuiPushTests
 
 		verifyOnlySyncBPartnersCalled();
 
-		final ArgumentCaptor<SyncBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(SyncBPartnersRequest.class);
+		final ArgumentCaptor<PutBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(PutBPartnersRequest.class);
 		Mockito.verify(agentSync).syncBPartners(syncBPartnersRequestCaptor.capture());
 
-		final SyncBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
+		final PutBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
 		// agentSync.syncBPartners(syncBPartnersRequest = withCapture());
 
 		assertNotNull(syncBPartnersRequest);
@@ -190,10 +187,10 @@ public class WebuiPushTests
 
 		verifyOnlySyncBPartnersCalled();
 
-		final ArgumentCaptor<SyncBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(SyncBPartnersRequest.class);
+		final ArgumentCaptor<PutBPartnersRequest> syncBPartnersRequestCaptor = ArgumentCaptor.forClass(PutBPartnersRequest.class);
 		Mockito.verify(agentSync).syncBPartners(syncBPartnersRequestCaptor.capture());
 
-		final SyncBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
+		final PutBPartnersRequest syncBPartnersRequest = syncBPartnersRequestCaptor.getValue();
 
 		assertNotNull(syncBPartnersRequest);
 		assertThat(syncBPartnersRequest.getBpartners().size(), is(1));

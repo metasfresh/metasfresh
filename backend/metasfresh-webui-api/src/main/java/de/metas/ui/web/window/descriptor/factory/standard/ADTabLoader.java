@@ -59,7 +59,7 @@ public class ADTabLoader
 			}
 
 			// Skip tabs which were already used/embedded in root layout
-			if (rootLayoutFactory.isSkipAD_Tab_ID(detailTabVO.getAD_Tab_ID()))
+			if (rootLayoutFactory.isSkipAD_Tab_ID(detailTabVO.getAdTabId()))
 			{
 				continue;
 			}

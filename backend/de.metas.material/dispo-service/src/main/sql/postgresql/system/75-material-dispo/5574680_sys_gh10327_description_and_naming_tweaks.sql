@@ -1,12 +1,12 @@
--- 2020-12-13T12:40:17.909Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=1003134
-;
-
--- 2020-12-13T12:40:17.918Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element WHERE AD_Element_ID=1003134
-;
+-- -- 2020-12-13T12:40:17.909Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=1003134
+-- ;
+--
+-- -- 2020-12-13T12:40:17.918Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- DELETE FROM AD_Element WHERE AD_Element_ID=1003134
+-- ;
 
 -- 2020-12-13T12:40:45.372Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -83,15 +83,15 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=2924
 /* DDL */ select AD_Element_Link_Create_Missing_Field(2924)
 ;
 
--- 2020-12-13T12:43:26.845Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=1003135
-;
-
--- 2020-12-13T12:43:26.852Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element WHERE AD_Element_ID=1003135
-;
+-- -- 2020-12-13T12:43:26.845Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=1003135
+-- ;
+--
+-- -- 2020-12-13T12:43:26.852Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- DELETE FROM AD_Element WHERE AD_Element_ID=1003135
+-- ;
 
 -- 2020-12-13T12:43:43.490Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

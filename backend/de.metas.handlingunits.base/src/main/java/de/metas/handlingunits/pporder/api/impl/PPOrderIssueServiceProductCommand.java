@@ -226,9 +226,9 @@ class PPOrderIssueServiceProductCommand
 					//.topLevelHUId(...)
 					;
 
-			// Extract CUs of 1 item each,
-			// but leave one item in the original HU
-			for (int i = 1; i <= huQty - 1; i++)
+			// Extract CUs of 1 item each.
+			// The original HU will also be replaced.
+			for (int i = 1; i <= huQty; i++)
 			{
 				final I_M_HU extractedHU = CollectionUtils.singleElement(
 						HUTransformService.newInstance(huContext)
@@ -248,12 +248,6 @@ class PPOrderIssueServiceProductCommand
 			// delete the original candidate, we no longer need it
 			// NOTE: we have to delete it first and then create the new link because of the unique constraint on (PP_Order_ID, M_HU_ID).
 			ppOrderQtyDAO.delete(finishedGoodsReceiveCandidate);
-
-			// add (as first item) our original HU which we assume it has only one item left into it
-			singleItemHUs.add(0, hu);
-			ppOrderQtyDAO.save(createReceiptCandidateRequestTemplate
-					.topLevelHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.build());
 
 			return singleItemHUs;
 		}

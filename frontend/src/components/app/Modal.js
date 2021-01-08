@@ -17,19 +17,21 @@ import {
   patch,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
+import { openFile } from '../../actions/GenericActions';
+
 import { getTableId, getSelection } from '../../reducers/tables';
+import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
 import ChangeLogModal from '../ChangeLogModal';
 import Process from '../Process';
-import Window from '../Window';
+import SectionGroup from '../SectionGroup';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 import CommentsPanel from '../comments/CommentsPanel';
 import PrintingOptions from './PrintingOptions';
-import { openFile } from '../../actions/GenericActions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -194,7 +196,14 @@ class Modal extends Component {
       case 'window':
         try {
           await dispatch(
-            createWindow(windowId, dataId, tabId, rowId, true, isAdvanced)
+            createWindow({
+              windowId,
+              docId: dataId,
+              tabId,
+              rowId,
+              isModal: true,
+              isAdvanced,
+            })
           );
         } catch (error) {
           this.handleClose();
@@ -357,10 +366,10 @@ class Modal extends Component {
 
   /**
    * @method handleStart
-   * @summary ToDo: Describe the method
+   * @summary Handler for starting process from a modal
    */
   handleStart = () => {
-    const { dispatch, layout, windowId, indicator } = this.props;
+    const { dispatch, layout, windowId, indicator, parentId } = this.props;
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -380,7 +389,8 @@ class Modal extends Component {
           const action = handleProcessResponse(
             response,
             windowId,
-            layout.pinstanceId
+            layout.pinstanceId,
+            parentId
           );
 
           await dispatch(action);
@@ -474,7 +484,7 @@ class Modal extends Component {
       }
       case 'window':
         return (
-          <Window
+          <SectionGroup
             data={data}
             dataId={dataId}
             layout={layout}
@@ -805,6 +815,7 @@ Modal.propTypes = {
   triggerField: PropTypes.any,
   viewId: PropTypes.string,
   windowId: PropTypes.string,
+  parentId: PropTypes.string,
   documentType: PropTypes.string,
   viewDocumentIds: PropTypes.array,
   printBtnCaption: PropTypes.string,
@@ -812,11 +823,15 @@ Modal.propTypes = {
 };
 
 const mapStateToProps = (state, props) => {
-  const { tabId, dataId, rawModalWindowId } = props;
+  const { tabId, dataId, rawModalWindowId, viewId, documentType } = props;
 
   const parentViewId = state.windowHandler.modal.parentViewId
     ? state.windowHandler.modal.parentViewId
     : props.parentViewId;
+
+  const id = parentViewId ? parentViewId : viewId;
+  const parentView = id && findViewByViewId(state, id);
+  const parentId = parentView ? parentView.windowId : documentType;
 
   const parentViewTableId = getTableId({
     windowId: rawModalWindowId,
@@ -832,6 +847,7 @@ const mapStateToProps = (state, props) => {
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator: state.windowHandler.indicator,
     parentViewId,
+    parentId,
     printingOptions: state.windowHandler.printingOptions,
   };
 };

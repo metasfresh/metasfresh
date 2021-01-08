@@ -339,7 +339,7 @@ class DesadvBL_addInOutLine_Test
 		final I_M_HU_Attribute huAttrRecord = newInstance(I_M_HU_Attribute.class);
 		huAttrRecord.setM_Attribute_ID(sscc18HUPIAttributeRecord.getM_Attribute_ID());
 		huAttrRecord.setM_HU_ID(lu.getM_HU_ID());
-		huAttrRecord.setValue(sscc18CodeBL.toString(sscc18CodeBL.generate(OrgId.ANY), false));
+		huAttrRecord.setValue(sscc18CodeBL.generate(OrgId.ANY).asString());
 		huAttrRecord.setM_HU_PI_Attribute_ID(sscc18HUPIAttributeRecord.getM_HU_PI_Attribute_ID());
 		saveRecord(huAttrRecord);
 

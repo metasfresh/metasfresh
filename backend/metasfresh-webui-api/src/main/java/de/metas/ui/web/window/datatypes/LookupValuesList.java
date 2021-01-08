@@ -168,6 +168,14 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return valuesById.keySet();
 	}
 
+	public Set<String> getKeysAsString()
+	{
+		return valuesById.values().stream()
+				.map(LookupValue::getIdAsString)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+
 	public Set<Integer> getKeysAsInt()
 	{
 		return valuesById.values().stream()

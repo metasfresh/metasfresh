@@ -22,25 +22,24 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Properties;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.util.ISingletonService;
+import org.adempiere.util.lang.IReference;
+
+import java.util.Collection;
+import java.util.Properties;
 
 public interface IHUAssignmentBL extends ISingletonService
 {
 	/**
 	 * Register an {@link IHUAssignmentListener}.
-	 *
-	 * @param listener
 	 */
 	void registerHUAssignmentListener(IHUAssignmentListener listener);
 
 	/**
 	 * Gets current {@link IHUAssignmentListener}s.
-	 *
+	 * <p>
 	 * NOTE: don't use it directly, it's used by API
 	 *
 	 * @return composite {@link IHUAssignmentListener}s
@@ -49,54 +48,30 @@ public interface IHUAssignmentBL extends ISingletonService
 
 	/**
 	 * Assign given HUs <b>as top level HUs</b>. This means, create {@link I_M_HU_Assignment} records and set their {@code M_HU_ID} to the given HUs' IDs.
-	 *
+	 * <p>
 	 * NOTE: model's trxName will be used.
-	 *
-	 * @param model
-	 * @param huList
 	 */
 	void assignHUs(Object model, Collection<I_M_HU> huList);
 
 	/**
 	 * See {@link #assignHUs(Object, Collection)}.
-	 *
-	 * @param model
-	 * @param huList
-	 * @param trxName
 	 */
 	void assignHUs(Object model, Collection<I_M_HU> huList, final String trxName);
 
 	/**
 	 * Assign given HU <b>as top level HU</b>.
 	 *
-	 * @param model
-	 * @param hu
-	 * @param trxName
 	 * @return created/updated {@link I_M_HU_Assignment}.
 	 */
 	I_M_HU_Assignment assignHU(Object model, I_M_HU hu, final String trxName);
 
 	/**
 	 * Assign given HU <b>as top level HU</b>.
-	 *
-	 * @param model
-	 * @param hu
-	 * @param isTransferPackingMaterials
-	 * @param trxName
-	 * @return
 	 */
 	I_M_HU_Assignment assignHU(Object model, I_M_HU hu, boolean isTransferPackingMaterials, String trxName);
 
 	/**
 	 * Create handling unit assignment builder for given loading / trading unit(s) of the top-level HU
-	 *
-	 * @param ctx
-	 * @param model
-	 * @param topLevelHU
-	 * @param luHU
-	 * @param tuHU
-	 * @param trxName
-	 * @return builder
 	 */
 	IHUAssignmentBuilder createTradingUnitDerivedAssignmentBuilder(Properties ctx, Object model, I_M_HU topLevelHU, I_M_HU luHU, I_M_HU tuHU, String trxName);
 
@@ -105,39 +80,29 @@ public interface IHUAssignmentBL extends ISingletonService
 	 */
 	void setAssignedHandlingUnits(Object model, Collection<I_M_HU> handlingUnits);
 
+	void addAssignedHandlingUnits(Object model, Collection<I_M_HU> handlingUnits);
+
 	/**
 	 * Unassign all HUs which are currently assigned to given <code>model</code>.
-	 *
-	 * @param model
-	 * @param trxName
 	 */
 	void unassignAllHUs(Object model, String trxName);
 
 	/**
 	 * Unassign all HUs which are currently assigned to given <code>model</code>.
-	 *
+	 * <p>
 	 * Model's transaction will be used.
-	 *
-	 * @param model
 	 */
 	void unassignAllHUs(Object model);
 
 	/**
 	 * Unassigns the given <code>hus</code> from the given <code>model</code> by deleting the respective {@link I_M_HU_Assignment} records and then calls
-	 * {@link IHUAssignmentListener#onHUUnassigned(I_M_HU, Object, String)} for all registered listeners. Note that for HUs with <code>M_HU_ID <= 0</code> no unassignment is attempted, and the
+	 * {@link IHUAssignmentListener#onHUUnassigned(IReference, IReference, String)} for all registered listeners. Note that for HUs with <code>M_HU_ID <= 0</code> no unassignment is attempted, and the
 	 * listeners are not notified.
-	 *
-	 * @param model
-	 * @param husToUnassign
 	 */
 	void unassignHUs(Object model, Collection<I_M_HU> husToUnassign);
 
 	/**
 	 * Unassign given HUs.
-	 *
-	 * @param model
-	 * @param husToUnassign
-	 * @param trxName
 	 */
 	void unassignHUs(Object model, Collection<I_M_HU> husToUnassign, String trxName);
 

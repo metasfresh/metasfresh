@@ -232,12 +232,6 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
 		<!--
 		Dependency needed in case you want to use de.metas.adempiere.report.jasper.server.LocalJasperServer.
 		i.e. a developer wants to use embedded jasper server while working/debugging in eclipse.

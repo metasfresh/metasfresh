@@ -89,7 +89,7 @@ import de.metas.util.Services;
  *
  * @author Colin Rooney (croo) & kstan_79 RFE#1670185
  * @author victor.perez@e-evolution.com
- * @see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
+ * see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
  *
  */
 public final class AEnv
@@ -587,12 +587,6 @@ public final class AEnv
 		return 0;
 	}   // getMnemonic
 
-	/**
-	 * Zoom
-	 *
-	 * @param AD_Table_ID
-	 * @param Record_ID
-	 */
 	public static void zoom(final int AD_Table_ID, final int Record_ID)
 	{
 		if (AD_Table_ID <= 0)
@@ -604,12 +598,6 @@ public final class AEnv
 		zoom(RecordZoomWindowFinder.newInstance(tableName, Record_ID));
 	}
 
-	/**
-	 * Zoom
-	 *
-	 * @param AD_Table_ID
-	 * @param Record_ID
-	 */
 	public static void zoom(
 			final String TableName,
 			final int Record_ID,
@@ -822,68 +810,14 @@ public final class AEnv
 	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(AEnv.class);
 
-	/**
-	 * Is AppsServer Active ?
-	 *
-	 * @return true if active
-	 */
-	public static boolean isServerActive()
-	{
-		final boolean contactAgain = s_serverTries == 0;
-		boolean ok = CConnection.get().isAppsServerOK(contactAgain);
-		if (ok)
-		{
-			s_serverTries = 0;
-			return true;
-		}
-		if (s_serverTries > 1)
-		{
-			return false;
-		}
-
-		// Try to connect
-		// CLogMgt.enable(false);
-		try
-		{
-			s_serverTries++;
-			log.debug("try #{}", s_serverTries);
-			ok = CConnection.get().isAppsServerOK(true);
-			if (ok)
-			{
-				s_serverTries = 0;
-			}
-		}
-		catch (final Exception ex)
-		{
-			ok = false;
-		}
-		finally
-		{
-			// CLogMgt.enable(true);
-		}
-		//
-		return ok;
-	}   // isServerActive
-
-	/**
-	 * Get Server Version
-	 *
-	 * @return Apps Server Version
-	 * @see ALogin#checkVersion
-	 */
-	public static String getServerVersion()
-	{
-		return CConnection.get().getServerVersion();
-	}   // getServerVersion
-
 	/** Window Cache */
-	private static CCache<AdWindowId, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
+	private static final CCache<AdWindowId, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
 
 	/**
 	 * Get Window Model
 	 *
 	 * @param WindowNo Window No
-	 * @param AD_Window_ID window
+	 * @param adWindowId window
 	 * @param AD_Menu_ID menu
 	 * @return Model Window Value Object; never returns <code>null</code>
 	 */

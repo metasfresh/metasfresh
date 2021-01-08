@@ -39,7 +39,7 @@ public interface IDDOrderLineQuickInput
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 	int getM_HU_PI_Item_Product_ID();
 	// I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-	// void setM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID);
+	void setM_HU_PI_Item_Product_ID(final int M_HU_PI_Item_Product_ID);
 	void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPIItemProduct);
 	//@formatter:on
 

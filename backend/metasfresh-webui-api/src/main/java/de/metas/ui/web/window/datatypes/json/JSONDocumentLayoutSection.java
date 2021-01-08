@@ -1,22 +1,22 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.CaptionMode;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.ClosableMode;
 import io.swagger.annotations.ApiModel;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -41,6 +41,7 @@ import javax.annotation.Nullable;
  */
 
 @ApiModel("section")
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public final class JSONDocumentLayoutSection
 {
 	static List<JSONDocumentLayoutSection> ofSectionsList(final List<DocumentLayoutSectionDescriptor> sections, final JSONDocumentLayoutOptions jsonOpts)
@@ -88,6 +89,7 @@ public final class JSONDocumentLayoutSection
 
 	@JsonProperty("columns")
 	@JsonInclude(Include.NON_EMPTY)
+	@Getter
 	private final List<JSONDocumentLayoutColumn> columns;
 
 	@JsonProperty("closableMode")
@@ -144,8 +146,8 @@ public final class JSONDocumentLayoutSection
 				.toString();
 	}
 
-	public List<JSONDocumentLayoutColumn> getColumns()
+	Stream<JSONDocumentLayoutElement> streamInlineTabElements()
 	{
-		return columns;
+		return getColumns().stream().flatMap(JSONDocumentLayoutColumn::streamInlineTabElements);
 	}
 }

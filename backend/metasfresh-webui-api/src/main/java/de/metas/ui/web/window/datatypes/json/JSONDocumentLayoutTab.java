@@ -1,10 +1,5 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -12,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -20,10 +14,14 @@ import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -55,36 +53,46 @@ public final class JSONDocumentLayoutTab
 			@NonNull final Collection<DocumentLayoutDetailDescriptor> details,
 			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
-		final Collection<DocumentFilterDescriptor> filters = null;
-
 		// note: this used to be implemented with stream, but that was too cumbersome to debug
 		final ImmutableList.Builder<JSONDocumentLayoutTab> result = ImmutableList.builder();
 		for (final DocumentLayoutDetailDescriptor detail : details)
 		{
-			final JSONDocumentLayoutTab jsonTab = new JSONDocumentLayoutTab(detail, filters, jsonOpts);
-			if (isTabEmpty(jsonTab))
+			final JSONDocumentLayoutTab jsonTab = ofOrNull(detail, jsonOpts);
+			if (jsonTab != null)
 			{
-				continue;
+				result.add(jsonTab);
 			}
-			result.add(jsonTab);
 		}
 		return result.build();
 	}
 
+	@Nullable
+	public static JSONDocumentLayoutTab ofOrNull(
+			@NonNull final DocumentLayoutDetailDescriptor tab,
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
+	{
+		final JSONDocumentLayoutTab jsonTab = new JSONDocumentLayoutTab(tab, null, jsonOpts);
+		return !isTabEmpty(jsonTab) ? jsonTab : null;
+	}
+
 	private static boolean isTabEmpty(@NonNull final JSONDocumentLayoutTab tab)
 	{
-		final boolean singleRowDetailLayout = CoalesceUtil.coalesce(tab.singleRowDetailLayout, false);
+		final boolean singleRowDetailLayout = tab.singleRowDetailLayout != null ? tab.singleRowDetailLayout : false;
 		if (singleRowDetailLayout)
 		{
 			return tab.sections.isEmpty();
 		}
-		return tab.elements.isEmpty() && tab.subTabs.isEmpty();
+		else
+		{
+			return tab.elements.isEmpty() && tab.subTabs.isEmpty();
+		}
 	}
 
 	@JsonProperty("windowId")
 	private final WindowId windowId;
 
 	@JsonProperty("tabId")
+	@Getter
 	private final DetailId tabId;
 
 	@JsonProperty("internalName")
@@ -107,10 +115,12 @@ public final class JSONDocumentLayoutTab
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String emptyResultHint;
 
-	/**  */
+	/**
+	 *
+	 */
 	@ApiModelProperty( //
 			allowEmptyValue = true, value = "Required to render the table columns for this tab.<br>"
-					+ "Therefore filled, unless <code>singleRowDetailLayout</code> is <code>true</code>.")
+			+ "Therefore filled, unless <code>singleRowDetailLayout</code> is <code>true</code>.")
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -159,7 +169,6 @@ public final class JSONDocumentLayoutTab
 		queryOnActivate = includedTabLayout.isQueryOnActivate();
 
 		windowId = includedTabLayout.getWindowId();
-
 		tabId = includedTabLayout.getDetailId();
 
 		internalName = includedTabLayout.getInternalName();
@@ -169,13 +178,7 @@ public final class JSONDocumentLayoutTab
 				&& tabId != null
 				&& gridLayout != null)
 		{
-			caption = new StringBuilder()
-					.append("[")
-					.append(tabId)
-					.append(queryOnActivate ? "Q" : "")
-					.append("] ")
-					.append(gridLayout.getCaption(adLanguage))
-					.toString();
+			caption = "[" + tabId + (queryOnActivate ? "Q" : "") + "] " + gridLayout.getCaption(adLanguage);
 		}
 		else
 		{

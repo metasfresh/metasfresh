@@ -250,8 +250,7 @@ describe('TableActions grid', () => {
     });
   });
 
-  it(`should call UPDATE_TABLE_SELECTION, FETCH_QUICK_ACTIONS
-    and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, () => {
+  it(`should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change`, () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const rowResponse = gridRowFixtures.data3_parent;
     const { windowId, viewId , result} = rowResponse;
@@ -289,8 +288,6 @@ describe('TableActions grid', () => {
       isModal: true,
     };
     const payload1 = { id: tableId, selection: [rowId], keyProperty: 'id' };
-    const qActionsId1 = getQuickActionsId({ windowId, viewId });
-    const payload2 = { id: qActionsId1 };
     const payload3 = {
       id: windowId,
       showIncludedView: true,
@@ -305,7 +302,6 @@ describe('TableActions grid', () => {
 
     const expectedActions = [
       { type: ACTION_TYPES.UPDATE_TABLE_SELECTION, payload: payload1 },
-      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload2 },
       { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload3 },
       { type: ACTION_TYPES.SET_INCLUDED_VIEW, payload: payload4 },
     ];
@@ -315,8 +311,7 @@ describe('TableActions grid', () => {
     );
   });
 
-  it(`should call DESELECT_TABLE_ROWS, FETCH_QUICK_ACTIONS
-    and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, () => {
+  it(`should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows`, () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const childLayoutResponse = gridLayoutFixtures.layout2_child;
     const parentRowResponse = gridRowFixtures.data3_parent;
@@ -383,8 +378,6 @@ describe('TableActions grid', () => {
       isModal: true,
     };
     const payload1 = { id: parentTableId, selection: [parentRowId] };
-    const qActionsId1 = getQuickActionsId({ windowId: parentWindowId, viewId: parentViewId });
-    const payload2 = { id: qActionsId1 };
     const payload3 = {
       id: parentWindowId,
       showIncludedView: false,
@@ -398,7 +391,6 @@ describe('TableActions grid', () => {
 
     const expectedActions = [
       { type: ACTION_TYPES.DESELECT_TABLE_ROWS, payload: payload1 },
-      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload2 },
       { type: ACTION_TYPES.TOGGLE_INCLUDED_VIEW, payload: payload3 },
       { type: ACTION_TYPES.UNSET_INCLUDED_VIEW, payload: payload4 },
     ];

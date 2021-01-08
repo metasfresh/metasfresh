@@ -53,6 +53,7 @@ class ElementGroup extends PureComponent {
       elementGroupIndex,
       sectionIndex,
       columnIndex,
+      disconnected,
     } = this.props;
 
     return elementsLinesLayoutArray.map(
@@ -78,6 +79,7 @@ class ElementGroup extends PureComponent {
             isFullScreen={isFullScreen}
             onBlurWidget={onBlurWidget}
             addRefToWidgets={addRefToWidgets}
+            disconnected={disconnected}
           />
         );
       }
@@ -102,6 +104,7 @@ ElementGroup.propTypes = {
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
   requestElementGroupFocus: PropTypes.func.isRequired,
+  disconnected: PropTypes.string,
 };
 
 export default ElementGroup;

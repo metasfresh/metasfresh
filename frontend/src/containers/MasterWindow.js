@@ -50,10 +50,10 @@ class MasterWindowContainer extends PureComponent {
   }
 
   componentWillUnmount() {
-    const { clearMasterData } = this.props;
+    // const { clearMasterData } = this.props;
 
-    clearMasterData();
-    this.deleteTabsTables();
+    // clearMasterData();
+    // this.deleteTabsTables();
     disconnectWS.call(this);
   }
 

@@ -43,7 +43,7 @@ import lombok.NonNull;
  */
 public class DocumentLayoutSingleRow
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -122,7 +122,7 @@ public class DocumentLayoutSingleRow
 		private ITranslatableString caption;
 		private ITranslatableString description;
 
-		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
+		private final ArrayList<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
 
 		private Builder()
 		{
@@ -138,9 +138,9 @@ public class DocumentLayoutSingleRow
 		{
 			return sectionBuilders
 					.stream()
-					.filter(sectionBuilder -> sectionBuilder.isValid())
-					.map(sectionBuilder -> sectionBuilder.build())
-					.filter(section -> section.hasColumns())
+					.filter(DocumentLayoutSectionDescriptor.Builder::isValid)
+					.map(DocumentLayoutSectionDescriptor.Builder::build)
+					.filter(DocumentLayoutSectionDescriptor::hasColumns)
 					.collect(ImmutableList.toImmutableList());
 		}
 
@@ -179,7 +179,7 @@ public class DocumentLayoutSingleRow
 
 		public Builder addSections(@NonNull final Collection<DocumentLayoutSectionDescriptor.Builder> sectionBuildersToAdd)
 		{
-			sectionBuildersToAdd.forEach(sectionBuilders::add);
+			sectionBuilders.addAll(sectionBuildersToAdd);
 			return this;
 		}
 

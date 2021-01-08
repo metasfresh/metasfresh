@@ -7,6 +7,7 @@
 		<artifactId>de.metas.printing</artifactId>
 		<groupId>de.metas.printing</groupId>
 		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>de.metas.printing.embedded-client</artifactId>

@@ -1,22 +1,18 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.process.BarcodeScannerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
@@ -24,8 +20,14 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -61,10 +63,11 @@ public final class JSONDocumentLayoutElement
 		return elements.stream()
 				.filter(jsonOpts.documentLayoutElementFilter())
 				.map(element -> new JSONDocumentLayoutElement(element, jsonOpts))
-				.filter(JSONDocumentLayoutElement::hasFields) // IMPORTANT: we shall avoid having elements without any field, see https://github.com/metasfresh/metasfresh-webui-frontend/issues/870#issuecomment-307770832
+				.filter(element -> !element.isEmpty()) // IMPORTANT: we shall avoid having elements without any field, see https://github.com/metasfresh/metasfresh-webui-frontend/issues/870#issuecomment-307770832
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
+	@Nullable
 	static JSONDocumentLayoutElement fromNullable(
 			@Nullable final DocumentLayoutElementDescriptor element,
 			@NonNull final JSONDocumentLayoutOptions jsonOpts)
@@ -121,7 +124,9 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;
 
-	/** Widget size (see https://github.com/metasfresh/metasfresh-webui-api/issues/411). */
+	/**
+	 * Widget size (see https://github.com/metasfresh/metasfresh-webui-api/issues/411).
+	 */
 	@JsonProperty("size")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final WidgetSize size;
@@ -144,6 +149,14 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("fields")
 	@JsonInclude(Include.NON_EMPTY)
 	private final Set<JSONDocumentLayoutElementField> fields;
+
+	@JsonIgnore
+	@Getter
+	private final DetailId inlineTabId;
+
+	@JsonProperty("inlineTab")
+	@JsonInclude(Include.NON_EMPTY)
+	private JSONDocumentLayoutTab inlineTab;
 
 	private JSONDocumentLayoutElement(
 			@NonNull final DocumentLayoutElementDescriptor element,
@@ -201,9 +214,13 @@ public final class JSONDocumentLayoutElement
 		restrictToMediaTypes = ImmutableSet.copyOf(element.getRestrictToMediaTypes());
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), options);
+
+		inlineTabId = element.getInlineTabId();
 	}
 
-	/** Debugging field constructor */
+	/**
+	 * Debugging field constructor
+	 */
 	private JSONDocumentLayoutElement(final String fieldName, final DocumentFieldWidgetType widgetType)
 	{
 		caption = fieldName;
@@ -231,11 +248,13 @@ public final class JSONDocumentLayoutElement
 						.emptyText("no " + fieldName)
 						.supportZoomInto(widgetType.isSupportZoomInto())
 						.build());
+
+		inlineTabId = null;
 	}
 
-	private boolean hasFields()
+	private boolean isEmpty()
 	{
-		return !fields.isEmpty();
+		return fields.isEmpty() && inlineTabId == null;
 	}
 
 	public boolean hasField(@NonNull final String fieldName)
@@ -246,5 +265,21 @@ public final class JSONDocumentLayoutElement
 	public static boolean hasField(@NonNull final List<JSONDocumentLayoutElement> elements, @NonNull final String fieldName)
 	{
 		return elements.stream().anyMatch(element -> element.hasField(fieldName));
+	}
+
+	void setInlineTab(@NonNull final JSONDocumentLayoutTab inlineTab)
+	{
+		if (inlineTabId == null)
+		{
+			throw new AdempiereException("Setting inline tab not allowed if inlineTabId was not set before");
+		}
+		else if (!DetailId.equals(inlineTabId, inlineTab.getTabId()))
+		{
+			throw new AdempiereException("inlineTabId not matching: " + inlineTabId + ", " + inlineTab);
+		}
+		else
+		{
+			this.inlineTab = inlineTab;
+		}
 	}
 }

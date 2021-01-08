@@ -238,7 +238,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		p060.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
-		final String sscc18Value = Util.removePrecedingZeros(pack == null ? "" : pack.getIPASSCC18());
+		final String sscc18Value = pack == null ? "" : pack.getIPASSCC18();
 		p060.setNormalSSCC(sscc18Value);
 		p060.setGrainNummer(pack.getGTINLUPackingMaterial());
 

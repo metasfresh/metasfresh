@@ -4,6 +4,8 @@ import com.google.common.base.Stopwatch;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.procurement.base.IAgentSyncBL;
+import de.metas.procurement.base.impl.ServerSyncBL;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,7 +62,6 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.adempiere.service.IAppDictionaryBL.class, "is registered programmatically")
 			.skipServiceInterface(de.metas.letters.api.ITextTemplateBL.class, "is registered programmatically")
 			.skipServiceInterface(de.metas.product.IProductActivityProvider.class, "is registered programatically")
-			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "JAX-RS")
 			//
 			.skipServiceInterface(org.adempiere.util.testservice.ITestServiceWithFailingConstructor.class, "because it's supposed to fail")
 			.skipServiceInterface(org.adempiere.util.testservice.ITestMissingService.class, "because it's supposed to fail")
@@ -68,22 +69,24 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.cache.interceptor.testservices.ITestServiceWithPrivateCachedMethod.class, "some test interface")
 			//
 			// Skip services with no default constructor (spring components):
-			.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class, "spring component")
-			.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class, "spring component")
-			.skipServiceInterface(de.metas.document.sequence.IDocumentNoBuilderFactory.class, "spring component")
-			.skipServiceInterface(de.metas.notification.INotificationRepository.class, "spring component")
-			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
-			.skipServiceInterface(de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.class, "spring component")
+			.skipServiceInterface(de.metas.banking.payment.IBankStatementPaymentBL.class, "spring component")
+			.skipServiceInterface(de.metas.banking.service.IBankStatementBL.class, "spring component")
 			.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class, "spring component")
-			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component")
+			.skipServiceInterface(de.metas.document.sequence.IDocumentNoBuilderFactory.class, "spring component")
 			.skipServiceInterface(de.metas.edi.api.IDesadvBL.class, "spring component")
 			.skipServiceInterface(de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL.class, "spring component")
-			.skipServiceInterface(de.metas.banking.payment.IBankStatementPaymentBL.class, "spring component")
+			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
+			.skipServiceInterface(de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL.class, "spring component")
+			.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class, "spring component")
+			.skipServiceInterface(de.metas.notification.INotificationRepository.class, "spring component")
+			.skipServiceInterface(de.metas.ordercandidate.api.IOLCandBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRBPBankAccountBL.class, "spring component")
 			.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class, "spring component")
 			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class,"spring component")
-			.skipServiceInterface(de.metas.banking.service.IBankStatementBL.class, "spring component")
-	//
+			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "spring component")
+			.skipServiceInterface(de.metas.procurement.base.IServerSyncBL.class, "spring component")
+			.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class, "spring component")
+			//
 	;
 
 	@BeforeEach

@@ -87,7 +87,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private PPOrderAdvisedHandler ppOrderAdvisedHandler;
 
-	private AvailableToPromiseRepository stockRepository;
+	private AvailableToPromiseRepository availableToPromiseRepository;
 
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
 
@@ -105,7 +105,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService);
 
-		stockRepository = new AvailableToPromiseRepository();
+		availableToPromiseRepository = new AvailableToPromiseRepository();
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
@@ -114,7 +114,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
 						postMaterialEventService,
-						stockRepository,
+						availableToPromiseRepository,
 						stockCandidateService,
 						supplyCandidateHandler)));
 

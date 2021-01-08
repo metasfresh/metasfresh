@@ -38,13 +38,12 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
-import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
@@ -58,7 +57,6 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateRe
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.organization.OrgId;
@@ -76,7 +74,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
 import org.eevolution.api.PPCostCollectorId;
 
@@ -92,13 +89,12 @@ import java.util.Map;
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
 	// Services
-	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -111,11 +107,9 @@ import java.util.Map;
 	@Nullable
 	private LocalDate bestBeforeDate;
 	//
-	@Deprecated
-	private boolean skipCreatingReceiptCandidates;
 	private boolean processReceiptCandidates;
 	private boolean receiveOneVHU;
-	private LinkedHashSet<PPCostCollectorId> createdCostCollectorIds = new LinkedHashSet<>();
+	private final LinkedHashSet<PPCostCollectorId> createdCostCollectorIds = new LinkedHashSet<>();
 
 	//
 	// Abstract methods
@@ -124,7 +118,7 @@ import java.util.Map;
 	protected abstract Object getAllocationRequestReferencedModel();
 	protected abstract IAllocationSource createAllocationSource();
 	protected abstract IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager();
-	protected abstract void setAssignedHUs(final Collection<I_M_HU> hus);
+	protected abstract void addAssignedHUs(final Collection<I_M_HU> hus);
 	// @formatter:on
 
 	public AbstractPPOrderReceiptHUProducer(@NonNull final PPOrderId ppOrderId)
@@ -154,13 +148,6 @@ import java.util.Map;
 
 			return createReceiptCandidatesAndPlanningHUs_InTrx(qtyCUsTotal);
 		});
-	}
-
-	@Override
-	public List<I_M_HU> createPlanningHUs(@NonNull final Quantity qtyToReceive)
-	{
-		skipCreatingReceiptCandidates = true;
-		return trxManager.callInNewTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
 	}
 
 	@Override
@@ -224,7 +211,7 @@ import java.util.Map;
 		//
 		// Update received HUs
 		InterfaceWrapperHelper.setThreadInheritedTrxName(planningHUs); // just to be sure
-		updateReceivedHUs(huContext, planningHUs);
+		updateReceivedHUs(huContext, planningHUs, ppOrderReceiptCandidateCollector.coByProductOrderBOMLineId);
 
 		//
 		// Create receipt candidates
@@ -237,11 +224,6 @@ import java.util.Map;
 
 	private void createAndProcessReceiptCandidatesIfRequested(final ImmutableList<CreateReceiptCandidateRequest> requests)
 	{
-		if (skipCreatingReceiptCandidates)
-		{
-			return;
-		}
-
 		if (requests.isEmpty())
 		{
 			return;
@@ -265,143 +247,50 @@ import java.util.Map;
 
 	protected abstract ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer();
 
-	@Override
-	public final void createReceiptCandidatesFromPlanningHU(@NonNull final I_M_HU planningHU)
-	{
-		processReceiptCandidates = true;
-
-		if (!X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
-		{
-			throw new HUException("HU " + planningHU + " shall have status Planning but it has " + planningHU.getHUStatus());
-		}
-
-		huTrxBL.process(huContext -> {
-			InterfaceWrapperHelper.setThreadInheritedTrxName(planningHU); // just to be sure
-
-			//
-			// Delete previously created candidates
-			// Assume there are no processed one, and even if it would be it would fail on DAO level
-			huPPOrderQtyDAO.streamOrderQtys(getPpOrderId())
-					.filter(candidate -> candidate.getM_HU_ID() == planningHU.getM_HU_ID())
-					.forEach(huPPOrderQtyDAO::delete);
-
-			// Extract it if not top level
-			huTrxBL.setParentHU(huContext,
-					null,
-					planningHU,
-					true // destroyOldParentIfEmptyStorage
-			);
-
-			final HuId topLevelHUId = HuId.ofRepoId(planningHU.getM_HU_ID());
-			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(planningHU.getM_Locator_ID());
-
-			// Stream all product storages
-			// ... and create planning receipt candidates
-			{
-				final ImmutableList<CreateReceiptCandidateRequest> requests = huContext.getHUStorageFactory()
-						.getStorage(planningHU)
-						.getProductStorages()
-						.stream()
-						// FIXME: validate if the storage product is accepted
-						.map(productStorage -> toCreateReceiptCandidateRequest(productStorage, topLevelHUId, locatorId))
-						.collect(ImmutableList.toImmutableList());
-
-				createAndProcessReceiptCandidatesIfRequested(requests);
-			}
-
-			//
-			updateReceivedHUs(huContext, ImmutableSet.of(planningHU));
-		});
-	}
-
-	private static CreateReceiptCandidateRequest toCreateReceiptCandidateRequest(final IHUProductStorage productStorage, final HuId topLevelHUId, final LocatorId locatorId)
-	{
-		return CreateReceiptCandidateRequest.builder()
-				.locatorId(locatorId)
-				.topLevelHUId(topLevelHUId)
-				.productId(productStorage.getProductId())
-				.qtyToReceive(productStorage.getQty())
-				.build();
-	}
-
 	private void updateReceivedHUs(
 			final IHUContext huContext,
-			final Collection<I_M_HU> hus)
+			final Collection<I_M_HU> hus,
+			@Nullable final PPOrderBOMLineId coByProductOrderBOMLineId)
 	{
+		if (hus.isEmpty())
+		{
+			return;
+		}
+
 		//
 		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
-		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId());
+		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId(), coByProductOrderBOMLineId);
 
-		if (lotNumber != null
-				|| bestBeforeDate != null)
+		final IAttributeStorageFactory huAttributeStorageFactory = huContext.getHUAttributeStorageFactory();
+
+		for (final I_M_HU hu : hus)
 		{
-			final IAttributeStorageFactory huAttributeStorageFactory = huContext.getHUAttributeStorageFactory();
+			final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
 
-			for (final I_M_HU hu : hus)
+			if (lotNumber != null
+					&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 			{
-				final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
-
-				if (lotNumber != null
-						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
-				{
-					huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
-				}
-
-				if (bestBeforeDate != null
-						&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
-				{
-					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-				}
-
-				huAttributes.saveChangesIfNeeded();
+				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
 			}
+
+			if (bestBeforeDate != null
+					&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+			}
+
+			huAttributes.saveChangesIfNeeded();
+
+			huAttributesBL.updateHUAttributeRecursive(
+					HuId.ofRepoId(hu.getM_HU_ID()),
+					HUAttributeConstants.ATTR_PP_Order_ID,
+					ppOrderId.getRepoId(),
+					null);
 		}
 
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine
-		setAssignedHUs(hus);
-	}
-
-	private void setAttributes(@NonNull final I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
-	{
-		setLotNumberAttribute(hu, huAttributes);
-		setBestBeforeDateAttribute(huAttributes);
-
-		huAttributes.saveChangesIfNeeded();
-	}
-
-	private void setLotNumberAttribute(@NonNull final I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
-	{
-		if (!huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
-		{
-			return;
-		}
-
-		final String lotNumberToSet;
-		if (Services.get(IHUAttributesBL.class).isAutomaticallySetLotNumber())
-		{
-			lotNumberToSet = CoalesceUtil.coalesce(lotNumber, hu.getValue());
-		}
-		else
-		{
-			lotNumberToSet = lotNumber;
-		}
-
-		if (lotNumberToSet == null)
-		{
-			return;
-		}
-
-		huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
-	}
-
-	private void setBestBeforeDateAttribute(final IAttributeStorage huAttributes)
-	{
-		if (bestBeforeDate != null
-				&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
-		{
-			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-		}
+		addAssignedHUs(hus);
 	}
 
 	@Override

@@ -17,8 +17,10 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Properties;
 
+import org.compiere.model.I_C_ProjectLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProject;
@@ -92,25 +94,25 @@ public class ProjectGenOrder extends JavaProcess
 
 		else	//	Order Lines
 		{
-			MProjectLine[] lines = fromProject.getLines ();
-			for (int i = 0; i < lines.length; i++)
+			final List<MProjectLine> lines = fromProject.getLines();
+			for (I_C_ProjectLine line : lines)
 			{
 				MOrderLine ol = new MOrderLine(order);
-				ol.setLine(lines[i].getLine());
-				ol.setDescription(lines[i].getDescription());
+				ol.setLine(line.getLine());
+				ol.setDescription(line.getDescription());
 				//
-				ol.setM_Product_ID(lines[i].getM_Product_ID(), true);
-				ol.setQty(lines[i].getPlannedQty().subtract(lines[i].getInvoicedQty()));
+				ol.setM_Product_ID(line.getM_Product_ID(), true);
+				ol.setQty(line.getPlannedQty().subtract(line.getInvoicedQty()));
 				ol.setPrice();
-				if (lines[i].getPlannedPrice() != null && lines[i].getPlannedPrice().compareTo(Env.ZERO) != 0)
-					ol.setPrice(lines[i].getPlannedPrice());
+				if (line.getPlannedPrice() != null && line.getPlannedPrice().compareTo(Env.ZERO) != 0)
+					ol.setPrice(line.getPlannedPrice());
 				updateDiscount(ol);
 				ol.setTax();
 				if (ol.save())
 					count++;
 			}	//	for all lines
-			if (lines.length != count)
-				log.error("Lines difference - ProjectLines=" + lines.length + " <> Saved=" + count);
+			if (lines.size() != count)
+				log.error("Lines difference - ProjectLines=" + lines.size() + " <> Saved=" + count);
 		}	//	Order Lines
 
 		return "@C_Order_ID@ " + order.getDocumentNo() + " (" + count + ")";
