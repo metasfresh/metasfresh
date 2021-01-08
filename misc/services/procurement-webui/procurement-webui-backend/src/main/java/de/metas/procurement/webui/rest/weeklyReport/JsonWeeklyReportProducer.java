@@ -65,17 +65,21 @@ class JsonWeeklyReportProducer
 	@NonNull
 	private final YearWeek week;
 
+	private final long singleProductId;
+
 	@Builder
 	private JsonWeeklyReportProducer(
 			@NonNull final IProductSuppliesService productSuppliesService,
 			@NonNull final User user,
 			@NonNull final Locale locale,
-			@NonNull final YearWeek week)
+			@NonNull final YearWeek week,
+			final long singleProductId)
 	{
 		this.productSuppliesService = productSuppliesService;
 		this.user = user;
 		this.locale = locale;
 		this.week = week;
+		this.singleProductId = singleProductId;
 	}
 
 	public JsonWeeklyReport execute()
@@ -87,20 +91,32 @@ class JsonWeeklyReportProducer
 		final List<LocalDate> days = DateUtils.getDaysList(startDate, endDate);
 
 		//
-		final List<Product> favoriteProducts = productSuppliesService.getUserFavoriteProducts(user);
-		final ImmutableMap<Long, Product> favoriteProductsById = Maps.uniqueIndex(favoriteProducts, Product::getId);
+		// Favorite products
+		final ImmutableMap<Long, Product> favoriteProductsById;
+		final Product singleProduct;
+		if (singleProductId <= 0)
+		{
+			singleProduct = null;
+			final List<Product> favoriteProducts = productSuppliesService.getUserFavoriteProducts(user);
+			favoriteProductsById = Maps.uniqueIndex(favoriteProducts, Product::getId);
+		}
+		else
+		{
+			singleProduct = productSuppliesService.getProductById(singleProductId);
+			favoriteProductsById = ImmutableMap.of(singleProduct.getId(), singleProduct);
+		}
 
 		//
 		final List<ProductSupply> dailySupplies = productSuppliesService.getProductSupplies(
 				bpartner.getId(),
-				-1, // all products
+				singleProductId, // all products
 				startDate,
 				endDate);
 		final ImmutableListMultimap<Long, ProductSupply> dailySuppliesByProductId = Multimaps.index(dailySupplies, ProductSupply::getProductId);
 
 		//
 		final ImmutableMap<Long, WeekSupply> nextWeekForecastByProductId = Maps.uniqueIndex(
-				productSuppliesService.getWeeklySupplies(bpartner, week.plusWeeks(1)),
+				productSuppliesService.getWeeklySupplies(bpartner, singleProduct, week.plusWeeks(1)),
 				WeekSupply::getProductId);
 
 		final ImmutableSet<Long> productIds = ImmutableSet.<Long>builder()
@@ -161,6 +177,7 @@ class JsonWeeklyReportProducer
 				.previousWeek(YearWeekUtil.toJsonString(week.minusWeeks(1)))
 				.nextWeek(YearWeekUtil.toJsonString(week.plusWeeks(1)))
 				.nextWeekCaption(YearWeekUtil.toDisplayName(week.plusWeeks(1)))
+				.singleProductId(singleProductId > 0 ? String.valueOf(singleProductId) : null)
 				.products(resultProducts)
 				.build();
 	}

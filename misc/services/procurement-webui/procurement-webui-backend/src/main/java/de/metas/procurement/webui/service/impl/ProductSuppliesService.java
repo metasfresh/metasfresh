@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.threeten.extra.YearWeek;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -274,13 +275,14 @@ public class ProductSuppliesService implements IProductSuppliesService
 	@Override
 	public List<WeekSupply> getWeeklySupplies(
 			@NonNull final BPartner bpartner,
+			@Nullable final Product product,
 			@NonNull final YearWeek week)
 	{
 		final LocalDate weekDay = week.atDay(DayOfWeek.MONDAY);
 
 		return weekSupplyRepository.findBySelector(
 				bpartner,
-				null, // product
+				product,
 				DateUtils.toSqlDate(weekDay),
 				DateUtils.toSqlDate(weekDay));
 	}
