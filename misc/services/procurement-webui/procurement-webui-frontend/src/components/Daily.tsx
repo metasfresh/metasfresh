@@ -5,7 +5,7 @@ import View from './View';
 const DailyView: FunctionComponent = (): ReactElement => {
   return (
     <View>
-      <div className="container">
+      <div>
         <h1 className="title">Daily view</h1>
         <DailyNav headerText={`Dienstag`} />
         <br />

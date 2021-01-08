@@ -4,7 +4,7 @@ import View from './View';
 const Weekly: FunctionComponent = (): ReactElement => {
   return (
     <View>
-      <div className="container">
+      <div>
         <h1 className="title">Weekly view</h1>
         <p className="subtitle">Some content</p>
       </div>

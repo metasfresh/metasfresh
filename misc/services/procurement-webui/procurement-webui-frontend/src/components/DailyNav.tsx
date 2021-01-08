@@ -12,8 +12,12 @@ interface Props {
 class DailyNav extends React.Component<Props> {
   render(): ReactElement {
     const { store } = this.props;
-    if (!store) return null;
+
+    if (!store) {
+      return null;
+    }
     const { day } = store;
+
     return (
       <div className="daily-nav">
         <div className="columns is-mobile">
