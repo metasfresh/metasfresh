@@ -39,9 +39,7 @@ let initialState = Store.create(
         id: 0,
       },
     ],
-    day: {
-      currentDay: 'today',
-    },
+    day: { caption: 'Samstag', currentDay: '09.01.2021' },
   },
   {
     fetch: fetcher,

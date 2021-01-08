@@ -55,3 +55,15 @@ body {
 .section {
   width: 100%;
 }
+
+.daily-nav {
+  width: 100%;
+  color:#000000;
+
+    .rows {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      font-size: 20px;
+    }
+}
