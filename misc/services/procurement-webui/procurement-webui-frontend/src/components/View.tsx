@@ -9,7 +9,7 @@ interface Props {
 }
 
 const View: FunctionComponent<Props> = ({ children }) => {
-  return <section className="section is-flex-grow-1">{children}</section>;
+  return <section className="container page">{children}</section>;
 };
 
 View.propTypes = {

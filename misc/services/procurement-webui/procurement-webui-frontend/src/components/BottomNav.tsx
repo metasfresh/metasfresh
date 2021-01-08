@@ -9,13 +9,12 @@ const BottomNav: FunctionComponent = (): ReactElement => {
   }
 
   return (
-    <nav className="navbar">
+    <footer className="p-4 navbar is-fixed-bottom">
       <Link
         to={{
           pathname: '/',
           state: { prev: false },
         }}
-        className="nav-link"
       >
         Daily
       </Link>
@@ -24,11 +23,10 @@ const BottomNav: FunctionComponent = (): ReactElement => {
           pathname: '/weekly',
           state: { prev: true },
         }}
-        className="nav-link"
       >
         Weekly
       </Link>
-    </nav>
+    </footer>
   );
 };
 

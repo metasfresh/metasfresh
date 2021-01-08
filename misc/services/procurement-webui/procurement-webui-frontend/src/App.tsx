@@ -5,7 +5,6 @@ import {
   Switch, 
   BrowserRouter,
 } from 'react-router-dom';
-import { CSSTransition } from 'react-transition-group';
 
 import Header from './components/Header';
 import Weekly from './components/Weekly';
@@ -16,30 +15,23 @@ import BottomNav from './components/BottomNav';
 
 const routes = [
   { path: '/', name: 'Daily Reporting', Component: Daily },
+  { path: '/:productId', name: 'Daily Reporting', Component: Daily },
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
+
 ];
 
 const childRoutes = (
-  <main>
+  <div className="p-4 view fullsize">
+    <Switch>
     {routes.map(({ path, Component }) => (
       <Route key={path} exact path={path}>
-        {({ match }) => (
-          <CSSTransition
-            in={match != null}
-            classNames="view"
-            timeout={200}
-            unmountOnExit
-          >
-            <div className="view is-flex is-flex-direction-column is-align-items-center">
-              <Header />
-              <Component />
-              <BottomNav />
-            </div>
-          </CSSTransition>
-        )}
+        <Header />
+        <Component />
+        <BottomNav />
       </Route>
-    ))}  
-  </main>
+    ))}
+    </Switch> 
+  </div>
 );
 
 class Index extends Component {
@@ -74,7 +66,7 @@ class Index extends Component {
 
 const App = () => (
   <BrowserRouter>
-    <div className="app">
+    <>
       <Switch>
         <Route
           path="/login"
@@ -96,7 +88,7 @@ const App = () => (
         />
         <Route path="/" component={Index} />
       </Switch>
-    </div>
+    </>
   </BrowserRouter>
 );
 
