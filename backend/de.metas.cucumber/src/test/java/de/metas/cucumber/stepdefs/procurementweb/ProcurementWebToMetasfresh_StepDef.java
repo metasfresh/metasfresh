@@ -52,8 +52,7 @@ import org.springframework.amqp.core.MessageProperties;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -181,7 +180,7 @@ public class ProcurementWebToMetasfresh_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "BPartner." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final SyncBPartner syncBPartner = syncBPartnerStepDefData.get(bpartnerIdentifier);
 
-			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 			final String dateFrom = DataTableUtil.extractStringForColumnName(tableRow, "DateFrom");
 			final String dateTo = DataTableUtil.extractStringForColumnName(tableRow, "DateTo");
