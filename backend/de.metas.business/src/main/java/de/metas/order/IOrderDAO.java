@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -162,4 +163,6 @@ public interface IOrderDAO extends ISingletonService
 	void save(org.compiere.model.I_C_Order order);
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
+
+	Optional<String> retrieveExternalIdByOrderCriteria(OrderQuery query);
 }

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.bpartner.SwaggerDocConstants;
+import de.metas.common.rest_api.SwaggerDocConstants;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;

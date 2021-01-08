@@ -556,6 +556,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoice.setC_BPartner_ID(order.getBill_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(order.getBill_Location_ID());
 		invoice.setAD_User_ID(order.getBill_User_ID());
+		invoice.setExternalId(order.getExternalId());
 
 		return invoice;
 	}

@@ -12,6 +12,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderQuery;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -31,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -327,5 +329,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	public void save(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		InterfaceWrapperHelper.save(orderLine);
+	}
+
+	public Optional<String> retrieveExternalIdByOrderCriteria(OrderQuery query)
+	{
+		if (query.getOrderId() != null)
+		{
+			return Optional.ofNullable(InterfaceWrapperHelper.load(query.getOrderId(), I_C_Order.class).getExternalId());
+		}
+		if (query.getExternalId() != null)
+		{
+			return Optional.of(query.getExternalId().getValue());
+		}
+		return Optional.empty();
 	}
 }

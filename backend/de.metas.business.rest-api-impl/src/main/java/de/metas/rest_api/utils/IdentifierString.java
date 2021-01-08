@@ -1,20 +1,10 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isEmpty;
-
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.bpartner.GLN;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
@@ -23,6 +13,13 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.function.IntFunction;
+
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -46,24 +43,32 @@ import lombok.Value;
  * #L%
  */
 
-/** Identifies a metasfresh resourse (e.g. business partner). */
+/**
+ * Identifies a metasfresh resourse (e.g. business partner).
+ */
 @Value
 public class IdentifierString
 {
 
 	public enum Type
 	{
-		/** Every metasfresh ressource can be identified via its metasfresh-ID (i.e. the PK of its data base record, e.g. {@code C_BPartner_ID} or {@code M_Product_ID}) */
+		/**
+		 * Every metasfresh ressource can be identified via its metasfresh-ID (i.e. the PK of its data base record, e.g. {@code C_BPartner_ID} or {@code M_Product_ID})
+		 */
 		METASFRESH_ID,
 
-		/** Note that at least for C_BPartner, the external ID is only unique per Org!*/
+		/**
+		 * Note that at least for C_BPartner, the external ID is only unique per Org!
+		 */
 		EXTERNAL_ID,
 
 		VALUE,
 
 		GLN,
 
-		INTERNALNAME
+		INTERNALNAME,
+
+		DOC
 	}
 
 	Type type;
@@ -77,6 +82,7 @@ public class IdentifierString
 	public static final String PREFIX_VALUE = "val-";
 	public static final String PREFIX_INTERNALNAME = "int-";
 	public static final String PREFIX_GLN = "gln-";
+	public static final String PREFIX_DOC = "doc-";
 
 	public static final IdentifierString ofOrNull(@Nullable final String rawIdentifierString)
 	{
@@ -127,6 +133,15 @@ public class IdentifierString
 			}
 			return new IdentifierString(Type.GLN, glnString, rawIdentifierString);
 		}
+		else if (rawIdentifierString.toLowerCase().startsWith(PREFIX_DOC))
+		{
+			final String docString = rawIdentifierString.substring(4).trim();
+			if (docString.isEmpty())
+			{
+				throw new AdempiereException("Invalid documentId: `" + rawIdentifierString + "`");
+			}
+			return new IdentifierString(Type.DOC, docString, rawIdentifierString);
+		}
 		else
 		{
 			try
@@ -165,6 +180,11 @@ public class IdentifierString
 	public static IdentifierString ofGLN(String gln)
 	{
 		return of(PREFIX_GLN + gln);
+	}
+
+	public static IdentifierString ofDoc(String doc)
+	{
+		return of(PREFIX_DOC + doc);
 	}
 
 	private IdentifierString(
@@ -208,6 +228,10 @@ public class IdentifierString
 		{
 			prefix = PREFIX_GLN;
 		}
+		else if (Type.DOC.equals(type))
+		{
+			prefix = PREFIX_DOC;
+		}
 		else if (Type.INTERNALNAME.equals(type))
 		{
 			prefix = PREFIX_INTERNALNAME;
@@ -222,21 +246,21 @@ public class IdentifierString
 
 	public ExternalId asExternalId()
 	{
-		Check.assume(Type.EXTERNAL_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.EXTERNAL_ID, this);
+		Check.assume(Type.EXTERNAL_ID.equals(type), "The type of this instance needs to be {}; this={}", Type.EXTERNAL_ID, this);
 
 		return ExternalId.of(value);
 	}
 
 	public JsonExternalId asJsonExternalId()
 	{
-		Check.assume(Type.EXTERNAL_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.EXTERNAL_ID, this);
+		Check.assume(Type.EXTERNAL_ID.equals(type), "The type of this instance needs to be {}; this={}", Type.EXTERNAL_ID, this);
 
 		return JsonExternalId.of(value);
 	}
 
 	public MetasfreshId asMetasfreshId()
 	{
-		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.METASFRESH_ID, this);
+		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
 
 		final int repoId = Integer.parseInt(value);
 		return MetasfreshId.of(repoId);
@@ -244,7 +268,7 @@ public class IdentifierString
 
 	public <T extends RepoIdAware> T asMetasfreshId(@NonNull final IntFunction<T> mapper)
 	{
-		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.METASFRESH_ID, this);
+		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
 
 		final int repoId = Integer.parseInt(value);
 		return mapper.apply(repoId);
@@ -252,9 +276,16 @@ public class IdentifierString
 
 	public GLN asGLN()
 	{
-		Check.assume(Type.GLN.equals(type), "The type of this instace needs to be {}; this={}", Type.GLN, this);
+		Check.assume(Type.GLN.equals(type), "The type of this instance needs to be {}; this={}", Type.GLN, this);
 
 		return GLN.ofString(value);
+	}
+
+	public String asDoc()
+	{
+		Check.assume(Type.DOC.equals(type), "The type of this instance needs to be {}; this={}", Type.DOC, this);
+
+		return value;
 	}
 
 	public String asValue()
@@ -266,7 +297,7 @@ public class IdentifierString
 
 	public String asInternalName()
 	{
-		Check.assume(Type.INTERNALNAME.equals(type), "The type of this instace needs to be {}; this={}", Type.INTERNALNAME, this);
+		Check.assume(Type.INTERNALNAME.equals(type), "The type of this instance needs to be {}; this={}", Type.INTERNALNAME, this);
 
 		return value;
 	}

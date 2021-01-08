@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,15 @@
  * #L%
  */
 
-package de.metas.rest_api.payment;
+package de.metas.common.rest_api.payment;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.rest_api.bpartner.SwaggerDocConstants;
+import de.metas.common.rest_api.SwaggerDocConstants;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,6 +37,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @Builder
@@ -55,11 +57,10 @@ public class JsonInboundPaymentInfo
 	@NonNull
 	String targetIBAN;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String", //
-			value = "This translates to `C_Order.ExternalId`.")
-	@NonNull
-	String externalOrderId;
+	@ApiModelProperty(dataType = "java.lang.String", //
+			value = SwaggerDocConstants.ORDER_IDENTIFIER_DOC)
+	@Nullable
+	String orderIdentifier;
 
 	@ApiModelProperty(required = true)
 	@NonNull
@@ -81,6 +82,10 @@ public class JsonInboundPaymentInfo
 			value = "If this is sent, it is used for both `accounting date` and `payment date`.")
 	@Nullable
 	LocalDate transactionDate;
+
+	@Nullable
+	@JsonProperty("lines")
+	List<JsonPaymentAllocationLine> lines;
 
 	@JsonIgnoreProperties(ignoreUnknown = true) // the annotation to ignore properties should be set on the deserializer method (on the builder), and not on the base class
 	@JsonPOJOBuilder(withPrefix = "")

@@ -23,6 +23,7 @@
 package de.metas.rest_api.payment;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
 import de.metas.money.CurrencyId;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.organization.OrgId;
@@ -64,7 +65,7 @@ class PaymentRestEndpointTest
 	private final CurrencyService currencyService = new CurrencyService();
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade = new BpartnerPriceListServicesFacade();
 	private final JsonPaymentService jsonPaymentService = new JsonPaymentService(currencyService, bpartnerPriceListServicesFacade);
-	private final PaymentRestEndpoint paymentRestEndpoint = new PaymentRestEndpointImpl(jsonPaymentService);
+	private final PaymentRestEndpointImpl paymentRestEndpoint = new PaymentRestEndpointImpl(jsonPaymentService);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	@BeforeEach
@@ -88,7 +89,7 @@ class PaymentRestEndpointTest
 		// create JsonPaymentInfo
 		final JsonInboundPaymentInfo jsonInboundPaymentInfo = JsonInboundPaymentInfo.builder()
 				.orgCode(AD_Org_Value)
-				.externalOrderId(externalOrderId.getValue())
+				.orderIdentifier(externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)
@@ -97,7 +98,7 @@ class PaymentRestEndpointTest
 
 		assertEquals(JsonInboundPaymentInfo.builder()
 				.orgCode(AD_Org_Value)
-				.externalOrderId("Order")
+				.orderIdentifier("Order")
 				.bpartnerIdentifier("ext-bPartner")
 				.currencyCode(CURRENCY_CODE_EUR)
 				.amount(PAYMENT_AMOUNT)

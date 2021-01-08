@@ -22,32 +22,51 @@
 
 package de.metas.rest_api.payment;
 
+import de.metas.allocation.api.C_AllocationHdr_Builder;
+import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
+import de.metas.common.rest_api.payment.JsonPaymentAllocationLine;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -58,7 +77,12 @@ public class JsonPaymentService
 
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private static final Logger logger = LogManager.getLogger(JsonPaymentService.class);
 
 	public JsonPaymentService(final CurrencyService currencyService, final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade)
 	{
@@ -69,6 +93,17 @@ public class JsonPaymentService
 	public ResponseEntity<String> createInboundPaymentFromJson(@NonNull @RequestBody final JsonInboundPaymentInfo jsonInboundPaymentInfo)
 	{
 		final LocalDate dateTrx = CoalesceUtil.coalesce(jsonInboundPaymentInfo.getTransactionDate(), SystemTime.asLocalDate());
+
+		final List<JsonPaymentAllocationLine> lines = jsonInboundPaymentInfo.getLines();
+		if (validateAllocationLineAmounts(lines))
+		{
+			return ResponseEntity.unprocessableEntity().body("At least one of the following allocation amounts are mandatory: amount, discountAmt, writeOffAmt, overUnderAmt");
+		}
+
+		if (validateAmountsMatchPaymentAmt(jsonInboundPaymentInfo.getAmount(), lines))
+		{
+			return ResponseEntity.unprocessableEntity().body("The total payment amount should match the sum of all allocation amounts");
+		}
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(jsonInboundPaymentInfo.getCurrencyCode());
 		if (currencyId == null)
@@ -114,12 +149,97 @@ public class JsonPaymentService
 				.dateTrx(dateTrx)
 				.createAndProcess();
 
-		final String externalOrderId = jsonInboundPaymentInfo.getExternalOrderId();
-		payment.setExternalOrderId(externalOrderId);
+		final String orderIdentifier = jsonInboundPaymentInfo.getOrderIdentifier();
+		if (!Check.isEmpty(orderIdentifier))
+		{
+			Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier));
+			if (!externalOrderId.isPresent())
+			{
+				logger.debug("could not find externalOrderId for identifier: " + orderIdentifier);
+			}
+			else
+			{
+				payment.setExternalOrderId(externalOrderId.get());
+			}
+		}
 		payment.setIsAutoAllocateAvailableAmt(true);
 		InterfaceWrapperHelper.save(payment);
 
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
+		{
+
+			@Override
+			public void run(String localTrxName) throws Exception
+			{
+				createAllocationsForPayment(payment, lines);
+			}
+		});
 		return ResponseEntity.ok().build();
+	}
+
+	private void createAllocationsForPayment(final I_C_Payment payment, final List<JsonPaymentAllocationLine> lines)
+	{
+		if (Check.isEmpty(lines))
+		{
+			return;
+		}
+		final int orgId = payment.getAD_Org_ID();
+		final C_AllocationHdr_Builder allocationBuilder = allocationBL.newBuilder()
+				.currencyId(payment.getC_Currency_ID())
+				.dateTrx(payment.getDateTrx())
+				.dateAcct(payment.getDateAcct())
+				.orgId(orgId);
+		for (JsonPaymentAllocationLine line : lines)
+		{
+			final String invoiceId = line.getInvoiceIdentifier();
+			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocType());
+			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), orgId, docType);
+			if (!invoice.isPresent())
+			{
+				logger.warn("Cannot find invoice for identifier: " + invoiceId);
+			}
+			else
+			{
+				allocationBuilder.addLine()
+						.skipIfAllAmountsAreZero()
+						.invoiceId(invoice.get().getRepoId())
+						.orgId(orgId)
+						.bpartnerId(payment.getC_BPartner_ID())
+						.amount(line.getAmount())
+						.discountAmt(line.getDiscountAmt())
+						.writeOffAmt(line.getWriteOffAmt())
+						.paymentId(payment.getC_Payment_ID())
+						.lineDone();
+			}
+		}
+		allocationBuilder.createAndComplete();
+	}
+
+	/**
+	 * @param lines list of {@code JsonPaymentAllocationLine} to check
+	 * @return true if any line in {@code lines} has no valid amounts, false otherwise
+	 */
+	private boolean validateAllocationLineAmounts(final List<JsonPaymentAllocationLine> lines)
+	{
+		return Check.isEmpty(lines) && lines.stream().anyMatch(line -> Check.isEmpty(line.getAmount()));
+	}
+
+	/**
+	 * @param paymentAmt the total payment amt
+	 * @param lines      list of {@code JsonPaymentAllocationLine} corresponding to the payment
+	 * @return true if the sum of all allocation line amounts does not match  {@code paymentAmt}, false otherwise
+	 */
+	private boolean validateAmountsMatchPaymentAmt(final @NonNull BigDecimal paymentAmt, final List<JsonPaymentAllocationLine> lines)
+	{
+		if (Check.isEmpty(lines))
+		{
+			return false;
+		}
+		final BigDecimal totalLineAmt = lines.stream()
+				.map(line -> line.getAmount())
+				.filter(amt -> amt != null)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		return paymentAmt.compareTo(totalLineAmt) != 0;
 	}
 
 	private OrgId retrieveOrg(@RequestBody @NonNull final JsonInboundPaymentInfo jsonInboundPaymentInfo)
@@ -143,5 +263,61 @@ public class JsonPaymentService
 	{
 		// TODO it would be nice here if we would also use orgID when searching for the bpartner, since an ExternalId may belong to multiple users from different orgs.
 		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString);
+	}
+
+	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final int orgId, final DocBaseAndSubType docType)
+	{
+		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier).docType(docType).orgId(OrgId.ofRepoIdOrNull(orgId)).build();
+		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
+	}
+
+	private static InvoiceQuery.InvoiceQueryBuilder createInvoiceQuery(@NonNull final IdentifierString identifierString)
+	{
+		final IdentifierString.Type type = identifierString.getType();
+		if (IdentifierString.Type.METASFRESH_ID.equals(type))
+		{
+			return InvoiceQuery.builder()
+					.invoiceId(MetasfreshId.toValue(identifierString.asMetasfreshId()));
+		}
+		else if (IdentifierString.Type.EXTERNAL_ID.equals(type))
+		{
+			return InvoiceQuery.builder()
+					.externalId(identifierString.asExternalId());
+		}
+		else if (IdentifierString.Type.DOC.equals(type))
+		{
+			return InvoiceQuery.builder()
+					.documentNo(identifierString.asDoc());
+		}
+		else
+		{
+			throw new AdempiereException("Invalid identifierString: " + identifierString);
+		}
+	}
+
+	private Optional<String> getExternalOrderIdFromIdentifier(final IdentifierString orderIdentifier)
+	{
+		return orderDAO.retrieveExternalIdByOrderCriteria(createOrderQuery(orderIdentifier));
+	}
+
+	private OrderQuery createOrderQuery(final IdentifierString identifierString)
+	{
+		final IdentifierString.Type type = identifierString.getType();
+		if (IdentifierString.Type.METASFRESH_ID.equals(type))
+		{
+			return OrderQuery.builder()
+					.orderId(MetasfreshId.toValue(identifierString.asMetasfreshId()))
+					.build();
+		}
+		else if (IdentifierString.Type.EXTERNAL_ID.equals(type))
+		{
+			return OrderQuery.builder()
+					.externalId(identifierString.asExternalId())
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("Invalid identifierString: " + identifierString);
+		}
 	}
 }

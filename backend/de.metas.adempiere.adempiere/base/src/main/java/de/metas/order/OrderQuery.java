@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,28 @@
  * #L%
  */
 
-package de.metas.rest_api.payment;
+package de.metas.order;
 
-import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.organization.OrgId;
+import de.metas.util.lang.ExternalId;
+import lombok.Builder;
 import lombok.NonNull;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import lombok.Value;
 
-public interface PaymentRestEndpoint
+import javax.annotation.Nullable;
+
+@Value
+public class OrderQuery
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/payment";
+	Integer orderId;
+	ExternalId externalId;
+	OrgId orgId;
 
-	@PostMapping
-	ResponseEntity<String> createInboundPayment(@RequestBody @NonNull JsonInboundPaymentInfo jsonInboundPaymentInfo);
+	@Builder(toBuilder = true)
+	public OrderQuery(@Nullable final Integer orderId, @Nullable final ExternalId externalId, @NonNull final OrgId orgId)
+	{
+		this.orderId = orderId;
+		this.externalId = externalId;
+		this.orgId = orgId;
+	}
 }

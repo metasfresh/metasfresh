@@ -11,16 +11,20 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -46,9 +50,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -412,5 +418,61 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
 				.create()
 				.list();
+	}
+
+	public Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query)
+	{
+		if (query.getInvoiceId() != null)
+		{
+			return Optional.of(InvoiceId.ofRepoId(query.getInvoiceId()));
+		}
+		if (query.getExternalId() != null)
+		{
+			return getInvoiceIdByExternalIdIfExists(query);
+		}
+		if (Check.isEmpty(query.getDocType())) {
+			return getInvoiceIdByDocumentIdIfExists(query);
+		}
+		return Optional.empty();
+	}
+
+	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
+	{
+		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
+		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
+		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
+
+		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocBaseType, docType.getDocBaseType())
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo);
+
+
+		final int invoiceRepoId = queryBuilder.create().firstId();
+		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
+	}
+
+	private Optional<InvoiceId> getInvoiceIdByExternalIdIfExists(@NonNull final InvoiceQuery query)
+	{
+		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
+		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
+
+		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId);
+
+		final int invoiceRepoId = queryBuilder.create().firstId();
+		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
+	}
+
+	private <T> IQueryBuilder<T> createQueryBuilder(
+			@NonNull final Class<T> modelClass)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(modelClass)
+				// .addOnlyActiveRecordsFilter() // don't generally rule out inactive partners
+				.orderByDescending(I_AD_Org.COLUMNNAME_AD_Org_ID); // prefer "more specific" AD_Org_ID > 0;
 	}
 }

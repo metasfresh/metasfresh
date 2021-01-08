@@ -23,6 +23,8 @@
 package de.metas.rest_api.payment;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -32,10 +34,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(PaymentRestEndpoint.ENDPOINT)
+@RequestMapping(PaymentRestEndpointImpl.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-public class PaymentRestEndpointImpl implements PaymentRestEndpoint
+public class PaymentRestEndpointImpl
 {
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/payment";
 	private final JsonPaymentService jsonPaymentService;
 
 	public PaymentRestEndpointImpl(final JsonPaymentService jsonPaymentService)
@@ -44,7 +47,6 @@ public class PaymentRestEndpointImpl implements PaymentRestEndpoint
 	}
 
 	@PostMapping("/inbound")
-	@Override
 	public ResponseEntity<String> createInboundPayment(@RequestBody @NonNull final JsonInboundPaymentInfo jsonInboundPaymentInfo)
 	{
 		return jsonPaymentService.createInboundPaymentFromJson(jsonInboundPaymentInfo);
