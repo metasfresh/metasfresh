@@ -48,3 +48,4 @@ private
 # Camel
 misc/services/camel/de-metas-camel-shipping/tmp/
 
+**/node_modules/

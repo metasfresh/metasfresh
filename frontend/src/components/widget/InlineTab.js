@@ -132,12 +132,14 @@ class InlineTab extends PureComponent {
           {/* Header  */}
           <div className="pull-left offset-left">
             {fieldsOrder.map((fieldKey, index) => {
-              return (
-                <Fragment key={`${fieldKey}_${index}`}>
-                  <span>{fieldsByName[fieldKey].value}</span>
-                  <span>&nbsp;&nbsp;</span>
-                </Fragment>
-              );
+              if (fieldsByName[fieldKey]) {
+                return (
+                  <Fragment key={`${fieldKey}_${index}`}>
+                    <span>{fieldsByName[fieldKey].value}</span>
+                    <span>&nbsp;&nbsp;</span>
+                  </Fragment>
+                );
+              }
             })}
           </div>
         </div>

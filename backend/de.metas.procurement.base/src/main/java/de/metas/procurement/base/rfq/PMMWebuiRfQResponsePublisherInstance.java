@@ -1,15 +1,10 @@
 package de.metas.procurement.base.rfq;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
+import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
@@ -17,13 +12,17 @@ import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.impl.SyncObjectsFactory;
 import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
-import de.metas.procurement.sync.SyncRfQCloseEvent;
-import de.metas.procurement.sync.protocol.SyncProductSuppliesRequest;
-import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ import de.metas.util.Services;
 
 class PMMWebuiRfQResponsePublisherInstance
 {
-	public static final PMMWebuiRfQResponsePublisherInstance newInstance()
+	public static PMMWebuiRfQResponsePublisherInstance newInstance()
 	{
 		return new PMMWebuiRfQResponsePublisherInstance();
 	}
@@ -68,7 +67,7 @@ class PMMWebuiRfQResponsePublisherInstance
 	// State
 	private final List<SyncRfQ> syncRfQs = new ArrayList<>();
 	private final List<SyncRfQCloseEvent> syncRfQCloseEvents = new ArrayList<>();
-	private final SyncProductSuppliesRequest syncProductSuppliesRequest = new SyncProductSuppliesRequest();
+	private final List<SyncProductSupply> syncProductSupplies = new ArrayList<>();
 
 	private PMMWebuiRfQResponsePublisherInstance()
 	{
@@ -131,11 +130,11 @@ class PMMWebuiRfQResponsePublisherInstance
 		if (syncRfQCloseEvent != null)
 		{
 			syncRfQCloseEvents.add(syncRfQCloseEvent);
-			syncProductSuppliesRequest.getProductSupplies().addAll(syncRfQCloseEvent.getPlannedSupplies());
+			syncProductSupplies.addAll(syncRfQCloseEvent.getPlannedSupplies());
 		}
 	}
 
-	private final void pushToWebUI()
+	private void pushToWebUI()
 	{
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
@@ -143,30 +142,30 @@ class PMMWebuiRfQResponsePublisherInstance
 				.registerHandlingMethod(innerTrx -> pushToWebUINow());
 	}
 
-	private final void pushToWebUINow()
+	private void pushToWebUINow()
 	{
 		//
 		// Push new RfQs
-		final List<SyncRfQ> syncRfQs = copyAndClear(this.syncRfQs);
+		final List<SyncRfQ> syncRfQsCopy = copyAndClear(this.syncRfQs);
 		if (!syncRfQs.isEmpty())
 		{
-			webuiPush.pushRfQs(syncRfQs);
+			webuiPush.pushRfQs(syncRfQsCopy);
 		}
 
 		// Push close events
 		{
-			final List<SyncRfQCloseEvent> syncRfQCloseEvents = copyAndClear(this.syncRfQCloseEvents);
-			if (!syncRfQCloseEvents.isEmpty())
+			final List<SyncRfQCloseEvent> syncRfQCloseEventsCopy = copyAndClear(this.syncRfQCloseEvents);
+			if (!syncRfQCloseEventsCopy.isEmpty())
 			{
-				webuiPush.pushRfQCloseEvents(syncRfQCloseEvents);
+				webuiPush.pushRfQCloseEvents(syncRfQCloseEventsCopy);
 			}
 
 			// Internally push the planned product supplies, to create the PMM_PurchaseCandidates
-			serverSyncBL.reportProductSupplies(syncProductSuppliesRequest);
+			serverSyncBL.reportProductSupplies(PutProductSuppliesRequest.of(syncProductSupplies));
 		}
 	}
 
-	private static final <T> List<T> copyAndClear(final List<T> list)
+	private static <T> List<T> copyAndClear(final List<T> list)
 	{
 		if (list == null || list.isEmpty())
 		{

@@ -1,0 +1,41 @@
+# thx @metas-jb for the hint about using v2
+version: '2.4'
+services:
+  # rabbitmq server
+  metasfresh_rabbitmq:
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
+    image: rabbitmq:3.8.9-management
+    #container_name: 'metasfresh_rabbitmq' - not having it right now, because it's not supported by test containers
+    environment:
+      # default virtual host
+      RABBITMQ_DEFAULT_VHOST: /
+    # expose some rabbitmq ports
+    ports:
+    #  - 5683:5671 I didn't manage to get federation via TLS to work
+      - 5673:5672
+      - 15673:15672
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#volumes
+    volumes:
+      - ./configs/metasfresh_rabbitmq:/etc/rabbitmq/:ro
+    networks:
+      - backend
+
+  procurement_webui_rabbitmq:
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
+    image: rabbitmq:3.8.9-management
+    #container_name: 'procurement_webui_rabbitmq' - not having it right now, because it's not supported by test containers
+    environment:
+      # default virtual host
+      RABBITMQ_DEFAULT_VHOST: /
+    # expose some rabbitmq ports
+    ports:
+    #  - 5684:5671  I didn't manage to get federation via TLS to work
+      - 5674:5672
+      - 15674:15672
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#volumes
+    volumes:
+      - ./configs/procurement_webui_rabbitmq:/etc/rabbitmq/:ro
+    networks:
+      - backend
+networks:
+  backend:

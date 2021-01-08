@@ -80,7 +80,7 @@ describe('Pick the SO', function() {
   it('Select row and run action Pick', function() {
     cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
 
-    cy.intercept(includedQAUrl2).as('huQA');
+    cy.intercept(includedQAUrl).as('huQA');
 
     cy.executeQuickAction('WEBUI_Picking_Launcher', false, false);
 
@@ -88,7 +88,7 @@ describe('Pick the SO', function() {
   });
 
   it('Pick first HU', function() {
-    cy.intercept(includedQAUrl2).as('huQA1');
+    cy.intercept(includedQAUrl).as('huQA1');
 
     cy.selectLeftTable().within(() => {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
@@ -98,7 +98,7 @@ describe('Pick the SO', function() {
       cy.get('.table-row', { timeout: 30000 }).should('exist');
     });
 
-    cy.intercept(includedQAUrl).as('huQA2');
+    cy.intercept(includedQAUrl2).as('huQA2');
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher', true);
     cy.wait('@huQA2', { timeout: 10000 });
 
@@ -114,7 +114,7 @@ describe('Pick the SO', function() {
   });
 
   it('Pick second HU', function() {
-    cy.intercept(includedQAUrl2).as('huQA3');
+    cy.intercept(includedQAUrl).as('huQA3');
 
     cy.selectLeftTable().within(() => {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
@@ -124,7 +124,7 @@ describe('Pick the SO', function() {
       cy.get('.table-row', { timeout: 30000 }).should('exist');
     });
 
-    cy.intercept(includedQAUrl).as('huQA4');
+    cy.intercept(includedQAUrl2).as('huQA4');
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher', true);
     cy.wait('@huQA4', { timeout: 10000 });
 
@@ -146,13 +146,13 @@ describe('Pick the SO', function() {
     });
 
     cy.intercept(parentQAUrl).as('parentQA1');
-    cy.intercept(parentQAUrl).as('parentQA2');
-    cy.intercept(includedQAUrl2).as('childQA1');
-    cy.intercept(includedQAUrl2).as('childQA2');
+    //cy.intercept(parentQAUrl).as('parentQA2');
+    cy.intercept(includedQAUrl).as('childQA1');
+    //cy.intercept(includedQAUrl).as('childQA2');
 
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
 
-    cy.wait(['@parentQA1', '@parentQA2', '@childQA1', '@childQA2'], { timeout: 30000 });
+    cy.wait(['@parentQA1', '@childQA1'], { timeout: 30000 });
 
     cy.selectLeftTable().within(() => {
       cy.get('.table-row', { timeout: 10000 }).should('exist');

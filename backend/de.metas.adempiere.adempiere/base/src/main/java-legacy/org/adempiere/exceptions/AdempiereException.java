@@ -624,6 +624,7 @@ public class AdempiereException extends RuntimeException
 	 * Ask the exception to also include the parameters in it's message.
 	 */
 	@OverridingMethodsMustInvokeSuper
+	@NonNull
 	public AdempiereException appendParametersToMessage()
 	{
 		if (!appendParametersToMessage)
