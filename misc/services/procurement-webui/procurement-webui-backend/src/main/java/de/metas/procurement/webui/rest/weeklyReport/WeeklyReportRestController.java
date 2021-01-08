@@ -59,11 +59,29 @@ public class WeeklyReportRestController
 	@GetMapping("/{weekYear}")
 	public JsonWeeklyReport getWeeklyReport(@PathVariable("weekYear") @NonNull final String weekYearStr)
 	{
+		final YearWeek yearWeek = YearWeekUtil.parse(weekYearStr);
+		return getWeeklyReport(yearWeek, -1);
+	}
+
+	@GetMapping("/{weekYear}/{productId}")
+	public JsonWeeklyReport getWeeklyReport(
+			@PathVariable("weekYear") @NonNull final String weekYearStr,
+			@PathVariable("productId") final long productId)
+	{
+		final YearWeek yearWeek = YearWeekUtil.parse(weekYearStr);
+		return getWeeklyReport(yearWeek, productId);
+	}
+
+	private JsonWeeklyReport getWeeklyReport(
+			@NonNull final YearWeek yearWeek,
+			final long singleProductId)
+	{
 		return JsonWeeklyReportProducer.builder()
 				.productSuppliesService(productSuppliesService)
 				.user(loginService.getLoggedInUser())
 				.locale(loginService.getLocale())
-				.week(YearWeekUtil.parse(weekYearStr))
+				.week(yearWeek)
+				.singleProductId(singleProductId)
 				.build()
 				.execute();
 	}

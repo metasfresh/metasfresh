@@ -85,7 +85,7 @@ public interface IProductSuppliesService
 
 	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
 
-	List<WeekSupply> getWeeklySupplies(BPartner bpartner, YearWeek week);
+	List<WeekSupply> getWeeklySupplies(BPartner bpartner, @Nullable Product product, YearWeek week);
 
 	Product getProductById(long productId);
 

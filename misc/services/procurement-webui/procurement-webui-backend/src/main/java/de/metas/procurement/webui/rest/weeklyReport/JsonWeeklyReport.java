@@ -23,10 +23,12 @@
 package de.metas.procurement.webui.rest.weeklyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Data
@@ -46,6 +48,10 @@ public class JsonWeeklyReport
 
 	@NonNull
 	private final String previousWeek;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable
+	private final String singleProductId;
 
 	@NonNull
 	private final List<JsonWeeklyProductReport> products;
