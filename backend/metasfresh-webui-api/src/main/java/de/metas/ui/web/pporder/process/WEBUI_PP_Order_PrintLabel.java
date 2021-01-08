@@ -27,18 +27,19 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
-import de.metas.i18n.AdMessageKey;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.PInstanceId;
 import de.metas.process.PInstanceRequest;
+import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -49,13 +50,49 @@ import de.metas.report.server.ReportResult;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 
 public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
-	final private static AdProcessId LabelPdf_AD_Process_ID = AdProcessId.ofRepoId(584768);
-	protected static final AdMessageKey MSG_MustBe_TopLevel_HU = AdMessageKey
-			.of("WEBUI_PP_Order_PrintLabel.MustBe_TopLevel_HU");
+	private static final String PARAM_PrintLabel = "PrintLabel";
+
+	@Param(parameterName = PARAM_PrintLabel)
+	private String reportTypeCode;
+
+	private enum ReportType
+	{
+		Simple("S", AdProcessId.ofRepoId(584773)), //
+		MultipleSegments("M", AdProcessId.ofRepoId(584768));
+
+		private final String code;
+		@Getter
+		private final AdProcessId processId;
+
+		ReportType(@NonNull final String code, @NonNull final AdProcessId processId)
+		{
+			this.code = code;
+			this.processId = processId;
+		}
+
+		public static ReportType ofCode(@NonNull final String code)
+		{
+			if (Simple.code.equals(code))
+			{
+				return Simple;
+			}
+			else if (MultipleSegments.code.equals(code))
+			{
+				return MultipleSegments;
+			}
+			else
+			{
+				throw new AdempiereException("Unknown code: " + code);
+			}
+		}
+	}
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
@@ -76,7 +113,6 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	@RunOutOfTrx
 	protected String doIt()
 	{
-
 		// create selection
 		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
 		DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
@@ -99,23 +135,27 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 				.streamByIds(selectedRowIds)
 				.collect(ImmutableList.toImmutableList());
 
-		final Set<HuId> huIds = new HashSet<HuId>();  
-				
+		final Set<HuId> huIds = new HashSet<HuId>();
+
 		for (final PPOrderLineRow row : selectedRows)
 		{
-			final PPOrderLineType type = row.getType();
-			if (type.isMainProduct())
+			if (row.isReceipt())
 			{
-				final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
-				includedRows.stream()
-						.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
-						.map(PPOrderLineRow::getHuId)
-						.filter(Objects::nonNull)
-						.forEach(huIds::add);
-			}
-			else if (row.getHuId() != null && type.isHUOrHUStorage())
-			{
-				huIds.add(row.getHuId());
+
+				final PPOrderLineType type = row.getType();
+				if (type.isMainProduct())
+				{
+					final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
+					includedRows.stream()
+							.filter(ppOrderLineRow -> ppOrderLineRow.getType().isHUOrHUStorage())
+							.map(PPOrderLineRow::getHuId)
+							.filter(Objects::nonNull)
+							.forEach(huIds::add);
+				}
+				else if (row.getHuId() != null && type.isHUOrHUStorage())
+				{
+					huIds.add(row.getHuId());
+				}
 			}
 		}
 
@@ -127,9 +167,13 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 		final PInstanceRequest pinstanceRequest = createPInstanceRequest();
 		final PInstanceId pinstanceId = adPInstanceDAO.createADPinstanceAndADPInstancePara(pinstanceRequest);
 
-		final ProcessInfo jasperProcessInfo = ProcessInfo.builder().setCtx(getCtx())
-				.setAD_Process_ID(LabelPdf_AD_Process_ID).setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
-				.setReportLanguage(getProcessInfo().getReportLanguage()).setJRDesiredOutputType(OutputType.PDF).build();
+		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
+				.setCtx(getCtx())
+				.setAD_Process_ID(getReportType().getProcessId())
+				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
+				.setReportLanguage(getProcessInfo().getReportLanguage())
+				.setJRDesiredOutputType(OutputType.PDF)
+				.build();
 
 		final ReportsClient reportsClient = ReportsClient.get();
 		return reportsClient.report(jasperProcessInfo);
@@ -138,8 +182,11 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	private PInstanceRequest createPInstanceRequest()
 	{
 
-		return PInstanceRequest.builder().processId(LabelPdf_AD_Process_ID)
-				.processParams(ImmutableList.of(ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId()))).build();
+		return PInstanceRequest.builder()
+				.processId(getReportType().getProcessId())
+				.processParams(ImmutableList.of(
+						ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId())))
+				.build();
 	}
 
 	private String buildFilename()
@@ -150,4 +197,8 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 		return Joiner.on("_").skipNulls().join(instance, title) + ".pdf";
 	}
 
+	private ReportType getReportType()
+	{
+		return ReportType.ofCode(reportTypeCode);
+	}
 }
