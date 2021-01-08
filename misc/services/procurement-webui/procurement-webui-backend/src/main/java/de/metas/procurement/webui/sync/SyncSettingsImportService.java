@@ -31,7 +31,7 @@ import javax.transaction.Transactional;
 
 @Service
 @Transactional
-public class SyncSettingsImportService extends AbstractSyncImportService
+class SyncSettingsImportService extends AbstractSyncImportService
 {
 	private final ISettingsService settingsService;
 
@@ -43,7 +43,6 @@ public class SyncSettingsImportService extends AbstractSyncImportService
 
 	public void importSyncInfoMessage(final PutInfoMessageRequest request)
 	{
-		// logger.debug("Importing: {}", request);
 		settingsService.setInfoMessage(request.getMessage());
 	}
 }

@@ -35,7 +35,7 @@ import java.util.Date;
 
 @Service
 @Transactional
-public class SyncConfirmationsImportService extends AbstractSyncImportService
+class SyncConfirmationsImportService extends AbstractSyncImportService
 {
 	private static final Logger logger = LoggerFactory.getLogger(SyncConfirmationsImportService.class);
 	private final SyncConfirmRepository syncConfirmRepo;
@@ -60,7 +60,7 @@ public class SyncConfirmationsImportService extends AbstractSyncImportService
 		if (confirmRecord == null)
 		{
 			// something is actually wrong. Either the given syncConfirm has no ID, or there is no record with this ID.
-			// Since the whole syncConfirm thing is about stability and diagnosibility, we shall now try to make the best of the situation.
+			// Since the whole syncConfirm thing is about stability and diagnosable, we shall now try to make the best of the situation.
 			confirmRecord = new SyncConfirm();
 			confirmRecord.setEntryType("UNKNOWN ID " + syncConfirmation.getConfirmId());
 			logger.error("Found no record for {}", syncConfirmation);

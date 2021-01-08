@@ -1,6 +1,5 @@
 package de.metas.procurement.webui.util;
 
-import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner.SyncBPartnerBuilder;
 import de.metas.common.procurement.sync.protocol.dto.SyncContract;
@@ -20,6 +19,7 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.sync.ReceiverFromMetasfreshHandler;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -59,7 +59,7 @@ public class DummyDataProducer
 	private final BPartnerRepository bpartnersRepo;
 	private final ContractRepository contractsRepo;
 	private final IProductSuppliesService productSuppliesService;
-	private final IAgentSync agentSync;
+	private final ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler;
 
 	private final LocalDate contractDateFrom = LocalDate.of(2015, 4, 1);
 	private final LocalDate contractDateTo = LocalDate.of(2016, 3, 31);
@@ -93,18 +93,18 @@ public class DummyDataProducer
 			@NonNull final BPartnerRepository bpartnersRepo,
 			@NonNull final ContractRepository contractsRepo,
 			@NonNull final IProductSuppliesService productSuppliesService,
-			@NonNull final IAgentSync agentSync)
+			@NonNull final ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler)
 	{
 		this.bpartnersRepo = bpartnersRepo;
 		this.contractsRepo = contractsRepo;
 		this.productSuppliesService = productSuppliesService;
-		this.agentSync = agentSync;
+		this.receiverFromMetasfreshHandler = receiverFromMetasfreshHandler;
 	}
 
 	public void createDummyData()
 	{
 		final PutBPartnersRequest request = getSyncBPartnersRequest();
-		agentSync.syncBPartners(request);
+		receiverFromMetasfreshHandler.handlePutBPartnersRequest(request);
 
 		createDummyProductSupplies();
 	}

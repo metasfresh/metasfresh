@@ -43,7 +43,7 @@ import java.util.Objects;
 
 @Service
 @Transactional
-public class SyncContractImportService extends AbstractSyncImportService
+class SyncContractImportService extends AbstractSyncImportService
 {
 	private final ContractRepository contractsRepo;
 	private final ContractLineRepository contractLinesRepo;
@@ -60,13 +60,9 @@ public class SyncContractImportService extends AbstractSyncImportService
 		this.productsImportService = productsImportService;
 	}
 
-	public Contract importContract(final BPartner bpartner, final SyncContract syncContract, Contract contract)
+	public void importContract(final BPartner bpartner, final SyncContract syncContract, Contract contract)
 	{
 		contract = importContractNoCascade(bpartner, syncContract, contract);
-		if (contract == null)
-		{
-			return null;
-		}
 
 		//
 		// Contract Line
@@ -94,7 +90,6 @@ public class SyncContractImportService extends AbstractSyncImportService
 
 		// applicationEventBus.post(ContractChangedEvent.of(contract.getBpartner().getUuid(), contract.getId()));
 
-		return contract;
 	}
 
 	private Contract importContractNoCascade(final BPartner bpartner, final SyncContract syncContract, Contract contract)
@@ -137,7 +132,8 @@ public class SyncContractImportService extends AbstractSyncImportService
 		// Product
 		final SyncProduct syncProductNoDelete = assertNotDeleteRequest_WarnAndFix(syncContractLine.getProduct(), "importing contract lines");
 		Product product = contractLine == null ? null : contractLine.getProduct();
-		product = productsImportService.importProduct(syncProductNoDelete, product);
+		product = productsImportService.importProduct(syncProductNoDelete, product)
+				.orElseThrow(() -> new RuntimeException("Deleted product cannot be used in " + syncContractLine));
 
 		//
 		// Contract Line

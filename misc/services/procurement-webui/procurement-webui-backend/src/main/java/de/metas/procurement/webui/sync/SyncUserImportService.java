@@ -5,8 +5,6 @@ import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.repository.UserRepository;
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +37,7 @@ import java.util.Objects;
 
 @Service
 @Transactional
-public class SyncUserImportService extends AbstractSyncImportService
+class SyncUserImportService extends AbstractSyncImportService
 {
 	private final UserRepository usersRepo;
 
@@ -62,10 +60,7 @@ public class SyncUserImportService extends AbstractSyncImportService
 
 			User user = users.remove(syncUser.getUuid());
 			user = importUserNoSave(bpartner, syncUser, user);
-			if (user != null)
-			{
-				usersToSave.add(user);
-			}
+			usersToSave.add(user);
 		}
 		//
 		// Delete remaining users

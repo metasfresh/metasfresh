@@ -1,7 +1,6 @@
 package de.metas.procurement.webui;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.IServerSync;
 import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
@@ -21,6 +20,7 @@ import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
+import de.metas.procurement.webui.sync.ReceiverFromMetasfreshHandler;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.DummyDataProducer;
 import de.metas.procurement.webui.util.YearWeekUtil;
@@ -107,7 +107,7 @@ public class SpringIntegrationTest
 	private IServerSync serverSync;
 
 	@Autowired
-	private IAgentSync agentSync;
+	private ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler;
 
 	private final Random random = new Random();
 
@@ -166,7 +166,7 @@ public class SpringIntegrationTest
 						.build();
 				request.product(syncProduct);
 			}
-			agentSync.syncProducts(request.build());
+			receiverFromMetasfreshHandler.handlePutProductsRequest(request.build());
 
 			Assert.assertEquals(ImmutableList.<Product>of(), productSuppliesService.getAllProducts());
 		}

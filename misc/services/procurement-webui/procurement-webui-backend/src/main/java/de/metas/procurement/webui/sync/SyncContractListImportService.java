@@ -38,7 +38,7 @@ import java.util.Map.Entry;
 
 @Service
 @Transactional
-public class SyncContractListImportService extends AbstractSyncImportService
+class SyncContractListImportService extends AbstractSyncImportService
 {
 	private final ContractRepository contractsRepo;
 	private final SyncContractImportService contractsImportService;
