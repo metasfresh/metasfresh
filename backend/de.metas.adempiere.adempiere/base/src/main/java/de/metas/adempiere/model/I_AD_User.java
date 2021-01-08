@@ -22,7 +22,6 @@ package de.metas.adempiere.model;
  * #L%
  */
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
 public interface I_AD_User extends org.compiere.model.I_AD_User
