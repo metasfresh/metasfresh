@@ -2,6 +2,7 @@
 
 $base-color: #000000;
 $base-elements: green;
+$base-border: #cccccc;
 
 * {
   box-sizing: border-box;
@@ -57,11 +58,18 @@ body {
 
 .section {
   width: 100%;
+  padding: 0rem;
 }
 
 .daily-nav {
   width: 100%;
   color: $base-color;
+
+    .columns {
+      padding: 0rem 1rem;
+      border-top: 1px solid $base-border;
+      border-bottom: 1px solid $base-border;
+    }
 
     .rows {
       display: flex;
