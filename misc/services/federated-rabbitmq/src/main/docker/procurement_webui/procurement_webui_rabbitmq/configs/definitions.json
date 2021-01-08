@@ -57,7 +57,7 @@
       "value": {
         "ack-mode": "on-confirm",
         "trust-user-id": false,
-        "uri": "amqp://procurement_webui:9aORIRWlS7TV9VjFVNBj@metasfresh_rabbitmq"
+        "uri": "amqps://procurement_webui:9aORIRWlS7TV9VjFVNBj@localhost:25673"
       },
       "vhost": "/",
       "component": "federation-upstream",

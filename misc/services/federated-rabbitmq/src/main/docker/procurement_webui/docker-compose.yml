@@ -1,0 +1,30 @@
+# thx @metas-jb for the hint about using v2
+version: '2.4'
+services:
+  procurement_webui_stream_proxy:
+    image: tekn0ir/nginx-stream
+    container_name: procurement_webui_stream_proxy
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "25674:25672"
+    volumes:
+      - ./procurement_webui_nginx/certs/nginx-selfsigned.crt:/etc/nginx/ssl/cert.pem:ro
+      - ./procurement_webui_nginx/certs/nginx-selfsigned.key:/etc/nginx/ssl/key.pem:ro
+      - ./procurement_webui_nginx/default.conf:/opt/nginx/stream.conf.d/default.conf:ro
+    networks:
+      - procurement_webui_backend
+  procurement_webui_rabbitmq:
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
+    image: rabbitmq:3.8.9-management
+    #container_name: 'procurement_webui_rabbitmq' - not having it right now, because it's not supported by test containers
+    ports:
+      - 5674:5672
+      - 15674:15672
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#volumes
+    volumes:
+      - ./procurement_webui_rabbitmq/configs:/etc/rabbitmq/:ro
+    networks:
+      - procurement_webui_backend
+networks:
+  procurement_webui_backend:
