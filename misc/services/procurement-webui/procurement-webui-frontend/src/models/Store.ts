@@ -1,10 +1,12 @@
 import { useContext, createContext } from 'react';
 import { types, getEnv, destroy, Instance, onSnapshot } from 'mobx-state-tree';
 import { Todo } from './Todo';
+import { Day } from './Day';
 
-const Store = types
+export const Store = types
   .model('Store', {
     todos: types.array(Todo),
+    day: Day,
   })
   .views((self) => ({
     get fetch() {
@@ -37,6 +39,9 @@ let initialState = Store.create(
         id: 0,
       },
     ],
+    day: {
+      currentDay: 'today',
+    },
   },
   {
     fetch: fetcher,
