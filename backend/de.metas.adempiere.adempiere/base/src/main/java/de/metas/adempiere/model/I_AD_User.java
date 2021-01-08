@@ -73,14 +73,9 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 
 	public void setLogin(String Login);
 
-
 	void setC_Title_ID (int C_Title_ID);
 
 	int getC_Title_ID();
 
-	@Nullable
-	org.compiere.model.I_C_Title getC_Title();
-
-	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
 	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 }

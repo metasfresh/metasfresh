@@ -1,8 +1,5 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for AD_User
  *  @author Adempiere (generated) 
