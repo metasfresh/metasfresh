@@ -102,6 +102,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	IMutableHUContext createMutableHUContextForProcessing(IContextAware contextProvider);
 
+	IMutableHUContext createMutableHUContextForProcessing();
+
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> (may not be <code>null</code>) and <code>trxName=ITrx.TRXNAME_None</code>.
 	 */
@@ -352,7 +354,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	String getHU_UnitType(I_M_HU hu);
 
-	boolean isVirtual(I_M_HU_PI_Item piItem);
+	boolean isVirtual(@Nullable I_M_HU_PI_Item piItem);
 
 	/**
 	 * @return true if given <code>piItem</code> is null or is NoPI

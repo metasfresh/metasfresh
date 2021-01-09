@@ -76,6 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
@@ -131,6 +132,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContextForProcessing(contextProvider);
 	}
+
+	@Override
+	public IMutableHUContext createMutableHUContextForProcessing()
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		return huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newWithThreadInheritedTrx());
+	}
+
 
 	@Override
 	public IMutableHUContext createMutableHUContext(final Properties ctx, final @NonNull ClientAndOrgId clientAndOrgId)
@@ -321,11 +330,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean isVirtual(final I_M_HU_PI_Item piItem)
+	public boolean isVirtual(@Nullable final I_M_HU_PI_Item piItem)
 	{
-		return piItem != null
-				? HuPackingInstructionsItemId.isVirtualRepoId(piItem.getM_HU_PI_Item_ID())
-				: false;
+		return piItem != null && HuPackingInstructionsItemId.isVirtualRepoId(piItem.getM_HU_PI_Item_ID());
 	}
 
 	@Override
