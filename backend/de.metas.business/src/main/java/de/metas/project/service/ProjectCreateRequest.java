@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,41 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.project.service;
 
-import de.metas.document.sequence.DocSequenceId;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.project.ProjectCategory;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ProjectType
+public class ProjectCreateRequest
 {
 	@NonNull
-	ProjectTypeId id;
+	OrgId orgId;
 
 	@NonNull
 	ProjectCategory projectCategory;
 
+	@NonNull
+	BPartnerLocationId bpartnerAndLocationId;
 	@Nullable
-	DocSequenceId docSequenceId;
+	BPartnerContactId contactId;
+
+	@NonNull
+	CurrencyId currencyId;
+	@NonNull
+	PriceListVersionId priceListVersionId;
+
+	@NonNull
+	WarehouseId warehouseId;
 }

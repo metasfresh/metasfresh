@@ -14,6 +14,7 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_R_Request;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +49,8 @@ import java.util.Optional;
 public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
+
+	void save(I_M_InOut inout);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
@@ -88,6 +91,7 @@ public interface IInOutBL extends ISingletonService
 	 * @return the pricing system fir for the inout,
 	 * Otherwise, throws exception when throwEx = true and return null if it is false
 	 */
+	@Nullable
 	I_M_PricingSystem getPricingSystem(I_M_InOut inOut, boolean throwEx);
 
 	/**
@@ -125,9 +129,9 @@ public interface IInOutBL extends ISingletonService
 
 	/**
 	 * @return <ul>
-	 *         <li>true if Customer Shipment or Returns
-	 *         <li>false if Vendor Receipts or Returns
-	 *         </ul>
+	 * <li>true if Customer Shipment or Returns
+	 * <li>false if Vendor Receipts or Returns
+	 * </ul>
 	 */
 	boolean getSOTrxFromMovementType(String movementType);
 
@@ -175,5 +179,4 @@ public interface IInOutBL extends ISingletonService
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
 
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
-
 }

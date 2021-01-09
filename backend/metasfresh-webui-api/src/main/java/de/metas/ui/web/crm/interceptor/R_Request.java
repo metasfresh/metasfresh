@@ -22,32 +22,40 @@
 
 package de.metas.ui.web.crm.interceptor;
 
-import java.sql.Timestamp;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.ModelValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.metas.ui.web.window.model.DocumentCollection;
+import java.sql.Timestamp;
 
 @Interceptor(I_R_Request.class)
 @Component
 public class R_Request
 {
-	@Autowired
-	private DocumentCollection documentsCollection;
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final DocumentCollection documentsCollection;
+
+	public R_Request(@NonNull final DocumentCollection documentsCollection)
+	{
+		this.documentsCollection = documentsCollection;
+	}
 
 	/**
 	 * If request has the ReminderDate set then update the BPartner's ReminderDateExtern or ReminderDateIntern (based on request's sales rep).
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/2066
+	 * <p>
+	 * Task https://github.com/metasfresh/metasfresh/issues/2066
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_R_Request.COLUMNNAME_ReminderDate)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = I_R_Request.COLUMNNAME_ReminderDate)
 	public void updateBPartnerReminderDate(final I_R_Request request)
 	{
 		final Timestamp reminderDate = request.getReminderDate();
@@ -56,24 +64,30 @@ public class R_Request
 			return;
 		}
 
-		final int adUserId = request.getSalesRep_ID();
-		if (adUserId < 0)
+		final UserId adUserId = UserId.ofRepoIdOrNull(request.getSalesRep_ID());
+		if (adUserId == null || !adUserId.isRegularUser())
 		{
 			return;
 		}
 
-		final I_C_BPartner bpartner = request.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(request.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			// nothing to do
+			return;
+		}
+		final I_C_BPartner bpartner = bpartnerDAO.getByIdInTrx(bpartnerId);
 		if (bpartner == null)
 		{
 			// nothing to do
 			return;
 		}
 
-		if (bpartner.getSalesRepIntern_ID() == adUserId)
+		if (bpartner.getSalesRepIntern_ID() == adUserId.getRepoId())
 		{
 			bpartner.setReminderDateIntern(reminderDate);
 		}
-		else if (bpartner.getSalesRep_ID() == adUserId)
+		else if (bpartner.getSalesRep_ID() == adUserId.getRepoId())
 		{
 			bpartner.setReminderDateExtern(reminderDate);
 		}
@@ -83,12 +97,12 @@ public class R_Request
 			return;
 		}
 
-		InterfaceWrapperHelper.save(bpartner);
+		bpartnerDAO.save(bpartner);
 		documentsCollection.invalidateDocumentByRecordId(I_C_BPartner.Table_Name, bpartner.getC_BPartner_ID());
 	}
 
 	@ModelChange(
-			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_R_Request.COLUMNNAME_StartTime, I_R_Request.COLUMNNAME_StartDate })
 	public void updateStartDateAndStartTime(final I_R_Request request)
 	{
