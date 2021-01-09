@@ -28,6 +28,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_C_ProjectType;
 
+import javax.annotation.Nullable;
+
 public enum ProjectCategory implements ReferenceListAwareEnum
 {
 	General(X_C_ProjectType.PROJECTCATEGORY_General),
@@ -46,8 +48,19 @@ public enum ProjectCategory implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	public static ProjectCategory ofCode(final String code)
+	public static ProjectCategory ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
+	}
+
+	public static ProjectCategory ofNullableCodeOrGeneral(@Nullable final String code)
+	{
+		final ProjectCategory type = index.ofNullableCode(code);
+		return type != null ? type : ProjectCategory.General;
+	}
+
+	public boolean isServiceOrRepair()
+	{
+		return ServiceOrRepair.equals(this);
 	}
 }

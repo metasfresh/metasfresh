@@ -88,6 +88,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	IHUStorageFactory getStorageFactory();
 
+	IMutableHUContext createMutableHUContext();
+
 	/**
 	 * @return mutable HU context for <code>contextProvider</code>
 	 */

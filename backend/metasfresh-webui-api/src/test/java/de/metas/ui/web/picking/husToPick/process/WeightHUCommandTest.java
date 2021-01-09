@@ -258,7 +258,7 @@ public class WeightHUCommandTest
 				allocationStrategyType);
 
 		HULoader.of(source, destination)
-				.load(AllocationUtils.createAllocationRequestBuilder()
+				.load(AllocationUtils.builder()
 						.setHUContext(helper.createMutableHUContextForProcessingOutOfTrx())
 						.setDateAsToday()
 						.setProduct(masterdata.productId)

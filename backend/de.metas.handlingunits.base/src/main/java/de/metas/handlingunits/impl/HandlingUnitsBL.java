@@ -120,6 +120,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public IMutableHUContext createMutableHUContext()
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		return huContextFactory.createMutableHUContext();
+	}
+
+	@Override
 	public IMutableHUContext createMutableHUContext(final IContextAware contextProvider)
 	{
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);

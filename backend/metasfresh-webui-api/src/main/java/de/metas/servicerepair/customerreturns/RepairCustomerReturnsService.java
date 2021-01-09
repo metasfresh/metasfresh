@@ -115,7 +115,7 @@ public class RepairCustomerReturnsService
 						customerReturnLine))
 				.destination(destination = HUProducerDestination.ofVirtualPI()
 						.setHUStatus(X_M_HU.HUSTATUS_Planning))
-				.load(AllocationUtils.createAllocationRequestBuilder()
+				.load(AllocationUtils.builder()
 						.setHUContext(handlingUnitsBL.createMutableHUContextForProcessing())
 						.setProduct(productId)
 						.setQuantity(qtyReturned)

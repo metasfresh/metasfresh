@@ -41,15 +41,23 @@ import java.math.BigDecimal;
 @Service
 public class ProjectService
 {
-	private final ProjectTypeRepository projectTypeRepository;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	private final ProjectTypeRepository projectTypeRepository;
+	private final ProjectRepository projectRepository;
 
 	public ProjectService(
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
+			@NonNull final ProjectRepository projectRepository)
 	{
 		this.projectTypeRepository = projectTypeRepository;
+		this.projectRepository = projectRepository;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
+	}
+
+	public I_C_Project getById(@NonNull final ProjectId id)
+	{
+		return projectRepository.getById(id);
 	}
 
 	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId id)
@@ -94,13 +102,8 @@ public class ProjectService
 		project.setM_PriceList_Version_ID(request.getPriceListVersionId().getRepoId());
 		project.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 
-		save(project);
+		projectRepository.save(project);
 		return ProjectId.ofRepoId(project.getC_Project_ID());
-	}
-
-	private void save(final I_C_Project project)
-	{
-		InterfaceWrapperHelper.saveRecord(project);
 	}
 
 	public void updateFromProjectType(final I_C_Project projectRecord)
@@ -133,5 +136,4 @@ public class ProjectService
 				.setFailOnError(false)
 				.build();
 	}
-
 }

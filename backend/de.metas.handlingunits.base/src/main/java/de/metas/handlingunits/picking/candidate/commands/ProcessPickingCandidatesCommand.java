@@ -185,7 +185,7 @@ public class ProcessPickingCandidatesCommand
 		final Quantity qtyPicked = pickingCandidate.getQtyPicked();
 
 		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+		final IAllocationRequest request = AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(qtyPicked)
