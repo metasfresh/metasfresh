@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
@@ -149,6 +150,11 @@ public interface IView
 			final ViewRowsOrderBy orderBy)
 	{
 		return getPage(firstRow, pageLength, orderBy);
+	}
+
+	default ImmutableMap<String, Object> getParameters()
+	{
+		return ImmutableMap.of();
 	}
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;

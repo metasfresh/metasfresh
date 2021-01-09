@@ -210,6 +210,7 @@ public class HUEditorView implements IView
 		return additionalRelatedProcessDescriptors;
 	}
 
+	@Override
 	public ImmutableMap<String, Object> getParameters()
 	{
 		return parameters;

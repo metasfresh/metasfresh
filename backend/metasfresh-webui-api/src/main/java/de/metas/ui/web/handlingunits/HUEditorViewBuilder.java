@@ -303,6 +303,11 @@ public final class HUEditorViewBuilder
 
 	public <T> T getParameter(@NonNull final String name)
 	{
+		if (parameters == null)
+		{
+			return null;
+		}
+
 		@SuppressWarnings("unchecked") final T value = (T)parameters.get(name);
 		return value;
 	}
@@ -310,9 +315,9 @@ public final class HUEditorViewBuilder
 	public void assertParameterSet(final String name)
 	{
 		final Object value = getParameter(name);
-		if(value == null)
+		if (value == null)
 		{
-			throw new AdempiereException("Parameter "+name+" is expected to be set in "+parameters+" for "+this);
+			throw new AdempiereException("Parameter " + name + " is expected to be set in " + parameters + " for " + this);
 		}
 	}
 
