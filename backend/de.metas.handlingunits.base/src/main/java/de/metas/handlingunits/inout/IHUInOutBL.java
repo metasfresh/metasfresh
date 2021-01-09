@@ -91,8 +91,6 @@ public interface IHUInOutBL extends ISingletonService
 
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines);
 
-	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_InOutLine inOutLine);
-
 	/**
 	 * @return True if the given inOut is a Customer Return, False otherwise
 	 */

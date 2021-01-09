@@ -24,7 +24,7 @@ package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
@@ -47,6 +47,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -57,7 +58,11 @@ import java.util.Set;
 
 public class HUInOutDAO implements IHUInOutDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
 	@Override
 	public List<I_M_InOutLine> retrievePackingMaterialLines(final I_M_InOut inOut)
@@ -66,9 +71,9 @@ public class HUInOutDAO implements IHUInOutDAO
 				.list(I_M_InOutLine.class);
 	}
 
-	private final IQuery<I_M_InOutLine> retrievePackingMaterialLinesQuery(final I_M_InOut inOut)
+	private IQuery<I_M_InOutLine> retrievePackingMaterialLinesQuery(final I_M_InOut inOut)
 	{
-		final IQueryBuilder<de.metas.handlingunits.model.I_M_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(de.metas.handlingunits.model.I_M_InOutLine.class, inOut)
+		final IQueryBuilder<de.metas.handlingunits.model.I_M_InOutLine> queryBuilder = queryBL.createQueryBuilder(de.metas.handlingunits.model.I_M_InOutLine.class, inOut)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
 				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial, true);
@@ -92,8 +97,6 @@ public class HUInOutDAO implements IHUInOutDAO
 	@Override
 	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 
 		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<>();
@@ -111,17 +114,12 @@ public class HUInOutDAO implements IHUInOutDAO
 	@Override
 	public List<I_M_HU> retrieveHandlingUnitsByInOutLineId(@NonNull final InOutLineId inOutLineId)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 		return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutDAO.getLineById(inOutLineId));
 	}
 
 	@Override
 	public List<I_M_HU> retrieveShippedHandlingUnits(final I_M_InOut inOut)
 	{
-
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 
 		final LinkedHashMap<Integer, I_M_HU> hus = new LinkedHashMap<>();
@@ -139,11 +137,10 @@ public class HUInOutDAO implements IHUInOutDAO
 		return new ArrayList<>(hus.values());
 	}
 
+	@Override
 	@NonNull
 	public Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(@NonNull final Set<InOutLineId> shipmentLineIds)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
 		final List<I_M_InOutLine> inOutLines = inOutDAO.getLinesByIds(shipmentLineIds, I_M_InOutLine.class);
 
 		return inOutLines
@@ -160,12 +157,9 @@ public class HUInOutDAO implements IHUInOutDAO
 	 * NOTE: keep in sync with {@link #retrieveHandlingUnits(I_M_InOut)} logic
 	 */
 	@Override
+	@Nullable
 	public I_M_InOutLine retrieveCompletedReceiptLineOrNull(final I_M_HU hu)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 		final AttributeId receiptInOutLineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_ReceiptInOutLine_ID);
 
@@ -184,7 +178,9 @@ public class HUInOutDAO implements IHUInOutDAO
 			return null;
 		}
 
-		if (!docActionBL.isDocumentCompletedOrClosed(inoutLine.getM_InOut()))
+		final I_M_InOut inOut = inoutLine.getM_InOut();
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(inOut.getDocStatus());
+		if (!docStatus.isCompletedOrClosed())
 		{
 			return null;
 		}
@@ -206,9 +202,9 @@ public class HUInOutDAO implements IHUInOutDAO
 	@NonNull
 	private List<I_M_HU> getShippedHUsByShipmentLine(@NonNull final I_M_InOutLine inOutLine)
 	{
-		 return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLine)
-				 .stream()
-				 .filter(hu -> X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus()))
-				 .collect(ImmutableList.toImmutableList());
+		return huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLine)
+				.stream()
+				.filter(hu -> X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus()))
+				.collect(ImmutableList.toImmutableList());
 	}
 }

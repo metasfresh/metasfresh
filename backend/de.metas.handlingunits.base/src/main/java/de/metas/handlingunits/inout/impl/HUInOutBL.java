@@ -72,8 +72,6 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-	private final IDocumentLUTUConfigurationHandler<I_M_InOutLine> lutuConfigurationHandler = CustomerReturnLUTUConfigurationHandler.instance;
-	private final IDocumentLUTUConfigurationHandler<List<I_M_InOutLine>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -252,21 +250,19 @@ public class HUInOutBL implements IHUInOutBL
 	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(final List<I_M_InOutLine> inOutLines)
 	{
 		Check.assumeNotEmpty(inOutLines, "inOutLines not empty");
+
+		final CustomerReturnLUTUConfigurationHandler lutuConfigurationHandler = new CustomerReturnLUTUConfigurationHandler();
+
 		if (inOutLines.size() == 1)
 		{
 			final I_M_InOutLine inOutLine = inOutLines.get(0);
-			return createLUTUConfigurationManager(inOutLine);
+			return new DocumentLUTUConfigurationManager<>(inOutLine, lutuConfigurationHandler);
 		}
 		else
 		{
+			final IDocumentLUTUConfigurationHandler<List<I_M_InOutLine>> lutuConfigurationListHandler = CompositeDocumentLUTUConfigurationHandler.of(lutuConfigurationHandler);
 			return new DocumentLUTUConfigurationManager<>(inOutLines, lutuConfigurationListHandler);
 		}
-	}
-
-	@Override
-	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(final I_M_InOutLine inOutLine)
-	{
-		return new DocumentLUTUConfigurationManager<>(inOutLine, lutuConfigurationHandler);
 	}
 
 	@Override

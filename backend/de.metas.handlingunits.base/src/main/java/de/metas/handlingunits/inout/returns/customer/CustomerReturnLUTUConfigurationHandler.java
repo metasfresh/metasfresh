@@ -22,42 +22,38 @@
 
 package de.metas.handlingunits.inout.returns.customer;
 
-import java.math.BigDecimal;
-
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_M_InOut;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inout.IInOutDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_InOut;
+
+import java.math.BigDecimal;
 
 public class CustomerReturnLUTUConfigurationHandler
 		extends AbstractDocumentLUTUConfigurationHandler<I_M_InOutLine>
 {
-
-	public static final transient CustomerReturnLUTUConfigurationHandler instance = new CustomerReturnLUTUConfigurationHandler();
-
-	private CustomerReturnLUTUConfigurationHandler()
-	{
-		super();
-	}
+	private final ILUTUConfigurationFactory lutuFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHUPIItemProductBL piItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@Override
-	public I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(final I_M_InOutLine documentLine)
+	public I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(@NonNull final I_M_InOutLine documentLine)
 	{
-		Check.assumeNotNull(documentLine, "documentLine not null");
-
 		final I_M_HU_LUTU_Configuration lutuConfiguration = documentLine.getM_HU_LUTU_Configuration();
 		if (lutuConfiguration == null || lutuConfiguration.getM_HU_LUTU_Configuration_ID() <= 0)
 		{
@@ -76,11 +72,8 @@ public class CustomerReturnLUTUConfigurationHandler
 	@Override
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(final I_M_InOutLine documentLine)
 	{
-
-		final ILUTUConfigurationFactory lutuFactory = Services.get(ILUTUConfigurationFactory.class);
-
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
-		final ProductId cuProductId = ProductId.ofRepoIdOrNull(documentLine.getM_Product_ID());
+		final ProductId cuProductId = ProductId.ofRepoId(documentLine.getM_Product_ID());
 		final UomId cuUOMId = UomId.ofRepoId(documentLine.getC_UOM_ID());
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(documentLine.getM_InOut().getC_BPartner_ID());
@@ -114,7 +107,7 @@ public class CustomerReturnLUTUConfigurationHandler
 		//
 		// Set Locator
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(customerReturn.getM_Warehouse_ID());
-		final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
 		lutuConfiguration.setM_Locator_ID(locatorId.getRepoId());
 
 		//
@@ -127,8 +120,15 @@ public class CustomerReturnLUTUConfigurationHandler
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(final I_M_InOutLine inOutLine)
+	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(@NonNull final I_M_InOutLine inOutLine)
 	{
-		return inOutLine.getM_HU_PI_Item_Product();
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNone(inOutLine.getM_HU_PI_Item_Product_ID());
+		return piItemProductBL.getById(piItemProductId);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_InOutLine documentLine)
+	{
+		inOutDAO.save(documentLine);
 	}
 }
