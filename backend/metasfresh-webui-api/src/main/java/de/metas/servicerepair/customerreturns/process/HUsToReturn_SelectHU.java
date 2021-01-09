@@ -22,6 +22,7 @@
 
 package de.metas.servicerepair.customerreturns.process;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
@@ -72,6 +73,8 @@ public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IP
 				.build();
 
 		getResult().setCloseWebuiModalView(true);
+
+		getView().removeHUIdsAndInvalidate(ImmutableList.of(row.getHuId()));
 
 		return MSG_OK;
 	}
