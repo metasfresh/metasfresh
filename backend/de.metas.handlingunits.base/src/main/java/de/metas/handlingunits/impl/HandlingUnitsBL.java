@@ -321,6 +321,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isVirtual(final I_M_HU_PI_Item piItem)
+	{
+		return piItem != null
+				? HuPackingInstructionsItemId.isVirtualRepoId(piItem.getM_HU_PI_Item_ID())
+				: false;
+	}
+
+	@Override
 	public boolean isNoPI(final I_M_HU_PI_Item piItem)
 	{
 		if (piItem == null)

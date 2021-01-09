@@ -352,6 +352,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	String getHU_UnitType(I_M_HU hu);
 
+	boolean isVirtual(I_M_HU_PI_Item piItem);
+
 	/**
 	 * @return true if given <code>piItem</code> is null or is NoPI
 	 */
