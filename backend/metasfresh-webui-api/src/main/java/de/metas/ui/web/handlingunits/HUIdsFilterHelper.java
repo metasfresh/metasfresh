@@ -1,21 +1,10 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.model.PlainContextAware;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -30,6 +19,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.PlainContextAware;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
 
 /*
  * #%L
@@ -64,7 +60,7 @@ public final class HUIdsFilterHelper
 	{
 		/**
 		 * Creates a new instance with the given {@code huIds} as {@link #getInitialHUIds()}.
-		 * 
+		 *
 		 * @param huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
 		 * @return
 		 */
@@ -90,6 +86,7 @@ public final class HUIdsFilterHelper
 		/**
 		 * Important: {@code null} means "no restriction" (i.e. we can select allHUs) whereas empty means that no HU matches the filter.
 		 */
+		@Nullable
 		private final ImmutableSet<HuId> initialHUIds;
 
 		private final IHUQueryBuilder initialHUQuery;
@@ -110,7 +107,7 @@ public final class HUIdsFilterHelper
 			shallNotHUIds = new HashSet<>();
 		}
 
-		private HUIdsFilterData(final HUIdsFilterData from)
+		private HUIdsFilterData(@NonNull final HUIdsFilterData from)
 		{
 			initialHUIds = from.initialHUIds;
 			initialHUQuery = from.initialHUQuery != null ? from.initialHUQuery.copy() : null;
@@ -124,6 +121,7 @@ public final class HUIdsFilterHelper
 			return new HUIdsFilterData(this);
 		}
 
+		@Nullable
 		public ImmutableSet<HuId> getInitialHUIds()
 		{
 			return initialHUIds;
@@ -134,7 +132,7 @@ public final class HUIdsFilterHelper
 			return initialHUQuery != null ? initialHUQuery.copy() : null;
 		}
 
-		public Set<HuId> getMustHUIds()
+		public ImmutableSet<HuId> getMustHUIds()
 		{
 			return ImmutableSet.copyOf(mustHUIds);
 		}
@@ -152,7 +150,7 @@ public final class HUIdsFilterHelper
 			return added;
 		}
 
-		public Set<HuId> getShallNotHUIds()
+		public ImmutableSet<HuId> getShallNotHUIds()
 		{
 			return ImmutableSet.copyOf(shallNotHUIds);
 		}
@@ -192,9 +190,7 @@ public final class HUIdsFilterHelper
 	}
 
 	/**
-	 * 
 	 * @param huIds huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
-	 * 
 	 * @return
 	 */
 	public static DocumentFilter createFilter(@NonNull final Collection<HuId> huIds)
@@ -260,12 +256,14 @@ public final class HUIdsFilterHelper
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
 			final ImmutableList<HuId> onlyHUIds;
 
-			final boolean mustHuIdsSpecified = huIdsFilter.getMustHUIds() != null && !huIdsFilter.getMustHUIds().isEmpty();
+			final ImmutableSet<HuId> mustHUIds = huIdsFilter.getMustHUIds();
+			final ImmutableSet<HuId> shallNotHUIds = huIdsFilter.getShallNotHUIds();
+			final boolean mustHuIdsSpecified = !mustHUIds.isEmpty();
 			final boolean initialHuIdsSpecified = huIdsFilter.getInitialHUIds() != null;
 
 			if (initialHuIdsSpecified && mustHuIdsSpecified)
 			{
-				onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+				onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), mustHUIds));
 			}
 			else if (initialHuIdsSpecified)
 			{
@@ -273,14 +271,16 @@ public final class HUIdsFilterHelper
 			}
 			else if (mustHuIdsSpecified)
 			{
-				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds());
+				onlyHUIds = ImmutableList.copyOf(mustHUIds);
 			}
 			else
 			{
 				onlyHUIds = null;
 			}
 
-			if (onlyHUIds == null && !huIdsFilter.hasInitialHUQuery())
+			if (onlyHUIds == null
+					&& !huIdsFilter.hasInitialHUQuery()
+					&& shallNotHUIds.isEmpty())
 			{
 				return SQL_TRUE; // no restrictions were specified; pass through
 			}
@@ -290,7 +290,10 @@ public final class HUIdsFilterHelper
 			IHUQueryBuilder huQuery = huIdsFilter.getInitialHUQueryOrNull();
 			if (huQuery == null)
 			{
-				huQuery = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder();
+				final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+				huQuery = handlingUnitsDAO.createHUQueryBuilder()
+						.setOnlyActiveHUs(false) // let other enforce this rule
+						.setOnlyTopLevelHUs(false); // let other enforce this rule
 			}
 			huQuery.setContext(PlainContextAware.newOutOfTrx());
 
@@ -301,7 +304,7 @@ public final class HUIdsFilterHelper
 			}
 
 			// Exclude HUs
-			huQuery.addHUIdsToExclude(HuId.toRepoIds(huIdsFilter.getShallNotHUIds()));
+			huQuery.addHUIdsToExclude(HuId.toRepoIds(shallNotHUIds));
 
 			final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(huQuery.createQueryFilter());
 			final String sql = sqlQueryFilter.getSql();
