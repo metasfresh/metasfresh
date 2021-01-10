@@ -53,21 +53,33 @@ public final class QtyCalculationsBOMLine
 {
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 
+	@Getter
+	@NonNull
 	private final ProductId bomProductId;
+	@Getter
+	@NonNull
 	private final I_C_UOM bomProductUOM;
 
+	@NonNull
 	private final BOMComponentType componentType;
 
 	@Getter
+	@NonNull
 	private final ProductId productId;
+	@NonNull
 	private final I_C_UOM uom;
+
 	private final boolean qtyPercentage;
+	@Nullable
 	private final Quantity qtyForOneFinishedGood;
+	@Nullable
 	private final Percent percentOfFinishedGood;
+	@NonNull
 	private final Percent scrap;
 
 	// References
 	@Getter
+	@Nullable
 	private final PPOrderBOMLineId orderBOMLineId;
 
 	@Builder
@@ -110,6 +122,11 @@ public final class QtyCalculationsBOMLine
 		this.scrap = scrap != null ? scrap : Percent.ZERO;
 
 		this.orderBOMLineId = orderBOMLineId;
+	}
+
+	public UomId getBomProductUOMId()
+	{
+		return UomId.ofRepoId(bomProductUOM.getC_UOM_ID());
 	}
 
 	/**

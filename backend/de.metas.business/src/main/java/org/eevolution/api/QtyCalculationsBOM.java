@@ -23,15 +23,17 @@
 package org.eevolution.api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.product.ProductId;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A BOM useful for quantity calculations
@@ -39,10 +41,11 @@ import java.util.List;
 @Value
 public class QtyCalculationsBOM
 {
+	@NonNull
 	ImmutableList<QtyCalculationsBOMLine> lines;
 
 	// References
-	@Getter
+	@Nullable
 	PPOrderId orderId;
 
 	@Builder
@@ -55,6 +58,27 @@ public class QtyCalculationsBOM
 		this.orderId = orderId;
 	}
 
+	public ProductId getBomProductId()
+	{
+		if (lines.isEmpty())
+		{
+			throw new AdempiereException("No lines");
+		}
+
+		return lines.get(0).getBomProductId();
+	}
+
+	public  I_C_UOM getBomProductUOM()
+	{
+		if (lines.isEmpty())
+		{
+			throw new AdempiereException("No lines");
+		}
+
+		return lines.get(0).getBomProductUOM();
+	}
+
+
 	public QtyCalculationsBOMLine getLineByOrderBOMLineId(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
 		return lines.stream()
@@ -62,4 +86,12 @@ public class QtyCalculationsBOM
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No BOM line found for " + orderBOMLineId + " in " + this));
 	}
+
+	public Optional<QtyCalculationsBOMLine> getLineByComponentId(@NonNull final ProductId componentId)
+	{
+		return lines.stream()
+				.filter(line -> ProductId.equals(line.getProductId(), componentId))
+				.findFirst();
+	}
+
 }

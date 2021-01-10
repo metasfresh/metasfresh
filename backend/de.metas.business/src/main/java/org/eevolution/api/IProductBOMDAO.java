@@ -3,7 +3,7 @@ package org.eevolution.api;
 import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
-import org.compiere.model.IQuery;
+import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -16,6 +16,8 @@ import java.util.Optional;
 
 public interface IProductBOMDAO extends ISingletonService
 {
+	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull I_M_Product product, @NonNull BOMType bomType);
+
 	I_PP_Product_BOM getById(ProductBOMId bomId);
 
 	@Deprecated

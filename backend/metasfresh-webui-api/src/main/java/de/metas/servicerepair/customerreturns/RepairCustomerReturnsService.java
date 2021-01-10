@@ -22,6 +22,10 @@
 
 package de.metas.servicerepair.customerreturns;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -40,9 +44,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -53,7 +59,14 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_DocType;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMAndQty;
+import org.eevolution.api.QtyCalculationsBOMAndQtyList;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 @Service
 public class RepairCustomerReturnsService
@@ -61,7 +74,10 @@ public class RepairCustomerReturnsService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 
 	private final DocBaseAndSubType DOCBASEANDSUBTYPE_ServiceRepair = DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialReceipt, X_C_DocType.DOCSUBTYPE_SR);
@@ -157,6 +173,42 @@ public class RepairCustomerReturnsService
 				.getImmutableAttributeSet(hu);
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIWithASFromProductAndInsertAttributeSet(productId, attributes);
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+	}
+
+	public QtyCalculationsBOMAndQtyList getQtyCalculationsBOMAndQtyList(final InOutId customerReturnId)
+	{
+		final ImmutableListMultimap<ProductId, org.compiere.model.I_M_InOutLine> allCustomerReturnLines = inoutBL.getLines(customerReturnId)
+				.stream()
+				.filter(customerReturnLine -> ProductId.ofRepoIdOrNull(customerReturnLine.getM_Product_ID()) != null)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						customerReturnLine -> ProductId.ofRepoIdOrNull(customerReturnLine.getM_Product_ID()),
+						customerReturnLine -> customerReturnLine
+				));
+
+		final ImmutableSet<ProductId> finishedGoodIds = allCustomerReturnLines.keySet();
+
+		final ImmutableMap<ProductId, QtyCalculationsBOM> bomsByFinishedGoodId = Maps.uniqueIndex(
+				productBOMBL.getQtyCalculationBOMs(finishedGoodIds, BOMType.PreviousSpare),
+				QtyCalculationsBOM::getBomProductId);
+
+		final ArrayList<QtyCalculationsBOMAndQty> bomAndQtys = new ArrayList<>();
+		for (final ProductId finishedGoodId : finishedGoodIds)
+		{
+			final QtyCalculationsBOM bom = bomsByFinishedGoodId.get(finishedGoodId);
+			if (bom == null)
+			{
+				// not actually a BOM product, move forward
+				continue;
+			}
+
+			for (final org.compiere.model.I_M_InOutLine customerReturnLine : allCustomerReturnLines.get(finishedGoodId))
+			{
+				final Quantity qty = Quantity.of(customerReturnLine.getQtyEntered(), uomDAO.getById(customerReturnLine.getC_UOM_ID()));
+				bomAndQtys.add(QtyCalculationsBOMAndQty.of(bom, qty));
+			}
+		}
+
+		return QtyCalculationsBOMAndQtyList.of(bomAndQtys);
 	}
 
 }

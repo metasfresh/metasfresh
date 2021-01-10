@@ -64,6 +64,8 @@ public interface IInOutBL extends ISingletonService
 	 */
 	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
 
+	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
+
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
 	 * <p>

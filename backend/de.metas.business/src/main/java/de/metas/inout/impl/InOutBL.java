@@ -118,6 +118,14 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public List<I_M_InOutLine> getLines(@NonNull final InOutId inoutId)
+	{
+		final I_M_InOut inout = getById(inoutId);
+		return getLines(inout);
+	}
+
+
+	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		final I_M_InOut inOut = inOutLine.getM_InOut();

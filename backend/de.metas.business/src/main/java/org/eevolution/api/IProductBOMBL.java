@@ -24,7 +24,10 @@ package org.eevolution.api;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
+import lombok.NonNull;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -83,4 +86,12 @@ public interface IProductBOMBL extends ISingletonService
 	Quantity getQtyExcludingScrap(I_PP_Product_BOMLine bomLine);
 
 	Percent getCoProductCostDistributionPercent(I_PP_Product_BOMLine bomLine);
+
+	List<QtyCalculationsBOM> getQtyCalculationBOMs(
+			@NonNull Set<ProductId> finishGoodIds,
+			@NonNull BOMType bomType);
+
+	QtyCalculationsBOMLine toQtyCalculationsBOMLine(
+			@NonNull I_PP_Product_BOMLine productBOMLine,
+			@NonNull I_PP_Product_BOM bom);
 }

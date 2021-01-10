@@ -22,21 +22,9 @@ package org.eevolution.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Date;
-import java.util.List;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IProductBOMBL;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.IProductLowLevelUpdater;
-import org.eevolution.api.ProductBOMQtys;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -50,6 +38,28 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.IProductLowLevelUpdater;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMQtys;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class ProductBOMBL implements IProductBOMBL
 {
@@ -243,5 +253,79 @@ public class ProductBOMBL implements IProductBOMBL
 	{
 		return ProductBOMDescriptionBuilder.newInstance()
 				.build(productId);
+	}
+
+	@Override
+	public List<QtyCalculationsBOM> getQtyCalculationBOMs(
+			final @NonNull Set<ProductId> finishGoodIds,
+			final @NonNull BOMType bomType)
+	{
+		if (finishGoodIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final HashMap<ProductBOMId, I_PP_Product_BOM> boms = new HashMap<>();
+
+		final List<I_M_Product> finishGoods = productDAO.getByIds(finishGoodIds);
+		for (final I_M_Product finishGood : finishGoods)
+		{
+			final I_PP_Product_BOM bom = bomDAO.getDefaultBOM(finishGood, bomType).orElse(null);
+			if (bom == null)
+			{
+				continue;
+			}
+
+			final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
+			boms.put(bomId, bom);
+		}
+
+		if (boms.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableListMultimap<ProductBOMId, I_PP_Product_BOMLine> bomLines = Multimaps.index(
+				bomDAO.retrieveLinesByBOMIds(boms.keySet()),
+				bomLine -> ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID()));
+
+		final ArrayList<QtyCalculationsBOM> qtyCalculationsBOMs = new ArrayList<>(boms.size());
+		for (final ProductBOMId bomId : boms.keySet())
+		{
+			final QtyCalculationsBOM qtyCalculationsBOM = toQtyCalculationsBOM(boms.get(bomId), bomLines.get(bomId));
+			qtyCalculationsBOMs.add(qtyCalculationsBOM);
+		}
+
+		return ImmutableList.copyOf(qtyCalculationsBOMs);
+	}
+
+	private QtyCalculationsBOM toQtyCalculationsBOM(final I_PP_Product_BOM bom, final List<I_PP_Product_BOMLine> bomLines)
+	{
+		return QtyCalculationsBOM.builder()
+				.lines(bomLines.stream()
+						.map(bomLine -> toQtyCalculationsBOMLine(bomLine, bom))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	@Override
+	public QtyCalculationsBOMLine toQtyCalculationsBOMLine(
+			@NonNull final I_PP_Product_BOMLine productBOMLine,
+			@NonNull final I_PP_Product_BOM bom)
+	{
+		return QtyCalculationsBOMLine.builder()
+				.bomProductId(ProductId.ofRepoId(bom.getM_Product_ID()))
+				.bomProductUOM(uomDAO.getById(bom.getC_UOM_ID()))
+				.componentType(BOMComponentType.ofCode(productBOMLine.getComponentType()))
+				//
+				.productId(ProductId.ofRepoId(productBOMLine.getM_Product_ID()))
+				.qtyPercentage(productBOMLine.isQtyPercentage())
+				.qtyForOneFinishedGood(productBOMLine.getQtyBOM())
+				.percentOfFinishedGood(Percent.of(productBOMLine.getQtyBatch()))
+				.scrap(Percent.of(productBOMLine.getScrap()))
+				//
+				.uom(uomDAO.getById(productBOMLine.getC_UOM_ID()))
+				//
+				.build();
 	}
 }
