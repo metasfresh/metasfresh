@@ -34,6 +34,7 @@ import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
@@ -46,7 +47,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
-import org.compiere.model.I_C_ProjectLine;
 import org.compiere.model.MProjectIssue;
 import org.compiere.model.MTransaction;
 import org.compiere.util.Env;
@@ -169,17 +169,14 @@ class ProjectIssueCommand
 	{
 		final I_C_Project project = getProject();
 
-		final I_C_ProjectLine projectLine = InterfaceWrapperHelper.newInstance(I_C_ProjectLine.class);
-		projectLine.setAD_Org_ID(project.getAD_Org_ID());
-		projectLine.setC_Project_ID(project.getC_Project_ID());
-		projectLine.setC_ProjectIssue_ID(projectIssue.getAD_Org_ID());
-
-		projectLine.setC_ProjectIssue_ID(projectIssue.getC_ProjectIssue_ID());
-		projectLine.setM_Product_ID(projectIssue.getM_Product_ID());
-		projectLine.setCommittedQty(projectIssue.getMovementQty());
-		projectLine.setDescription(projectIssue.getDescription());
-
-		InterfaceWrapperHelper.save(projectLine);
+		projectService.createProjectLine(CreateProjectLineRequest.builder()
+				.projectId(ProjectId.ofRepoId(project.getC_Project_ID()))
+				.orgId(OrgId.ofRepoId(project.getAD_Org_ID()))
+				.projectIssueId(projectIssue.getC_ProjectIssue_ID())
+				.productId(ProductId.ofRepoId(projectIssue.getM_Product_ID()))
+				.committedQty(projectIssue.getMovementQty())
+				.description(projectIssue.getDescription())
+				.build());
 	}
 
 	private void addAssignedHandlingUnit(final I_C_ProjectIssue projectIssue, final I_M_HU hu)

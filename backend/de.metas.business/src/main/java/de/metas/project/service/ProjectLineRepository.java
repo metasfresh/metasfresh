@@ -52,6 +52,11 @@ public class ProjectLineRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	private void save(final I_C_ProjectLine projectLine)
+	{
+		InterfaceWrapperHelper.saveRecord(projectLine);
+	}
+
 	private ProjectLine toProjectLine(final I_C_ProjectLine record)
 	{
 		return ProjectLine.builder()
@@ -60,4 +65,19 @@ public class ProjectLineRepository
 				.description(record.getDescription())
 				.build();
 	}
+
+	public void createProjectLine(@NonNull final CreateProjectLineRequest request)
+	{
+		final I_C_ProjectLine projectLine = InterfaceWrapperHelper.newInstance(I_C_ProjectLine.class);
+		projectLine.setAD_Org_ID(request.getOrgId().getRepoId());
+		projectLine.setC_Project_ID(request.getProjectId().getRepoId());
+
+		projectLine.setC_ProjectIssue_ID(request.getProjectIssueId());
+		projectLine.setM_Product_ID(request.getProductId().getRepoId());
+		projectLine.setCommittedQty(request.getCommittedQty());
+		projectLine.setDescription(request.getDescription());
+
+		save(projectLine);
+	}
+
 }

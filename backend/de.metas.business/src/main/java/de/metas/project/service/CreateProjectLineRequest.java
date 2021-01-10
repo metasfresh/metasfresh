@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -22,41 +22,23 @@
 
 package de.metas.project.service;
 
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectLine;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_C_Project;
-import org.springframework.stereotype.Service;
+import lombok.Value;
 
-import java.util.List;
+import java.math.BigDecimal;
 
-@Service
-public class HUProjectService
+@Value
+@Builder
+public class CreateProjectLineRequest
 {
-	private final ProjectService projectService;
-
-	public HUProjectService(
-			@NonNull final ProjectService projectService)
-	{
-		this.projectService = projectService;
-	}
-
-	public I_C_Project getById(@NonNull final ProjectId id)
-	{
-		return projectService.getById(id);
-	}
-
-	public List<ProjectLine> getLines(@NonNull final ProjectId projectId)
-	{
-		return projectService.getLines(projectId);
-	}
-
-	public void createProjectIssue(@NonNull final ProjectIssueRequest request)
-	{
-		ProjectIssueCommand.builder()
-				.projectService(projectService)
-				.request(request)
-				.build()
-				.execute();
-	}
+	@NonNull ProjectId projectId;
+	@NonNull OrgId orgId;
+	int projectIssueId;
+	@NonNull ProductId productId;
+	@NonNull BigDecimal committedQty;
+	@NonNull String description;
 }

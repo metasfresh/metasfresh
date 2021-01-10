@@ -147,4 +147,9 @@ public class ProjectService
 				.setFailOnError(false)
 				.build();
 	}
+
+	public void createProjectLine(@NonNull final CreateProjectLineRequest request)
+	{
+		projectLineRepository.createProjectLine(request);
+	}
 }
