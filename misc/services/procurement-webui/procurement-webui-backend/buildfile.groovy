@@ -10,15 +10,17 @@ import de.metas.jenkins.Nexus
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 
+return this
+
 Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
     final def resultsMap = [:]
     resultsMap.buildDescription = '<h4>procurement-webui-backend</h4>'
 
+    final misc = new Misc()
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
-    final misc = new Misc()
     if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
 
         final Nexus nexus = new Nexus()
@@ -45,9 +47,9 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
 
         withCredentials([usernamePassword(credentialsId: 'nexus.metasfresh.com_jenkins', passwordVariable: 'DOCKER_PUSH_REGISTRY_PASSWORD', usernameVariable: 'DOCKER_PUSH_REGISTRY_USERNAME')]) {
-    // do the actual building and deployment
-    // maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+            // do the actual building and deployment
+            // maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+            sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
         }
     }
     final def dockerInfo = readJSON file: 'target/jib-image.json'
@@ -74,6 +76,4 @@ To run with your <code>application.properties</code>, include something as <code
 
     return resultsMap
 }
-
-return this
 
