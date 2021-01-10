@@ -3,8 +3,9 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 import de.metas.jenkins.DockerConf
-import de.metas.jenkins.Nexus
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Nexus
 
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
@@ -70,6 +71,8 @@ docker run --rm\\<br/>
 <p/>
 To run with your <code>application.properties</code>, include something as <code>-v /tmp/my-own-resources:/app/resources</code> in the <code>docker run</code> command.
 """
+
+    return resultsMap
 }
 
 return this

@@ -5,35 +5,45 @@
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 
 @Library('misc')
-import de.metas.jenkins.Misc
-import de.metas.jenkins.DockerConf
+import de.metas.jenkins.MvnConf
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
-    stage('Build misc services') {
-        currentBuild.description = """${currentBuild.description}<p/>
-			<h3>procurement-webui</h3>
-		"""
 
-        withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
-            dir('procurement-webui-backend') {
-                def buildFile = load('buildfile.groovy')
-                buildFile.build(mvnConf, scmVars, forceBuild)
-            }
-        }
-        dir('procurement-webui-frontend') {
-            def buildFile = load('buildfile.groovy')
-            buildFile.build(scmVars, forceBuild)
-        }
-        dir('rabbitmq') {
+    final String backendBuildDescription;
+    final String backendDockerImage;
+    final String frontendBuildDescription;
+    final String frontendDockerImage;
 
-            def buildFile = load('buildfile.groovy')
-            buildFile.build(scmVars, forceBuild)
+    withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+        dir('procurement-webui-backend') {
+            final def buildFile = load('buildfile.groovy')
+            final Map results = buildFile.build(mvnConf, scmVars, forceBuild)
+
+            backendBuildDescription = results.buildDescription
+            backendDockerImage = results.dockerImage
         }
-        dir('nginx') {
-            def buildFile = load('buildfile.groovy')
-            buildFile.build(scmVars, forceBuild)
-        }
-    } // stage
+    }
+    dir('procurement-webui-frontend') {
+        def buildFile = load('buildfile.groovy')
+        buildFile.build(scmVars, forceBuild)
+
+        frontendBuildDescription = results.buildDescription
+        frontendDockerImage = results.dockerImage
+    }
+    dir('rabbitmq') {
+
+        def buildFile = load('buildfile.groovy')
+        buildFile.build(scmVars, forceBuild)
+    }
+    dir('nginx') {
+        def buildFile = load('buildfile.groovy')
+        buildFile.build(scmVars, forceBuild)
+    }
+
+    currentBuild.description = """
+${frontendBuildDescription}<p>
+${backendBuildDescription}<p>
+"""
 }
 
 return this

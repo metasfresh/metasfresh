@@ -9,6 +9,7 @@ Map build(
         final MvnConf mvnConf,
         final Map scmVars,
         final boolean forceBuild = false,
+        final boolean forceSkip = false,
         final String multithreadParam = "-T 2C") {
     final dockerImages = [:]
     String publishedDBInitDockerImageName
@@ -19,6 +20,13 @@ Map build(
                 currentBuild.description = """${currentBuild.description}<p/>
 				<h2>Backend</h2>
 			"""
+                if (forceSkip) {
+                    currentBuild.description = """${currentBuild.description}<p/>
+            Forced to skip.
+            """
+                    echo "forced to skip backend";
+                    return;
+                }
 
                 def anyFileChanged
                 try {
