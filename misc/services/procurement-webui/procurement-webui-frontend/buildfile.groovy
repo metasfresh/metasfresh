@@ -32,15 +32,21 @@ Map build(final Map scmVars, final boolean forceBuild = false) {
         return resultsMap
     }
 
-    resultsMap.dockerImage = dockerBuildAndPush(materialDispoDockerConf)
+    final DockerConf dockerConf = new DockerConf(
+            'procurement-webui-frontend', // artifactName
+            env.BRANCH_NAME, // branchName
+            env.MF_VERSION, // versionSuffix
+            '.' // workDir
+    )
+    resultsMap.dockerImage = dockerBuildAndPush(dockerConf)
 
     resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 		artifacts (if not yet cleaned up)
 			<ul>
-<li>a docker image with name <code>${dockerImage}</code>; Note that you can also use the tag <code>${dockerLatestTag}</code></li>
+<li>a docker image with name <code>${resultsMap.dockerImage}</code>; Note that you can also use the tag <code>${dockerLatestTag}</code></li>
 </ul>""";
 
-    echo "Build and pushed docker image ${dockerImage}"
+    echo "Build and pushed docker image ${resultsMap.dockerImage}"
     return resultsMap
 }
 
