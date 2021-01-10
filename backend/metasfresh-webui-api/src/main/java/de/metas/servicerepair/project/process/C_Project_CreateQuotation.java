@@ -64,7 +64,6 @@ public class C_Project_CreateQuotation
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
