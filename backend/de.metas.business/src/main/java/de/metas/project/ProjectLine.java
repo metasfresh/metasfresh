@@ -23,12 +23,12 @@
 package de.metas.project;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -37,11 +37,11 @@ public class ProjectLine
 	@NonNull
 	ProductId productId;
 
-	/**
-	 * Committed Qty in stocking UOM
-	 */
 	@NonNull
-	BigDecimal committedQty;
+	Quantity plannedQty;
+
+	@NonNull
+	Quantity committedQty;
 
 	@Nullable
 	String description;

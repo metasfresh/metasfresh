@@ -37,12 +37,17 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
-import de.metas.project.service.ProjectCreateRequest;
+import de.metas.project.service.CreateProjectRequest;
 import de.metas.project.service.ProjectService;
+import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestBL;
+import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
+import de.metas.servicerepair.customerreturns.SparePartsReturnCalculation;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -55,25 +60,29 @@ import org.compiere.model.I_R_Request;
 import org.compiere.util.TimeUtil;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 class CreateServiceRepairProjectCommand
 {
-	private final ProjectService projectService;
 	private final IRequestBL requestBL = Services.get(IRequestBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final ProjectService projectService;
+	private final RepairCustomerReturnsService repairCustomerReturnsService;
 
 	private final RequestId requestId;
 
 	@Builder
 	private CreateServiceRepairProjectCommand(
 			@NonNull final ProjectService projectService,
-			//
+			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService,
 			@NonNull final RequestId requestId)
 	{
 		this.projectService = projectService;
+		this.repairCustomerReturnsService = repairCustomerReturnsService;
 		this.requestId = requestId;
 	}
 
@@ -87,21 +96,34 @@ class CreateServiceRepairProjectCommand
 		final BPartnerLocationId bpartnerAndLocationId = BPartnerLocationId.ofRepoId(customerReturn.getC_BPartner_ID(), customerReturn.getC_BPartner_Location_ID());
 		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(customerReturn.getC_BPartner_ID(), customerReturn.getAD_User_ID());
 		final ZonedDateTime customerReturnDate = TimeUtil.asZonedDateTime(customerReturn.getMovementDate(), orgDAO.getTimeZone(orgId));
-
 		final PricingInfo pricingInfo = getPricingInfo(bpartnerAndLocationId, customerReturnDate);
 
-		final ProjectId projectId = projectService.createProject(ProjectCreateRequest.builder()
+		//
+		final ArrayList<CreateProjectRequest.ProjectLine> projectLines = new ArrayList<>();
+		final SparePartsReturnCalculation sparePartsCalculation = repairCustomerReturnsService.getSparePartsCalculation(customerReturnId);
+		for (final ProductId sparePartId : sparePartsCalculation.getAllowedSparePartIds())
+		{
+			final Quantity qtyRequired = sparePartsCalculation.computeQtyOfSparePartsRequiredNet(sparePartId, uomConversionBL).orElse(null);
+			if (qtyRequired == null || qtyRequired.isZero())
+			{
+				continue;
+			}
+
+			projectLines.add(CreateProjectRequest.ProjectLine.builder()
+					.productId(sparePartId)
+					.plannedQty(qtyRequired)
+					.build());
+		}
+
+		final ProjectId projectId = projectService.createProject(CreateProjectRequest.builder()
 				.orgId(orgId)
 				.projectCategory(ProjectCategory.ServiceOrRepair)
-				//
 				.bpartnerAndLocationId(bpartnerAndLocationId)
 				.contactId(contactId)
-				//
 				.priceListVersionId(pricingInfo.getPriceListVersionId())
 				.currencyId(pricingInfo.getCurrencyId())
-				//
 				.warehouseId(WarehouseId.ofRepoId(customerReturn.getM_Warehouse_ID()))
-				//
+				.lines(projectLines)
 				.build());
 
 		request.setC_Project_ID(projectId.getRepoId());

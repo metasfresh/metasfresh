@@ -27,17 +27,21 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
-public class ProjectCreateRequest
+public class CreateProjectRequest
 {
 	@NonNull
 	OrgId orgId;
@@ -57,4 +61,15 @@ public class ProjectCreateRequest
 
 	@NonNull
 	WarehouseId warehouseId;
+
+	@Singular
+	@NonNull List<ProjectLine> lines;
+
+	@Value
+	@Builder
+	public static class ProjectLine
+	{
+		@NonNull ProductId productId;
+		@NonNull Quantity plannedQty;
+	}
 }

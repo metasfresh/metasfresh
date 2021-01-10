@@ -33,7 +33,6 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_ProjectLine;
 import org.compiere.model.X_C_Project;
 import org.springframework.stereotype.Service;
 
@@ -76,7 +75,7 @@ public class ProjectService
 		return projectLineRepository.retrieveLines(projectId);
 	}
 
-	public ProjectId createProject(@NonNull final ProjectCreateRequest request)
+	public ProjectId createProject(@NonNull final CreateProjectRequest request)
 	{
 		final I_C_Project project = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 		project.setAD_Org_ID(request.getOrgId().getRepoId());
@@ -114,10 +113,17 @@ public class ProjectService
 		project.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 
 		projectRepository.save(project);
-		return ProjectId.ofRepoId(project.getC_Project_ID());
+		final ProjectId projectId = ProjectId.ofRepoId(project.getC_Project_ID());
+
+		for (final CreateProjectRequest.ProjectLine lineRequest : request.getLines())
+		{
+			projectLineRepository.createProjectLine(lineRequest, projectId, request.getOrgId());
+		}
+
+		return projectId;
 	}
 
-	public void updateFromProjectType(final I_C_Project projectRecord)
+	public void updateFromProjectType(@NonNull final I_C_Project projectRecord)
 	{
 		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
 		if (projectTypeId == null)

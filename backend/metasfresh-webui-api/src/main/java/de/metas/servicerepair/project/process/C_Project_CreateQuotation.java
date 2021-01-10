@@ -104,9 +104,10 @@ public class C_Project_CreateQuotation
 		for (final ProjectLine line : projectService.getLines(projectId))
 		{
 			final ProductId productId = line.getProductId();
-			final Quantity qty = getCommittedQty(line);
+			final Quantity qty = line.getPlannedQty();
 
-			orderFactory.orderLineByProductAndUomOrCreate(productId, qty.getUomId())
+			orderFactory
+					.orderLineByProductAndUomOrCreate(productId, qty.getUomId())
 					.addQty(qty);
 		}
 
@@ -119,11 +120,6 @@ public class C_Project_CreateQuotation
 				.build());
 
 		return MSG_OK;
-	}
-
-	private Quantity getCommittedQty(final ProjectLine line)
-	{
-		return Quantity.of(line.getCommittedQty(), productBL.getStockUOM(line.getProductId()));
 	}
 
 	private OrderFactory newOrderFactory(@NonNull final I_C_Project project)

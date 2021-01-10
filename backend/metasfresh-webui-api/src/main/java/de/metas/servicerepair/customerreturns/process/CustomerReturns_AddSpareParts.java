@@ -32,6 +32,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
+import de.metas.servicerepair.customerreturns.SparePartsReturnCalculation;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -45,7 +46,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.QtyCalculationsBOMAndQtyList;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -71,7 +71,7 @@ public class CustomerReturns_AddSpareParts
 	@Nullable
 	private UomId uomId;
 
-	private QtyCalculationsBOMAndQtyList _qtyCalculationsBOMs; // lazy
+	private SparePartsReturnCalculation _sparePartsCalculation; // lazy
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -86,7 +86,7 @@ public class CustomerReturns_AddSpareParts
 			lookupTableName = I_M_Product.Table_Name)
 	public LookupValuesList getProducts()
 	{
-		final ImmutableSet<ProductId> sparePartIds = getQtyCalculationsBOMs().getAllComponentIds();
+		final ImmutableSet<ProductId> sparePartIds = getSparePartsCalculation().getAllowedSparePartIds();
 		return LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name).findByIdsOrdered(sparePartIds);
 	}
 
@@ -98,7 +98,7 @@ public class CustomerReturns_AddSpareParts
 			final ProductId sparePartId = this.sparePartId;
 			if (sparePartId != null)
 			{
-				final Quantity qty = getQtyCalculationsBOMs().computeQtyOfComponentsRequired(sparePartId, uomConversionBL).orElse(null);
+				final Quantity qty = getSparePartsCalculation().computeQtyOfSparePartsRequiredNet(sparePartId, uomConversionBL).orElse(null);
 				this.qtyBD = qty != null ? qty.toBigDecimal() : null;
 				this.uomId = qty != null ? qty.getUomId() : null;
 
@@ -136,14 +136,14 @@ public class CustomerReturns_AddSpareParts
 		return Quantity.of(qtyBD, uom);
 	}
 
-	private QtyCalculationsBOMAndQtyList getQtyCalculationsBOMs()
+	private SparePartsReturnCalculation getSparePartsCalculation()
 	{
-		QtyCalculationsBOMAndQtyList qtyCalculationsBOMs = _qtyCalculationsBOMs;
-		if (qtyCalculationsBOMs == null)
+		SparePartsReturnCalculation sparePartsCalculation = _sparePartsCalculation;
+		if (sparePartsCalculation == null)
 		{
-			qtyCalculationsBOMs = _qtyCalculationsBOMs = repairCustomerReturnsService.getQtyCalculationsBOMAndQtyList(getCustomerReturnId());
+			sparePartsCalculation = _sparePartsCalculation = repairCustomerReturnsService.getSparePartsCalculation(getCustomerReturnId());
 		}
-		return qtyCalculationsBOMs;
+		return sparePartsCalculation;
 	}
 
 }

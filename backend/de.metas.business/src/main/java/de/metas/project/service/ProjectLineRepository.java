@@ -23,9 +23,12 @@
 package de.metas.project.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -59,25 +62,43 @@ public class ProjectLineRepository
 
 	private ProjectLine toProjectLine(final I_C_ProjectLine record)
 	{
+		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 		return ProjectLine.builder()
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.committedQty(record.getCommittedQty())
+				.plannedQty(Quantitys.create(record.getPlannedQty(), uomId))
+				.committedQty(Quantitys.create(record.getCommittedQty(), uomId))
 				.description(record.getDescription())
 				.build();
 	}
 
 	public void createProjectLine(@NonNull final CreateProjectLineRequest request)
 	{
-		final I_C_ProjectLine projectLine = InterfaceWrapperHelper.newInstance(I_C_ProjectLine.class);
-		projectLine.setAD_Org_ID(request.getOrgId().getRepoId());
-		projectLine.setC_Project_ID(request.getProjectId().getRepoId());
+		final I_C_ProjectLine record = InterfaceWrapperHelper.newInstance(I_C_ProjectLine.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setC_Project_ID(request.getProjectId().getRepoId());
 
-		projectLine.setC_ProjectIssue_ID(request.getProjectIssueId());
-		projectLine.setM_Product_ID(request.getProductId().getRepoId());
-		projectLine.setCommittedQty(request.getCommittedQty());
-		projectLine.setDescription(request.getDescription());
+		record.setC_ProjectIssue_ID(request.getProjectIssueId());
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setCommittedQty(request.getCommittedQty());
+		record.setDescription(request.getDescription());
 
-		save(projectLine);
+		save(record);
+	}
+
+	public void createProjectLine(
+			@NonNull final CreateProjectRequest.ProjectLine request,
+			@NonNull final ProjectId projectId,
+			@NonNull final OrgId orgId)
+	{
+		final I_C_ProjectLine record = InterfaceWrapperHelper.newInstance(I_C_ProjectLine.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setC_Project_ID(projectId.getRepoId());
+
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setPlannedQty(request.getPlannedQty().toBigDecimal());
+		record.setC_UOM_ID(request.getPlannedQty().getUomId().getRepoId());
+
+		save(record);
 	}
 
 }

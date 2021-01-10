@@ -25,6 +25,7 @@ package de.metas.servicerepair.project;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectService;
 import de.metas.request.RequestId;
+import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.springframework.stereotype.Service;
@@ -35,17 +36,21 @@ public class ServiceRepairProjectService
 	public static final AdWindowId AD_WINDOW_ID = AdWindowId.ofRepoId(541015); // FIXME hardcoded
 
 	private final ProjectService projectService;
+	private final RepairCustomerReturnsService repairCustomerReturnsService;
 
 	public ServiceRepairProjectService(
-			@NonNull final ProjectService projectService)
+			@NonNull final ProjectService projectService,
+			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService)
 	{
 		this.projectService = projectService;
+		this.repairCustomerReturnsService = repairCustomerReturnsService;
 	}
 
 	public ProjectId createProjectFromRequest(final RequestId requestId)
 	{
 		return CreateServiceRepairProjectCommand.builder()
 				.projectService(projectService)
+				.repairCustomerReturnsService(repairCustomerReturnsService)
 				.requestId(requestId)
 				.build()
 				.execute();

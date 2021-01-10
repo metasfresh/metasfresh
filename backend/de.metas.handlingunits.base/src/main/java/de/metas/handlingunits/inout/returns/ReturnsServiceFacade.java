@@ -40,8 +40,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -134,7 +132,7 @@ public class ReturnsServiceFacade
 	}
 
 	public void assignHandlingUnitToHeaderAndLine(
-			@NonNull final I_M_InOutLine customerReturnLine,
+			@NonNull final org.compiere.model.I_M_InOutLine customerReturnLine,
 			@NonNull final I_M_HU hu)
 	{
 		final ImmutableList<I_M_HU> hus = ImmutableList.of(hu);
@@ -143,7 +141,7 @@ public class ReturnsServiceFacade
 	}
 
 	public void assignHandlingUnitsToHeaderAndLine(
-			@NonNull final I_M_InOutLine customerReturnLine,
+			@NonNull final org.compiere.model.I_M_InOutLine customerReturnLine,
 			@NonNull final List<I_M_HU> hus)
 	{
 		if (hus.isEmpty())

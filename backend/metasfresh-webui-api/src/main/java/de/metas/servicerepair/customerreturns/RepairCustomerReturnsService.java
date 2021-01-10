@@ -22,7 +22,7 @@
 
 package de.metas.servicerepair.customerreturns;
 
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -41,7 +41,6 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.IInOutBL;
@@ -58,15 +57,14 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.QtyCalculationsBOM;
-import org.eevolution.api.QtyCalculationsBOMAndQty;
-import org.eevolution.api.QtyCalculationsBOMAndQtyList;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class RepairCustomerReturnsService
@@ -175,40 +173,44 @@ public class RepairCustomerReturnsService
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
-	public QtyCalculationsBOMAndQtyList getQtyCalculationsBOMAndQtyList(final InOutId customerReturnId)
+	public SparePartsReturnCalculation getSparePartsCalculation(final InOutId customerReturnId)
 	{
-		final ImmutableListMultimap<ProductId, org.compiere.model.I_M_InOutLine> allCustomerReturnLines = inoutBL.getLines(customerReturnId)
+		final List<I_M_InOutLine> customerReturnLines = inoutBL.getLines(customerReturnId)
 				.stream()
 				.filter(customerReturnLine -> ProductId.ofRepoIdOrNull(customerReturnLine.getM_Product_ID()) != null)
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						customerReturnLine -> ProductId.ofRepoIdOrNull(customerReturnLine.getM_Product_ID()),
-						customerReturnLine -> customerReturnLine
-				));
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableSet<ProductId> finishedGoodIds = allCustomerReturnLines.keySet();
+		final ImmutableSet<ProductId> productIds = customerReturnLines.stream()
+				.map(customerReturnLine -> ProductId.ofRepoId(customerReturnLine.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ProductId, QtyCalculationsBOM> bomsByFinishedGoodId = Maps.uniqueIndex(
-				productBOMBL.getQtyCalculationBOMs(finishedGoodIds, BOMType.PreviousSpare),
+		final ImmutableMap<ProductId, QtyCalculationsBOM> sparePartsBOMs = Maps.uniqueIndex(
+				productBOMBL.getQtyCalculationBOMs(productIds, BOMType.PreviousSpare),
 				QtyCalculationsBOM::getBomProductId);
 
-		final ArrayList<QtyCalculationsBOMAndQty> bomAndQtys = new ArrayList<>();
-		for (final ProductId finishedGoodId : finishedGoodIds)
+		final SparePartsReturnCalculation.SparePartsReturnCalculationBuilder resultBuilder = SparePartsReturnCalculation.builder();
+		for (final I_M_InOutLine customerReturnLine : customerReturnLines)
 		{
-			final QtyCalculationsBOM bom = bomsByFinishedGoodId.get(finishedGoodId);
-			if (bom == null)
-			{
-				// not actually a BOM product, move forward
-				continue;
-			}
+			final ProductId productId = ProductId.ofRepoId(customerReturnLine.getM_Product_ID());
+			final Quantity qtyReturned = Quantity.of(customerReturnLine.getQtyEntered(), uomDAO.getById(customerReturnLine.getC_UOM_ID()));
 
-			for (final org.compiere.model.I_M_InOutLine customerReturnLine : allCustomerReturnLines.get(finishedGoodId))
+			final QtyCalculationsBOM sparePartsBOM = sparePartsBOMs.get(productId);
+			if (sparePartsBOM != null)
 			{
-				final Quantity qty = Quantity.of(customerReturnLine.getQtyEntered(), uomDAO.getById(customerReturnLine.getC_UOM_ID()));
-				bomAndQtys.add(QtyCalculationsBOMAndQty.of(bom, qty));
+				resultBuilder.finishedGood(SparePartsReturnCalculation.FinishedGood.builder()
+						.sparePartsBOM(sparePartsBOM)
+						.qty(qtyReturned)
+						.build());
+			}
+			else
+			{
+				resultBuilder.sparePart(SparePartsReturnCalculation.SparePart.builder()
+						.sparePartId(productId)
+						.qty(qtyReturned)
+						.build());
 			}
 		}
 
-		return QtyCalculationsBOMAndQtyList.of(bomAndQtys);
+		return resultBuilder.build();
 	}
-
 }
