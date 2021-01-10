@@ -20,11 +20,13 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
+import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -64,7 +66,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.orderBy(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOMLine_ID)
 				.create()
 				.listImmutable(I_PP_Product_BOMLine.class);
-	}	// getLines
+	}    // getLines
 
 	@Override
 	public List<I_PP_Product_BOMLine> retrieveLinesByBOMIds(@NonNull final Collection<ProductBOMId> bomIds)
@@ -102,23 +104,25 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final String productValue = product.getValue();
 
-		return retrieveDefaultBOM(ctx, productId, productValue, trxName);
+		return retrieveDefaultBOM(ctx, productId, productValue, BOMType.CurrentActive, trxName);
 	}
 
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#IsDefault")
-	/* package */ Optional<I_PP_Product_BOM> retrieveDefaultBOM(
-			@CacheCtx final Properties ctx,
-			final int productId,
-			final String productValue,
-			@CacheTrx final String trxName)
+	Optional<I_PP_Product_BOM> retrieveDefaultBOM(
+			@CacheCtx @NonNull final Properties ctx,
+			@NonNull final ProductId productId,
+			@NonNull final String productValue,
+			@NonNull final BOMType bomType,
+			@CacheTrx @Nullable final String trxName)
 	{
 		final I_PP_Product_BOM bom = queryBL
 				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName)
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_Value, productValue)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_PP_Product_BOM.class);
@@ -163,13 +167,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	public IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQuery(final Properties ctx, final int productId, final String trxName)
+	public IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQueryInTrx(@NonNull final ProductId productId)
 	{
 		return queryBL
-				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName)
+				.createQueryBuilder(I_PP_Product_BOMLine.class)
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient(ctx)
 				.create();
 	}
 
