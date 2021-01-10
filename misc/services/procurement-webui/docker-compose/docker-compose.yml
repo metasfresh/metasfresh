@@ -1,0 +1,50 @@
+version: '2.4'
+services:
+  procurement_rabbitmq:
+    image: rabbitmq:3.8.9-management
+    ports:
+      - 5673:5672
+      - 15673:15672
+    volumes:
+      - ./volumes/procurement_rabbitmq/configs:/etc/rabbitmq/:ro
+    networks:
+      - rmq_backend
+  procurement_rabbitmq_stream_proxy:
+    image: tekn0ir/nginx-stream
+    container_name: rmq_stream_proxy
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "25672:25672"
+    volumes:
+      - ./nginx/certs/cert.pem:/etc/nginx/ssl/cert.pem:ro
+      - ./nginx/certs/key.pem:/etc/nginx/ssl/key.pem:ro
+      - ./nginx/default.conf:/opt/nginx/stream.conf.d/default.conf:ro
+    networks:
+      - rmq_backend
+  procurement_db:
+    image: postgres:13.1
+    restart: always
+    environment:
+      - POSTGRES_USER=metasfresh
+      - POSTGRES_PASSWORD=xYjloQKHPfqgKSHbNzgp
+      - POSTGRES_DB=mfprocurement
+    networks:
+      - rmq_backend
+    volumes:
+      - ./volumes/procurement_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+  procurement_backend:
+    image: docker.metasfresh.com/metasfresh/de-metas-procurement-backend:procurement_app_LATEST
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db/mfprocurement
+      - SPRING_DATASOURCE_USERNAME=metasfresh
+      - SPRING_DATASOURCE_PASSWORD=xYjloQKHPfqgKSHbNzgp
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    ports:
+      - "8082:8082"
+    networks:
+      - rmq_backend
+networks:
+  rmq_backend:

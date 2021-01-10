@@ -2,25 +2,33 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-import de.metas.jenkins.MvnConf
+import de.metas.jenkins.DockerConf
+import de.metas.jenkins.Nexus
 import de.metas.jenkins.Misc
+
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 
-def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
+Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
-    currentBuild.description = """${currentBuild.description}<p/>
-			<h4>procurement-webui-backend</h4>
-		"""
+    final def resultsMap = [:]
+    resultsMap.buildDescription = '<h4>procurement-webui-backend</h4>'
+
+    final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
     final misc = new Misc()
     if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
-        currentBuild.description = """${currentBuild.description}<p/>
-					No changes happened in procurement-webui-backend.
+
+        final Nexus nexus = new Nexus()
+        final String dockerImageName = 'metasfresh/procurement-webui-backend'
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}/${dockerImageName}/${dockerLatestTag}")
+
+        resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
+					No changes happened in procurement-webui-backend; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
         echo "no changes happened in procurement-webui-backend; skip building procurement-webui-backend";
-        return
+        return resultsMap
     }
 
     // set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
@@ -43,7 +51,8 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     }
     final def dockerInfo = readJSON file: 'target/jib-image.json'
 
-    currentBuild.description = """${currentBuild.description}<p/>
+    resultsMap.dockerImage = dockerInfo.image
+    resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 		This build's main artifact (if not yet cleaned up) is
 <ul>
 <li>a docker image with name<br>
