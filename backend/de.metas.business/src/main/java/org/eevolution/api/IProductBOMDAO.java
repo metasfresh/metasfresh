@@ -43,7 +43,7 @@ public interface IProductBOMDAO extends ISingletonService
 
 	boolean hasBOMs(ProductId productId);
 
-	IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQueryInTrx(ProductId productId);
+	List<I_PP_Product_BOMLine> retrieveBOMLinesByComponentIdInTrx(ProductId productId);
 
 	List<I_PP_Product_BOM> retrieveBOMsContainingExactProducts(Collection<Integer> productIds);
 

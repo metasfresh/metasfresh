@@ -53,9 +53,8 @@ import java.util.Set;
 	{
 		final DefaultMutableTreeNode productNode = new DefaultMutableTreeNode(productId);
 
-		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class)
-				.retrieveBOMLinesForProductQueryInTrx(productId)
-				.list();
+		final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+		final List<I_PP_Product_BOMLine> productBOMLines = productBOMDAO.retrieveBOMLinesByComponentIdInTrx(productId);
 
 		boolean first = true;
 		for (final I_PP_Product_BOMLine productBOMLine : productBOMLines)

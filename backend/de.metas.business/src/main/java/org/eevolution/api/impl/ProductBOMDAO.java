@@ -167,13 +167,14 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	public IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQueryInTrx(@NonNull final ProductId productId)
+	public List<I_PP_Product_BOMLine> retrieveBOMLinesByComponentIdInTrx(@NonNull final ProductId productId)
 	{
 		return queryBL
 				.createQueryBuilder(I_PP_Product_BOMLine.class)
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
-				.create();
+				.create()
+				.listImmutable(I_PP_Product_BOMLine.class);
 	}
 
 	@Override
