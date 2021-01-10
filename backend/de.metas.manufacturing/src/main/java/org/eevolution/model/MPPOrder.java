@@ -47,7 +47,7 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.report.DocumentReportService;

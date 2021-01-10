@@ -16,7 +16,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingId;
 import lombok.AccessLevel;
 import lombok.Builder;

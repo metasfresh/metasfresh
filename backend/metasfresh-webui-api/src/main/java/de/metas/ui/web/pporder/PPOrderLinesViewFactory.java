@@ -25,7 +25,7 @@ package de.metas.ui.web.pporder;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;

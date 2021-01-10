@@ -2,8 +2,6 @@ package org.eevolution.api;
 
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;

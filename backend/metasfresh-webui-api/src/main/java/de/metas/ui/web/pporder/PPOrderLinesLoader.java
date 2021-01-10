@@ -23,7 +23,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

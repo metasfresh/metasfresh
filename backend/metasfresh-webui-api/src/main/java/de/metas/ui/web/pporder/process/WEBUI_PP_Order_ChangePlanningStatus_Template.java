@@ -5,7 +5,7 @@ import org.eevolution.api.PPOrderPlanningStatus;
 
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLinesView;

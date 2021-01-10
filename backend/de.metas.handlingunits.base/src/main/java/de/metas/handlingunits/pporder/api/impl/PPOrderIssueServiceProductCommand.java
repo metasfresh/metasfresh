@@ -40,7 +40,7 @@ import de.metas.manufacturing.generatedcomponents.GeneratedComponentRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

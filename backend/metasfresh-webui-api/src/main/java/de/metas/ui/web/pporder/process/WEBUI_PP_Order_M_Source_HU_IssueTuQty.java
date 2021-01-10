@@ -16,7 +16,7 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;

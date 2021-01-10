@@ -12,7 +12,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;

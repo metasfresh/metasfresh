@@ -1,35 +1,8 @@
-package de.metas.material.planning.pporder.impl;
-
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UOMConversionRate;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.ProductBOMQtys;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,6 +19,30 @@ import java.math.RoundingMode;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package org.eevolution.api;
+
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UOMConversionRate;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * BOM Line used for various quantity calculations
@@ -148,7 +145,7 @@ public final class QtyCalculationsBOMLine
 	}
 
 	@VisibleForTesting
-	Quantity getQtyRequiredForOneFinishedGood()
+	public Quantity getQtyRequiredForOneFinishedGood()
 	{
 		if (qtyPercentage)
 		{

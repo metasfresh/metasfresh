@@ -37,7 +37,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;

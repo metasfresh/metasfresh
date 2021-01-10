@@ -27,7 +27,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.util.Services;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;

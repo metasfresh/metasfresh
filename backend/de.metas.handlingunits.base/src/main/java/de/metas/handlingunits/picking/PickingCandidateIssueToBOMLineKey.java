@@ -2,7 +2,7 @@ package de.metas.handlingunits.picking;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

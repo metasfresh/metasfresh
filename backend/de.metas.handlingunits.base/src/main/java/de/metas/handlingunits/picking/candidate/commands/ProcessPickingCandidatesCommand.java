@@ -40,7 +40,7 @@ import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

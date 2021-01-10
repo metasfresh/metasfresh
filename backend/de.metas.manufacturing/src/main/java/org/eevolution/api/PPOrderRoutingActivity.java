@@ -13,7 +13,6 @@ import com.google.common.base.Objects;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.product.ResourceId;
