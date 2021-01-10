@@ -18,6 +18,22 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     final String nginxBuildDescription
     final String nginxDockerImage
 
+    dir('rabbitmq') {
+
+        final def buildFile = load('buildfile.groovy')
+        final Map results = buildFile.build(scmVars, forceBuild)
+
+        rabbitmqBuildDescription = results.buildDescription
+        rabbitmqDockerImage = results.dockerImage
+    }
+    dir('nginx') {
+        final def buildFile = load('buildfile.groovy')
+        final Map results = buildFile.build(scmVars, forceBuild)
+
+        nginxBuildDescription = results.buildDescription
+        nginxDockerImage = results.dockerImage
+    }
+
     withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
         dir('procurement-webui-backend') {
             final def buildFile = load('buildfile.groovy')
@@ -34,21 +50,6 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 //        frontendBuildDescription = results.buildDescription
 //        frontendDockerImage = results.dockerImage
 //    }
-    dir('procurement-rabbitmq') {
-
-        final def buildFile = load('buildfile.groovy')
-        final Map results = buildFile.build(scmVars, forceBuild)
-
-        rabbitmqBuildDescription = results.buildDescription
-        rabbitmqDockerImage = results.dockerImage
-    }
-    dir('procurement-nginx') {
-        final def buildFile = load('buildfile.groovy')
-        final Map results = buildFile.build(scmVars, forceBuild)
-
-        nginxBuildDescription = results.buildDescription
-        nginxDockerImage = results.dockerImage
-    }
 
     currentBuild.description = """
 ${frontendBuildDescription}<p>
