@@ -20,24 +20,29 @@
  * #L%
  */
 
-package de.metas.project.service;
+package de.metas.project;
 
-import de.metas.project.ProjectId;
+import de.metas.product.ProductId;
+import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Project;
-import org.springframework.stereotype.Repository;
+import lombok.Value;
 
-@Repository
-public class ProjectRepository
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+@Value
+@Builder
+public class ProjectLine
 {
-	public I_C_Project getById(@NonNull final ProjectId id)
-	{
-		return InterfaceWrapperHelper.load(id, I_C_Project.class);
-	}
+	@NonNull
+	ProductId productId;
 
-	public void save(@NonNull final I_C_Project project)
-	{
-		InterfaceWrapperHelper.saveRecord(project);
-	}
+	/**
+	 * Committed Qty in stocking UOM
+	 */
+	@NonNull
+	BigDecimal committedQty;
+
+	@Nullable
+	String description;
 }

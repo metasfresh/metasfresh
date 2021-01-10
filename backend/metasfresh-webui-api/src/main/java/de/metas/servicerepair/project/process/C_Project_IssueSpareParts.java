@@ -30,7 +30,6 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
@@ -51,7 +50,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class C_Project_IssueSpareParts
-		extends JavaProcess
+		extends ServiceOrRepairProjectBasedProcess
 		implements IProcessPrecondition, IProcessParametersCallout
 {
 	private final HUProjectService projectService = SpringContextHolder.instance.getBean(HUProjectService.class);

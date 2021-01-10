@@ -23,9 +23,13 @@
 package de.metas.project.service;
 
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectLine;
 import lombok.NonNull;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_ProjectLine;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class HUProjectService
@@ -41,6 +45,11 @@ public class HUProjectService
 	public I_C_Project getById(@NonNull final ProjectId id)
 	{
 		return projectService.getById(id);
+	}
+
+	public List<ProjectLine> getLines(@NonNull final ProjectId projectId)
+	{
+		return projectService.getLines(projectId);
 	}
 
 	public void createProjectIssue(@NonNull final ProjectIssueRequest request)

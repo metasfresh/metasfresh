@@ -25,6 +25,7 @@ package de.metas.project.service;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectLine;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
@@ -32,11 +33,13 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_ProjectLine;
 import org.compiere.model.X_C_Project;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class ProjectService
@@ -44,15 +47,18 @@ public class ProjectService
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final ProjectTypeRepository projectTypeRepository;
 	private final ProjectRepository projectRepository;
+	private final ProjectLineRepository projectLineRepository;
 
 	public ProjectService(
 			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
-			@NonNull final ProjectRepository projectRepository)
+			@NonNull final ProjectRepository projectRepository,
+			@NonNull final ProjectLineRepository projectLineRepository)
 	{
+		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.projectTypeRepository = projectTypeRepository;
 		this.projectRepository = projectRepository;
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
+		this.projectLineRepository = projectLineRepository;
 	}
 
 	public I_C_Project getById(@NonNull final ProjectId id)
@@ -63,6 +69,11 @@ public class ProjectService
 	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId id)
 	{
 		return projectTypeRepository.getById(id);
+	}
+
+	public List<ProjectLine> getLines(@NonNull final ProjectId projectId)
+	{
+		return projectLineRepository.retrieveLines(projectId);
 	}
 
 	public ProjectId createProject(@NonNull final ProjectCreateRequest request)

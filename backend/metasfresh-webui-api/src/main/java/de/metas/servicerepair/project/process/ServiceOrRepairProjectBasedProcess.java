@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,13 @@
  * #L%
  */
 
-package de.metas.project.service;
+package de.metas.servicerepair.project.process;
 
-import de.metas.project.ProjectId;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Project;
-import org.springframework.stereotype.Repository;
+import de.metas.process.JavaProcess;
+import de.metas.project.service.HUProjectService;
+import org.compiere.SpringContextHolder;
 
-@Repository
-public class ProjectRepository
+abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 {
-	public I_C_Project getById(@NonNull final ProjectId id)
-	{
-		return InterfaceWrapperHelper.load(id, I_C_Project.class);
-	}
-
-	public void save(@NonNull final I_C_Project project)
-	{
-		InterfaceWrapperHelper.saveRecord(project);
-	}
+	protected final HUProjectService projectService = SpringContextHolder.instance.getBean(HUProjectService.class);
 }
