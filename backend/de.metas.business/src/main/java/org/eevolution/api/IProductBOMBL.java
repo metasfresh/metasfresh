@@ -33,6 +33,8 @@ import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 
+import javax.annotation.Nullable;
+
 public interface IProductBOMBL extends ISingletonService
 {
 	boolean isValidFromTo(I_PP_Product_BOM productBOM, Date date);
@@ -45,7 +47,6 @@ public interface IProductBOMBL extends ISingletonService
 	 * Calculates low level code (LLC) for given product.
 	 * It also checks for BOM cycles.
 	 *
-	 * @param productId
 	 * @return low level code (LLC)
 	 */
 	int calculateProductLowestLevel(ProductId productId);
@@ -57,9 +58,6 @@ public interface IProductBOMBL extends ISingletonService
 	 *
 	 * Valid variant group means that exists at least one other BOMLine which has Component Type <code>X_PP_Order_BOMLine.COMPONENTTYPE_Component</code>
 	 * or <code>X_PP_Order_BOMLine.COMPONENTTYPE_Packing</code> and same VariantGroup.
-	 *
-	 * @param bomLine
-	 * @return
 	 */
 	boolean isValidVariantGroup(I_PP_Product_BOMLine bomLine);
 
@@ -73,13 +71,11 @@ public interface IProductBOMBL extends ISingletonService
 	 *
 	 * i.e. how much of this component is needed for 1 item of finished good.
 	 *
-	 * @param bomLine
-	 * @param finishedGoodProductId
-	 *
 	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
 	 */
 	BigDecimal computeQtyMultiplier(I_PP_Product_BOMLine bomLine, ProductId finishedGoodProductId);
 
+	@Nullable
 	String getBOMDescriptionForProductId(ProductId productId);
 
 	Quantity getQtyIncludingScrap(I_PP_Product_BOMLine bomLine);

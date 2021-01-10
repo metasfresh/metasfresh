@@ -53,6 +53,12 @@ import lombok.NonNull;
 
 public class ProductBOMBL implements IProductBOMBL
 {
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+
 	@Override
 	public boolean isValidFromTo(final I_PP_Product_BOM productBOM, final Date date)
 	{
@@ -63,11 +69,7 @@ public class ProductBOMBL implements IProductBOMBL
 		}
 
 		final Date validTo = productBOM.getValidTo();
-		if (validTo != null && date.after(validTo))
-		{
-			return false;
-		}
-		return true;
+		return validTo == null || !date.after(validTo);
 	}
 
 	@Override
@@ -80,22 +82,15 @@ public class ProductBOMBL implements IProductBOMBL
 		}
 
 		final Date validTo = bomLine.getValidTo();
-		if (validTo != null && date.after(validTo))
-		{
-			return false;
-		}
-		return true;
+		return validTo == null || !date.after(validTo);
 	}
 
 	@Override
 	public void updateIsBOMFlag(@NonNull final ProductId productId)
 	{
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+		final boolean hasBOMs = bomDAO.hasBOMs(productId);
 
-		final boolean hasBOMs = bomsRepo.hasBOMs(productId);
-
-		productsRepo.updateProduct(UpdateProductRequest.builder()
+		productDAO.updateProduct(UpdateProductRequest.builder()
 				.productId(productId)
 				.isBOM(hasBOMs)
 				.build());
@@ -123,15 +118,13 @@ public class ProductBOMBL implements IProductBOMBL
 		}
 
 		boolean isComponentOrPacking = false;
-		final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 		final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
-		for (I_PP_Product_BOMLine bl : bomLines)
+		for (final I_PP_Product_BOMLine bl : bomLines)
 		{
 			final BOMComponentType componentType = BOMComponentType.ofCode(bl.getComponentType());
 			if (componentType.isComponentOrPacking() && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
 			{
 				isComponentOrPacking = true;
-				continue;
 			}
 		}
 
@@ -140,9 +133,9 @@ public class ProductBOMBL implements IProductBOMBL
 
 	@Override
 	public BigDecimal computeQtyRequired(
-			@NonNull I_PP_Product_BOMLine bomLine,
-			@NonNull ProductId finishedGoodProductId,
-			@NonNull BigDecimal finishedGoodQty)
+			@NonNull final I_PP_Product_BOMLine bomLine,
+			@NonNull final ProductId finishedGoodProductId,
+			@NonNull final BigDecimal finishedGoodQty)
 	{
 		final BigDecimal multiplier = computeQtyMultiplier(bomLine, finishedGoodProductId);
 
@@ -160,8 +153,7 @@ public class ProductBOMBL implements IProductBOMBL
 		//
 		// Adjust the qtyRequired by adding the scrap percentage to it.
 		final Percent qtyScrap = Percent.of(bomLine.getScrap());
-		final BigDecimal qtyRequiredPlusScrap = ProductBOMQtys.computeQtyWithScrap(qtyRequired, qtyScrap);
-		return qtyRequiredPlusScrap;
+		return ProductBOMQtys.computeQtyWithScrap(qtyRequired, qtyScrap);
 	}
 
 	@Override
@@ -176,12 +168,10 @@ public class ProductBOMBL implements IProductBOMBL
 
 		// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 		// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
-		final IProductBL productBL = Services.get(IProductBL.class);
 		final UomId endUOMId = productBL.getStockUOMId(finishedGoodProductId);
 
 		final UomId bomLineUOMId = UomId.ofRepoId(bomLine.getC_UOM_ID());
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(finishedGoodProductId);
 		final BigDecimal bomToLineUOMMultiplier = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, endUOMId, bomLineUOMId);
 
@@ -221,9 +211,7 @@ public class ProductBOMBL implements IProductBOMBL
 	 */
 	private Quantity getQty(@NonNull final I_PP_Product_BOMLine bomLine, final boolean includeScrapQty)
 	{
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomsRepo.getById(bomLine.getC_UOM_ID());
+		final I_C_UOM uom = uomDAO.getById(bomLine.getC_UOM_ID());
 		int precision = uom.getStdPrecision();
 		BigDecimal qty;
 		if (bomLine.isQtyPercentage())
