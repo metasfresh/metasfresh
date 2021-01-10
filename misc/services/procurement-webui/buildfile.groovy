@@ -9,6 +9,9 @@ import de.metas.jenkins.MvnConf
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
 
+    currentBuild.description = """${currentBuild.description}
+    <h3>procurement-webui</h3>"""
+
     final String backendBuildDescription
     final String backendDockerImage
     final String frontendBuildDescription = 'SKIPPED'
@@ -51,7 +54,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 //        frontendDockerImage = results.dockerImage
 //    }
 
-    currentBuild.description = """
+    currentBuild.description = """${currentBuild.description}
 ${frontendBuildDescription}<p>
 ${backendBuildDescription}<p>
 ${rabbitmqBuildDescription}<p>
