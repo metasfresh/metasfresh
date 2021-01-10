@@ -28,10 +28,10 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 								buildFile.build(mvnConf, scmVars, forceBuild)
 							}
 				}
-		dir('procurement-webui/procurement-webui-frontend')
+		dir('procurement-webui')
 				{
-					def ediBuildFile = load('buildfile.groovy')
-					ediBuildFile.build(scmVars, forceBuild)
+					def buildFile = load('buildfile.groovy')
+					buildFile.build(mvnConf, scmVars, forceBuild)
 				}
 
 		withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)])
