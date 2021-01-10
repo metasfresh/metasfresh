@@ -11,7 +11,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
     final String backendBuildDescription
     final String backendDockerImage
-    final String frontendBuildDescription = SKIPPED
+    final String frontendBuildDescription = 'SKIPPED'
     final String frontendDockerImage
     final String rabbitmqBuildDescription
     final String rabbitmqDockerImage
