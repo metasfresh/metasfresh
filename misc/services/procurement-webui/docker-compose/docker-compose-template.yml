@@ -11,15 +11,13 @@ services:
       - rmq_backend
   procurement_nginx:
     image: ${dockerImage.procurement_nginx}
-    container_name: rmq_stream_proxy
     restart: unless-stopped
     tty: true
     ports:
       - "25672:25672"
     volumes:
-      - ./nginx/certs/cert.pem:/etc/nginx/ssl/cert.pem:ro
-      - ./nginx/certs/key.pem:/etc/nginx/ssl/key.pem:ro
-      - ./nginx/default.conf:/opt/nginx/stream.conf.d/default.conf:ro
+      - ./volumes/nginx/certs:/etc/nginx/ssl:ro
+      - ./volumes/nginx/stream.conf.d:/opt/nginx/stream.conf.d:ro
     networks:
       - rmq_backend
   procurement_db:
@@ -38,10 +36,13 @@ services:
   procurement_backend:
     image: ${dockerImage.procurement_backend}
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db/mfprocurement
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://procurement_db/mfprocurement
       - SPRING_DATASOURCE_USERNAME=metasfresh
       - SPRING_DATASOURCE_PASSWORD=xYjloQKHPfqgKSHbNzgp
-      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_HOST=procurement_rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=procurement_webui
+      - SPRING_RABBITMQ_PASSWORD=9aORIRWlS7TV9VjFVNBj
     ports:
       - "8082:8082"
     networks:
