@@ -1,4 +1,4 @@
-export function getInitialDate(lang: string) {
+export function getInitialDate(lang: string): { caption: string; dayFormat: string } {
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
