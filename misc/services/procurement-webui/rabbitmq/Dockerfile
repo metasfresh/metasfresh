@@ -7,7 +7,7 @@ ARG CACHEBUST=1
 
 RUN apt update && apt upgrade -y
 
-#
+# init.sh will copy them to /etc/rabbitmq, but won't overwrite existing files
 COPY ./configs /etc/rabbitmq_default_configs
 
 COPY ./init.sh /init.sh

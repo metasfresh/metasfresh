@@ -1,4 +1,4 @@
-FROM rabbitmq:3.8.9-management
+FROM tekn0ir/nginx-stream
 
 COPY ./configs/certs/nginx-selfsigned.crt /etc/nginx/ssl/cert.pem
 COPY ./configs/certs/nginx-selfsigned.key /etc/nginx/ssl/key.pem
