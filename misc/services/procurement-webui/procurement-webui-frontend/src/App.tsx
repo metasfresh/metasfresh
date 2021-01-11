@@ -15,7 +15,7 @@ import BottomNav from './components/BottomNav';
 
 const routes = [
   { path: '/', name: 'Daily Reporting', Component: Daily },
-  { path: '/:productId', name: 'Daily Reporting', Component: Daily },
+  { path: '/daily/:productId', name: 'Daily Reporting', Component: Daily },
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
 
 ];
