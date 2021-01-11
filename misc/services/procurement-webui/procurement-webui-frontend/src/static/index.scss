@@ -18,6 +18,7 @@ body {
 .section {
   padding-top: 1rem;
   padding-bottom: 1rem;
+  width: 100%;
 }
 .header {
   .header-title {
@@ -79,6 +80,7 @@ body {
     }
     .arrow-navigation {
       color: $base-elements;
+      padding: 1rem 0;
     }
 }
 

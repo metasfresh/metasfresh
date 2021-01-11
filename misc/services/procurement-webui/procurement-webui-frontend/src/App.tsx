@@ -21,7 +21,7 @@ const routes = [
 ];
 
 const childRoutes = (
-  <div className="p-4 view fullsize">
+  <div className="view fullsize">
     <Switch>
     {routes.map(({ path, Component }) => (
       <Route key={path} exact path={path}>

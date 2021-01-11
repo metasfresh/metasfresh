@@ -6,10 +6,10 @@ const DailyView: FunctionComponent = (): ReactElement => {
   return (
     <View>
       <div>
-        <h1 className="title">Daily view</h1>
+        <h1 className="title p-4">Daily view</h1>
         <DailyNav headerText={`Dienstag`} />
         <br />
-        <p className="subtitle">Some content</p>
+        <p className="subtitle p-4">Some content</p>
       </div>
     </View>
   );

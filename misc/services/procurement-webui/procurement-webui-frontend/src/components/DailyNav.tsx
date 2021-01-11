@@ -21,7 +21,7 @@ class DailyNav extends React.Component<Props> {
     return (
       <div className="daily-nav">
         <div className="columns is-mobile">
-          <div className="column is-3 arrow-navigation">
+          <div className="column is-3 arrow-navigation is-vcentered p-4">
             <i className="fas fa-arrow-left fa-3x"></i>
           </div>
           <div className="column is-6">
@@ -30,7 +30,7 @@ class DailyNav extends React.Component<Props> {
               <div className="row is-full"> {day.currentDay} </div>
             </div>
           </div>
-          <div className="column is-3 has-text-right arrow-navigation">
+          <div className="column is-3 has-text-right arrow-navigation is-vcentered p-4">
             <i className="fas fa-arrow-right fa-3x"></i>
           </div>
         </div>
