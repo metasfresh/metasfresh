@@ -31,6 +31,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.logging.LogManager;
@@ -380,7 +381,7 @@ class ManufacturingOrderReportProcessCommand
 		{
 			huReservationService.makeReservation(ReserveHUsRequest.builder()
 					.qtyToReserve(qtyToReceive)
-					.salesOrderLineId(salesOrderLineId)
+					.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId))
 					.productId(productId)
 					.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
 					.build());

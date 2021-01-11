@@ -168,4 +168,23 @@ public class CoalesceUtil
 		}
 		return null;
 	}
+
+	public int countNotNulls(@Nullable final Object... values)
+	{
+		if (values == null || values.length <= 0)
+		{
+			return 0;
+		}
+
+		int count = 0;
+		for (final Object value : values)
+		{
+			if (value != null)
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
 }

@@ -43,19 +43,21 @@ import lombok.Value;
 @Value
 public class HUReservation
 {
-	OrderLineId salesOrderLineId;
+	HUReservationDocRef documentRef;
+
 	@Getter(AccessLevel.PRIVATE)
 	ImmutableMap<HuId, Quantity> reservedQtyByVhuIds;
+
 	Quantity reservedQtySum;
 
 	@Builder(toBuilder = true)
 	private HUReservation(
-			@NonNull final OrderLineId salesOrderLineId,
+			@NonNull final HUReservationDocRef documentRef,
 			@NonNull @Singular final Map<HuId, Quantity> reservedQtyByVhuIds)
 	{
 		Check.assumeNotEmpty(reservedQtyByVhuIds, "reservedQtyByVhuIds is not empty");
 
-		this.salesOrderLineId = salesOrderLineId;
+		this.documentRef = documentRef;
 		this.reservedQtyByVhuIds = ImmutableMap.copyOf(reservedQtyByVhuIds);
 
 		this.reservedQtySum = reservedQtyByVhuIds.values()

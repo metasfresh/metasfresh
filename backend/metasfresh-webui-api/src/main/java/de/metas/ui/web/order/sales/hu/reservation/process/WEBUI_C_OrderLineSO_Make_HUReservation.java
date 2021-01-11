@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import java.math.BigDecimal;
 
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -125,8 +126,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
 				streamSelectedHUIds(Select.ALL), productId);
 
-		final Quantity reservableQty = huReservationService.retrieveReservableQty(request);
-		return reservableQty;
+		return huReservationService.retrieveReservableQty(request);
 	}
 
 	@Override
@@ -148,7 +148,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 				.huIds(selectedHuIds)
 				.productId(salesOrderLine.getProductId())
 				.qtyToReserve(qtyToReserve)
-				.salesOrderLineId(salesOrderLine.getId().getOrderLineId())
+				.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLine.getId().getOrderLineId()))
 				.build();
 		huReservationService.makeReservation(reservationRequest);
 
