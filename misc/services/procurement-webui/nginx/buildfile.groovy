@@ -8,34 +8,38 @@ import de.metas.jenkins.Nexus
 import de.metas.jenkins.Misc
 
 
+/**
+ * @param forceBuild build even if no changes
+ * @param forceSkip always skip; forceSkip overrules forceBuild
+ */
 Map build(final Map scmVars,
-          final boolean forceBuild = false,
-          final boolean forceSkip = false) {
+        final boolean forceBuild = false,
+        final boolean forceSkip = false) {
 
     final misc = new Misc()
 
     final def resultsMap = [:]
-    resultsMap.buildDescription = "<h4>procurement-webui-frontend</h4>"
+    resultsMap.buildDescription = "<h4>procurement-nginx</h4>"
 
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
     if (forceSkip || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
 
-        final String dockerImageName = "metasfresh/procurement-webui-frontend"
+        final String dockerImageName = "metasfresh/procurement-nginx"
 
         final Nexus nexus = new Nexus()
         resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
-					No changes happened or forceSkip=true in procurement-webui-frontend; latest docker image: <code>${resultsMap.dockerImage}</code>
+					No changes or forceSkip=true in procurement-nginx; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
 
-        echo "no changes happened or forceSkip=true in procurement-webui-frontend; skip building procurement-webui-frontend";
+        echo "no changes happened or forceSkip=true in procurement-nginx; skip building procurement-nginx";
         return resultsMap
     }
 
     final DockerConf dockerConf = new DockerConf(
-            'procurement-webui-frontend', // artifactName
+            'procurement-nginx', // artifactName
             env.BRANCH_NAME, // branchName
             env.MF_VERSION, // versionSuffix
             '.' // workDir
