@@ -19,7 +19,7 @@ Map build(final Map scmVars,
 
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
-    if (forceBuild || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
+    if (forceSkip || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
 
         final String dockerImageName = "metasfresh/procurement-webui-frontend"
 
