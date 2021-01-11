@@ -32,7 +32,7 @@ export const Store = types
 
 const fetcher = (url) => window.fetch(url).then((response) => response.json());
 
-const { caption, dayFormat } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
+const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
 
 let initialState = Store.create(
   {
@@ -42,7 +42,7 @@ let initialState = Store.create(
         id: 0,
       },
     ],
-    day: { caption, currentDay: dayFormat },
+    day: { caption, currentDay: day },
   },
   {
     fetch: fetcher,

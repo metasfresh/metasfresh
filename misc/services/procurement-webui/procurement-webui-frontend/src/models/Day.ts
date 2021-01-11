@@ -3,13 +3,13 @@ import { types } from 'mobx-state-tree';
 export const Day = types
   .model({
     caption: types.string,
-    currentDay: types.string,
+    currentDay: types.Date,
   })
   .actions((self) => ({
     changeCaption(newCaption: string) {
       self.caption = newCaption;
     },
-    changeCurrentDay(newDay: string) {
+    changeCurrentDay(newDay: Date) {
       self.currentDay = newDay;
     },
   }))
