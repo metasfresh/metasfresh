@@ -7,8 +7,15 @@ import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Nexus
 import de.metas.jenkins.Misc
 
-
-Map build(final Map scmVars, final boolean forceBuild = false) {
+/**
+ * @param forceBuild build even if no changes
+ * @param forceSkip always skip; forceSkip overrules forceBuild
+ */
+Map build(
+        final Map scmVars,
+        final boolean forceBuild = false,
+        final boolean forceSkip = true // just temporarily
+) {
 
     final misc = new Misc()
 
@@ -17,7 +24,7 @@ Map build(final Map scmVars, final boolean forceBuild = false) {
 
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
-    if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
+    if (forceSkip || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
 
         final String dockerImageName = "metasfresh/procurement-rabbitmq"
 
