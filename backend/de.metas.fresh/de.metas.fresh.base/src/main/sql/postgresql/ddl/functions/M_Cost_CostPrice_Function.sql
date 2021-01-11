@@ -1,29 +1,31 @@
-DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(IN p_keydate timestamp with time zone,
-    IN p_M_Product_ID numeric(10, 0),
-    IN p_M_Warehouse_ID numeric(10, 0),
-    IN p_showDetails character varying,
-    IN p_ad_language character varying(6),
-    IN p_AcctSchema_ID numeric(10, 0),
-    IN p_M_CostElement_ID numeric(10, 0),
-    IN p_AD_Client_ID numeric(10, 0),
-    IN p_AD_Org_ID numeric(10, 0));
+DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(IN p_keydate          timestamp WITH TIME ZONE,
+                                                         IN p_M_Product_ID     numeric(10, 0),
+                                                         IN p_M_Warehouse_ID   numeric(10, 0),
+                                                         IN p_showDetails      character varying,
+                                                         IN p_ad_language      character varying(6),
+                                                         IN p_AcctSchema_ID    numeric(10, 0),
+                                                         IN p_M_CostElement_ID numeric(10, 0),
+                                                         IN p_AD_Client_ID     numeric(10, 0),
+                                                         IN p_AD_Org_ID        numeric(10, 0))
+;
 
 
-DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(IN p_keydate timestamp with time zone,
-    IN p_M_Product_ID numeric(10, 0),
-    IN p_M_Warehouse_ID numeric(10, 0),
-    IN p_showDetails character varying,
-    IN p_ad_language character varying(6),
-    IN p_AD_Client_ID numeric(10, 0),
-    IN p_AD_Org_ID numeric(10, 0));
+DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(IN p_keydate        timestamp WITH TIME ZONE,
+                                                         IN p_M_Product_ID   numeric(10, 0),
+                                                         IN p_M_Warehouse_ID numeric(10, 0),
+                                                         IN p_showDetails    character varying,
+                                                         IN p_ad_language    character varying(6),
+                                                         IN p_AD_Client_ID   numeric(10, 0),
+                                                         IN p_AD_Org_ID      numeric(10, 0))
+;
 
-CREATE OR REPLACE FUNCTION report.M_Cost_CostPrice_Function(IN p_keydate timestamp with time zone,
-                                                            IN p_M_Product_ID numeric(10, 0),
+CREATE OR REPLACE FUNCTION report.M_Cost_CostPrice_Function(IN p_keydate        timestamp WITH TIME ZONE,
+                                                            IN p_M_Product_ID   numeric(10, 0),
                                                             IN p_M_Warehouse_ID numeric(10, 0),
-                                                            IN p_showDetails character varying,
-                                                            IN p_ad_language character varying(6),
-                                                            IN p_AD_Client_ID numeric(10, 0),
-                                                            IN p_AD_Org_ID numeric(10, 0))
+                                                            IN p_showDetails    character varying,
+                                                            IN p_ad_language    character varying(6),
+                                                            IN p_AD_Client_ID   numeric(10, 0),
+                                                            IN p_AD_Org_ID      numeric(10, 0))
 
 
     RETURNS TABLE
@@ -61,7 +63,7 @@ FROM (
                 wh.M_Warehouse_ID,
                 hus.M_Product_ID,
                 hus.C_UOM_ID,
-                SUM(uomconvert(hus.m_product_id, hutl.c_uom_id, hus.c_uom_id, hutl.qty)) as qty,
+                SUM(uomconvert(hus.m_product_id, hutl.c_uom_id, hus.c_uom_id, hutl.qty)) AS qty,
                 COALESCE(
                         getCurrentCost(hus.M_Product_ID,
                                        p_keydate::date,
@@ -71,12 +73,12 @@ FROM (
                                        p_AD_org_ID)
                     , 0::numeric)                                                        AS CostPrice
          FROM M_Warehouse wh
-                  JOIN ad_org org on wh.ad_org_id = org.ad_org_ID
-                  JOIN AD_Client client on wh.ad_client_ID = client.ad_client_id
-                  JOIN ad_clientinfo clientInfo on client.ad_client_id = clientInfo.ad_client_id
-                  JOIN c_acctschema schema on clientInfo.c_acctschema1_id = schema.c_acctschema_id
+                  JOIN ad_org org ON wh.ad_org_id = org.ad_org_ID
+                  JOIN AD_Client client ON wh.ad_client_ID = client.ad_client_id
+                  JOIN ad_clientinfo clientInfo ON client.ad_client_id = clientInfo.ad_client_id
+                  JOIN c_acctschema schema ON clientInfo.c_acctschema1_id = schema.c_acctschema_id
                   JOIN m_costelement costElement
-                       on schema.costingmethod = costElement.costingmethod and costElement.isactive = 'Y' /* There should only be one active M_CostElement
+                       ON schema.costingmethod = costElement.costingmethod AND costElement.isactive = 'Y' /* There should only be one active M_CostElement
               entry for a certain CostingMethod because of the unique index M_CostElement_CostingMethod_Unique. Please, keep this function in sync with this index */
 
 
@@ -119,12 +121,12 @@ FROM (
                                         p_AD_org_ID), 0::numeric) AS CostPrice
          FROM M_Warehouse wh
                   JOIN ad_org org
-                       on wh.ad_org_id = org.ad_org_ID
-                  JOIN AD_Client client on wh.ad_client_ID = client.ad_client_id
-                  JOIN ad_clientinfo clientInfo on client.ad_client_id = clientInfo.ad_client_id
-                  JOIN c_acctschema schema on clientInfo.c_acctschema1_id = schema.c_acctschema_id
+                       ON wh.ad_org_id = org.ad_org_ID
+                  JOIN AD_Client client ON wh.ad_client_ID = client.ad_client_id
+                  JOIN ad_clientinfo clientInfo ON client.ad_client_id = clientInfo.ad_client_id
+                  JOIN c_acctschema schema ON clientInfo.c_acctschema1_id = schema.c_acctschema_id
                   JOIN m_costelement costElement
-                       on schema.costingmethod = costElement.costingmethod and costElement.isactive = 'Y' /* There should only be one active M_CostElement
+                       ON schema.costingmethod = costElement.costingmethod AND costElement.isactive = 'Y' /* There should only be one active M_CostElement
               entry for a certain CostingMethod because of the unique index M_CostElement_CostingMethod_Unique. Please, keep this function in sync with this index */
 
                   LEFT OUTER JOIN M_Locator l ON wh.M_Warehouse_ID = l.M_Warehouse_ID AND l.isActive = 'Y'
@@ -152,7 +154,7 @@ FROM (
                                           p_AD_org_ID), 0::numeric)
      ) dat
          LEFT OUTER JOIN M_Product p
-                         ON dat.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y' and p.AD_Org_ID = p_ad_org_id
+                         ON dat.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y' AND p.AD_Org_ID = p_ad_org_id
          LEFT OUTER JOIN M_Product_Trl pt
                          ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = $5 AND pt.isActive = 'Y' AND
                             pt.AD_Org_ID = p_ad_org_id
