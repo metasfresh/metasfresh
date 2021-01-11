@@ -71,4 +71,10 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 	public String getLogin();
 
 	public void setLogin(String Login);
+
+	void setC_Title_ID (int C_Title_ID);
+
+	int getC_Title_ID();
+
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 }
