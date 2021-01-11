@@ -74,15 +74,6 @@ public class HUProjectService
 		return projectService.getLineById(projectLineId);
 	}
 
-	public void createProjectIssue(@NonNull final ProjectIssueRequest request)
-	{
-		ProjectIssueCommand.builder()
-				.projectService(projectService)
-				.request(request)
-				.build()
-				.execute();
-	}
-
 	public void reserveHUs(
 			final ProjectAndLineId projectLineId,
 			final ImmutableSet<HuId> huIds)
