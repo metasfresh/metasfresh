@@ -8,7 +8,13 @@ import de.metas.jenkins.Nexus
 import de.metas.jenkins.Misc
 
 
-Map build(final Map scmVars, final boolean forceBuild = false) {
+/**
+ * @param forceBuild build even if no changes
+ * @param forceSkip always skip; forceSkip overrules forceBuild
+ */
+Map build(final Map scmVars,
+        final boolean forceBuild = false,
+        final boolean forceSkip = false) {
 
     final misc = new Misc()
 
@@ -17,12 +23,12 @@ Map build(final Map scmVars, final boolean forceBuild = false) {
 
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
-    if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
+    if (forceSkip || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
 
         final String dockerImageName = "metasfresh/procurement-nginx"
 
         final Nexus nexus = new Nexus()
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}/${dockerImageName}/${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 					No changes in procurement-nginx; latest docker image: <code>${resultsMap.dockerImage}</code>

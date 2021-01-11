@@ -22,7 +22,7 @@ Map build(final Map scmVars, final boolean forceBuild = false) {
         final String dockerImageName = "metasfresh/procurement-webui-frontend"
 
         final Nexus nexus = new Nexus()
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}/${dockerImageName}/${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 					No changes in procurement-webui-frontend; latest docker image: <code>${resultsMap.dockerImage}</code>
