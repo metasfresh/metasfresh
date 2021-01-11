@@ -63,7 +63,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     sh "sed -i 's|\${dockerImage.procurement_frontend}|${frontendDockerImage}|g' docker-compose/docker-compose.yml"
 
     withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
-        sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=docker-compose/docker-compose.yml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.procurement -DartifactId=procurement-webui -Dversion=${env.MF_VERSION} -Dpackaging=yml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
+        sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=docker-compose/docker-compose.yml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.procurement -DartifactId=procurement-webui -Dversion=${env.MF_VERSION} -Dclassifier=docker-compose -Dpackaging=yml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
     }
 
     final Misc misc = new Misc()
