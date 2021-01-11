@@ -7,7 +7,9 @@ ARG CACHEBUST=1
 
 RUN apt update && apt upgrade -y
 
-COPY ./configs /etc/rabbitmq
+#
+COPY ./configs /etc/rabbitmq_default_configs
+
 COPY ./init.sh /init.sh
 RUN chmod +x /init.sh
 
