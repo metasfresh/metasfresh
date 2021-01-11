@@ -74,6 +74,24 @@
       "value": "rabbitmq-cluster-id-HbppxN2vo8iGuBgS7LWW1Q"
     }
   ],
+  "queues": [
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "procurement_webui-to-metasfresh",
+      "type": "classic",
+      "vhost": "/"
+    },
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "metasfresh-to-procurement_webui",
+      "type": "classic",
+      "vhost": "/"
+    }
+  ],
   "policies": [
     {
       "vhost": "/",
@@ -94,32 +112,6 @@
         "federation-upstream-set": "all"
       },
       "priority": 0
-    }
-  ],
-  "queues": [
-    {
-      "name": "procurement_webui-to-metasfresh",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "metas.dead-letter",
-        "x-overflow": "reject-publish-dlx",
-        "x-queue-mode": "lazy",
-        "x-queue-type": "classic"
-      }
-    },
-    {
-      "name": "metasfresh-to-procurement_webui",
-      "vhost": "/",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "metas.dead-letter",
-        "x-overflow": "reject-publish-dlx",
-        "x-queue-mode": "lazy",
-        "x-queue-type": "classic"
-      }
     }
   ],
   "exchanges": [

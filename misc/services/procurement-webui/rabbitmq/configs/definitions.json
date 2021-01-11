@@ -98,28 +98,20 @@
   ],
   "queues": [
     {
-      "name": "procurement_webui-to-metasfresh",
-      "vhost": "/",
-      "durable": true,
+      "arguments": {},
       "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "metas.dead-letter",
-        "x-overflow": "reject-publish-dlx",
-        "x-queue-mode": "lazy",
-        "x-queue-type": "classic"
-      }
+      "durable": true,
+      "name": "procurement_webui-to-metasfresh",
+      "type": "classic",
+      "vhost": "/"
     },
     {
-      "name": "metasfresh-to-procurement_webui",
-      "vhost": "/",
-      "durable": true,
+      "arguments": {},
       "auto_delete": false,
-      "arguments": {
-        "x-dead-letter-exchange": "metas.dead-letter",
-        "x-overflow": "reject-publish-dlx",
-        "x-queue-mode": "lazy",
-        "x-queue-type": "classic"
-      }
+      "durable": true,
+      "name": "metasfresh-to-procurement_webui",
+      "type": "classic",
+      "vhost": "/"
     }
   ],
   "exchanges": [
