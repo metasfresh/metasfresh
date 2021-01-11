@@ -274,13 +274,18 @@ public class HUReservationService
 
 	public Optional<Quantity> retrieveReservedQty(@NonNull final OrderLineId orderLineId)
 	{
-		return getBySalesOrderLineId(orderLineId)
+		return getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
 				.map(HUReservation::getReservedQtySum);
 	}
 
 	public Optional<HUReservation> getBySalesOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return huReservationRepository.getBySalesOrderLineId(orderLineId);
+		return getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
+	}
+
+	public Optional<HUReservation> getByDocumentRef(@NonNull final HUReservationDocRef documentRef)
+	{
+		return huReservationRepository.getByDocumentRef(documentRef);
 	}
 
 	@Builder(builderMethodName = "prepareHUQuery", builderClassName = "ReservationHUQueryBuilder")
@@ -323,5 +328,12 @@ public class HUReservationService
 	private boolean isAllowSqlWhenFilteringHUAttributes()
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_AllowSqlWhenFilteringHUAttributes, true);
+	}
+
+	public void transferReservation(
+			@NonNull final HUReservationDocRef from,
+			@NonNull final HUReservationDocRef to)
+	{
+		huReservationRepository.transferReservation(from, to);
 	}
 }

@@ -20,42 +20,23 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.project.service;
 
-import de.metas.product.ProductId;
+import de.metas.project.ProjectAndLineId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Data
+@Value
 @Builder
-public class ProjectLine
+public class ChangeProjectLineRequest
 {
 	@NonNull
-	private final ProjectAndLineId id;
-
-	@NonNull
-	private final ProductId productId;
-
-	@NonNull
-	private final Quantity plannedQty;
-
-	@NonNull
-	private Quantity committedQty;
+	ProjectAndLineId projectLineId;
 
 	@Nullable
-	private final String description;
-
-	public Quantity getPlannedQtyButNotCommitted()
-	{
-		return getPlannedQty().subtract(getCommittedQty());
-	}
-
-	public void addCommittedQty(@NonNull final Quantity committedQtyToAdd)
-	{
-		this.committedQty = this.committedQty.add(committedQtyToAdd);
-	}
+	Quantity committedQtyToAdd;
 }

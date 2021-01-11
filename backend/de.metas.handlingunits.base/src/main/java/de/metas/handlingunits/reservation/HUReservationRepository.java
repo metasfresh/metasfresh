@@ -13,6 +13,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Repository;
@@ -58,23 +59,35 @@ public class HUReservationRepository
 	private final CCache<HuId, Optional<HUReservationDocRef>> documentRefByVhuId = CCache.newLRUCache(
 			I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
 
-	public Optional<HUReservation> getBySalesOrderLineId(@NonNull final OrderLineId salesOrderLineId)
+	public Optional<HUReservation> getByDocumentRef(@NonNull final HUReservationDocRef documentRef)
 	{
-		final List<I_M_HU_Reservation> huReservationRecords = queryBL
-				.createQueryBuilder(I_M_HU_Reservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, salesOrderLineId)
-				.create()
-				.list();
-
+		final List<I_M_HU_Reservation> huReservationRecords = retrieveRecordsByDocumentRef(documentRef);
 		if (huReservationRecords.isEmpty())
 		{
 			return Optional.empty();
 		}
 
-		final HUReservationDocRef documentRef = HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId);
 		final HUReservation huReservation = toHUReservation(documentRef, huReservationRecords);
 		return Optional.of(huReservation);
+	}
+
+	private List<I_M_HU_Reservation> retrieveRecordsByDocumentRef(final HUReservationDocRef documentRef)
+	{
+		final IQueryBuilder<I_M_HU_Reservation> queryBuilder = queryBL
+				.createQueryBuilder(I_M_HU_Reservation.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (documentRef.getSalesOrderLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, documentRef.getSalesOrderLineId());
+		}
+		else if (documentRef.getProjectAndLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, documentRef.getProjectAndLineId().getProjectId());
+			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_ProjectLine_ID, documentRef.getProjectAndLineId().getProjectLineRepoId());
+		}
+
+		return queryBuilder.create().list();
 	}
 
 	private HUReservation toHUReservation(
@@ -112,19 +125,22 @@ public class HUReservationRepository
 			final Quantity qtyReserved = huReservation.getReservedQtyByVhuId(vhuId);
 
 			final I_M_HU_Reservation huReservationRecord = retrieveOrCreateByVhuId(vhuId);
-
-			final HUReservationDocRef documentRef = huReservation.getDocumentRef();
-			huReservationRecord.setC_OrderLineSO_ID(OrderLineId.toRepoId(documentRef.getSalesOrderLineId()));
-			huReservationRecord.setC_Project_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectId().getRepoId() : -1);
-			huReservationRecord.setC_ProjectLine_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectLineRepoId() : -1);
-
+			updateRecordFromDocumentRef(huReservationRecord, huReservation.getDocumentRef());
 			huReservationRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(huReservation.getCustomerId()));
-
 			huReservationRecord.setQtyReserved(qtyReserved.toBigDecimal());
 			huReservationRecord.setC_UOM_ID(qtyReserved.getUomId().getRepoId());
 
 			saveRecord(huReservationRecord);
 		}
+	}
+
+	private static void updateRecordFromDocumentRef(
+			@NonNull final I_M_HU_Reservation record,
+			@NonNull final HUReservationDocRef documentRef)
+	{
+		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(documentRef.getSalesOrderLineId()));
+		record.setC_Project_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectId().getRepoId() : -1);
+		record.setC_ProjectLine_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectLineRepoId() : -1);
 	}
 
 	private I_M_HU_Reservation retrieveOrCreateByVhuId(@NonNull final HuId vhuId)
@@ -229,4 +245,27 @@ public class HUReservationRepository
 				.projectAndLineId(ProjectAndLineId.ofRepoIdOrNull(record.getC_Project_ID(), record.getC_ProjectLine_ID()))
 				.build();
 	}
+
+	public void transferReservation(
+			@NonNull final HUReservationDocRef from,
+			@NonNull final HUReservationDocRef to)
+	{
+		if (Objects.equals(from, to))
+		{
+			return;
+		}
+
+		final List<I_M_HU_Reservation> records = retrieveRecordsByDocumentRef(from);
+		if (records.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_M_HU_Reservation record : records)
+		{
+			updateRecordFromDocumentRef(record, to);
+			saveRecord(record);
+		}
+	}
+
 }

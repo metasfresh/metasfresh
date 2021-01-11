@@ -25,8 +25,10 @@ package de.metas.project.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -37,6 +39,7 @@ import org.compiere.model.I_C_ProjectLine;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 @Repository
 public class ProjectLineRepository
@@ -55,6 +58,21 @@ public class ProjectLineRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public ProjectLine retrieveLineById(@NonNull final ProjectAndLineId projectLineId)
+	{
+		final I_C_ProjectLine record = retrieveLineRecordById(projectLineId);
+		return toProjectLine(record);
+	}
+
+	private I_C_ProjectLine retrieveLineRecordById(final ProjectAndLineId projectLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_ProjectLine.class)
+				.addEqualsFilter(I_C_ProjectLine.COLUMNNAME_C_Project_ID, projectLineId.getProjectId())
+				.addEqualsFilter(I_C_ProjectLine.COLUMNNAME_C_ProjectLine_ID, projectLineId.getProjectLineRepoId())
+				.create()
+				.firstOnlyNotNull(I_C_ProjectLine.class);
+	}
+
 	private void save(final I_C_ProjectLine projectLine)
 	{
 		InterfaceWrapperHelper.saveRecord(projectLine);
@@ -64,11 +82,22 @@ public class ProjectLineRepository
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 		return ProjectLine.builder()
+				.id(ProjectAndLineId.ofRepoId(record.getC_Project_ID(), record.getC_ProjectLine_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.plannedQty(Quantitys.create(record.getPlannedQty(), uomId))
 				.committedQty(Quantitys.create(record.getCommittedQty(), uomId))
 				.description(record.getDescription())
 				.build();
+	}
+
+	private void updateRecord(final I_C_ProjectLine record, final ProjectLine from)
+	{
+		final UomId uom = Quantity.getCommonUomIdOfAll(from.getPlannedQty(), from.getCommittedQty());
+		record.setM_Product_ID(from.getProductId().getRepoId());
+		record.setPlannedQty(from.getPlannedQty().toBigDecimal());
+		record.setCommittedQty(from.getCommittedQty().toBigDecimal());
+		record.setC_UOM_ID(uom.getRepoId());
+		record.setDescription(from.getDescription());
 	}
 
 	public void createProjectLine(@NonNull final CreateProjectLineRequest request)
@@ -101,4 +130,15 @@ public class ProjectLineRepository
 		save(record);
 	}
 
+	public ProjectLine changeProjectLine(
+			@NonNull final ProjectAndLineId projectLineId,
+			@NonNull final Consumer<ProjectLine> updater)
+	{
+		final I_C_ProjectLine record = retrieveLineRecordById(projectLineId);
+		final ProjectLine line = toProjectLine(record);
+		updater.accept(line);
+		updateRecord(record, line);
+		save(record);
+		return line;
+	}
 }

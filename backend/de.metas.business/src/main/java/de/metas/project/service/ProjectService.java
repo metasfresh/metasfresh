@@ -24,6 +24,7 @@ package de.metas.project.service;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
 import de.metas.project.ProjectType;
@@ -73,6 +74,11 @@ public class ProjectService
 	public List<ProjectLine> getLines(@NonNull final ProjectId projectId)
 	{
 		return projectLineRepository.retrieveLines(projectId);
+	}
+
+	public ProjectLine getLineById(@NonNull final ProjectAndLineId projectLineId)
+	{
+		return projectLineRepository.retrieveLineById(projectLineId);
 	}
 
 	public ProjectId createProject(@NonNull final CreateProjectRequest request)
@@ -157,5 +163,21 @@ public class ProjectService
 	public void createProjectLine(@NonNull final CreateProjectLineRequest request)
 	{
 		projectLineRepository.createProjectLine(request);
+	}
+
+	public ProjectLine changeProjectLine(@NonNull final ChangeProjectLineRequest request)
+	{
+		return projectLineRepository.changeProjectLine(
+				request.getProjectLineId(),
+				projectLine -> changeProjectLine(request, projectLine));
+
+	}
+
+	private void changeProjectLine(final ChangeProjectLineRequest request, final ProjectLine projectLine)
+	{
+		if (request.getCommittedQtyToAdd() != null)
+		{
+			projectLine.addCommittedQty(request.getCommittedQtyToAdd());
+		}
 	}
 }

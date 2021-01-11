@@ -40,9 +40,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
 import de.metas.quantity.Quantity;
@@ -78,22 +76,10 @@ public class C_Project_CreateQuotation
 		return checkIsServiceOrRepairProject(projectId);
 	}
 
-	private ProcessPreconditionsResolution checkIsServiceOrRepairProject(@NonNull final ProjectId projectId)
-	{
-		final I_C_Project project = projectService.getById(projectId);
-		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory());
-		if (!projectCategory.isServiceOrRepair())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not Service/Repair project");
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
 	@Override
 	protected String doIt()
 	{
-		final ProjectId projectId = ProjectId.ofRepoId(getRecord_ID());
+		final ProjectId projectId = getProjectId();
 		checkIsServiceOrRepairProject(projectId).throwExceptionIfRejected();
 
 		final I_C_Project fromProject = projectService.getById(projectId);
@@ -112,13 +98,18 @@ public class C_Project_CreateQuotation
 
 		final I_C_Order order = orderFactory.createDraft();
 
+		setRecordToOpen(order);
+
+		return MSG_OK;
+	}
+
+	private void setRecordToOpen(final I_C_Order order)
+	{
 		getResult().setRecordToOpen(ProcessExecutionResult.RecordsToOpen.builder()
 				.record(TableRecordReference.of(I_C_Order.Table_Name, order.getC_Order_ID()))
 				.target(ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument)
 				.targetTab(ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB)
 				.build());
-
-		return MSG_OK;
 	}
 
 	private OrderFactory newOrderFactory(@NonNull final I_C_Project project)

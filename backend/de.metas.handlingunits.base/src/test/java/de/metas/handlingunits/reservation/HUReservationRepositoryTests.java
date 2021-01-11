@@ -71,7 +71,9 @@ public class HUReservationRepositoryTests
 		final I_M_HU vhu2 = createHuReservationRecord(orderLineId, ONE);
 
 		// invoke the method under test
-		final HUReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId).get();
+		final HUReservation huReservation = huReservationRepository
+				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
+				.get();
 
 		assertThat(huReservation.getDocumentRef().getSalesOrderLineId()).isEqualTo(orderLineId);
 
@@ -94,7 +96,8 @@ public class HUReservationRepositoryTests
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(20);
 
 		// invoke the method under test
-		final Optional<HUReservation> huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+		final Optional<HUReservation> huReservation = huReservationRepository
+				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
 		assertThat(huReservation).isNotPresent();
 	}
 

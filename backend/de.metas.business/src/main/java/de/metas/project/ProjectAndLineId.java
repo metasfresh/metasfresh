@@ -38,6 +38,12 @@ public class ProjectAndLineId
 		return new ProjectAndLineId(projectId, projectLineRepoId);
 	}
 
+	public static ProjectAndLineId ofRepoId(@NonNull final ProjectId projectId, final int projectLineRepoId)
+	{
+		return new ProjectAndLineId(projectId, projectLineRepoId);
+	}
+
+
 	@Nullable
 	public static ProjectAndLineId ofRepoIdOrNull(final int projectRepoId, final int projectLineRepoId)
 	{

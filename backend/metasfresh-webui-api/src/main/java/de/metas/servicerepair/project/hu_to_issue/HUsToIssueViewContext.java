@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,42 +20,16 @@
  * #L%
  */
 
-package de.metas.project;
+package de.metas.servicerepair.project.hu_to_issue;
 
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.project.ProjectAndLineId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Data
+@Value
 @Builder
-public class ProjectLine
+public class HUsToIssueViewContext
 {
-	@NonNull
-	private final ProjectAndLineId id;
-
-	@NonNull
-	private final ProductId productId;
-
-	@NonNull
-	private final Quantity plannedQty;
-
-	@NonNull
-	private Quantity committedQty;
-
-	@Nullable
-	private final String description;
-
-	public Quantity getPlannedQtyButNotCommitted()
-	{
-		return getPlannedQty().subtract(getCommittedQty());
-	}
-
-	public void addCommittedQty(@NonNull final Quantity committedQtyToAdd)
-	{
-		this.committedQty = this.committedQty.add(committedQtyToAdd);
-	}
+	@NonNull ProjectAndLineId projectLineId;
 }
