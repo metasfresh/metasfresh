@@ -2,7 +2,7 @@ import { useContext, createContext } from 'react';
 import { types, getEnv, destroy, Instance, onSnapshot } from 'mobx-state-tree';
 import { Todo } from './Todo';
 import { Day } from './Day';
-import { getInitialDate } from '../utils/date';
+import { formDate } from '../utils/date';
 
 export const Store = types
   .model('Store', {
@@ -32,7 +32,7 @@ export const Store = types
 
 const fetcher = (url) => window.fetch(url).then((response) => response.json());
 
-const { caption, dayFormat } = getInitialDate('de_DE'); // TODO: this should be changed with whatever we get from login
+const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
 
 let initialState = Store.create(
   {
@@ -42,7 +42,7 @@ let initialState = Store.create(
         id: 0,
       },
     ],
-    day: { caption, currentDay: dayFormat },
+    day: { caption, currentDay: day },
   },
   {
     fetch: fetcher,
@@ -63,7 +63,7 @@ export const store = initialState;
  * Create a localStorage entry from the snapshot
  */
 onSnapshot(store, (snapshot) => {
-  console.log('Snapshot: ', snapshot);
+  console.log('Snapshot: ', snapshot); // this is for debugging purposes - can be removed in prod
   localStorage.setItem('initialState', JSON.stringify(snapshot));
 });
 
