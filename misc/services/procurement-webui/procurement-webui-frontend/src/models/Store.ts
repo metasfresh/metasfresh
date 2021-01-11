@@ -1,57 +1,23 @@
 import { useContext, createContext } from 'react';
-import { types, getEnv, destroy, Instance, onSnapshot } from 'mobx-state-tree';
-import { Todo } from './Todo';
+import { types, Instance, onSnapshot } from 'mobx-state-tree';
+import Navigation from './Navigation';
 import { Day } from './Day';
 import { DailyProductList } from './DailyProductList';
 import { formDate } from '../utils/date';
 
-export const Store = types
-  .model('Store', {
-    todos: types.array(Todo),
-    day: Day,
-    dailyProducts: DailyProductList,
-  })
-  .views((self) => ({
-    get fetch() {
-      return getEnv(self).fetch;
-    },
-    get alert() {
-      return getEnv(self).alert;
-    },
-  }))
-  .actions((self) => ({
-    addTodo(text) {
-      const id = self.todos.reduce((maxId, todo) => Math.max(todo.id, maxId), -1) + 1;
-      self.todos.unshift({
-        id,
-        text,
-      });
-    },
-    removeTodo(todo) {
-      destroy(todo);
-    },
-  }));
-
-const fetcher = (url) => window.fetch(url).then((response) => response.json());
+export const Store = types.model('Store', {
+  navigation: Navigation,
+  day: Day,
+  dailyProducts: DailyProductList,
+});
 
 const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
 
-let initialState = Store.create(
-  {
-    todos: [
-      {
-        text: 'Get coffee',
-        id: 0,
-      },
-    ],
-    day: { caption, currentDay: day },
-    dailyProducts: {},
-  },
-  {
-    fetch: fetcher,
-    alert: (m) => console.log(m), // Noop for demo: window.alert(m)
-  }
-);
+let initialState = Store.create({
+  navigation: { viewName: '' },
+  day: { caption, currentDay: day },
+  dailyProducts: {},
+});
 
 const data = localStorage.getItem('initialState');
 if (data) {
