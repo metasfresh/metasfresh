@@ -462,6 +462,27 @@ public interface I_AD_Column
 	String COLUMNNAME_FilterDefaultValue = "FilterDefaultValue";
 
 	/**
+	 * Set Filter Operator.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilterOperator (@Nullable java.lang.String FilterOperator);
+
+	/**
+	 * Get Filter Operator.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFilterOperator();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_FilterOperator = new ModelColumn<>(I_AD_Column.class, "FilterOperator", null);
+	String COLUMNNAME_FilterOperator = "FilterOperator";
+
+	/**
 	 * Set Format Pattern.
 	 * The pattern used to format a number or date.
 	 *
@@ -870,29 +891,6 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_IsParent = new ModelColumn<>(I_AD_Column.class, "IsParent", null);
 	String COLUMNNAME_IsParent = "IsParent";
-
-	/**
-	 * Set Range filter.
-	 * Check if the filter by this column shall render a range component
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsRangeFilter (boolean IsRangeFilter);
-
-	/**
-	 * Get Range filter.
-	 * Check if the filter by this column shall render a range component
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isRangeFilter();
-
-	ModelColumn<I_AD_Column, Object> COLUMN_IsRangeFilter = new ModelColumn<>(I_AD_Column.class, "IsRangeFilter", null);
-	String COLUMNNAME_IsRangeFilter = "IsRangeFilter";
 
 	/**
 	 * Set Selection Column.

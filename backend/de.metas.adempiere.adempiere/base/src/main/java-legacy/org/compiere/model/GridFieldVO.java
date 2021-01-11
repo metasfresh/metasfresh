@@ -454,7 +454,7 @@ public class GridFieldVO implements Serializable
 				//
 				.defaultFilter(defaultFilter)
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
-				.rangeFilter(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsRangeFilter)))
+				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
 				.showFilterInline(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterInline)))
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))

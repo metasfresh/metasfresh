@@ -68,7 +68,7 @@ SELECT
 	-- Filtering
 	, c.IsSelectionColumn
 	, c.SelectionColumnSeqNo
-	, c.IsRangeFilter
+	, c.filteroperator
 	, c.IsShowFilterIncrementButtons
     , c.IsShowFilterInline
 	, c.FilterDefaultValue

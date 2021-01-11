@@ -68,6 +68,7 @@ public final class DocumentFilterParam
 		LESS, //
 		LESS_OR_EQUAL, //
 		BETWEEN, //
+		NOT_NULL_IF_TRUE, //
 		;
 
 		public boolean isRangeOperator()

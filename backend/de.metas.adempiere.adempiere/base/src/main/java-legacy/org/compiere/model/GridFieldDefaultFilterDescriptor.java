@@ -1,11 +1,10 @@
 package org.compiere.model;
 
-import java.util.OptionalInt;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -34,7 +33,7 @@ public class GridFieldDefaultFilterDescriptor
 {
 	boolean defaultFilter;
 	int defaultFilterSeqNo;
-	boolean rangeFilter;
+	String operator;
 	boolean showFilterIncrementButtons;
 	boolean showFilterInline;
 	String defaultValue;
@@ -47,7 +46,7 @@ public class GridFieldDefaultFilterDescriptor
 	public GridFieldDefaultFilterDescriptor(
 			final boolean defaultFilter,
 			final int defaultFilterSeqNo,
-			final boolean rangeFilter,
+			final String operator,
 			final boolean showFilterIncrementButtons,
 			final boolean showFilterInline,
 			final String defaultValue,
@@ -67,7 +66,7 @@ public class GridFieldDefaultFilterDescriptor
 		{
 			this.defaultFilter = true;
 			this.defaultFilterSeqNo = defaultFilterSeqNo;
-			this.rangeFilter = rangeFilter;
+			this.operator = operator;
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
 			this.showFilterInline = showFilterInline;
 			this.defaultValue = defaultValue;
@@ -76,7 +75,7 @@ public class GridFieldDefaultFilterDescriptor
 		{
 			this.defaultFilter = false;
 			this.defaultFilterSeqNo = 0;
-			this.rangeFilter = false;
+			this.operator = null; // default
 			this.showFilterIncrementButtons = false;
 			this.showFilterInline = false;
 			this.defaultValue = null;

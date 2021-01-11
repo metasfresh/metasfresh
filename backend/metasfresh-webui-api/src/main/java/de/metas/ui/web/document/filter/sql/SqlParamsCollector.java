@@ -117,7 +117,7 @@ public final class SqlParamsCollector
 	 * 
 	 * @param sqlParams
 	 */
-	public void collectAll(final Collection<? extends Object> sqlParams)
+	public void collectAll(@Nullable final Collection<? extends Object> sqlParams)
 	{
 		if (sqlParams == null || sqlParams.isEmpty())
 		{
@@ -131,7 +131,7 @@ public final class SqlParamsCollector
 		params.addAll(sqlParams);
 	}
 
-	public void collect(final SqlParamsCollector from)
+	public void collect(@NonNull final SqlParamsCollector from)
 	{
 		collectAll(from.params);
 	}
@@ -142,7 +142,7 @@ public final class SqlParamsCollector
 	 * In case this is in non-collecting mode, the given SQL value will be converted to SQL code and it will be returned.
 	 * The internal list won't be affected, because it does not exist.
 	 */
-	public String placeholder(final Object sqlValue)
+	public String placeholder(@Nullable final Object sqlValue)
 	{
 		if (params == null)
 		{

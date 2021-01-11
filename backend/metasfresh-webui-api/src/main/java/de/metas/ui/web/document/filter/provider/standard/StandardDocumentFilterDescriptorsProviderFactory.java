@@ -176,26 +176,41 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		final DocumentFieldWidgetType widgetType = extractFilterWidgetType(field);
 		final DocumentFieldDefaultFilterDescriptor filteringInfo = field.getDefaultFilterInfo();
 
-		final Optional<LookupDescriptor> lookupDescriptor = field.getLookupDescriptorForFiltering();
-
 		final Operator operator;
-		if (widgetType.isText())
+		final DocumentFieldWidgetType widgetTypeEffective;
+		final Optional<LookupDescriptor> lookupDescriptor;
+		switch (filteringInfo.getOperator())
 		{
-			operator = Operator.LIKE_I;
-		}
-		else if (filteringInfo.isRangeFilter())
-		{
-			operator = Operator.BETWEEN;
-		}
-		else
-		{
-			operator = Operator.EQUAL;
+			case BETWEEN:
+			{
+				widgetTypeEffective = widgetType;
+				operator = Operator.BETWEEN;
+				lookupDescriptor = field.getLookupDescriptorForFiltering();
+				break;
+			}
+			case IS_NOT_NULL:
+			{
+				widgetTypeEffective = DocumentFieldWidgetType.YesNo;
+				operator = Operator.NOT_NULL_IF_TRUE;
+				lookupDescriptor = Optional.empty();
+				break;
+			}
+			case EQUALS_OR_ILIKE:
+			default:
+			{
+				widgetTypeEffective = widgetType;
+				operator = widgetType.isText()
+						? Operator.LIKE_I
+						: Operator.EQUAL;
+				lookupDescriptor = field.getLookupDescriptorForFiltering();
+				break;
+			}
 		}
 
 		return DocumentFilterParamDescriptor.builder()
 				.setDisplayName(displayName)
 				.setFieldName(fieldName)
-				.setWidgetType(widgetType)
+				.setWidgetType(widgetTypeEffective)
 				.setOperator(operator)
 				.setLookupDescriptor(lookupDescriptor)
 				.setMandatory(false)

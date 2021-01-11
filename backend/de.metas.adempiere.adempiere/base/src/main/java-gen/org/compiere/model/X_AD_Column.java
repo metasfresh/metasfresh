@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1722592698L;
+	private static final long serialVersionUID = 1295204142L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -313,6 +313,29 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return get_ValueAsString(COLUMNNAME_FilterDefaultValue);
 	}
 
+	/** 
+	 * FilterOperator AD_Reference_ID=541241
+	 * Reference name: FilterOperator
+	 */
+	public static final int FILTEROPERATOR_AD_Reference_ID=541241;
+	/** EqualsOrLike = E */
+	public static final String FILTEROPERATOR_EqualsOrLike = "E";
+	/** Between = B */
+	public static final String FILTEROPERATOR_Between = "B";
+	/** NotNull = N */
+	public static final String FILTEROPERATOR_NotNull = "N";
+	@Override
+	public void setFilterOperator (final java.lang.String FilterOperator)
+	{
+		set_Value (COLUMNNAME_FilterOperator, FilterOperator);
+	}
+
+	@Override
+	public java.lang.String getFilterOperator() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilterOperator);
+	}
+
 	@Override
 	public void setFormatPattern (final java.lang.String FormatPattern)
 	{
@@ -524,18 +547,6 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isParent() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsParent);
-	}
-
-	@Override
-	public void setIsRangeFilter (final boolean IsRangeFilter)
-	{
-		set_Value (COLUMNNAME_IsRangeFilter, IsRangeFilter);
-	}
-
-	@Override
-	public boolean isRangeFilter() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsRangeFilter);
 	}
 
 	@Override

@@ -1,19 +1,7 @@
 package de.metas.ui.web.document.filter.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryFilterModifier;
-import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
-import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
-import org.adempiere.db.DBConstants;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -27,7 +15,19 @@ import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilterModifier;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
+import org.adempiere.db.DBConstants;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -53,11 +53,10 @@ import lombok.NonNull;
 
 /**
  * Default {@link SqlDocumentFilterConverter}.
- *
+ * <p>
  * It simply converts the filters to SQL using a given {@link SqlEntityBinding} to map filter parameters.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilterConverter
 {
@@ -87,7 +86,9 @@ import lombok.NonNull;
 		return true;
 	}
 
-	/** Build document filter where clause */
+	/**
+	 * Build document filter where clause
+	 */
 	@Override
 	public String getSql(
 			@NonNull final SqlParamsCollector sqlParams,
@@ -101,7 +102,7 @@ import lombok.NonNull;
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
 			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterId, filterParam, sqlOpts);
-			if (Check.isEmpty(sqlFilterParam, true))
+			if (Check.isBlank(sqlFilterParam))
 			{
 				continue;
 			}
@@ -117,7 +118,10 @@ import lombok.NonNull;
 		return sql.toString();
 	}
 
-	/** Build document filter parameter where clause */
+	/**
+	 * Build document filter parameter where clause
+	 */
+	@Nullable
 	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final String filterId, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
 		//
@@ -154,8 +158,7 @@ import lombok.NonNull;
 
 	private SqlEntityFieldBinding getParameterBinding(final String parameterName)
 	{
-		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(parameterName);
-		return fieldBinding;
+		return entityBinding.getFieldByFieldName(parameterName);
 	}
 
 	private DocumentFieldWidgetType getParameterWidgetType(final String parameterName)
@@ -195,6 +198,7 @@ import lombok.NonNull;
 		}
 	}
 
+	@Nullable
 	private Object convertToSqlValue(final Object value, final SqlEntityFieldBinding fieldBinding, final IQueryFilterModifier modifier)
 	{
 		final String columnName = fieldBinding.getColumnName();
@@ -205,6 +209,7 @@ import lombok.NonNull;
 		return modifier.convertValue(columnName, sqlValue, null/* model */);
 	}
 
+	@Nullable
 	private String buildSqlWhereClause_StandardWidget(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
 		final SqlEntityFieldBinding paramBinding = getParameterBinding(filterParam.getFieldName());
@@ -294,6 +299,11 @@ import lombok.NonNull;
 				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), paramBinding, valueModifier);
 				return buildSqlWhereClause_Between(columnSqlString, sqlValue, sqlValueTo, sqlParams);
 			}
+			case NOT_NULL_IF_TRUE:
+			{
+				final Object isApplyFilterFlag = filterParam.getValue();
+				return buildSqlWhereClause_NotNullIfFlagTrue(columnSqlString, isApplyFilterFlag);
+			}
 			default:
 			{
 				throw new IllegalArgumentException("Operator not supported: " + operator);
@@ -301,7 +311,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Equals(final String sqlColumnExpr, @Nullable final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -322,13 +332,14 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private static String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, final Object sqlValue, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
 		return new StringBuilder()
 				.append(sqlColumnExpr).append(sqlOperator).append(sqlParams.placeholder(sqlValue))
 				.toString();
 	}
 
+	@Nullable
 	private static String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValues == null || sqlValues.isEmpty())
@@ -351,7 +362,7 @@ import lombok.NonNull;
 		return sql;
 	}
 
-	private static String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -384,7 +395,7 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private static String buildSqlWhereClause_Between(final String sqlColumnExpr, final Object sqlValue, final Object sqlValueTo, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -404,6 +415,17 @@ import lombok.NonNull;
 		return new StringBuilder()
 				.append(sqlColumnExpr).append(" BETWEEN ").append(sqlParams.placeholder(sqlValue)).append(" AND ").append(sqlParams.placeholder(sqlValueTo))
 				.toString();
+	}
+
+	private String buildSqlWhereClause_NotNullIfFlagTrue(final String sqlColumnExpr, final Object isApplyFilterFlagObj)
+	{
+		final boolean applyFilter = StringUtils.toBoolean(isApplyFilterFlagObj);
+		if (!applyFilter)
+		{
+			return "";
+		}
+
+		return sqlColumnExpr + " IS NOT NULL";
 	}
 
 	@VisibleForTesting
@@ -441,6 +463,7 @@ import lombok.NonNull;
 				tableAlias);
 	}
 
+	@Nullable
 	private String buildSqlWhereClause_LabelsWidget(
 			final DocumentFilterParam filterParam,
 			final DocumentFilterParamDescriptor paramDescriptor,
