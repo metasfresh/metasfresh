@@ -202,7 +202,7 @@ public class JsonSerializeDeserializeTests
 		}
 
 		@Test
-		void SyncBPartner() throws IOException
+		void PutBPartnersRequest() throws IOException
 		{
 			final SyncBPartner syncBPartner = SyncBPartner.builder()
 					.name("name")
