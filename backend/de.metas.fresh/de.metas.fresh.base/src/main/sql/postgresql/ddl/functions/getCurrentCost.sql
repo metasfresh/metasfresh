@@ -19,8 +19,13 @@ WITH x AS
              SELECT m_costdetail_ID,
                     cd.prev_currentcostprice,
                     cd.M_Product_ID,
-                    COALESCE(mi.dateAcct, mpo.dateAcct, pp.dateAcct, inv.movementDate, m.MovementDate, io.dateAcct,
-                             NULL) AS dateAcct
+                    COALESCE(mi.dateAcct,
+                        mpo.dateAcct,
+                        pp.dateAcct,
+                        inv.movementDate,
+                        m.MovementDate,
+                        io.dateAcct,
+                        NULL) AS dateAcct
 
              FROM m_costdetail cd
 
