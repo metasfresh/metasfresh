@@ -5,8 +5,8 @@ services:
     ports:
       - 5673:5672
       - 15673:15672
-    volumes:
-      - ./volumes/procurement_rabbitmq/configs:/etc/rabbitmq/:ro
+#    volumes:
+#      - ./volumes/rabbitmq/configs:/etc/rabbitmq/:ro
     networks:
       - rmq_backend
   procurement_nginx:
@@ -15,9 +15,9 @@ services:
     tty: true
     ports:
       - "25672:25672"
-    volumes:
-      - ./volumes/nginx/certs:/etc/nginx/ssl:ro
-      - ./volumes/nginx/stream.conf.d:/opt/nginx/stream.conf.d:ro
+#    volumes:
+#      - ./volumes/nginx/certs:/etc/nginx/ssl:ro
+#      - ./volumes/nginx/stream.conf.d:/opt/nginx/stream.conf.d:ro
     networks:
       - rmq_backend
   procurement_db:
@@ -30,7 +30,7 @@ services:
     networks:
       - rmq_backend
     volumes:
-      - ./volumes/procurement_db:/var/lib/postgresql/data
+      - ./volumes/db:/var/lib/postgresql/data
     ports:
       - "5433:5432"
   procurement_backend:
