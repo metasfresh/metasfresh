@@ -8,7 +8,9 @@ import de.metas.jenkins.Nexus
 import de.metas.jenkins.Misc
 
 
-Map build(final Map scmVars, final boolean forceBuild = false) {
+Map build(final Map scmVars,
+          final boolean forceBuild = false,
+          final boolean forceSkip = false) {
 
     final misc = new Misc()
 
@@ -17,18 +19,18 @@ Map build(final Map scmVars, final boolean forceBuild = false) {
 
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
-    if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
+    if (forceBuild || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
 
         final String dockerImageName = "metasfresh/procurement-webui-frontend"
 
         final Nexus nexus = new Nexus()
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6000/${dockerImageName}:${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
-					No changes in procurement-webui-frontend; latest docker image: <code>${resultsMap.dockerImage}</code>
+					No changes happened or forceSkip=true in procurement-webui-frontend; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
 
-        echo "no changes happened in procurement-webui-frontend; skip building procurement-webui-frontend";
+        echo "no changes happened or forceSkip=true in procurement-webui-frontend; skip building procurement-webui-frontend";
         return resultsMap
     }
 

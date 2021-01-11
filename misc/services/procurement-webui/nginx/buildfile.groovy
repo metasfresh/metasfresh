@@ -28,13 +28,13 @@ Map build(final Map scmVars,
         final String dockerImageName = "metasfresh/procurement-nginx"
 
         final Nexus nexus = new Nexus()
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6000/${dockerImageName}:${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
-					No changes in procurement-nginx; latest docker image: <code>${resultsMap.dockerImage}</code>
+					No changes or forceSkip=true in procurement-nginx; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
 
-        echo "no changes happened in procurement-nginx; skip building procurement-nginx";
+        echo "no changes happened or forceSkip=true in procurement-nginx; skip building procurement-nginx";
         return resultsMap
     }
 

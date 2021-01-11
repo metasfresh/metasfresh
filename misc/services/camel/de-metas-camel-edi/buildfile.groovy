@@ -23,7 +23,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
         final Nexus nexus = new Nexus()
         final String dockerImageName = 'metasfresh/de-metas-edi-esb-camel'
-        final String latestDockerImageName = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6000/${dockerImageName}:${dockerLatestTag}")
+        final String latestDockerImageName = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
         currentBuild.description = """${currentBuild.description}<p/>
 					No changes happened in EDI; latest docker image: <code>${latestDockerImageName}</code>

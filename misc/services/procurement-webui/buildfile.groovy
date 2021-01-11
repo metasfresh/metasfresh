@@ -5,6 +5,7 @@
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 
 @Library('misc')
+import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
@@ -14,7 +15,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
     final String backendBuildDescription
     final String backendDockerImage
-    final String frontendBuildDescription = 'SKIPPED'
+    final String frontendBuildDescription
     final String frontendDockerImage
     final String rabbitmqBuildDescription
     final String rabbitmqDockerImage
@@ -46,24 +47,26 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
             backendDockerImage = results.dockerImage
         }
     }
-//    dir('procurement-webui-frontend') {
-//        final def buildFile = load('buildfile.groovy')
-//        final Map results = buildFile.build(scmVars, forceBuild)
-//
-//        frontendBuildDescription = results.buildDescription
-//        frontendDockerImage = results.dockerImage
-//    }
+    dir('procurement-webui-frontend') {
+        final def buildFile = load('buildfile.groovy')
+        final Map results = buildFile.build(scmVars, forceBuild, true)
 
+        frontendBuildDescription = results.buildDescription
+        frontendDockerImage = results.dockerImage
+    }
+
+    // create and push your docker-compose.yml file
     sh 'cp docker-compose/docker-compose-template.yml docker-compose/docker-compose.yml'
     sh "sed -i 's|\${dockerImage.procurement_rabbitmq}|${rabbitmqDockerImage}|g' docker-compose/docker-compose.yml"
     sh "sed -i 's|\${dockerImage.procurement_nginx}|${nginxDockerImage}|g' docker-compose/docker-compose.yml"
     sh "sed -i 's|\${dockerImage.procurement_backend}|${backendDockerImage}|g' docker-compose/docker-compose.yml"
-    //sh "sed -i 's|\${dockerImage.procurement_frontend}|${frontendDockerImage}|g' docker-compose/docker-compose.yml"
+//    sh "sed -i 's|\${dockerImage.procurement_frontend}|${frontendDockerImage}|g' docker-compose/docker-compose.yml"
 
     withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
         sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=docker-compose/docker-compose.yml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.procurement -DartifactId=procurement-webui -Dversion=${env.MF_VERSION} -Dpackaging=yml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
     }
 
+    final Misc misc = new Misc()
     currentBuild.description = """${currentBuild.description}
 <p>
   <a href="${mvnConf.deployRepoURL}/de/metas/procurement/procurement-webui/${misc.urlEncode(env.MF_VERSION)}/procurement-webui-${misc.urlEncode(env.MF_VERSION)}.yml">docker-compose.yml</a>
@@ -73,8 +76,6 @@ ${backendBuildDescription}<p>
 ${rabbitmqBuildDescription}<p>
 ${nginxBuildDescription}<p>
 """
-
-
 }
 
 return this

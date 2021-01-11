@@ -13,7 +13,7 @@ import de.metas.jenkins.Misc
  */
 Map build(final Map scmVars,
         final boolean forceBuild = false,
-        final boolean forceSkip = true /*just temporarily*/) {
+        final boolean forceSkip = false) {
 
     final misc = new Misc()
 
@@ -27,13 +27,13 @@ Map build(final Map scmVars,
         final String dockerImageName = "metasfresh/procurement-rabbitmq"
 
         final Nexus nexus = new Nexus()
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6000/${dockerImageName}:${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
-					No changes in procurement-rabbitmq; latest docker image: <code>${resultsMap.dockerImage}</code>
+					No changes happened or forceSkip=true in procurement-rabbitmq; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
 
-        echo "no changes happened in procurement-rabbitmq; skip building procurement-rabbitmq";
+        echo "no changes happened or forceSkip=true in procurement-rabbitmq; skip building procurement-rabbitmq";
         return resultsMap
     }
 

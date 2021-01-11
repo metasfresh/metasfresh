@@ -12,7 +12,15 @@ import de.metas.jenkins.Nexus
 
 return this
 
-Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
+/**
+ * @param forceBuild build even if no changes
+ * @param forceSkip always skip; forceSkip overrules forceBuild
+ */
+Map build(final MvnConf mvnConf,
+          final Map scmVars,
+          final boolean forceBuild = false,
+          final boolean forceSkip = false) {
+
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
     final def resultsMap = [:]
@@ -21,16 +29,16 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     final misc = new Misc()
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
-    if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
+    if (forceSkip || (!misc.isAnyFileChanged(scmVars) && !forceBuild)) {
 
         final Nexus nexus = new Nexus()
         final String dockerImageName = 'metasfresh/procurement-webui-backend'
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6000/${dockerImageName}:${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
-					No changes happened in procurement-webui-backend; latest docker image: <code>${resultsMap.dockerImage}</code>
+					No changes happened or forceSkip=true in procurement-webui-backend; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
-        echo "no changes happened in procurement-webui-backend; skip building procurement-webui-backend";
+        echo "no changes happened or forceSkip=true in procurement-webui-backend; skip building procurement-webui-backend";
         return resultsMap
     }
 
