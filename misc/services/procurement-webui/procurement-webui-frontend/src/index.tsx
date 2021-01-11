@@ -6,6 +6,7 @@ import { observable } from 'mobx';
 import './static/index.scss';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import { loadMirageInDev } from './api';
 import reportWebVitals from './reportWebVitals';
 import { store } from './models/Store';
 
@@ -14,6 +15,8 @@ const history = {
   actions: observable.array([], { deep: false }),
   patches: observable.array([], { deep: false }),
 };
+
+loadMirageInDev();
 
 ReactDOM.render(
   <Provider store={store} history={history}>
