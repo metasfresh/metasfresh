@@ -100,11 +100,6 @@ public class JsonPaymentService
 			return ResponseEntity.unprocessableEntity().body("At least one of the following allocation amounts are mandatory: amount, discountAmt, writeOffAmt, overUnderAmt");
 		}
 
-		if (validateAmountsMatchPaymentAmt(jsonInboundPaymentInfo.getAmount(), lines))
-		{
-			return ResponseEntity.unprocessableEntity().body("The total payment amount should match the sum of all allocation amounts");
-		}
-
 		final CurrencyId currencyId = currencyService.getCurrencyId(jsonInboundPaymentInfo.getCurrencyCode());
 		if (currencyId == null)
 		{
@@ -147,6 +142,8 @@ public class JsonPaymentService
 				final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
 						.bpartnerId(bPartnerId)
 						.payAmt(jsonInboundPaymentInfo.getAmount())
+						.discountAmt(jsonInboundPaymentInfo.getDiscountAmt())
+						.writeoffAmt(jsonInboundPaymentInfo.getWriteOffAmt())
 						.currencyId(currencyId)
 						.orgBankAccountId(bankAccountIdOptional.get())
 						.adOrgId(orgId)

@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -61,10 +62,6 @@ public class JsonInboundPaymentInfo
 			value = SwaggerDocConstants.ORDER_IDENTIFIER_DOC)
 	@Nullable
 	String orderIdentifier;
-
-	@ApiModelProperty(required = true)
-	@NonNull
-	BigDecimal amount;
 
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String")
@@ -91,6 +88,26 @@ public class JsonInboundPaymentInfo
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonInboundPaymentInfoBuilder
 	{
+	}
+
+	public BigDecimal getAmount()
+	{
+		return getAmount(JsonPaymentAllocationLine::getAmount);
+	}
+
+	public BigDecimal getDiscountAmt()
+	{
+		return getAmount(JsonPaymentAllocationLine::getDiscountAmt);
+	}
+
+	public BigDecimal getWriteOffAmt()
+	{
+		return getAmount(JsonPaymentAllocationLine::getWriteOffAmt);
+	}
+
+	private BigDecimal getAmount(final Function<JsonPaymentAllocationLine, BigDecimal> lineToPayAmt)
+	{
+		return getLines().stream().map(lineToPayAmt).filter(amt -> amt != null).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 }

@@ -92,7 +92,6 @@ class PaymentRestEndpointTest
 				.orderIdentifier(externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
-				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
 				.build();
 
@@ -101,7 +100,6 @@ class PaymentRestEndpointTest
 				.orderIdentifier("Order")
 				.bpartnerIdentifier("ext-bPartner")
 				.currencyCode(CURRENCY_CODE_EUR)
-				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
 				.build(),
 				jsonInboundPaymentInfo);
