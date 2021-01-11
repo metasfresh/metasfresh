@@ -1,8 +1,8 @@
 package de.metas.handlingunits.reservation;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -45,6 +47,9 @@ public class ReserveHUsRequest
 	@NonNull
 	ProductId productId;
 
+	@Nullable
+	BPartnerId customerId;
+
 	/**
 	 * The HUs from which the respective {@link #qtyToReserve} shall be reserved. can be higher-level-HUs;
 	 * The actual reservation is done on VHU level.
@@ -57,6 +62,7 @@ public class ReserveHUsRequest
 			@NonNull final Quantity qtyToReserve,
 			@NonNull final HUReservationDocRef documentRef,
 			@NonNull final ProductId productId,
+			@Nullable final BPartnerId customerId,
 			@Singular @NonNull final ImmutableSet<HuId> huIds)
 	{
 		Check.assumeNotEmpty(huIds, "huIds needs to be not empty; this={}", this);
@@ -65,6 +71,7 @@ public class ReserveHUsRequest
 		this.qtyToReserve = qtyToReserve;
 		this.documentRef = documentRef;
 		this.productId = productId;
+		this.customerId = customerId;
 		this.huIds = huIds;
 	}
 }

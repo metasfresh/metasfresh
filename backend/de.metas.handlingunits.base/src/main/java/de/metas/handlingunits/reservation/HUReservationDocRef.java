@@ -45,7 +45,7 @@ public class HUReservationDocRef
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final ProjectAndLineId projectAndLineId)
 	{
-		if(CoalesceUtil.countNotNulls(salesOrderLineId, projectAndLineId) != 1)
+		if (CoalesceUtil.countNotNulls(salesOrderLineId, projectAndLineId) != 1)
 		{
 			throw new AdempiereException("One and only one document shall be set")
 					.appendParametersToMessage()
@@ -59,8 +59,12 @@ public class HUReservationDocRef
 
 	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderLineId salesOrderLineId)
 	{
-		return HUReservationDocRef.builder()
-				.salesOrderLineId(salesOrderLineId)
-				.build();
+		return HUReservationDocRef.builder().salesOrderLineId(salesOrderLineId).build();
 	}
+
+	public static HUReservationDocRef ofProjectAndLineId(@NonNull final ProjectAndLineId projectAndLineId)
+	{
+		return HUReservationDocRef.builder().projectAndLineId(projectAndLineId).build();
+	}
+
 }

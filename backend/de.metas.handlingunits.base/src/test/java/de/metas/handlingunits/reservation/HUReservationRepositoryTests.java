@@ -1,5 +1,6 @@
 package de.metas.handlingunits.reservation;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
@@ -116,6 +117,7 @@ public class HUReservationRepositoryTests
 	{
 		final HUReservation huReservation = HUReservation.builder()
 				.documentRef(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)))
+				.customerId(BPartnerId.ofRepoId(123))
 				.reservedQtyByVhuId(HuId.ofRepoId(10), Quantity.of(TEN, uomRecord))
 				.reservedQtyByVhuId(HuId.ofRepoId(11), Quantity.of(ONE, uomRecord))
 				.build();

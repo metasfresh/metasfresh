@@ -1,10 +1,13 @@
 package de.metas.handlingunits.reservation;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.order.OrderLineId;
+import de.metas.project.ProjectAndLineId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -18,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -51,7 +55,7 @@ public class HUReservationRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final CCache<HuId, Optional<OrderLineId>> salesOrderLinesByVhuId = CCache.newLRUCache(
+	private final CCache<HuId, Optional<HUReservationDocRef>> documentRefByVhuId = CCache.newLRUCache(
 			I_M_HU_Reservation.Table_Name + "#by#" + I_M_HU_Reservation.COLUMNNAME_VHU_ID, 500, 5);
 
 	public Optional<HUReservation> getBySalesOrderLineId(@NonNull final OrderLineId salesOrderLineId)
@@ -87,8 +91,16 @@ public class HUReservationRepository
 			reservedQtyByVhuId.put(vhuId, reservedQty);
 		}
 
+		final ImmutableSet<BPartnerId> customerIds = huReservationRecords.stream()
+				.map(huReservationRecord -> BPartnerId.ofRepoIdOrNull(huReservationRecord.getC_BPartner_Customer_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final BPartnerId customerId = customerIds.size() == 1 ? customerIds.iterator().next() : null;
+
 		return HUReservation.builder()
 				.documentRef(documentRef)
+				.customerId(customerId)
 				.reservedQtyByVhuIds(reservedQtyByVhuId)
 				.build();
 	}
@@ -105,6 +117,8 @@ public class HUReservationRepository
 			huReservationRecord.setC_OrderLineSO_ID(OrderLineId.toRepoId(documentRef.getSalesOrderLineId()));
 			huReservationRecord.setC_Project_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectId().getRepoId() : -1);
 			huReservationRecord.setC_ProjectLine_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectLineRepoId() : -1);
+
+			huReservationRecord.setC_BPartner_Customer_ID(BPartnerId.toRepoId(huReservation.getCustomerId()));
 
 			huReservationRecord.setQtyReserved(qtyReserved.toBigDecimal());
 			huReservationRecord.setC_UOM_ID(qtyReserved.getUomId().getRepoId());
@@ -158,48 +172,61 @@ public class HUReservationRepository
 
 	public void warmup(@NonNull final Collection<HuId> huIds)
 	{
-		salesOrderLinesByVhuId.getAllOrLoad(huIds, this::retrieveReservedForOrderLineId);
+		documentRefByVhuId.getAllOrLoad(huIds, this::retrieveDocumentRefsByVhuIds);
 	}
 
-	private Map<HuId, Optional<OrderLineId>> retrieveReservedForOrderLineId(@NonNull final Collection<HuId> huIds)
+	private Map<HuId, Optional<HUReservationDocRef>> retrieveDocumentRefsByVhuIds(@NonNull final Collection<HuId> vhuIds)
 	{
-		final HashMap<HuId, Optional<OrderLineId>> map = new HashMap<>(huIds.size());
+		final HashMap<HuId, Optional<HUReservationDocRef>> map = new HashMap<>(vhuIds.size());
 
-		huIds.forEach(huId -> map.put(huId, Optional.empty()));
+		vhuIds.forEach(huId -> map.put(huId, Optional.empty()));
 
 		final List<I_M_HU_Reservation> huReservationRecords = queryBL
 				.createQueryBuilder(I_M_HU_Reservation.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_Reservation.COLUMN_VHU_ID, huIds)
+				.addInArrayFilter(I_M_HU_Reservation.COLUMN_VHU_ID, vhuIds)
 				.create()
 				.list();
 		for (final I_M_HU_Reservation huReservationRecord : huReservationRecords)
 		{
-			final HuId huId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(huReservationRecord.getC_OrderLineSO_ID());
-			map.put(huId, Optional.of(orderLineId));
+			final HuId vhuId = HuId.ofRepoId(huReservationRecord.getVHU_ID());
+			final HUReservationDocRef documentRef = extractDocumentRef(huReservationRecord);
+			map.put(vhuId, Optional.of(documentRef));
 		}
 		return ImmutableMap.copyOf(map);
 	}
 
 	public Optional<OrderLineId> getOrderLineIdByReservedVhuId(@NonNull final HuId vhuId)
 	{
-		return salesOrderLinesByVhuId.getOrLoad(vhuId, this::retrieveOrderLineIdByReservedVhuId);
+		return getDocumentRefByVhuId(vhuId)
+				.map(HUReservationDocRef::getSalesOrderLineId);
 	}
 
-	private Optional<OrderLineId> retrieveOrderLineIdByReservedVhuId(@NonNull final HuId huId)
+	public Optional<HUReservationDocRef> getDocumentRefByVhuId(@NonNull final HuId vhuId)
 	{
-		final I_M_HU_Reservation huReservationRecord = queryBL
-				.createQueryBuilder(I_M_HU_Reservation.class)
+		return documentRefByVhuId.getOrLoad(vhuId, this::retrieveDocumentRefByVhuId);
+	}
+
+	private Optional<HUReservationDocRef> retrieveDocumentRefByVhuId(@NonNull final HuId vhuId)
+	{
+		final I_M_HU_Reservation huReservationRecord = queryBL.createQueryBuilder(I_M_HU_Reservation.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Reservation.COLUMN_VHU_ID, huId) // we have a UC constraint on VHU_ID
+				.addEqualsFilter(I_M_HU_Reservation.COLUMN_VHU_ID, vhuId) // we have a UC constraint on VHU_ID
 				.create()
 				.firstOnly(I_M_HU_Reservation.class);
 		if (huReservationRecord == null)
 		{
 			return Optional.empty();
 		}
-		return Optional.of(OrderLineId.ofRepoId(huReservationRecord.getC_OrderLineSO_ID()));
+
+		return Optional.of(extractDocumentRef(huReservationRecord));
 	}
 
+	private static HUReservationDocRef extractDocumentRef(@NonNull final I_M_HU_Reservation record)
+	{
+		return HUReservationDocRef.builder()
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()))
+				.projectAndLineId(ProjectAndLineId.ofRepoIdOrNull(record.getC_Project_ID(), record.getC_ProjectLine_ID()))
+				.build();
+	}
 }

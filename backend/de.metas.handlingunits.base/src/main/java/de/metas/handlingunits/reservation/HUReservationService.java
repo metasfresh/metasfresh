@@ -154,6 +154,7 @@ public class HUReservationService
 
 		final HUReservation huReservation = HUReservation.builder()
 				.documentRef(reservationRequest.getDocumentRef())
+				.customerId(reservationRequest.getCustomerId())
 				.reservedQtyByVhuIds(reservedQtyByVhuId)
 				.build();
 
