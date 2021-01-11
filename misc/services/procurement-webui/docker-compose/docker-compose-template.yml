@@ -5,8 +5,10 @@ services:
     ports:
       - 5673:5672
       - 15673:15672
-#    volumes:
-#      - ./volumes/rabbitmq/configs:/etc/rabbitmq/:ro
+    restart: always
+    environment:
+      - RABBITMQ_PROCUREMENT_WEBUI_PASSWORD=procurement_webui_pw
+      - RABBITMQ_METASFRESH_PASSWORD=metasfresh_pw
     networks:
       - rmq_backend
   procurement_nginx:
@@ -42,7 +44,7 @@ services:
       - SPRING_RABBITMQ_HOST=procurement_rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=procurement_webui
-      - SPRING_RABBITMQ_PASSWORD=9aORIRWlS7TV9VjFVNBj
+      - SPRING_RABBITMQ_PASSWORD=procurement_webui_pw
     ports:
       - "8082:8082"
     networks:
