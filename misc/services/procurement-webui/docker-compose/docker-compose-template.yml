@@ -26,7 +26,7 @@ services:
     image: postgres:13.1
     restart: always
     environment:
-      - POSTGRES_USER=metasfresh
+      - POSTGRES_USER=mfprocurement
       - POSTGRES_PASSWORD=xYjloQKHPfqgKSHbNzgp
       - POSTGRES_DB=mfprocurement
     networks:
@@ -39,7 +39,7 @@ services:
     image: ${dockerImage.procurement_backend}
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://procurement_db/mfprocurement
-      - SPRING_DATASOURCE_USERNAME=metasfresh
+      - SPRING_DATASOURCE_USERNAME=mfprocurement
       - SPRING_DATASOURCE_PASSWORD=xYjloQKHPfqgKSHbNzgp
       - SPRING_RABBITMQ_HOST=procurement_rabbitmq
       - SPRING_RABBITMQ_PORT=5672

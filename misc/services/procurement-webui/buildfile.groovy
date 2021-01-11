@@ -72,8 +72,9 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     final Misc misc = new Misc()
     currentBuild.description = """${currentBuild.description}
 <p>
-  this build's <a href="${mvnConf.deployRepoURL}/de/metas/procurement/procurement-webui/${misc.urlEncode(env.MF_VERSION)}/procurement-webui-${misc.urlEncode(env.MF_VERSION)}.yml">docker-compose.yml</a>.<br>
-You can always get the latest docker-compose.yml with <code>${mvnConf.mvnResolveRepoBaseURL}/service/rest/v1/search/assets/download?sort=version&repository=${mvnConf.mvnRepoName}&maven.groupId=${dockerComposeGroupId}&maven.artifactId=${dockerComposeArtifactId}&maven.classifier=${dockerComposeClassifier}&maven.extension=yml</code>
+  this build's <a href="${mvnConf.deployRepoURL}/de/metas/procurement/procurement-webui/${misc.urlEncode(env.MF_VERSION)}/procurement-webui-${misc.urlEncode(env.MF_VERSION)}-${dockerComposeClassifier}.yml">docker-compose.yml</a>.
+<p>
+Note: you can always get the <b>latest</b> docker-compose.yml for this branch at <code>${mvnConf.mvnResolveRepoBaseURL}/service/rest/v1/search/assets/download?sort=version&repository=${mvnConf.mvnRepoName}&maven.groupId=${dockerComposeGroupId}&maven.artifactId=${dockerComposeArtifactId}&maven.classifier=${dockerComposeClassifier}&maven.extension=yml</code>
 
 ${frontendBuildDescription}<p>
 ${backendBuildDescription}<p>
