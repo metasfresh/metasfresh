@@ -1,11 +1,26 @@
+interface DateFormatting {
+  lang: string;
+  currentDay: Date;
+  to: string;
+}
+
 /**
- * @method getInitialDate
- * @summary gets the object contianing the caption and dayFormat for the next day based on the lang parameter given as a string
+ * @method formDate
+ * @summary gets the object contianing the caption and dayFormat for the next day based on the lang parameter given
+ * @param<string> lang - language format - i.e: en_US
+ * @param<Date> currentDay -  from where we calculate the next/prev one, current day
+ * @param<string> to - string indicating we should return the next or previous day, calculated from the currentDay
  */
-export function getInitialDate(lang: string): { caption: string; dayFormat: string } {
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+export function formDate({ lang, currentDay, to }: DateFormatting): { caption: string; dayFormat: string } {
+  const tomorrow = new Date(currentDay);
+  switch (to) {
+    case 'prev':
+      tomorrow.setDate(tomorrow.getDate() - 1);
+      break;
+    case 'next':
+    default:
+      tomorrow.setDate(tomorrow.getDate() + 1);
+  }
 
   const dd = (tomorrow.getDate() < 10 ? '0' : '') + tomorrow.getDate();
   const mm = (tomorrow.getMonth() + 1 < 10 ? '0' : '') + (tomorrow.getMonth() + 1);
@@ -19,6 +34,7 @@ export function getInitialDate(lang: string): { caption: string; dayFormat: stri
       days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
       dayFormat = `${dd}.${mm}.${yyyy}`;
       break;
+    case 'en_US':
     case 'en_EN':
     default:
       days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
