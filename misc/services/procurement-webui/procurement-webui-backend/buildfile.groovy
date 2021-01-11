@@ -25,7 +25,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
         final Nexus nexus = new Nexus()
         final String dockerImageName = 'metasfresh/procurement-webui-backend'
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}/${dockerImageName}:${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6000/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 					No changes happened in procurement-webui-backend; latest docker image: <code>${resultsMap.dockerImage}</code>

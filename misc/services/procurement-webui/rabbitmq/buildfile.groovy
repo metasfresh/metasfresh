@@ -27,7 +27,7 @@ Map build(final Map scmVars,
         final String dockerImageName = "metasfresh/procurement-rabbitmq"
 
         final Nexus nexus = new Nexus()
-        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}/${dockerImageName}:${dockerLatestTag}")
+        resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6000/${dockerImageName}:${dockerLatestTag}")
 
         resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 					No changes in procurement-rabbitmq; latest docker image: <code>${resultsMap.dockerImage}</code>
