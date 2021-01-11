@@ -1,3 +1,7 @@
+/**
+ * @method getInitialDate
+ * @summary gets the object contianing the caption and dayFormat for the next day based on the lang parameter given as a string
+ */
 export function getInitialDate(lang: string): { caption: string; dayFormat: string } {
   const today = new Date();
   const tomorrow = new Date(today);
@@ -10,6 +14,7 @@ export function getInitialDate(lang: string): { caption: string; dayFormat: stri
   let days;
   let dayFormat;
   switch (lang) {
+    case 'de_CH':
     case 'de_DE':
       days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
       dayFormat = `${dd}.${mm}.${yyyy}`;
