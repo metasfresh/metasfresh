@@ -21,6 +21,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -105,7 +107,7 @@ public class OrderLineBuilder
 
 		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 		save(orderLine);
-		try (final MDCCloseable orderLineMDC = TableRecordMDC.putTableRecordReference(orderLine))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(orderLine))
 		{
 			// would be great to also have the pricing engine run in here..if there is a way for this without the need to save twice
 			logger.debug("Set C_OrderLine.QtyOrdered={} as converted from qty={} and productId={}", qtyOrdered.toBigDecimal(), qty, productId);
@@ -186,6 +188,7 @@ public class OrderLineBuilder
 				&& Objects.equals(getUomId(), uomId);
 	}
 
+	@Nullable
 	private UomId getUomId()
 	{
 		return qty != null ? qty.getUomId() : null;

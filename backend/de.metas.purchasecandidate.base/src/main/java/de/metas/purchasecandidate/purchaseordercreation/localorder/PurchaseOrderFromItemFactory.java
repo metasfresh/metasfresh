@@ -137,10 +137,10 @@ import java.util.Set;
 	}
 
 	private void updatePurchaseCandidateFromOrderLineBuilder(
-			@NonNull final PurchaseOrderItem pruchaseOrderItem,
+			@NonNull final PurchaseOrderItem purchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		pruchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
+		purchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
 	}
 
 	@Nullable
