@@ -26,7 +26,7 @@ class DailyNav extends React.Component<Props> {
           </div>
           <div className="column is-6">
             <div className="rows">
-              <div className="row is-full"> Freitag </div>
+              <div className="row is-full"> {day.caption} </div>
               <div className="row is-full"> {day.currentDay} </div>
             </div>
           </div>

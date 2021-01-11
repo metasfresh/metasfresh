@@ -2,6 +2,7 @@ import { useContext, createContext } from 'react';
 import { types, getEnv, destroy, Instance, onSnapshot } from 'mobx-state-tree';
 import { Todo } from './Todo';
 import { Day } from './Day';
+import { getInitialDate } from '../utils/date';
 
 export const Store = types
   .model('Store', {
@@ -31,6 +32,8 @@ export const Store = types
 
 const fetcher = (url) => window.fetch(url).then((response) => response.json());
 
+const { caption, dayFormat } = getInitialDate('de_DE'); // TODO: this should be changed with whatever we get from login
+
 let initialState = Store.create(
   {
     todos: [
@@ -39,7 +42,7 @@ let initialState = Store.create(
         id: 0,
       },
     ],
-    day: { caption: 'Samstag', currentDay: '09.01.2021' },
+    day: { caption, currentDay: dayFormat },
   },
   {
     fetch: fetcher,
@@ -71,7 +74,7 @@ export type RootInstance = Instance<typeof Store>;
 const RootStoreContext = createContext<null | RootInstance>(null);
 
 export const Provider = RootStoreContext.Provider;
-export function useMst() {
+export function useMst(): RootInstance {
   const store = useContext(RootStoreContext);
   if (store === null) {
     throw new Error('Please add a context provider');
