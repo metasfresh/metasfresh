@@ -11,7 +11,7 @@ interface Props {
 @inject('store')
 @observer
 class DailyNav extends React.Component<Props> {
-  updateCurrentDay = (to): void => {
+  updateCurrentDay = (to: string): void => {
     const { store } = this.props;
     const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(store.day.currentDay), to });
 
