@@ -152,7 +152,7 @@ public class JsonPaymentService
 		final String orderIdentifier = jsonInboundPaymentInfo.getOrderIdentifier();
 		if (!Check.isEmpty(orderIdentifier))
 		{
-			Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier));
+			Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
 			if (!externalOrderId.isPresent())
 			{
 				logger.debug("could not find externalOrderId for identifier: " + orderIdentifier);
@@ -193,7 +193,7 @@ public class JsonPaymentService
 		{
 			final String invoiceId = line.getInvoiceIdentifier();
 			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocType());
-			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), orgId, docType);
+			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), OrgId.ofRepoIdOrNull(orgId), docType);
 			if (!invoice.isPresent())
 			{
 				logger.warn("Cannot find invoice for identifier: " + invoiceId);
@@ -265,9 +265,9 @@ public class JsonPaymentService
 		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString);
 	}
 
-	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final int orgId, final DocBaseAndSubType docType)
+	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)
 	{
-		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier).docType(docType).orgId(OrgId.ofRepoIdOrNull(orgId)).build();
+		final InvoiceQuery invoiceQuery = createInvoiceQuery(invoiceIdentifier).docType(docType).orgId(orgId).build();
 		return invoiceDAO.retrieveIdByInvoiceQuery(invoiceQuery);
 	}
 
@@ -295,23 +295,24 @@ public class JsonPaymentService
 		}
 	}
 
-	private Optional<String> getExternalOrderIdFromIdentifier(final IdentifierString orderIdentifier)
+	private Optional<String> getExternalOrderIdFromIdentifier(final IdentifierString orderIdentifier, final OrgId orgId)
 	{
-		return orderDAO.retrieveExternalIdByOrderCriteria(createOrderQuery(orderIdentifier));
+		return orderDAO.retrieveExternalIdByOrderCriteria(createOrderQuery(orderIdentifier, orgId));
 	}
 
-	private OrderQuery createOrderQuery(final IdentifierString identifierString)
+	private OrderQuery createOrderQuery(final IdentifierString identifierString, final OrgId orgId)
 	{
 		final IdentifierString.Type type = identifierString.getType();
+		final OrderQuery.OrderQueryBuilder builder = OrderQuery.builder().orgId(orgId);
 		if (IdentifierString.Type.METASFRESH_ID.equals(type))
 		{
-			return OrderQuery.builder()
+			return builder
 					.orderId(MetasfreshId.toValue(identifierString.asMetasfreshId()))
 					.build();
 		}
 		else if (IdentifierString.Type.EXTERNAL_ID.equals(type))
 		{
-			return OrderQuery.builder()
+			return builder
 					.externalId(identifierString.asExternalId())
 					.build();
 		}

@@ -23,6 +23,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -430,7 +431,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		{
 			return getInvoiceIdByExternalIdIfExists(query);
 		}
-		if (Check.isEmpty(query.getDocType())) {
+		if (!Check.isEmpty(query.getDocType()))
+		{
 			return getInvoiceIdByDocumentIdIfExists(query);
 		}
 		return Optional.empty();
@@ -445,7 +447,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocBaseType, docType.getDocBaseType())
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1))
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo);
 
 
@@ -461,7 +463,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId);
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
 
 		final int invoiceRepoId = queryBuilder.create().firstId();
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
