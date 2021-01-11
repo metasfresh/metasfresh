@@ -3,18 +3,24 @@ package de.metas.order.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderQuery;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -38,6 +44,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
@@ -79,8 +86,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Nullable
 	private I_C_Order getByExternalId(@Nullable final ExternalId externalId)
 	{
-		final I_C_Order order = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class)
+		final I_C_Order order = createQueryBuilder()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
 				.create()
 				.first();
@@ -92,8 +98,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		final List<String> externalIdsAsStrings = externalIds.stream().map(ExternalId::getValue).collect(Collectors.toList());
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class)
+		return createQueryBuilder()
 				.addInArrayFilter(I_C_Order.COLUMNNAME_ExternalId, externalIdsAsStrings)
 				.create()
 				.list();
@@ -280,8 +285,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			return ImmutableSet.of();
 		}
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class)
+		return createQueryBuilder()
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
 				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class)
@@ -305,12 +309,17 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public Stream<OrderId> streamOrderIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class)
+		return createQueryBuilder()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.listIds(OrderId::ofRepoId)
 				.stream();
+	}
+
+	private IQueryBuilder<I_C_Order> createQueryBuilder()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class);
 	}
 
 	@Override
@@ -341,6 +350,26 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		{
 			return Optional.of(query.getExternalId().getValue());
 		}
+		if (Check.isNotBlank(query.getDocumentNo()))
+		{
+			return Optional.ofNullable(getExternalIdByDocumentNo(query));
+		}
 		return Optional.empty();
+	}
+
+	private String getExternalIdByDocumentNo(final OrderQuery query)
+	{
+		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
+		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
+		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
+
+		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
+
+		final I_C_Order order = queryBuilder.create().first();
+		return order == null ? null : order.getExternalId();
 	}
 }

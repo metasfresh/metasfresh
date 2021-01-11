@@ -138,39 +138,39 @@ public class JsonPaymentService
 		}
 		final BPartnerId bPartnerId = bPartnerIdOptional.get();
 
-		final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
-				.bpartnerId(bPartnerId)
-				.payAmt(jsonInboundPaymentInfo.getAmount())
-				.currencyId(currencyId)
-				.orgBankAccountId(bankAccountIdOptional.get())
-				.adOrgId(orgId)
-				.tenderType(TenderType.DirectDeposit)
-				.dateAcct(dateTrx)
-				.dateTrx(dateTrx)
-				.createAndProcess();
-
-		final String orderIdentifier = jsonInboundPaymentInfo.getOrderIdentifier();
-		if (!Check.isEmpty(orderIdentifier))
-		{
-			Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
-			if (!externalOrderId.isPresent())
-			{
-				logger.debug("could not find externalOrderId for identifier: " + orderIdentifier);
-			}
-			else
-			{
-				payment.setExternalOrderId(externalOrderId.get());
-			}
-		}
-		payment.setIsAutoAllocateAvailableAmt(true);
-		InterfaceWrapperHelper.save(payment);
-
 		trxManager.run(ITrx.TRXNAME_ThreadInherited, new TrxRunnableAdapter()
 		{
 
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
+				final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
+						.bpartnerId(bPartnerId)
+						.payAmt(jsonInboundPaymentInfo.getAmount())
+						.currencyId(currencyId)
+						.orgBankAccountId(bankAccountIdOptional.get())
+						.adOrgId(orgId)
+						.tenderType(TenderType.DirectDeposit)
+						.dateAcct(dateTrx)
+						.dateTrx(dateTrx)
+						.createAndProcess();
+
+				final String orderIdentifier = jsonInboundPaymentInfo.getOrderIdentifier();
+				if (!Check.isEmpty(orderIdentifier))
+				{
+					Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
+					if (!externalOrderId.isPresent())
+					{
+						logger.debug("could not find externalOrderId for identifier: " + orderIdentifier);
+					}
+					else
+					{
+						payment.setExternalOrderId(externalOrderId.get());
+					}
+				}
+				payment.setIsAutoAllocateAvailableAmt(true);
+				InterfaceWrapperHelper.save(payment);
+
 				createAllocationsForPayment(payment, lines);
 			}
 		});
@@ -276,18 +276,15 @@ public class JsonPaymentService
 		final IdentifierString.Type type = identifierString.getType();
 		if (IdentifierString.Type.METASFRESH_ID.equals(type))
 		{
-			return InvoiceQuery.builder()
-					.invoiceId(MetasfreshId.toValue(identifierString.asMetasfreshId()));
+			return InvoiceQuery.builder().invoiceId(MetasfreshId.toValue(identifierString.asMetasfreshId()));
 		}
 		else if (IdentifierString.Type.EXTERNAL_ID.equals(type))
 		{
-			return InvoiceQuery.builder()
-					.externalId(identifierString.asExternalId());
+			return InvoiceQuery.builder().externalId(identifierString.asExternalId());
 		}
 		else if (IdentifierString.Type.DOC.equals(type))
 		{
-			return InvoiceQuery.builder()
-					.documentNo(identifierString.asDoc());
+			return InvoiceQuery.builder().documentNo(identifierString.asDoc());
 		}
 		else
 		{
@@ -314,6 +311,12 @@ public class JsonPaymentService
 		{
 			return builder
 					.externalId(identifierString.asExternalId())
+					.build();
+		}
+		else if (IdentifierString.Type.DOC.equals(type))
+		{
+			return builder
+					.documentNo(identifierString.asDoc())
 					.build();
 		}
 		else

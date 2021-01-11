@@ -1,26 +1,20 @@
 package de.metas.rest_api.invoice.impl;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
@@ -29,8 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -121,31 +113,5 @@ public class InvoiceService
 				.externalLineId(JsonExternalId.ofOrNull(invoiceCandidate.getExternalLineId()))
 				.metasfreshId(MetasfreshId.of(invoiceCandidate.getC_Invoice_Candidate_ID()))
 				.build();
-	}
-
-	public I_C_Invoice getByIdentifierStringInTrx(@NonNull final IdentifierString identifierString)
-	{
-	return null;
-	}
-
-	private static InvoiceQuery createInvoiceQuery(@NonNull final IdentifierString bpartnerIdentifier)
-	{
-		final IdentifierString.Type type = bpartnerIdentifier.getType();
-		if (IdentifierString.Type.METASFRESH_ID.equals(type))
-		{
-			return InvoiceQuery.builder()
-					.invoiceId(MetasfreshId.toValue(bpartnerIdentifier.asMetasfreshId()))
-					.build();
-		}
-		else if (IdentifierString.Type.EXTERNAL_ID.equals(type))
-		{
-			return InvoiceQuery.builder()
-					.externalId(bpartnerIdentifier.asExternalId())
-					.build();
-		}
-		else
-		{
-			throw new AdempiereException("Invalid bpartnerIdentifier: " + bpartnerIdentifier);
-		}
 	}
 }
