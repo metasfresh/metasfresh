@@ -218,25 +218,7 @@ public class JsonPaymentService
 	 */
 	private boolean validateAllocationLineAmounts(final List<JsonPaymentAllocationLine> lines)
 	{
-		return Check.isEmpty(lines) && lines.stream().anyMatch(line -> Check.isEmpty(line.getAmount()));
-	}
-
-	/**
-	 * @param paymentAmt the total payment amt
-	 * @param lines      list of {@code JsonPaymentAllocationLine} corresponding to the payment
-	 * @return true if the sum of all allocation line amounts does not match  {@code paymentAmt}, false otherwise
-	 */
-	private boolean validateAmountsMatchPaymentAmt(final @NonNull BigDecimal paymentAmt, final List<JsonPaymentAllocationLine> lines)
-	{
-		if (Check.isEmpty(lines))
-		{
-			return false;
-		}
-		final BigDecimal totalLineAmt = lines.stream()
-				.map(line -> line.getAmount())
-				.filter(amt -> amt != null)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		return paymentAmt.compareTo(totalLineAmt) != 0;
+		return !Check.isEmpty(lines) && lines.stream().anyMatch(line -> Check.isEmpty(line.getAmount()));
 	}
 
 	private OrgId retrieveOrg(@RequestBody @NonNull final JsonInboundPaymentInfo jsonInboundPaymentInfo)

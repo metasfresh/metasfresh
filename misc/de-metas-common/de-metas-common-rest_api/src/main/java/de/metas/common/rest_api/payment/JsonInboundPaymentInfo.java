@@ -107,7 +107,9 @@ public class JsonInboundPaymentInfo
 
 	private BigDecimal getAmount(final Function<JsonPaymentAllocationLine, BigDecimal> lineToPayAmt)
 	{
-		return getLines().stream().map(lineToPayAmt).filter(amt -> amt != null).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		final List<JsonPaymentAllocationLine> lines = getLines();
+		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(amt -> amt != null).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 }

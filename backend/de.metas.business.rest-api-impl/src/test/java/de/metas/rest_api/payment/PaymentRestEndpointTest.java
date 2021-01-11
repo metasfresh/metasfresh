@@ -89,19 +89,19 @@ class PaymentRestEndpointTest
 		// create JsonPaymentInfo
 		final JsonInboundPaymentInfo jsonInboundPaymentInfo = JsonInboundPaymentInfo.builder()
 				.orgCode(AD_Org_Value)
-				.orderIdentifier(externalOrderId.getValue())
+				.orderIdentifier(IdentifierString.PREFIX_EXTERNAL_ID + externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
 				.targetIBAN(TARGET_IBAN)
 				.build();
 
 		assertEquals(JsonInboundPaymentInfo.builder()
-				.orgCode(AD_Org_Value)
-				.orderIdentifier("Order")
-				.bpartnerIdentifier("ext-bPartner")
-				.currencyCode(CURRENCY_CODE_EUR)
-				.targetIBAN(TARGET_IBAN)
-				.build(),
+						.orgCode(AD_Org_Value)
+						.orderIdentifier("ext-Order")
+						.bpartnerIdentifier("ext-bPartner")
+						.currencyCode(CURRENCY_CODE_EUR)
+						.targetIBAN(TARGET_IBAN)
+						.build(),
 				jsonInboundPaymentInfo);
 
 		// process JsonPaymentInfo
