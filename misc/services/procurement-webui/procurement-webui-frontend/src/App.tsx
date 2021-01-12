@@ -12,12 +12,16 @@ import Daily from './components/Daily';
 import Error404 from './components/Error404';
 import Login from './components/Login';
 import BottomNav from './components/BottomNav';
+import Info from './components/Info';
+import RfQ from './components/RfQ';
 
 const routes = [
   { path: '/', name: 'Daily Reporting', Component: Daily },
-  { path: '/daily/:productId', name: 'Daily Reporting', Component: Daily },
+  { path: '/daily/:productId', name: 'Daily Reporting Details', Component: Daily },
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
-
+  { path: '/news', name: 'Info/News', Component: Info },
+  { path: '/quotations', name: 'RfQ', Component: RfQ },
+  { path: '/quotations/:quotationId', name: 'RfQ Details', Component: RfQ },
 ];
 
 const childRoutes = (
