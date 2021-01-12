@@ -58,7 +58,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class PaymentRestEndpointTest
 {
 	public static final String CURRENCY_CODE_EUR = "EUR";
-	public static final BigDecimal PAYMENT_AMOUNT = BigDecimal.valueOf(123.456);
 	public static final String TARGET_IBAN = "012345678901234";
 	public static final String AD_Org_Value = "orgCode";
 
@@ -84,7 +83,7 @@ class PaymentRestEndpointTest
 
 		// create test data
 		final I_C_Order salesOrder = createSalesOrder(orgId, externalOrderId);
-		createBPartner(partnerIdentifier);
+		createBPartner(partnerIdentifier, orgId);
 
 		// create JsonPaymentInfo
 		final JsonInboundPaymentInfo jsonInboundPaymentInfo = JsonInboundPaymentInfo.builder()
@@ -142,11 +141,11 @@ class PaymentRestEndpointTest
 		return order;
 	}
 
-	private void createBPartner(@NonNull final IdentifierString bpartnerIdentifier)
+	private void createBPartner(@NonNull final IdentifierString bpartnerIdentifier, final OrgId orgId)
 	{
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		bPartner.setExternalId(bpartnerIdentifier.asExternalId().getValue());
-
+		bPartner.setAD_Org_ID(orgId.getRepoId());
 		saveRecord(bPartner);
 	}
 

@@ -400,7 +400,11 @@ public final class AggregationEngine
 		invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 		invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 		invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
-		invoiceHeader.setExternalId(orderDAO.getById(OrderId.ofRepoId(icRecord.getC_Order_ID())).getExternalId());
+		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
+		if (orderId != null)
+		{
+			invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
+		}
 
 		// why not using DateToInvoice[_Override] if available?
 		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
