@@ -97,7 +97,7 @@ public class JsonPaymentService
 		final List<JsonPaymentAllocationLine> lines = jsonInboundPaymentInfo.getLines();
 		if (validateAllocationLineAmounts(lines))
 		{
-			return ResponseEntity.unprocessableEntity().body("At least one of the following allocation amounts are mandatory: amount, discountAmt, writeOffAmt, overUnderAmt");
+			return ResponseEntity.unprocessableEntity().body("At least one of the following allocation amounts are mandatory in every line: amount, discountAmt, writeOffAmt");
 		}
 
 		final CurrencyId currencyId = currencyService.getCurrencyId(jsonInboundPaymentInfo.getCurrencyCode());
