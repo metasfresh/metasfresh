@@ -9,7 +9,7 @@ interface Props {
 }
 
 const View: FunctionComponent<Props> = ({ children }) => {
-  return <section className="container page">{children}</section>;
+  return <section className="container page custom-top-offset">{children}</section>;
 };
 
 View.propTypes = {
