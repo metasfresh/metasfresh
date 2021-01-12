@@ -55,13 +55,17 @@ public class JsonPaymentAllocationLine
 
 	@ApiModelProperty(position = 20)
 	@Nullable
-	BigDecimal amount;
+	String docSubType;
 
 	@ApiModelProperty(position = 30)
 	@Nullable
-	BigDecimal discountAmt;
+	BigDecimal amount;
 
 	@ApiModelProperty(position = 40)
+	@Nullable
+	BigDecimal discountAmt;
+
+	@ApiModelProperty(position = 50)
 	@Nullable
 	BigDecimal writeOffAmt;
 

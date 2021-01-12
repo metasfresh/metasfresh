@@ -32,10 +32,12 @@ public class SwaggerDocConstants
 
 	public static final String INVOICE_IDENTIFIER_DOC = "Identifier of the Invoice in question. Can be\n"
 			+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
+			+ "* or something like `doc-<C_Invoice.documentNo>`"
 			+ "* or something like `ext-<C_Invoice.ExternalId>`";
 
 	public static final String ORDER_IDENTIFIER_DOC = "Identifier of the Order in question. Can be\n"
 			+ "* a plain `<C_Order.C_Order_ID>`\n"
+			+ "* or something like `doc-<C_Order.documentNo>`"
 			+ "* or something like `ext-<C_Order.ExternalId>`";
 
 	public static final String CONTACT_IDENTIFIER_DOC = "Identifier of the contact in question. Can be\n"

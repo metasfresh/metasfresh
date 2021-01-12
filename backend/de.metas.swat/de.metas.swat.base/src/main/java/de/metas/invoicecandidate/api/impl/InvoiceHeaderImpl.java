@@ -74,6 +74,7 @@ import lombok.Setter;
 	private I_C_DocType docTypeInvoice;
 
 	private boolean taxIncluded;
+	private String  externalId;
 
 	private int C_PaymentTerm_ID = -1;
 
@@ -96,6 +97,7 @@ import lombok.Setter;
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
+				+ ", externalID=" + externalId
 				+ ", lines=" + lines
 				+ "]";
 	}
@@ -317,5 +319,16 @@ import lombok.Setter;
 	public int getC_PaymentTerm_ID()
 	{
 		return C_PaymentTerm_ID;
+	}
+
+	@Override
+	public String getExternalId()
+	{
+		return externalId;
+	}
+
+	public String setExternalId(String externalId)
+	{
+		return this.externalId = externalId;
 	}
 }

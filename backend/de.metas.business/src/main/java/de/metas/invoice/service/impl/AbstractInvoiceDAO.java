@@ -23,7 +23,6 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -38,6 +37,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
@@ -443,15 +443,24 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
+		final String docBaseType = assumeNotNull(docType.getDocBaseType(), "Param query needs to have a non-null docBaseType; query={}", query);
+		final String docSubType = docType.getDocSubType();
+
+		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
+		if (Check.isNotBlank(docSubType))
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
+		}
 
 		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1))
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo);
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo)
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQueryBuilder.create());
 
-
-		final int invoiceRepoId = queryBuilder.create().firstId();
+		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 
@@ -465,7 +474,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
 
-		final int invoiceRepoId = queryBuilder.create().firstId();
+		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 

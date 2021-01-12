@@ -64,7 +64,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -126,7 +125,7 @@ public class JsonPaymentService
 					orgBPartnerIdOptional.get().getRepoId(), jsonInboundPaymentInfo.getCurrencyCode(), jsonInboundPaymentInfo.getTargetIBAN()));
 		}
 
-		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonInboundPaymentInfo.getBpartnerIdentifier()));
+		final Optional<BPartnerId> bPartnerIdOptional = retrieveBPartnerId(IdentifierString.of(jsonInboundPaymentInfo.getBpartnerIdentifier()), orgId);
 		if (!bPartnerIdOptional.isPresent())
 		{
 			return ResponseEntity.unprocessableEntity().body("Cannot find bpartner: " + jsonInboundPaymentInfo.getBpartnerIdentifier());
@@ -156,14 +155,8 @@ public class JsonPaymentService
 				if (!Check.isEmpty(orderIdentifier))
 				{
 					Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
-					if (!externalOrderId.isPresent())
-					{
-						logger.debug("could not find externalOrderId for identifier: " + orderIdentifier);
-					}
-					else
-					{
-						payment.setExternalOrderId(externalOrderId.get());
-					}
+					Check.assumeNotEmpty(externalOrderId, "Could not find externalOrderId for identifier: " + orderIdentifier);
+					payment.setExternalOrderId(externalOrderId.get());
 				}
 				payment.setIsAutoAllocateAvailableAmt(true);
 				InterfaceWrapperHelper.save(payment);
@@ -189,25 +182,19 @@ public class JsonPaymentService
 		for (JsonPaymentAllocationLine line : lines)
 		{
 			final String invoiceId = line.getInvoiceIdentifier();
-			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocType());
+			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocType(), line.getDocSubType());
 			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), OrgId.ofRepoIdOrNull(orgId), docType);
-			if (!invoice.isPresent())
-			{
-				logger.warn("Cannot find invoice for identifier: " + invoiceId);
-			}
-			else
-			{
-				allocationBuilder.addLine()
-						.skipIfAllAmountsAreZero()
-						.invoiceId(invoice.get().getRepoId())
-						.orgId(orgId)
-						.bpartnerId(payment.getC_BPartner_ID())
-						.amount(line.getAmount())
-						.discountAmt(line.getDiscountAmt())
-						.writeOffAmt(line.getWriteOffAmt())
-						.paymentId(payment.getC_Payment_ID())
-						.lineDone();
-			}
+			Check.assumeNotEmpty(invoice, "Cannot find invoice for identifier: " + invoiceId);
+			allocationBuilder.addLine()
+					.skipIfAllAmountsAreZero()
+					.invoiceId(invoice.get().getRepoId())
+					.orgId(orgId)
+					.bpartnerId(payment.getC_BPartner_ID())
+					.amount(line.getAmount())
+					.discountAmt(line.getDiscountAmt())
+					.writeOffAmt(line.getWriteOffAmt())
+					.paymentId(payment.getC_Payment_ID())
+					.lineDone();
 		}
 		allocationBuilder.createAndComplete();
 	}
@@ -238,10 +225,9 @@ public class JsonPaymentService
 		return orgId.orElse(Env.getOrgId());
 	}
 
-	private Optional<BPartnerId> retrieveBPartnerId(final IdentifierString bPartnerIdentifierString)
+	private Optional<BPartnerId> retrieveBPartnerId(final IdentifierString bPartnerIdentifierString, OrgId orgId)
 	{
-		// TODO it would be nice here if we would also use orgID when searching for the bpartner, since an ExternalId may belong to multiple users from different orgs.
-		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString);
+		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString, orgId);
 	}
 
 	private Optional<InvoiceId> retrieveInvoice(final IdentifierString invoiceIdentifier, final OrgId orgId, final DocBaseAndSubType docType)

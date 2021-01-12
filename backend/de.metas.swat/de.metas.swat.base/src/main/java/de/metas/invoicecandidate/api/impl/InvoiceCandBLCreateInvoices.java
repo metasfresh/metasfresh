@@ -350,10 +350,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
 				Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(cand -> cand.getExternalHeaderId()).filter(cand -> cand != null).collect(Collectors.toSet());
-				if (externalIds.size() > 1)
-				{
-					logger.warn("Unexpectedly found multiple externalId candidates for the same invoice: " + externalIds.toArray());
-				}
+				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: " + externalIds.toArray());
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
 
