@@ -3,7 +3,6 @@ import { observer, inject } from 'mobx-react';
 import { RootInstance } from '../models/Store';
 
 interface Props {
-  headerText: string;
   store?: RootInstance;
 }
 
