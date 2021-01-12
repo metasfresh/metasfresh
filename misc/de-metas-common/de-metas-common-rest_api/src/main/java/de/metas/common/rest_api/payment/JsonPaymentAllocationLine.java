@@ -51,7 +51,7 @@ public class JsonPaymentAllocationLine
 
 	@ApiModelProperty(position = 10)
 	@Nullable
-	String docType;
+	String docBaseType;
 
 	@ApiModelProperty(position = 20)
 	@Nullable

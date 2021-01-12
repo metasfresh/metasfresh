@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 class JsonPaymentAllocationLineTest
 {
@@ -58,8 +57,8 @@ class JsonPaymentAllocationLineTest
 	{
 		testSerializeDeserialize(JsonPaymentAllocationLine.builder()
 				.invoiceIdentifier("ext-API_001")
-				.docType("DocType")
-				.docType("DocSubType")
+				.docBaseType("DocType")
+				.docSubType("DocSubType")
 				.amount(BigDecimal.valueOf(10))
 				.discountAmt(BigDecimal.valueOf(11))
 				.writeOffAmt(BigDecimal.valueOf(12))

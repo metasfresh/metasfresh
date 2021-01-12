@@ -36,7 +36,6 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderQuery;
@@ -59,11 +58,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -81,7 +80,6 @@ public class JsonPaymentService
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private static final Logger logger = LogManager.getLogger(JsonPaymentService.class);
 
 	public JsonPaymentService(final CurrencyService currencyService, final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade)
 	{
@@ -136,7 +134,7 @@ public class JsonPaymentService
 		{
 
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				final I_C_Payment payment = paymentBL.newInboundReceiptBuilder()
 						.bpartnerId(bPartnerId)
@@ -154,9 +152,9 @@ public class JsonPaymentService
 				final String orderIdentifier = jsonInboundPaymentInfo.getOrderIdentifier();
 				if (!Check.isEmpty(orderIdentifier))
 				{
-					Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
+					final Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
 					Check.assumeNotEmpty(externalOrderId, "Could not find externalOrderId for identifier: " + orderIdentifier);
-					payment.setExternalOrderId(externalOrderId.get());
+					payment.setExternalOrderId(externalOrderId.orElseGet(null));
 				}
 				payment.setIsAutoAllocateAvailableAmt(true);
 				InterfaceWrapperHelper.save(payment);
@@ -179,10 +177,10 @@ public class JsonPaymentService
 				.dateTrx(payment.getDateTrx())
 				.dateAcct(payment.getDateAcct())
 				.orgId(orgId);
-		for (JsonPaymentAllocationLine line : lines)
+		for (final JsonPaymentAllocationLine line : lines)
 		{
 			final String invoiceId = line.getInvoiceIdentifier();
-			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocType(), line.getDocSubType());
+			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocBaseType(), line.getDocSubType());
 			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), OrgId.ofRepoIdOrNull(orgId), docType);
 			Check.assumeNotEmpty(invoice, "Cannot find invoice for identifier: " + invoiceId);
 			allocationBuilder.addLine()
@@ -203,7 +201,7 @@ public class JsonPaymentService
 	 * @param lines list of {@code JsonPaymentAllocationLine} to check
 	 * @return true if any line in {@code lines} has no valid amounts, false otherwise
 	 */
-	private boolean validateAllocationLineAmounts(final List<JsonPaymentAllocationLine> lines)
+	private boolean validateAllocationLineAmounts(@Nullable final List<JsonPaymentAllocationLine> lines)
 	{
 		return !Check.isEmpty(lines) && lines.stream().anyMatch(line -> Check.isEmpty(line.getAmount()));
 	}
