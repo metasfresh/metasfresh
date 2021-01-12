@@ -23,7 +23,7 @@ class WeeklyNav extends React.Component<Props> {
     if (!store) {
       return null;
     }
-    const { day } = store;
+    const { week } = store;
 
     return (
       <div className="daily-nav">
@@ -33,7 +33,7 @@ class WeeklyNav extends React.Component<Props> {
           </div>
           <div className="column is-6">
             <div className="rows">
-              <div className="row is-full"> Week </div>
+              <div className="row is-full"> {week.caption} </div>
               <div className="row is-full"> 05.2011 </div>
             </div>
           </div>

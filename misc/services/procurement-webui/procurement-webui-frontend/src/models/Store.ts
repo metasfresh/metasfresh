@@ -4,10 +4,12 @@ import Navigation from './Navigation';
 import { Day } from './Day';
 import { DailyProductList } from './DailyProductList';
 import { formDate } from '../utils/date';
+import { Week } from './Week';
 
 export const Store = types.model('Store', {
   navigation: Navigation,
   day: Day,
+  week: Week,
   dailyProducts: DailyProductList,
 });
 
@@ -16,6 +18,7 @@ const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: '
 let initialState = Store.create({
   navigation: { viewName: '' },
   day: { caption, currentDay: day },
+  week: { caption, currentWeek: 'Week' },
   dailyProducts: {},
 });
 

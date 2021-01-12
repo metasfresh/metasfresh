@@ -5,7 +5,6 @@ import { RootInstance } from '../models/Store';
 import { formDate, prettyDate } from '../utils/date';
 
 interface Props {
-  headerText: string;
   store?: RootInstance;
 }
 
@@ -39,7 +38,7 @@ class DailyNav extends React.Component<Props> {
           </div>
           <div className="column is-6">
             <div className="rows">
-              <div className="row is-full"> {day.caption} </div>
+              <div className="row is-full"> {day.retrieveCaption} </div>
               <div className="row is-full"> {prettyDate({ lang: 'de_DE', date: day.currentDay })} </div>
             </div>
           </div>
