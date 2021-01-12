@@ -22,6 +22,7 @@
 
 package de.metas.project;
 
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -48,6 +49,9 @@ public class ProjectLine
 
 	@Nullable
 	private final String description;
+
+	@Nullable
+	private final OrderAndLineId salesOrderLineId;
 
 	public Quantity getPlannedQtyButNotCommitted()
 	{

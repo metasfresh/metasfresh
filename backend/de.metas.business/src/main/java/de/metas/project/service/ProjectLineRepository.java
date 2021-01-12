@@ -23,6 +23,8 @@
 package de.metas.project.service;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectAndLineId;
@@ -64,13 +66,25 @@ public class ProjectLineRepository
 		return toProjectLine(record);
 	}
 
-	private I_C_ProjectLine retrieveLineRecordById(final ProjectAndLineId projectLineId)
+	private I_C_ProjectLine retrieveLineRecordById(@NonNull final ProjectAndLineId projectLineId)
 	{
 		return queryBL.createQueryBuilder(I_C_ProjectLine.class)
 				.addEqualsFilter(I_C_ProjectLine.COLUMNNAME_C_Project_ID, projectLineId.getProjectId())
 				.addEqualsFilter(I_C_ProjectLine.COLUMNNAME_C_ProjectLine_ID, projectLineId.getProjectLineRepoId())
 				.create()
 				.firstOnlyNotNull(I_C_ProjectLine.class);
+	}
+
+	public List<ProjectLine> retrieveLinesByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_ProjectLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ProjectLine.COLUMNNAME_C_Order_ID, orderId)
+				.orderBy(I_C_ProjectLine.COLUMNNAME_C_ProjectLine_ID)
+				.create()
+				.stream()
+				.map(this::toProjectLine)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private void save(final I_C_ProjectLine projectLine)
@@ -81,12 +95,14 @@ public class ProjectLineRepository
 	private ProjectLine toProjectLine(final I_C_ProjectLine record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+
 		return ProjectLine.builder()
 				.id(ProjectAndLineId.ofRepoId(record.getC_Project_ID(), record.getC_ProjectLine_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.plannedQty(Quantitys.create(record.getPlannedQty(), uomId))
 				.committedQty(Quantitys.create(record.getCommittedQty(), uomId))
 				.description(record.getDescription())
+				.salesOrderLineId(OrderAndLineId.ofRepoIdsOrNull(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.build();
 	}
 
@@ -140,5 +156,15 @@ public class ProjectLineRepository
 		updateRecord(record, line);
 		save(record);
 		return line;
+	}
+
+	public void linkToOrderLine(
+			@NonNull final ProjectAndLineId projectLineId,
+			@NonNull final OrderAndLineId orderLineId)
+	{
+		final I_C_ProjectLine record = retrieveLineRecordById(projectLineId);
+		record.setC_Order_ID(orderLineId.getOrderRepoId());
+		record.setC_OrderLine_ID(orderLineId.getOrderLineRepoId());
+		save(record);
 	}
 }

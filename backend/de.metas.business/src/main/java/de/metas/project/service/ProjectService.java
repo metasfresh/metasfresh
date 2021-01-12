@@ -24,6 +24,8 @@ package de.metas.project.service;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
@@ -79,6 +81,11 @@ public class ProjectService
 	public ProjectLine getLineById(@NonNull final ProjectAndLineId projectLineId)
 	{
 		return projectLineRepository.retrieveLineById(projectLineId);
+	}
+
+	public List<ProjectLine> getLinesByOrderId(@NonNull final OrderId orderId)
+	{
+		return projectLineRepository.retrieveLinesByOrderId(orderId);
 	}
 
 	public ProjectId createProject(@NonNull final CreateProjectRequest request)
@@ -179,5 +186,12 @@ public class ProjectService
 		{
 			projectLine.addCommittedQty(request.getCommittedQtyToAdd());
 		}
+	}
+
+	public void linkToOrderLine(
+			@NonNull final ProjectAndLineId projectLineId,
+			@NonNull final OrderAndLineId orderLineId)
+	{
+		projectLineRepository.linkToOrderLine(projectLineId, orderLineId);
 	}
 }

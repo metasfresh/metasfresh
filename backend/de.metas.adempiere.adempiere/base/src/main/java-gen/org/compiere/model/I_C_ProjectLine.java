@@ -79,6 +79,31 @@ public interface I_C_ProjectLine
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_ID (int C_OrderLine_ID);
+
+	/**
+	 * Get Orderline.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine();
+
+	void setC_OrderLine(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine);
+
+	ModelColumn<I_C_ProjectLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_ProjectLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
 	 * Set Bestellung.
 	 * Purchase Order
 	 *
@@ -155,7 +180,7 @@ public interface I_C_ProjectLine
 	String COLUMNNAME_C_ProjectIssue_ID = "C_ProjectIssue_ID";
 
 	/**
-	 * Set Projekt-Position.
+	 * Set Project Line.
 	 * Task or step in a project
 	 *
 	 * <br>Type: ID
@@ -165,7 +190,7 @@ public interface I_C_ProjectLine
 	void setC_ProjectLine_ID (int C_ProjectLine_ID);
 
 	/**
-	 * Get Projekt-Position.
+	 * Get Project Line.
 	 * Task or step in a project
 	 *
 	 * <br>Type: ID
