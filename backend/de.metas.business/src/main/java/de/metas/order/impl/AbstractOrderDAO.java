@@ -340,7 +340,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		InterfaceWrapperHelper.save(orderLine);
 	}
 
-	public Optional<String> retrieveExternalIdByOrderCriteria(OrderQuery query)
+	public Optional<String> retrieveExternalIdByOrderCriteria(@NonNull final OrderQuery query)
 	{
 		if (query.getOrderId() != null)
 		{
