@@ -1,7 +1,5 @@
 #!/bin/sh
 
-/etc/rabbitmq_default_configs
-
 echo "init.sh - before rabbitmq start - copy not-yet-existing config files"
 cp --no-clobber --recursive --verbose /etc/rabbitmq_default_configs/* /etc/rabbitmq/
 
