@@ -30,6 +30,7 @@ import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.HUProjectService;
+import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -38,7 +39,7 @@ import org.compiere.model.I_C_ProjectLine;
 
 abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 {
-	protected final HUProjectService projectService = SpringContextHolder.instance.getBean(HUProjectService.class);
+	protected final ServiceRepairProjectService projectService = SpringContextHolder.instance.getBean(ServiceRepairProjectService.class);
 
 	protected ProcessPreconditionsResolution checkIsServiceOrRepairProject(@NonNull final ProjectId projectId)
 	{

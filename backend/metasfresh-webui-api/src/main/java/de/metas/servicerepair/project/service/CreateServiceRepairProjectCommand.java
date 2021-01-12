@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.servicerepair.project;
+package de.metas.servicerepair.project.service;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -41,7 +41,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.CreateProjectRequest;
-import de.metas.project.service.ProjectService;
+import de.metas.project.service.HUProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestBL;
@@ -70,14 +70,14 @@ class CreateServiceRepairProjectCommand
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final ProjectService projectService;
+	private final HUProjectService projectService;
 	private final RepairCustomerReturnsService repairCustomerReturnsService;
 
 	private final RequestId requestId;
 
 	@Builder
 	private CreateServiceRepairProjectCommand(
-			@NonNull final ProjectService projectService,
+			@NonNull final HUProjectService projectService,
 			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService,
 			@NonNull final RequestId requestId)
 	{

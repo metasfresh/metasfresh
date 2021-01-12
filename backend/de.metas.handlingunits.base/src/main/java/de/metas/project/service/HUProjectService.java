@@ -29,6 +29,8 @@ import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectLine;
@@ -36,6 +38,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +77,11 @@ public class HUProjectService
 		return projectService.getLineById(projectLineId);
 	}
 
+	public ProjectId createProject(final CreateProjectRequest request)
+	{
+		return projectService.createProject(request);
+	}
+
 	public void reserveHUs(
 			final ProjectAndLineId projectLineId,
 			final ImmutableSet<HuId> huIds)
@@ -89,6 +97,10 @@ public class HUProjectService
 				.huIds(huIds)
 				.build())
 				.orElse(null);
+		if (huReservation == null)
+		{
+			throw new AdempiereException("Cannot make reservation");
+		}
 
 		final Quantity qtyReserved = huReservation.getReservedQtySum();
 		projectService.changeProjectLine(ChangeProjectLineRequest.builder()
@@ -132,5 +144,44 @@ public class HUProjectService
 					.committedQtyToAdd(qtyToRelease.get(projectLineId).negate())
 					.build());
 		}
+	}
+
+	public void linkToOrderLine(
+			@NonNull final ProjectAndLineId projectLineId,
+			@NonNull final OrderAndLineId orderLineId)
+	{
+		projectService.linkToOrderLine(projectLineId, orderLineId);
+	}
+
+	public void transferHUReservationsFromProjectToOrder(@NonNull final OrderId orderId)
+	{
+		for (final ProjectLine projectLine : projectService.getLinesByOrderId(orderId))
+		{
+			if (projectLine.getSalesOrderLineId() == null)
+			{
+				continue;
+			}
+
+			final HUReservationDocRef from = HUReservationDocRef.ofProjectAndLineId(projectLine.getId());
+			final HUReservationDocRef to = HUReservationDocRef.ofSalesOrderLineId(projectLine.getSalesOrderLineId().getOrderLineId());
+			huReservationService.transferReservation(from, to);
+		}
+
+	}
+
+	public void transferHUReservationsFromOrderToProject(@NonNull final OrderId orderId)
+	{
+		for (final ProjectLine projectLine : projectService.getLinesByOrderId(orderId))
+		{
+			if (projectLine.getSalesOrderLineId() == null)
+			{
+				continue;
+			}
+
+			final HUReservationDocRef from = HUReservationDocRef.ofSalesOrderLineId(projectLine.getSalesOrderLineId().getOrderLineId());
+			final HUReservationDocRef to = HUReservationDocRef.ofProjectAndLineId(projectLine.getId());
+			huReservationService.transferReservation(from, to);
+		}
+
 	}
 }

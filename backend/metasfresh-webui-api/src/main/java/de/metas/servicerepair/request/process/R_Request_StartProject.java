@@ -30,7 +30,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.project.ProjectId;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestBL;
-import de.metas.servicerepair.project.ServiceRepairProjectService;
+import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;

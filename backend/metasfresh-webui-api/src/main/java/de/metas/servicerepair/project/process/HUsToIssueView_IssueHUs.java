@@ -29,6 +29,7 @@ import de.metas.project.ProjectAndLineId;
 import de.metas.project.service.HUProjectService;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewContext;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewFactory;
+import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -37,7 +38,7 @@ import org.compiere.SpringContextHolder;
 
 public class HUsToIssueView_IssueHUs extends HUEditorProcessTemplate
 {
-	private final HUProjectService projectService = SpringContextHolder.instance.getBean(HUProjectService.class);
+	private final ServiceRepairProjectService projectService = SpringContextHolder.instance.getBean(ServiceRepairProjectService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

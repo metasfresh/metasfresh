@@ -20,14 +20,20 @@
  * #L%
  */
 
-package de.metas.servicerepair.project;
+package de.metas.servicerepair.project.service;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.order.OrderId;
+import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
-import de.metas.project.service.ProjectService;
+import de.metas.project.ProjectLine;
+import de.metas.project.service.HUProjectService;
 import de.metas.request.RequestId;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,15 +41,25 @@ public class ServiceRepairProjectService
 {
 	public static final AdWindowId AD_WINDOW_ID = AdWindowId.ofRepoId(541015); // FIXME hardcoded
 
-	private final ProjectService projectService;
+	private final HUProjectService projectService;
 	private final RepairCustomerReturnsService repairCustomerReturnsService;
 
 	public ServiceRepairProjectService(
-			@NonNull final ProjectService projectService,
+			@NonNull final HUProjectService projectService,
 			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService)
 	{
 		this.projectService = projectService;
 		this.repairCustomerReturnsService = repairCustomerReturnsService;
+	}
+
+	public I_C_Project getById(@NonNull final ProjectId projectId)
+	{
+		return projectService.getById(projectId);
+	}
+
+	public ProjectLine getLineById(final ProjectAndLineId projectLineId)
+	{
+		return projectService.getLineById(projectLineId);
 	}
 
 	public ProjectId createProjectFromRequest(final RequestId requestId)
@@ -54,5 +70,24 @@ public class ServiceRepairProjectService
 				.requestId(requestId)
 				.build()
 				.execute();
+	}
+
+	public OrderId createQuotationFromProject(final ProjectId projectId)
+	{
+		return CreateQuotationFromProjectCommand.builder()
+				.projectService(projectService)
+				.projectId(projectId)
+				.build()
+				.execute();
+	}
+
+	public void reserveHUs(final ProjectAndLineId projectLineId, final ImmutableSet<HuId> huIds)
+	{
+		projectService.reserveHUs(projectLineId, huIds);
+	}
+
+	public void releaseReservedHUs(final ImmutableSet<ProjectAndLineId> projectLineIds)
+	{
+		projectService.releaseReservedHUs(projectLineIds);
 	}
 }
