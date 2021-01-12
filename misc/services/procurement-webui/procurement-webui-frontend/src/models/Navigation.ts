@@ -8,11 +8,6 @@ const Navigation = types
     setViewName(viewName: string) {
       self.viewName = viewName;
     },
-  }))
-  .views((self) => ({
-    get getViewName() {
-      return self.viewName;
-    },
   }));
 
 export default Navigation;

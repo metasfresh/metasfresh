@@ -1,17 +1,34 @@
 import { useContext, createContext } from 'react';
-import { types, Instance, onSnapshot } from 'mobx-state-tree';
+import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
+
+import { fetchDailyReport } from '../api';
+import { formDate } from '../utils/date';
+
 import Navigation from './Navigation';
 import { Day } from './Day';
 import { DailyProductList } from './DailyProductList';
-import { formDate } from '../utils/date';
+
 import { Week } from './Week';
 
-export const Store = types.model('Store', {
-  navigation: Navigation,
-  day: Day,
-  week: Week,
-  dailyProducts: DailyProductList,
-});
+export const Store = types
+  .model('Store', {
+    navigation: Navigation,
+    day: Day,
+    week: Week,
+    dailyProducts: DailyProductList,
+  })
+  .actions((self) => ({
+    fetchDailyReport: flow(function* fetchReport(date: string) {
+      try {
+        const response = yield fetchDailyReport(date);
+
+        self.navigation.setViewName(response.data.dayCaption);
+        // TODO: Do stuff for daily report
+      } catch (error) {
+        console.error('Failed to fetch', error);
+      }
+    }),
+  }));
 
 const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
 
