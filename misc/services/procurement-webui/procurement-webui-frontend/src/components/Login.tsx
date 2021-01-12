@@ -18,7 +18,7 @@ const Login: FunctionComponent<Props> = ({}) => {
 
   return (
     <View>
-      <div className="container">
+      <div className="container p-4">
         <h1 className="title">Login</h1>
         <form>
           <div className="field">
