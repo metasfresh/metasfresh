@@ -100,5 +100,28 @@ body {
 }
 
 footer {
+  min-height: 5rem !important;
 
+  .link {
+    display: block;
+    color: $base-elements;
+
+    svg {
+      font-size: 40px;
+    }
+  }
+}
+
+.back-bottom-nav {
+  border-top: 1px solid #ddd;
+}
+
+.icons-bottom-nav {
+  .link {
+    width: 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+  }
 }
