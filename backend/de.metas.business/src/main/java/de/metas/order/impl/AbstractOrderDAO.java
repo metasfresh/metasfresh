@@ -369,7 +369,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
 
-		final I_C_Order order = queryBuilder.create().first();
+		final I_C_Order order = queryBuilder.create().firstOnly();
 		return order == null ? null : order.getExternalId();
 	}
 }
