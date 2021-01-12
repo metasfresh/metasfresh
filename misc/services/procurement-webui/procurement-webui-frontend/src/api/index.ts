@@ -5,6 +5,7 @@ const loadMirage = () => import('miragejs');
 export function loadMirageInDev() {
   if (process.env.NODE_ENV === 'development') {
     loadMirage().then(({ Server }) => {
+      console.log('MIRAGE listening');
       return new Server({
         routes() {
           this.namespace = '/rest/';
