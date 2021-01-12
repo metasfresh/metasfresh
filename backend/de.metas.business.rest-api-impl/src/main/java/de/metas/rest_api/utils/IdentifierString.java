@@ -68,6 +68,9 @@ public class IdentifierString
 
 		INTERNALNAME,
 
+		/**
+		 * Note that in general document numbers are only unique per Org and DocType!
+		 */
 		DOC
 	}
 
