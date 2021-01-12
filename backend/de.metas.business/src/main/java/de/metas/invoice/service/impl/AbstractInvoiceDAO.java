@@ -421,7 +421,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list();
 	}
 
-	public Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query)
+	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
 	{
 		if (query.getInvoiceId() != null)
 		{
