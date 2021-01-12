@@ -18,7 +18,7 @@ const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: '
 let initialState = Store.create({
   navigation: { viewName: '' },
   day: { caption, currentDay: day },
-  week: { caption, currentWeek: 'Week' },
+  week: { caption: 'Week', currentWeek: '05.2021' },
   dailyProducts: {},
 });
 

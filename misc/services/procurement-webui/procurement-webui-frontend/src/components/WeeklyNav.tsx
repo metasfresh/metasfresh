@@ -34,7 +34,7 @@ class WeeklyNav extends React.Component<Props> {
           <div className="column is-6">
             <div className="rows">
               <div className="row is-full"> {week.caption} </div>
-              <div className="row is-full"> 05.2011 </div>
+              <div className="row is-full"> {week.retrieveCurrentWeek} </div>
             </div>
           </div>
           <div className="column is-3 has-text-right arrow-navigation is-vcentered p-4" onClick={this.nextWeek}>
