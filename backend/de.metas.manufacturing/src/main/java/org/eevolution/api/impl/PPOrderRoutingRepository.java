@@ -67,7 +67,7 @@ import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;

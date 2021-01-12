@@ -4365,7 +4365,7 @@ public abstract class PO
 	public final boolean insert_Accounting(
 			final String acctTable,
 			final String acctBaseTable,
-			final String whereClause)
+			@Nullable final String whereClause)
 	{
 		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
 		if(acctInfo == null)

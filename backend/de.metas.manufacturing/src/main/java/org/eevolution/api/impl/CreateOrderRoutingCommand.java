@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;

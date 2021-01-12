@@ -224,7 +224,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
 	@Deprecated
-	I_C_BPartner_Location retrieveShipToLocation(Properties ctx, int bPartnerId, String trxName);
+	I_C_BPartner_Location retrieveShipToLocation(Properties ctx, int bPartnerId, @Nullable String trxName);
 
 	/**
 	 * Retrieve all (active) ship to locations.

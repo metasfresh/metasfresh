@@ -4,8 +4,8 @@ import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.AccessLevel;

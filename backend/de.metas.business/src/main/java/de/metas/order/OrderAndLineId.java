@@ -12,6 +12,8 @@ import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -39,6 +41,7 @@ public class OrderAndLineId
 {
 	private static final Logger logger = LogManager.getLogger(OrderAndLineId.class);
 
+	@Nullable
 	public static OrderAndLineId ofRepoIdsOrNull(final int orderRepoId, final int orderLineRepoId)
 	{
 		if (orderLineRepoId <= 0)

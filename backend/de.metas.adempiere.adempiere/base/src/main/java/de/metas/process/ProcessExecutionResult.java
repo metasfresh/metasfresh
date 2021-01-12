@@ -112,6 +112,7 @@ public class ProcessExecutionResult
 	/**
 	 * Log Info
 	 */
+	@Nullable
 	private transient List<ProcessInfoLog> logs;
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
@@ -120,12 +121,14 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private transient MPrintFormat printFormat;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable
 	private ReportResultData reportData;
 
 	/**
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
+	@Nullable
 	private transient Throwable throwable = null;
 
 	private boolean refreshAllAfterExecution = false;
@@ -150,18 +153,30 @@ public class ProcessExecutionResult
 
 	@Getter
 	@Setter
+	private boolean closeWebuiModalView = false;
+
+	@Getter
+	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private DisplayQRCode displayQRCode;
 
+	/**
+	 * Webui's viewId on which this process was executed.
+	 */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Setter
+	@Getter
+	@Nullable
 	private String webuiViewId = null;
 
-	@Getter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Nullable
 	private String stringResult = null;
 
-	@Getter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Nullable
 	private String stringResultContentType = null;
 
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
@@ -181,7 +196,7 @@ public class ProcessExecutionResult
 			// @JsonProperty("logs") final List<ProcessInfoLog> logs, // transient
 			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy,
 			// @JsonProperty("printFormat") final MPrintFormat printFormat, // transient
-			@JsonProperty("reportData") final ReportResultData reportData,
+			@JsonProperty("reportData") @Nullable final ReportResultData reportData,
 			// @JsonProperty("throwable") final Throwable throwable, // transient
 			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
 			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
@@ -189,9 +204,9 @@ public class ProcessExecutionResult
 			@JsonProperty("recordsToOpen") @Nullable final RecordsToOpen recordsToOpen,
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
-			@JsonProperty("webuiViewId") final String webuiViewId,
-			@JsonProperty("stringResult") final String stringResult,
-			@JsonProperty("stringResultContentType") final String stringResultContentType)
+			@JsonProperty("webuiViewId") @Nullable final String webuiViewId,
+			@JsonProperty("stringResult") @Nullable final String stringResult,
+			@JsonProperty("stringResultContentType") @Nullable final String stringResultContentType)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
@@ -279,7 +294,7 @@ public class ProcessExecutionResult
 		markAsError(errorMsg, throwable);
 	}
 
-	public void markAsError(final String summary, final Throwable throwable)
+	public void markAsError(final String summary, @Nullable final Throwable throwable)
 	{
 		this.summary = summary;
 		this.throwable = throwable;
@@ -311,6 +326,7 @@ public class ProcessExecutionResult
 	 * @return throwable
 	 * Task 03152
 	 */
+	@Nullable
 	public Throwable getThrowable()
 	{
 		return throwable;
@@ -530,19 +546,6 @@ public class ProcessExecutionResult
 	public RecordsToOpen getRecordsToOpen()
 	{
 		return recordsToOpen;
-	}
-
-	/**
-	 * Sets webui's viewId on which this process was executed.
-	 */
-	public void setWebuiViewId(final String webuiViewId)
-	{
-		this.webuiViewId = webuiViewId;
-	}
-
-	public String getWebuiViewId()
-	{
-		return webuiViewId;
 	}
 
 	public void setPrintFormat(final MPrintFormat printFormat)
@@ -836,11 +839,6 @@ public class ProcessExecutionResult
 		recordsToOpen = otherResult.recordsToOpen;
 		webuiViewToOpen = otherResult.webuiViewToOpen;
 		displayQRCode = otherResult.displayQRCode;
-	}
-
-	public void setDisplayQRCodeFromString(final String qrCode)
-	{
-		setDisplayQRCode(DisplayQRCode.builder().code(qrCode).build());
 	}
 
 	//

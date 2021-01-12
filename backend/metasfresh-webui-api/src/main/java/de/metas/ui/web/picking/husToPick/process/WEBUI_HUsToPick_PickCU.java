@@ -261,7 +261,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		final ProductId productId = getProductId();
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 
-		return AllocationUtils.createAllocationRequestBuilder()
+		return AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(getQtyCU(), uom)

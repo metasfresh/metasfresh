@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;

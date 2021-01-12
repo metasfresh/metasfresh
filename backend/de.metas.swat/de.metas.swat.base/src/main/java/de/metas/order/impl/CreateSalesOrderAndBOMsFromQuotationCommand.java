@@ -244,7 +244,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.collect(ImmutableList.toImmutableList());
 		if (quotationGroupProductLines.isEmpty())
 		{
-			throw new AdempiereException(MSG_NoQuotationGrouppingProductFoundForLines, new Object[] { extractLineNosAsString(quotationLines) });
+			throw new AdempiereException(MSG_NoQuotationGrouppingProductFoundForLines, extractLineNosAsString(quotationLines));
 		}
 		else if (quotationGroupProductLines.size() == 1)
 		{
@@ -252,7 +252,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 		}
 		else
 		{
-			throw new AdempiereException(MSG_MoreThanOneQuotationGrouppingProductLinesFound, new Object[] { extractLineNosAsString(quotationGroupProductLines) });
+			throw new AdempiereException(MSG_MoreThanOneQuotationGrouppingProductLinesFound, extractLineNosAsString(quotationGroupProductLines));
 		}
 	}
 
@@ -434,7 +434,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 
 		if (salesOrderDocTypeId != null)
 		{
-			orderBL.setDocTypeTargetIdAndUpdateDescription(newSalesOrder, salesOrderDocTypeId.getRepoId());
+			orderBL.setDocTypeTargetIdAndUpdateDescription(newSalesOrder, salesOrderDocTypeId);
 			newSalesOrder.setC_DocType_ID(salesOrderDocTypeId.getRepoId());
 		}
 		if (salesOrderPOReference != null)
@@ -499,19 +499,14 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 	@Builder
 	private static class SalesOrderCandidate
 	{
-		@NonNull
-		private final PriceListId priceListId;
+		@NonNull PriceListId priceListId;
 
-		@NonNull
-		private final ZonedDateTime datePromised;
+		@NonNull ZonedDateTime datePromised;
 
-		@NonNull
-		private final I_C_Order fromQuotation;
+		@NonNull I_C_Order fromQuotation;
 
-		@NonNull
-		private final ImmutableList<SalesOrderLineCandidate> lines;
-		@NonNull
-		private final ImmutableList<I_C_OrderLine> otherQuotationLinesToCopyDirectly;
+		@NonNull ImmutableList<SalesOrderLineCandidate> lines;
+		@NonNull ImmutableList<I_C_OrderLine> otherQuotationLinesToCopyDirectly;
 	}
 
 	@Data

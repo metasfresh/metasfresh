@@ -1,6 +1,7 @@
 package de.metas.ui.web.process.adprocess;
 
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.process.BarcodeScannerType;
@@ -37,7 +38,6 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -89,7 +89,6 @@ import java.util.stream.Stream;
  * Creates {@link ProcessDescriptor}s from {@link I_AD_Process} based processes
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */ class ADProcessDescriptorsFactory
 {
@@ -112,18 +111,17 @@ import java.util.stream.Stream;
 		final AdWindowId adWindowId = preconditionsContext.getAdWindowId();
 		final AdTabId adTabId = preconditionsContext.getAdTabId();
 
-		final Stream<RelatedProcessDescriptor> relatedProcessDescriptors;
+		Stream<RelatedProcessDescriptor> relatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors().stream();
+
+		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors())
 		{
 			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
-			final Stream<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = preconditionsContext.getAdditionalRelatedProcessDescriptors()
-					.stream();
-
-			relatedProcessDescriptors = Stream.concat(additionalRelatedProcessDescriptors, tableRelatedProcessDescriptors)
-					.collect(GuavaCollectors.distinctBy(RelatedProcessDescriptor::getProcessId));
+			relatedProcessDescriptors = Stream.concat(relatedProcessDescriptors, tableRelatedProcessDescriptors);
 		}
 
 		return relatedProcessDescriptors
+				.collect(GuavaCollectors.distinctBy(RelatedProcessDescriptor::getProcessId))
 				.filter(relatedProcess -> isEligible(relatedProcess, preconditionsContext, userRolePermissions))
 				.map(relatedProcess -> toWebuiRelatedProcessDescriptor(relatedProcess, preconditionsContext));
 	}
@@ -212,7 +210,7 @@ import java.util.stream.Stream;
 			adProcessDAO.retrieveProcessParameters(processId.toAdProcessId())
 					.stream()
 					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
-					.forEach(processParaDescriptor -> parametersDescriptorBuilder.addField(processParaDescriptor));
+					.forEach(parametersDescriptorBuilder::addField);
 
 			parametersDescriptor = parametersDescriptorBuilder.build();
 		}
@@ -294,7 +292,7 @@ import java.util.stream.Stream;
 
 		final DocumentFieldWidgetType widgetType = extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor, adProcessParam.isRange());
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
-		final boolean allowShowPassword = widgetType == DocumentFieldWidgetType.Password ? true : false; // process parameters shall always allow displaying the password
+		final boolean allowShowPassword = widgetType == DocumentFieldWidgetType.Password; // process parameters shall always allow displaying the password
 		final BarcodeScannerType barcodeScannerType = extractBarcodeScannerTypeOrNull(adProcessParam, webuiProcesClassInfo);
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
@@ -329,8 +327,8 @@ import java.util.stream.Stream;
 				.addCharacteristic(Characteristic.PublicField)
 				//
 				.deviceDescriptorsProvider(webuiProcesClassInfo.getDeviceDescriptorsProvider(parameterName))
-		//
-		;
+				//
+				;
 
 		// Add a callout to forward process parameter value (UI) to current process instance
 		if (webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName))
@@ -341,12 +339,13 @@ import java.util.stream.Stream;
 		return paramDescriptor;
 	}
 
+	@Nullable
 	private static BarcodeScannerType extractBarcodeScannerTypeOrNull(
 			@NonNull final I_AD_Process_Para adProcessParamRecord,
 			final WebuiProcessClassInfo webuiProcesClassInfo)
 	{
 		final String parameterName = adProcessParamRecord.getColumnName();
-		BarcodeScannerType barcodeScannerType = webuiProcesClassInfo.getBarcodeScannerTypeOrNull(parameterName);
+		final BarcodeScannerType barcodeScannerType = webuiProcesClassInfo.getBarcodeScannerTypeOrNull(parameterName);
 		if (barcodeScannerType != null)
 		{
 			return barcodeScannerType;

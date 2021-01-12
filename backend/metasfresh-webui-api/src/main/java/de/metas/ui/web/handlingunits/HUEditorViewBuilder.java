@@ -22,16 +22,9 @@
 
 package de.metas.ui.web.handlingunits;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -45,6 +38,14 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class HUEditorViewBuilder
 {
@@ -53,16 +54,20 @@ public final class HUEditorViewBuilder
 	private ViewId viewId;
 	private JSONViewDataType viewType = JSONViewDataType.grid;
 
+	@Nullable
 	private String referencingTableName;
 	private Set<DocumentPath> referencingDocumentPaths;
 
+	private boolean considerTableRelatedProcessDescriptors = true;
 	private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
+	@Nullable
 	private List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = null;
 
 	private DocumentFilterList stickyFilters;
 	private DocumentFilterList filters;
 	private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 
+	@Nullable
 	private ArrayList<DocumentQueryOrderBy> orderBys = null;
 
 	private LinkedHashMap<String, Object> parameters;
@@ -123,13 +128,14 @@ public final class HUEditorViewBuilder
 		return viewType;
 	}
 
-	public HUEditorViewBuilder setReferencingDocumentPaths(final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)
+	public HUEditorViewBuilder setReferencingDocumentPaths(@Nullable final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)
 	{
 		this.referencingTableName = referencingTableName;
 		this.referencingDocumentPaths = referencingDocumentPaths;
 		return this;
 	}
 
+	@Nullable
 	public String getReferencingTableName()
 	{
 		return referencingTableName;
@@ -138,6 +144,17 @@ public final class HUEditorViewBuilder
 	Set<DocumentPath> getReferencingDocumentPaths()
 	{
 		return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
+	}
+
+	public HUEditorViewBuilder considerTableRelatedProcessDescriptors(final boolean considerTableRelatedProcessDescriptors)
+	{
+		this.considerTableRelatedProcessDescriptors = considerTableRelatedProcessDescriptors;
+		return this;
+	}
+
+	boolean isConsiderTableRelatedProcessDescriptors()
+	{
+		return considerTableRelatedProcessDescriptors;
 	}
 
 	public HUEditorViewBuilder setActions(@NonNull final ViewActionDescriptorsList actions)
@@ -252,7 +269,7 @@ public final class HUEditorViewBuilder
 		return DocumentQueryOrderByList.ofList(orderBys);
 	}
 
-	public HUEditorViewBuilder setParameter(final String name, final Object value)
+	public HUEditorViewBuilder setParameter(final String name, @Nullable final Object value)
 	{
 		if (value == null)
 		{
@@ -286,9 +303,22 @@ public final class HUEditorViewBuilder
 
 	public <T> T getParameter(@NonNull final String name)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)parameters.get(name);
+		if (parameters == null)
+		{
+			return null;
+		}
+
+		@SuppressWarnings("unchecked") final T value = (T)parameters.get(name);
 		return value;
+	}
+
+	public void assertParameterSet(final String name)
+	{
+		final Object value = getParameter(name);
+		if (value == null)
+		{
+			throw new AdempiereException("Parameter " + name + " is expected to be set in " + parameters + " for " + this);
+		}
 	}
 
 	public HUEditorViewBuilder setHUEditorViewRepository(final HUEditorViewRepository huEditorViewRepository)

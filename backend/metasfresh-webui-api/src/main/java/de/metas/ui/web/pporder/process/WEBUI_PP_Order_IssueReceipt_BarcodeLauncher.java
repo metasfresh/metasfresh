@@ -6,7 +6,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.IPPOrderDAO;
 
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;

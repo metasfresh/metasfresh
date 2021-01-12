@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -158,6 +159,14 @@ public class SystemTime
 	public static ZonedDateTime asZonedDateTimeAtStartOfDay()
 	{
 		return asZonedDateTime(zoneId()).truncatedTo(ChronoUnit.DAYS);
+	}
+
+	public static ZonedDateTime asZonedDateTimeAtEndOfDay(@NonNull final ZoneId zoneId)
+	{
+		return asZonedDateTime(zoneId)
+				.toLocalDate()
+				.atTime(LocalTime.MAX)
+				.atZone(zoneId);
 	}
 
 	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)

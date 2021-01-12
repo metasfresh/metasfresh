@@ -3,7 +3,6 @@ package org.eevolution.api;
 import lombok.NonNull;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderCostBL extends ISingletonService

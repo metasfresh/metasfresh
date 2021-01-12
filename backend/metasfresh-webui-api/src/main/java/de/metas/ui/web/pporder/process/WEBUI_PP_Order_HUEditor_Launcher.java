@@ -29,7 +29,7 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;

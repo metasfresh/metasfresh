@@ -3,13 +3,11 @@ package de.metas.request.api.impl;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.IDocTypeDAO;
 import de.metas.inout.api.impl.QualityNoteDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.request.api.IRequestBL;
-import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
@@ -55,8 +53,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RequestBLTest
 {
 	private IRequestBL requestBL;
-	private IRequestTypeDAO requestTypeDAO;
-	private IDocTypeDAO docTypeDAO;
 
 	@BeforeEach
 	public void init()
@@ -64,8 +60,6 @@ public class RequestBLTest
 		AdempiereTestHelper.get().init();
 
 		this.requestBL = Services.get(IRequestBL.class);
-		this.requestTypeDAO = Services.get(IRequestTypeDAO.class);
-		this.docTypeDAO = Services.get(IDocTypeDAO.class);
 	}
 
 	@Test
@@ -80,6 +74,7 @@ public class RequestBLTest
 
 		final I_R_Request request = requestBL.createRequestFromInOutLineWithQualityIssues(line);
 
+		assertThat(request).isNotNull();
 		assertThat(request.getAD_Org_ID()).isEqualTo(line.getAD_Org_ID());
 		assertThat(request.getM_Product_ID()).isEqualTo(line.getM_Product_ID());
 		assertThat(request.getR_RequestType_ID()).isEqualTo(soRequestType.getR_RequestType_ID());
@@ -88,7 +83,7 @@ public class RequestBLTest
 		assertThat(request.getC_BPartner_ID()).isEqualTo(inout.getC_BPartner_ID());
 		assertThat(request.getAD_User_ID()).isEqualTo(inout.getAD_User_ID());
 		assertThat(request.getDateDelivered()).isEqualTo(inout.getMovementDate());
-		assertThat(request.getSummary()).isEqualTo(RequestBL.MSG_R_Request_From_InOut_Summary);
+		assertThat(request.getSummary()).isEqualTo(RequestBL.MSG_R_Request_From_InOut_Summary.toAD_Message());
 		assertThat(request.getConfidentialType()).isEqualTo(X_R_Request.CONFIDENTIALTYPE_Internal);
 		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(0);
 		assertThat(request.getPerformanceType()).isNullOrEmpty();
@@ -193,15 +188,15 @@ public class RequestBLTest
 		return line;
 	}
 
-	private I_M_Attribute createQualityNoteAttribute()
+	private void createQualityNoteAttribute()
 	{
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
 		attribute.setValue(QualityNoteDAO.QualityNoteAttribute.getCode());
 
 		save(attribute);
-		return attribute;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_R_RequestType createRequestType(final String name)
 	{
 		final I_R_RequestType requestType = newInstance(I_R_RequestType.class);

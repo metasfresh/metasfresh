@@ -1,25 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.ITranslatableString;
@@ -47,6 +30,21 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -72,7 +70,7 @@ import lombok.NonNull;
 
 public class HUEditorView implements IView
 {
-	public static final HUEditorViewBuilder builder()
+	public static HUEditorViewBuilder builder()
 	{
 		return new HUEditorViewBuilder();
 	}
@@ -88,10 +86,10 @@ public class HUEditorView implements IView
 	private final ViewId viewId;
 	private final JSONViewDataType viewType;
 
-	private final String referencingTableName;
 	private final Set<DocumentPath> referencingDocumentPaths;
 
 	private final ViewActionDescriptorsList actions;
+	private final boolean considerTableRelatedProcessDescriptors;
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	private final HUEditorViewBuffer rowsBuffer;
@@ -107,11 +105,11 @@ public class HUEditorView implements IView
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		viewId = builder.getViewId();
-		referencingTableName = builder.getReferencingTableName();
 		filterDescriptors = builder.getFilterDescriptors();
 		filters = builder.getFilters();
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		actions = builder.getActions();
+		considerTableRelatedProcessDescriptors = builder.isConsiderTableRelatedProcessDescriptors();
 		additionalRelatedProcessDescriptors = builder.getAdditionalRelatedProcessDescriptors();
 		parameters = builder.getParameters();
 		rowsBuffer = builder.createRowsBuffer(SqlDocumentFilterConverterContext.ofMap(parameters));
@@ -154,17 +152,6 @@ public class HUEditorView implements IView
 	@Override
 	public String getTableNameOrNull(@Nullable final DocumentId documentId)
 	{
-		// commented out for now, see javadoc
-		// if (documentId == null)
-		// {
-		// return null;
-		// }
-		// final HUEditorRow huEditorRow = getById(documentId);
-		// final HUEditorRowType type = huEditorRow.getType();
-		// if (type == HUEditorRowType.HUStorage)
-		// {
-		// return I_M_HU_Storage.Table_Name;
-		// }
 		return I_M_HU.Table_Name;
 	}
 
@@ -206,6 +193,12 @@ public class HUEditorView implements IView
 	}
 
 	@Override
+	public boolean isConsiderTableRelatedProcessDescriptors()
+	{
+		return considerTableRelatedProcessDescriptors;
+	}
+
+	@Override
 	public ViewActionDescriptorsList getActions()
 	{
 		return actions;
@@ -217,6 +210,7 @@ public class HUEditorView implements IView
 		return additionalRelatedProcessDescriptors;
 	}
 
+	@Override
 	public ImmutableMap<String, Object> getParameters()
 	{
 		return parameters;
@@ -225,14 +219,20 @@ public class HUEditorView implements IView
 	public boolean getParameterAsBoolean(final String name, final boolean defaultValue)
 	{
 		final Boolean value = (Boolean)parameters.get(name);
-		return value != null ? value.booleanValue() : defaultValue;
+		return value != null ? value : defaultValue;
 	}
 
 	public <T extends RepoIdAware> Optional<T> getParameterAsId(final String name)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)parameters.get(name);
+		@SuppressWarnings("unchecked") final T value = (T)parameters.get(name);
 		return Optional.ofNullable(value);
+	}
+
+	@NonNull
+	public <T> Optional<T> getParameter(@NonNull final String name, @NonNull final Class<T> type)
+	{
+		final Object value = parameters.get(name);
+		return value != null ? Optional.of(type.cast(value)) : Optional.empty();
 	}
 
 	@Override
@@ -241,11 +241,10 @@ public class HUEditorView implements IView
 		return rowsBuffer.getById(rowId);
 	}
 
+	@Nullable
 	public HUEditorRow getParentRowByChildIdOrNull(final DocumentId childId) throws EntityNotFoundException
 	{
-
 		return rowsBuffer.getParentRowByChildIdOrNull(childId).orElse(null);
-
 	}
 
 	@Override
@@ -254,7 +253,7 @@ public class HUEditorView implements IView
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
+				.orElseThrow(() -> new AdempiereException("No lookup source for filterId=" + filterId + ", parameterName=" + filterParameterName))
 				.findEntities(ctx);
 	}
 
@@ -264,7 +263,7 @@ public class HUEditorView implements IView
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
+				.orElseThrow(() -> new AdempiereException("No lookup source for filterId=" + filterId + ", parameterName=" + filterParameterName))
 				.findEntities(ctx, query);
 	}
 
@@ -317,11 +316,6 @@ public class HUEditorView implements IView
 		return true;
 	}
 
-	public String getReferencingTableName()
-	{
-		return referencingTableName;
-	}
-
 	@Override
 	public Set<DocumentPath> getReferencingDocumentPaths()
 	{
@@ -342,11 +336,6 @@ public class HUEditorView implements IView
 		rowsBuffer.invalidateAll();
 	}
 
-	public void addHUsAndInvalidate(final Collection<I_M_HU> husToAdd)
-	{
-		addHUIdsAndInvalidate(extractHUIds(husToAdd));
-	}
-
 	public void addHUIdAndInvalidate(@NonNull final HuId huId)
 	{
 		addHUIdsAndInvalidate(ImmutableSet.of(huId));
@@ -360,9 +349,9 @@ public class HUEditorView implements IView
 		}
 	}
 
-	public boolean addHUId(@NonNull final HuId huIdToAdd)
+	public void addHUId(@NonNull final HuId huIdToAdd)
 	{
-		return rowsBuffer.addHUIds(ImmutableSet.of(huIdToAdd));
+		rowsBuffer.addHUIds(ImmutableSet.of(huIdToAdd));
 	}
 
 	public boolean addHUIds(final Collection<HuId> huIdsToAdd)
@@ -389,7 +378,7 @@ public class HUEditorView implements IView
 		return rowsBuffer.removeHUIds(huIdsToRemove);
 	}
 
-	private static final Set<HuId> extractHUIds(final Collection<I_M_HU> hus)
+	private static Set<HuId> extractHUIds(final Collection<I_M_HU> hus)
 	{
 		if (hus == null || hus.isEmpty())
 		{
@@ -445,13 +434,17 @@ public class HUEditorView implements IView
 		return rowsBuffer.streamByIdsExcludingIncludedRows(filter);
 	}
 
-	/** @return top level rows and included rows recursive stream which are matching the given filter */
+	/**
+	 * @return top level rows and included rows recursive stream which are matching the given filter
+	 */
 	public Stream<HUEditorRow> streamAllRecursive(final HUEditorRowFilter filter)
 	{
 		return rowsBuffer.streamAllRecursive(filter);
 	}
 
-	/** @return true if there is any top level or included row which is matching given filter */
+	/**
+	 * @return true if there is any top level or included row which is matching given filter
+	 */
 	public boolean matchesAnyRowRecursive(final HUEditorRowFilter filter)
 	{
 		return rowsBuffer.matchesAnyRowRecursive(filter);

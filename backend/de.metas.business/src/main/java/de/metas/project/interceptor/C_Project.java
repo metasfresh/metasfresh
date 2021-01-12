@@ -1,9 +1,6 @@
 package de.metas.project.interceptor;
 
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.project.ProjectType;
-import de.metas.project.ProjectTypeId;
-import de.metas.project.ProjectTypeRepository;
+import de.metas.project.service.ProjectService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -12,8 +9,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,15 +36,12 @@ import javax.annotation.Nullable;
 @Callout(I_C_Project.class)
 public class C_Project
 {
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final ProjectTypeRepository projectTypeRepository;
+	private final ProjectService projectService;
 
 	public C_Project(
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final ProjectTypeRepository projectTypeRepository)
+			@NonNull final ProjectService projectService)
 	{
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.projectTypeRepository = projectTypeRepository;
+		this.projectService = projectService;
 
 		// register ourselves
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -60,25 +52,6 @@ public class C_Project
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
 	public void onC_ProjectType_ID(@NonNull final I_C_Project projectRecord)
 	{
-		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
-		if (projectTypeId == null)
-		{
-			return;
-		}
-
-		final String value = computeNextProjectValue(projectRecord);
-		projectRecord.setValue(value);
-
-		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
-		projectRecord.setProjectCategory(projectType.getProjectCategory());
-	}
-
-	@Nullable
-	private String computeNextProjectValue(final I_C_Project projectRecord)
-	{
-		return documentNoBuilderFactory
-				.createValueBuilderFor(projectRecord)
-				.setFailOnError(false)
-				.build();
+		projectService.updateFromProjectType(projectRecord);
 	}
 }

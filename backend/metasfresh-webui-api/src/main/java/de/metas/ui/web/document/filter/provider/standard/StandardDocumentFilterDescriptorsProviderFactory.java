@@ -1,23 +1,11 @@
 package de.metas.ui.web.document.filter.provider.standard;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.service.ISysConfigBL;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstants;
@@ -28,11 +16,20 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.service.ISysConfigBL;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -69,6 +66,8 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	private static final String FILTER_ID_Default = "default";
 	private static final AdMessageKey MSG_DefaultFilterName = AdMessageKey.of("default");
 
+	private static final String INLINE_FILTER_ID_PREFIX = "inline-";
+
 	private static final String FACET_FILTER_ID_PREFIX = "facet-";
 	private static final String SYSCONFIG_MAX_FACETS_TO_FETCH = "webui.document.filters.MaxFacetsToFetch";
 	private static final int SYSCONFIG_FACETS_TO_FETCH_DEFAULT = 10;
@@ -78,9 +77,6 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		this.viewsRepository = viewsRepository;
 	}
 
-	/**
-	 * Creates standard filters, i.e. from document fields which are flagged with {@link Characteristic#AllowFiltering}.
-	 */
 	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId adTabId_NOTUSED,
@@ -108,6 +104,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		// Default filters
 		DocumentFilterDescriptor defaultDateFilter = null;
 		DocumentFilterDescriptor.Builder defaultFilterBuilder = null;
+		final ArrayList<DocumentFilterDescriptor> inlineFilters = new ArrayList<>();
 		for (final DocumentFieldDescriptor field : fieldsForDefaultFiltering)
 		{
 			final DocumentFilterParamDescriptor.Builder filterParam = createFilterParam(field);
@@ -121,6 +118,17 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 						.setDisplayName(filterParam.getDisplayName())
 						.addParameter(filterParam)
 						.build();
+			}
+			else if (field.getDefaultFilterInfo().isShowFilterInline())
+			{
+				inlineFilters.add(DocumentFilterDescriptor.builder()
+						.setFilterId(INLINE_FILTER_ID_PREFIX + filterParam.getFieldName())
+						.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_INLINE_FILTERS)
+						.setFrequentUsed(true)
+						.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
+						.setDisplayName(filterParam.getDisplayName())
+						.addParameter(filterParam)
+						.build());
 			}
 			else
 			{
@@ -139,7 +147,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		//
 		// Facet filters
 		final ArrayList<DocumentFilterDescriptor> facetFilters = new ArrayList<>();
-		for (DocumentFieldDescriptor field : fieldsForFacetFiltering)
+		for (final DocumentFieldDescriptor field : fieldsForFacetFiltering)
 		{
 			final int sortNo = facetFilters.size() + 1;
 			final DocumentFilterDescriptor facetFilter = createFacetFilter(field, sortNo);
@@ -155,38 +163,54 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		{
 			descriptors.add(defaultFilterBuilder.build());
 		}
+		descriptors.addAll(inlineFilters);
 		descriptors.addAll(facetFilters);
 
 		return ImmutableDocumentFilterDescriptorsProvider.of(descriptors);
 	}
 
-	private static final DocumentFilterParamDescriptor.Builder createFilterParam(final DocumentFieldDescriptor field)
+	private static DocumentFilterParamDescriptor.Builder createFilterParam(final DocumentFieldDescriptor field)
 	{
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = extractFilterWidgetType(field);
 		final DocumentFieldDefaultFilterDescriptor filteringInfo = field.getDefaultFilterInfo();
 
-		final Optional<LookupDescriptor> lookupDescriptor = field.getLookupDescriptorForFiltering();
-
 		final Operator operator;
-		if (widgetType.isText())
+		final DocumentFieldWidgetType widgetTypeEffective;
+		final Optional<LookupDescriptor> lookupDescriptor;
+		switch (filteringInfo.getOperator())
 		{
-			operator = Operator.LIKE_I;
-		}
-		else if (filteringInfo.isRangeFilter())
-		{
-			operator = Operator.BETWEEN;
-		}
-		else
-		{
-			operator = Operator.EQUAL;
+			case BETWEEN:
+			{
+				widgetTypeEffective = widgetType;
+				operator = Operator.BETWEEN;
+				lookupDescriptor = field.getLookupDescriptorForFiltering();
+				break;
+			}
+			case IS_NOT_NULL:
+			{
+				widgetTypeEffective = DocumentFieldWidgetType.YesNo;
+				operator = Operator.NOT_NULL_IF_TRUE;
+				lookupDescriptor = Optional.empty();
+				break;
+			}
+			case EQUALS_OR_ILIKE:
+			default:
+			{
+				widgetTypeEffective = widgetType;
+				operator = widgetType.isText()
+						? Operator.LIKE_I
+						: Operator.EQUAL;
+				lookupDescriptor = field.getLookupDescriptorForFiltering();
+				break;
+			}
 		}
 
 		return DocumentFilterParamDescriptor.builder()
 				.setDisplayName(displayName)
 				.setFieldName(fieldName)
-				.setWidgetType(widgetType)
+				.setWidgetType(widgetTypeEffective)
 				.setOperator(operator)
 				.setLookupDescriptor(lookupDescriptor)
 				.setMandatory(false)

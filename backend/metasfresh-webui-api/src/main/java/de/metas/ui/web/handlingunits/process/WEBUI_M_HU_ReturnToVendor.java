@@ -1,21 +1,19 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
-import de.metas.util.Services;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -43,10 +41,12 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
  * Return the selected HUs back to vendor.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
+ * Initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
  */
 public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
+
 	private List<I_M_HU> husToReturn = null;
 
 	@Override
@@ -75,7 +75,7 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 		}
 
 		final Timestamp movementDate = Env.getDate(getCtx());
-		Services.get(IHUInOutBL.class).createVendorReturnInOutForHUs(husToReturn, movementDate);
+		returnsServiceFacade.createVendorReturnInOutForHUs(husToReturn, movementDate);
 		return MSG_OK;
 	}
 

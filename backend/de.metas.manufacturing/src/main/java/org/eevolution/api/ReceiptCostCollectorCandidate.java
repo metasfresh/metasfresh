@@ -1,8 +1,6 @@
 package org.eevolution.api;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;

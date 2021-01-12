@@ -1,6 +1,6 @@
 package de.metas.handlingunits.attribute.impl;
 
-import com.google.common.base.Supplier;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -12,10 +12,10 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.NullAutoCloseable;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 {
@@ -63,7 +63,7 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 						final SaveDecoupledHUAttributesDAO innerHuAttributesDAO = innerTrx.setProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, null);
 						if (innerHuAttributesDAO == null)
 						{
-							// shall not happen, because this handlerMetghod is invoked only once,
+							// shall not happen, because this handlerMethod is invoked only once,
 							// but silently ignore it
 							return;
 						}
@@ -98,6 +98,13 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
+	public List<I_M_HU_Attribute> retrieveAttributesNoCache(final Collection<HuId> huIds)
+	{
+		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
+		return delegate.retrieveAttributesNoCache(huIds);
+	}
+
+	@Override
 	public HUAndPIAttributes retrieveAttributesOrdered(final I_M_HU hu)
 	{
 		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
@@ -109,27 +116,6 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	{
 		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
 		return delegate.retrieveAttribute(hu, attributeId);
-	}
-
-	/**
-	 * @return {@link NullAutoCloseable} always
-	 */
-	@Override
-	public IAutoCloseable temporaryDisableAutoflush()
-	{
-		// NOTE: disabling "autoflush" is not supported because in order to decide with which delegate we need to work,
-		// we need the HU or at least which is the transaction.
-		return NullAutoCloseable.instance;
-	}
-
-	@Override
-	public void flushAndClearCache()
-	{
-		final SaveDecoupledHUAttributesDAO attributesDAO = getDelegateOrNull();
-		if (attributesDAO != null)
-		{
-			attributesDAO.flushAndClearCache();
-		}
 	}
 
 	@Override

@@ -1,14 +1,16 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.OptionalInt;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_AD_Column;
 
 import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import lombok.Builder;
-import lombok.Value;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -35,15 +37,16 @@ import lombok.Value;
 @Value
 public class DocumentFieldDefaultFilterDescriptor
 {
-	private final boolean defaultFilter;
-	private final int defaultFilterSeqNo;
-	private final boolean rangeFilter;
-	private final boolean showFilterIncrementButtons;
-	private final Object autoFilterInitialValue;
+	boolean defaultFilter;
+	int defaultFilterSeqNo;
+	FilterOperator operator;
+	boolean showFilterIncrementButtons;
+	Object autoFilterInitialValue;
+	boolean showFilterInline;
 
-	private final boolean facetFilter;
-	private final int facetFilterSeqNo;
-	private final OptionalInt maxFacetsToFetch;
+	boolean facetFilter;
+	int facetFilterSeqNo;
+	OptionalInt maxFacetsToFetch;
 
 	@Builder
 	public DocumentFieldDefaultFilterDescriptor(
@@ -51,8 +54,9 @@ public class DocumentFieldDefaultFilterDescriptor
 			//
 			final boolean defaultFilter,
 			final int defaultFilterSeqNo,
-			final boolean rangeFilter,
+			final FilterOperator operator,
 			final boolean showFilterIncrementButtons,
+			final boolean showFilterInline,
 			@Nullable final Object autoFilterInitialValue,
 			//
 			final boolean facetFilter,
@@ -68,17 +72,19 @@ public class DocumentFieldDefaultFilterDescriptor
 		{
 			this.defaultFilter = true;
 			this.defaultFilterSeqNo = defaultFilterSeqNo > 0 ? defaultFilterSeqNo : Integer.MAX_VALUE;
-			this.rangeFilter = rangeFilter;
+			this.operator = operator != null ? operator : FilterOperator.EQUALS_OR_ILIKE;
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
 			this.autoFilterInitialValue = autoFilterInitialValue;
+			this.showFilterInline = showFilterInline;
 		}
 		else
 		{
 			this.defaultFilter = false;
 			this.defaultFilterSeqNo = Integer.MAX_VALUE;
-			this.rangeFilter = false;
+			this.operator = FilterOperator.EQUALS_OR_ILIKE;
 			this.showFilterIncrementButtons = false;
 			this.autoFilterInitialValue = null;
+			this.showFilterInline = false;
 		}
 
 		if (facetFilter)
@@ -92,6 +98,35 @@ public class DocumentFieldDefaultFilterDescriptor
 			this.facetFilter = false;
 			this.facetFilterSeqNo = Integer.MAX_VALUE;
 			this.maxFacetsToFetch = OptionalInt.empty();
+		}
+	}
+
+	public enum FilterOperator implements ReferenceListAwareEnum
+	{
+		EQUALS_OR_ILIKE(X_AD_Column.FILTEROPERATOR_EqualsOrLike),
+		BETWEEN(X_AD_Column.FILTEROPERATOR_Between),
+		IS_NOT_NULL(X_AD_Column.FILTEROPERATOR_NotNull),
+		;
+
+		@Getter
+		private final String code;
+
+		private static final ReferenceListAwareEnums.ValuesIndex<FilterOperator> index = ReferenceListAwareEnums.index(FilterOperator.values());
+
+		FilterOperator(@NonNull final String code)
+		{
+			this.code = code;
+		}
+
+		public static FilterOperator ofNullableStringOrEquals(@Nullable final String code)
+		{
+			final FilterOperator type = index.ofNullableCode(code);
+			return type != null ? type : EQUALS_OR_ILIKE;
+		}
+
+		public static FilterOperator ofCode(@NonNull final String code)
+		{
+			return index.ofCode(code);
 		}
 	}
 }

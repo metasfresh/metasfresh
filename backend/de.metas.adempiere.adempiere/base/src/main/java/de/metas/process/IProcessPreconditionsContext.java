@@ -59,6 +59,7 @@ public interface IProcessPreconditionsContext
 	 * @deprecated please use {@link #getSingleSelectedRecordId()} and read via DAO/Repository instead
 	 */
 	@Deprecated
+	@Nullable
 	<T> T getSelectedModel(final Class<T> modelClass);
 
 	/**

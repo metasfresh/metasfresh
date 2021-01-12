@@ -263,8 +263,7 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final Properties ctx = getCtx(priceList);
 		final PriceListId priceListId = PriceListId.ofRepoId(priceList.getM_PriceList_ID());
-		final I_M_PriceList_Version plv = retrievePriceListVersionOrNull(ctx, priceListId, date, processed);
-		return plv;
+		return retrievePriceListVersionOrNull(ctx, priceListId, date, processed);
 	}
 
 	@Override
@@ -287,6 +286,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date#Processed")
+	@Nullable
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@CacheCtx @NonNull final Properties ctx,
 			@NonNull final PriceListId priceListId,
@@ -328,6 +328,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date")
+	@Nullable
 	public I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(final PriceListId priceListId, @NonNull final Date date)
 	{
 		return Services.get(IQueryBL.class)
@@ -363,10 +364,11 @@ public class PriceListDAO implements IPriceListDAO
 		return retrievePreviousOrNext(plv, validFromOperator, onlyProcessed, orderAscending);
 	}
 
+	@Nullable
 	private I_M_PriceList_Version retrievePreviousOrNext(final I_M_PriceList_Version plv,
-			final Operator validFromOperator,
-			final boolean onlyProcessed,
-			final boolean orderAscending)
+														 final Operator validFromOperator,
+														 final boolean onlyProcessed,
+														 final boolean orderAscending)
 	{
 		final IQueryBuilder<I_M_PriceList_Version> filter = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList_Version.class, plv)
 				// active
@@ -405,8 +407,7 @@ public class PriceListDAO implements IPriceListDAO
 			lastMatchSeqNo = 0;
 		}
 
-		final int nextMatchSeqNo = lastMatchSeqNo / 10 * 10 + 10;
-		return nextMatchSeqNo;
+		return lastMatchSeqNo / 10 * 10 + 10;
 	}
 
 	@Override
@@ -481,7 +482,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	}
 
-	private final ICompositeQueryFilter<I_M_ProductPrice> createPriceProductQueryFilter(@NonNull final LocalDate date)
+	private ICompositeQueryFilter<I_M_ProductPrice> createPriceProductQueryFilter(@NonNull final LocalDate date)
 	{
 		final ICompositeQueryFilter<I_M_ProductPrice> filters = queryBL.createCompositeQueryFilter(I_M_ProductPrice.class);
 
@@ -533,8 +534,7 @@ public class PriceListDAO implements IPriceListDAO
 	public I_M_PriceList_Version getCreatePriceListVersion(@NonNull final ProductPriceCreateRequest request)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoId(request.getPriceListId());
-		@NonNull
-		final LocalDate validDate = request.getValidDate();
+		@NonNull final LocalDate validDate = request.getValidDate();
 		final I_M_PriceList_Version plv;
 		if (request.isUseNewestPriceListversion())
 		{
@@ -577,7 +577,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	public I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(@NonNull final PriceListVersionId priceListVersionId,
-			@NonNull ZonedDateTime promisedDate)
+																					@NonNull final ZonedDateTime promisedDate)
 	{
 		final I_M_PriceList_Version priceListVersion = getPriceListVersionById(priceListVersionId);
 		return getBasePriceListVersionForPricingCalculationOrNull(priceListVersion, promisedDate);
@@ -585,7 +585,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	public I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(@NonNull final I_M_PriceList_Version priceListVersion,
-			@NonNull ZonedDateTime date)
+																					@NonNull final ZonedDateTime date)
 	{
 		final PriceListVersionId basePriceListVersionId = getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion, date);
 		return basePriceListVersionId != null
@@ -595,7 +595,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	public /* static */PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(@NonNull final I_M_PriceList_Version priceListVersion,
-			@NonNull ZonedDateTime date)
+																							   @NonNull final ZonedDateTime date)
 	{
 
 		final I_M_PriceList priceList = getById(priceListVersion.getM_PriceList_ID());
@@ -612,7 +612,7 @@ public class PriceListDAO implements IPriceListDAO
 
 	@Override
 	public PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(@NonNull final PriceListVersionId priceListVersionId,
-			@NonNull ZonedDateTime date)
+																				   @NonNull final ZonedDateTime date)
 	{
 		final I_M_PriceList_Version priceListVersion = getPriceListVersionById(priceListVersionId);
 		return getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion, date);
@@ -795,23 +795,21 @@ public class PriceListDAO implements IPriceListDAO
 	@VisibleForTesting
 	protected List<I_M_PriceList_Version> retrieveCustomPLVsToMutate(@NonNull final PriceListId basePriceListId)
 	{
-		final StringBuilder maxValidFromTypedFilter = new StringBuilder()
-				.append(I_M_PriceList_Version.Table_Name)
-				.append(".")
-				.append(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
-				.append(" = ( SELECT max (v.")
-				.append(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
-				.append(") FROM ")
-				.append(I_M_PriceList_Version.Table_Name).append(" v ")
-				.append(" WHERE ")
-				.append(I_M_PriceList_Version.Table_Name)
-				.append(".")
-				.append(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID)
-				.append(" = v.")
-				.append(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID)
-				.append(") ");
-
-		final IQueryFilter<I_M_PriceList_Version> maxValidFromFilter = TypedSqlQueryFilter.of(maxValidFromTypedFilter.toString());
+		final String maxValidFromTypedFilter = I_M_PriceList_Version.Table_Name
+				+ "."
+				+ I_M_PriceList_Version.COLUMNNAME_ValidFrom
+				+ " = ( SELECT max (v."
+				+ I_M_PriceList_Version.COLUMNNAME_ValidFrom
+				+ ") FROM "
+				+ I_M_PriceList_Version.Table_Name + " v "
+				+ " WHERE "
+				+ I_M_PriceList_Version.Table_Name
+				+ "."
+				+ I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID
+				+ " = v."
+				+ I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID
+				+ ") ";
+		final IQueryFilter<I_M_PriceList_Version> maxValidFromFilter = TypedSqlQueryFilter.of(maxValidFromTypedFilter);
 
 		final IQuery<I_C_BPartner> customerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
 
@@ -822,7 +820,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		final I_M_PriceList basePriceList = getById(basePriceListId);
 
-		final List<I_M_PriceList_Version> newestVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
+		return queryBL.createQueryBuilder(I_M_PriceList.class)
 
 				.addEqualsFilter(I_M_PriceList.COLUMN_BasePriceList_ID, basePriceListId)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, basePriceList.getC_Country_ID())
@@ -841,8 +839,6 @@ public class PriceListDAO implements IPriceListDAO
 				.create()
 
 				.list(I_M_PriceList_Version.class);
-
-		return newestVersions;
 	}
 
 	@Override
@@ -864,6 +860,7 @@ public class PriceListDAO implements IPriceListDAO
 	 * @param dateFrom         the method updates product-prices with a PLV that is valid at or after the given date.
 	 * @param newIsActiveValue {@code M_ProductPrice.IsActive} is set this the given value for all matching product prices.
 	 */
+	@Override
 	public void updateProductPricesIsActive(
 			@NonNull final IQueryFilter<I_M_Product> productFilter,
 			@NonNull final LocalDate dateFrom,
@@ -942,5 +939,16 @@ public class PriceListDAO implements IPriceListDAO
 		Services
 				.get(IModelCacheInvalidationService.class)
 				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.CHANGE);
+	}
+
+	@Override
+	public CurrencyId getCurrencyId(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = getById(priceListId);
+		if (priceList == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_PriceList_ID@: " + priceListId);
+		}
+		return CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 	}
 }

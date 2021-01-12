@@ -587,9 +587,10 @@ import java.util.Set;
 				//
 				.defaultFilter(gridFieldDefaultFilterInfo.isDefaultFilter())
 				.defaultFilterSeqNo(gridFieldDefaultFilterInfo.getDefaultFilterSeqNo())
-				.rangeFilter(gridFieldDefaultFilterInfo.isRangeFilter())
+				.operator(DocumentFieldDefaultFilterDescriptor.FilterOperator.ofNullableStringOrEquals(gridFieldDefaultFilterInfo.getOperator()))
 				.showFilterIncrementButtons(gridFieldDefaultFilterInfo.isShowFilterIncrementButtons())
 				.autoFilterInitialValue(autoFilterInitialValue)
+				.showFilterInline(gridFieldDefaultFilterInfo.isShowFilterInline())
 				//
 				.facetFilter(gridFieldDefaultFilterInfo.isFacetFilter())
 				.facetFilterSeqNo(gridFieldDefaultFilterInfo.getFacetFilterSeqNo())

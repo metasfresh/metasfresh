@@ -45,9 +45,12 @@ public class MProjectIssue extends X_C_ProjectIssue
 		super(ctx, rs, trxName);
 	}
 
-	public MProjectIssue(final MProject project)
+	public MProjectIssue(final I_C_Project project)
 	{
-		this(project.getCtx(), 0, project.get_TrxName());
+		this(InterfaceWrapperHelper.getCtx(project),
+				0,
+				InterfaceWrapperHelper.getTrxName(project));
+
 		setClientOrg(project.getAD_Client_ID(), project.getAD_Org_ID());
 		setC_Project_ID(project.getC_Project_ID());    //	Parent
 		setLine(getNextLine());

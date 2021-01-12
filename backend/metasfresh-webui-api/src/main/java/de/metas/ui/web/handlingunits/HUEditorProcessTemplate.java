@@ -51,6 +51,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		return isViewClass(HUEditorView.class);
 	}
 
+	@SuppressWarnings("MethodDoesntCallSuperMethod")
 	@Override
 	protected final HUEditorView getView()
 	{

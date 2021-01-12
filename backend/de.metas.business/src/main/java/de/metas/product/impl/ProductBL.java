@@ -95,9 +95,10 @@ public final class ProductBL implements IProductBL
 	@Override
 	public String getMMPolicy(final I_M_Product product)
 	{
-		final MProductCategory pc = MProductCategory.get(Env.getCtx(), product.getM_Product_Category_ID());
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(product.getM_Product_Category_ID());
+		final I_M_Product_Category pc = productsRepo.getProductCategoryById(productCategoryId);
 		String policy = pc.getMMPolicy();
-		if (policy == null || policy.length() == 0)
+		if (policy == null || policy.isEmpty())
 		{
 			policy = clientDAO.retriveClient(Env.getCtx()).getMMPolicy();
 		}

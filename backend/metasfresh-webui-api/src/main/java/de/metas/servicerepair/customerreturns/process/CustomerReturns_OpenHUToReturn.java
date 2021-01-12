@@ -22,68 +22,43 @@
 
 package de.metas.servicerepair.customerreturns.process;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.servicerepair.customerreturns.HUsToReturnViewFactory;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOut;
 
-public class CustomerReturns_OpenHUToReturn extends JavaProcess implements IProcessPrecondition
+public class CustomerReturns_OpenHUToReturn extends CustomerReturnsBasedProcess implements IProcessPrecondition
 {
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
-
-	@Override
-	protected String doIt() throws Exception
-	{
-
-		final ViewId viewId = openServiceHUEditorView();
-
-		getResult().setWebuiViewToOpen(ProcessExecutionResult.WebuiViewToOpen.builder()
-				.viewId(viewId.getViewId())
-				.target(ProcessExecutionResult.ViewOpenTarget.ModalOverlay)
-				.build());
-		return MSG_OK;
-	}
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-
-		if (!context.isSingleSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
-		final I_M_InOut serviceDocument = inOutDAO.getById(InOutId.ofRepoId(context.getSingleSelectedRecordId()));
-
-		final DocStatus docStatus = DocStatus.ofCode(serviceDocument.getDocStatus());
-		if (!docStatus.isDrafted())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("document status should be Drafted");
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		return checkSingleDraftedServiceRepairReturns(context);
 	}
 
-	private ViewId openServiceHUEditorView()
+	@Override
+	protected String doIt()
 	{
-		final IView view = viewsRepo
-				.createView(CreateViewRequest
-						.builder(WEBUI_HU_Constants.WEBUI_SERVICE_HU_Window_ID)
-						.build());
-		return view.getViewId();
+		final ProcessExecutionResult.WebuiViewToOpen viewToOpen = openServiceHUEditorView();
+		getResult().setWebuiViewToOpen(viewToOpen);
+		return MSG_OK;
+	}
+
+	private ProcessExecutionResult.WebuiViewToOpen openServiceHUEditorView()
+	{
+		final InOutId customerReturnsId = getCustomerReturnId();
+		final IView view = viewsRepo.createView(HUsToReturnViewFactory.createViewRequest(customerReturnsId));
+
+		return ProcessExecutionResult.WebuiViewToOpen.builder()
+				.viewId(view.getViewId().getViewId())
+				.target(ProcessExecutionResult.ViewOpenTarget.ModalOverlay)
+				.build();
 	}
 }

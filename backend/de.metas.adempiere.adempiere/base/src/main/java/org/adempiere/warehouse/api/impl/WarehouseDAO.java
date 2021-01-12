@@ -272,6 +272,12 @@ public class WarehouseDAO implements IWarehouseDAO
 		{
 			return null;
 		}
+		return getLocatorIdByRepoId(locatorId);
+	}
+
+	@Override
+	public LocatorId getLocatorIdByRepoId(final int locatorId)
+	{
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 		return LocatorId.ofRecord(locator);
 	}

@@ -3,9 +3,11 @@ package de.metas.ui.web.handlingunits.process;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -59,9 +61,9 @@ import de.metas.util.collections.CollectionUtils;
  */
 public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	@Param(parameterName = "QtyTU", mandatory = true)
 	private int p_QtyTU;
@@ -145,7 +147,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 		//
 		// Actually create the vendor return
 		final Timestamp movementDate = Env.getDate(getCtx());
-		huInOutBL.createVendorReturnInOutForHUs(tusToReturn, movementDate);
+		returnsServiceFacade.createVendorReturnInOutForHUs(tusToReturn, movementDate);
 
 		invalidateView(); // we split something off the original HUs and therefore need to refresh our view
 		return MSG_OK;

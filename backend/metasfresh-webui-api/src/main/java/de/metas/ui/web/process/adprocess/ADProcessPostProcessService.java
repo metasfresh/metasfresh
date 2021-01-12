@@ -40,12 +40,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.MimeType;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,13 +167,14 @@ public class ADProcessPostProcessService
 		}
 	}
 
-	private static final DocumentId extractInstanceId(final ADProcessPostProcessRequest request)
+	private static DocumentId extractInstanceId(final ADProcessPostProcessRequest request)
 	{
 		final DocumentId instanceIdOverride = request.getInstanceIdOverride();
 		return instanceIdOverride != null ? instanceIdOverride : DocumentId.of(request.getProcessExecutionResult().getPinstanceId());
 	}
 
-	private static final String extractSummary(final ProcessExecutionResult processExecutionResult)
+	@Nullable
+	private static String extractSummary(final ProcessExecutionResult processExecutionResult)
 	{
 		final String summary = processExecutionResult.getSummary();
 		if (Check.isEmpty(summary, true) || JavaProcess.MSG_OK.equals(summary))
@@ -187,7 +186,8 @@ public class ADProcessPostProcessService
 		return summary;
 	}
 
-	private static final File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
+	@Nullable
+	private static File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
 	{
 		//
 		// If we are not dealing with a report, stop here
@@ -259,7 +259,8 @@ public class ADProcessPostProcessService
 		}
 	}
 
-	private static final CreateViewRequest createViewRequest(
+	@Nullable
+	private static CreateViewRequest createViewRequest(
 			final RecordsToOpen recordsToOpen,
 			final Set<DocumentPath> referencingDocumentPaths,
 			final ViewId parentViewId)
@@ -294,14 +295,14 @@ public class ADProcessPostProcessService
 		{
 			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
 		}
-		final CreateViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
+		return viewRequestBuilders.values().iterator().next()
 				.setReferencingDocumentPaths(referencingDocumentPaths)
 				.setParentViewId(parentViewId)
 				.setUseAutoFilters(recordsToOpen.isUseAutoFilters())
 				.build();
-		return viewRequest;
 	}
 
+	@Nullable
 	private ResultAction createResultAction(final ProcessInfo processInfo, final ProcessExecutionResult processExecutionResult)
 	{
 		final File reportTempFile = saveReportToDiskIfAny(processExecutionResult);
@@ -394,6 +395,12 @@ public class ADProcessPostProcessService
 					.documentPath(documentPath)
 					.targetTab(recordsToOpen.getTargetTab())
 					.build();
+		}
+		//
+		// Close underlying modal view
+		else if(processExecutionResult.isCloseWebuiModalView())
+		{
+			return ProcessInstanceResult.CloseViewAction.instance;
 		}
 		//
 		// Display QRCode to user

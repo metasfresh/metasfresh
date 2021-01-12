@@ -107,7 +107,8 @@ public final class CreateViewRequest
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
 				.setUseAutoFilters(false)
 				.addActions(view.getActions())
-				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
+				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors())
+				.setParameters(view.getParameters());
 	}
 
 	public static Builder deleteStickyFilterBuilder(

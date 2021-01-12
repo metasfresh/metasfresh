@@ -36,6 +36,7 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
@@ -81,6 +82,13 @@ public class M_InOut
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
+	private final ReturnsServiceFacade returnsServiceFacade;
+
+	public M_InOut(
+			@NonNull final ReturnsServiceFacade returnsServiceFacade)
+	{
+		this.returnsServiceFacade = returnsServiceFacade;
+	}
 
 	@Init
 	public void init()
@@ -101,7 +109,6 @@ public class M_InOut
 		}
 		else
 		{
-			final IHUInOutBL huInOutBL = this.huInOutBL;
 			huInOutBL.copyAssignmentsToReversal(inout);
 			huInOutBL.destroyHUs(inout);
 		}
@@ -110,7 +117,6 @@ public class M_InOut
 	/**
 	 * Generates additional shipment lines for the packaging materials of currently assigned HUs.
 	 *
-	 * @param shipment
 	 * @see IHUInOutBL#createPackingMaterialLines(I_M_InOut)
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE })
@@ -118,7 +124,6 @@ public class M_InOut
 	{
 		if (shipment.isSOTrx())
 		{
-			final IHUInOutBL huInOutBL = this.huInOutBL;
 			huInOutBL.createPackingMaterialLines(shipment);
 		}
 		else
@@ -155,7 +160,7 @@ public class M_InOut
 		}
 
 		// make sure we are not dealing with a customer return
-		if (huInOutBL.isCustomerReturn(shipment))
+		if (returnsServiceFacade.isCustomerReturn(shipment))
 		{
 			return;
 		}
@@ -197,7 +202,7 @@ public class M_InOut
 
 		// task #1306: Do not genertate empties movements for customer returns
 
-		if (huInOutBL.isCustomerReturn(inout))
+		if (returnsServiceFacade.isCustomerReturn(inout))
 		{
 			return;
 		}
@@ -273,8 +278,7 @@ public class M_InOut
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
 	 *
-	 * @param inout
-	 * @task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
+	 * Task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void updateReversedQtys(final I_M_InOut inout)
@@ -304,9 +308,7 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void generateHUsForCustomerReturn(final I_M_InOut customerReturn)
 	{
-		final IHUInOutBL huInOutBL = this.huInOutBL;
-
-		if (!huInOutBL.isCustomerReturn(customerReturn))
+		if (!returnsServiceFacade.isCustomerReturn(customerReturn))
 		{
 			// do nothing if the inout is not a customer return
 			return;
@@ -327,20 +329,19 @@ public class M_InOut
 
 			//make sure they all have status active
 			existingHandlingUnits.forEach(hu -> handlingUnitsBL.setHUStatus(hu, contextProvider, X_M_HU.HUSTATUS_Active));
-			return;
 		}
-
-		// create HUs based on the lines in the customer return inout
-		huInOutBL.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
+		else
+		{
+			// create HUs based on the lines in the customer return inout
+			returnsServiceFacade.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
+		}
 
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
-		final IHUInOutBL huInOutBL = this.huInOutBL;
-
-		if (!(huInOutBL.isVendorReturn(returnInOut) || huInOutBL.isCustomerReturn(returnInOut)))
+		if (!(returnsServiceFacade.isVendorReturn(returnInOut) || returnsServiceFacade.isCustomerReturn(returnInOut)))
 		{
 			return; // nothing to do
 		}
@@ -359,7 +360,7 @@ public class M_InOut
 			return;
 		}
 
-		if (huInOutBL.isCustomerReturn(returnInOut))
+		if (returnsServiceFacade.isCustomerReturn(returnInOut))
 		{
 			huMovementBL.moveHUsToWarehouse(hus, returnInOut.getM_Warehouse());
 		}

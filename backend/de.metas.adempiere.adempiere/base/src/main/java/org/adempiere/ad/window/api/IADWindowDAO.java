@@ -3,6 +3,7 @@ package org.adempiere.ad.window.api;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
@@ -67,6 +68,8 @@ public interface IADWindowDAO extends ISingletonService
 	 * @return
 	 */
 	I_AD_Tab retrieveFirstTab(final AdWindowId adWindowId);
+
+	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
 	void copyWindow(AdWindowId targetWindowId, AdWindowId sourceWindowId);
 

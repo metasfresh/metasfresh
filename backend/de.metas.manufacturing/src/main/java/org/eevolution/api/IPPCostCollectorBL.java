@@ -3,13 +3,11 @@ package org.eevolution.api;
 import java.time.Duration;
 
 import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.validator.PP_Order_BOMLine;
 
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 

@@ -13,21 +13,24 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
+import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
@@ -64,7 +67,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.orderBy(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOMLine_ID)
 				.create()
 				.listImmutable(I_PP_Product_BOMLine.class);
-	}	// getLines
+	}    // getLines
 
 	@Override
 	public List<I_PP_Product_BOMLine> retrieveLinesByBOMIds(@NonNull final Collection<ProductBOMId> bomIds)
@@ -100,30 +103,58 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final I_M_Product product)
 	{
+		return getDefaultBOM(product, BOMType.CurrentActive);
+	}
+
+	@Override
+	public Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final I_M_Product product, @NonNull final BOMType bomType)
+	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final String productValue = product.getValue();
 
-		return retrieveDefaultBOM(ctx, productId, productValue, trxName);
+		return retrieveDefaultBOM(ctx, productId, productValue, bomType, trxName);
 	}
 
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#IsDefault")
-	/* package */ Optional<I_PP_Product_BOM> retrieveDefaultBOM(
-			@CacheCtx final Properties ctx,
-			final int productId,
-			final String productValue,
-			@CacheTrx final String trxName)
+	Optional<I_PP_Product_BOM> retrieveDefaultBOM(
+			@CacheCtx @NonNull final Properties ctx,
+			@NonNull final ProductId productId,
+			@NonNull final String productValue,
+			@NonNull final BOMType bomType,
+			@CacheTrx @Nullable final String trxName)
 	{
-		final I_PP_Product_BOM bom = queryBL
+		final ImmutableList<I_PP_Product_BOM> boms = queryBL
 				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName)
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_Value, productValue)
+				// .addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_Value, productValue)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, bomType)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnly(I_PP_Product_BOM.class);
+				.listImmutable(I_PP_Product_BOM.class);
 
-		return Optional.ofNullable(bom);
+		if (boms.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (boms.size() == 1)
+		{
+			return Optional.of(boms.get(0));
+		}
+		else
+		{
+			final Optional<I_PP_Product_BOM> defaultBOM = boms.stream()
+					.filter(bom -> Objects.equals(bom.getValue(), productValue))
+					.findFirst();
+			if (!defaultBOM.isPresent())
+			{
+				throw new AdempiereException("No default BOM found."
+						+ " Make sure you have defined only one BOM for the product and BOM Type,"
+						+ " or one of the BOMs have the save Search Key as the Product.");
+			}
+			return defaultBOM;
+		}
 	}
 
 	@Override
@@ -163,14 +194,14 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	public IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQuery(final Properties ctx, final int productId, final String trxName)
+	public List<I_PP_Product_BOMLine> retrieveBOMLinesByComponentIdInTrx(@NonNull final ProductId productId)
 	{
 		return queryBL
-				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName)
+				.createQueryBuilder(I_PP_Product_BOMLine.class)
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient(ctx)
-				.create();
+				.create()
+				.listImmutable(I_PP_Product_BOMLine.class);
 	}
 
 	@Override

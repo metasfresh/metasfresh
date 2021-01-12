@@ -237,7 +237,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(rs.getAD_Client_ID(), rs.getAD_Org_ID());
 		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), clientAndOrgId);
 
-		return AllocationUtils.createAllocationRequestBuilder()
+		return AllocationUtils.builder()
 				.setHUContext(huContextInitial)
 				.setDateAsToday()
 				.setProduct(loadOutOfTrx(rs.getM_Product_ID(), I_M_Product.class))

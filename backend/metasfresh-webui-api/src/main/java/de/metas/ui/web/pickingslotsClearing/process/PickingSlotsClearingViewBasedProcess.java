@@ -199,7 +199,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		}
 		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(productId);
 
-		return AllocationUtils.createAllocationRequestBuilder()
+		return AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(qtyCU, productStorage.getC_UOM())

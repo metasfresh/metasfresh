@@ -2,6 +2,7 @@ package de.metas.handlingunits.attribute.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
@@ -14,9 +15,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.NullAutoCloseable;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 
 public final class HUAttributesDAO implements IHUAttributesDAO
@@ -31,8 +32,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	@Override
 	public I_M_HU_Attribute newHUAttribute(final Object contextProvider)
 	{
-		final I_M_HU_Attribute huAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class, contextProvider);
-		return huAttribute;
+		return InterfaceWrapperHelper.newInstance(I_M_HU_Attribute.class, contextProvider);
 	}
 
 	@Override
@@ -45,6 +45,23 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	public void delete(final I_M_HU_Attribute huAttribute)
 	{
 		InterfaceWrapperHelper.delete(huAttribute);
+	}
+
+	@Override
+	public List<I_M_HU_Attribute> retrieveAttributesNoCache(final Collection<HuId> huIds)
+	{
+		if(huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -77,8 +94,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		final IHUPIAttributesDAO piAttributesRepo = Services.get(IHUPIAttributesDAO.class);
 
 		final ImmutableSet<Integer> piAttributeIds = huAttributes.stream().map(I_M_HU_Attribute::getM_HU_PI_Attribute_ID).collect(ImmutableSet.toImmutableSet());
-		final PIAttributes piAttributes = piAttributesRepo.retrievePIAttributesByIds(piAttributeIds);
-		return piAttributes;
+		return piAttributesRepo.retrievePIAttributesByIds(piAttributeIds);
 	}
 
 	private List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
@@ -100,6 +116,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU_Attribute retrieveAttribute(final I_M_HU hu, final AttributeId attributeId)
 	{
 		final List<I_M_HU_Attribute> huAttributes = retrieveAttributes(hu, attributeId);
@@ -117,27 +134,9 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		}
 	}
 
-	/**
-	 * @return {@link NullAutoCloseable} always
-	 */
-	@Override
-	public IAutoCloseable temporaryDisableAutoflush()
-	{
-		// NOTE: conceptualy this DAO implementation is continuously auto-flushing because it's saving/deleting direclty in database,
-		// but we cannot disable this functionality
-		return NullAutoCloseable.instance;
-	}
-
 	@Override
 	public void flush()
 	{
 		// nothing because there is no internal cache
 	}
-
-	@Override
-	public void flushAndClearCache()
-	{
-		// nothing because there is no internal cache
-	}
-
 }
