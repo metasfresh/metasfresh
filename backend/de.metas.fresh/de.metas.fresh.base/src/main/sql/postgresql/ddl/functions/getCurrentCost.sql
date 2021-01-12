@@ -2,10 +2,22 @@ DROP FUNCTION IF EXISTS getCurrentCost(numeric,
                                        date,
                                        numeric,
                                        numeric,
+                                       numeric,
+                                       numeric)
+;
+
+
+
+DROP FUNCTION IF EXISTS getCurrentCost(numeric,
+                                       numeric,
+                                       date,
+                                       numeric,
+                                       numeric,
                                        numeric)
 ;
 
 CREATE OR REPLACE FUNCTION getCurrentCost(p_M_Product_ID     numeric,
+                                          p_C_UOM_ID         numeric,
                                           p_Date             date,
                                           p_AcctSchema_ID    numeric,
                                           p_M_CostElement_Id numeric,
@@ -20,12 +32,12 @@ WITH x AS
                     cd.prev_currentcostprice,
                     cd.M_Product_ID,
                     COALESCE(mi.dateAcct,
-                        mpo.dateAcct,
-                        pp.dateAcct,
-                        inv.movementDate,
-                        m.MovementDate,
-                        io.dateAcct,
-                        NULL) AS dateAcct
+                             mpo.dateAcct,
+                             pp.dateAcct,
+                             inv.movementDate,
+                             m.MovementDate,
+                             io.dateAcct,
+                             NULL) AS dateAcct
 
              FROM m_costdetail cd
 
@@ -51,10 +63,21 @@ WITH x AS
          )
 
 
-SELECT COALESCE((SELECT prev_currentcostprice FROM x WHERE dateAcct > p_Date LIMIT 1), cost.currentCostPrice)
+SELECT priceuomconvert(p.M_Product_ID,
+                       COALESCE((
+                                    SELECT prev_currentcostprice
+                                    FROM x
+                                    WHERE dateAcct > p_Date
+                                    LIMIT 1), cost.currentCostPrice),
+                       p.c_uom_id,
+                       p_c_uom_id,
+                       currency.costingprecision:: integer)
            AS currentCostPrice
 
 FROM M_Cost cost
+         JOIN M_Product p ON cost.M_Product_ID = p.M_Product_ID
+         JOIN C_AcctSchema sch ON cost.c_acctschema_id = sch.c_acctschema_id
+         JOIN C_Currency currency ON sch.c_currency_id = currency.c_currency_id
 
 
 WHERE cost.m_product_id = p_M_Product_ID
