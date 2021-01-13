@@ -26,16 +26,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.project.ProjectAndLineId;
-import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
-import de.metas.project.service.HUProjectService;
+import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_ProjectLine;
+import org.compiere.model.I_C_Project_Repair_Task;
 
 abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 {
@@ -43,14 +40,9 @@ abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 
 	protected ProcessPreconditionsResolution checkIsServiceOrRepairProject(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project project = projectService.getById(projectId);
-		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory());
-		if (!projectCategory.isServiceOrRepair())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not Service/Repair project");
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		return projectService.isServiceOrRepair(projectId)
+				? ProcessPreconditionsResolution.accept()
+				: ProcessPreconditionsResolution.rejectWithInternalReason("not Service/Repair project");
 	}
 
 	protected ProjectId getProjectId()
@@ -58,21 +50,21 @@ abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 		return ProjectId.ofRepoId(getRecord_ID());
 	}
 
-	protected ProjectAndLineId getSingleSelectedProjectLineId()
+	protected ServiceRepairProjectTaskId getSingleSelectedTaskId()
 	{
-		return CollectionUtils.singleElement(getSelectedProjectLineIds());
+		return CollectionUtils.singleElement(getSelectedTaskIds());
 	}
 
-	protected ImmutableSet<ProjectAndLineId> getSelectedProjectLineIds()
+	protected ImmutableSet<ServiceRepairProjectTaskId> getSelectedTaskIds()
 	{
 		final ProjectId projectId = getProjectId();
-		return getSelectedIncludedRecordIds(I_C_ProjectLine.class)
+		return getSelectedIncludedRecordIds(I_C_Project_Repair_Task.class)
 				.stream()
-				.map(projectLineRepoId -> ProjectAndLineId.ofRepoId(projectId, projectLineRepoId))
+				.map(taskRepoId -> ServiceRepairProjectTaskId.ofRepoId(projectId, taskRepoId))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	protected ImmutableSet<ProjectAndLineId> getSelectedProjectLineIds(final @NonNull IProcessPreconditionsContext context)
+	protected ImmutableSet<ServiceRepairProjectTaskId> getSelectedTaskIds(final @NonNull IProcessPreconditionsContext context)
 	{
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
 		if (projectId == null)
@@ -82,10 +74,9 @@ abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 
 		return context.getSelectedIncludedRecords()
 				.stream()
-				.filter(recordRef -> I_C_ProjectLine.Table_Name.equals(recordRef.getTableName()))
-				.map(recordRef -> ProjectAndLineId.ofRepoId(projectId, recordRef.getRecord_ID()))
+				.filter(recordRef -> I_C_Project_Repair_Task.Table_Name.equals(recordRef.getTableName()))
+				.map(recordRef -> ServiceRepairProjectTaskId.ofRepoId(projectId, recordRef.getRecord_ID()))
 				.collect(ImmutableSet.toImmutableSet());
-
 	}
 
 }

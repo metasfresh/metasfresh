@@ -25,8 +25,7 @@ package de.metas.servicerepair.project.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.project.ProjectAndLineId;
-import de.metas.project.service.HUProjectService;
+import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewContext;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewFactory;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
@@ -56,10 +55,10 @@ public class HUsToIssueView_IssueHUs extends HUEditorProcessTemplate
 	protected String doIt()
 	{
 		final HUsToIssueViewContext husToIssueViewContext = getHusToIssueViewContext();
-		final ProjectAndLineId projectLineId = husToIssueViewContext.getProjectLineId();
+		final ServiceRepairProjectTaskId taskId = husToIssueViewContext.getTaskId();
 		final ImmutableSet<HuId> huIds = streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL).collect(ImmutableSet.toImmutableSet());
 
-		projectService.reserveHUs(projectLineId, huIds);
+		projectService.reserveSparePartsFromHUs(taskId, huIds);
 
 		return MSG_OK;
 	}

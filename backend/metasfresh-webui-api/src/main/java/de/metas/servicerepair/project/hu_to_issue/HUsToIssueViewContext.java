@@ -22,7 +22,8 @@
 
 package de.metas.servicerepair.project.hu_to_issue;
 
-import de.metas.project.ProjectAndLineId;
+import de.metas.product.ProductId;
+import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,5 +32,6 @@ import lombok.Value;
 @Builder
 public class HUsToIssueViewContext
 {
-	@NonNull ProjectAndLineId projectLineId;
+	@NonNull ServiceRepairProjectTaskId taskId;
+	@NonNull ProductId productId;
 }

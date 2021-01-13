@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU_BestBefore_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1110443172L;
+	private static final long serialVersionUID = 83716577L;
 
     /** Standard Constructor */
     public X_M_HU_BestBefore_V (final Properties ctx, final int M_HU_BestBefore_V_ID, @Nullable final String trxName)
@@ -47,7 +47,7 @@ public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public void setHU_BestBeforeDate (final java.sql.Timestamp HU_BestBeforeDate)
+	public void setHU_BestBeforeDate (final @Nullable java.sql.Timestamp HU_BestBeforeDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_HU_BestBeforeDate, HU_BestBeforeDate);
 	}
@@ -59,7 +59,7 @@ public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public void setHU_Expired (final java.lang.String HU_Expired)
+	public void setHU_Expired (final @Nullable java.lang.String HU_Expired)
 	{
 		set_ValueNoCheck (COLUMNNAME_HU_Expired, HU_Expired);
 	}
@@ -71,7 +71,7 @@ public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public void setHU_ExpiredWarnDate (final java.sql.Timestamp HU_ExpiredWarnDate)
+	public void setHU_ExpiredWarnDate (final @Nullable java.sql.Timestamp HU_ExpiredWarnDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_HU_ExpiredWarnDate, HU_ExpiredWarnDate);
 	}

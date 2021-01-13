@@ -24,11 +24,13 @@ package de.metas.servicerepair.customerreturns;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.inout.InOutAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UomId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
@@ -45,6 +47,7 @@ import java.util.stream.Stream;
 @ToString
 public class SparePartsReturnCalculation
 {
+	@Getter
 	private final ImmutableList<FinishedGood> finishedGoods;
 	private final ImmutableList<SparePart> spareParts;
 
@@ -126,6 +129,7 @@ public class SparePartsReturnCalculation
 	{
 		@NonNull Quantity qty;
 		@NonNull QtyCalculationsBOM sparePartsBOM;
+		@NonNull InOutAndLineId customerReturnLineId;
 
 		public Stream<ProductId> streamComponentIds()
 		{
@@ -146,6 +150,11 @@ public class SparePartsReturnCalculation
 			final Quantity qtyInBomUOM = uomConverter.convertQuantityTo(qty, bomLine.getBomProductId(), bomLine.getBomProductUOMId());
 			return bomLine.computeQtyRequired(qtyInBomUOM);
 		}
+
+		public ProductId getProductId()
+		{
+			return sparePartsBOM.getBomProductId();
+		}
 	}
 
 	@Value
@@ -154,6 +163,7 @@ public class SparePartsReturnCalculation
 	{
 		@NonNull ProductId sparePartId;
 		@NonNull Quantity qty;
+		@NonNull InOutAndLineId customerReturnLineId;
 	}
 
 }

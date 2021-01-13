@@ -170,6 +170,11 @@ public class HUReservationService
 	 */
 	public void deleteReservations(@NonNull final Collection<HuId> vhuIds)
 	{
+		if(vhuIds.isEmpty())
+		{
+			return;
+		}
+
 		trxManager.runInNewTrx(() -> deleteReservationInTrx(vhuIds));
 	}
 

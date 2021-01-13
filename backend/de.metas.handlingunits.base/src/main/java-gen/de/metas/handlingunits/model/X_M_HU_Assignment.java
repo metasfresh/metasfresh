@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_Assignment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1228067616L;
+	private static final long serialVersionUID = 935131328L;
 
     /** Standard Constructor */
     public X_M_HU_Assignment (final Properties ctx, final int M_HU_Assignment_ID, @Nullable final String trxName)
@@ -159,7 +159,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public void setProducts (final java.lang.String Products)
+	public void setProducts (final @Nullable java.lang.String Products)
 	{
 		throw new IllegalArgumentException ("Products is virtual column");	}
 
@@ -170,7 +170,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public void setQty (final BigDecimal Qty)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}

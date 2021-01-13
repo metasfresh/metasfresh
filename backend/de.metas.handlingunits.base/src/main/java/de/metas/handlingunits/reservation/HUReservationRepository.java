@@ -7,13 +7,14 @@ import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.order.OrderLineId;
-import de.metas.project.ProjectAndLineId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Repository;
@@ -81,10 +82,13 @@ public class HUReservationRepository
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, documentRef.getSalesOrderLineId());
 		}
-		else if (documentRef.getProjectAndLineId() != null)
+		else if (documentRef.getProjectId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, documentRef.getProjectAndLineId().getProjectId());
-			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_ProjectLine_ID, documentRef.getProjectAndLineId().getProjectLineRepoId());
+			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, documentRef.getProjectId());
+		}
+		else
+		{
+			throw new AdempiereException("Document reference not supported: "+documentRef);
 		}
 
 		return queryBuilder.create().list();
@@ -139,8 +143,7 @@ public class HUReservationRepository
 			@NonNull final HUReservationDocRef documentRef)
 	{
 		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(documentRef.getSalesOrderLineId()));
-		record.setC_Project_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectId().getRepoId() : -1);
-		record.setC_ProjectLine_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectLineRepoId() : -1);
+		record.setC_Project_ID(documentRef.getProjectId() != null ? documentRef.getProjectId().getRepoId() : -1);
 	}
 
 	private I_M_HU_Reservation retrieveOrCreateByVhuId(@NonNull final HuId vhuId)
@@ -242,7 +245,7 @@ public class HUReservationRepository
 	{
 		return HUReservationDocRef.builder()
 				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()))
-				.projectAndLineId(ProjectAndLineId.ofRepoIdOrNull(record.getC_Project_ID(), record.getC_ProjectLine_ID()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.build();
 	}
 

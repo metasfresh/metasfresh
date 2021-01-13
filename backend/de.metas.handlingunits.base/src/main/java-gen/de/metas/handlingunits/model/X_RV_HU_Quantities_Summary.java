@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements I_RV_HU_Quantities_Summary, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -248490554L;
+	private static final long serialVersionUID = -1661729016L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities_Summary (final Properties ctx, final int RV_HU_Quantities_Summary_ID, @Nullable final String trxName)
@@ -90,7 +90,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (final @Nullable java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -102,7 +102,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setQtyAvailable (final BigDecimal QtyAvailable)
+	public void setQtyAvailable (final @Nullable BigDecimal QtyAvailable)
 	{
 		set_Value (COLUMNNAME_QtyAvailable, QtyAvailable);
 	}
@@ -115,7 +115,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setQtyOnHand (final BigDecimal QtyOnHand)
+	public void setQtyOnHand (final @Nullable BigDecimal QtyOnHand)
 	{
 		set_Value (COLUMNNAME_QtyOnHand, QtyOnHand);
 	}
@@ -128,7 +128,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setQtyOrdered (final BigDecimal QtyOrdered)
+	public void setQtyOrdered (final @Nullable BigDecimal QtyOrdered)
 	{
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
@@ -141,7 +141,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setQtyReserved (final BigDecimal QtyReserved)
+	public void setQtyReserved (final @Nullable BigDecimal QtyReserved)
 	{
 		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
 	}
@@ -154,7 +154,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setValue (final java.lang.String Value)
+	public void setValue (final @Nullable java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}

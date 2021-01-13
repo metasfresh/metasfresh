@@ -41,12 +41,12 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.CreateProjectRequest;
-import de.metas.project.service.HUProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.request.api.IRequestBL;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.servicerepair.customerreturns.SparePartsReturnCalculation;
+import de.metas.servicerepair.project.ServiceRepairProjectTaskType;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -60,7 +60,6 @@ import org.compiere.model.I_R_Request;
 import org.compiere.util.TimeUtil;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 
 class CreateServiceRepairProjectCommand
 {
@@ -70,19 +69,19 @@ class CreateServiceRepairProjectCommand
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final HUProjectService projectService;
-	private final RepairCustomerReturnsService repairCustomerReturnsService;
+	private final RepairCustomerReturnsService customerReturnsService;
+	private final ServiceRepairProjectService projectService;
 
 	private final RequestId requestId;
 
 	@Builder
 	private CreateServiceRepairProjectCommand(
-			@NonNull final HUProjectService projectService,
-			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService,
+			@NonNull final RepairCustomerReturnsService customerReturnsService,
+			@NonNull final ServiceRepairProjectService projectService,
 			@NonNull final RequestId requestId)
 	{
+		this.customerReturnsService = customerReturnsService;
 		this.projectService = projectService;
-		this.repairCustomerReturnsService = repairCustomerReturnsService;
 		this.requestId = requestId;
 	}
 
@@ -98,23 +97,6 @@ class CreateServiceRepairProjectCommand
 		final ZonedDateTime customerReturnDate = TimeUtil.asZonedDateTime(customerReturn.getMovementDate(), orgDAO.getTimeZone(orgId));
 		final PricingInfo pricingInfo = getPricingInfo(bpartnerAndLocationId, customerReturnDate);
 
-		//
-		final ArrayList<CreateProjectRequest.ProjectLine> projectLines = new ArrayList<>();
-		final SparePartsReturnCalculation sparePartsCalculation = repairCustomerReturnsService.getSparePartsCalculation(customerReturnId);
-		for (final ProductId sparePartId : sparePartsCalculation.getAllowedSparePartIds())
-		{
-			final Quantity qtyRequired = sparePartsCalculation.computeQtyOfSparePartsRequiredNet(sparePartId, uomConversionBL).orElse(null);
-			if (qtyRequired == null || qtyRequired.isZero())
-			{
-				continue;
-			}
-
-			projectLines.add(CreateProjectRequest.ProjectLine.builder()
-					.productId(sparePartId)
-					.plannedQty(qtyRequired)
-					.build());
-		}
-
 		final ProjectId projectId = projectService.createProject(CreateProjectRequest.builder()
 				.orgId(orgId)
 				.projectCategory(ProjectCategory.ServiceOrRepair)
@@ -123,8 +105,37 @@ class CreateServiceRepairProjectCommand
 				.priceListVersionId(pricingInfo.getPriceListVersionId())
 				.currencyId(pricingInfo.getCurrencyId())
 				.warehouseId(WarehouseId.ofRepoId(customerReturn.getM_Warehouse_ID()))
-				.lines(projectLines)
 				.build());
+
+		final SparePartsReturnCalculation sparePartsCalculation = customerReturnsService.getSparePartsCalculation(customerReturnId);
+
+		for (final SparePartsReturnCalculation.FinishedGood finishedGood : sparePartsCalculation.getFinishedGoods())
+		{
+			projectService.createProjectTask(CreateProjectTaskRequest.builder()
+					.projectId(projectId)
+					.type(ServiceRepairProjectTaskType.REPAIR_ORDER)
+					.customerReturnLineId(finishedGood.getCustomerReturnLineId())
+					.productId(finishedGood.getProductId())
+					.qtyRequired(finishedGood.getQty())
+					.build());
+		}
+
+		for (final ProductId sparePartId : sparePartsCalculation.getAllowedSparePartIds())
+		{
+			final Quantity qtyRequired = sparePartsCalculation.computeQtyOfSparePartsRequiredNet(sparePartId, uomConversionBL).orElse(null);
+			if (qtyRequired == null || qtyRequired.isZero())
+			{
+				continue;
+			}
+
+			projectService.createProjectTask(CreateProjectTaskRequest.builder()
+					.projectId(projectId)
+					.type(ServiceRepairProjectTaskType.SPARE_PARTS)
+					.customerReturnLineId(null)
+					.productId(sparePartId)
+					.qtyRequired(qtyRequired)
+					.build());
+		}
 
 		request.setC_Project_ID(projectId.getRepoId());
 		requestBL.save(request);

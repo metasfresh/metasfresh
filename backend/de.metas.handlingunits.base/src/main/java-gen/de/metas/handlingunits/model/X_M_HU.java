@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -278632837L;
+	private static final long serialVersionUID = 294382396L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -140,7 +140,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public void setLot (final java.lang.String Lot)
+	public void setLot (final @Nullable java.lang.String Lot)
 	{
 		throw new IllegalArgumentException ("Lot is virtual column");	}
 
@@ -299,7 +299,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public void setSerialNo (final java.lang.String SerialNo)
+	public void setSerialNo (final @Nullable java.lang.String SerialNo)
 	{
 		throw new IllegalArgumentException ("SerialNo is virtual column");	}
 
@@ -310,7 +310,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public void setServiceContract (final java.lang.String ServiceContract)
+	public void setServiceContract (final @Nullable java.lang.String ServiceContract)
 	{
 		throw new IllegalArgumentException ("ServiceContract is virtual column");	}
 

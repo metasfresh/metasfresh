@@ -27,13 +27,15 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectLine;
+import de.metas.servicerepair.project.ServiceRepairProjectTask;
+import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewContext;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewFactory;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 public class C_Project_OpenHUsToIssue
@@ -52,10 +54,11 @@ public class C_Project_OpenHUsToIssue
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 
-		final ImmutableSet<ProjectAndLineId> projectLineIds = getSelectedProjectLineIds(context);
-		if (projectLineIds.size() != 1)
+		final ImmutableSet<ServiceRepairProjectTaskId> taskIds = getSelectedTaskIds(context);
+		final ImmutableSet<ServiceRepairProjectTaskId> taskIdsOfTypeSpareParts = projectService.retainIdsOfTypeSpareParts(taskIds);
+		if (taskIdsOfTypeSpareParts.size() != 1)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one project line shall be selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one task shall be selected");
 		}
 
 		return checkIsServiceOrRepairProject(projectId);
@@ -64,11 +67,19 @@ public class C_Project_OpenHUsToIssue
 	@Override
 	protected String doIt()
 	{
-		final ProjectAndLineId projectLineId = getSingleSelectedProjectLineId();
+		final ServiceRepairProjectTaskId taskId = getSingleSelectedTaskId();
+		if (!projectService.isSparePartsTask(taskId))
+		{
+			throw new AdempiereException("Not a spare parts task");
+		}
 
-		final ProjectLine projectLine = projectService.getLineById(projectLineId);
+		final ServiceRepairProjectTask task = projectService.getTaskById(taskId);
 
-		final IView view = viewsRepository.createView(husToIssueViewFactory.createViewRequest(projectLine));
+		final IView view = viewsRepository.createView(
+				husToIssueViewFactory.createViewRequest(HUsToIssueViewContext.builder()
+						.taskId(taskId)
+						.productId(task.getProductId())
+						.build()));
 
 		getResult().setWebuiViewToOpen(ProcessExecutionResult.WebuiViewToOpen.builder()
 				.viewId(view.getViewId().toJson())

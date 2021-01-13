@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements I_M_HU_LUTU_Configuration, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 179174762L;
+	private static final long serialVersionUID = -270391989L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (final Properties ctx, final int M_HU_LUTU_Configuration_ID, @Nullable final String trxName)
@@ -98,7 +98,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
 	@Override
-	public void setHUStatus (final java.lang.String HUStatus)
+	public void setHUStatus (final @Nullable java.lang.String HUStatus)
 	{
 		set_Value (COLUMNNAME_HUStatus, HUStatus);
 	}

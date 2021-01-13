@@ -22,14 +22,15 @@
 
 package de.metas.servicerepair.project.service;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
@@ -39,11 +40,10 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectLine;
-import de.metas.project.service.HUProjectService;
 import de.metas.quantity.Quantity;
+import de.metas.servicerepair.project.ServiceRepairProjectCostCollector;
+import de.metas.servicerepair.project.ServiceRepairProjectCostCollectorId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,7 +54,9 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -63,13 +65,13 @@ class CreateQuotationFromProjectCommand
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final HUProjectService projectService;
+	private final ServiceRepairProjectService projectService;
 
 	private final ProjectId projectId;
 
 	@Builder
 	private CreateQuotationFromProjectCommand(
-			@NonNull final HUProjectService projectService,
+			@NonNull final ServiceRepairProjectService projectService,
 			@NonNull final ProjectId projectId)
 	{
 		this.projectService = projectService;
@@ -78,61 +80,51 @@ class CreateQuotationFromProjectCommand
 
 	public OrderId execute()
 	{
-		//checkIsServiceOrRepairProject(projectId).throwExceptionIfRejected();
-
 		final I_C_Project fromProject = projectService.getById(projectId);
 
 		final OrderFactory orderFactory = newOrderFactory(fromProject);
 
-		final ArrayList<ProjectLineAndOrderLine> projectLineAndOrderLines = new ArrayList<>();
-		for (final ProjectLine line : projectService.getLines(projectId))
+		final ArrayList<ProjectCostCollectorAndOrderLine> costCollectorAndOrderLines = new ArrayList<>();
+
+		for (final ServiceRepairProjectCostCollector costCollector : projectService.getCostCollectorsByProjectButNotInProposal(projectId))
 		{
-			if (line.getSalesOrderLineId() != null)
+			if (costCollector.getCustomerQuotationLineId() != null)
 			{
 				continue;
 			}
 
-			final ProductId productId = line.getProductId();
-			final Quantity qty = line.getPlannedQty();
+			final ProductId productId = costCollector.getProductId();
+			final Quantity qty = costCollector.getQtyReservedOrConsumed();
 			final OrderLineBuilder orderLineBuilder = orderFactory.orderLineByProductAndUomOrCreate(productId, qty.getUomId());
 			orderLineBuilder.addQty(qty);
 
-			projectLineAndOrderLines.add(ProjectLineAndOrderLine.of(line.getId(), orderLineBuilder));
+			costCollectorAndOrderLines.add(ProjectCostCollectorAndOrderLine.of(costCollector.getId(), orderLineBuilder));
 		}
 
 		final I_C_Order order = orderFactory.createDraft();
 
-		for (final ProjectLineAndOrderLine projectLineAndOrderLine : projectLineAndOrderLines)
-		{
-			projectService.linkToOrderLine(
-					projectLineAndOrderLine.getProjectLineId(),
-					projectLineAndOrderLine.getOrderLineBuilder().getCreatedOrderAndLineId());
-		}
+		setCustomerQuotationToCostCollectors(costCollectorAndOrderLines);
 
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
 
+	private void setCustomerQuotationToCostCollectors(final ArrayList<ProjectCostCollectorAndOrderLine> costCollectorAndOrderLines)
+	{
+		projectService.setCustomerQuotationToCostCollectors(
+				costCollectorAndOrderLines
+						.stream()
+						.collect(ImmutableMap.toImmutableMap(
+								ProjectCostCollectorAndOrderLine::getCostCollectorId,
+								ProjectCostCollectorAndOrderLine::getCustomerQuotationLineId)));
+	}
+
 	private OrderFactory newOrderFactory(@NonNull final I_C_Project project)
 	{
-		final OrgId orgId = OrgId.ofRepoId(project.getAD_Org_ID());
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
-				.adClientId(project.getAD_Client_ID())
-				.adOrgId(orgId.getRepoId())
-				.build());
-
 		final OrderFactory orderFactory = OrderFactory.newSalesOrder()
-				.docType(docTypeId)
-				.orgId(orgId)
-				.dateOrdered(CoalesceUtil.coalesceSuppliers(
-						() -> TimeUtil.asLocalDate(project.getDateContract()),
-						() -> SystemTime.asLocalDate()))
-				.datePromised(CoalesceUtil.coalesceSuppliers(
-						() -> TimeUtil.asZonedDateTime(project.getDateFinish()),
-						() -> SystemTime.asZonedDateTimeAtEndOfDay(timeZone)))
+				.docType(getQuotationDocTypeId(project))
+				.orgId(OrgId.ofRepoId(project.getAD_Org_ID()))
+				.dateOrdered(extractDateOrdered(project))
+				.datePromised(extractDatePromised(project))
 				.shipBPartner(
 						BPartnerId.ofRepoId(project.getC_BPartner_ID()),
 						BPartnerLocationId.ofRepoIdOrNull(project.getC_BPartner_ID(), project.getC_BPartner_Location_ID()),
@@ -148,7 +140,41 @@ class CreateQuotationFromProjectCommand
 		return orderFactory;
 	}
 
-	private Optional<PricingSystemId> getPricingSystemId(final I_C_Project project)
+	private DocTypeId getQuotationDocTypeId(@NonNull final I_C_Project project)
+	{
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
+				.adClientId(project.getAD_Client_ID())
+				.adOrgId(project.getAD_Org_ID())
+				.build());
+	}
+
+	private ZonedDateTime extractDatePromised(@NonNull final I_C_Project project)
+	{
+		final ZonedDateTime dateFinish = TimeUtil.asZonedDateTime(project.getDateFinish());
+		if (dateFinish != null)
+		{
+			return dateFinish;
+		}
+
+		final ZoneId timeZone = getTimeZone(project);
+		return SystemTime.asZonedDateTimeAtEndOfDay(timeZone);
+	}
+
+	private static LocalDate extractDateOrdered(@NonNull final I_C_Project project)
+	{
+		final LocalDate dateContract = TimeUtil.asLocalDate(project.getDateContract());
+		return dateContract != null ? dateContract : SystemTime.asLocalDate();
+	}
+
+	private ZoneId getTimeZone(@NonNull final I_C_Project project)
+	{
+		final OrgId orgId = OrgId.ofRepoId(project.getAD_Org_ID());
+		return orgDAO.getTimeZone(orgId);
+	}
+
+	private Optional<PricingSystemId> getPricingSystemId(@NonNull final I_C_Project project)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(project.getM_PriceList_Version_ID());
 		if (priceListVersionId == null)
@@ -161,10 +187,15 @@ class CreateQuotationFromProjectCommand
 	}
 
 	@Value(staticConstructor = "of")
-	private static class ProjectLineAndOrderLine
+	private static class ProjectCostCollectorAndOrderLine
 	{
-		@NonNull ProjectAndLineId projectLineId;
+		@NonNull ServiceRepairProjectCostCollectorId costCollectorId;
 		@NonNull OrderLineBuilder orderLineBuilder;
+
+		public OrderAndLineId getCustomerQuotationLineId()
+		{
+			return orderLineBuilder.getCreatedOrderAndLineId();
+		}
 	}
 
 }

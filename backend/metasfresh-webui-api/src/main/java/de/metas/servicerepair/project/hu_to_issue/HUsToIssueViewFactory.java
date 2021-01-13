@@ -23,10 +23,9 @@
 package de.metas.servicerepair.project.hu_to_issue;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.project.ProjectLine;
+import de.metas.product.ProductId;
 import de.metas.servicerepair.project.process.HUsToIssueView_IssueHUs;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
@@ -36,6 +35,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 @ViewFactory(windowId = HUsToIssueViewFactory.Window_ID_String)
 public class HUsToIssueViewFactory extends HUEditorViewFactoryTemplate
@@ -52,21 +52,20 @@ public class HUsToIssueViewFactory extends HUEditorViewFactoryTemplate
 		super(ImmutableList.of());
 	}
 
-	public CreateViewRequest createViewRequest(final ProjectLine projectLine)
+	public CreateViewRequest createViewRequest(@NonNull final HUsToIssueViewContext context)
 	{
 		return CreateViewRequest.builder(Window_ID)
-				.addStickyFilters(createEligibleHUsFilter(projectLine))
-				.setParameter(PARAM_HUsToIssueViewContext, HUsToIssueViewContext.builder()
-						.projectLineId(projectLine.getId())
-						.build())
+				.addStickyFilters(createEligibleHUsFilter(context.getProductId()))
+				.setParameter(PARAM_HUsToIssueViewContext, context)
 				.build();
 	}
 
-	private DocumentFilter createEligibleHUsFilter(final ProjectLine projectLine)
+	private DocumentFilter createEligibleHUsFilter(
+			@NonNull final ProductId productId)
 	{
 		return HUIdsFilterHelper.createFilter(
 				handlingUnitsBL.createHUQueryBuilder()
-						.addOnlyWithProductId(projectLine.getProductId())
+						.addOnlyWithProductId(productId)
 						.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 						.setExcludeReserved());
 	}

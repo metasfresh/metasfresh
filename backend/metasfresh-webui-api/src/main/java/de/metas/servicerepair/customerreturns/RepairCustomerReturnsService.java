@@ -44,6 +44,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -193,6 +194,7 @@ public class RepairCustomerReturnsService
 		{
 			final ProductId productId = ProductId.ofRepoId(customerReturnLine.getM_Product_ID());
 			final Quantity qtyReturned = Quantity.of(customerReturnLine.getQtyEntered(), uomDAO.getById(customerReturnLine.getC_UOM_ID()));
+			final InOutAndLineId customerReturnLineId = InOutAndLineId.ofRepoId(customerReturnLine.getM_InOut_ID(), customerReturnLine.getM_InOutLine_ID());
 
 			final QtyCalculationsBOM sparePartsBOM = sparePartsBOMs.get(productId);
 			if (sparePartsBOM != null)
@@ -200,6 +202,7 @@ public class RepairCustomerReturnsService
 				resultBuilder.finishedGood(SparePartsReturnCalculation.FinishedGood.builder()
 						.sparePartsBOM(sparePartsBOM)
 						.qty(qtyReturned)
+						.customerReturnLineId(customerReturnLineId)
 						.build());
 			}
 			else
@@ -207,6 +210,7 @@ public class RepairCustomerReturnsService
 				resultBuilder.sparePart(SparePartsReturnCalculation.SparePart.builder()
 						.sparePartId(productId)
 						.qty(qtyReturned)
+						.customerReturnLineId(customerReturnLineId)
 						.build());
 			}
 		}

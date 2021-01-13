@@ -26,8 +26,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.project.ProjectAndLineId;
 import de.metas.project.ProjectId;
+import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
 import lombok.NonNull;
 
 public class C_Project_ReleaseReservedHUs
@@ -43,10 +43,11 @@ public class C_Project_ReleaseReservedHUs
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 
-		final ImmutableSet<ProjectAndLineId> projectLineIds = getSelectedProjectLineIds(context);
-		if (projectLineIds.isEmpty())
+		final ImmutableSet<ServiceRepairProjectTaskId> taskIds = getSelectedTaskIds(context);
+		final ImmutableSet<ServiceRepairProjectTaskId> taskIdsOfTypeSpareParts = projectService.retainIdsOfTypeSpareParts(taskIds);
+		if (taskIdsOfTypeSpareParts.isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("no project lines selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no spare parts tasks selected");
 		}
 
 		return checkIsServiceOrRepairProject(projectId);
@@ -55,10 +56,8 @@ public class C_Project_ReleaseReservedHUs
 	@Override
 	protected String doIt()
 	{
-		final ImmutableSet<ProjectAndLineId> projectLineIds = getSelectedProjectLineIds();
-
-		projectService.releaseReservedHUs(projectLineIds);
-
+		final ImmutableSet<ServiceRepairProjectTaskId> taskIds = getSelectedTaskIds();
+		projectService.releaseReservedSpareParts(taskIds);
 		return MSG_OK;
 	}
 }

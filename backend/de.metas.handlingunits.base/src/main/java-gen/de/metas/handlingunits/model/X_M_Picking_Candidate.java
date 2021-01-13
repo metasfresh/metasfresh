@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_Picking_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 704896679L;
+	private static final long serialVersionUID = -1275027448L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (final Properties ctx, final int M_Picking_Candidate_ID, @Nullable final String trxName)
@@ -265,7 +265,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setQtyReview (final BigDecimal QtyReview)
+	public void setQtyReview (final @Nullable BigDecimal QtyReview)
 	{
 		set_Value (COLUMNNAME_QtyReview, QtyReview);
 	}

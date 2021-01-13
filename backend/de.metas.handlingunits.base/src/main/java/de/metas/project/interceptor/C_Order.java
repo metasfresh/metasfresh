@@ -54,7 +54,7 @@ public class C_Order
 		}
 
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-		projectService.transferHUReservationsFromProjectToOrder(orderId);
+		// projectService.transferHUReservationsFromProjectToOrder(orderId);
 	}
 
 	@DocValidate(timings = {
@@ -70,6 +70,6 @@ public class C_Order
 		}
 
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-		projectService.transferHUReservationsFromOrderToProject(orderId);
+		// projectService.transferHUReservationsFromOrderToProject(orderId);
 	}
 }
