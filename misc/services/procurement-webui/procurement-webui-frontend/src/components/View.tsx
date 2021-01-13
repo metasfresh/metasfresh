@@ -1,11 +1,11 @@
-// import React from 'react';
 import React, { FunctionComponent } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
+import * as H from 'history';
 
 interface Props {
   children?: React.ReactNode;
-  location?: any;
+  location?: H.Location;
 }
 
 const View: FunctionComponent<Props> = ({ children }) => {
