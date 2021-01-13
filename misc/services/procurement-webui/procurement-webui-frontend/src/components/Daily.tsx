@@ -1,11 +1,9 @@
 import React, { Component, ReactElement } from 'react';
-
 import DailyNav from './DailyNav';
 import View from './View';
-import ProductItems from './ProductItems';
-
 import { observer, inject } from 'mobx-react';
 import { RootInstance } from '../models/Store';
+import ProductList from './ProductList';
 
 interface Props {
   store?: RootInstance;
@@ -28,10 +26,8 @@ export default class DailyView extends Component<Props> {
           <h1 className="title p-4">Daily view</h1>
           <DailyNav />
           <section className="section">
-            <ProductItems />
+            <ProductList />
           </section>
-          <br />
-          <p className="subtitle p-4">Some content</p>
         </div>
       </View>
     );

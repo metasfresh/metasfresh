@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 import { createServer } from 'miragejs';
 
@@ -79,6 +79,6 @@ export function loadMirageInDev(): void {
   }
 }
 
-export function fetchDailyReport(date: string): Promise<any> {
+export function fetchDailyReport(date: string): Promise<AxiosResponse> {
   return axios.get(`/rest/dailyReport/${date}`);
 }

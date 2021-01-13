@@ -11,6 +11,7 @@ interface Props {
 class WeeklyNav extends React.Component<Props> {
   updateCurrentWeek = (to: string): void => {
     const { store } = this.props;
+    console.log('New week: ', to);
     console.log(store);
   };
 

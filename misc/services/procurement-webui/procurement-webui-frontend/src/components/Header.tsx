@@ -6,7 +6,6 @@ import { RootInstance } from '../models/Store';
 
 interface Props {
   store?: RootInstance;
-  children?: any;
 }
 
 const Header: FunctionComponent<Props> = inject('store')(
@@ -20,13 +19,7 @@ const Header: FunctionComponent<Props> = inject('store')(
         fakeAligner = <div className="header-aligner" />;
         link = (
           <div className="logout-link">
-            <Link
-              to={{
-                pathname: '/logout',
-                state: { prev: true },
-              }}
-              className="button is-success"
-            >
+            <Link to={{ pathname: '/logout' }} className="button is-success">
               Logout
             </Link>
           </div>
