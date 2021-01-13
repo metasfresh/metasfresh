@@ -7,7 +7,7 @@ import { RootInstance } from '../models/Store';
 
 interface Props {
   store?: RootInstance;
-  location?: any;
+  location?: LocationState;
 }
 
 interface LocationState {
@@ -47,8 +47,14 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             }}
             className="link"
           >
-            <i className="fas fa-chevron-left" />
-            {text}
+            <div className="p-4">
+              <div className="columns is-mobile">
+                <div className="column">
+                  <i className="fas fa-chevron-left" />
+                </div>
+                <div className="column pt-4">{text}</div>
+              </div>
+            </div>
           </Link>
         );
       } else {

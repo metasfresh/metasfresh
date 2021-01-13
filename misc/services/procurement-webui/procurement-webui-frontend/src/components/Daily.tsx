@@ -30,8 +30,6 @@ export default class DailyView extends Component<Props> {
           <section className="section">
             <ProductItems />
           </section>
-          <br />
-          <p className="subtitle p-4">Some content</p>
         </div>
       </View>
     );
