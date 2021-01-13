@@ -50,9 +50,9 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             <div className="p-4">
               <div className="columns is-mobile">
                 <div className="column">
-                  <i className="fas fa-chevron-left" />
+                  <i className="fas fa-chevron-left is-pulled-left" />
+                  <span className="is-pulled-left pl-2 pt-2">{text}</span>
                 </div>
-                <div className="column pt-4">{text}</div>
               </div>
             </div>
           </Link>
