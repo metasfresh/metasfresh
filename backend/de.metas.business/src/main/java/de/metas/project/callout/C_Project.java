@@ -1,20 +1,8 @@
-package de.metas.project.interceptor;
-
-import de.metas.project.service.ProjectService;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.model.CopyRecordFactory;
-import org.compiere.model.I_C_Project;
-import org.springframework.stereotype.Component;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +19,18 @@ import org.springframework.stereotype.Component;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.project.callout;
+
+import de.metas.project.service.ProjectService;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.model.CopyRecordFactory;
+import org.compiere.model.I_C_Project;
+import org.springframework.stereotype.Component;
 
 @Component
 @Callout(I_C_Project.class)

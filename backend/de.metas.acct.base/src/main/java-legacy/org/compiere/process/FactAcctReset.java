@@ -29,6 +29,7 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
@@ -223,7 +224,7 @@ public class FactAcctReset extends JavaProcess
 		else if (AD_Table_ID == getTableId(I_C_Order.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_SalesOrder
 				+ "','" + X_C_DocType.DOCBASETYPE_PurchaseOrder + "')";
-		else if (AD_Table_ID == MProjectIssue.Table_ID)
+		else if (AD_Table_ID == getTableId(I_C_ProjectIssue.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_ProjectIssue + "'";
 		else if (AD_Table_ID == getTableId(I_C_BankStatement.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_BankStatement + "'";

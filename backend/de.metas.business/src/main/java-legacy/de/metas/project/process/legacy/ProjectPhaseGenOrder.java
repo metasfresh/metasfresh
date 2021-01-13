@@ -1,24 +1,28 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-package org.compiere.process;
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+package de.metas.project.process.legacy;
 
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.compiere.model.I_C_ProjectTask;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 
@@ -26,9 +30,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectPhase;
-import org.compiere.model.MProjectTask;
 import org.compiere.util.Env;
 
+import java.util.List;
 
 /**
  *  Generate Order from Project Phase
@@ -36,6 +40,7 @@ import org.compiere.util.Env;
  *	@author Jorg Janke
  *	@version $Id: ProjectPhaseGenOrder.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
+@Deprecated
 public class ProjectPhaseGenOrder  extends JavaProcess
 {
 	private int		m_C_ProjectPhase_ID = 0;
@@ -97,25 +102,25 @@ public class ProjectPhaseGenOrder  extends JavaProcess
 
 		//	Project Tasks
 		int count = 0;
-		MProjectTask[] tasks = fromPhase.getTasks ();
-		for (int i = 0; i < tasks.length; i++)
+		List<I_C_ProjectTask> tasks = fromPhase.getTasks ();
+		for (int i = 0; i < tasks.size(); i++)
 		{
 			MOrderLine ol = new MOrderLine(order);
-			ol.setLine(tasks[i].getSeqNo());
-			StringBuffer sb = new StringBuffer (tasks[i].getName());
-			if (tasks[i].getDescription() != null && tasks[i].getDescription().length() > 0)
-				sb.append(" - ").append(tasks[i].getDescription());
+			ol.setLine(tasks.get(i).getSeqNo());
+			StringBuffer sb = new StringBuffer (tasks.get(i).getName());
+			if (tasks.get(i).getDescription() != null && tasks.get(i).getDescription().length() > 0)
+				sb.append(" - ").append(tasks.get(i).getDescription());
 			ol.setDescription(sb.toString());
 			//
-			ol.setM_Product_ID(tasks[i].getM_Product_ID(), true);
-			ol.setQty(tasks[i].getQty());
+			ol.setM_Product_ID(tasks.get(i).getM_Product_ID(), true);
+			ol.setQty(tasks.get(i).getQty());
 			ol.setPrice();
 			ol.setTax();
 			if (ol.save())
 				count++;
 		}	//	for all lines
-		if (tasks.length != count)
-			log.error("doIt - Lines difference - ProjectTasks=" + tasks.length + " <> Saved=" + count);
+		if (tasks.size() != count)
+			log.error("doIt - Lines difference - ProjectTasks=" + tasks.size() + " <> Saved=" + count);
 
 		return "@C_Order_ID@ " + order.getDocumentNo() + " (" + count + ")";
 	}	//	doIt

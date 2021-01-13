@@ -187,7 +187,7 @@ public class MProject extends X_C_Project
 
 			return list;
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			throw new DBException(ex, sql);
 		}
@@ -267,7 +267,7 @@ public class MProject extends X_C_Project
 			if (pstmt != null)
 				pstmt.close();
 		}
-		catch (SQLException ex1)
+		catch (final SQLException ex1)
 		{
 		}
 		pstmt = null;
