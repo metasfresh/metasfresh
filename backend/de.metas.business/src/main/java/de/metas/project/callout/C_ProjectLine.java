@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
-@Callout(I_C_Project.class)
+@Callout(I_C_ProjectLine.class)
 public class C_ProjectLine
 {
 	public C_ProjectLine()
