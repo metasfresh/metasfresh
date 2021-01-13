@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import Product from './Product';
 
-const ProductItems: FunctionComponent = (): ReactElement => {
+const ProductList: FunctionComponent = (): ReactElement => {
   return (
     <div className="custom-top-offset">
       <Product id={`prodId1`} name={`Batavia`} packType={`G2 x 6Stk`} itemsNo={0} isEdited={false} editedItemsNo={0} />
@@ -18,4 +18,4 @@ const ProductItems: FunctionComponent = (): ReactElement => {
   );
 };
 
-export default ProductItems;
+export default ProductList;

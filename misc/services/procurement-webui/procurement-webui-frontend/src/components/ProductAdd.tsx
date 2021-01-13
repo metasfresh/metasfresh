@@ -4,15 +4,16 @@
 
 import React, { FunctionComponent, ReactElement } from 'react';
 import View from './View';
+import ProductAddList from './ProductAddList';
 
 const ProductAdd: FunctionComponent = (): ReactElement => {
   return (
     <View>
       <div>
-        <h1 className="title p-4">Products</h1>
-        <div className="custom-top-offset p-4">
-          <p className="subtitle">products listing</p>
-        </div>
+        <h1 className="title p-4">Add products</h1>
+        <section className="section">
+          <ProductAddList />
+        </section>
       </div>
     </View>
   );
