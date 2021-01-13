@@ -304,7 +304,10 @@ public class DefaultPaymentBuilder
 	public final DefaultPaymentBuilder externalId(@Nullable final ExternalId externalId)
 	{
 		assertNotBuilt();
-		payment.setExternalId(externalId.getValue());
+		if(externalId != null)
+		{
+			payment.setExternalId(externalId.getValue());
+		}
 		return this;
 	}
 }
