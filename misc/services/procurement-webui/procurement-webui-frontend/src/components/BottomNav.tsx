@@ -15,10 +15,6 @@ interface LocationState {
   text?: string;
 }
 
-const LinkComponent: FunctionComponent = (props): ReactElement => {
-  return <a {...props}>{props.children}</a>;
-};
-
 const BottomNav: FunctionComponent<Props> = inject('store')(
   observer(
     ({ store }): ReactElement => {
