@@ -3,7 +3,7 @@ import Product from './Product';
 
 const ProductList: FunctionComponent = (): ReactElement => {
   return (
-    <div className="custom-top-offset">
+    <div className="mt-4">
       <Product id={`prodId1`} name={`Batavia`} packType={`G2 x 6Stk`} itemsNo={0} isEdited={false} editedItemsNo={0} />
       <Product id={`prodId2`} name={`Broccoli`} packType={`G2 x 6 Kg`} itemsNo={0} isEdited={false} editedItemsNo={0} />
       <Product
