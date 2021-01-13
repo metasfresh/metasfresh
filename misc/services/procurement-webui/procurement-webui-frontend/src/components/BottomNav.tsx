@@ -88,9 +88,8 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
               pathname: '/info',
               state: navigateBackObject,
             }}
-            component={LinkComponent}
             className="link"
-            key="3"
+            key="2"
           >
             <i className="fas fa-info" />
           </Link>,
@@ -100,7 +99,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
               state: navigateBackObject,
             }}
             className="link"
-            key="4"
+            key="3"
           >
             <i className="far fa-money-bill-alt" />
           </Link>,

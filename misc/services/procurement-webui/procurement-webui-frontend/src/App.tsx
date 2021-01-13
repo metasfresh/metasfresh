@@ -21,7 +21,7 @@ const routes = [
   { path: '/daily/:productId', name: 'Daily Reporting Details', Component: Daily },
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
   { path: '/products', name: 'Products', Component: ProductAdd },
-  { path: '/news', name: 'Info/News', Component: Info },
+  { path: '/info', name: 'Info/News', Component: Info },
   { path: '/quotations', name: 'RfQ', Component: RfQ },
   { path: '/quotations/:quotationId', name: 'RfQ Details', Component: RfQ },
 ];
