@@ -23,7 +23,10 @@ const Product: FunctionComponent<Props> = ({ name, itemsNo, packType }: Props): 
           <div className="column is-3 no-p">
             <div className="columns is-mobile">
               <div className="column mt-2 is-size-2-mobile no-p">{itemsNo}</div>
-              <div className="column mt-4 green-check">
+              <div className="column green-check is-hidden-mobile">
+                <i className="fas fa-check"></i>
+              </div>
+              <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet">
                 <i className="fas fa-check"></i>
               </div>
             </div>
