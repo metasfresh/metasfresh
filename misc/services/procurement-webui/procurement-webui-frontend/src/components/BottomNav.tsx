@@ -72,7 +72,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
           </Link>,
           <Link
             to={{
-              pathname: '/weekly',
+              pathname: '/products',
               state: navigateBackObject,
             }}
             className="link"

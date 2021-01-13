@@ -14,11 +14,13 @@ import Login from './components/Login';
 import BottomNav from './components/BottomNav';
 import Info from './components/Info';
 import RfQ from './components/RfQ';
+import ProductAdd from './components/ProductAdd';
 
 const routes = [
   { path: '/', name: 'Daily Reporting', Component: Daily },
   { path: '/daily/:productId', name: 'Daily Reporting Details', Component: Daily },
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
+  { path: '/products', name: 'Products', Component: ProductAdd },
   { path: '/news', name: 'Info/News', Component: Info },
   { path: '/quotations', name: 'RfQ', Component: RfQ },
   { path: '/quotations/:quotationId', name: 'RfQ Details', Component: RfQ },
