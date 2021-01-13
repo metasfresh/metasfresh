@@ -49,6 +49,12 @@ public class JsonInboundPaymentInfo
 {
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String", //
+			value = "An identifier for the transaction being processed.")
+	@Nullable
+	String paymentId;
+
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String", //
 			value = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
 	@NonNull
 	String bpartnerIdentifier;
@@ -68,8 +74,7 @@ public class JsonInboundPaymentInfo
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(position = 10, //
-			value = "Optional, to specify the `AD_Org_ID`.\n"
+	@ApiModelProperty(value = "Optional, to specify the `AD_Org_ID`.\n"
 					+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 					+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
@@ -80,6 +85,7 @@ public class JsonInboundPaymentInfo
 	@Nullable
 	LocalDate transactionDate;
 
+	@ApiModelProperty(value = "List of payment allocations")
 	@Nullable
 	@JsonProperty("lines")
 	List<JsonPaymentAllocationLine> lines;

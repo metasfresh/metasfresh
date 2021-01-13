@@ -27,6 +27,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.lang.ExternalId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -225,21 +226,21 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	public final DefaultPaymentBuilder payAmt(final BigDecimal payAmt)
+	public final DefaultPaymentBuilder payAmt(@Nullable final BigDecimal payAmt)
 	{
 		assertNotBuilt();
 		payment.setPayAmt(payAmt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder discountAmt(final BigDecimal discountAmt)
+	public final DefaultPaymentBuilder discountAmt(@Nullable final BigDecimal discountAmt)
 	{
 		assertNotBuilt();
 		payment.setDiscountAmt(discountAmt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder writeoffAmt(final BigDecimal writeoffAmt)
+	public final DefaultPaymentBuilder writeoffAmt(@Nullable final BigDecimal writeoffAmt)
 	{
 		assertNotBuilt();
 		payment.setWriteOffAmt(writeoffAmt);
@@ -297,6 +298,13 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setDescription(description);
+		return this;
+	}
+
+	public final DefaultPaymentBuilder externalId(@Nullable final ExternalId externalId)
+	{
+		assertNotBuilt();
+		payment.setExternalId(externalId.getValue());
 		return this;
 	}
 }

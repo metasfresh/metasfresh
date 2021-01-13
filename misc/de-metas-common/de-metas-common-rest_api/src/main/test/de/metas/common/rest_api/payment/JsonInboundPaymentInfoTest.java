@@ -56,6 +56,7 @@ class JsonInboundPaymentInfoTest
 	public void test() throws Exception
 	{
 		testSerializeDeserialize(JsonInboundPaymentInfo.builder()
+				.bpartnerIdentifier("ID001")
 				.bpartnerIdentifier("BPartnerId")
 				.currencyCode("EUR")
 				.orgCode("Org001")

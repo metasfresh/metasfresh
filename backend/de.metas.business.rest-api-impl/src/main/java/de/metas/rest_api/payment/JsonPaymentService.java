@@ -50,6 +50,7 @@ import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -109,6 +110,9 @@ public class JsonPaymentService
 			return ResponseEntity.unprocessableEntity().body("Cannot find the orgId from either orgCode=" + jsonInboundPaymentInfo.getOrgCode() + " or the current user's context.");
 		}
 
+		final ExternalId externalId = ExternalId.ofOrNull(jsonInboundPaymentInfo.getPaymentId());
+		validatePaymentId(externalId, orgId);
+
 		final Optional<BPartnerId> orgBPartnerIdOptional = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartnerId(orgId);
 		if (!orgBPartnerIdOptional.isPresent())
 		{
@@ -147,6 +151,7 @@ public class JsonPaymentService
 						.tenderType(TenderType.DirectDeposit)
 						.dateAcct(dateTrx)
 						.dateTrx(dateTrx)
+						.externalId(externalId)
 						.createAndProcess();
 
 				final String orderIdentifier = jsonInboundPaymentInfo.getOrderIdentifier();
@@ -163,6 +168,14 @@ public class JsonPaymentService
 			}
 		});
 		return ResponseEntity.ok().build();
+	}
+
+	private void validatePaymentId(@Nullable final ExternalId externalId, @NonNull final OrgId orgId)
+	{
+		if (externalId != null)
+		{
+			Check.assumeNull(paymentBL.getByExtIdOrgId(externalId, orgId).orElse(null), "A payment with this ID already exists for this organization.");
+		}
 	}
 
 	private void createAllocationsForPayment(final I_C_Payment payment, final List<JsonPaymentAllocationLine> lines)
@@ -223,7 +236,7 @@ public class JsonPaymentService
 		return orgId.orElse(Env.getOrgId());
 	}
 
-	private Optional<BPartnerId> retrieveBPartnerId(final IdentifierString bPartnerIdentifierString, OrgId orgId)
+	private Optional<BPartnerId> retrieveBPartnerId(final IdentifierString bPartnerIdentifierString, final OrgId orgId)
 	{
 		return bpartnerPriceListServicesFacade.getBPartnerId(bPartnerIdentifierString, orgId);
 	}
