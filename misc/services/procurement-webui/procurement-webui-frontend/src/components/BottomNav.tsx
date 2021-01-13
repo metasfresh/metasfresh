@@ -41,16 +41,10 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             to={{
               pathname: path,
             }}
-            className="link"
+            className="is-flex is-align-items-center link p-4"
           >
-            <div className="p-4">
-              <div className="columns is-mobile">
-                <div className="column">
-                  <i className="fas fa-chevron-left is-pulled-left" />
-                  <span className="is-pulled-left pl-2 pt-2">{text}</span>
-                </div>
-              </div>
-            </div>
+            <i className="fas fa-chevron-left" />
+            <span className="pl-3 is-size-4">{text}</span>
           </Link>
         );
       } else {
@@ -61,43 +55,48 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
               pathname: '/weekly',
               state: navigateBackObject,
             }}
-            className="link"
+            className="link is-flex is-flex-direction-column is-justify-content-center"
             key="0"
           >
             <i className="far fa-calendar-alt" />
+            <span className="link-text">Week</span>
           </Link>,
           <Link
             to={{
               pathname: '/products',
               state: navigateBackObject,
             }}
-            className="link"
+            className="link is-flex is-flex-direction-column is-justify-content-center"
             key="1"
           >
             <i className="fas fa-plus" />
+            <span className="link-text">Product</span>
           </Link>,
-          <a className="link" key="2">
+          <a className="link is-flex is-flex-direction-column is-justify-content-center" key="2">
             <i className="fas fa-check" />
+            <span className="link-text">Submit</span>
           </a>,
           <Link
             to={{
               pathname: '/info',
               state: navigateBackObject,
             }}
-            className="link"
+            className="link is-flex is-flex-direction-column is-justify-content-center"
             key="3"
           >
             <i className="fas fa-info" />
+            <span className="link-text">Info</span>
           </Link>,
           <Link
             to={{
               pathname: '/quotations',
               state: navigateBackObject,
             }}
-            className="link"
+            className="link is-flex is-flex-direction-column is-justify-content-center"
             key="4"
           >
             <i className="far fa-money-bill-alt" />
+            <span className="link-text">Quotation</span>
           </Link>,
         ];
       }

@@ -1,3 +1,5 @@
 $base-color: #000000;
 $base-elements: green;
-$base-border: #cccccc;
+
+$grey-light: hsl(0, 0%, 71%);
+$base-border: $grey-light;

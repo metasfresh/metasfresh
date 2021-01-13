@@ -1,4 +1,4 @@
-@import 'bulma/css/bulma.css';
+@import 'bulma/bulma.sass';
 @import './variables.scss';
 
 * {
@@ -19,6 +19,11 @@ body {
   padding-top: 1rem;
   padding-bottom: 1rem;
   width: 100%;
+}
+
+.header {
+  border-bottom: 1px solid $base-border;
+  box-shadow: 0 0.05em 0.4em -0.125em rgba(10, 10, 10, 0.1);
 }
 
 .product {
@@ -72,6 +77,9 @@ body {
   transform: translate(-90%, 0);
 }
 
+.page {
+
+}
 
 .daily-nav {
   width: 100%;
@@ -103,8 +111,12 @@ footer {
     color: $base-elements;
 
     svg {
-      font-size: 40px;
+      font-size: 2.25rem;
     }
+  }
+
+  .link-text {
+    padding-top: 2px;
   }
 }
 
@@ -115,9 +127,7 @@ footer {
 .icons-bottom-nav {
   .link {
     width: 20%;
-    display: flex;
     align-items: center;
-    justify-content: center;
     border: 1px solid #ddd;
   }
 }

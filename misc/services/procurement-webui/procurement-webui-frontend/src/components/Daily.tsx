@@ -22,13 +22,10 @@ export default class DailyView extends Component<Props> {
   render(): ReactElement {
     return (
       <View>
-        <div>
-          <h1 className="title p-4">Daily view</h1>
-          <DailyNav />
-          <section className="section">
-            <ProductList />
-          </section>
-        </div>
+        <DailyNav />
+        <section className="section">
+          <ProductList />
+        </section>
       </View>
     );
   }
