@@ -68,6 +68,10 @@ public class AD_User
 			String title = extractTitle(user);
 			user.setTitle(title);
 		}
+		else
+		{
+			user.setTitle("");
+		}
 	}
 
 	private String extractTitle(I_AD_User user) {
