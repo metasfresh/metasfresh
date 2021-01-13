@@ -8,6 +8,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -266,9 +267,12 @@ public class ModelClassGenerator
 
 		//
 		// Setter
+		addImportClasses(dataTypeInfo.getNullableValueSetter().getClassesToImport());
 		sb.append(NL);
 		sb.append("\t@Override").append(NL);
-		sb.append("\tpublic void set").append(columnName).append(" (final ").append(dataTypeInfo.getJavaCode()).append(" ").append(columnName).append(")").append(NL)
+		sb.append("\tpublic void set").append(columnName).append(" (final ")
+				.append(dataTypeInfo.getNullableValueSetter().getJavaCode())
+				.append(dataTypeInfo.getJavaCode()).append(" ").append(columnName).append(")").append(NL)
 				.append("\t{").append(NL);
 		// List Validation
 		if (columnInfo.getAdReferenceId() > 0
@@ -485,6 +489,24 @@ public class ModelClassGenerator
 			}
 		}
 		s_importClasses.add(className);
+	}
+
+	private void addImportClasses(@Nullable final Collection<Class<?>> classes)
+	{
+		if (classes == null || classes.isEmpty())
+		{
+			return;
+		}
+
+		for (final Class<?> clazz : classes)
+		{
+			if (clazz == null)
+			{
+				continue;
+			}
+
+			addImportClass(clazz);
+		}
 	}
 
 	/**
