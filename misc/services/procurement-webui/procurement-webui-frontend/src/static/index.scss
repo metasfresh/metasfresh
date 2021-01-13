@@ -22,7 +22,8 @@ body {
 }
 
 .header {
-
+  border-bottom: 1px solid $base-border;
+  box-shadow: 0 0.05em 0.4em -0.125em rgba(10, 10, 10, 0.1);
 }
 
 .product {
