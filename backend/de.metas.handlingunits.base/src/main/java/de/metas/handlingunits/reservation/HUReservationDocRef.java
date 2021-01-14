@@ -23,6 +23,7 @@
 package de.metas.handlingunits.reservation;
 
 import de.metas.common.util.CoalesceUtil;
+ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.project.ProjectId;
 import lombok.Builder;
@@ -60,6 +61,11 @@ public class HUReservationDocRef
 	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderLineId salesOrderLineId)
 	{
 		return HUReservationDocRef.builder().salesOrderLineId(salesOrderLineId).build();
+	}
+
+	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderAndLineId salesOrderLineId)
+	{
+		return ofSalesOrderLineId(salesOrderLineId.getOrderLineId());
 	}
 
 	public static HUReservationDocRef ofProjectId(@NonNull final ProjectId projectId)
