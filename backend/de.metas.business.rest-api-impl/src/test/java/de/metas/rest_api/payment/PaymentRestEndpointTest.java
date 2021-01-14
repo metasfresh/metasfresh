@@ -60,6 +60,7 @@ class PaymentRestEndpointTest
 	public static final String CURRENCY_CODE_EUR = "EUR";
 	public static final String TARGET_IBAN = "012345678901234";
 	public static final String AD_Org_Value = "orgCode";
+	public static final String EXTERNAL_ID = "1234";
 
 	private final CurrencyService currencyService = new CurrencyService();
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade = new BpartnerPriceListServicesFacade();
@@ -91,6 +92,7 @@ class PaymentRestEndpointTest
 				.orderIdentifier(IdentifierString.PREFIX_EXTERNAL_ID + externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR)
+				.externalPaymentId(EXTERNAL_ID)
 				.targetIBAN(TARGET_IBAN)
 				.build();
 
@@ -100,6 +102,7 @@ class PaymentRestEndpointTest
 						.bpartnerIdentifier("ext-bPartner")
 						.currencyCode(CURRENCY_CODE_EUR)
 						.targetIBAN(TARGET_IBAN)
+						.externalPaymentId(EXTERNAL_ID)
 						.build(),
 				jsonInboundPaymentInfo);
 
