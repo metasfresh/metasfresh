@@ -947,8 +947,8 @@ public class OrderBL implements IOrderBL
 			return false;
 		}
 
-		final DocTypeId docTypeId = getDocTypeIdEffective(order);
-		return docTypeBL.isSalesProposalOrQuotation(docTypeId);
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isSalesProposalOrQuotation(docTypeId);
 	}
 
 	@Override
@@ -970,7 +970,8 @@ public class OrderBL implements IOrderBL
 		return docTypeBL.isPrepay(docTypeId);
 	}
 
-	public DocTypeId getDocTypeIdEffective(@NonNull final I_C_Order order)
+	@Nullable
+	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		if (docTypeId != null)
@@ -984,7 +985,7 @@ public class OrderBL implements IOrderBL
 			return docTypeTargetId;
 		}
 
-		throw new AdempiereException("Order has no document type set: " + order);
+		return null;
 	}
 
 	@Override
