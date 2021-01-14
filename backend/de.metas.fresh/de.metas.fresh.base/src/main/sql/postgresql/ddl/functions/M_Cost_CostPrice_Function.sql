@@ -90,7 +90,7 @@ FROM (
                   LEFT OUTER JOIN M_HU hu ON item.M_HU_ID = hu.M_HU_ID AND hu.isActive = 'Y'
                   LEFT OUTER JOIN M_HU_Storage hus ON hu.M_HU_ID = hus.M_HU_ID AND hus.isActive = 'Y'
                   LEFT OUTER JOIN M_Product_acct pa ON hus.M_Product_ID = pa.M_Product_ID AND pa.isActive = 'Y'
-         WHERE hutl.DateTrx::date <= $1
+         WHERE hutl.DateTrx::date <= p_keydate
            AND hutl.huStatus IN ('A', 'S') -- qonly display transactions if status is stocked, A = Active, S = Picked
            AND org.ad_org_id = p_AD_Org_ID
            AND client.ad_client_id = p_AD_Client_ID
@@ -141,7 +141,7 @@ FROM (
                getSysConfigAsNumeric('PackingMaterialProductCategoryID'
                    , wh.AD_Client_ID
                    , wh.AD_Org_ID)
-           AND t.MovementDate::date <= $1
+           AND t.MovementDate::date <= p_keydate
            AND org.ad_org_id = p_AD_Org_ID
          GROUP BY pa.P_Asset_acct,
                   wh.C_Activity_ID,
@@ -160,7 +160,7 @@ FROM (
          LEFT OUTER JOIN M_Product p
                          ON dat.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y' AND p.AD_Org_ID = p_ad_org_id
          LEFT OUTER JOIN M_Product_Trl pt
-                         ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = $5 AND pt.isActive = 'Y' AND
+                         ON p.M_Product_ID = pt.M_Product_ID AND pt.ad_language = p_ad_language AND pt.isActive = 'Y' AND
                             pt.AD_Org_ID = p_ad_org_id
          LEFT OUTER JOIN M_Warehouse wh
                          ON dat.M_Warehouse_ID = wh.M_Warehouse_ID AND wh.isActive = 'Y' AND wh.AD_Org_ID = p_ad_org_id
@@ -169,10 +169,10 @@ FROM (
                          ON dat.C_ValidCombination_ID = vc.C_ValidCombination_ID AND vc.isActive = 'Y'
          LEFT OUTER JOIN C_UOM uom ON dat.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
          LEFT OUTER JOIN C_UOM_Trl uomt
-                         ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.ad_language = $5 AND uomt.isActive = 'Y'
+                         ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.ad_language = p_ad_language AND uomt.isActive = 'Y'
 WHERE qty != 0
-  AND CASE WHEN $2 IS NULL THEN p.M_Product_ID ELSE $2 END = p.M_Product_ID
-  AND CASE WHEN $3 IS NULL THEN wh.M_Warehouse_ID ELSE $3 END = wh.M_Warehouse_ID
+  AND CASE WHEN p_M_Product_ID IS NOT NULL THEN p.M_Product_ID  = p_M_Product_ID ELSE 1=1 END
+  AND CASE WHEN p_M_Warehouse_ID IS NOT NULL THEN wh.M_Warehouse_ID  = p_M_Warehouse_ID ELSE 1=1 END
 ORDER BY vc.combination,
          vc.description,
          a.name,
