@@ -1,33 +1,8 @@
-package org.adempiere.process;
-
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.references.RecordZoomWindowFinder;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import de.metas.order.impl.CreateSalesOrderAndBOMsFromQuotationCommand;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
-import de.metas.util.Services;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -44,6 +19,31 @@ import java.util.Optional;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.order.process;
+
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.createFrom.CreateSalesOrderAndBOMsFromQuotationCommand;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 public class C_Order_CreateFromQuotation_Construction extends JavaProcess implements IProcessPrecondition
 {

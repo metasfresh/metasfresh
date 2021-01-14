@@ -31,7 +31,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.order.impl.LegacyOrderCopyCommand;
+import de.metas.order.createFrom.LegacyOrderCopyCommand;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.order.impl;
+package de.metas.order.createFrom;
 
 import de.metas.document.ICopyHandlerBL;
 import de.metas.logging.LogManager;
