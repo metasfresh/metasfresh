@@ -11,6 +11,7 @@ import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.ContractLineRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
+import de.metas.procurement.webui.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -111,8 +112,8 @@ public class SyncContractImportService extends AbstractSyncImportService
 		}
 
 		contract.setDeleted(false);
-		contract.setDateFrom(syncContract.getDateFrom());
-		contract.setDateTo(syncContract.getDateTo());
+		contract.setDateFrom(DateUtils.toDate(syncContract.getDateFrom()));
+		contract.setDateTo(DateUtils.toDate(syncContract.getDateTo()));
 		contract.setRfq_uuid(syncContract.getRfq_uuid());
 		contractsRepo.save(contract);
 		logger.debug("Imported: {} -> {}", syncContract, contract);

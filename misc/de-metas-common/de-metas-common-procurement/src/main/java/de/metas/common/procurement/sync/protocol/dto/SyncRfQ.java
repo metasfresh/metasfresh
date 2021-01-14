@@ -28,7 +28,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Value
 public class SyncRfQ implements IConfirmableDTO
@@ -37,9 +37,9 @@ public class SyncRfQ implements IConfirmableDTO
 	boolean deleted;
 	long syncConfirmationId;
 
-	Date dateStart;
-	Date dateEnd;
-	Date dateClose;
+	LocalDate dateStart;
+	LocalDate dateEnd;
+	LocalDate dateClose;
 
 	String bpartner_uuid;
 
@@ -55,9 +55,9 @@ public class SyncRfQ implements IConfirmableDTO
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
 			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
-			@JsonProperty("dateStart") final Date dateStart,
-			@JsonProperty("dateEnd") final Date dateEnd,
-			@JsonProperty("dateClose") final Date dateClose,
+			@JsonProperty("dateStart") final LocalDate dateStart,
+			@JsonProperty("dateEnd") final LocalDate dateEnd,
+			@JsonProperty("dateClose") final LocalDate dateClose,
 			@JsonProperty("bpartner_uuid") final String bpartner_uuid,
 			@JsonProperty("product") final SyncProduct product,
 			@JsonProperty("qtyRequested") final BigDecimal qtyRequested,

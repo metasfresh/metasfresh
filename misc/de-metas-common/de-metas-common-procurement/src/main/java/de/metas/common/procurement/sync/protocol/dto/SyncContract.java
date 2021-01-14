@@ -28,7 +28,7 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Value
@@ -38,8 +38,8 @@ public class SyncContract implements IConfirmableDTO
 	boolean deleted;
 	long syncConfirmationId;
 
-	Date dateFrom;
-	Date dateTo;
+	LocalDate dateFrom;
+	LocalDate dateTo;
 	List<SyncContractLine> contractLines;
 	String rfq_uuid; // optional
 
@@ -49,8 +49,8 @@ public class SyncContract implements IConfirmableDTO
 			@JsonProperty("uuid") final String uuid,
 			@JsonProperty("deleted") final boolean deleted,
 			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
-			@JsonProperty("dateFrom") final Date dateFrom,
-			@JsonProperty("dateTo") final Date dateTo,
+			@JsonProperty("dateFrom") final LocalDate dateFrom,
+			@JsonProperty("dateTo") final LocalDate dateTo,
 			@JsonProperty("contractLines") @Singular final List<SyncContractLine> contractLines,
 			@JsonProperty("rfq_uuid") final String rfq_uuid)
 	{

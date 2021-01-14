@@ -4,11 +4,11 @@ import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.repository.BPartnerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -35,26 +35,34 @@ import java.util.List;
 
 @Service
 @Transactional
-public class SyncBPartnerImportService extends AbstractSyncImportService
+class SyncBPartnerImportService extends AbstractSyncImportService
 {
-	@Autowired
-	@Lazy
-	private BPartnerRepository bpartnersRepo;
-	@Autowired
-	@Lazy
-	private SyncContractListImportService contractsListImportService;
-	@Autowired
-	@Lazy
-	private SyncUserImportService usersImportService;
-	@Autowired
-	@Lazy
-	private SyncRfqImportService rfqImportService;
+	private final BPartnerRepository bpartnersRepo;
+	private final SyncContractListImportService contractsListImportService;
+	private final SyncUserImportService usersImportService;
+	private final SyncRfqImportService rfqImportService;
 
-	public BPartner importBPartner(final SyncBPartner syncBpartner)
+	public SyncBPartnerImportService(
+			@NonNull final BPartnerRepository bpartnersRepo,
+			@NonNull final SyncContractListImportService contractsListImportService,
+			@NonNull final SyncUserImportService usersImportService,
+			@NonNull final SyncRfqImportService rfqImportService)
+	{
+		this.bpartnersRepo = bpartnersRepo;
+		this.contractsListImportService = contractsListImportService;
+		this.usersImportService = usersImportService;
+		this.rfqImportService = rfqImportService;
+	}
+
+	public void importBPartner(final SyncBPartner syncBpartner)
 	{
 		//
 		// Import the BPartner only
 		final BPartner bpartner = importBPartnerNoCascade(syncBpartner);
+		if (bpartner == null)
+		{
+			return;
+		}
 
 		//
 		// Users
@@ -68,7 +76,7 @@ public class SyncBPartnerImportService extends AbstractSyncImportService
 			{
 				contractsListImportService.importContracts(bpartner, syncBpartner.getContracts());
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				logger.warn("Failed importing contracts for {}. Skipped", bpartner, ex);
 			}
@@ -81,14 +89,14 @@ public class SyncBPartnerImportService extends AbstractSyncImportService
 			final List<SyncRfQ> rfqs = syncBpartner.getRfqs();
 			rfqImportService.importRfQs(bpartner, rfqs);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed importing contracts for {}. Skipped", bpartner, ex);
 		}
 
-		return bpartner;
 	}
 
+	@Nullable
 	private BPartner importBPartnerNoCascade(final SyncBPartner syncBpartner)
 	{
 		//
@@ -99,11 +107,7 @@ public class SyncBPartnerImportService extends AbstractSyncImportService
 		// Handle delete request
 		if (syncBpartner.isDeleted())
 		{
-			if (bpartner == null)
-			{
-				// already deleted
-			}
-			else
+			if (bpartner != null)
 			{
 				deleteBPartner(bpartner);
 			}

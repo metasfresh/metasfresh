@@ -1,15 +1,21 @@
 package de.metas.procurement.webui;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /*
  * #%L
@@ -36,43 +42,50 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableJpaRepositories
+@EnableSwagger2
 public class Application
 {
-	public static final void main(final String[] args)
+	public static final String ENDPOINT_ROOT = "/rest";
+
+	public static void main(final String[] args)
 	{
 		SpringApplication.run(Application.class, args);
 	}
 
-	@Autowired
-	private ApplicationContext context;
-
-	private static Application instance;
-
-	public Application()
+	@Bean
+	public static ObjectMapper jsonObjectMapper()
 	{
-		instance = this;
-	}
+		// important to register the jackson-datatype-jsr310 module which we have in our pom and
+		// which is needed to serialize/deserialize java.time.Instant
+		//noinspection ConstantConditions
+		assert com.fasterxml.jackson.datatype.jsr310.JavaTimeModule.class != null; // just to get a compile error if not present
 
-	public static final ApplicationContext getContext()
-	{
-		return instance.context;
-	}
-
-	public static final void autowire(final Object bean)
-	{
-		getContext().getAutowireCapableBeanFactory().autowireBean(bean);
+		return new ObjectMapper()
+				.findAndRegisterModules()
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+				.enable(MapperFeature.USE_ANNOTATIONS);
 	}
 
 	/**
 	 * @return default task executor used by {@link Async} calls
 	 */
-	@Bean
-	public TaskExecutor taskExecutor()
+	@Bean("asyncCallsTaskExecutor")
+	public TaskExecutor asyncCallsTaskExecutor()
 	{
 		final ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(1);
 		executor.setMaxPoolSize(10);
 		executor.setQueueCapacity(100);
 		return executor;
+	}
+
+	@Bean
+	public Docket docket()
+	{
+		return new Docket(DocumentationType.SWAGGER_2)
+				.select()
+				.paths(PathSelectors.any())
+				.build();
 	}
 }

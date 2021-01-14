@@ -33,10 +33,9 @@ import lombok.NonNull;
 @Table(name = "user_product" //
 , uniqueConstraints = @UniqueConstraint(name = "user_product_uq", columnNames = { "user_id", "product_id" })  //
 )
-@SuppressWarnings("serial")
 public class UserProduct extends AbstractEntity
 {
-	public static final UserProduct build(final User user, final Product product)
+	public static UserProduct build(final User user, final Product product)
 	{
 		final UserProduct userProduct = new UserProduct();
 		userProduct.setUser(user);
@@ -57,7 +56,7 @@ public class UserProduct extends AbstractEntity
 		return user;
 	}
 
-	private void setUser(User user)
+	private void setUser(final User user)
 	{
 		this.user = user;
 	}
@@ -67,7 +66,7 @@ public class UserProduct extends AbstractEntity
 		return product;
 	}
 
-	private void setProduct(Product product)
+	private void setProduct(final Product product)
 	{
 		this.product = product;
 	}

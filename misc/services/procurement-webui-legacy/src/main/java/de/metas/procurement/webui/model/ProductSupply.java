@@ -45,7 +45,6 @@ import de.metas.procurement.webui.util.DateUtils;
 @Table(name = "product_supply"//
 , uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })           //
 )
-@SuppressWarnings("serial")
 @SelectBeforeUpdate
 public class ProductSupply extends AbstractSyncConfirmAwareEntity
 {
@@ -95,11 +94,6 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 
 	@NotNull
 	private Date day;
-
-	ProductSupply()
-	{
-		super();
-	}
 
 	@Override
 	protected void toString(final ToStringHelper toStringHelper)

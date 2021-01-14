@@ -91,7 +91,7 @@ public class FederatedRabbitMQTest
 		final ConnectionFactory metasfreshFactory = new ConnectionFactory();
 		metasfreshFactory.setHost(metasfresh_rabbitmq_host);
 		metasfreshFactory.setPort(procurement_webui_rabbitmq_port);
-		metasfreshFactory.setUsername("metasfresh");
+		metasfreshFactory.setUsername("procurement_mf");
 		metasfreshFactory.setPassword("vNz4R9bGzlcGG5o6Dnnt");
 
 		final String message = createFromMetasfreshMessage();
@@ -160,7 +160,7 @@ public class FederatedRabbitMQTest
 		final ConnectionFactory metasfreshFactory = new ConnectionFactory();
 		metasfreshFactory.setHost(metasfresh_rabbitmq_host);
 		metasfreshFactory.setPort(metasfresh_rabbitmq_port);
-		metasfreshFactory.setUsername("metasfresh");
+		metasfreshFactory.setUsername("procurement_mf");
 		metasfreshFactory.setPassword("vNz4R9bGzlcGG5o6Dnnt");
 
 		final Connection connection = metasfreshFactory.newConnection();
