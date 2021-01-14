@@ -9,7 +9,7 @@ export const i18n = types
     changeLang(newLang: string) {
       self.lang = newLang;
     },
-    changeMessages(newMessages: any) {
+    changeMessages(newMessages: unknown) {
       self.messages = newMessages;
     },
   }))
