@@ -49,9 +49,9 @@ public class JsonInboundPaymentInfo
 {
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String", //
-			value = "An identifier for the transaction being processed.")
+			value = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
 	@Nullable
-	String paymentId;
+	String externalPaymentId;
 
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String", //
@@ -119,4 +119,3 @@ public class JsonInboundPaymentInfo
 	}
 
 }
-
