@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useHistory } from 'react-router-dom';
-
+import { translate } from '../utils/translate';
 import View from './View';
 
 interface Props {
@@ -19,11 +19,11 @@ const Login: FunctionComponent<Props> = ({}) => {
   return (
     <View>
       <div className="container p-4">
-        <h1 className="title">Login</h1>
+        <h1 className="title">{translate('LoginView.fields.loginButton')}</h1>
         <form>
           <div className="field">
             <p className="control has-icons-left has-icons-right">
-              <input className="input" type="email" placeholder="Email" />
+              <input className="input" type="email" placeholder={translate('LoginView.fields.email')} />
               <span className="icon is-small is-left">
                 <i className="fas fa-envelope"></i>
               </span>
@@ -34,7 +34,7 @@ const Login: FunctionComponent<Props> = ({}) => {
           </div>
           <div className="field">
             <p className="control has-icons-left">
-              <input className="input" type="password" placeholder="Password" />
+              <input className="input" type="password" placeholder={translate('LoginView.fields.email')} />
               <span className="icon is-small is-left">
                 <i className="fas fa-lock"></i>
               </span>
@@ -43,7 +43,7 @@ const Login: FunctionComponent<Props> = ({}) => {
           <div className="field">
             <p className="control">
               <button type="submit" className="button is-success" onClick={handleSubmit}>
-                Login
+                {translate('LoginView.fields.loginButton')}
               </button>
             </p>
           </div>
