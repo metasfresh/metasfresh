@@ -8,6 +8,7 @@ import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { loadMirageInDev } from './api';
 import reportWebVitals from './reportWebVitals';
+import { getMessages } from './api';
 import { store } from './models/Store';
 
 const history = {
@@ -18,6 +19,14 @@ const history = {
 
 // if there is no DEV_SERVER env set up it will use the Mirage mockups - this can be later removed
 process.env.DEV_SERVER === 'undefined' && loadMirageInDev();
+
+// get the messages first for i18n
+getMessages().then((response) => {
+  if (response.status === 200 && response.data) {
+    const { language } = response.data;
+    store.i18n.changeLang(language);
+  }
+});
 
 ReactDOM.render(
   <Provider store={store} history={history}>

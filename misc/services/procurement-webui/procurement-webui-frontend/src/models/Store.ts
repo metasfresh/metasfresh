@@ -7,11 +7,12 @@ import { formDate } from '../utils/date';
 import Navigation from './Navigation';
 import { Day } from './Day';
 import { DailyProductList } from './DailyProductList';
-
+import { i18n } from './i18n';
 import { Week } from './Week';
 
 export const Store = types
   .model('Store', {
+    i18n: i18n,
     navigation: Navigation,
     day: Day,
     week: Week,
@@ -33,6 +34,7 @@ export const Store = types
 const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
 
 let initialState = Store.create({
+  i18n: { lang: '' },
   navigation: { viewName: '' },
   day: { caption, currentDay: day },
   week: {
