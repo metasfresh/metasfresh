@@ -57,3 +57,16 @@ export function prettyDate({ lang, date }: PrettyDate): string {
   }
   return dayFormat;
 }
+
+/**
+ * @method slashSeparatedYYYYmmdd
+ * @summary converts date to the standard allowed by the backend YYYY-MM-dd for the api calls
+ * @param date
+ */
+export function slashSeparatedYYYYmmdd(date: Date): string {
+  const dd = (date.getDate() < 10 ? '0' : '') + date.getDate();
+  const MM = (date.getMonth() + 1 < 10 ? '0' : '') + (date.getMonth() + 1);
+  const YYYY = date.getFullYear();
+
+  return `${YYYY}-${MM}-${dd}`;
+}

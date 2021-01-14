@@ -1,7 +1,8 @@
 import React, { ReactElement } from 'react';
 import { observer, inject } from 'mobx-react';
 import { RootInstance } from '../models/Store';
-import { formDate, prettyDate } from '../utils/date';
+import { formDate, prettyDate, slashSeparatedYYYYmmdd } from '../utils/date';
+import { fetchDailyReport } from '../api';
 
 interface Props {
   store?: RootInstance;
@@ -13,6 +14,9 @@ class DailyNav extends React.Component<Props> {
   updateCurrentDay = (to: string): void => {
     const { store } = this.props;
     const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(store.day.currentDay), to });
+
+    // fetch the dayProducts in here
+    fetchDailyReport(slashSeparatedYYYYmmdd(day));
 
     store.day.changeCaption(caption);
     store.day.changeCurrentDay(day);
