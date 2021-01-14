@@ -2,7 +2,7 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import classnames from 'classnames';
-
+import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
 
 interface Props {
@@ -59,7 +59,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             key="0"
           >
             <i className="far fa-calendar-alt" />
-            <span className="link-text">Week</span>
+            <span className="link-text">{translate('DailyReportingView.weekViewButton')}</span>
           </Link>,
           <Link
             to={{
@@ -70,11 +70,11 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             key="1"
           >
             <i className="fas fa-plus" />
-            <span className="link-text">Product</span>
+            <span className="link-text">{translate('DailyReportingView.addProductButton')}</span>
           </Link>,
           <a className="link is-flex is-flex-direction-column is-justify-content-center" key="2">
             <i className="fas fa-check" />
-            <span className="link-text">Submit</span>
+            <span className="link-text">{translate('DailyReportingView.sendButton')}</span>
           </a>,
           <Link
             to={{
@@ -85,7 +85,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             key="3"
           >
             <i className="fas fa-info" />
-            <span className="link-text">Info</span>
+            <span className="link-text">{translate('InfoMessageView.caption.short')}</span>
           </Link>,
           <Link
             to={{
@@ -96,7 +96,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             key="4"
           >
             <i className="far fa-money-bill-alt" />
-            <span className="link-text">Quotation</span>
+            <span className="link-text">{translate('BottomNav.quotation')}</span>
           </Link>,
         ];
       }
