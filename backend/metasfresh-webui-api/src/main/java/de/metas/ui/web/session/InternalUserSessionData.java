@@ -22,7 +22,6 @@ import com.google.common.base.MoreObjects;
 import de.metas.i18n.Language;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
-import de.metas.ui.web.base.session.UserPreference;
 import de.metas.user.UserId;
 
 /*

@@ -9,7 +9,6 @@ import de.metas.organization.OrgInfo;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
-import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;

@@ -9,7 +9,7 @@ import de.metas.i18n.ILanguageBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
-import de.metas.ui.web.base.session.UserPreference;
+import de.metas.ui.web.session.UserPreference;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
