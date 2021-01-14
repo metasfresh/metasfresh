@@ -1,6 +1,6 @@
 package de.metas.rest_api.ordercandidates.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 

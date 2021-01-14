@@ -1,9 +1,9 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

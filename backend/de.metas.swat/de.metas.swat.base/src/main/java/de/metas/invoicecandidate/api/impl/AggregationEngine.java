@@ -36,6 +36,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -122,6 +124,7 @@ public final class AggregationEngine
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
@@ -397,6 +400,11 @@ public final class AggregationEngine
 		invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 		invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 		invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
+		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
+		if (orderId != null)
+		{
+			invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
+		}
 
 		// why not using DateToInvoice[_Override] if available?
 		// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced

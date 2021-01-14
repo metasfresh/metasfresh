@@ -93,6 +93,24 @@ class IdentifierStringTest
 	}
 
 	@Test
+	void of_Doc()
+	{
+		final IdentifierString testee = IdentifierString.of("doc-abcd");
+
+		assertThat(testee.getType()).isEqualTo(Type.DOC);
+		assertThat(testee.asDoc()).isEqualTo("abcd");
+	}
+
+	@Test
+	void invalid_Doc()
+	{
+		assertThatThrownBy(() -> IdentifierString.of("doc-"))
+				.hasMessage("Invalid documentId: `doc-`");
+		assertThatThrownBy(() -> IdentifierString.of("doc-      "))
+				.hasMessage("Invalid documentId: `doc-      `");
+	}
+
+	@Test
 	void of_MetasfreshId()
 	{
 		final IdentifierString testee = IdentifierString.of("12345");
@@ -117,6 +135,7 @@ class IdentifierStringTest
 				.put(Type.EXTERNAL_ID, "ext-someExternalId")
 				.put(Type.VALUE, "val-someValue")
 				.put(Type.GLN, "gln-someGLN")
+				.put(Type.DOC, "doc-someDoc")
 				.put(Type.INTERNALNAME, "int-someInternalName")
 				.build();
 

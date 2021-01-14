@@ -114,5 +114,4 @@ public class InvoiceService
 				.metasfreshId(MetasfreshId.of(invoiceCandidate.getC_Invoice_Candidate_ID()))
 				.build();
 	}
-
 }
