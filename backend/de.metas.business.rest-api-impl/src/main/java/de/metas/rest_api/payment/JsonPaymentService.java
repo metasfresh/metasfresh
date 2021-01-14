@@ -158,7 +158,6 @@ public class JsonPaymentService
 				if (!Check.isEmpty(orderIdentifier))
 				{
 					final Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
-					Check.assumeNotEmpty(externalOrderId, "Could not find externalOrderId for identifier: " + orderIdentifier);
 					payment.setExternalOrderId(externalOrderId.orElseGet(null));
 				}
 				payment.setIsAutoAllocateAvailableAmt(true);
@@ -193,7 +192,8 @@ public class JsonPaymentService
 		for (final JsonPaymentAllocationLine line : lines)
 		{
 			final String invoiceId = line.getInvoiceIdentifier();
-			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocBaseType(), line.getDocSubType());
+			final String docBaseType = line.getDocBaseType();
+			final DocBaseAndSubType docType = Check.isBlank(docBaseType) ? null : DocBaseAndSubType.of(docBaseType, line.getDocSubType());
 			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), OrgId.ofRepoIdOrNull(orgId), docType);
 			Check.assumeNotEmpty(invoice, "Cannot find invoice for identifier: " + invoiceId);
 			allocationBuilder.addLine()
