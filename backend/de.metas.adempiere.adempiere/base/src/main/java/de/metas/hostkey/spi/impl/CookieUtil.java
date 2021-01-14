@@ -1,5 +1,28 @@
-package de.metas.ui.web.base.util;
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
+package de.metas.hostkey.spi.impl;
+
+import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -9,29 +32,6 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.Services;
-
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Web Browser Cookie Helper
@@ -39,29 +39,16 @@ import de.metas.util.Services;
  * @author tsa
  * 
  */
-public final class CookieUtil
+final class CookieUtil
 {
 	private static final Logger logger = LogManager.getLogger(CookieUtil.class);
-
-	public static int DEFAULT_CookieMaxAge = 365 * 24 * 60 * 60; // 1year (in seconds)
 
 	private CookieUtil()
 	{
 		super();
 	}
 
-	public static String getCookie(final String name)
-	{
-		final HttpServletRequest request = Services.get(IHttpSessionProvider.class).getCurrentRequest();
-		return getCookie(request, name);
-	}
-
-	public static boolean setCookie(final String name, final String value)
-	{
-		final HttpServletResponse response = Services.get(IHttpSessionProvider.class).getCurrentResponse();
-		return setCookie(response, name, value);
-	}
-
+	@Nullable
 	public static String getCookie(final HttpServletRequest request, final String name)
 	{
 		Check.assume(request != null, "request not null");
@@ -70,6 +57,7 @@ public final class CookieUtil
 		return getCookie(cookies, name);
 	}
 
+	@Nullable
 	public static String getCookie(final Cookie[] cookies, final String name)
 	{
 		if (cookies == null || cookies.length == 0)
@@ -89,12 +77,6 @@ public final class CookieUtil
 
 		return null;
 		
-	}
-
-	public static boolean setCookie(final HttpServletResponse response, final String name, final String value)
-	{
-		final String description = null;
-		return setCookie(response, name, value, description, DEFAULT_CookieMaxAge);
 	}
 
 	public static boolean setCookie(final HttpServletResponse response, final String name, final String value, final String description, final int maxAge)

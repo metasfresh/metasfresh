@@ -14,7 +14,7 @@ import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.IHostKeyStorage;
 import de.metas.hostkey.spi.impl.HttpCookieHostKeyStorage;
 import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
-import de.metas.ui.web.base.util.IHttpSessionProvider;
+import de.metas.hostkey.spi.IHttpSessionProvider;
 import de.metas.util.Services;
 
 /*
@@ -43,13 +43,13 @@ import de.metas.util.Services;
  * Configures HostKey for webui
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh-webui-api/issues/264
+ * Task https://github.com/metasfresh/metasfresh-webui-api/issues/264
  */
 @Configuration
 public class HostKeyConfig
 {
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/1274
+	 * Task https://github.com/metasfresh/metasfresh/issues/1274
 	 */
 	private static final String PRINTING_WEBUI_HOST_KEY_STORAGE_MODE = "de.metas.printing.webui.HostKeyStorageMode";
 

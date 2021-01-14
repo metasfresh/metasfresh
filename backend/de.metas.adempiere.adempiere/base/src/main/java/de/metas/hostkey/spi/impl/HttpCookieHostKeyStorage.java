@@ -7,8 +7,7 @@ import org.slf4j.Logger;
 
 import de.metas.hostkey.spi.IHostKeyStorage;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.base.util.CookieUtil;
-import de.metas.ui.web.base.util.IHttpSessionProvider;
+import de.metas.hostkey.spi.IHttpSessionProvider;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -49,14 +48,14 @@ public class HttpCookieHostKeyStorage implements IHostKeyStorage
 	private static final String COOKIE_Name = "metasfresh.hostkey";
 	private static final String COOKIE_Description = "Used by metasfresh to identify if user logged in from same browser, no matter on which network he/she connects."
 			+ " Please note that this information is mandatory for providing host base configuration.";
-	private static int COOKIE_MaxAge = 365 * 24 * 60 * 60; // 1year (in seconds)
+	private static final int COOKIE_MaxAge = 365 * 24 * 60 * 60; // 1year (in seconds)
 
-	private final HttpServletRequest getActualHttpServletRequest()
+	private HttpServletRequest getActualHttpServletRequest()
 	{
 		return Services.get(IHttpSessionProvider.class).getCurrentRequest();
 	}
 
-	private final HttpServletResponse getActualHttpServletResponse()
+	private HttpServletResponse getActualHttpServletResponse()
 	{
 		return Services.get(IHttpSessionProvider.class).getCurrentResponse();
 	}
