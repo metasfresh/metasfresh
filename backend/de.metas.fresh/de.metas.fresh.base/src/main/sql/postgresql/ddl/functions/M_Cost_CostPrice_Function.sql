@@ -88,7 +88,7 @@ FROM (
                   LEFT OUTER JOIN M_HU_Trx_line hutl ON l.M_Locator_ID = hutl.M_locator_ID AND hutl.isActive = 'Y'
                   LEFT OUTER JOIN M_HU_Item item ON hutl.VHU_Item_ID = item.M_HU_Item_ID AND item.isActive = 'Y'
                   LEFT OUTER JOIN M_HU hu ON item.M_HU_ID = hu.M_HU_ID AND hu.isActive = 'Y'
-                  LEFT OUTER JOIN M_HU_Storage hus ON hu.M_HU_ID = hus.M_HU_ID AND hus.isActive = 'Y'
+                  LEFT OUTER JOIN M_HU_Storage hus ON hu.M_HU_ID = hus.M_HU_ID AND hus.isActive = 'Y' AND HUS.qty <> 0
                   LEFT OUTER JOIN M_Product_acct pa ON hus.M_Product_ID = pa.M_Product_ID AND pa.isActive = 'Y'
          WHERE hutl.DateTrx::date <= p_keydate
            AND hutl.huStatus IN ('A', 'S') -- qonly display transactions if status is stocked, A = Active, S = Picked
@@ -171,8 +171,8 @@ FROM (
          LEFT OUTER JOIN C_UOM_Trl uomt
                          ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.ad_language = p_ad_language AND uomt.isActive = 'Y'
 WHERE qty != 0
-  AND CASE WHEN p_M_Product_ID > 0 THEN p.M_Product_ID  = p_M_Product_ID ELSE 1=1 END
-  AND CASE WHEN p_M_Warehouse_ID > 0 THEN wh.M_Warehouse_ID  = p_M_Warehouse_ID ELSE 1=1 END
+  AND CASE WHEN p_M_Product_ID IS NOT NULL AND p_M_Product_ID > 0  THEN p.M_Product_ID  = p_M_Product_ID ELSE 1=1 END
+  AND CASE WHEN p_M_Warehouse_ID IS NOT NULL AND p_M_Warehouse_ID > 0 THEN wh.M_Warehouse_ID = p_M_Warehouse_ID ELSE 1=1 END
 ORDER BY vc.combination,
          vc.description,
          a.name,
