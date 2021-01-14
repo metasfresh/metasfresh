@@ -1,4 +1,4 @@
-package de.metas.order.process.impl;
+package de.metas.order.createFrom.po_from_so.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
@@ -19,7 +19,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.order.IOrderLineBL;
-import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -57,7 +57,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLine, I_C_OrderLine>
+class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLine, I_C_OrderLine>
 {
 	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
@@ -70,7 +70,6 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 
 	/**
 	 *
-	 * @param purchaseOrder
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
 	 */
 	/* package */public CreatePOLineFromSOLinesAggregator(final I_C_Order purchaseOrder, final String purchaseQtySource)
@@ -97,7 +96,7 @@ public class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_O
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 
-		purchaseOrderLine2saleOrderLines.put(purchaseOrderLine, new ArrayList<I_C_OrderLine>());
+		purchaseOrderLine2saleOrderLines.put(purchaseOrderLine, new ArrayList<>());
 		return purchaseOrderLine;
 
 	}

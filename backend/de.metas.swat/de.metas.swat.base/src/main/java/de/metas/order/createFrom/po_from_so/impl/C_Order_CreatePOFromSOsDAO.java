@@ -1,4 +1,4 @@
-package de.metas.order.process.impl;
+package de.metas.order.createFrom.po_from_so.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -21,7 +21,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.IDocument;
 import de.metas.order.model.I_C_Order;
-import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

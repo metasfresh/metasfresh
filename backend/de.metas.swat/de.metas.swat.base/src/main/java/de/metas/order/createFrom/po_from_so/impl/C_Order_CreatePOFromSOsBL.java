@@ -1,15 +1,14 @@
-package de.metas.order.process.impl;
+package de.metas.order.createFrom.po_from_so.impl;
 
-import java.util.ArrayList;
-
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_OrderLine;
-
-import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
-import de.metas.order.process.spi.IC_Order_CreatePOFromSOsListener;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.ToString;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_OrderLine;
+
+import java.util.ArrayList;
 
 /*
  * #%L
@@ -33,6 +32,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ToString
 public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 {
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseQtySource";
@@ -41,7 +41,7 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	private final ArrayList<IC_Order_CreatePOFromSOsListener> listeners = new ArrayList<>();
 
 	@Override
-	public void registerListener(IC_Order_CreatePOFromSOsListener listener)
+	public void registerListener(final IC_Order_CreatePOFromSOsListener listener)
 	{
 		listeners.add(listener);
 	}
@@ -50,7 +50,7 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	public IC_Order_CreatePOFromSOsListener getCompositeListener()
 	{
 		return (purchaseOrderLine, salesOrderLine) -> {
-			for (IC_Order_CreatePOFromSOsListener actualListener : listeners)
+			for (final IC_Order_CreatePOFromSOsListener actualListener : listeners)
 			{
 				actualListener.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine);
 			}
@@ -69,16 +69,10 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 				&& !I_C_OrderLine.COLUMNNAME_QtyReserved.equalsIgnoreCase(purchaseQtySource))
 		{
 			Loggables.addLog(
-					"AD_SysConfig " + SYSCONFIG_PURCHASE_QTY_SOURCE + " has an unsspported value: " + purchaseQtySource + "; Instead we use the default value: " + SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT);
+					"AD_SysConfig " + SYSCONFIG_PURCHASE_QTY_SOURCE + " has an unsupported value: " + purchaseQtySource + "; Instead we use the default value: " + SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT);
 
 			return SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT;
 		}
 		return purchaseQtySource;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 }

@@ -1,4 +1,4 @@
-package de.metas.order.process.impl;
+package de.metas.order.createFrom.po_from_so.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -125,7 +125,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 				InterfaceWrapperHelper.save(purchaseOrder);
 			}
 		}
-		catch (Throwable t)
+		catch (final Throwable t)
 		{
 			Loggables.addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);

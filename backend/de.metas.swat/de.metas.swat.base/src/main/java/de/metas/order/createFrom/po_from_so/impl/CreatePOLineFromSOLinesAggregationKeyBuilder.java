@@ -1,4 +1,4 @@
-package de.metas.order.process.impl;
+package de.metas.order.createFrom.po_from_so.impl;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.I_C_OrderLine;
@@ -36,7 +36,7 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder
+class CreatePOLineFromSOLinesAggregationKeyBuilder extends AbstractOrderLineAggregationKeyBuilder
 {
 
 	/*package*/ static CreatePOLineFromSOLinesAggregationKeyBuilder INSTANCE = new CreatePOLineFromSOLinesAggregationKeyBuilder();

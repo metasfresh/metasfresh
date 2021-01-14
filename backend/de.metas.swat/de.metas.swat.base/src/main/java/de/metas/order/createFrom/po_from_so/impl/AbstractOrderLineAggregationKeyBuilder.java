@@ -1,4 +1,4 @@
-package de.metas.order.process.impl;
+package de.metas.order.createFrom.po_from_so.impl;
 
 import java.util.List;
 
@@ -29,12 +29,12 @@ import org.compiere.model.I_C_OrderLine;
  * #L%
  */
 
-public abstract class AbstractOrderLineAggregationKeyBuilder implements IAggregationKeyBuilder<I_C_OrderLine>
+abstract class AbstractOrderLineAggregationKeyBuilder implements IAggregationKeyBuilder<I_C_OrderLine>
 {
 	@Override
 	public final List<String> getDependsOnColumnNames()
 	{
-		throw new UnsupportedOperationException("getDependsOnColumnNames() is not supported in this applciation");
+		throw new UnsupportedOperationException("getDependsOnColumnNames() is not supported in this application");
 	}
 
 	@Override

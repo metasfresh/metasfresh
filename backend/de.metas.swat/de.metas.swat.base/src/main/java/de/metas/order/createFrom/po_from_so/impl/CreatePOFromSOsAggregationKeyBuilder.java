@@ -1,4 +1,4 @@
-package de.metas.order.process.impl;
+package de.metas.order.createFrom.po_from_so.impl;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
