@@ -86,3 +86,14 @@ export function fetchDailyReport(date: string): Promise<AxiosResponse> {
 export function getMessages(): Promise<AxiosResponse> {
   return axios.get('/rest/i18n/messages');
 }
+
+export function logoutRequest(): Promise<AxiosResponse> {
+  return axios.get(`/rest/session/logout`);
+}
+
+export function loginRequest(username: string, password: string): Promise<AxiosResponse> {
+  return axios.post(`/rest/session/login`, {
+    username,
+    password,
+  });
+}
