@@ -171,8 +171,8 @@ FROM (
          LEFT OUTER JOIN C_UOM_Trl uomt
                          ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.ad_language = p_ad_language AND uomt.isActive = 'Y'
 WHERE qty != 0
-  AND CASE WHEN p_M_Product_ID IS NOT NULL THEN p.M_Product_ID  = p_M_Product_ID ELSE 1=1 END
-  AND CASE WHEN p_M_Warehouse_ID IS NOT NULL THEN wh.M_Warehouse_ID  = p_M_Warehouse_ID ELSE 1=1 END
+  AND CASE WHEN p_M_Product_ID > 0 THEN p.M_Product_ID  = p_M_Product_ID ELSE 1=1 END
+  AND CASE WHEN p_M_Warehouse_ID > 0 THEN wh.M_Warehouse_ID  = p_M_Warehouse_ID ELSE 1=1 END
 ORDER BY vc.combination,
          vc.description,
          a.name,
