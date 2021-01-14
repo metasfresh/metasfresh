@@ -62,7 +62,7 @@ class JsonInboundPaymentInfoTest
 				.orgCode("Org001")
 				.orderIdentifier("ext-API_001")
 				.targetIBAN("123456")
-				.paymentId("paymentId")
+				.externalPaymentId("paymentId")
 				.transactionDate(LocalDate.MAX)
 				.build());
 	}

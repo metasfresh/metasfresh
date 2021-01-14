@@ -110,7 +110,7 @@ public class JsonPaymentService
 			return ResponseEntity.unprocessableEntity().body("Cannot find the orgId from either orgCode=" + jsonInboundPaymentInfo.getOrgCode() + " or the current user's context.");
 		}
 
-		final ExternalId externalId = ExternalId.ofOrNull(jsonInboundPaymentInfo.getPaymentId());
+		final ExternalId externalId = ExternalId.ofOrNull(jsonInboundPaymentInfo.getExternalPaymentId());
 		validatePaymentId(externalId, orgId);
 
 		final Optional<BPartnerId> orgBPartnerIdOptional = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartnerId(orgId);
