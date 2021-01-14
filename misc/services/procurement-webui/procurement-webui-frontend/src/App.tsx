@@ -5,6 +5,9 @@ import {
   Switch, 
   BrowserRouter,
 } from 'react-router-dom';
+import { observer, inject } from 'mobx-react';
+
+import { RootInstance } from './models/Store';
 
 import Header from './components/Header';
 import Weekly from './components/Weekly';
@@ -15,6 +18,10 @@ import BottomNav from './components/BottomNav';
 import Info from './components/Info';
 import RfQ from './components/RfQ';
 import ProductAdd from './components/ProductAdd';
+
+interface AppProps {
+  store?: RootInstance;
+}
 
 const routes = [
   { path: '/', name: 'Daily Reporting', Component: Daily },
@@ -70,32 +77,44 @@ class Index extends Component {
   }
 }
 
-const App = () => (
-  <BrowserRouter>
-    <>
-      <Switch>
-        <Route
-          path="/login"
-          component={({ location }) => (
-            <Login />
-          )}
-        />
-        <Route
-          path="/forgottenPassword"
-          component={({ location }) => (
-            <Login splat={location.pathname.replace('/', '')} />
-          )}
-        />
-        <Route
-          path="/resetPassword"
-          component={({ location }) => (
-            <Login splat={location.pathname.replace('/', '')} />
-          )}
-        />
-        <Route path="/" component={Index} />
-      </Switch>
-    </>
-  </BrowserRouter>
-);
+@inject('store')
+@observer
+class App extends React.Component<AppProps> {
+  componentDidMount() {
+    const { store } = this.props;
+
+    store.getUserSession();
+  }
+
+  render() {
+    return(
+      <BrowserRouter>
+        <>
+          <Switch>
+            <Route
+              path="/login"
+              component={({ location }) => (
+                <Login />
+              )}
+            />
+            <Route
+              path="/forgottenPassword"
+              component={({ location }) => (
+                <Login splat={location.pathname.replace('/', '')} />
+              )}
+            />
+            <Route
+              path="/resetPassword"
+              component={({ location }) => (
+                <Login splat={location.pathname.replace('/', '')} />
+              )}
+            />
+            <Route path="/" component={Index} />
+          </Switch>
+        </>
+      </BrowserRouter>
+    );
+  }
+};
 
 export default App;

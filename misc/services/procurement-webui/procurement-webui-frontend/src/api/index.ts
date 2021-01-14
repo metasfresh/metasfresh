@@ -65,13 +65,13 @@ export function loadMirageInDev(): void {
           return {
             countUnconfirmed: 2,
             date: '01-12-2021',
-            dayCaption: 'string',
+            dayCaption: 'Day',
             email: 'string',
             language: 'de_DE',
             loggedIn: true,
             loginError: 'string',
             week: 'string',
-            weekCaption: 'string',
+            weekCaption: 'Week',
           };
         });
       },
@@ -96,4 +96,7 @@ export function loginRequest(username: string, password: string): Promise<AxiosR
     email: username,
     password,
   });
+
+export function getUserSession(): Promise<AxiosResponse> {
+  return axios.get(`/rest/session`);
 }

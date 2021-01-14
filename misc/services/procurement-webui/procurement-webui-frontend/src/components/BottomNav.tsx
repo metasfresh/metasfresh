@@ -19,8 +19,9 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
   observer(
     ({ store }): ReactElement => {
       const location = useLocation<LocationState>();
-      const { navigation } = store;
+      const { navigation, app } = store;
       const { state, pathname } = location;
+      const { countUnconfirmed } = app;
       let links = null;
       let classes = '';
       const path = state ? state.path : null;
@@ -72,9 +73,10 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             <i className="fas fa-plus" />
             <span className="link-text">{translate('DailyReportingView.addProductButton')}</span>
           </Link>,
-          <a className="link is-flex is-flex-direction-column is-justify-content-center" key="2">
+          <a className="link is-flex is-flex-direction-column is-justify-content-center is-relative" key="2">
             <i className="fas fa-check" />
             <span className="link-text">{translate('DailyReportingView.sendButton')}</span>
+            {countUnconfirmed && <span className="unconfirmed-count">{countUnconfirmed}</span>}
           </a>,
           <Link
             to={{

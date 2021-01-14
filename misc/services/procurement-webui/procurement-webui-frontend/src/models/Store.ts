@@ -1,13 +1,14 @@
 import { useContext, createContext } from 'react';
 import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
 
-import { fetchDailyReport } from '../api';
+import { fetchDailyReport, getUserSession } from '../api';
 import { formDate } from '../utils/date';
+import { i18n } from './i18n';
 
 import Navigation from './Navigation';
 import { Day } from './Day';
 import { DailyProductList } from './DailyProductList';
-import { i18n } from './i18n';
+import { App } from './App';
 import { Week } from './Week';
 
 export const Store = types
@@ -17,6 +18,7 @@ export const Store = types
     day: Day,
     week: Week,
     dailyProducts: DailyProductList,
+    app: App,
   })
   .actions((self) => ({
     fetchDailyReport: flow(function* fetchReport(date: string) {
@@ -25,6 +27,15 @@ export const Store = types
 
         self.navigation.setViewName(response.data.dayCaption);
         // TODO: Do stuff for daily report
+      } catch (error) {
+        console.error('Failed to fetch', error);
+      }
+    }),
+    getUserSession: flow(function* getSession() {
+      try {
+        const response = yield getUserSession();
+
+        self.app.setInitialData(response.data);
       } catch (error) {
         console.error('Failed to fetch', error);
       }
@@ -44,6 +55,15 @@ let initialState = Store.create({
     nextWeek: '06.2021',
   },
   dailyProducts: {},
+  app: {
+    language: '',
+    loggedIn: false,
+    loginError: '',
+    countUnconfirmed: 0,
+    email: '',
+    dayCaption: '',
+    weekCaption: '',
+  },
 });
 
 const data = localStorage.getItem('initialState');
