@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
-
+import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
 
 interface Props {
@@ -20,7 +20,7 @@ const Header: FunctionComponent<Props> = inject('store')(
         link = (
           <div className="logout-link">
             <Link to={{ pathname: '/logout' }} className="button is-success">
-              Logout
+              {translate('Logout.caption')}
             </Link>
           </div>
         );
