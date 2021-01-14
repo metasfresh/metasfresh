@@ -82,3 +82,7 @@ export function loadMirageInDev(): void {
 export function fetchDailyReport(date: string): Promise<AxiosResponse> {
   return axios.get(`/rest/dailyReport/${date}`);
 }
+
+export function getMessages(): Promise<AxiosResponse> {
+  return axios.get('/rest/i18n/messages');
+}
