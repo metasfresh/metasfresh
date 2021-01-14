@@ -45,15 +45,26 @@ public class C_Order
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void afterComplete(final I_C_Order order)
+	public void afterComplete(final I_C_Order salesOrder)
 	{
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
+		if (!salesOrder.isSOTrx())
+		{
+			return;
+		}
+
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(salesOrder.getC_Project_ID());
 		if (projectId == null)
 		{
 			return;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final OrderId proposalId = OrderId.ofRepoIdOrNull(salesOrder.getRef_Proposal_ID());
+		if (proposalId == null)
+		{
+			return;
+		}
+
+		final OrderId salesOrderId = OrderId.ofRepoId(salesOrder.getC_Order_ID());
 		// projectService.transferHUReservationsFromProjectToOrder(orderId);
 	}
 
