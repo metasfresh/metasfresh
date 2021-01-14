@@ -45,6 +45,8 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
 
+import javax.annotation.Nullable;
+
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
  *
@@ -522,4 +524,10 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setExcludeReserved();
 
 	IHUQueryBuilder addOnlyInLocatorIds(Collection<Integer> locatorIds);
+
+	/**
+	 * If true = include only the HUs which have a product with {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} = true
+	 * If false or not set = all HUs are included (the field {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} is ignored when filtering the HUs)
+	 */
+	IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts);
 }
