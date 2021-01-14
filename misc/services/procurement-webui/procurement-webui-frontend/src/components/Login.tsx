@@ -1,18 +1,31 @@
-import React, { FunctionComponent } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import { useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
 import View from './View';
-
+import { loginRequest } from '../api/index';
 interface Props {
   splat?: string;
 }
 
 const Login: FunctionComponent<Props> = ({}) => {
   const history = useHistory();
+  const [state, setState] = useState({
+    email: '',
+    password: '',
+  });
+
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    setState((prevState) => ({
+      ...prevState,
+      [id]: value,
+    }));
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
+    const { email, password } = state;
+    loginRequest(email, password);
     history.push('/');
   };
 
@@ -23,7 +36,14 @@ const Login: FunctionComponent<Props> = ({}) => {
         <form>
           <div className="field">
             <p className="control has-icons-left has-icons-right">
-              <input className="input" type="email" placeholder={translate('LoginView.fields.email')} />
+              <input
+                className="input"
+                id="email"
+                type="email"
+                value={state.email}
+                placeholder={translate('LoginView.fields.email')}
+                onChange={handleChange}
+              />
               <span className="icon is-small is-left">
                 <i className="fas fa-envelope"></i>
               </span>
@@ -34,7 +54,14 @@ const Login: FunctionComponent<Props> = ({}) => {
           </div>
           <div className="field">
             <p className="control has-icons-left">
-              <input className="input" type="password" placeholder={translate('LoginView.fields.email')} />
+              <input
+                className="input"
+                id="password"
+                type="password"
+                value={state.password}
+                placeholder={translate('LoginView.fields.email')}
+                onChange={handleChange}
+              />
               <span className="icon is-small is-left">
                 <i className="fas fa-lock"></i>
               </span>

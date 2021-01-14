@@ -93,7 +93,7 @@ export function logoutRequest(): Promise<AxiosResponse> {
 
 export function loginRequest(username: string, password: string): Promise<AxiosResponse> {
   return axios.post(`/rest/session/login`, {
-    username,
+    email: username,
     password,
   });
 }
