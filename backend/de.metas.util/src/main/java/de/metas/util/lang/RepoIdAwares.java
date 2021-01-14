@@ -72,7 +72,7 @@ public class RepoIdAwares
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static <T extends RepoIdAware> T ofRepoId(final int repoId, Class<T> repoIdClass)
+	public static <T extends RepoIdAware> T ofRepoId(final int repoId, final Class<T> repoIdClass)
 	{
 		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
 
@@ -82,7 +82,7 @@ public class RepoIdAwares
 		return id;
 	}
 
-	public static <T extends RepoIdAware> T ofRepoId(final String repoIdStr, Class<T> repoIdClass)
+	public static <T extends RepoIdAware> T ofRepoId(final String repoIdStr, final Class<T> repoIdClass)
 	{
 		final Integer repoId = NumberUtils.asIntegerOrNull(repoIdStr);
 		if (repoId == null)
@@ -93,7 +93,7 @@ public class RepoIdAwares
 		return ofRepoId(repoId, repoIdClass);
 	}
 
-	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, Class<T> repoIdClass)
+	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, final Class<T> repoIdClass)
 	{
 		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
 
@@ -115,7 +115,7 @@ public class RepoIdAwares
 	@VisibleForTesting
 	static RepoIdAwareDescriptor getRepoIdAwareDescriptor(final Class<? extends RepoIdAware> repoIdClass)
 	{
-		return repoIdAwareDescriptors.computeIfAbsent(repoIdClass, k -> createRepoIdAwareDescriptor(k));
+		return repoIdAwareDescriptors.computeIfAbsent(repoIdClass, RepoIdAwares::createRepoIdAwareDescriptor);
 	}
 
 	private static RepoIdAwareDescriptor createRepoIdAwareDescriptor(final Class<? extends RepoIdAware> repoIdClass)
@@ -170,6 +170,7 @@ public class RepoIdAwares
 		}
 	}
 
+	@Nullable
 	private static Method getMethodOrNull(
 			@NonNull final Class<? extends RepoIdAware> repoIdClass,
 			@NonNull final String methodName,
@@ -190,7 +191,7 @@ public class RepoIdAwares
 
 	}
 
-	private static final RuntimeException mkEx(final String msg, final Throwable cause)
+	private static RuntimeException mkEx(final String msg, final Throwable cause)
 	{
 		final RuntimeException ex = Check.newException(msg);
 		if (cause != null)
@@ -200,7 +201,7 @@ public class RepoIdAwares
 		return ex;
 	}
 
-	private static ConcurrentHashMap<Class<? extends RepoIdAware>, RepoIdAwareDescriptor> repoIdAwareDescriptors = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<Class<? extends RepoIdAware>, RepoIdAwareDescriptor> repoIdAwareDescriptors = new ConcurrentHashMap<>();
 
 	@Value
 	@Builder
