@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
 import View from './View';
 import { loginRequest } from '../api/index';
+import { store } from '../models/Store';
 interface Props {
   splat?: string;
 }
@@ -25,7 +26,10 @@ const Login: FunctionComponent<Props> = ({}) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const { email, password } = state;
-    loginRequest(email, password);
+    loginRequest(email, password).then((response) => {
+      const { week } = response.data;
+      store.week.changeCurrentWeek = week;
+    });
     history.push('/');
   };
 

@@ -27,14 +27,14 @@ getMessages().then((response) => {
     store.i18n.changeLang(language);
     store.i18n.changeMessages(messages);
   }
-});
 
-ReactDOM.render(
-  <Provider store={store} history={history}>
-    <App />
-  </Provider>,
-  document.getElementById('root')
-);
+  ReactDOM.render(
+    <Provider store={store} history={history}>
+      <App />
+    </Provider>,
+    document.getElementById('root')
+  );
+});
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
