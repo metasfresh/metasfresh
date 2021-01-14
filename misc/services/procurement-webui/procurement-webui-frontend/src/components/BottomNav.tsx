@@ -96,7 +96,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             key="4"
           >
             <i className="far fa-money-bill-alt" />
-            <span className="link-text">{translate('BottomNav.quotation')}</span>
+            <span className="link-text">{translate('RfQView.caption')}</span>
           </Link>,
         ];
       }
