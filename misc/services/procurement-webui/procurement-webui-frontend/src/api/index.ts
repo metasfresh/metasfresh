@@ -6,7 +6,7 @@ export function loadMirageInDev(): void {
   if (process.env.NODE_ENV === 'development') {
     createServer({
       routes() {
-        console.log('MIRAGE listening');
+        console.log('MIRAGE listening now...');
 
         this.namespace = '/rest';
         this.urlPrefix = 'http://localhost:3000';

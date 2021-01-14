@@ -16,7 +16,8 @@ const history = {
   patches: observable.array([], { deep: false }),
 };
 
-loadMirageInDev();
+// if there is no DEV_SERVER env set up it will use the Mirage mockups - this can be later removed
+process.env.DEV_SERVER === 'undefined' && loadMirageInDev();
 
 ReactDOM.render(
   <Provider store={store} history={history}>
