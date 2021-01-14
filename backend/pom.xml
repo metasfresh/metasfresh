@@ -181,6 +181,10 @@
         <module>de.metas.issue.tracking.everhour</module>
 
         <module>de.metas.ui.web.base</module>
+
+        <module>de.metas.servicerepair.base</module>
+        <module>de.metas.servicerepair.webui</module>
+
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
 
