@@ -8,13 +8,22 @@ import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
-Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
-{
+Map build(final MvnConf mvnConf,
+          final Map scmVars,
+          final boolean forceBuild = false,
+          final boolean forceSkip = false) {
 	stage('Build frontend')
 	{
-		currentBuild.description="""${currentBuild.description}<br/>
+    currentBuild.description = """${currentBuild.description}<br/>
 			<h2>Frontend</h2>
 		"""
+    if (forceSkip) {
+      currentBuild.description = """${currentBuild.description}<p/>
+            Forced to skip.
+            """
+      echo "forced to skip frontend";
+      return;
+    }
 
     def anyFileChanged
     try {

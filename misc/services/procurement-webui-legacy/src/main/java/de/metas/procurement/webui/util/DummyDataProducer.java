@@ -145,8 +145,8 @@ public class DummyDataProducer
 
 				final SyncContractBuilder syncContract = SyncContract.builder()
 						.uuid(randomUUID())
-						.dateFrom(contractDateFrom)
-						.dateTo(contractDateTo);
+						.dateFrom(DateUtils.toLocalDate(contractDateFrom))
+						.dateTo(DateUtils.toLocalDate(contractDateTo));
 
 				final PutProductsRequest syncProductsRequest = getSyncProductsRequest();
 				for (final SyncProduct syncProduct : syncProductsRequest.getProducts().subList(0, 6))
@@ -173,12 +173,12 @@ public class DummyDataProducer
 				final SyncRfQ.SyncRfQBuilder syncRfQ = SyncRfQ.builder()
 						.uuid(randomUUID())
 
-						.dateStart(dateStart)
-						.dateEnd(dateEnd)
+						.dateStart(DateUtils.toLocalDate(dateStart))
+						.dateEnd(DateUtils.toLocalDate(dateEnd))
 
 						.bpartner_uuid(syncBPartnerUUID)
 
-						.dateClose(dateClose);
+						.dateClose(DateUtils.toLocalDate(dateClose));
 
 				final SyncProduct syncProduct = syncProducts.get(rfqNo);
 				syncRfQ.product(syncProduct)

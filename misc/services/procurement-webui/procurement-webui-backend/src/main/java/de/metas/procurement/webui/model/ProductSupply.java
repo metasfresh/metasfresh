@@ -1,26 +1,24 @@
 package de.metas.procurement.webui.model;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
+import de.metas.procurement.webui.util.DateUtils;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-
+import lombok.Setter;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.SelectBeforeUpdate;
 import org.springframework.context.annotation.Lazy;
 
-
-
-
-import de.metas.procurement.webui.util.DateUtils;
+import javax.annotation.Nullable;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
 
 /*
  * #%L
@@ -46,38 +44,11 @@ import de.metas.procurement.webui.util.DateUtils;
 
 @Entity
 @Table(name = "product_supply"//
-, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })           //
+		, uniqueConstraints = @UniqueConstraint(name = "product_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })           //
 )
-@SuppressWarnings("serial")
 @SelectBeforeUpdate
 public class ProductSupply extends AbstractSyncConfirmAwareEntity
 {
-	public static ProductSupply build(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day)
-	{
-		//
-		// Validate
-		if (contractLine != null)
-		{
-			final BPartner contractBPartner = contractLine.getContract().getBpartner();
-			if (!Objects.equal(bpartner, contractBPartner))
-			{
-				throw new IllegalArgumentException("BPartner not matching the contract");
-			}
-
-			final Product contractProduct = contractLine.getProduct();
-			if (!Objects.equal(product, contractProduct))
-			{
-				throw new IllegalArgumentException("Product not matching the contract");
-			}
-		}
-		final ProductSupply productSupply = new ProductSupply();
-		productSupply.setBpartner(bpartner);
-		productSupply.setProduct(product);
-		productSupply.setContractLine(contractLine);
-		productSupply.setDay(DateUtils.truncToDay(day));
-		return productSupply;
-	}
-
 	@ManyToOne
 	@Lazy
 	@NonNull
@@ -91,76 +62,93 @@ public class ProductSupply extends AbstractSyncConfirmAwareEntity
 	@NotFound(action = NotFoundAction.IGNORE)        // don't fail if the record was not found
 	@SuppressWarnings("deprecation")
 	@org.hibernate.annotations.ForeignKey(name = "none")         // deprecated but see http://stackoverflow.com/questions/27040735/jpa-association-without-foreign-key
+	@Nullable
+	@Getter
+	@Setter
 	private ContractLine contractLine;
 
 	@NonNull
+	@Getter
+	@Setter
 	private BigDecimal qty = BigDecimal.ZERO;
 
 	@NonNull
-	private Date day;
+	@Getter
+	@Setter
+	private BigDecimal qtyUserEntered = BigDecimal.ZERO;
+
+	@NonNull
+	private java.sql.Date day;
 
 	protected ProductSupply()
 	{
+	}
+
+	@Builder
+	private ProductSupply(
+			@NonNull final BPartner bpartner,
+			@NonNull final Product product,
+			@Nullable final ContractLine contractLine,
+			@NonNull final LocalDate day)
+	{
+		//
+		// Validate
+		if (contractLine != null)
+		{
+			final BPartner contractBPartner = contractLine.getContract().getBpartner();
+			if (!Objects.equals(bpartner, contractBPartner))
+			{
+				throw new IllegalArgumentException("BPartner not matching the contract");
+			}
+
+			final Product contractProduct = contractLine.getProduct();
+			if (!Objects.equals(product, contractProduct))
+			{
+				throw new IllegalArgumentException("Product not matching the contract");
+			}
+		}
+
+		this.bpartner = bpartner;
+		this.product = product;
+		this.contractLine = contractLine;
+		this.day = DateUtils.toSqlDate(day);
 	}
 
 	@Override
 	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
+				.omitNullValues()
 				.add("product", product)
 				.add("bpartner", bpartner)
 				.add("day", day)
+				.add("qtyUserEntered", qtyUserEntered)
 				.add("qty", qty)
 				.add("contractLine", contractLine);
 	}
 
-	public BPartner getBpartner()
+	public String getBpartnerUUID()
 	{
-		return bpartner;
+		return bpartner.getUuid();
 	}
 
-	private void setBpartner(final BPartner bpartner)
+	public String getProductUUID()
 	{
-		this.bpartner = bpartner;
+		return product.getUuid();
 	}
 
-	public Product getProduct()
+	public Long getProductId()
 	{
-		return product;
+		return product.getId();
 	}
 
-	private void setProduct(final Product product)
+	public LocalDate getDay()
 	{
-		this.product = product;
+		return day.toLocalDate();
 	}
 
-	public ContractLine getContractLine()
+	public boolean isQtyConfirmedByUser()
 	{
-		return contractLine;
-	}
-
-	public void setContractLine(final ContractLine contractLine)
-	{
-		this.contractLine = contractLine;
-	}
-
-	public BigDecimal getQty()
-	{
-		return qty;
-	}
-
-	public void setQty(final BigDecimal qty)
-	{
-		this.qty = qty;
-	}
-
-	public Date getDay()
-	{
-		return (Date)day.clone();
-	}
-
-	private void setDay(final Date day)
-	{
-		this.day = day;
+		return getQty().compareTo(getQtyUserEntered()) == 0;
 	}
 }

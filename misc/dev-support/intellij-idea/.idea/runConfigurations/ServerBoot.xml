@@ -9,7 +9,6 @@
     </extension>
     <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.ServerBoot" />
     <option name="VM_PARAMETERS" value="-DPropertyFile=C:\work-metas\metasfresh.properties -DTraceFile=true -Xms256M -Xmx736M -Drun-headless=false -DdevelopmentWorkspaceDir=C:\work-metas/metasfresh/backend" />
-    <option name="PROGRAM_PARAMETERS" value="--debug" />
     <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH" />
     <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />

@@ -1,0 +1,89 @@
+@import 'bulma/css/bulma.css';
+@import './variables.scss';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: #fff;
+  line-height: 1.5;
+}
+
+.fullsize {
+  width: 100%;
+  height: 100%;
+}
+
+.section {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  width: 100%;
+}
+.header {
+  .header-title {
+
+    flex: 0 1 auto;
+  }
+
+  .header-aligner {
+    visibility: hidden;
+    flex: 0 1 auto;
+  }
+
+  .logout-link {
+    flex: 0 1 auto;
+  }
+}
+
+.view {
+  overflow-y: auto;
+  position: absolute;
+/*  position: fixed;
+  top: 0;*/
+  -webkit-overflow-scrolling: touch;
+  transition: transform .2s ease-in-out;
+}
+
+.view-enter {
+  transform: translate(-100%, 0);
+}
+
+.view-enter-active {
+  transform: translate(0, 0);
+}
+
+.view-exit {
+  transform: translate(-100%, 0);
+}
+
+.view-exit-active {
+  transform: translate(-90%, 0);
+}
+
+
+.daily-nav {
+  width: 100%;
+  color: $base-color;
+
+    .columns {
+      padding: 0rem 1rem;
+      border-top: 1px solid $base-border;
+      border-bottom: 1px solid $base-border;
+    }
+
+    .rows {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      font-size: 20px;
+    }
+    .arrow-navigation {
+      color: $base-elements;
+      padding: 1rem 0;
+    }
+}
+
+footer {
+
+}

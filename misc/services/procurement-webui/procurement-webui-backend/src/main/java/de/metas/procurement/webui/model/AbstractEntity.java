@@ -1,12 +1,7 @@
 package de.metas.procurement.webui.model;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Objects;
 import lombok.NonNull;
-
-import java.io.Serializable;
-import java.util.Date;
-import java.util.UUID;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,6 +11,10 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Objects;
+import java.util.UUID;
 
 
 
@@ -43,7 +42,6 @@ import javax.persistence.Version;
  */
 
 @MappedSuperclass
-@SuppressWarnings("serial")
 public abstract class AbstractEntity implements Serializable
 {
 	@Id
@@ -70,7 +68,7 @@ public abstract class AbstractEntity implements Serializable
 	{
 		super();
 	}
-	
+
 	@PreUpdate
 	@PrePersist
 	public void updateCreatedUpdated()
@@ -84,7 +82,7 @@ public abstract class AbstractEntity implements Serializable
 	}
 
 	@Override
-	public final String toString()
+	public String toString()
 	{
 		final MoreObjects.ToStringHelper toStringHelper = MoreObjects.toStringHelper(this);
 		toString(toStringHelper);
@@ -101,38 +99,43 @@ public abstract class AbstractEntity implements Serializable
 		// nothing at this level
 	}
 
-	public final Long getId()
+	public Long getId()
 	{
 		return id;
 	}
 
-	public final String getUuid()
+	public String getIdAsString()
+	{
+		return String.valueOf(getId());
+	}
+
+	public String getUuid()
 	{
 		return uuid;
 	}
 
-	public final void setUuid(final String uuid)
+	public void setUuid(final String uuid)
 	{
 		this.uuid = uuid;
 	}
 
-	public final int getVersion()
+	public int getVersion()
 	{
 		return version;
 	}
 
-	public final void setDeleted(final boolean deleted)
+	public void setDeleted(final boolean deleted)
 	{
 		this.deleted = deleted;
 	}
 
-	public final boolean isDeleted()
+	public boolean isDeleted()
 	{
 		return deleted;
 	}
 
 	@Override
-	public final int hashCode()
+	public int hashCode()
 	{
 		final int prime = 31;
 		int result = 1;
@@ -141,7 +144,7 @@ public abstract class AbstractEntity implements Serializable
 	}
 
 	@Override
-	public final boolean equals(final Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -158,14 +161,14 @@ public abstract class AbstractEntity implements Serializable
 		}
 
 		final AbstractEntity other = (AbstractEntity)obj;
-		return Objects.equal(id, other.id);
+		return Objects.equals(id, other.id);
 	}
-	
+
 	protected Date getDateCreated()
 	{
 		return dateCreated;
 	}
-	
+
 	protected Date getDateUpdated()
 	{
 		return dateUpdated;

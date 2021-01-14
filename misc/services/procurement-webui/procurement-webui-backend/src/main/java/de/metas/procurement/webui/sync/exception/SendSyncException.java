@@ -26,8 +26,8 @@ import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 
 public class SendSyncException extends RuntimeException
 {
-	public SendSyncException(RequestToMetasfresh event, Exception cause)
+	public SendSyncException(RequestToMetasfresh requestToMetasfresh, Exception cause)
 	{
-		super("Error sending request=" + event, cause);
+		super("Error sending request=" + requestToMetasfresh, cause);
 	}
 }

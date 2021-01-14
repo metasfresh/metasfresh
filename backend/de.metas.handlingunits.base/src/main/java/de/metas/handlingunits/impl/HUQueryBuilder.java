@@ -22,16 +22,24 @@
 
 package de.metas.handlingunits.impl;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.IHULockBL;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Reservation;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -53,29 +61,18 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * {@link IHUQueryBuilder} implementation.
- *
+ * <p>
  * NOTE to developer: if you want to add a new filtering parameter, please make sure you are handling the parameters in following places:
  * <ul>
  * <li>{@link #createQueryFilter()} - creates the actual {@link I_M_HU} filter to be used. Here you will add your filters based on your new parameter value.
@@ -84,7 +81,6 @@ import lombok.NonNull;
  * </ul>
  *
  * @author tsa
- *
  */
 /* package */class HUQueryBuilder implements IHUQueryBuilder
 {
@@ -103,7 +99,7 @@ import lombok.NonNull;
 
 	/**
 	 * Shall we select only those HUs which are top level (i.e. not included in other HUs)?
-	 *
+	 * <p>
 	 * Default: true because in most of the cases we are looking for top level HUs
 	 */
 	private boolean huItemParentNull = true;
@@ -154,6 +150,7 @@ import lombok.NonNull;
 	// Data retrieval options
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
+	private boolean onlyStockedProducts;
 
 	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository)
 	{
@@ -184,6 +181,7 @@ import lombok.NonNull;
 		this._huStatusesToInclude.addAll(from._huStatusesToInclude);
 		this._huStatusesToExclude.addAll(from._huStatusesToExclude);
 		this.onlyActiveHUs = from.onlyActiveHUs;
+		this.onlyStockedProducts = from.onlyStockedProducts;
 
 		this._onlyHUIds = from._onlyHUIds == null ? null : new HashSet<>(from._onlyHUIds);
 
@@ -228,6 +226,7 @@ import lombok.NonNull;
 				.append(_huStatusesToInclude)
 				.append(_huStatusesToExclude)
 				.append(onlyActiveHUs)
+				.append(onlyStockedProducts)
 				.append(_onlyHUIds)
 				.append(_huIdsToExclude)
 				.append(_huPIVersionIdsToInclude)
@@ -271,6 +270,7 @@ import lombok.NonNull;
 				.append(_huStatusesToInclude, other._huStatusesToInclude)
 				.append(_huStatusesToExclude, other._huStatusesToExclude)
 				.append(onlyActiveHUs, other.onlyActiveHUs)
+				.append(onlyStockedProducts, other.onlyStockedProducts)
 				.append(_onlyHUIds, other._onlyHUIds)
 				.append(_huIdsToExclude, other._huIdsToExclude)
 				.append(_huPIVersionIdsToInclude, other._huPIVersionIdsToInclude)
@@ -362,6 +362,20 @@ import lombok.NonNull;
 			filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
 		}
 
+		if (onlyStockedProducts)
+		{
+			final IQueryBuilder<I_M_HU_Storage> huStoragesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
+					.addOnlyActiveRecordsFilter();
+
+			final IQuery<I_M_Product> productQueryBuilder = queryBL.createQueryBuilder(I_M_Product.class, getContextProvider())
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+					.create();
+
+			huStoragesQueryBuilder.addInSubQueryFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQueryBuilder);
+			filters.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID, I_M_HU_Storage.COLUMNNAME_M_HU_ID, huStoragesQueryBuilder.create());
+		}
+
 		//
 		// Filter only those HUs which contains our products restriction
 		final Set<ProductId> onlyWithProductIds = getOnlyWithProductIds();
@@ -379,7 +393,7 @@ import lombok.NonNull;
 			final IQuery<I_M_HU_Storage> huStoragesQuery = huStoragesQueryBuilder.create();
 
 			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID,
-					I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
+										I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
 		}
 
 		//
@@ -427,8 +441,8 @@ import lombok.NonNull;
 						.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHUId)
 						.create();
 				filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID,
-						I_M_HU_Item.COLUMN_M_HU_Item_ID,
-						parentHUItemQuery);
+											I_M_HU_Item.COLUMN_M_HU_Item_ID,
+											parentHUItemQuery);
 			}
 		}
 
@@ -520,10 +534,10 @@ import lombok.NonNull;
 		if (_excludeReservedToOtherThanOrderLineId != null)
 		{
 			final IQuery<I_M_HU_Reservation> //
-			excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanOrderLineId);
+					excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanOrderLineId);
 
 			final ICompositeQueryFilter<I_M_HU> //
-			notReservedToOtherOrderLineFilter = queryBL
+					notReservedToOtherOrderLineFilter = queryBL
 					.createCompositeQueryFilter(I_M_HU.class)
 					.setJoinOr()
 					.addEqualsFilter(I_M_HU.COLUMN_IsReserved, false)
@@ -725,6 +739,13 @@ import lombok.NonNull;
 	}
 
 	@Override
+	public IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts)
+	{
+		this.onlyStockedProducts = onlyStockedProducts;
+		return this;
+	}
+
+	@Override
 	public Set<BPartnerId> getOnlyInBPartnerIds()
 	{
 		return _onlyInBpartnerIdsRO;
@@ -758,7 +779,7 @@ import lombok.NonNull;
 	{
 		if (product == null)
 		{
-			return addOnlyWithProductIds(Collections.<Integer> emptyList());
+			return addOnlyWithProductIds(Collections.<Integer>emptyList());
 		}
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		return addOnlyWithProductId(productId);

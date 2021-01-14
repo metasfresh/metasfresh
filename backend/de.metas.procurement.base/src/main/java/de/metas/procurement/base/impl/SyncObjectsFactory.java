@@ -32,17 +32,19 @@ import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -84,11 +86,6 @@ import java.util.concurrent.ExecutionException;
  */
 public class SyncObjectsFactory
 {
-	public static SyncObjectsFactory newFactory(final Date date)
-	{
-		return new SyncObjectsFactory(date);
-	}
-
 	public static SyncObjectsFactory newFactory()
 	{
 		return new SyncObjectsFactory(SystemTime.asDayTimestamp());
@@ -99,6 +96,7 @@ public class SyncObjectsFactory
 	private static final Logger logger = LogManager.getLogger(SyncObjectsFactory.class);
 
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IPMMContractsDAO pmmContractsDAO = Services.get(IPMMContractsDAO.class);
 	private final transient IPMMProductDAO pmmProductDAO = Services.get(IPMMProductDAO.class);
 	private final transient IPMMBPartnerDAO pmmbPartnerDAO = Services.get(IPMMBPartnerDAO.class);
@@ -125,8 +123,7 @@ public class SyncObjectsFactory
 	private boolean _bpartnerId2activeRfqResponseLines_fullyLoaded = false;
 	private boolean _bpartnerId2activeRfqResponseLines_fullyLoadedRequired = false;
 
-	private Cache<String, SyncProduct> syncProductsCache = CacheBuilder.newBuilder()
-			.build();
+	private final Cache<String, SyncProduct> syncProductsCache = CacheBuilder.newBuilder().build();
 
 	private SyncObjectsFactory(final Date date)
 	{
@@ -164,8 +161,8 @@ public class SyncObjectsFactory
 
 		final SyncContract.SyncContractBuilder syncContract = SyncContract.builder()
 				.uuid(uuid)
-				.dateFrom(term.getStartDate())
-				.dateTo(term.getEndDate());
+				.dateFrom(TimeUtil.asLocalDate(term.getStartDate()))
+				.dateTo(TimeUtil.asLocalDate(term.getEndDate()));
 
 		final int rfqResponseLineId = term.getC_RfQResponseLine_ID();
 		if (rfqResponseLineId > 0)
@@ -287,7 +284,7 @@ public class SyncObjectsFactory
 	}
 
 	@Nullable
-	private SyncUser createSyncUser(@NonNull final I_AD_User contact, final String adLanguage)
+	private SyncUser createSyncUser(@NonNull final I_AD_User contact, @Nullable final String bpartnerLanguage)
 	{
 		if (!contact.isActive() || !contact.isIsMFProcurementUser())
 		{
@@ -301,6 +298,9 @@ public class SyncObjectsFactory
 		{
 			return null;
 		}
+
+		final String contactLanguage = contact.getAD_Language();
+		final String adLanguage = !Check.isBlank(contactLanguage) ? contactLanguage : bpartnerLanguage;
 
 		return SyncUser.builder()
 				.language(adLanguage)
@@ -390,7 +390,7 @@ public class SyncObjectsFactory
 	{
 		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
 
-		final I_M_Product product = pmmProduct.getM_Product();
+		final I_M_Product product = productBL.getById(ProductId.ofRepoId(pmmProduct.getM_Product_ID()));
 
 		String productName = pmmProduct.getProductName();
 		// Fallback to M_Product.Name (shall not happen)
@@ -548,9 +548,9 @@ public class SyncObjectsFactory
 
 		return SyncRfQ.builder()
 				.uuid(SyncUUIDs.toUUIDString(rfqResponseLine))
-				.dateStart(rfqResponseLine.getDateWorkStart())
-				.dateEnd(rfqResponseLine.getDateWorkComplete())
-				.dateClose(rfqResponseLine.getDateResponse())
+				.dateStart(TimeUtil.asLocalDate(rfqResponseLine.getDateWorkStart()))
+				.dateEnd(TimeUtil.asLocalDate(rfqResponseLine.getDateWorkComplete()))
+				.dateClose(TimeUtil.asLocalDate(rfqResponseLine.getDateResponse()))
 				.bpartner_uuid(SyncUUIDs.toUUIDString(rfqResponseLine.getC_BPartner()))
 				.product(syncProduct)
 				.qtyRequested(rfqResponseLine.getQtyRequiered())
@@ -621,7 +621,7 @@ public class SyncObjectsFactory
 					.bpartner_uuid(bpartner_uuid)
 					.contractLine_uuid(contractLine_uuid)
 					.product_uuid(product_uuid)
-					.day(rfqResponseLineQty.getDatePromised())
+					.day(TimeUtil.asLocalDate(rfqResponseLineQty.getDatePromised()))
 					.qty(rfqResponseLineQty.getQtyPromised())
 					.build();
 			plannedSyncProductSupplies.add(syncProductSupply);

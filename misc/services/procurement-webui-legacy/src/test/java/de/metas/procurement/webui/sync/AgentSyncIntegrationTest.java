@@ -45,6 +45,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -128,8 +129,8 @@ public class AgentSyncIntegrationTest
 	@Autowired
 	ProductSupplyRepository productSuppliesRepo;
 
-	private final Date contractDateFrom = DateUtils.toDayDate(2015, 04, 01);
-	private final Date contractDateTo = DateUtils.toDayDate(2016, 03, 31);
+	private final LocalDate contractDateFrom = LocalDate.of(2015, 04, 01);
+	private final LocalDate contractDateTo = LocalDate.of(2016, 03, 31);
 
 	@Test
 	public void test_ImportContracts_ReportQty()

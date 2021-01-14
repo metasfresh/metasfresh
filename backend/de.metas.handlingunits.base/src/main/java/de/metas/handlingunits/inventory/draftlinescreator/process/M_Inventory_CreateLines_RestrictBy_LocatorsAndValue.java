@@ -1,12 +1,5 @@
 package de.metas.handlingunits.inventory.draftlinescreator.process;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.util.TimeUtil;
-
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
@@ -15,6 +8,12 @@ import de.metas.organization.IOrgDAO;
 import de.metas.process.Param;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 /*
  * #%L
@@ -49,6 +48,9 @@ public class M_Inventory_CreateLines_RestrictBy_LocatorsAndValue extends DraftIn
 	@Param(parameterName = "MaxNumberOfLocators")
 	private int maxLocators;
 
+	@Param(parameterName = "OnlyStockedProducts")
+	private boolean onlyStockedProducts;
+
 	@Override
 	protected LeastRecentTransactionStrategy createStrategy(@NonNull final Inventory inventory)
 	{
@@ -59,6 +61,7 @@ public class M_Inventory_CreateLines_RestrictBy_LocatorsAndValue extends DraftIn
 				.maxLocators(maxLocators)
 				.minimumPrice(minimumPrice)
 				.movementDate(movementDate)
+				.onlyStockedProducts(onlyStockedProducts)
 				.huForInventoryLineFactory(huForInventoryLineFactory)
 				.build();
 	}

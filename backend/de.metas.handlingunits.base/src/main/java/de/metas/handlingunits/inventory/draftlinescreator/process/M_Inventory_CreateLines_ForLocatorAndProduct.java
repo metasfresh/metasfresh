@@ -46,6 +46,9 @@ public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventory
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID)
 	private int productId;
 
+	@Param(parameterName = "OnlyStockedProducts")
+	private boolean onlyStockedProducts;
+
 	@Override
 	protected LocatorAndProductStrategy createStrategy(@NonNull final Inventory inventory)
 	{
@@ -55,6 +58,7 @@ public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventory
 				.warehouseId(warehouseId)
 				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, locatorId))
 				.productId(ProductId.ofRepoIdOrNull(productId))
+				.onlyStockedProducts(onlyStockedProducts)
 				.huForInventoryLineFactory(huForInventoryLineFactory)
 				.build();
 	}

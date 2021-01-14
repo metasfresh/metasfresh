@@ -136,7 +136,7 @@ public class ServerSyncService implements IServerSyncService
 	 *
 	 * @param callback instance whose <code>run()</code> method shall be executed after the sync, also if the sync failed.
 	 */
-	public void syncAllAsync(final Runnable callback)
+	public void syncAllAsync(@Nullable final Runnable callback)
 	{
 		final SyncAllRequest request = SyncAllRequest.of(callback);
 		logger.debug("Enqueuing: {}", request);
@@ -272,7 +272,7 @@ public class ServerSyncService implements IServerSyncService
 					.bpartner_uuid(productSupply.getBpartner().getUuid())
 					.contractLine_uuid(productSupply.getContractLine() == null ? null : productSupply.getContractLine().getUuid())
 					.product_uuid(productSupply.getProduct().getUuid())
-					.day(productSupply.getDay())
+					.day(DateUtils.toLocalDate(productSupply.getDay()))
 					.qty(productSupply.getQty())
 					.version(productSupply.getVersion())
 					.syncConfirmationId(productSupply.getSyncConfirmId())
@@ -351,7 +351,7 @@ public class ServerSyncService implements IServerSyncService
 					.version(weeklySupply.getVersion())
 					.bpartner_uuid(weeklySupply.getBpartner().getUuid())
 					.product_uuid(weeklySupply.getProduct().getUuid())
-					.weekDay(weeklySupply.getDay())
+					.weekDay(DateUtils.toLocalDate(weeklySupply.getDay()))
 					.trend(weeklySupply.getTrend())
 					.syncConfirmationId(weeklySupply.getSyncConfirmId())
 					.build();
@@ -375,7 +375,7 @@ public class ServerSyncService implements IServerSyncService
 			return new SyncAllRequest(callback);
 		}
 
-		public static SyncAllRequest of(final Runnable callback)
+		public static SyncAllRequest of(@Nullable final Runnable callback)
 		{
 			return new SyncAllRequest(callback);
 		}
@@ -466,7 +466,7 @@ public class ServerSyncService implements IServerSyncService
 		return SyncRfQQtyChangeEvent.builder()
 				.uuid(rfqQtyReport.getUuid())
 				.rfq_uuid(rfq.getUuid())
-				.day(rfqQtyReport.getDatePromised())
+				.day(DateUtils.toLocalDate(rfqQtyReport.getDatePromised()))
 				.product_uuid(product.getUuid())
 				.qty(rfqQtyReport.getQtyPromised())
 				.syncConfirmationId(rfqQtyReport.getSyncConfirmId())

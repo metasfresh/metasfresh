@@ -21,6 +21,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -45,6 +47,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Currency_Acct;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
@@ -135,7 +138,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
-	
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -247,7 +250,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return deleteCount;
 	}
 
-	/** Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense. */
+	/**
+	 * Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense.
+	 */
 	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
 	{
 		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
@@ -433,8 +438,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.endOrderBy()
-		//
-		;
+				//
+				;
 	}
 
 	@Override
@@ -581,15 +586,15 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidates(@NonNull final InvoiceId invoiceId)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-						//collect related invoice line alloc
-						.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
-						.addOnlyActiveRecordsFilter()
-						//collect related invoice candidates
-				        .andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
-						.addOnlyActiveRecordsFilter()
-						.create()
-				        .list();
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				//collect related invoice line alloc
+				.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
+				.addOnlyActiveRecordsFilter()
+				//collect related invoice candidates
+				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
 	}
 
 	@Override
@@ -603,7 +608,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.iterate(I_C_Invoice_Candidate.class);
 	}
 
-	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveForHeaderAggregationKeyQuery(final Properties ctx, final String headerAggregationKey, final String trxName)
+	private IQueryBuilder<I_C_Invoice_Candidate> retrieveForHeaderAggregationKeyQuery(
+			@CacheCtx final Properties ctx,
+			final String headerAggregationKey,
+			@CacheTrx final String trxName)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
@@ -753,7 +761,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCandsWithSameReference(final I_C_Invoice_Candidate ic)
+	public final void invalidateCandsWithSameTableReference(final I_C_Invoice_Candidate ic)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(TableRecordReference.ofReferenced(ic))
 				// Not already processed
@@ -860,9 +868,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(pinstanceId)
-		// Invalidate no matter if Processed or not
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
-		;
+				// Invalidate no matter if Processed or not
+				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
+				;
 
 		invalidateCandsFor(icQueryBuilder);
 		// logger.info("Invalidated {} C_Invoice_Candidates for AD_PInstance_ID={}", new Object[] { count, adPInstanceId });
@@ -1280,10 +1288,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	 * <p>
 	 * If there were any changes, those invoice candidates will be invalidated.
 	 *
-	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
-	 * @param value value to set (you can also use {@link ModelColumnNameValue})
+	 * @param columnName       {@link I_C_Invoice_Candidate}'s column to update
+	 * @param value            value to set (you can also use {@link ModelColumnNameValue})
 	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
-	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
+	 * @param selectionId      invoice candidates selection (AD_PInstance_ID)
 	 */
 	private final <T> void updateColumnForSelection(
 			@NonNull final String columnName,
@@ -1297,7 +1305,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.setOnlySelection(selectionId)
 				.addNotEqualsFilter(columnName, value) // skip those which have our value set
-		;
+				;
 		if (updateOnlyIfNull)
 		{
 			selectionQueryBuilder.addEqualsFilter(columnName, null);
