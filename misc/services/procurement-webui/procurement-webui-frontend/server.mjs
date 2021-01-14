@@ -1,5 +1,5 @@
-const express = require('express');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+import express from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const app = express();
 
@@ -14,3 +14,4 @@ if (typeof process.env.DEV_SERVER === 'undefined') {
   app.use('/rest', createProxyMiddleware({ target: process.env.DEV_SERVER, changeOrigin: true }));
   app.listen(5000); // this has to match the proxy set in the package.json !
 }
+export default app;

@@ -44,7 +44,7 @@
     "workbox-streams": "^5.1.3"
   },
   "scripts": {
-    "proxy-up": "node server.js&",
+    "proxy-up": "node server.mjs&",
     "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet",
     "lint-fix": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
     "start": "yarn run proxy-up && react-scripts start",
