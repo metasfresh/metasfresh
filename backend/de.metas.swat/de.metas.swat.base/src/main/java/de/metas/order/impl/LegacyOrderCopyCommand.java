@@ -1,29 +1,64 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
+import de.metas.document.ICopyHandlerBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MOrder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.document.ICopyHandlerBL;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderPA;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
 
-public class OrderPA implements IOrderPA
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+@Deprecated
+public class LegacyOrderCopyCommand
 {
-	private static final Logger logger = LogManager.getLogger(OrderPA.class);
+	private static final Logger logger = LogManager.getLogger(LegacyOrderCopyCommand.class);
 
-	@Override
-	public I_C_Order copyOrder(
-			final I_C_Order originalOrder,
+	private final I_C_Order originalOrder;
+	private final boolean copyLines;
+	private final String trxName;
+
+	@Builder
+	private LegacyOrderCopyCommand(
+			@NonNull final I_C_Order originalOrder,
 			final boolean copyLines,
-			final String trxName)
+			@Nullable final String trxName)
 	{
+		this.originalOrder = originalOrder;
+		this.copyLines = copyLines;
+		this.trxName = trxName;
+	}
 
+	public I_C_Order execute()
+	{
 		final MOrder newOrder = new MOrder(Env.getCtx(), 0, trxName);
 
 		Services.get(ICopyHandlerBL.class).copyPreliminaryValues(originalOrder, newOrder);
