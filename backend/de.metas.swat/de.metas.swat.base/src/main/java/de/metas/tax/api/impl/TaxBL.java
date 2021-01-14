@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 import de.metas.logging.TableRecordMDC;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -78,7 +79,14 @@ import org.slf4j.MDC;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
-	private static final transient Logger log = LogManager.getLogger(TaxBL.class);
+	private static final Logger log = LogManager.getLogger(TaxBL.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
+	@Override
+	public I_C_Tax getTaxById(final TaxId taxId)
+	{
+		return taxDAO.getTaxById(taxId);
+	}
 
 	/**
 	 * Do not attempt to retrieve the C_Tax for an order (i.e invoicing is done at a different time - 1 year - from the order)<br>
@@ -154,7 +162,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// 07814
 		// If we got here, it means that no tax was found to satisfy the conditions
 		// In this case, the Tax_Not_Found placeholder will be returned
-		final I_C_Tax taxNotFound = Services.get(ITaxDAO.class).retrieveNoTaxFound(ctx);
+		final I_C_Tax taxNotFound = taxDAO.retrieveNoTaxFound(ctx);
 		return taxNotFound.getC_Tax_ID();
 	}
 
@@ -284,7 +292,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		log.debug("Org BP: {}", orgBPartner);
 
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
 
 		if (taxDAO.retrieveIsTaxExemptSmallBusiness(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()), billDate))
@@ -479,7 +486,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 		else
 		{
-			return Services.get(ITaxDAO.class).retrieveExemptTax(OrgId.ofRepoId(AD_Org_ID)).getRepoId();
+			return taxDAO.retrieveExemptTax(OrgId.ofRepoId(AD_Org_ID)).getRepoId();
 		}
 	}
 

@@ -38,7 +38,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(de.metas.order.model.interceptor.C_Order.INSTANCE); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order()); // FRESH-348
 
 		//
 		// Elasticsearch indexing
@@ -50,11 +50,5 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 					.triggerOnDelete()
 					.buildAndInstall();
 		}
-	}
-
-	@Override
-	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
-	{
-		calloutsRegistry.registerAnnotatedCallout(de.metas.order.model.interceptor.C_Order.INSTANCE); // FRESH-348
 	}
 }

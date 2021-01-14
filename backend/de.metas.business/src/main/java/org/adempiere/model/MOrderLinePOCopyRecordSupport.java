@@ -1,41 +1,59 @@
 package org.adempiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
-
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.OrderFreightCostsService;
+import de.metas.util.collections.CompositePredicate;
+import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.order.OrderFreightCostsService;
-import de.metas.util.collections.CompositePredicate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
+	private static final String DYNATTR_OrderCompensationGroupIdsMap = "OrderCompensationGroupIdsMap";
+
 	/**
 	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
 	 */
-	private static final CompositePredicate<I_C_OrderLine> skipPredicates = new CompositePredicate<>();
-	private static final String DYNATTR_OrderCompensationGroupIdsMap = "OrderCompensationGroupIdsMap";
+	private static final CompositePredicate<I_C_OrderLine> skipPredicates = new CompositePredicate<I_C_OrderLine>()
+			.addPredicate(orderLine -> isNotFreightCost(orderLine));
+
+	private static boolean isNotFreightCost(final @NonNull I_C_OrderLine orderLine)
+	{
+		final OrderFreightCostsService ordersFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
+		return !ordersFreightCostService.isFreightCostOrderLine(orderLine);
+	}
+
+	/**
+	 * Add a skip filter.
+	 * <p>
+	 * In case given skip filter evaluates the order line as true (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
+	 */
+	public static void addSkipPredicate(final Predicate<I_C_OrderLine> skipPredicate)
+	{
+		skipPredicates.addPredicate(skipPredicate);
+	}
+
+	/**
+	 * @return true if the record shall be copied
+	 */
+	public static boolean isCopyRecord(final I_C_OrderLine orderLine)
+	{
+		return skipPredicates.isEmpty() || skipPredicates.test(orderLine);
+	}
 
 	@Override
 	public void copyRecord(final PO po, final String trxName)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
-
-		//
-		// Exclude freight cost products
-		final OrderFreightCostsService ordersFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
-		if (ordersFreightCostService.isFreightCostOrderLine(orderLine))
-		{
-			return;
-		}
 
 		// Check if we shall skip this record
 		if (!isCopyRecord(orderLine))
@@ -53,10 +71,15 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		final I_C_OrderLine toOrderLine = InterfaceWrapperHelper.create(to, I_C_OrderLine.class);
 		final I_C_OrderLine fromOrderLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
 
+		onOrderLineCopied(toOrderLine, fromOrderLine);
+	}
+
+	private void onOrderLineCopied(final I_C_OrderLine toOrderLine, final I_C_OrderLine fromOrderLine)
+	{
 		toOrderLine.setC_Order_CompensationGroup_ID(getOrCloneOrderCompensationGroup(fromOrderLine.getC_Order_CompensationGroup_ID()));
 	}
 
-	private final int getOrCloneOrderCompensationGroup(final int orderCompensationGroupId)
+	private int getOrCloneOrderCompensationGroup(final int orderCompensationGroupId)
 	{
 		if (orderCompensationGroupId <= 0)
 		{
@@ -85,43 +108,5 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		orderCompensationGroupNew.setPP_Product_BOM_ID(-1); // don't copy the Quotation BOM; another one has to be created
 		InterfaceWrapperHelper.save(orderCompensationGroupNew);
 		return orderCompensationGroupNew.getC_Order_CompensationGroup_ID();
-	}
-
-	/**
-	 * Add a skip filter.
-	 *
-	 * In case given skip filter evaluates the order line as true (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
-	 *
-	 * @param skipPredicate
-	 */
-	public static final void addSkipPredicate(final Predicate<I_C_OrderLine> skipPredicate)
-	{
-		skipPredicates.addPredicate(skipPredicate);
-	}
-
-	/**
-	 *
-	 * @param orderLine
-	 * @return true if the record shall be copied
-	 */
-	private final boolean isCopyRecord(final I_C_OrderLine orderLine)
-	{
-		// If there was no predicate registered
-		// => accept this record
-		if (skipPredicates.isEmpty())
-		{
-			return true;
-		}
-
-		// If skip predicates are advicing us to skip this record
-		// => skip it
-		if (skipPredicates.test(orderLine))
-		{
-			return false;
-		}
-
-		//
-		// Default: accept it
-		return true;
 	}
 }

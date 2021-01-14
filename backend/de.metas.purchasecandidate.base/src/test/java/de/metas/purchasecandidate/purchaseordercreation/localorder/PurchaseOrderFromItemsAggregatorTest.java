@@ -69,6 +69,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 	{
 		private int updatePricesCallCount;
 
+		@Override
 		public void updatePrices(org.compiere.model.I_C_OrderLine orderLine)
 		{
 			// mock IOrderLineBL.updatePrices() because

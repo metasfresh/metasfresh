@@ -36,7 +36,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
@@ -108,7 +107,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 public class OrderBL implements IOrderBL
 {
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -304,9 +303,8 @@ public class OrderBL implements IOrderBL
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
 					.build();
-			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-			final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+			final DocTypeId docTypeId = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
 			if (docTypeId == null)
 			{
 				logger.error("No POO found for {}", docTypeQuery);
@@ -328,9 +326,8 @@ public class OrderBL implements IOrderBL
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build();
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		final DocTypeId docTypeId = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
 		if (docTypeId == null)
 		{
 			logger.error("Not found for {}", docTypeQuery);
@@ -353,8 +350,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void updateDescriptionFromDocTypeTargetId(final I_C_Order order)
 	{
-		final int docTypeId = order.getC_DocTypeTarget_ID();
-		if (docTypeId <= 0)
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+		if (docTypeId == null)
 		{
 			return;
 		}
@@ -366,8 +363,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-
+		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 		if (docType == null)
 		{
 			return;
@@ -942,38 +938,17 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isQuotation(@NonNull final I_C_Order order)
+	public boolean isSalesProposalOrQuotation(@NonNull final I_C_Order order)
 	{
-		final boolean isSOTrx = order.isSOTrx();
-
-		if (!isSOTrx)
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		if (!soTrx.isSales())
 		{
-			// purchase orders are not quotations
+			// only sales orders can be proposals or quotations
 			return false;
 		}
 
-		final I_C_DocType docType = CoalesceUtil.coalesceSuppliers(
-				() -> getDocTypeOrNull(order),
-				() -> getDocTypeTargetOrNull(order));
-		if (docType == null)
-		{
-			return false;
-		}
-
-		if (!(X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType())))
-		{
-			// Quotation must be of BaseType Sales Order
-			return false;
-		}
-
-		final String docSubType = docType.getDocSubType();
-		if (docSubType == null)
-		{
-			// Quotation must have a docSubType
-			return false;
-		}
-
-		return (docSubType.equals(X_C_DocType.DOCSUBTYPE_Proposal) || docSubType.equals(X_C_DocType.DOCSUBTYPE_Quotation));
+		final DocTypeId docTypeId = getDocTypeIdEffective(order);
+		return docTypeBL.isSalesProposalOrQuotation(docTypeId);
 	}
 
 	@Override
@@ -992,7 +967,24 @@ public class OrderBL implements IOrderBL
 			return false;
 		}
 
-		return Services.get(IDocTypeBL.class).isPrepay(docTypeId);
+		return docTypeBL.isPrepay(docTypeId);
+	}
+
+	public DocTypeId getDocTypeIdEffective(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+		if (docTypeId != null)
+		{
+			return docTypeId;
+		}
+
+		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+		if (docTypeTargetId != null)
+		{
+			return docTypeTargetId;
+		}
+
+		throw new AdempiereException("Order has no document type set: " + order);
 	}
 
 	@Override
@@ -1000,15 +992,16 @@ public class OrderBL implements IOrderBL
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		return docTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? docTypeBL.getById(docTypeId)
 				: null;
 	}
 
+	@Nullable
 	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		return docTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? docTypeBL.getById(docTypeId)
 				: null;
 	}
 
@@ -1033,8 +1026,8 @@ public class OrderBL implements IOrderBL
 	@Override
 	public Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(@NonNull final I_C_Order order)
 	{
-		final I_C_DocType docType = docTypeDAO.getById(order.getC_DocType_ID());
-
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
+		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 		if (docType.getR_RequestType_ID() <= 0)
 		{
 			return Optional.empty();

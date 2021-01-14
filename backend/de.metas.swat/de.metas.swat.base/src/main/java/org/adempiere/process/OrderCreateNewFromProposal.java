@@ -6,167 +6,49 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.RecordZoomWindowFinder;
-import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.MDocType;
-import org.compiere.model.MOrder;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import java.sql.Timestamp;
 import java.util.Optional;
 
 public final class OrderCreateNewFromProposal extends JavaProcess implements IProcessPrecondition
 {
-	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
-	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final Optional<AdWindowId> orderWindowId = RecordZoomWindowFinder.findAdWindowId(I_C_Order.Table_Name);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	private MOrder sourceOrder;
+	@Param(parameterName = "C_DocType_ID", mandatory = true)
+	private DocTypeId newOrderDocTypeId;
 
-	private int newOrderDocTypeId;
-
+	@Param(parameterName = "DateOrdered")
 	private Timestamp newOrderDateOrdered;
 
+	@Param(parameterName = "DocumentNo")
 	private String poReference;
 
-	private boolean newOrderClompleteIt = false;
-
-	@Override
-	protected String doIt() throws Exception
-	{
-
-		final I_C_Order newOrder = InterfaceWrapperHelper.create(getCtx(), I_C_Order.class, get_TrxName());
-		final PO to = InterfaceWrapperHelper.getPO(newOrder);
-		PO.copyValues(sourceOrder, to, true);
-
-		orderBL.setDocTypeTargetIdAndUpdateDescription(newOrder, newOrderDocTypeId);
-		newOrder.setC_DocType_ID(newOrderDocTypeId);
-
-		if (newOrderDateOrdered != null)
-		{
-			newOrder.setDateOrdered(newOrderDateOrdered);
-		}
-		if (poReference != null)
-		{
-			newOrder.setPOReference(poReference);
-		}
-
-		newOrder.setRef_Proposal(sourceOrder);
-
-		InterfaceWrapperHelper.save(newOrder);
-
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name);
-		childCRS.setParentPO(to);
-		childCRS.setBase(true);
-		childCRS.copyRecord(sourceOrder, get_TrxName());
-
-		newOrder.setDatePromised(sourceOrder.getDatePromised());
-		newOrder.setPreparationDate(sourceOrder.getPreparationDate());
-		newOrder.setDocStatus(DocStatus.Drafted.getCode());
-		newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
-		InterfaceWrapperHelper.save(newOrder);
-
-		String docAction;
-		if (newOrderClompleteIt)
-		{
-			docAction = IDocument.ACTION_Complete;
-			Services.get(IDocumentBL.class).processEx(newOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-		}
-		else
-		{
-			docAction = IDocument.ACTION_Prepare;
-		}
-
-		newOrder.setDocAction(docAction);
-
-		InterfaceWrapperHelper.save(newOrder);
-
-		sourceOrder.setRef_Order_ID(newOrder.getC_Order_ID());
-		InterfaceWrapperHelper.save(sourceOrder, get_TrxName());
-
-		getResult().setRecordToOpen(
-				TableRecordReference.of(newOrder),
-				orderWindowId.get().getRepoId(), // adWindowId
-				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument,
-				ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB
-		);
-
-		return newOrder.getDocumentNo();
-	}
-
-	@Override
-	protected void prepare()
-	{
-
-		sourceOrder = new MOrder(Env.getCtx(), getRecord_ID(), null);
-
-		//
-		// check if we are invoked with a legal doc type
-		final MDocType sourceOrderDocType = MDocType.get(Env.getCtx(),
-				sourceOrder.getC_DocTypeTarget_ID());
-
-		if (!(MDocType.DOCBASETYPE_SalesOrder.equals(sourceOrderDocType
-				.getDocBaseType()) //
-				&& MDocType.DOCSUBTYPE_Proposal.equals(sourceOrderDocType
-				.getDocSubType())//
-		))
-		{
-			throw new IllegalStateException(
-					"This process may be started for proposals only");
-		}
-
-		final ProcessInfoParameter[] para = getParametersAsArray();
-
-		for (ProcessInfoParameter element : para)
-		{
-			String name = element.getParameterName();
-			if (element.getParameter() == null)
-			{
-				// do nothing
-			}
-			else if (name.equals("C_DocType_ID"))
-			{
-				newOrderDocTypeId = element.getParameterAsInt();
-			}
-			else if (name.equals("DateOrdered"))
-			{
-				newOrderDateOrdered = element.getParameterAsTimestamp();
-			}
-			else if (name.equals("DocumentNo"))
-			{
-				poReference = element.getParameterAsString();
-			}
-			else if (name.equals("CompleteIt"))
-			{
-				newOrderClompleteIt = element.getParameterAsBoolean();
-			}
-			else
-			{
-				log.error("Unknown Parameter: {}", name);
-			}
-		}
-	}
+	@Param(parameterName = "CompleteIt")
+	private boolean completeIt;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -182,9 +64,13 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final int orderId = context.getSingleSelectedRecordId();
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderId));
+		final OrderId orderId = OrderId.ofRepoId(context.getSingleSelectedRecordId());
+		final I_C_Order order = orderDAO.getById(orderId);
+		return checkPreconditionsApplicable(order);
+	}
 
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull I_C_Order order)
+	{
 		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(order.getDocStatus());
 		if (!quotationDocStatus.isCompleted())
 		{
@@ -207,5 +93,129 @@ public final class OrderCreateNewFromProposal extends JavaProcess implements IPr
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
+	protected String doIt()
+	{
+		final OrderId fromProposalId = OrderId.ofRepoId(getRecord_ID());
+		final I_C_Order fromProposal = orderBL.getById(fromProposalId);
+		checkPreconditionsApplicable(fromProposal).throwExceptionIfRejected();
+
+		final I_C_Order newSalesOrder = copyProposalHeader(fromProposal);
+		copyProposalLines(fromProposal, newSalesOrder);
+		completeSalesOrderIfNeeded(newSalesOrder);
+
+		openOrder(newSalesOrder);
+
+		return newSalesOrder.getDocumentNo();
+	}
+
+	private I_C_Order copyProposalHeader(@NonNull final I_C_Order fromProposal)
+	{
+		final I_C_Order newSalesOrder = InterfaceWrapperHelper.copy()
+				.setFrom(fromProposal)
+				.setSkipCalculatedColumns(true)
+				.copyToNew(I_C_Order.class);
+
+		orderBL.setDocTypeTargetIdAndUpdateDescription(newSalesOrder, newOrderDocTypeId);
+		newSalesOrder.setC_DocType_ID(newOrderDocTypeId.getRepoId());
+
+		if (newOrderDateOrdered != null)
+		{
+			newSalesOrder.setDateOrdered(newOrderDateOrdered);
+		}
+		if (!Check.isBlank(poReference))
+		{
+			newSalesOrder.setPOReference(poReference);
+		}
+
+		newSalesOrder.setDatePromised(fromProposal.getDatePromised());
+		newSalesOrder.setPreparationDate(fromProposal.getPreparationDate());
+		newSalesOrder.setDocStatus(DocStatus.Drafted.getCode());
+		newSalesOrder.setDocAction(X_C_Order.DOCACTION_Complete);
+		newSalesOrder.setRef_Proposal_ID(fromProposal.getC_Order_ID());
+		orderDAO.save(newSalesOrder);
+
+		fromProposal.setRef_Order_ID(newSalesOrder.getC_Order_ID());
+		orderDAO.save(fromProposal);
+
+		return newSalesOrder;
+	}
+
+	private void copyProposalLines(
+			@NonNull final I_C_Order fromProposal,
+			@NonNull final I_C_Order newSalesOrder)
+	{
+		CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name)
+				.setParentPO(InterfaceWrapperHelper.getPO(newSalesOrder))
+				.addChildRecordCopiedListener(this::onRecordCopied)
+				.copyRecord(InterfaceWrapperHelper.getPO(fromProposal), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void onRecordCopied(@NonNull final PO to, @NonNull final PO from)
+	{
+		if (InterfaceWrapperHelper.isInstanceOf(to, I_C_OrderLine.class)
+				&& InterfaceWrapperHelper.isInstanceOf(from, I_C_OrderLine.class))
+		{
+			final I_C_OrderLine newSalesOrderLine = InterfaceWrapperHelper.create(to, I_C_OrderLine.class);
+			final I_C_OrderLine fromProposalLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
+
+			newSalesOrderLine.setRef_ProposalLine_ID(fromProposalLine.getC_OrderLine_ID());
+			orderDAO.save(newSalesOrderLine);
+		}
+	}
+
+	// private void copyProposalLine(
+	// 		@NonNull final I_C_OrderLine fromProposalLine,
+	// 		@NonNull final OrderId newSalesOrderId)
+	// {
+	// 	if (!MOrderLinePOCopyRecordSupport.isCopyRecord(fromProposalLine))
+	// 	{
+	// 		return;
+	// 	}
+	//
+	// 	final I_C_OrderLine newSalesOrderLine = InterfaceWrapperHelper.copy()
+	// 			.setFrom(fromProposalLine)
+	// 			.setSkipCalculatedColumns(true)
+	// 			.copyToNew(I_C_OrderLine.class);
+	// 	newSalesOrderLine.setC_Order_ID(newSalesOrderId.getRepoId());
+	// 	newSalesOrderLine.setRef_ProposalLine_ID(fromProposalLine.getC_OrderLine_ID());
+	// 	orderDAO.save(newSalesOrderLine);
+	//
+	// 	fromProposalLine.setRef_OrderLine_ID(newSalesOrderLine.getC_OrderLine_ID());
+	// 	orderDAO.save(fromProposalLine);
+	// }
+
+	private void completeSalesOrderIfNeeded(final I_C_Order newSalesOrder)
+	{
+		if (completeIt)
+		{
+			documentBL.processEx(newSalesOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		}
+		else
+		{
+			newSalesOrder.setDocAction(IDocument.ACTION_Prepare);
+			orderDAO.save(newSalesOrder);
+		}
+	}
+
+	private void openOrder(@NonNull final I_C_Order order)
+	{
+		final AdWindowId orderWindowId = RecordZoomWindowFinder
+				.findAdWindowId(TableRecordReference.of(order))
+				.orElse(null);
+
+		if (orderWindowId == null)
+		{
+			log.warn("Skip opening {} because no window found for it", order);
+			return;
+		}
+
+		getResult().setRecordToOpen(
+				TableRecordReference.of(order),
+				orderWindowId.getRepoId(),
+				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument,
+				ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB);
 	}
 }

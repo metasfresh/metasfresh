@@ -1349,7 +1349,7 @@ public abstract class PO
 	 * @param columnName column
 	 * @param value value
 	 */
-	public final void set_CustomColumn(final String columnName, final Object value)
+	public final void set_CustomColumn(final String columnName, @Nullable final Object value)
 	{
 		set_CustomColumnReturningBoolean(columnName, value);
 	}	// set_CustomColumn
@@ -5011,7 +5011,7 @@ public abstract class PO
 	 * @param name
 	 * @param value
 	 */
-	public final Object setDynAttribute(final String name, final Object value)
+	public final Object setDynAttribute(final String name, @Nullable final Object value)
 	{
 		if (m_dynAttrs == null)
 		{
