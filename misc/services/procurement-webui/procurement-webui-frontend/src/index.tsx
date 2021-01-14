@@ -23,8 +23,9 @@ process.env.DEV_SERVER === 'undefined' && loadMirageInDev();
 // get the messages first for i18n
 getMessages().then((response) => {
   if (response.status === 200 && response.data) {
-    const { language } = response.data;
+    const { language, messages } = response.data;
     store.i18n.changeLang(language);
+    store.i18n.changeMessages(messages);
   }
 });
 
