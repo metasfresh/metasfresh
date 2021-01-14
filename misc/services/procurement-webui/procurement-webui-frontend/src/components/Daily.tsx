@@ -16,7 +16,7 @@ export default class DailyView extends Component<Props> {
     const { store } = this.props;
 
     // TODO: Use current date as it's only fired on init
-    store.fetchDailyReport('12-01-2020');
+    store.fetchDailyReport('2020-01-12');
   }
 
   render(): ReactElement {

@@ -11,5 +11,6 @@ if (typeof process.env.DEV_SERVER === 'undefined') {
   );
 } else {
   app.use('/api', createProxyMiddleware({ target: process.env.DEV_SERVER, changeOrigin: true }));
+  app.use('/rest', createProxyMiddleware({ target: process.env.DEV_SERVER, changeOrigin: true }));
   app.listen(5000); // this has to match the proxy set in the package.json !
 }
