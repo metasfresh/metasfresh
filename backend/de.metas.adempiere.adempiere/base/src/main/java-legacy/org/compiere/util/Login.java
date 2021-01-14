@@ -274,7 +274,7 @@ public class Login
 		//
 		if (roles.isEmpty())
 		{
-			throw new AdempiereException("No roles").markAsUserValidationError(); // TODO: specific exception
+			throw new AdempiereException("@NoRoles@").markAsUserValidationError(); 
 		}
 
 		log.debug("User={}, roles={}", username, roles);
