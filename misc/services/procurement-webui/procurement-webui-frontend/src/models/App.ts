@@ -10,6 +10,7 @@ export const App = types
     countUnconfirmed: types.number,
     email: types.string,
     dayCaption: types.string,
+    week: types.string,
     weekCaption: types.string,
   })
   .actions((self) => {

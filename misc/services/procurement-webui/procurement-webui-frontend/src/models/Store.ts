@@ -53,6 +53,7 @@ let initialState = Store.create({
     countUnconfirmed: 0,
     email: '',
     dayCaption: '',
+    week: '',
     weekCaption: '',
   },
 });
