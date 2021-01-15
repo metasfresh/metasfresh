@@ -6,6 +6,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.config.ConfigConstants;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 import de.metas.util.Check;
@@ -69,8 +70,6 @@ import java.util.stream.Collectors;
 public class WebRestApiApplication
 {
 	private static final String SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE = "de.metas.ui.web.spring.profiles.active";
-
-	public static final String BEANNAME_WebuiTaskScheduler = "webuiTaskScheduler";
 
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -165,7 +164,7 @@ public class WebRestApiApplication
 		};
 	}
 
-	@Bean(BEANNAME_WebuiTaskScheduler)
+	@Bean(ConfigConstants.BEANNAME_WebuiTaskScheduler)
 	public TaskScheduler webuiTaskScheduler()
 	{
 		final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();

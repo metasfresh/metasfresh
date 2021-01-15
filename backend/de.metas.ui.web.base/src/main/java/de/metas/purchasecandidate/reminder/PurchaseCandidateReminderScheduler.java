@@ -1,32 +1,10 @@
 package de.metas.purchasecandidate.reminder;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledFuture;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -38,7 +16,7 @@ import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.purchasecandidate.PurchaseCandidateReminder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.ui.web.WebRestApiApplication;
+import de.metas.ui.web.config.ConfigConstants;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -50,6 +28,26 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.stereotype.Component;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ScheduledFuture;
 
 /*
  * #%L
@@ -95,7 +93,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	private NextDispatch nextDispatch;
 
 	public PurchaseCandidateReminderScheduler(
-			@Qualifier(WebRestApiApplication.BEANNAME_WebuiTaskScheduler) @NonNull final TaskScheduler taskScheduler,
+			@Qualifier(ConfigConstants.BEANNAME_WebuiTaskScheduler) @NonNull final TaskScheduler taskScheduler,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final IBPartnerBL bpartnersService)
