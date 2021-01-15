@@ -2,6 +2,7 @@ import React, { ReactElement } from 'react';
 import Product from './Product';
 import { observer, inject } from 'mobx-react';
 import { RootInstance } from '../models/Store';
+import { getSnapshot } from 'mobx-state-tree';
 interface Props {
   store?: RootInstance;
 }
@@ -9,32 +10,23 @@ interface Props {
 @observer
 class ProductList extends React.Component<Props> {
   render(): ReactElement {
+    const { store } = this.props;
+    const products = getSnapshot(store.dailyProducts.getProducts);
+
     return (
       <div className="mt-4">
-        <Product
-          id={`prodId1`}
-          name={`Batavia`}
-          packType={`G2 x 6Stk`}
-          itemsNo={0}
-          isEdited={false}
-          editedItemsNo={0}
-        />
-        <Product
-          id={`prodId2`}
-          name={`Broccoli`}
-          packType={`G2 x 6 Kg`}
-          itemsNo={0}
-          isEdited={false}
-          editedItemsNo={0}
-        />
-        <Product
-          id={`prodId3`}
-          name={`Lauch grun`}
-          packType={`G2 x 7 Kg`}
-          itemsNo={0}
-          isEdited={false}
-          editedItemsNo={0}
-        />
+        {products &&
+          products.map((product) => (
+            <Product
+              key={product.productId}
+              id={product.productId}
+              productName={product.productName}
+              packingInfo={product.packingInfo}
+              qty={product.qty}
+              isEdited={product.isEdited}
+              editedItemsNo={0}
+            />
+          ))}
       </div>
     );
   }
