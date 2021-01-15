@@ -65,7 +65,7 @@ public interface IPPOrderBL extends ISingletonService
 	void setDocType(
 			I_PP_Order ppOrder,
 			String docBaseType,
-			String docSubType);
+			@Nullable String docSubType);
 
 	void closeOrder(PPOrderId ppOrderId);
 
