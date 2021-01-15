@@ -105,7 +105,7 @@ public class OrderFactory
 		{
 			if (orderLineBuilders.isEmpty())
 			{
-				throw new AdempiereException("no lines");
+				throw new AdempiereException("Cannot create an order without lines");
 			}
 
 			createDraftOrderHeader();
