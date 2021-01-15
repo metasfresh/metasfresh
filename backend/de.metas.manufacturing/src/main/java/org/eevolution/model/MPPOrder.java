@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
- * Contributor(s): Victor Perez www.e-evolution.com *
- * Teo Sarca, www.arhipac.ro *
- *****************************************************************************/
 package org.eevolution.model;
 
 /*
@@ -38,16 +22,18 @@ package org.eevolution.model;
  */
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import org.eevolution.api.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.report.DocumentReportService;
@@ -57,18 +43,19 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
@@ -91,6 +78,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
 
+	@SuppressWarnings("unused")
 	public MPPOrder(
 			final Properties ctx,
 			final int PP_Order_ID,
@@ -103,6 +91,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MPPOrder(
 			final Properties ctx,
 			final ResultSet rs,
@@ -509,8 +498,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String getDocumentInfo()
 	{
-		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		return dt.getName() + " " + getDocumentNo();
+		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(getC_DocType_ID());
+		final ITranslatableString docTypeName = docTypeBL.getNameById(docTypeId);
+		return docTypeName.translate(Env.getADLanguageOrBaseLanguage()) + " " + getDocumentNo();
 	}
 
 	private PPOrderRouting getOrderRouting()
@@ -522,18 +514,17 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("MPPOrder[ID=").append(get_ID())
-				.append("-DocumentNo=").append(getDocumentNo())
-				.append(",IsSOTrx=").append(isSOTrx())
-				.append(",C_DocType_ID=").append(getC_DocType_ID())
-				.append("]");
-		return sb.toString();
+		return "MPPOrder[ID=" + get_ID()
+				+ "-DocumentNo=" + getDocumentNo()
+				+ ",IsSOTrx=" + isSOTrx()
+				+ ",C_DocType_ID=" + getC_DocType_ID()
+				+ "]";
 	}
 
 	/**
 	 * Auto report the first Activity and Sub contracting if are Milestone Activity
 	 */
-	private final void autoReportActivities()
+	private void autoReportActivities()
 	{
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
