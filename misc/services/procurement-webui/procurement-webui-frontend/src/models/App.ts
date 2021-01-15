@@ -44,9 +44,13 @@ export const App = types
     });
 
     const getSession = flow(function* getSession() {
-      const response = yield getUserSession();
-
-      setInitialData(response.data);
+      let response;
+      try {
+        response = yield getUserSession();
+        setInitialData(response.data);
+      } catch (e) {
+        // 401 (Unauthorized)
+      }
 
       return response;
     });
