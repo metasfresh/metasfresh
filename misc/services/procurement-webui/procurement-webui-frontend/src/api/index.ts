@@ -87,6 +87,10 @@ export function fetchDailyReport(date: string): Promise<AxiosResponse> {
   return axios.get(`/rest/dailyReport/${date}`);
 }
 
+export function fetchWeeklyReport(weekYear: string): Promise<AxiosResponse> {
+  return axios.get(`/rest/weeklyReport/${weekYear}`);
+}
+
 export function confirmDataEntry(): Promise<AxiosResponse> {
   return axios.post(`/rest/session/confirmDataEntry`);
 }
