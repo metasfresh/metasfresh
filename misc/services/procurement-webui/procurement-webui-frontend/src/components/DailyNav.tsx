@@ -21,6 +21,7 @@ class DailyNav extends React.Component<Props> {
     dailyreport.then((response) => {
       store.day.changeCaption(response.data.dayCaption);
       store.day.changeCurrentDay(day);
+      store.dailyProducts.updateProductList(response.data.products);
     });
   };
 

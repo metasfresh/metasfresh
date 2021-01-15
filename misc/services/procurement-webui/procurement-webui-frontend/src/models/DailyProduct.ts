@@ -7,7 +7,7 @@ export const DailyProduct = types
     productId: types.string,
     productName: types.string,
     qty: types.number,
-    isEdited: types.boolean,
+    isEdited: types.optional(types.boolean, false),
   })
   .actions((self) => ({
     changeConfirmation(newConf: boolean) {

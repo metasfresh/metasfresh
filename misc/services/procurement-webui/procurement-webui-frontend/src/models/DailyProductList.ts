@@ -1,18 +1,19 @@
-import { types } from 'mobx-state-tree';
+import { types, cast, SnapshotOrInstance } from 'mobx-state-tree';
 
 import { DailyProduct } from './DailyProduct';
+
 export const DailyProductList = types
   .model({
-    list: types.array(DailyProduct),
+    products: types.optional(types.array(DailyProduct), []),
   })
   .actions((self) => ({
-    updateProductList(newList: any) {
-      self.list = newList;
+    updateProductList(newList: SnapshotOrInstance<typeof self.products>) {
+      self.products = cast(newList);
     },
   }))
   .views((self) => ({
     get getProducts() {
-      return self.list;
+      return self.products;
     },
   }));
 
