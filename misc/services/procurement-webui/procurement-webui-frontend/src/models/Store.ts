@@ -1,7 +1,7 @@
 import { useContext, createContext } from 'react';
 import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
 
-import { fetchDailyReport, getUserSession } from '../api';
+import { fetchDailyReport } from '../api';
 import { formDate } from '../utils/date';
 import { i18n } from './i18n';
 
@@ -27,15 +27,6 @@ export const Store = types
 
         self.navigation.setViewName(response.data.dayCaption);
         // TODO: Do stuff for daily report
-      } catch (error) {
-        console.error('Failed to fetch', error);
-      }
-    }),
-    getUserSession: flow(function* getSession() {
-      try {
-        const response = yield getUserSession();
-
-        self.app.setInitialData(response.data);
       } catch (error) {
         console.error('Failed to fetch', error);
       }

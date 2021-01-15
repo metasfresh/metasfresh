@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
+
 import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
 
@@ -11,17 +12,24 @@ interface Props {
 const Header: FunctionComponent<Props> = inject('store')(
   observer(
     ({ store }): ReactElement => {
+      const history = useHistory();
       const location = useLocation();
       let fakeAligner = null;
       let link = null;
+
+      const logOut = () => {
+        store.app.logOut().then(() => {
+          history.push('/login');
+        });
+      };
 
       if (location.pathname === '/') {
         fakeAligner = <div className="header-aligner" />;
         link = (
           <div className="logout-link">
-            <Link to={{ pathname: '/logout' }} className="button is-success">
+            <a onClick={logOut} className="button is-success">
               {translate('Logout.caption')}
-            </Link>
+            </a>
           </div>
         );
       }

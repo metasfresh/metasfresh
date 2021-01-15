@@ -74,6 +74,10 @@ export function loadMirageInDev(): void {
             weekCaption: 'Week',
           };
         });
+
+        this.post('/session/confirmDataEntry', () => {
+          return {};
+        });
       },
     });
   }
@@ -81,6 +85,10 @@ export function loadMirageInDev(): void {
 
 export function fetchDailyReport(date: string): Promise<AxiosResponse> {
   return axios.get(`/rest/dailyReport/${date}`);
+}
+
+export function confirmDataEntry(): Promise<AxiosResponse> {
+  return axios.post(`/rest/session/confirmDataEntry`);
 }
 
 export function getMessages(): Promise<AxiosResponse> {
@@ -96,6 +104,7 @@ export function loginRequest(username: string, password: string): Promise<AxiosR
     email: username,
     password,
   });
+}
 
 export function getUserSession(): Promise<AxiosResponse> {
   return axios.get(`/rest/session`);

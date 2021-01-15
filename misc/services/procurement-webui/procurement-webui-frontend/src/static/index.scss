@@ -6,7 +6,7 @@
 }
 
 body {
-  color: #fff;
+  color: white;
   line-height: 1.5;
 }
 
@@ -121,13 +121,22 @@ footer {
 }
 
 .back-bottom-nav {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid $base-border;
 }
 
 .icons-bottom-nav {
   .link {
     width: 20%;
     align-items: center;
-    border: 1px solid #ddd;
+    border: 1px solid $base-border;
   }
+}
+
+.unconfirmed-count {
+  position: absolute;
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background-color: $danger-red;
 }

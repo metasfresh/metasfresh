@@ -2,6 +2,8 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import classnames from 'classnames';
+
+import { confirmDataEntry } from '../api';
 import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
 
@@ -73,7 +75,11 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             <i className="fas fa-plus" />
             <span className="link-text">{translate('DailyReportingView.addProductButton')}</span>
           </Link>,
-          <a className="link is-flex is-flex-direction-column is-justify-content-center is-relative" key="2">
+          <a
+            className="link is-flex is-flex-direction-column is-justify-content-center is-relative"
+            key="2"
+            onClick={confirmDataEntry}
+          >
             <i className="fas fa-check" />
             <span className="link-text">{translate('DailyReportingView.sendButton')}</span>
             {countUnconfirmed && <span className="unconfirmed-count">{countUnconfirmed}</span>}

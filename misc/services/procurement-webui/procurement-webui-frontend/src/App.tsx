@@ -4,6 +4,7 @@ import {
   Route, 
   Switch, 
   BrowserRouter,
+  Redirect,
 } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 
@@ -19,8 +20,12 @@ import Info from './components/Info';
 import RfQ from './components/RfQ';
 import ProductAdd from './components/ProductAdd';
 
-interface AppProps {
+interface IProps {
   store?: RootInstance;
+}
+
+interface IState {
+  loggedIn: boolean;
 }
 
 const routes = [
@@ -77,26 +82,46 @@ class Index extends Component {
   }
 }
 
+function PrivateRoute({ loggedIn, ...rest }) {
+  return (
+    <Route
+      {...rest}
+      render={() =>
+        loggedIn ? (
+            <Index />
+        ) : (
+          <Redirect
+            to={{
+              pathname: "/login",
+            }}
+          />
+        )
+      }
+    />
+  );
+}
+
 @inject('store')
 @observer
-class App extends React.Component<AppProps> {
-  componentDidMount() {
-    const { store } = this.props;
+class App extends React.Component<IProps, IState> {
+  constructor(props) {
+    super(props);
 
-    store.getUserSession();
+    const { store } = props;
+
+    store.app.getUserSession()
   }
 
   render() {
+    const { loggedIn } = this.props.store.app;
+
     return(
       <BrowserRouter>
         <>
           <Switch>
-            <Route
-              path="/login"
-              component={({ location }) => (
-                <Login />
-              )}
-            />
+            <Route exact path="/login">
+              {loggedIn ? <Redirect to="/" /> : <Login />}
+            </Route>
             <Route
               path="/forgottenPassword"
               component={({ location }) => (
@@ -109,7 +134,7 @@ class App extends React.Component<AppProps> {
                 <Login splat={location.pathname.replace('/', '')} />
               )}
             />
-            <Route path="/" component={Index} />
+            <PrivateRoute path="/" loggedIn={loggedIn} />
           </Switch>
         </>
       </BrowserRouter>
