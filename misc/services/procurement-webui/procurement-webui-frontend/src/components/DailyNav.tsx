@@ -13,13 +13,15 @@ interface Props {
 class DailyNav extends React.Component<Props> {
   updateCurrentDay = (to: string): void => {
     const { store } = this.props;
-    const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(store.day.currentDay), to });
+    const { day } = formDate({ lang: 'de_DE', currentDay: new Date(store.day.currentDay), to });
 
     // fetch the dayProducts in here
-    fetchDailyReport(slashSeparatedYYYYmmdd(day));
+    const dailyreport = fetchDailyReport(slashSeparatedYYYYmmdd(day));
 
-    store.day.changeCaption(caption);
-    store.day.changeCurrentDay(day);
+    dailyreport.then((response) => {
+      store.day.changeCaption(response.data.dayCaption);
+      store.day.changeCurrentDay(day);
+    });
   };
 
   previousDay = (): void => this.updateCurrentDay('prev');
