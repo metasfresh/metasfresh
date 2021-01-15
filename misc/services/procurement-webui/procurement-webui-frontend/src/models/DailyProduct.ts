@@ -2,24 +2,50 @@ import { types } from 'mobx-state-tree';
 
 export const DailyProduct = types
   .model({
-    name: types.string,
-    pack: types.string,
-    items: types.number,
+    confirmedByUser: types.boolean,
+    packingInfo: types.string,
+    productId: types.string,
+    productName: types.string,
+    qty: types.number,
     isEdited: types.boolean,
   })
   .actions((self) => ({
-    changeCaption(newName: string) {
-      self.name = newName;
+    changeConfirmation(newConf: boolean) {
+      self.confirmedByUser = newConf;
     },
     changePack(newPack: string) {
-      self.pack = newPack;
+      self.packingInfo = newPack;
+    },
+    changeId(newId: string) {
+      self.productId = newId;
+    },
+    changeName(newName: string) {
+      self.productName = newName;
+    },
+    changeQty(newQty: number) {
+      self.qty = newQty;
+    },
+    changeEditMode(newEdit: boolean) {
+      self.isEdited = newEdit;
     },
   }))
   .views((self) => ({
-    get getName() {
-      return self.name;
+    get getConfirmation() {
+      return self.confirmedByUser;
     },
     get getPack() {
-      return self.pack;
+      return self.packingInfo;
+    },
+    get getId() {
+      return self.productId;
+    },
+    get getName() {
+      return self.productName;
+    },
+    get getQty() {
+      return self.qty;
+    },
+    get getEditMode() {
+      return self.isEdited;
     },
   }));
