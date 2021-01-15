@@ -2,8 +2,6 @@ package de.metas.material.planning.impl;
 
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.ProductPlanningBL;
-import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
