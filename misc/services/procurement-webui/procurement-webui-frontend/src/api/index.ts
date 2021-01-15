@@ -107,5 +107,5 @@ export function loginRequest(username: string, password: string): Promise<AxiosR
 }
 
 export function getUserSession(): Promise<AxiosResponse> {
-  return axios.get(`/rest/session`);
+  return axios.get(`/rest/session/`);
 }
