@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service;
+package de.metas.servicerepair.project.repository.requests;
 
-import de.metas.handlingunits.HuId;
+import de.metas.inout.InOutAndLineId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
-import de.metas.uom.UomId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,18 +35,13 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class CreateProjectCostCollectorRequest
+public class CreateProjectTaskRequest
 {
-	@NonNull ServiceRepairProjectTaskId taskId;
-	@NonNull ProductId productId;
-	@NonNull Quantity qtyReserved;
-	@NonNull Quantity qtyConsumed;
-
+	@NonNull ProjectId projectId;
+	@NonNull ServiceRepairProjectTaskType type;
 	@Nullable
-	HuId reservedVhuId;
+	InOutAndLineId customerReturnLineId;
 
-	public UomId getUomId()
-	{
-		return Quantity.getCommonUomIdOfAll(qtyReserved, qtyConsumed);
-	}
+	@NonNull ProductId productId;
+	@NonNull Quantity qtyRequired;
 }

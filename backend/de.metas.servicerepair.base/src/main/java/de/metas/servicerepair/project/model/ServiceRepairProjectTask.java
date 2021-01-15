@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,12 +20,12 @@
  * #L%
  */
 
-package de.metas.servicerepair.project;
+package de.metas.servicerepair.project.model;
 
 import de.metas.inout.InOutAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.servicerepair.project.service.AddQtyToProjectTaskRequest;
+import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;

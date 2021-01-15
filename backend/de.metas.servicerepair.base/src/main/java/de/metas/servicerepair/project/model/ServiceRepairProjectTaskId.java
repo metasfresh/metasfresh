@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.servicerepair.project;
+package de.metas.servicerepair.project.model;
 
 import de.metas.project.ProjectId;
 import de.metas.util.Check;

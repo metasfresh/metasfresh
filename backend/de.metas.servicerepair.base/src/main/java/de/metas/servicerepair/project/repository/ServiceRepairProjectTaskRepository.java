@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,16 +20,17 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service;
+package de.metas.servicerepair.project.repository;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.InOutAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
-import de.metas.servicerepair.project.ServiceRepairProjectTask;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskStatus;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskType;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
+import de.metas.servicerepair.project.repository.requests.CreateProjectTaskRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,6 +46,7 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Repository
+public
 class ServiceRepairProjectTaskRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);

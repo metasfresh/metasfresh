@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service;
+package de.metas.servicerepair.project.repository;
 
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.servicerepair.project.ServiceRepairProjectConsumptionSummary;
+import de.metas.servicerepair.project.model.ServiceRepairProjectConsumptionSummary;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,6 +40,7 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Repository
+public
 class ServiceRepairProjectConsumptionSummaryRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);

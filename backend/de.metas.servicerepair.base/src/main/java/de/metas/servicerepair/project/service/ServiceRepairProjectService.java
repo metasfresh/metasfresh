@@ -38,10 +38,18 @@ import de.metas.project.service.ProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
-import de.metas.servicerepair.project.ServiceRepairProjectCostCollector;
-import de.metas.servicerepair.project.ServiceRepairProjectCostCollectorId;
-import de.metas.servicerepair.project.ServiceRepairProjectTask;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.repository.ServiceRepairProjectConsumptionSummaryRepository;
+import de.metas.servicerepair.project.repository.ServiceRepairProjectCostCollectorRepository;
+import de.metas.servicerepair.project.repository.ServiceRepairProjectTaskRepository;
+import de.metas.servicerepair.project.repository.requests.CreateProjectCostCollectorRequest;
+import de.metas.servicerepair.project.repository.requests.CreateProjectTaskRequest;
+import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjectCommand;
+import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
+import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -108,12 +116,12 @@ public class ServiceRepairProjectService
 		return projectCategory.isServiceOrRepair();
 	}
 
-	ProjectId createProject(@NonNull final CreateProjectRequest request)
+	public ProjectId createProjectHeader(@NonNull final CreateProjectRequest request)
 	{
 		return projectService.createProject(request);
 	}
 
-	void createProjectTask(@NonNull final CreateProjectTaskRequest request)
+	public void createProjectTask(@NonNull final CreateProjectTaskRequest request)
 	{
 		projectTaskRepository.createNew(request);
 	}
@@ -145,12 +153,12 @@ public class ServiceRepairProjectService
 				.execute();
 	}
 
-	List<ServiceRepairProjectCostCollector> getCostCollectorsByProjectButNotInProposal(@NonNull final ProjectId projectId)
+	public List<ServiceRepairProjectCostCollector> getCostCollectorsByProjectButNotInProposal(@NonNull final ProjectId projectId)
 	{
 		return projectCostCollectorRepository.getCostCollectorsByProjectButNotInProposal(projectId);
 	}
 
-	void setCustomerQuotationToCostCollectors(@NonNull final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
+	public void setCustomerQuotationToCostCollectors(@NonNull final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
 	{
 		projectCostCollectorRepository.setCustomerQuotationToCostCollectors(map);
 	}

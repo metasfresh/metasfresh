@@ -6,8 +6,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import de.metas.servicerepair.project.ServiceRepairProjectCostCollectorId;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtensionContext;

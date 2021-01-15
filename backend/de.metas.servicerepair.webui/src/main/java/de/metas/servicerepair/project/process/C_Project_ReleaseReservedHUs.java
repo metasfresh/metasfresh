@@ -27,7 +27,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.project.ProjectId;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import lombok.NonNull;
 
 public class C_Project_ReleaseReservedHUs

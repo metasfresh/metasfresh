@@ -30,7 +30,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.project.ProjectId;
-import de.metas.servicerepair.project.ServiceRepairProjectCostCollector;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.util.Services;
 import lombok.NonNull;

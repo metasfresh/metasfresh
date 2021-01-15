@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,28 +20,40 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service;
+package de.metas.servicerepair.project.model;
 
-import de.metas.inout.InOutAndLineId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskType;
+import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-@Builder
-public class CreateProjectTaskRequest
+@Builder(toBuilder = true)
+public class ServiceRepairProjectConsumptionSummary
 {
 	@NonNull ProjectId projectId;
-	@NonNull ServiceRepairProjectTaskType type;
-	@Nullable
-	InOutAndLineId customerReturnLineId;
-
 	@NonNull ProductId productId;
-	@NonNull Quantity qtyRequired;
+	@NonNull Quantity qtyReserved;
+	@NonNull Quantity qtyConsumed;
+
+	public UomId getUomId()
+	{
+		return Quantity.getCommonUomIdOfAll(qtyReserved, qtyConsumed);
+	}
+
+	public ServiceRepairProjectConsumptionSummary reduce(@NonNull final AddQtyToProjectTaskRequest request)
+	{
+		Check.assumeEquals(projectId, request.getTaskId().getProjectId(), "projectId not matching: {}, {}", this, request);
+
+		return toBuilder()
+				.qtyReserved(getQtyReserved().add(request.getQtyReserved()))
+				.qtyConsumed(getQtyConsumed().add(request.getQtyConsumed()))
+				.build();
+	}
+
 }

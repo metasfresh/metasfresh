@@ -25,7 +25,7 @@ package de.metas.servicerepair.project.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewContext;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewFactory;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;

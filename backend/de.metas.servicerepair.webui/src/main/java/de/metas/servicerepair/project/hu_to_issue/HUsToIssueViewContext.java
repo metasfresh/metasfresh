@@ -23,7 +23,7 @@
 package de.metas.servicerepair.project.hu_to_issue;
 
 import de.metas.product.ProductId;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

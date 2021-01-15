@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,11 +20,12 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service;
+package de.metas.servicerepair.project.repository.requests;
 
-import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.HuId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,26 +34,16 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class AddQtyToProjectTaskRequest
+@Builder
+public class CreateProjectCostCollectorRequest
 {
 	@NonNull ServiceRepairProjectTaskId taskId;
+	@NonNull ProductId productId;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
-	@Builder
-	private AddQtyToProjectTaskRequest(
-			@NonNull final ServiceRepairProjectTaskId taskId,
-			@Nullable final Quantity qtyReserved,
-			@Nullable final Quantity qtyConsumed)
-	{
-		this.taskId = taskId;
-
-		Quantity.getCommonUomIdOfAll(qtyReserved, qtyConsumed); // assume same UOM
-		final Quantity zero = CoalesceUtil.coalesce(qtyReserved, qtyConsumed).toZero();
-
-		this.qtyReserved = qtyReserved != null ? qtyReserved : zero;
-		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : zero;
-	}
+	@Nullable
+	HuId reservedVhuId;
 
 	public UomId getUomId()
 	{

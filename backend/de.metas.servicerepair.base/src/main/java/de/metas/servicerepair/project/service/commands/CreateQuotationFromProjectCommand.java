@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service;
+package de.metas.servicerepair.project.service.commands;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
@@ -42,8 +42,9 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
-import de.metas.servicerepair.project.ServiceRepairProjectCostCollector;
-import de.metas.servicerepair.project.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -60,7 +61,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 
-class CreateQuotationFromProjectCommand
+public class CreateQuotationFromProjectCommand
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);

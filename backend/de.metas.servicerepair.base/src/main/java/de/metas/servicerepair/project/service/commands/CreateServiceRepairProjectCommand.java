@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service;
+package de.metas.servicerepair.project.service.commands;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -46,7 +46,9 @@ import de.metas.request.RequestId;
 import de.metas.request.api.IRequestBL;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.servicerepair.customerreturns.SparePartsReturnCalculation;
-import de.metas.servicerepair.project.ServiceRepairProjectTaskType;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
+import de.metas.servicerepair.project.repository.requests.CreateProjectTaskRequest;
+import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -61,7 +63,7 @@ import org.compiere.util.TimeUtil;
 
 import java.time.ZonedDateTime;
 
-class CreateServiceRepairProjectCommand
+public class CreateServiceRepairProjectCommand
 {
 	private final IRequestBL requestBL = Services.get(IRequestBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -97,7 +99,7 @@ class CreateServiceRepairProjectCommand
 		final ZonedDateTime customerReturnDate = TimeUtil.asZonedDateTime(customerReturn.getMovementDate(), orgDAO.getTimeZone(orgId));
 		final PricingInfo pricingInfo = getPricingInfo(bpartnerAndLocationId, customerReturnDate);
 
-		final ProjectId projectId = projectService.createProject(CreateProjectRequest.builder()
+		final ProjectId projectId = projectService.createProjectHeader(CreateProjectRequest.builder()
 				.orgId(orgId)
 				.projectCategory(ProjectCategory.ServiceOrRepair)
 				.bpartnerAndLocationId(bpartnerAndLocationId)
