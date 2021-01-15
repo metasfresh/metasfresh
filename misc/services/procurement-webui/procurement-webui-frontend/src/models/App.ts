@@ -54,6 +54,7 @@ export const App = types
         weekCaption && store.week.changeCaption(weekCaption);
       } catch (e) {
         // 401 (Unauthorized)
+        // TODO: redirect here to /login as you are not authenticated anymore
       }
 
       return response;
