@@ -56,6 +56,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
@@ -104,7 +105,7 @@ public class JsonPaymentService
 			return ResponseEntity.unprocessableEntity().body("Wrong currency: " + jsonInboundPaymentInfo.getCurrencyCode());
 		}
 
-		final OrgId orgId = retrieveOrg(jsonInboundPaymentInfo);
+		final OrgId orgId = retrieveOrg(jsonInboundPaymentInfo.getOrgCode());
 		if (!orgId.isRegular())
 		{
 			return ResponseEntity.unprocessableEntity().body("Cannot find the orgId from either orgCode=" + jsonInboundPaymentInfo.getOrgCode() + " or the current user's context.");
@@ -154,12 +155,22 @@ public class JsonPaymentService
 						.externalId(externalId)
 						.createAndProcess();
 
-				final String orderIdentifier = jsonInboundPaymentInfo.getOrderIdentifier();
-				if (!Check.isEmpty(orderIdentifier))
+				final String orderIdentifierString = jsonInboundPaymentInfo.getOrderIdentifier();
+				if (!Check.isEmpty(orderIdentifierString))
 				{
-					final Optional<String> externalOrderId = getExternalOrderIdFromIdentifier(IdentifierString.of(orderIdentifier), orgId);
-					Check.assumeNotEmpty(externalOrderId, "Could not find externalOrderId for identifier: " + orderIdentifier);
-					payment.setExternalOrderId(externalOrderId.orElseGet(null));
+					final IdentifierString orderIdentifier = IdentifierString.of(orderIdentifierString);
+					if (orderIdentifier.getType().equals(IdentifierString.Type.EXTERNAL_ID))
+					{
+						payment.setExternalOrderId(orderIdentifier.asExternalId().getValue());
+					}
+					else
+					{
+						final Optional<I_C_Order> potentialOrder = getOrderIdFromIdentifier(orderIdentifier, orgId);
+						Check.assumeNotEmpty(potentialOrder, "Could not find order for identifier: " + orderIdentifierString);
+						final I_C_Order order = potentialOrder.get();
+						payment.setExternalOrderId(order.getExternalId());
+						payment.setC_Order_ID(order.getC_Order_ID());
+					}
 				}
 				payment.setIsAutoAllocateAvailableAmt(true);
 				InterfaceWrapperHelper.save(payment);
@@ -193,7 +204,8 @@ public class JsonPaymentService
 		for (final JsonPaymentAllocationLine line : lines)
 		{
 			final String invoiceId = line.getInvoiceIdentifier();
-			final DocBaseAndSubType docType = DocBaseAndSubType.of(line.getDocBaseType(), line.getDocSubType());
+			final String docBaseType = line.getDocBaseType();
+			final DocBaseAndSubType docType = Check.isBlank(docBaseType) ? null : DocBaseAndSubType.of(docBaseType, line.getDocSubType());
 			final Optional<InvoiceId> invoice = retrieveInvoice(IdentifierString.of(invoiceId), OrgId.ofRepoIdOrNull(orgId), docType);
 			Check.assumeNotEmpty(invoice, "Cannot find invoice for identifier: " + invoiceId);
 			allocationBuilder.addLine()
@@ -219,13 +231,13 @@ public class JsonPaymentService
 		return !Check.isEmpty(lines) && lines.stream().anyMatch(line -> Check.isEmpty(line.getAmount()));
 	}
 
-	private OrgId retrieveOrg(@RequestBody @NonNull final JsonInboundPaymentInfo jsonInboundPaymentInfo)
+	private OrgId retrieveOrg(@Nullable final String orgCode)
 	{
 		final Optional<OrgId> orgId;
-		if (Check.isNotBlank(jsonInboundPaymentInfo.getOrgCode()))
+		if (Check.isNotBlank(orgCode))
 		{
 			final OrgQuery query = OrgQuery.builder()
-					.orgValue(jsonInboundPaymentInfo.getOrgCode())
+					.orgValue(orgCode)
 					.build();
 			orgId = orgDAO.retrieveOrgIdBy(query);
 		}
@@ -268,9 +280,9 @@ public class JsonPaymentService
 		}
 	}
 
-	private Optional<String> getExternalOrderIdFromIdentifier(final IdentifierString orderIdentifier, final OrgId orgId)
+	private Optional<I_C_Order> getOrderIdFromIdentifier(final IdentifierString orderIdentifier, final OrgId orgId)
 	{
-		return orderDAO.retrieveExternalIdByOrderCriteria(createOrderQuery(orderIdentifier, orgId));
+		return orderDAO.retrieveByOrderCriteria(createOrderQuery(orderIdentifier, orgId));
 	}
 
 	private OrderQuery createOrderQuery(final IdentifierString identifierString, final OrgId orgId)
