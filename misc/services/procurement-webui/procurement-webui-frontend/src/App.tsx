@@ -67,16 +67,6 @@ class Index extends Component {
       }
     });
   }
-  // shouldComponentUpdate(nextProps) {
-  //   const { location } = this.props;
-  //   const { location: nextLocation } = nextProps;
-
-  //   if (_.isEqual(location, nextLocation)) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
   render() {
     return childRoutes;
   }
