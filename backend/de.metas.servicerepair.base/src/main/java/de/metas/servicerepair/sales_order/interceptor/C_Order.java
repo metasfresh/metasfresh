@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,12 +20,11 @@
  * #L%
  */
 
-package de.metas.project.interceptor;
+package de.metas.servicerepair.sales_order.interceptor;
 
 import de.metas.handlingunits.model.I_C_Order;
-import de.metas.order.OrderId;
-import de.metas.project.ProjectId;
-import de.metas.project.service.HUProjectService;
+import de.metas.servicerepair.sales_order.RepairSalesOrderInfo;
+import de.metas.servicerepair.sales_order.RepairSalesOrderService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -36,36 +35,24 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_Order
 {
-	private final HUProjectService projectService;
+	private final RepairSalesOrderService salesOrderService;
 
 	public C_Order(
-			@NonNull final HUProjectService projectService)
+			@NonNull final RepairSalesOrderService salesOrderService)
 	{
-		this.projectService = projectService;
+		this.salesOrderService = salesOrderService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void afterComplete(final I_C_Order salesOrder)
+	public void afterComplete(final I_C_Order order)
 	{
-		if (!salesOrder.isSOTrx())
+		final RepairSalesOrderInfo salesOrderInfo = salesOrderService.extractSalesOrderInfo(order).orElse(null);
+		if (salesOrderInfo == null)
 		{
 			return;
 		}
 
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(salesOrder.getC_Project_ID());
-		if (projectId == null)
-		{
-			return;
-		}
-
-		final OrderId proposalId = OrderId.ofRepoIdOrNull(salesOrder.getRef_Proposal_ID());
-		if (proposalId == null)
-		{
-			return;
-		}
-
-		final OrderId salesOrderId = OrderId.ofRepoId(salesOrder.getC_Order_ID());
-		// projectService.transferHUReservationsFromProjectToOrder(orderId);
+		salesOrderService.transferVHUsFromProjectToSalesOrderLine(salesOrderInfo);
 	}
 
 	@DocValidate(timings = {
@@ -74,13 +61,13 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT })
 	public void beforeVoid(final I_C_Order order)
 	{
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
-		if (projectId == null)
+		final RepairSalesOrderInfo salesOrderInfo = salesOrderService.extractSalesOrderInfo(order).orElse(null);
+		if (salesOrderInfo == null)
 		{
 			return;
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-		// projectService.transferHUReservationsFromOrderToProject(orderId);
+		salesOrderService.transferVHUsFromSalesOrderToProject(salesOrderInfo);
 	}
+
 }

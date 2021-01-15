@@ -34,7 +34,7 @@ import de.metas.order.OrderId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.CreateProjectRequest;
-import de.metas.project.service.HUProjectService;
+import de.metas.project.service.ProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
@@ -51,6 +51,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class ServiceRepairProjectService
@@ -59,14 +60,14 @@ public class ServiceRepairProjectService
 
 	private final HUReservationService huReservationService;
 	private final RepairCustomerReturnsService repairCustomerReturnsService;
-	private final HUProjectService projectService;
+	private final ProjectService projectService;
 	private final ServiceRepairProjectTaskRepository projectTaskRepository;
 	private final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository;
 	private final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository;
 
 	public ServiceRepairProjectService(
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final HUProjectService projectService,
+			@NonNull final ProjectService projectService,
 			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService,
 			@NonNull final ServiceRepairProjectTaskRepository projectTaskRepository,
 			@NonNull final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository,
@@ -209,11 +210,11 @@ public class ServiceRepairProjectService
 
 		final List<ServiceRepairProjectCostCollector> costCollectors = projectCostCollectorRepository.getAndDeleteByTaskIds(taskIds);
 
-		final ImmutableSet<HuId> reservedVhuIds = costCollectors.stream()
-				.map(ServiceRepairProjectCostCollector::getReservedVhuId)
+		final ImmutableSet<HuId> reservedSparePartsVHUIds = costCollectors.stream()
+				.map(ServiceRepairProjectCostCollector::getReservedSparePartsVHUId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-		huReservationService.deleteReservations(reservedVhuIds);
+		huReservationService.deleteReservations(reservedSparePartsVHUIds);
 
 		for (final ServiceRepairProjectCostCollector costCollector : costCollectors)
 		{
@@ -230,5 +231,32 @@ public class ServiceRepairProjectService
 		final ImmutableSet<ServiceRepairProjectTaskId> result = retainIdsOfTypeSpareParts(ImmutableSet.of(taskId));
 		return result.size() == 1
 				&& ServiceRepairProjectTaskId.equals(result.asList().get(0), taskId);
+	}
+
+	public List<ServiceRepairProjectCostCollector> getCostCollectorsByQuotationLineIds(@NonNull final Set<OrderAndLineId> quotationLineIds)
+	{
+		return projectCostCollectorRepository.getByQuotationLineIds(quotationLineIds);
+	}
+
+	public void transferVHUsFromProjectToSalesOrderLine(
+			@NonNull final ProjectId fromProjectId,
+			@NonNull final OrderAndLineId salesOrderLineId,
+			@NonNull final Set<HuId> vhuIds)
+	{
+		huReservationService.transferReservation(
+				HUReservationDocRef.ofProjectId(fromProjectId),
+				HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId.getOrderLineId()),
+				vhuIds);
+	}
+
+	public void transferVHUsFromSalesOrderToProject(
+			@NonNull final Set<OrderAndLineId> fromSalesOrderLineIds,
+			@NonNull final ProjectId toProjectId)
+	{
+		final ImmutableSet<HUReservationDocRef> from = fromSalesOrderLineIds.stream()
+				.map(HUReservationDocRef::ofSalesOrderLineId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		huReservationService.transferReservation(from, HUReservationDocRef.ofProjectId(toProjectId));
 	}
 }

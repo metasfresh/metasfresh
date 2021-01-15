@@ -170,7 +170,7 @@ public class HUReservationService
 	 */
 	public void deleteReservations(@NonNull final Collection<HuId> vhuIds)
 	{
-		if(vhuIds.isEmpty())
+		if (vhuIds.isEmpty())
 		{
 			return;
 		}
@@ -337,8 +337,18 @@ public class HUReservationService
 
 	public void transferReservation(
 			@NonNull final HUReservationDocRef from,
+			@NonNull final HUReservationDocRef to,
+			@NonNull final Set<HuId> vhuIds)
+	{
+		huReservationRepository.transferReservation(ImmutableSet.of(from), to, vhuIds);
+	}
+
+	public void transferReservation(
+			@NonNull final Collection<HUReservationDocRef> from,
 			@NonNull final HUReservationDocRef to)
 	{
-		huReservationRepository.transferReservation(from, to);
+		final Set<HuId> vhuIds = ImmutableSet.of();
+		huReservationRepository.transferReservation(from, to, vhuIds);
 	}
+
 }

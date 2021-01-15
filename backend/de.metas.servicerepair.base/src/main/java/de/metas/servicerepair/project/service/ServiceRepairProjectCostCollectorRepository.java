@@ -120,7 +120,7 @@ class ServiceRepairProjectCostCollectorRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
-				.reservedVhuId(HuId.ofRepoIdOrNull(record.getVHU_ID()))
+				.reservedSparePartsVHUId(HuId.ofRepoIdOrNull(record.getVHU_ID()))
 				.customerQuotationLineId(OrderAndLineId.ofRepoIdsOrNull(record.getQuotation_Order_ID(), record.getQuotation_OrderLine_ID()))
 				.build();
 	}
@@ -160,5 +160,20 @@ class ServiceRepairProjectCostCollectorRepository
 			record.setQuotation_OrderLine_ID(customerQuotationLineId.getOrderLineRepoId());
 			InterfaceWrapperHelper.saveRecord(record);
 		}
+	}
+
+	public List<ServiceRepairProjectCostCollector> getByQuotationLineIds(final Set<OrderAndLineId> quotationLineIds)
+	{
+		if (quotationLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_OrderLine_ID, OrderAndLineId.getOrderLineIds(quotationLineIds))
+				.create()
+				.stream()
+				.map(ServiceRepairProjectCostCollectorRepository::toServiceRepairProjectCostCollector)
+				.collect(ImmutableList.toImmutableList());
 	}
 }
