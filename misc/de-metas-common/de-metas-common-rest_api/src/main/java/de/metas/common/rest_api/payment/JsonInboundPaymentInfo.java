@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Value
@@ -115,7 +116,7 @@ public class JsonInboundPaymentInfo
 	{
 
 		final List<JsonPaymentAllocationLine> lines = getLines();
-		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(amt -> amt != null).reduce(BigDecimal.ZERO, BigDecimal::add);
+		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 }

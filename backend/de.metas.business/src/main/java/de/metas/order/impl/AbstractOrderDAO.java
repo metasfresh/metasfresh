@@ -3,14 +3,12 @@ package de.metas.order.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.InvoiceId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -340,24 +338,20 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		InterfaceWrapperHelper.save(orderLine);
 	}
 
-	public Optional<String> retrieveExternalIdByOrderCriteria(@NonNull final OrderQuery query)
+	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderQuery query)
 	{
 		if (query.getOrderId() != null)
 		{
-			return Optional.ofNullable(InterfaceWrapperHelper.load(query.getOrderId(), I_C_Order.class).getExternalId());
-		}
-		if (query.getExternalId() != null)
-		{
-			return Optional.of(query.getExternalId().getValue());
+			return Optional.ofNullable(InterfaceWrapperHelper.load(query.getOrderId(), I_C_Order.class));
 		}
 		if (Check.isNotBlank(query.getDocumentNo()))
 		{
-			return Optional.ofNullable(getExternalIdByDocumentNo(query));
+			return Optional.ofNullable(getOrderByDocumentNumberQuery(query));
 		}
 		return Optional.empty();
 	}
 
-	private String getExternalIdByDocumentNo(final OrderQuery query)
+	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -370,6 +364,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
 
 		final I_C_Order order = queryBuilder.create().firstOnly(I_C_Order.class);
-		return order == null ? null : order.getExternalId();
+		return order == null ? null : order;
 	}
 }

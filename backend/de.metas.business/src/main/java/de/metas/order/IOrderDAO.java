@@ -115,7 +115,7 @@ public interface IOrderDAO extends ISingletonService
 
 	/**
 	 * @param order
-	 * @param line
+	 * @param lineNo
 	 * @param clazz
 	 */
 	<T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(I_C_Order order, int lineNo, Class<T> clazz);
@@ -164,5 +164,5 @@ public interface IOrderDAO extends ISingletonService
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
 
-	Optional<String> retrieveExternalIdByOrderCriteria(OrderQuery query);
+	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
 }
