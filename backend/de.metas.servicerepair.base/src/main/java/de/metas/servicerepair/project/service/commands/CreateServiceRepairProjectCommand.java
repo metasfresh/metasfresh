@@ -115,6 +115,7 @@ public class CreateServiceRepairProjectCommand
 		{
 			projectService.createProjectTask(CreateProjectTaskRequest.builder()
 					.projectId(projectId)
+					.orgId(orgId)
 					.type(ServiceRepairProjectTaskType.REPAIR_ORDER)
 					.customerReturnLineId(finishedGood.getCustomerReturnLineId())
 					.productId(finishedGood.getProductId())
@@ -132,6 +133,7 @@ public class CreateServiceRepairProjectCommand
 
 			projectService.createProjectTask(CreateProjectTaskRequest.builder()
 					.projectId(projectId)
+					.orgId(orgId)
 					.type(ServiceRepairProjectTaskType.SPARE_PARTS)
 					.customerReturnLineId(null)
 					.productId(sparePartId)

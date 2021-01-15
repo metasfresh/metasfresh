@@ -23,6 +23,7 @@
 package de.metas.servicerepair.project.model;
 
 import de.metas.inout.InOutAndLineId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
@@ -39,6 +40,7 @@ import javax.annotation.Nullable;
 public class ServiceRepairProjectTask
 {
 	@NonNull ServiceRepairProjectTaskId id;
+	@NonNull ClientAndOrgId clientAndOrgId;
 	@NonNull ServiceRepairProjectTaskType type;
 	@NonNull ServiceRepairProjectTaskStatus status;
 

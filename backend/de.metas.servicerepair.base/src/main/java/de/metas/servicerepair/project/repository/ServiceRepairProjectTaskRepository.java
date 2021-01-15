@@ -22,8 +22,10 @@
 
 package de.metas.servicerepair.project.repository;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.InOutAndLineId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
@@ -43,6 +45,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 @Repository
@@ -55,6 +58,7 @@ class ServiceRepairProjectTaskRepository
 	{
 		final I_C_Project_Repair_Task record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Task.class);
 		record.setC_Project_ID(request.getProjectId().getRepoId());
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setType(request.getType().getCode());
 		record.setStatus(ServiceRepairProjectTaskStatus.NOT_STARTED.getCode());
 
@@ -84,12 +88,26 @@ class ServiceRepairProjectTaskRepository
 		return InterfaceWrapperHelper.load(taskId, I_C_Project_Repair_Task.class);
 	}
 
+	public List<ServiceRepairProjectTask> getByIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
+	{
+		if (taskIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<I_C_Project_Repair_Task> recordIds = InterfaceWrapperHelper.loadByRepoIdAwares(taskIds, I_C_Project_Repair_Task.class);
+		return recordIds.stream()
+				.map(ServiceRepairProjectTaskRepository::toServiceRepairProjectTask)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private static ServiceRepairProjectTask toServiceRepairProjectTask(final I_C_Project_Repair_Task record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 
 		return ServiceRepairProjectTask.builder()
 				.id(ServiceRepairProjectTaskId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Repair_Task_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.type(ServiceRepairProjectTaskType.ofCode(record.getType()))
 				.status(ServiceRepairProjectTaskStatus.ofCode(record.getStatus()))
 				//
@@ -108,6 +126,8 @@ class ServiceRepairProjectTaskRepository
 			@NonNull final I_C_Project_Repair_Task record,
 			@NonNull final ServiceRepairProjectTask from)
 	{
+		record.setAD_Org_ID(from.getClientAndOrgId().getOrgId().getRepoId());
+
 		record.setType(from.getType().getCode());
 		record.setStatus(from.getStatus().getCode());
 
@@ -141,7 +161,9 @@ class ServiceRepairProjectTaskRepository
 		return changedTask;
 	}
 
-	public ImmutableSet<ServiceRepairProjectTaskId> retainIdsOfTypeSpareParts(@NonNull final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
+	public ImmutableSet<ServiceRepairProjectTaskId> retainIdsOfType(
+			@NonNull final ImmutableSet<ServiceRepairProjectTaskId> taskIds,
+			@NonNull final ServiceRepairProjectTaskType type)
 	{
 		if (taskIds.isEmpty())
 		{
@@ -150,7 +172,7 @@ class ServiceRepairProjectTaskRepository
 
 		final List<Integer> eligibleRepoIds = queryBL.createQueryBuilder(I_C_Project_Repair_Task.class)
 				.addInArrayFilter(I_C_Project_Repair_Task.COLUMNNAME_C_Project_Repair_Task_ID, taskIds)
-				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_Type, ServiceRepairProjectTaskType.SPARE_PARTS.getCode())
+				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_Type, type.getCode())
 				.create()
 				.listIds();
 

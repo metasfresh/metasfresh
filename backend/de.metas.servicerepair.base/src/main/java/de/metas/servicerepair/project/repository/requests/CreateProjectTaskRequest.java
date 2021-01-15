@@ -23,6 +23,7 @@
 package de.metas.servicerepair.project.repository.requests;
 
 import de.metas.inout.InOutAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
@@ -38,9 +39,9 @@ import javax.annotation.Nullable;
 public class CreateProjectTaskRequest
 {
 	@NonNull ProjectId projectId;
+	@NonNull OrgId orgId;
 	@NonNull ServiceRepairProjectTaskType type;
-	@Nullable
-	InOutAndLineId customerReturnLineId;
+	@Nullable InOutAndLineId customerReturnLineId;
 
 	@NonNull ProductId productId;
 	@NonNull Quantity qtyRequired;
