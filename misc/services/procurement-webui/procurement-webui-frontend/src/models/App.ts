@@ -1,5 +1,5 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
-
+import { store } from './Store';
 import { getUserSession, loginRequest, logoutRequest } from '../api';
 
 export const App = types
@@ -48,6 +48,10 @@ export const App = types
       try {
         response = yield getUserSession();
         setInitialData(response.data);
+        // update in the store also the current week
+        const { week, weekCaption } = response.data;
+        week && store.week.changeCurrentWeek(week);
+        weekCaption && store.week.changeCaption(weekCaption);
       } catch (e) {
         // 401 (Unauthorized)
       }
