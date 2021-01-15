@@ -5,8 +5,10 @@ import {
   Switch, 
   BrowserRouter,
   Redirect,
+  withRouter,
 } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
+import { onAction } from 'mobx-state-tree';
 
 import { RootInstance } from './models/Store';
 
@@ -52,8 +54,22 @@ const childRoutes = (
   </div>
 );
 
+@inject('store')
+@observer
 class Index extends Component {
   installPrompt = null;
+
+  constructor(props) {
+    super(props);
+
+    const { history, store } = props;
+
+    onAction(store, (call) => {
+      if (call.name === 'logOut') {
+        history.push('/login');
+      }
+    });
+  }
 
   componentDidMount() {
     window.addEventListener('beforeinstallprompt', (e: { preventDefault: () => void }) => {
@@ -72,13 +88,15 @@ class Index extends Component {
   }
 }
 
+const WrappedIndex = withRouter(Index);
+
 function PrivateRoute({ loggedIn, ...rest }) {
   return (
     <Route
       {...rest}
       render={() =>
         loggedIn ? (
-            <Index />
+            <WrappedIndex />
         ) : (
           <Redirect
             to={{
@@ -97,9 +115,9 @@ class App extends React.Component<IProps, IState> {
   constructor(props) {
     super(props);
 
-    const { store } = props;
+    const { store, history } = props;
 
-    store.app.getUserSession()
+    store.app.getUserSession();
   }
 
   render() {

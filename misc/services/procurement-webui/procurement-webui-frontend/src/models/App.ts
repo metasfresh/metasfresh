@@ -55,6 +55,7 @@ export const App = types
       } catch (e) {
         // 401 (Unauthorized)
         // TODO: redirect here to /login as you are not authenticated anymore
+        logOut();
       }
 
       return response;
