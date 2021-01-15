@@ -1,5 +1,3 @@
--- Adding the ad_element and column to database
-
 -- 2021-01-14T15:34:41.862Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,578643,0,'Setup_Place_No',TO_TIMESTAMP('2021-01-14 17:34:41','YYYY-MM-DD HH24:MI:SS'),100,'Bezeichnet einen Rüstplatz beim Logistik-Partner oder im eigenen Lager','D','Y','Rüstplatz-Nr.','Rüstplatz-Nr.',TO_TIMESTAMP('2021-01-14 17:34:41','YYYY-MM-DD HH24:MI:SS'),100)
@@ -75,8 +73,6 @@ INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTran
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=572436 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
---DATABASE changes DDL
-
 -- 2021-01-15T06:58:56.173Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_Column_Translation_From_AD_Element(578643) 
@@ -86,8 +82,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('C_BPartner_Location','ALTER TABLE public.C_BPartner_Location ADD COLUMN Setup_Place_No VARCHAR(250)')
 ;
-
--- Add the field to window = 123
 
 -- 2021-01-15T07:22:11.025Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
