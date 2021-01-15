@@ -111,5 +111,4 @@ public class ProductPlanningBL
 		final int durationDays = leadtimeDays + transferTimeDays;
 		return durationDays;
 	}
-
 }

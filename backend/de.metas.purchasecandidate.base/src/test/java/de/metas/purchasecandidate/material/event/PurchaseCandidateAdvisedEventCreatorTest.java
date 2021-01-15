@@ -85,7 +85,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.demandCandidateId(50)
 				.build();
 
-		final MRPContextFactory mrpContextFactory = new MRPContextFactory(new ProductPlanningBL());
+		final MRPContextFactory mrpContextFactory = new MRPContextFactory();
 		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
 		mrpContext.setProductPlanning(productPlanningRecord);
 

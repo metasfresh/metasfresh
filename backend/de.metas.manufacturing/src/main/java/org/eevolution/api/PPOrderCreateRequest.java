@@ -51,26 +51,26 @@ import lombok.Value;
 @JsonDeserialize(builder = PPOrderCreateRequestBuilder.class)
 public class PPOrderCreateRequest
 {
-	ClientAndOrgId clientAndOrgId;
-	ProductPlanningId productPlanningId;
-	MaterialDispoGroupId materialDispoGroupId;
-	ResourceId plantId;
-	WarehouseId warehouseId;
-	UserId plannerId;
+	@NonNull ClientAndOrgId clientAndOrgId;
+	@Nullable ProductPlanningId productPlanningId;
+	@Nullable MaterialDispoGroupId materialDispoGroupId;
+	@NonNull ResourceId plantId;
+	@NonNull WarehouseId warehouseId;
+	@Nullable UserId plannerId;
 
-	ProductBOMId bomId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
-	Quantity qtyRequired;
+	@Nullable ProductBOMId bomId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull Quantity qtyRequired;
 
-	Instant dateOrdered;
-	Instant datePromised;
-	Instant dateStartSchedule;
+	@NonNull Instant dateOrdered;
+	@NonNull Instant datePromised;
+	@NonNull Instant dateStartSchedule;
 
-	OrderLineId salesOrderLineId;
-	BPartnerId customerId;
+	@Nullable OrderLineId salesOrderLineId;
+	@Nullable BPartnerId customerId;
 
-	Boolean completeDocument;
+	@Nullable Boolean completeDocument;
 
 	@Builder
 	PPOrderCreateRequest(
@@ -81,13 +81,13 @@ public class PPOrderCreateRequest
 			@NonNull final WarehouseId warehouseId,
 			@Nullable final UserId plannerId,
 			//
-			@Nullable ProductBOMId bomId,
-			@NonNull ProductId productId,
-			@Nullable AttributeSetInstanceId attributeSetInstanceId,
-			@NonNull Quantity qtyRequired,
+			@Nullable final ProductBOMId bomId,
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final Quantity qtyRequired,
 			//
-			@NonNull Instant dateOrdered,
-			@NonNull Instant datePromised,
+			@NonNull final Instant dateOrdered,
+			@NonNull final Instant datePromised,
 			@NonNull final Instant dateStartSchedule,
 			//
 			@Nullable final OrderLineId salesOrderLineId,

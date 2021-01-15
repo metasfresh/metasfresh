@@ -22,26 +22,18 @@ package org.eevolution.mrp.api.impl;
  * #L%
  */
 
-
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
-import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
@@ -54,36 +46,29 @@ import org.compiere.model.X_M_Product;
 import org.compiere.model.X_M_Warehouse;
 import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_PP_MRP;
-import org.eevolution.model.I_PP_MRP_Alloc;
-import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.MRPFirmType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 /* package */class MRPQueryBuilder implements IMRPQueryBuilder
 {
 	// services
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
 	private Object _contextProvider = null;
-	private IMaterialPlanningContext _mrpContext = null;
 
 	//
 	// Planning segment
 	private Integer _adClientId = null;
 	private Integer _adOrgId = null;
 	private Integer _ppPlantId = null;
-	private boolean _acceptNoPlant = true;
 	private Integer _warehouseId = null;
 	/**
 	 * M_Product_ID
@@ -92,17 +77,10 @@ import java.util.Set;
 	 */
 	private Integer _productId = -1;
 
-	//
-	// Other MRP records dependency filters
-	private Set<Integer> _onlyPP_MRP_IDs = null;
-	private int _enforced_PP_MRP_Demand_ID;
-
 	private String _typeMRP = null;
-	private int _productLLC = -1;
-	private Date _datePromisedMax = null;
-	private MRPFirmType _mrpFirmType = null;
-	private boolean _qtyNotZero = false;
-	private Boolean _mrpAvailable = null;
+	private final Date _datePromisedMax = null;
+	private final MRPFirmType _mrpFirmType = null;
+	private final Boolean _mrpAvailable = null;
 	private final Set<String> _orderTypes = new HashSet<>();
 	private Object _referencedModel = null;
 	private boolean _ppOrderBOMLine_Null = false;
@@ -113,11 +91,6 @@ import java.util.Set;
 	 * Default: Yes
 	 */
 	private boolean _onlyActiveRecords = true;
-
-	/**
-	 * Shall we skip MRP records which are excluded by MRP_Exclude option (on BPartner, Product etc).
-	 */
-	private boolean _skipIfMRPExcluded = true;
 
 	public MRPQueryBuilder()
 	{
@@ -165,7 +138,7 @@ import java.util.Set;
 		// Filter by Plant (only those lines which have our plant ID or don't have the plant ID set at all)
 		// AIM: Clear separation on plant level (06594)
 		final Set<Integer> plantIds = getPP_Plant_IDs_ToUse();
-		if (plantIds != null && !plantIds.isEmpty())
+		if (!plantIds.isEmpty())
 		{
 			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_S_Resource_ID, plantIds);
 		}
@@ -185,7 +158,7 @@ import java.util.Set;
 		{
 			final IQuery<I_M_Product> productQuery = queryBL
 					.createQueryBuilder(I_M_Product.class, contextProvider)
-					.filter(new EqualsQueryFilter<I_M_Product>(I_M_Product.COLUMNNAME_LowLevel, productLLC))
+					.filter(new EqualsQueryFilter<>(I_M_Product.COLUMNNAME_LowLevel, productLLC))
 					.create();
 			filters.addInSubQueryFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
 		}
@@ -259,49 +232,12 @@ import java.util.Set;
 		}
 
 		//
-		// Filter by specific PP_MRP_IDs
-		final Set<Integer> mrpIds = getOnlyPP_MRP_IDs();
-		if (mrpIds != null && !mrpIds.isEmpty())
-		{
-			filters.addInArrayOrAllFilter(I_PP_MRP.COLUMNNAME_PP_MRP_ID, mrpIds);
-		}
-
-		//
-		// Filter by enforced MRP demand, i.e.
-		// * accept only MRP demand records which have the enforced MRP Demand ID
-		// * or accept only MRP supply records which are allocated to the enforced MRP Demand ID
-		if (_enforced_PP_MRP_Demand_ID > 0)
-		{
-			final ICompositeQueryFilter<I_PP_MRP> filterMRPDemands = queryBL.createCompositeQueryFilter(I_PP_MRP.class)
-					.setJoinAnd()
-					.addEqualsFilter(I_PP_MRP.COLUMNNAME_TypeMRP, X_PP_MRP.TYPEMRP_Demand)
-					.addEqualsFilter(I_PP_MRP.COLUMNNAME_PP_MRP_ID, _enforced_PP_MRP_Demand_ID);
-
-			final IQuery<I_PP_MRP_Alloc> mrpSuppliesSubQuery = queryBL.createQueryBuilder(I_PP_MRP.class, contextProvider)
-					.filter(filterMRPDemands)
-					.andCollectChildren(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID, I_PP_MRP_Alloc.class)
-					.create();
-			final ICompositeQueryFilter<I_PP_MRP> filterMRPSupplies = queryBL.createCompositeQueryFilter(I_PP_MRP.class)
-					.setJoinAnd()
-					.addEqualsFilter(I_PP_MRP.COLUMNNAME_TypeMRP, X_PP_MRP.TYPEMRP_Supply)
-					.addInSubQueryFilter(I_PP_MRP.COLUMN_PP_MRP_ID,
-							I_PP_MRP_Alloc.COLUMN_PP_MRP_Supply_ID,
-							mrpSuppliesSubQuery);
-
-			final ICompositeQueryFilter<I_PP_MRP> filterEnforcedMRPDemand = queryBL.createCompositeQueryFilter(I_PP_MRP.class)
-					.setJoinOr()
-					.addFilter(filterMRPDemands)
-					.addFilter(filterMRPSupplies);
-			filters.addFilter(filterEnforcedMRPDemand);
-		}
-
-		//
 		// Apply MRP_Exclude filters
-		if (_skipIfMRPExcluded)
-		{
-			final IQueryFilter<I_PP_MRP> skipIfMRPExcludedFilters = createQueryFilter_MRP_Exclude();
-			filters.addFilter(skipIfMRPExcludedFilters);
-		}
+		//
+		//Shall we skip MRP records which are excluded by MRP_Exclude option (on BPartner, Product etc).
+		//
+		final IQueryFilter<I_PP_MRP> skipIfMRPExcludedFilters = createQueryFilter_MRP_Exclude();
+		filters.addFilter(skipIfMRPExcludedFilters);
 
 		//
 		// Return built filters
@@ -367,111 +303,9 @@ import java.util.Set;
 	public IQueryBuilder<I_PP_MRP> createQueryBuilder()
 	{
 		final IQueryFilter<I_PP_MRP> filters = createQueryFilter();
-		final IQueryBuilder<I_PP_MRP> queryBuilder = queryBL.createQueryBuilder(I_PP_MRP.class, getContextProviderToUse())
+
+		return queryBL.createQueryBuilder(I_PP_MRP.class, getContextProviderToUse())
 				.filter(filters);
-
-		return queryBuilder;
-	}
-
-	@Override
-	public BigDecimal calculateQtySUM()
-	{
-		final BigDecimal qty = createQueryBuilder()
-				// create query
-				.create()
-				// Sum UP the Qty
-				.aggregate(I_PP_MRP.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
-
-		if (qty == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		return qty;
-	}
-
-	@Override
-	public int deleteMRPRecords()
-	{
-		final IQueryBuilder<I_PP_MRP> mrpsQuery = createQueryBuilder();
-		return mrpDAO.deleteMRP(mrpsQuery);
-	}
-
-	@Override
-	public int updateMRPRecords(@NonNull final IQueryUpdater<I_PP_MRP> queryUpdater)
-	{
-		return createQueryBuilder()
-				.create() // create query
-				.updateDirectly(queryUpdater);
-	}
-
-	@Override
-	public int updateMRPRecordsAndMarkAvailable()
-	{
-		// Updater
-		final IQueryUpdater<I_PP_MRP> setAvailableUpdater = queryBL.createCompositeQueryUpdater(I_PP_MRP.class)
-				.addSetColumnValue(I_PP_MRP.COLUMNNAME_IsAvailable, true);
-
-		return updateMRPRecords(setAvailableUpdater);
-	}
-
-	@Override
-	public final I_PP_MRP firstOnly()
-	{
-		return createQueryBuilder()
-				.create()
-				.firstOnly(I_PP_MRP.class);
-	}
-
-	@Override
-	public final List<I_PP_MRP> list()
-	{
-		return createQueryBuilder()
-				.create()
-				.list(I_PP_MRP.class);
-	}
-
-	@Override
-	public MRPQueryBuilder clear()
-	{
-		// _contextProvider = null;
-		// _mrpContext = null;
-
-		//
-		// Planning segment
-		_adClientId = null;
-		_adOrgId = null;
-		_ppPlantId = null;
-		_acceptNoPlant = true;
-		_warehouseId = null;
-		_productId = -1;
-
-		//
-		// Other MRP records dependency filters
-		_onlyPP_MRP_IDs = null;
-		_enforced_PP_MRP_Demand_ID = -1;
-
-		_typeMRP = null;
-		_productLLC = -1;
-		_datePromisedMax = null;
-		_mrpFirmType = null;
-		_qtyNotZero = false;
-		_mrpAvailable = null;
-		_orderTypes.clear();
-		_referencedModel = null;
-		_ppOrderBOMLine_Null = false;
-
-		_onlyActiveRecords = false;
-
-		_skipIfMRPExcluded = false;
-
-		return this;
-	}
-
-	@Override
-	public MRPQueryBuilder setMRPContext(final IMaterialPlanningContext mrpContext)
-	{
-		this._mrpContext = mrpContext;
-		return this;
 	}
 
 	@Override
@@ -481,12 +315,6 @@ import java.util.Set;
 		return this;
 	}
 
-	@Override
-	public MRPQueryBuilder setContextProvider(final Properties ctx, final String trxName)
-	{
-		return setContextProvider(new PlainContextAware(ctx, trxName));
-	}
-
 	private IContextAware getContextProviderToUse()
 	{
 		if (_contextProvider != null)
@@ -494,16 +322,11 @@ import java.util.Set;
 			return InterfaceWrapperHelper.getContextAware(_contextProvider);
 		}
 
-		if(_mrpContext != null)
-		{
-			return _mrpContext;
-		}
-
 		return PlainContextAware.newWithThreadInheritedTrx();
 	}
 
 	@Override
-	public MRPQueryBuilder setAD_Client_ID(Integer adClientId)
+	public MRPQueryBuilder setAD_Client_ID(final Integer adClientId)
 	{
 		this._adClientId = adClientId;
 		return this;
@@ -514,10 +337,6 @@ import java.util.Set;
 		if (_adClientId != null)
 		{
 			return _adClientId;
-		}
-		else if (_mrpContext != null)
-		{
-			return ClientId.toRepoId(_mrpContext.getClientId());
 		}
 
 		return -1;
@@ -536,14 +355,6 @@ import java.util.Set;
 		{
 			return _adOrgId;
 		}
-		else if (_mrpContext != null)
-		{
-			final I_AD_Org org = _mrpContext.getAD_Org();
-			if (org != null)
-			{
-				return org.getAD_Org_ID();
-			}
-		}
 
 		return -1;
 	}
@@ -561,14 +372,6 @@ import java.util.Set;
 		{
 			return _warehouseId;
 		}
-		else if (_mrpContext != null)
-		{
-			final I_M_Warehouse warehouse = _mrpContext.getM_Warehouse();
-			if (warehouse != null)
-			{
-				return warehouse.getM_Warehouse_ID();
-			}
-		}
 
 		return -1;
 	}
@@ -580,27 +383,12 @@ import java.util.Set;
 		return this;
 	}
 
-	@Override
-	public MRPQueryBuilder setAcceptWithoutPlant(final boolean acceptNoPlant)
-	{
-		this._acceptNoPlant = acceptNoPlant;
-		return this;
-	}
-
 	private Set<Integer> getPP_Plant_IDs_ToUse()
 	{
 		int ppPlantId = -1;
 		if (_ppPlantId != null)
 		{
 			ppPlantId = _ppPlantId;
-		}
-		else if (_mrpContext != null)
-		{
-			final I_S_Resource plant = _mrpContext.getPlant();
-			if (plant != null)
-			{
-				ppPlantId = plant.getS_Resource_ID();
-			}
 		}
 
 		if (ppPlantId <= 0)
@@ -610,16 +398,13 @@ import java.util.Set;
 
 		final Set<Integer> plantIds = new HashSet<>();
 		plantIds.add(ppPlantId);
-		if (_acceptNoPlant)
-		{
-			plantIds.add(null);
-		}
+		plantIds.add(null);
 
 		return plantIds;
 	}
 
 	@Override
-	public MRPQueryBuilder setM_Product_ID(Integer productId)
+	public MRPQueryBuilder setM_Product_ID(final Integer productId)
 	{
 		this._productId = productId;
 		return this;
@@ -631,24 +416,13 @@ import java.util.Set;
 		{
 			return _productId;
 		}
-		else if (_mrpContext != null)
-		{
-			return ProductId.toRepoId(_mrpContext.getProductId());
-		}
 
 		return -1;
 	}
 
-	@Override
-	public MRPQueryBuilder setLowLevelCode(final int productLLC)
-	{
-		this._productLLC = productLLC;
-		return this;
-	}
-
 	public int getLowLevelCode()
 	{
-		return this._productLLC;
+		return -1;
 	}
 
 	@Override
@@ -663,25 +437,13 @@ import java.util.Set;
 		return _typeMRP;
 	}
 
-	@Override
-	public MRPQueryBuilder setDatePromisedMax(final Date datePromisedMax)
-	{
-		this._datePromisedMax = datePromisedMax;
-		return this;
-	}
-
+	@Nullable
 	public Date getDatePromisedMax()
 	{
 		return this._datePromisedMax;
 	}
 
-	@Override
-	public MRPQueryBuilder setMRPFirmType(MRPFirmType mrpFirmType)
-	{
-		this._mrpFirmType = mrpFirmType;
-		return this;
-	}
-
+	@Nullable
 	public MRPFirmType getMRPFirmType()
 	{
 		return this._mrpFirmType;
@@ -689,26 +451,13 @@ import java.util.Set;
 
 	public boolean isQtyNotZero()
 	{
-		return _qtyNotZero;
+		return false;
 	}
 
-	@Override
-	public MRPQueryBuilder setQtyNotZero(boolean qtyNotZero)
-	{
-		this._qtyNotZero = qtyNotZero;
-		return this;
-	}
-
+	@Nullable
 	public Boolean getMRPAvailable()
 	{
 		return _mrpAvailable;
-	}
-
-	@Override
-	public MRPQueryBuilder setMRPAvailable(Boolean mrpAvailable)
-	{
-		this._mrpAvailable = mrpAvailable;
-		return this;
 	}
 
 	public boolean isOnlyActiveRecords()
@@ -717,7 +466,7 @@ import java.util.Set;
 	}
 
 	@Override
-	public MRPQueryBuilder setOnlyActiveRecords(boolean onlyActiveRecords)
+	public MRPQueryBuilder setOnlyActiveRecords(final boolean onlyActiveRecords)
 	{
 		this._onlyActiveRecords = onlyActiveRecords;
 		return this;
@@ -731,13 +480,6 @@ import java.util.Set;
 		{
 			this._orderTypes.add(orderType);
 		}
-		return this;
-	}
-
-	@Override
-	public IMRPQueryBuilder addOnlyOrderType(final String orderType)
-	{
-		this._orderTypes.add(orderType);
 		return this;
 	}
 
@@ -759,87 +501,8 @@ import java.util.Set;
 	}
 
 	@Override
-	public MRPQueryBuilder setPP_Order_BOMLine_Null()
+	public void setPP_Order_BOMLine_Null()
 	{
 		this._ppOrderBOMLine_Null = true;
-		return this;
-	}
-
-	@Override
-	public IMRPQueryBuilder addOnlyPP_MRP_ID(final int mrpId)
-	{
-		return addOnlyPP_MRP_IDs(Collections.singleton(mrpId));
-	}
-
-	@Override
-	public IMRPQueryBuilder addOnlyPP_MRP(final I_PP_MRP mrp)
-	{
-		return addOnlyPP_MRPs(Collections.singleton(mrp));
-	}
-
-	@Override
-	public IMRPQueryBuilder addOnlyPP_MRPs(final Collection<I_PP_MRP> mrps)
-	{
-		if (mrps == null || mrps.isEmpty())
-		{
-			return this;
-		}
-
-		final Set<Integer> mrpIds = new HashSet<Integer>(mrps.size());
-		for (final I_PP_MRP mrp : mrps)
-		{
-			if (mrp == null)
-			{
-				continue;
-			}
-			final int mrpId = mrp.getPP_MRP_ID();
-			if (mrpId <= 0)
-			{
-				continue;
-			}
-			mrpIds.add(mrpId);
-		}
-
-		if (mrpIds.isEmpty())
-		{
-			return this;
-		}
-
-		return addOnlyPP_MRP_IDs(mrpIds);
-	}
-
-	@Override
-	public IMRPQueryBuilder addOnlyPP_MRP_IDs(final Collection<Integer> mrpIds)
-	{
-		if (mrpIds == null || mrpIds.isEmpty())
-		{
-			return this;
-		}
-
-		if (_onlyPP_MRP_IDs == null)
-		{
-			_onlyPP_MRP_IDs = new HashSet<Integer>();
-		}
-		_onlyPP_MRP_IDs.addAll(mrpIds);
-		return this;
-	}
-
-	private final Set<Integer> getOnlyPP_MRP_IDs()
-	{
-		return _onlyPP_MRP_IDs;
-	}
-
-	@Override
-	public MRPQueryBuilder setEnforced_PP_MRP_Demand_ID(int mrpId)
-	{
-		this._enforced_PP_MRP_Demand_ID = mrpId;
-		return null;
-	}
-
-	@Override
-	public MRPQueryBuilder setSkipIfMRPExcluded(final boolean skipIfMRPExcluded)
-	{
-		this._skipIfMRPExcluded = skipIfMRPExcluded;
-		return this;
 	}
 }
