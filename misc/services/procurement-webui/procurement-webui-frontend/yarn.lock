@@ -7951,9 +7951,9 @@ mobx-react@^7.0.5:
     mobx-react-lite "^3.1.6"
 
 mobx-state-tree@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/mobx-state-tree/-/mobx-state-tree-4.0.2.tgz"
-  integrity sha512-NLE2xPRqyWlCFGMSAY2vW7gqJTtkcMhavT7I8VoFxUy1Twr7ANqhQXrwoBL5UfhfAY7HhqKjkh8K+TUVeXPGeA==
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/mobx-state-tree/-/mobx-state-tree-4.0.3.tgz#05c4ce3debca5b698df28c9bcfeb7243b318f037"
+  integrity sha512-08a93Ad6R6hsmzSmKb8nGyK1eU9RynA8pW67/1mNSXO4dS9+zZI+IY+zCktm8BqfFduNmXXBRUemB9qyaei4Qg==
 
 mobx@^6.0.4:
   version "6.0.4"
