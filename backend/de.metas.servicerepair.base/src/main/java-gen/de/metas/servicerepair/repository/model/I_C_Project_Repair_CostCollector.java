@@ -1,4 +1,4 @@
-package org.compiere.model;
+package de.metas.servicerepair.repository.model;
 
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
@@ -112,11 +112,11 @@ public interface I_C_Project_Repair_CostCollector
 	 */
 	int getC_Project_Repair_Task_ID();
 
-	@Nullable org.compiere.model.I_C_Project_Repair_Task getC_Project_Repair_Task();
+	@Nullable de.metas.servicerepair.repository.model.I_C_Project_Repair_Task getC_Project_Repair_Task();
 
-	void setC_Project_Repair_Task(@Nullable org.compiere.model.I_C_Project_Repair_Task C_Project_Repair_Task);
+	void setC_Project_Repair_Task(@Nullable de.metas.servicerepair.repository.model.I_C_Project_Repair_Task C_Project_Repair_Task);
 
-	ModelColumn<I_C_Project_Repair_CostCollector, org.compiere.model.I_C_Project_Repair_Task> COLUMN_C_Project_Repair_Task_ID = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "C_Project_Repair_Task_ID", org.compiere.model.I_C_Project_Repair_Task.class);
+	ModelColumn<I_C_Project_Repair_CostCollector, de.metas.servicerepair.repository.model.I_C_Project_Repair_Task> COLUMN_C_Project_Repair_Task_ID = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "C_Project_Repair_Task_ID", de.metas.servicerepair.repository.model.I_C_Project_Repair_Task.class);
 	String COLUMNNAME_C_Project_Repair_Task_ID = "C_Project_Repair_Task_ID";
 
 	/**

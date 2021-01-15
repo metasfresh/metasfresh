@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.webui
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -29,10 +29,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.project.ProjectId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
+import de.metas.servicerepair.repository.model.I_C_Project_Repair_Task;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Project_Repair_Task;
 
 abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 {

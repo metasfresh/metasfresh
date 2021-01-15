@@ -1,4 +1,4 @@
-package org.compiere.model;
+package de.metas.servicerepair.repository.model;
 
 import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;

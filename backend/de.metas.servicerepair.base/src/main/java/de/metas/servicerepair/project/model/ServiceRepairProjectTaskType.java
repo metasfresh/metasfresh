@@ -22,12 +22,12 @@
 
 package de.metas.servicerepair.project.model;
 
+import de.metas.servicerepair.repository.model.X_C_Project_Repair_Task;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.compiere.model.X_C_Project_Repair_Task;
 
 @AllArgsConstructor
 public enum ServiceRepairProjectTaskType implements ReferenceListAwareEnum

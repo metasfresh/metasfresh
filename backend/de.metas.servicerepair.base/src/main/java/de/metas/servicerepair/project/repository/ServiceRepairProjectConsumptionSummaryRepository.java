@@ -27,12 +27,12 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectConsumptionSummary;
+import de.metas.servicerepair.repository.model.I_C_Project_Repair_Consumption_Summary;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Project_Repair_Consumption_Summary;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;

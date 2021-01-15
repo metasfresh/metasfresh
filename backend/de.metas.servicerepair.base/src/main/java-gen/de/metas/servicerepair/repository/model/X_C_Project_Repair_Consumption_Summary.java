@@ -1,5 +1,5 @@
 // Generated Model - DO NOT CHANGE
-package org.compiere.model;
+package de.metas.servicerepair.repository.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_Consumption_Summary extends org.compiere.model.PO implements I_C_Project_Repair_Consumption_Summary, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -840517298L;
+	private static final long serialVersionUID = 866752045L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_Consumption_Summary (final Properties ctx, final int C_Project_Repair_Consumption_Summary_ID, @Nullable final String trxName)

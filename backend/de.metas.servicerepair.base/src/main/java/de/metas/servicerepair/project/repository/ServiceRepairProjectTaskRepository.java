@@ -31,12 +31,12 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import de.metas.servicerepair.project.repository.requests.CreateProjectTaskRequest;
+import de.metas.servicerepair.repository.model.I_C_Project_Repair_Task;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Project_Repair_Task;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Repository;
 

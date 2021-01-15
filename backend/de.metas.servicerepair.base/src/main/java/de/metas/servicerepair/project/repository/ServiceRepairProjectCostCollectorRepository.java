@@ -34,13 +34,13 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.repository.requests.CreateProjectCostCollectorRequest;
+import de.metas.servicerepair.repository.model.I_C_Project_Repair_CostCollector;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Project_Repair_CostCollector;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

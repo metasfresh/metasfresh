@@ -1,5 +1,5 @@
 // Generated Model - DO NOT CHANGE
-package org.compiere.model;
+package de.metas.servicerepair.repository.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO implements I_C_Project_Repair_CostCollector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1043057514L;
+	private static final long serialVersionUID = -937147969L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_CostCollector (final Properties ctx, final int C_Project_Repair_CostCollector_ID, @Nullable final String trxName)
@@ -66,15 +66,15 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public org.compiere.model.I_C_Project_Repair_Task getC_Project_Repair_Task()
+	public de.metas.servicerepair.repository.model.I_C_Project_Repair_Task getC_Project_Repair_Task()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_Repair_Task_ID, org.compiere.model.I_C_Project_Repair_Task.class);
+		return get_ValueAsPO(COLUMNNAME_C_Project_Repair_Task_ID, de.metas.servicerepair.repository.model.I_C_Project_Repair_Task.class);
 	}
 
 	@Override
-	public void setC_Project_Repair_Task(final org.compiere.model.I_C_Project_Repair_Task C_Project_Repair_Task)
+	public void setC_Project_Repair_Task(final de.metas.servicerepair.repository.model.I_C_Project_Repair_Task C_Project_Repair_Task)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Project_Repair_Task_ID, org.compiere.model.I_C_Project_Repair_Task.class, C_Project_Repair_Task);
+		set_ValueFromPO(COLUMNNAME_C_Project_Repair_Task_ID, de.metas.servicerepair.repository.model.I_C_Project_Repair_Task.class, C_Project_Repair_Task);
 	}
 
 	@Override
