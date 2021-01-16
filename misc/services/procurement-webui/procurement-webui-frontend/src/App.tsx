@@ -109,17 +109,10 @@ function PrivateRoute({ loggedIn, ...rest }) {
   );
 }
 
+// TODO: We should try making this a PureComponent
 @inject('store')
 @observer
 class App extends React.Component<IProps, IState> {
-  // constructor(props) {
-  //   super(props);
-
-  //   const { store, history } = props;
-
-  //   store.app.getUserSession();
-  // }
-
   render() {
     const { loggedIn } = this.props.store.app;
 
