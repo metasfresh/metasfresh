@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { observer, inject } from 'mobx-react';
 import { RootInstance } from '../models/Store';
-import { fetchWeeklyReport } from '../api';
+// import { fetchWeeklyReport } from '../api';
 
 interface Props {
   store?: RootInstance;
@@ -12,26 +12,26 @@ interface Props {
 class WeeklyNav extends React.Component<Props> {
   componentDidMount(): void {
     const { store } = this.props;
-    const currWeek = store.week.retrieveCurrentWeek;
+    const currWeek = store.app.week;
     this.updateWeekData(currWeek);
   }
 
   async updateWeekData(currWeek: string): Promise<void> {
     const { store } = this.props;
-    const currWeekReport = await fetchWeeklyReport(currWeek);
-    const { week, nextWeek, previousWeek, weekCaption } = currWeekReport.data;
-    // update the caption
-    store.week.changeCaption(weekCaption);
-    store.week.changeCurrentWeek(week);
-    // update the next and prev
-    store.week.changeNextWeek(nextWeek);
-    store.week.changePrevWeek(previousWeek);
+    // const currWeekReport = await fetchWeeklyReport(currWeek);
+    // const { week, nextWeek, previousWeek, weekCaption } = currWeekReport.data;
+    // // update the caption
+    // store.week.changeCaption(weekCaption);
+    // store.week.changeCurrentWeek(week);
+    // // update the next and prev
+    // store.week.changeNextWeek(nextWeek);
+    // store.week.changePrevWeek(previousWeek);
   }
 
   updateCurrentWeek = (to: string): void => {
     const { store } = this.props;
-    to === 'prev' && this.updateWeekData(store.week.retrievePrevWeek);
-    to === 'next' && this.updateWeekData(store.week.retrieveNextWeek);
+    to === 'prev' && this.updateWeekData(store.app.previousWeek);
+    to === 'next' && this.updateWeekData(store.app.nextWeek);
   };
 
   previousWeek = (): void => this.updateCurrentWeek('prev');
@@ -43,7 +43,7 @@ class WeeklyNav extends React.Component<Props> {
     if (!store) {
       return null;
     }
-    const { week } = store;
+    const { app } = store;
 
     return (
       <div className="daily-nav">
@@ -53,8 +53,8 @@ class WeeklyNav extends React.Component<Props> {
           </div>
           <div className="column is-6">
             <div className="rows">
-              <div className="row is-full"> {week.caption} </div>
-              <div className="row is-full"> {week.retrieveCurrentWeek} </div>
+              <div className="row is-full"> {app.weekCaption} </div>
+              <div className="row is-full"> {app.week} </div>
             </div>
           </div>
           <div className="column is-3 has-text-right arrow-navigation is-vcentered p-4" onClick={this.nextWeek}>

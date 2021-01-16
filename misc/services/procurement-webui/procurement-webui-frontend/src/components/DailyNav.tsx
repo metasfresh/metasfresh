@@ -1,8 +1,9 @@
 import React, { ReactElement } from 'react';
 import { observer, inject } from 'mobx-react';
-import { RootInstance } from '../models/Store';
+
+import { translate } from '../utils/translate';
 import { formDate, prettyDate, slashSeparatedYYYYmmdd } from '../utils/date';
-import { fetchDailyReport } from '../api';
+import { RootInstance } from '../models/Store';
 
 interface Props {
   store?: RootInstance;
@@ -11,18 +12,20 @@ interface Props {
 @inject('store')
 @observer
 class DailyNav extends React.Component<Props> {
+  componentDidMount(): void {
+    const { store } = this.props;
+
+    store.fetchDailyReport(store.app.currentDay);
+    store.navigation.setViewName(translate('DailyReportingView.caption'));
+  }
+
   updateCurrentDay = (to: string): void => {
     const { store } = this.props;
-    const { day } = formDate({ lang: 'de_DE', currentDay: new Date(store.day.currentDay), to });
+    const { day } = formDate({ currentDay: new Date(store.app.currentDay), to });
 
-    // fetch the dayProducts in here
-    const dailyreport = fetchDailyReport(slashSeparatedYYYYmmdd(day));
+    const newDay = slashSeparatedYYYYmmdd(day);
 
-    dailyreport.then((response) => {
-      store.day.changeCaption(response.data.dayCaption);
-      store.day.changeCurrentDay(day);
-      store.dailyProducts.updateProductList(response.data.products);
-    });
+    store.fetchDailyReport(newDay);
   };
 
   previousDay = (): void => this.updateCurrentDay('prev');
@@ -31,10 +34,12 @@ class DailyNav extends React.Component<Props> {
   render(): ReactElement {
     const { store } = this.props;
 
+    // TODO: Is this really needed ? Can we even have no store if it's created on app init ?
     if (!store) {
       return null;
     }
-    const { day } = store;
+    const { lang } = store.i18n;
+    const { day } = formDate({ currentDay: new Date(store.app.currentDay) });
 
     return (
       <div className="daily-nav">
@@ -44,8 +49,8 @@ class DailyNav extends React.Component<Props> {
           </div>
           <div className="column is-6">
             <div className="rows">
-              <div className="row is-full"> {day.retrieveCaption} </div>
-              <div className="row is-full"> {prettyDate({ lang: 'de_DE', date: day.currentDay })} </div>
+              <div className="row is-full"> {store.app.dayCaption} </div>
+              <div className="row is-full"> {prettyDate({ lang, date: day })} </div>
             </div>
           </div>
           <div className="column is-3 has-text-right arrow-navigation is-vcentered p-4" onClick={this.nextDay}>

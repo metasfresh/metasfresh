@@ -12,12 +12,22 @@ export const Day = types
     changeCurrentDay(newDay: Date) {
       self.currentDay = newDay;
     },
-  }))
-  .views((self) => ({
-    get retrieveCaption() {
-      return self.caption;
-    },
-    get retrieveCurrentDay() {
-      return self.currentDay;
-    },
+    // fetchDailyReport: flow(function* fetchReport(date: string) {
+    //   try {
+    //     const response = yield fetchDailyReport(date);
+
+    //     // self.navigation.setViewName(response.data.dayCaption);
+    //     // TODO: Do stuff for daily report
+    //   } catch (error) {
+    //     console.error('Failed to fetch', error);
+    //   }
+    // }),
   }));
+// .views((self) => ({
+//   get getCaption() {
+//     return self.caption;
+//   },
+//   get getCurrentDay() {
+//     return self.currentDay;
+//   },
+// }));

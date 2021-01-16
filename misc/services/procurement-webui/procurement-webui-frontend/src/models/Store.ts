@@ -1,50 +1,37 @@
 import { useContext, createContext } from 'react';
-import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
+import { types, Instance, onSnapshot } from 'mobx-state-tree';
 
-import { fetchDailyReport } from '../api';
-import { formDate } from '../utils/date';
+// import { fetchDailyReport } from '../api';
+// import { formDate } from '../utils/date';
 import { i18n } from './i18n';
 
 import Navigation from './Navigation';
-import { Day } from './Day';
+// import { Day } from './Day';
 import { DailyProductList } from './DailyProductList';
 import { App } from './App';
-import { Week } from './Week';
+// import { Week } from './Week';
 
-export const Store = types
-  .model('Store', {
-    i18n: i18n,
-    navigation: Navigation,
-    day: Day,
-    week: Week,
-    dailyProducts: DailyProductList,
-    app: App,
-  })
-  .actions((self) => ({
-    fetchDailyReport: flow(function* fetchReport(date: string) {
-      try {
-        const response = yield fetchDailyReport(date);
+export const Store = types.model('Store', {
+  i18n: i18n,
+  navigation: Navigation,
+  // day: Day,
+  // week: Week,
+  dailyProducts: DailyProductList,
+  app: App,
+});
 
-        self.navigation.setViewName(response.data.dayCaption);
-        // TODO: Do stuff for daily report
-      } catch (error) {
-        console.error('Failed to fetch', error);
-      }
-    }),
-  }));
-
-const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
+// const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
 
 let initialState = Store.create({
   i18n: { lang: '' },
   navigation: { viewName: '' },
-  day: { caption, currentDay: day },
-  week: {
-    caption: 'Week',
-    prevWeek: '04.2021',
-    currentWeek: '05.2021',
-    nextWeek: '06.2021',
-  },
+  // day: { caption, currentDay: day },
+  // week: {
+  //   caption: 'Week',
+  //   prevWeek: '04.2021',
+  //   currentWeek: '05.2021',
+  //   nextWeek: '06.2021',
+  // },
   dailyProducts: {},
   app: {
     language: '',
@@ -53,8 +40,12 @@ let initialState = Store.create({
     countUnconfirmed: 0,
     email: '',
     dayCaption: '',
+    currentDay: '',
+    // date: '',
     week: '',
     weekCaption: '',
+    previousWeek: '',
+    nextWeek: '',
   },
 });
 

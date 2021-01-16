@@ -1,5 +1,5 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
-import { store } from './Store';
+// import { store } from './Store';
 import { getUserSession, loginRequest, logoutRequest } from '../api';
 
 export const App = types
@@ -10,8 +10,13 @@ export const App = types
     countUnconfirmed: types.number,
     email: types.string,
     dayCaption: types.string,
+    currentDay: types.string,
     week: types.string,
     weekCaption: types.string,
+    // currentWeek: types.string,
+    nextWeek: types.string,
+    previousWeek: types.string,
+    // nextWeekCaption: types.string,
   })
   .actions((self) => {
     const logIn = flow(function* logIn(email: string, password: string) {
@@ -47,14 +52,20 @@ export const App = types
       let response;
       try {
         response = yield getUserSession();
+        response.data.currentDay = response.data.date;
+
+        delete response.data.date;
+
+        console.log('RESPONSE: ', response.data);
+
         setInitialData(response.data);
         // update in the store also the current week
-        const { week, weekCaption } = response.data;
-        week && store.week.changeCurrentWeek(week);
-        weekCaption && store.week.changeCaption(weekCaption);
+        // const { week, weekCaption } = response.data;
+        // week && store.week.changeCurrentWeek(week);
+        // weekCaption && store.week.changeCaption(weekCaption);
+        // const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
       } catch (e) {
         // 401 (Unauthorized)
-        // TODO: redirect here to /login as you are not authenticated anymore
         logOut();
       }
 

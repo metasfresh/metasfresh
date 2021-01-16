@@ -4,11 +4,12 @@ import { Provider } from 'mobx-react';
 import { observable } from 'mobx';
 
 import './static/index.scss';
+
 import App from './App';
+import { translate } from './utils/translate';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import { loadMirageInDev } from './api';
+import { loadMirageInDev, getMessages } from './api';
 import reportWebVitals from './reportWebVitals';
-import { getMessages } from './api';
 import { store } from './models/Store';
 
 const history = {
@@ -26,7 +27,11 @@ getMessages().then((response) => {
     const { language, messages } = response.data;
     store.i18n.changeLang(language);
     store.i18n.changeMessages(messages);
+
+    store.navigation.setViewName(translate('DailyReportingView.caption'));
   }
+
+  store.app.getUserSession();
 
   ReactDOM.render(
     <Provider store={store} history={history}>
