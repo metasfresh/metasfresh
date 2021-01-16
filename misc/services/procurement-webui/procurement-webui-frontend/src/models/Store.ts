@@ -1,37 +1,56 @@
 import { useContext, createContext } from 'react';
-import { types, Instance, onSnapshot } from 'mobx-state-tree';
+import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
 
-// import { fetchDailyReport } from '../api';
-// import { formDate } from '../utils/date';
+import { fetchDailyReport, fetchWeeklyReport } from '../api';
 import { i18n } from './i18n';
 
 import Navigation from './Navigation';
-// import { Day } from './Day';
 import { DailyProductList } from './DailyProductList';
 import { App } from './App';
-// import { Week } from './Week';
 
-export const Store = types.model('Store', {
-  i18n: i18n,
-  navigation: Navigation,
-  // day: Day,
-  // week: Week,
-  dailyProducts: DailyProductList,
-  app: App,
-});
+export const Store = types
+  .model('Store', {
+    i18n: i18n,
+    navigation: Navigation,
+    dailyProducts: DailyProductList,
+    app: App,
+  })
+  .actions((self) => ({
+    fetchDailyReport: flow(function* dailyReport(reportDate: string) {
+      try {
+        const {
+          data: { date, dayCaption, products },
+        } = yield fetchDailyReport(reportDate);
 
-// const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
+        self.app.setCurrentDay(date);
+        self.app.setDayCaption(dayCaption);
+        self.dailyProducts.updateProductList(products);
+      } catch (error) {
+        console.error('Failed to fetch', error);
+      }
+    }),
+    fetchWeeklyReport: flow(function* weeklyReport(reportWeek: string) {
+      try {
+        const {
+          data: { week, weekCaption, products, nextWeek, previousWeek },
+        } = yield fetchWeeklyReport(reportWeek);
+
+        self.app.setCurrentWeek(week);
+        self.app.setWeekCaption(weekCaption);
+        self.app.setNextWeek(nextWeek);
+        self.app.setPrevWeek(previousWeek);
+
+        // TODO: Should we just have `products` for both week and day ?
+        // self.dailyProducts.updateProductList(products);
+      } catch (error) {
+        console.error('Failed to fetch', error);
+      }
+    }),
+  }));
 
 let initialState = Store.create({
   i18n: { lang: '' },
   navigation: { viewName: '' },
-  // day: { caption, currentDay: day },
-  // week: {
-  //   caption: 'Week',
-  //   prevWeek: '04.2021',
-  //   currentWeek: '05.2021',
-  //   nextWeek: '06.2021',
-  // },
   dailyProducts: {},
   app: {
     language: '',
@@ -41,7 +60,6 @@ let initialState = Store.create({
     email: '',
     dayCaption: '',
     currentDay: '',
-    // date: '',
     week: '',
     weekCaption: '',
     previousWeek: '',

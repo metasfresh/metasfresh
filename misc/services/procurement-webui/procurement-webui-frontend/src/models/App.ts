@@ -1,5 +1,5 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
-// import { store } from './Store';
+
 import { getUserSession, loginRequest, logoutRequest } from '../api';
 
 export const App = types
@@ -13,10 +13,8 @@ export const App = types
     currentDay: types.string,
     week: types.string,
     weekCaption: types.string,
-    // currentWeek: types.string,
     nextWeek: types.string,
     previousWeek: types.string,
-    // nextWeekCaption: types.string,
   })
   .actions((self) => {
     const logIn = flow(function* logIn(email: string, password: string) {
@@ -56,14 +54,7 @@ export const App = types
 
         delete response.data.date;
 
-        console.log('RESPONSE: ', response.data);
-
         setInitialData(response.data);
-        // update in the store also the current week
-        // const { week, weekCaption } = response.data;
-        // week && store.week.changeCurrentWeek(week);
-        // weekCaption && store.week.changeCaption(weekCaption);
-        // const { caption, day } = formDate({ lang: 'de_DE', currentDay: new Date(), to: 'next' }); // TODO: lang - this should be changed with whatever we get from /login
       } catch (e) {
         // 401 (Unauthorized)
         logOut();
@@ -80,11 +71,41 @@ export const App = types
       self.loginError = errorMsg;
     };
 
+    const setDayCaption = function (dayCaption: string) {
+      self.dayCaption = dayCaption;
+    };
+
+    const setCurrentDay = function (newDay: string) {
+      self.currentDay = newDay;
+    };
+
+    const setWeekCaption = function (newCaption: string) {
+      self.weekCaption = newCaption;
+    };
+
+    const setPrevWeek = function (newPrevWeek: string) {
+      self.previousWeek = newPrevWeek;
+    };
+
+    const setCurrentWeek = function (newWeek: string) {
+      self.week = newWeek;
+    };
+
+    const setNextWeek = function (newNextWeek: string) {
+      self.nextWeek = newNextWeek;
+    };
+
     return {
       logIn,
       logOut,
       getUserSession: getSession,
       setInitialData,
       setResponseError,
+      setDayCaption,
+      setCurrentDay,
+      setWeekCaption,
+      setPrevWeek,
+      setCurrentWeek,
+      setNextWeek,
     };
   });

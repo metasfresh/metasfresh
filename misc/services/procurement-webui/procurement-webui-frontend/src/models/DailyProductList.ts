@@ -11,6 +11,8 @@ export const DailyProductList = types
       self.products = cast(newList);
     },
   }))
+  // TODO: This is not really different from `store.productsList.products
+  // According to the docs views should be used when computations are needed
   .views((self) => ({
     get getProducts() {
       return self.products;

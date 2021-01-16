@@ -1,7 +1,8 @@
 import React, { ReactElement } from 'react';
 import { observer, inject } from 'mobx-react';
+
+import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
-// import { fetchWeeklyReport } from '../api';
 
 interface Props {
   store?: RootInstance;
@@ -12,20 +13,14 @@ interface Props {
 class WeeklyNav extends React.Component<Props> {
   componentDidMount(): void {
     const { store } = this.props;
-    const currWeek = store.app.week;
-    this.updateWeekData(currWeek);
+    this.updateWeekData(store.app.week);
+    store.navigation.setViewName(translate('WeeklyReportingView.caption'));
   }
 
-  async updateWeekData(currWeek: string): Promise<void> {
+  updateWeekData(currWeek: string): void {
     const { store } = this.props;
-    // const currWeekReport = await fetchWeeklyReport(currWeek);
-    // const { week, nextWeek, previousWeek, weekCaption } = currWeekReport.data;
-    // // update the caption
-    // store.week.changeCaption(weekCaption);
-    // store.week.changeCurrentWeek(week);
-    // // update the next and prev
-    // store.week.changeNextWeek(nextWeek);
-    // store.week.changePrevWeek(previousWeek);
+
+    store.fetchWeeklyReport(currWeek);
   }
 
   updateCurrentWeek = (to: string): void => {

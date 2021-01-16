@@ -1,16 +1,15 @@
 interface DateFormatting {
-  lang: string;
   currentDay: Date;
   to?: string;
 }
 
 /**
  * @method formDate
- * @summary gets the object contianing the caption and dayFormat for the next day based on the lang parameter given
+ * @summary gets the Date object - either current or in the future/past
  * @param<Date> currentDay -  from where we calculate the next/prev one, current day
  * @param<string> to - string indicating we should return the next or previous day, calculated from the currentDay
  */
-export function formDate({ lang, currentDay, to }: DateFormatting): { /*caption: string;*/ day: Date } {
+export function formDate({ currentDay, to }: DateFormatting): { day: Date } {
   const day = new Date(currentDay);
   switch (to) {
     case 'prev':
@@ -21,19 +20,7 @@ export function formDate({ lang, currentDay, to }: DateFormatting): { /*caption:
       day.setDate(day.getDate() + 1);
   }
 
-  // let days;
-  // switch (lang) {
-  //   case 'de_CH':
-  //   case 'de_DE':
-  //     days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-  //     break;
-  //   case 'en_US':
-  //   case 'en_EN':
-  //   default:
-  //     days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  // }
-
-  return { /*caption: days[day.getDay()],*/ day };
+  return { day };
 }
 
 interface PrettyDate {
