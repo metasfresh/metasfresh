@@ -82,7 +82,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
           >
             <i className="fas fa-check" />
             <span className="link-text">{translate('DailyReportingView.sendButton')}</span>
-            {countUnconfirmed && <span className="unconfirmed-count">{countUnconfirmed}</span>}
+            {countUnconfirmed ? <span className="unconfirmed-count">{countUnconfirmed}</span> : null}
           </a>,
           <Link
             to={{

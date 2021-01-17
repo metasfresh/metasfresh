@@ -1,11 +1,14 @@
 import React, { ReactElement } from 'react';
-import Product from './Product';
 import { observer, inject } from 'mobx-react';
-import { RootInstance } from '../models/Store';
 import { getSnapshot } from 'mobx-state-tree';
+
+import Product from './Product';
+import { RootInstance } from '../models/Store';
+
 interface Props {
   store?: RootInstance;
 }
+
 @inject('store')
 @observer
 class ProductList extends React.Component<Props> {
