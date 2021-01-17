@@ -1,6 +1,6 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
 
-import { getUserSession, loginRequest, logoutRequest } from '../api';
+import { getUserSession, logoutRequest } from '../api';
 
 export const App = types
   .model('App', {
@@ -17,28 +17,15 @@ export const App = types
     previousWeek: types.string,
   })
   .actions((self) => {
-    const logIn = flow(function* logIn(email: string, password: string) {
-      self.loginError = '';
-      let result;
-
-      try {
-        const { data } = yield loginRequest(email, password);
-
-        if (!data.loginError) {
-          setInitialData(data);
-        } else {
-          setResponseError(data.loginError);
-        }
-        result = { ...data };
-      } catch (error) {
-        setResponseError(error);
-        result = {
-          loginError: error,
-        };
+    const logIn = function logIn(loginData) {
+      if (!loginData.loginError) {
+        setInitialData(loginData);
+      } else {
+        setResponseError(loginData.loginError);
       }
 
-      return result;
-    });
+      return loginData;
+    };
 
     const logOut = flow(function* logOut() {
       yield logoutRequest();
@@ -48,6 +35,7 @@ export const App = types
 
     const getSession = flow(function* getSession() {
       let response;
+
       try {
         response = yield getUserSession();
         response.data.currentDay = response.data.date;

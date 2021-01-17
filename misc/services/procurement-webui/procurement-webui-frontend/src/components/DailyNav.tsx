@@ -15,14 +15,14 @@ class DailyNav extends React.Component<Props> {
   componentDidMount(): void {
     const { store } = this.props;
 
-    store.fetchDailyReport(store.app.currentDay);
-    store.navigation.setViewName(translate('DailyReportingView.caption'));
+    store.fetchDailyReport(store.app.currentDay).then(() => {
+      store.navigation.setViewName(translate('DailyReportingView.caption'));
+    });
   }
 
   updateCurrentDay = (to: string): void => {
     const { store } = this.props;
     const { day } = formDate({ currentDay: new Date(store.app.currentDay), to });
-
     const newDay = slashSeparatedYYYYmmdd(day);
 
     store.fetchDailyReport(newDay);

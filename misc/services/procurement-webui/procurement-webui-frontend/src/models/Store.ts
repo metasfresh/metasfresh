@@ -1,7 +1,7 @@
 import { useContext, createContext } from 'react';
 import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
 
-import { fetchDailyReport, fetchWeeklyReport } from '../api';
+import { fetchDailyReport, fetchWeeklyReport, loginRequest } from '../api';
 import { i18n } from './i18n';
 
 import Navigation from './Navigation';
@@ -16,6 +16,23 @@ export const Store = types
     app: App,
   })
   .actions((self) => ({
+    logIn: flow(function* logIn(email: string, password: string) {
+      self.app.setResponseError('');
+      let result;
+
+      try {
+        const { data } = yield loginRequest(email, password);
+        yield self.app.getUserSession();
+
+        result = { ...data };
+      } catch (error) {
+        result = {
+          loginError: error,
+        };
+      }
+
+      return self.app.logIn(result);
+    }),
     fetchDailyReport: flow(function* dailyReport(reportDate: string) {
       try {
         const {

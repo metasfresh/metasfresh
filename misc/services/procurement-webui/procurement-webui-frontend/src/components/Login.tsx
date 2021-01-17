@@ -35,7 +35,7 @@ const Login: FunctionComponent<Props> = inject('store')(
 
         const { email, password } = state;
 
-        app.logIn(email, password).then((response) => {
+        store.logIn(email, password).then((response) => {
           !response.loginError && history.push('/');
         });
       };

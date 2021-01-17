@@ -54,21 +54,11 @@ const childRoutes = (
   </div>
 );
 
-@inject('store')
-@observer
 class Index extends Component {
   installPrompt = null;
 
   constructor(props) {
     super(props);
-
-    const { history, store } = props;
-
-    onAction(store, (call) => {
-      if (call.name === 'logOut') {
-        history.push('/login');
-      }
-    });
   }
 
   componentDidMount() {
