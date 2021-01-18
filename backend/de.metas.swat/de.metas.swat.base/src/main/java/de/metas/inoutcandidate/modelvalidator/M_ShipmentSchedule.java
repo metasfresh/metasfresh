@@ -310,7 +310,7 @@ public class M_ShipmentSchedule
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_M_ReceiptSchedule.COLUMNNAME_ExportStatus)
+			ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_ExportStatus)
 	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		shipmentScheduleBL.updateCanBeExportedAfter(sched);

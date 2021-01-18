@@ -408,10 +408,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			shipmentScheduleBL.updateExportStatus(schedRecord);
 			schedRecord.setPOReference(olAndSched.getSalesOrderPORef());
 
-			if (InterfaceWrapperHelper.hasChanges(schedRecord))
-			{
-				shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
-			}
+			// do not invoke this method, it's invoked by a model interceptor when M_ShipmentSchedule.ExportStatus is changed *for whatevever reason*.
+			// shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
 			shipmentSchedulePA.save(schedRecord);
 		}
 	}
