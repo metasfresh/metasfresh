@@ -16,14 +16,14 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.impl.AcctSchemaPeriodControl;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
@@ -38,8 +38,6 @@ import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MCash;
 import org.compiere.model.MJournal;
 import org.compiere.model.MMovement;
-import org.compiere.model.MPayment;
-import org.compiere.model.MProjectIssue;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -47,12 +45,12 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.api.impl.AcctSchemaPeriodControl;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /**
  *	Accounting Fact Reset
@@ -121,10 +119,11 @@ public class FactAcctReset extends JavaProcess
 		sql += " AND EXISTS (SELECT * FROM AD_Column c "
 				+ "WHERE t.AD_Table_ID=c.AD_Table_ID AND c.ColumnName='Posted' AND c.IsActive='Y')";
 		PreparedStatement pstmt = null;
+		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
-			final ResultSet rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
 				final int AD_Table_ID = rs.getInt(1);
@@ -134,24 +133,16 @@ public class FactAcctReset extends JavaProcess
 				else
 					reset (TableName);
 			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
 		}
 		catch (final Exception e)
 		{
-			log.error(sql, e);
+			throw new DBException(e, sql);
 		}
-		try
+		finally
 		{
-			if (pstmt != null)
-				pstmt.close();
-			pstmt = null;
+			DB.close(rs, pstmt);
 		}
-		catch (final Exception e)
-		{
-			pstmt = null;
-		}
+
 		//
 		return "@Updated@ = " + m_countReset + ", @Deleted@ = " + m_countDelete;
 	}	//	doIt
@@ -160,7 +151,7 @@ public class FactAcctReset extends JavaProcess
 	 * 	Reset Accounting Table and update count
 	 *	@param TableName table
 	 */
-	private void reset (String TableName)
+	private void reset (final String TableName)
 	{
 		String sql = "UPDATE " + TableName
 			+ " SET Processing='N' WHERE AD_Client_ID=" + p_AD_Client_ID
