@@ -18,7 +18,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
   const product = products.find((prod) => prod.productId === productId);
 
   useEffect(() => {
-    store.navigation.setTopViewName('Actual Product');
+    store.navigation.setTopViewName(product.productName);
   }, [store]);
 
   return (
