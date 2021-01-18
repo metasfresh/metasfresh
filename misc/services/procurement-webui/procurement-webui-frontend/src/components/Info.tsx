@@ -4,7 +4,7 @@ import View from './View';
 import { RootStoreContext } from '../models/Store';
 import { translate } from '../utils/translate';
 
-const Info: React.FC = observer(() => {
+const Info: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
 
   useEffect(() => {
