@@ -17,13 +17,12 @@ class DailyNav extends React.Component<Props> {
     const { store, isStatic } = this.props;
 
     if (!isStatic) {
-      store.fetchDailyReport(store.app.currentDay).then(() => {
-        store.navigation.setViewNames(translate('DailyReportingView.caption'));
-      });
+      store.navigation.setViewNames(translate('DailyReportingView.caption'));
+      store.fetchDailyReport(store.app.currentDay);
     }
   }
 
-  updateCurrentDay = (to: string): Promise<any> => {
+  updateCurrentDay = (to: string): Promise<void> => {
     const { store } = this.props;
     const date = formDate({ currentDay: new Date(store.app.currentDay), to });
     const formattedDate = slashSeparatedYYYYmmdd(date);
@@ -31,8 +30,8 @@ class DailyNav extends React.Component<Props> {
     return store.fetchDailyReport(formattedDate);
   };
 
-  previousDay = (): Promise<any> => this.updateCurrentDay('prev');
-  nextDay = (): Promise<any> => this.updateCurrentDay('next');
+  previousDay = (): Promise<void> => this.updateCurrentDay('prev');
+  nextDay = (): Promise<void> => this.updateCurrentDay('next');
 
   render(): ReactElement {
     const { store, isStatic } = this.props;
