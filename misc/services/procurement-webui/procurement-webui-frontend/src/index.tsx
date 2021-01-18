@@ -10,7 +10,7 @@ import { translate } from './utils/translate';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { loadMirageInDev, getMessages } from './api';
 import reportWebVitals from './reportWebVitals';
-import { store } from './models/Store';
+import { RootStoreContext, store } from './models/Store';
 
 const history = {
   snapshots: observable.array([], { deep: false }),
@@ -35,7 +35,9 @@ getMessages().then((response) => {
 
   ReactDOM.render(
     <Provider store={store} history={history}>
-      <App />
+      <RootStoreContext.Provider value={store}>
+        <App />
+      </RootStoreContext.Provider>
     </Provider>,
     document.getElementById('root')
   );

@@ -113,3 +113,7 @@ export function loginRequest(username: string, password: string): Promise<AxiosR
 export function getUserSession(): Promise<AxiosResponse> {
   return axios.get(`/rest/session/`);
 }
+
+export function infoMessages(): Promise<AxiosResponse> {
+  return axios.get(`/rest/infoMessages`);
+}

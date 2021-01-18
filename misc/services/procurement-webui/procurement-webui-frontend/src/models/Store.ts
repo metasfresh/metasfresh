@@ -3,7 +3,7 @@ import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
 
 import { fetchDailyReport, fetchWeeklyReport, loginRequest } from '../api';
 import { i18n } from './i18n';
-
+import { Info } from './Info';
 import Navigation from './Navigation';
 import { DailyProductList } from './DailyProductList';
 import { App } from './App';
@@ -14,6 +14,7 @@ export const Store = types
     navigation: Navigation,
     dailyProducts: DailyProductList,
     app: App,
+    info: Info,
   })
   .actions((self) => ({
     logIn: flow(function* logIn(email: string, password: string) {
@@ -82,6 +83,7 @@ let initialState = Store.create({
     previousWeek: '',
     nextWeek: '',
   },
+  info: { content: '' },
 });
 
 const data = localStorage.getItem('initialState');
@@ -105,7 +107,7 @@ onSnapshot(store, (snapshot) => {
  * we can use also useMst through the app to reach the data by using the context
  */
 export type RootInstance = Instance<typeof Store>;
-const RootStoreContext = createContext<null | RootInstance>(null);
+export const RootStoreContext = createContext<null | RootInstance>(null);
 
 export const Provider = RootStoreContext.Provider;
 export function useMst(): RootInstance {
