@@ -12,6 +12,10 @@ const Info: React.FC = observer(() => {
     store.navigation.setViewName(translate('InfoMessageView.caption'));
   }, [store]);
 
+  /**
+   * To preserve the html formatting and allow <B> <U> and <I> tags we used dangerouslySetInnerHTML
+   * TODO: this can be further improved with usage of a sanitizer like https://github.com/cure53/DOMPurify
+   */
   return (
     <View>
       <div>
