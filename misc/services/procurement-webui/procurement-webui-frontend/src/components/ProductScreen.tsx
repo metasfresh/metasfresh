@@ -1,9 +1,17 @@
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { useContext, useEffect } from 'react';
 import DailyNav from './DailyNav';
 import View from './View';
+import { RootStoreContext } from '../models/Store';
+import { observer } from 'mobx-react';
 // import { translate } from '../utils/translate';
 
-const ProductScreen: FunctionComponent = (): ReactElement => {
+const ProductScreen: React.FC = observer(() => {
+  const store = useContext(RootStoreContext);
+
+  useEffect(() => {
+    store.navigation.setViewName('Actual Product');
+  }, [store]);
+
   return (
     <View>
       <div>
@@ -14,6 +22,6 @@ const ProductScreen: FunctionComponent = (): ReactElement => {
       </div>
     </View>
   );
-};
+});
 
 export default ProductScreen;
