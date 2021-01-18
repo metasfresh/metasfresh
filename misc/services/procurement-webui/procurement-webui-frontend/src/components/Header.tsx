@@ -31,7 +31,7 @@ const Header: FunctionComponent<Props> = inject('store')(
         <header className="p-4 navbar is-fixed-top is-flex is-align-items-center is-justify-content-space-around header">
           {fakeAligner}
           <div className="header-title">
-            <h4 className="title is-4">{store.navigation.viewName}</h4>
+            <h4 className="title is-4">{store.navigation.topViewName}</h4>
           </div>
           {link}
         </header>

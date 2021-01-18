@@ -31,7 +31,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
       const text = state ? state.text : null;
       const navigateBackObject = {
         path: pathname,
-        text: navigation.viewName,
+        text: navigation.bottomViewName,
       };
 
       if (['login', 'password'].indexOf(pathname) >= 0) {

@@ -9,7 +9,7 @@ const Info: React.FunctionComponent = observer(() => {
 
   useEffect(() => {
     store.info.fetchInfo();
-    store.navigation.setViewName(translate('InfoMessageView.caption'));
+    store.navigation.setViewNames(translate('InfoMessageView.caption'));
   }, [store]);
 
   /**

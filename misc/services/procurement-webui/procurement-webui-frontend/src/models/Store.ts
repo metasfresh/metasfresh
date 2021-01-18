@@ -68,7 +68,7 @@ export const Store = types
 
 let initialState = Store.create({
   i18n: { lang: '' },
-  navigation: { viewName: '' },
+  navigation: { topViewName: '', bottomViewName: '' },
   dailyProducts: {},
   app: {
     loggedIn: false,

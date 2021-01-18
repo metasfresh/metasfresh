@@ -28,7 +28,7 @@ getMessages().then(async (response) => {
     store.i18n.changeLang(language);
     store.i18n.changeMessages(messages);
 
-    store.navigation.setViewName(translate('DailyReportingView.caption'));
+    store.navigation.setViewNames(translate('DailyReportingView.caption'));
   }
 
   await store.app.getUserSession();

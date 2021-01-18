@@ -14,7 +14,7 @@ class WeeklyNav extends React.Component<Props> {
   componentDidMount(): void {
     const { store } = this.props;
     this.updateWeekData(store.app.week);
-    store.navigation.setViewName(translate('WeeklyReportingView.caption'));
+    store.navigation.setViewNames(translate('WeeklyReportingView.caption'));
   }
 
   updateWeekData(currWeek: string): void {

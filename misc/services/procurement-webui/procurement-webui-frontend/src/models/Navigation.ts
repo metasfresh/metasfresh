@@ -2,11 +2,19 @@ import { types } from 'mobx-state-tree';
 
 const Navigation = types
   .model({
-    viewName: types.string,
+    topViewName: types.string,
+    bottomViewName: types.string,
   })
   .actions((self) => ({
-    setViewName(viewName: string) {
-      self.viewName = viewName;
+    setViewNames(viewName: string) {
+      self.topViewName = viewName;
+      self.bottomViewName = viewName;
+    },
+    setTopViewName(viewName: string) {
+      self.topViewName = viewName;
+    },
+    setBottomViewName(viewName: string) {
+      self.bottomViewName = viewName;
     },
   }));
 

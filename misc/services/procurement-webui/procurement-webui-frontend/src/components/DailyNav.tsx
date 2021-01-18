@@ -14,11 +14,13 @@ interface Props {
 @observer
 class DailyNav extends React.Component<Props> {
   componentDidMount(): void {
-    const { store } = this.props;
+    const { store, isStatic } = this.props;
 
-    store.fetchDailyReport(store.app.currentDay).then(() => {
-      store.navigation.setViewName(translate('DailyReportingView.caption'));
-    });
+    if (!isStatic) {
+      store.fetchDailyReport(store.app.currentDay).then(() => {
+        store.navigation.setViewNames(translate('DailyReportingView.caption'));
+      });
+    }
   }
 
   updateCurrentDay = (to: string): Promise<any> => {
