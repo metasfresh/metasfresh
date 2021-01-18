@@ -688,6 +688,7 @@ class ShipmentCandidateAPIService
 		final List<ShipmentSchedule> shipmentSchedulesOrderedByOrderId = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
 		final List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
 
+		// add possible shipmentSchedule which don't reference an order
 		int counter = 0;
 		for (final ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
 		{
@@ -701,26 +702,30 @@ class ShipmentCandidateAPIService
 				break;
 			}
 		}
-
-		if (counter == limit.toInt())
+		logger.info("loadShipmentSchedulesToExport - Added {} shipmentSchedules that have no C_Order_ID", schedulesToBeExported.size());
+		if (counter >= limit.toInt())
 		{
 			return schedulesToBeExported;
 		}
 
+		// add shipmentSchedules which reference an oder
 		final List<ShipmentSchedule> nonNullOrderShipmentSchedules = shipmentSchedulesOrderedByOrderId.stream()
 				.filter(sched -> sched.getOrderAndLineId() != null)
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableListMultimap<OrderId, ShipmentSchedule> schedulesForOrderIds = Multimaps.index(nonNullOrderShipmentSchedules, sched -> sched.getOrderAndLineId().getOrderId());
-
 		int ordersLeftToExport = limit.toInt() - counter;
 
-		final UnmodifiableIterator<OrderId> orderIdIterator = schedulesForOrderIds.keySet().iterator();
+		final ImmutableSet<OrderId> orderIds = schedulesForOrderIds.keySet();
+		logger.info("loadShipmentSchedulesToExport - the exportable shipmentSchedules have {} different C_Order_IDs; ordersLeftToExport={}", orderIds.size(), ordersLeftToExport);
 
+		final UnmodifiableIterator<OrderId> orderIdIterator = orderIds.iterator();
 		while (orderIdIterator.hasNext() && ordersLeftToExport > 0)
 		{
 			final OrderId currentOrderId = orderIdIterator.next();
-			schedulesToBeExported.addAll(schedulesForOrderIds.get(currentOrderId));
+			final ImmutableList<ShipmentSchedule> shipmentSchedules = schedulesForOrderIds.get(currentOrderId);
+			schedulesToBeExported.addAll(shipmentSchedules);
+			logger.info("loadShipmentSchedulesToExport - Added {} shipmentSchedules for C_Order_ID={} to the schedulesToBeExported", shipmentSchedules.size(), currentOrderId.getRepoId());
 			ordersLeftToExport--;
 		}
 
