@@ -9,18 +9,21 @@ interface DateFormatting {
  * @param<Date> currentDay -  from where we calculate the next/prev one, current day
  * @param<string> to - string indicating we should return the next or previous day, calculated from the currentDay
  */
-export function formDate({ currentDay, to }: DateFormatting): { day: Date } {
+export function formDate({ currentDay, to }: DateFormatting): Date {
   const day = new Date(currentDay);
+  let newDate;
   switch (to) {
     case 'prev':
-      day.setDate(day.getDate() - 1);
+      newDate = new Date(day.setDate(day.getDate() - 1));
       break;
     case 'next':
+      newDate = new Date(day.setDate(day.getDate() + 1));
+      break;
     default:
-      day.setDate(day.getDate() + 1);
+      newDate = day;
   }
 
-  return { day };
+  return newDate;
 }
 
 interface PrettyDate {
@@ -28,21 +31,19 @@ interface PrettyDate {
   date: Date;
 }
 export function prettyDate({ lang, date }: PrettyDate): string {
-  let dayFormat;
-  const dd = (date.getDate() < 10 ? '0' : '') + date.getDate();
-  const mm = (date.getMonth() + 1 < 10 ? '0' : '') + (date.getMonth() + 1);
-  const yyyy = date.getFullYear();
+  const day = (date.getDate() < 10 ? '0' : '') + date.getDate();
+  const month = (date.getMonth() + 1 < 10 ? '0' : '') + (date.getMonth() + 1);
+  const year = date.getFullYear();
+
   switch (lang) {
     case 'de_CH':
     case 'de_DE':
-      dayFormat = `${dd}.${mm}.${yyyy}`;
-      break;
+      return `${day}.${month}.${year}`;
     case 'en_US':
     case 'en_EN':
     default:
-      dayFormat = `${dd}/${mm}/${yyyy}`;
+      return `${day}/${month}/${year}`;
   }
-  return dayFormat;
 }
 
 /**

@@ -20,16 +20,16 @@ class DailyNav extends React.Component<Props> {
     });
   }
 
-  updateCurrentDay = (to: string): void => {
+  updateCurrentDay = (to: string): Promise<any> => {
     const { store } = this.props;
-    const { day } = formDate({ currentDay: new Date(store.app.currentDay), to });
-    const newDay = slashSeparatedYYYYmmdd(day);
+    const date = formDate({ currentDay: new Date(store.app.currentDay), to });
+    const formattedDate = slashSeparatedYYYYmmdd(date);
 
-    store.fetchDailyReport(newDay);
+    return store.fetchDailyReport(formattedDate);
   };
 
-  previousDay = (): void => this.updateCurrentDay('prev');
-  nextDay = (): void => this.updateCurrentDay('next');
+  previousDay = (): Promise<any> => this.updateCurrentDay('prev');
+  nextDay = (): Promise<any> => this.updateCurrentDay('next');
 
   render(): ReactElement {
     const { store } = this.props;
@@ -39,7 +39,7 @@ class DailyNav extends React.Component<Props> {
       return null;
     }
     const { lang } = store.i18n;
-    const { day } = formDate({ currentDay: new Date(store.app.currentDay) });
+    const date = formDate({ currentDay: new Date(store.app.currentDay) });
 
     return (
       <div className="daily-nav">
@@ -50,7 +50,7 @@ class DailyNav extends React.Component<Props> {
           <div className="column is-6">
             <div className="rows">
               <div className="row is-full"> {store.app.dayCaption} </div>
-              <div className="row is-full"> {prettyDate({ lang, date: day })} </div>
+              <div className="row is-full"> {prettyDate({ lang, date })} </div>
             </div>
           </div>
           <div className="column is-3 has-text-right arrow-navigation is-vcentered p-4" onClick={this.nextDay}>
