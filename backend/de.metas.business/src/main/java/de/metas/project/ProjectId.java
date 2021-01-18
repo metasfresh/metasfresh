@@ -52,7 +52,7 @@ public class ProjectId implements RepoIdAware
 		return repoId > 0 ? new ProjectId(repoId) : null;
 	}
 
-	public static int toRepoId(final ProjectId id)
+	public static int toRepoId(@Nullable final ProjectId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
