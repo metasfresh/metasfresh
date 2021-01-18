@@ -140,3 +140,7 @@ footer {
   border-radius: 10px;
   background-color: $danger-red;
 }
+
+.preserve-new-lines {
+  white-space: pre-wrap;
+}

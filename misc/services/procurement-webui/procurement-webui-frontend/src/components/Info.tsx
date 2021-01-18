@@ -15,7 +15,7 @@ const Info: React.FC = observer(() => {
       <div>
         <h1 className="title p-4">Info/News</h1>
         <div className="mt-1 p-4">
-          <p className="subtitle" dangerouslySetInnerHTML={{ __html: store.info.getContent }}></p>
+          <p className="subtitle preserve-new-lines" dangerouslySetInnerHTML={{ __html: store.info.getContent }}></p>
         </div>
       </div>
     </View>
