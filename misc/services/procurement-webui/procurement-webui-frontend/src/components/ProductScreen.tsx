@@ -3,10 +3,18 @@ import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
 import { observer } from 'mobx-react';
-// import { translate } from '../utils/translate';
+import { getSnapshot } from 'mobx-state-tree';
+import { useParams } from 'react-router-dom';
 
-const ProductScreen: React.FC = observer(() => {
+interface RouteParams {
+  productId?: string;
+}
+const ProductScreen: React.FunctionComponent = observer(() => {
+  const { productId } = useParams<RouteParams>();
+
   const store = useContext(RootStoreContext);
+  const products = getSnapshot(store.dailyProducts.products);
+  const product = products.find((prod) => prod.productId === productId);
 
   useEffect(() => {
     store.navigation.setViewName('Actual Product');
@@ -17,7 +25,7 @@ const ProductScreen: React.FC = observer(() => {
       <div>
         <DailyNav isStatic={true} />
         <div className="mt-1 p-4">
-          <p className="subtitle">Some content</p>
+          <p className="subtitle">{product.productName}</p>
         </div>
       </div>
     </View>
