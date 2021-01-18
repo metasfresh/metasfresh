@@ -47,6 +47,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Abstract {@link ITrx} implementation which has no dependencies on any native implementation.
  *
@@ -234,15 +236,11 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Native (actual) rollback to savepoint implementation
-	 *
-	 * @param savepointNative
-	 * @return
-	 * @throws SQLException
 	 */
 	protected abstract boolean rollbackNative(ITrxSavepoint savepoint) throws Exception;
 
 	@Override
-	public boolean commit(boolean throwException) throws SQLException
+	public boolean commit(final boolean throwException) throws SQLException
 	// metas: begin: 02367
 	{
 		final ITrxListenerManager trxListenerManager = getTrxListenerManager(false);
@@ -281,7 +279,7 @@ public abstract class AbstractTrx implements ITrx
 	protected abstract boolean commitNative(boolean throwException) throws SQLException;
 
 	@Override
-	public ITrxSavepoint createTrxSavepoint(String name)
+	public ITrxSavepoint createTrxSavepoint(@Nullable final String name)
 	{
 		final ITrxSavepoint savepoint;
 		try
@@ -302,9 +300,7 @@ public abstract class AbstractTrx implements ITrx
 	}
 
 	/**
-	 * @param name
 	 * @return savepoint or return <code>null</code> if no connection could be obtained of if we have an autoCommit connection.
-	 * @throws Exception
 	 */
 	protected abstract ITrxSavepoint createTrxSavepointNative(String name) throws Exception;
 
@@ -332,7 +328,6 @@ public abstract class AbstractTrx implements ITrx
 	/**
 	 * Release native savepoint
 	 *
-	 * @param savepointNative
 	 * @return true if released or if it was already released
 	 */
 	protected abstract boolean releaseSavepointNative(ITrxSavepoint savepoint) throws Exception;
