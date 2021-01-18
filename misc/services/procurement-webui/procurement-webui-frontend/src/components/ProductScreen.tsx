@@ -17,6 +17,9 @@ const ProductScreen: React.FunctionComponent = observer(() => {
   const products = getSnapshot(store.dailyProducts.products);
   const product = products.find((prod) => prod.productId === productId);
 
+  const currentDay = store.app.currentDay;
+  const currentCaption = store.app.dayCaption;
+
   useEffect(() => {
     store.navigation.setTopViewName(product.productName);
   }, [store]);
@@ -24,10 +27,8 @@ const ProductScreen: React.FunctionComponent = observer(() => {
   return (
     <View>
       <div>
-        <DailyNav isStatic={true} />
-        <div className="mt-1 p-4">
-          <p className="subtitle">{product.productName}</p>
-        </div>
+        <DailyNav isStatic={true} staticDay={currentDay} staticCaption={currentCaption} />
+        <div className="mt-1 p-4" />
       </div>
     </View>
   );

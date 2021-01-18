@@ -8,6 +8,8 @@ import { RootInstance } from '../models/Store';
 interface Props {
   store?: RootInstance;
   isStatic?: boolean;
+  staticDay?: string;
+  staticCaption?: string;
 }
 
 @inject('store')
@@ -34,7 +36,7 @@ class DailyNav extends React.Component<Props> {
   nextDay = (): Promise<void> => this.updateCurrentDay('next');
 
   render(): ReactElement {
-    const { store, isStatic } = this.props;
+    const { store, isStatic, staticDay, staticCaption } = this.props;
 
     // TODO: Is this really needed ? Can we even have no store if it's created on app init ?
     if (!store) {
@@ -43,8 +45,10 @@ class DailyNav extends React.Component<Props> {
     const { lang } = store.i18n;
     const date = formDate({ currentDay: new Date(store.app.currentDay) });
 
-    const renderedCaption = isStatic ? 'Static' : store.app.dayCaption;
-    const renderedDay = isStatic ? 'Date' : prettyDate({ lang, date });
+    const renderedCaption = isStatic ? staticDay : store.app.dayCaption;
+    const renderedDay = isStatic ? staticCaption : prettyDate({ lang, date });
+
+    console.log(renderedDay);
 
     return (
       <div className="daily-nav">
