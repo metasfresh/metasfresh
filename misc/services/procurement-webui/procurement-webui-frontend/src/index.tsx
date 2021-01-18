@@ -22,7 +22,7 @@ const history = {
 process.env.DEV_SERVER === 'undefined' && loadMirageInDev();
 
 // get the messages first for i18n
-getMessages().then((response) => {
+getMessages().then(async (response) => {
   if (response.status === 200 && response.data) {
     const { language, messages } = response.data;
     store.i18n.changeLang(language);
@@ -31,7 +31,7 @@ getMessages().then((response) => {
     store.navigation.setViewName(translate('DailyReportingView.caption'));
   }
 
-  store.app.getUserSession();
+  await store.app.getUserSession();
 
   ReactDOM.render(
     <Provider store={store} history={history}>

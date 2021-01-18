@@ -71,7 +71,6 @@ let initialState = Store.create({
   navigation: { viewName: '' },
   dailyProducts: {},
   app: {
-    language: '',
     loggedIn: false,
     loginError: '',
     countUnconfirmed: 0,

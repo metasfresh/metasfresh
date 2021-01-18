@@ -1,10 +1,10 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
 
 import { getUserSession, logoutRequest } from '../api';
+import { formDate, slashSeparatedYYYYmmdd } from '../utils/date';
 
 export const App = types
   .model('App', {
-    language: types.string,
     loggedIn: types.boolean,
     loginError: types.string,
     countUnconfirmed: types.number,
@@ -38,9 +38,15 @@ export const App = types
 
       try {
         response = yield getUserSession();
-        response.data.currentDay = response.data.date;
+
+        // FRESH-196
+        const date = formDate({ currentDay: new Date(response.data.date), to: 'next' });
+        const newDate = slashSeparatedYYYYmmdd(date);
+
+        response.data.currentDay = newDate;
 
         delete response.data.date;
+        delete response.data.language;
 
         setInitialData(response.data);
       } catch (e) {

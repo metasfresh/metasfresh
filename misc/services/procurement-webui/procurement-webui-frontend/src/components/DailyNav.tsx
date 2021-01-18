@@ -21,16 +21,16 @@ class DailyNav extends React.Component<Props> {
     });
   }
 
-  updateCurrentDay = (to: string): void => {
+  updateCurrentDay = (to: string): Promise<any> => {
     const { store } = this.props;
-    const { day } = formDate({ currentDay: new Date(store.app.currentDay), to });
-    const newDay = slashSeparatedYYYYmmdd(day);
+    const date = formDate({ currentDay: new Date(store.app.currentDay), to });
+    const formattedDate = slashSeparatedYYYYmmdd(date);
 
-    store.fetchDailyReport(newDay);
+    return store.fetchDailyReport(formattedDate);
   };
 
-  previousDay = (): void => this.updateCurrentDay('prev');
-  nextDay = (): void => this.updateCurrentDay('next');
+  previousDay = (): Promise<any> => this.updateCurrentDay('prev');
+  nextDay = (): Promise<any> => this.updateCurrentDay('next');
 
   render(): ReactElement {
     const { store, isStatic } = this.props;
@@ -40,10 +40,10 @@ class DailyNav extends React.Component<Props> {
       return null;
     }
     const { lang } = store.i18n;
-    const { day } = formDate({ currentDay: new Date(store.app.currentDay) });
+    const date = formDate({ currentDay: new Date(store.app.currentDay) });
 
     const renderedCaption = isStatic ? 'Static' : store.app.dayCaption;
-    const renderedDay = isStatic ? 'Date' : prettyDate({ lang, date: day });
+    const renderedDay = isStatic ? 'Date' : prettyDate({ lang, date });
 
     return (
       <div className="daily-nav">
@@ -59,7 +59,7 @@ class DailyNav extends React.Component<Props> {
               <div className="row is-full"> {renderedDay} </div>
             </div>
           </div>
-          {isStatic && (
+          {!isStatic && (
             <div className="column is-3 has-text-right arrow-navigation is-vcentered p-4" onClick={this.nextDay}>
               <i className="fas fa-arrow-right fa-3x"></i>
             </div>
