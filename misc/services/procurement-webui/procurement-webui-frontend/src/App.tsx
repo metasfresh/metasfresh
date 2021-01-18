@@ -20,6 +20,7 @@ import Login from './components/Login';
 import BottomNav from './components/BottomNav';
 import Info from './components/Info';
 import RfQ from './components/RfQ';
+import ProductScreen from './components/ProductScreen';
 import ProductAdd from './components/ProductAdd';
 
 interface IProps {
@@ -35,6 +36,7 @@ const routes = [
   { path: '/daily/:productId', name: 'Daily Reporting Details', Component: Daily },
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
   { path: '/products', name: 'Products', Component: ProductAdd },
+  { path: '/products/:productId', name: 'Product', Component: ProductScreen },
   { path: '/info', name: 'Info/News', Component: Info },
   { path: '/quotations', name: 'RfQ', Component: RfQ },
   { path: '/quotations/:quotationId', name: 'RfQ Details', Component: RfQ },
