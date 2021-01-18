@@ -1,4 +1,6 @@
 import React, { FunctionComponent, ReactElement } from 'react';
+import { useHistory } from 'react-router-dom';
+import { translate } from '../utils/translate';
 
 interface Props {
   id: string;
@@ -9,10 +11,20 @@ interface Props {
   editedItemsNo: number;
 }
 
-const Product: FunctionComponent<Props> = ({ productName, qty, packingInfo }: Props): ReactElement => {
+const Product: FunctionComponent<Props> = ({ id, productName, qty, packingInfo }: Props): ReactElement => {
+  const history = useHistory();
+
   return (
     <div className="product">
-      <div className="box">
+      <div
+        className="box"
+        onClick={() =>
+          history.push({
+            pathname: `/products/${id}`,
+            state: { path: '/', text: translate('DailyReportingView.caption') },
+          })
+        }
+      >
         <div className="columns is-mobile">
           <div className="column is-9">
             <div className="columns">

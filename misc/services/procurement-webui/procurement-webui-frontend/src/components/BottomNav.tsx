@@ -21,6 +21,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
   observer(
     ({ store }): ReactElement => {
       const location = useLocation<LocationState>();
+
       const { navigation, app } = store;
       const { state, pathname } = location;
       const { countUnconfirmed } = app;
