@@ -602,7 +602,7 @@ class ShipmentCandidateAPIService
 				.map(OrderAndLineId::getOrderId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+		return queryBL.createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
@@ -610,7 +610,6 @@ class ShipmentCandidateAPIService
 				.collect(ImmutableMap.toImmutableMap(
 						orderRecord -> OrderId.ofRepoId(orderRecord.getC_Order_ID()),
 						Function.identity()));
-		return orderIdToOrderRecord;
 	}
 
 	@NonNull
@@ -687,10 +686,10 @@ class ShipmentCandidateAPIService
 				.build();
 
 		final List<ShipmentSchedule> shipmentSchedulesOrderedByOrderId = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
-		List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
+		final List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
 
 		int counter = 0;
-		for (ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
+		for (final ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
 		{
 			if (schedule.getOrderAndLineId() == null && counter < limit.toInt() - 1)
 			{
