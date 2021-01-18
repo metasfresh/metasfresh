@@ -22,10 +22,17 @@ package de.metas.material.planning;
  * #L%
  */
 
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class ProductPlanningService
@@ -44,4 +51,11 @@ public class ProductPlanningService
 
 		return leadTimeDays + transferTimeDays;
 	}
+
+	public Optional<ResourceId> getPlantOfWarehouse(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = Services.get(IWarehouseBL.class).getById(warehouseId);
+		return ResourceId.optionalOfRepoId(warehouse.getPP_Plant_ID());
+	}
+
 }

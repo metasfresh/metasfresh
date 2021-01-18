@@ -27,12 +27,17 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.project.ProjectId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.servicerepair.repository.model.I_C_Project_Repair_Task;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+
+import java.util.List;
 
 abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 {
@@ -50,6 +55,12 @@ abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 		return ProjectId.ofRepoId(getRecord_ID());
 	}
 
+	protected ServiceRepairProjectInfo getProject()
+	{
+		final ProjectId projectId = getProjectId();
+		return projectService.getById(projectId);
+	}
+
 	protected ServiceRepairProjectTaskId getSingleSelectedTaskId()
 	{
 		return CollectionUtils.singleElement(getSelectedTaskIds());
@@ -62,6 +73,12 @@ abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 				.stream()
 				.map(taskRepoId -> ServiceRepairProjectTaskId.ofRepoId(projectId, taskRepoId))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	protected ImmutableSet<ServiceRepairProjectTaskId> getSelectedSparePartsTaskIds(final @NonNull IProcessPreconditionsContext context)
+	{
+		final ImmutableSet<ServiceRepairProjectTaskId> taskIds = getSelectedTaskIds(context);
+		return projectService.retainIdsOfTypeSpareParts(taskIds);
 	}
 
 	protected ImmutableSet<ServiceRepairProjectTaskId> getSelectedTaskIds(final @NonNull IProcessPreconditionsContext context)
@@ -79,4 +96,13 @@ abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	protected List<ServiceRepairProjectTask> getSelectedTasks(final @NonNull IProcessPreconditionsContext context)
+	{
+		return projectService.getTaskByIds(getSelectedTaskIds(context));
+	}
+
+	protected List<ServiceRepairProjectTask> getSelectedTasks()
+	{
+		return projectService.getTaskByIds(getSelectedTaskIds());
+	}
 }

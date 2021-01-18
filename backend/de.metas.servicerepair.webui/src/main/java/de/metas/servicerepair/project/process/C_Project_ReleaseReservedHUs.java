@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.servicerepair.webui
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -43,8 +43,7 @@ public class C_Project_ReleaseReservedHUs
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 
-		final ImmutableSet<ServiceRepairProjectTaskId> taskIds = getSelectedTaskIds(context);
-		final ImmutableSet<ServiceRepairProjectTaskId> taskIdsOfTypeSpareParts = projectService.retainIdsOfTypeSpareParts(taskIds);
+		final ImmutableSet<ServiceRepairProjectTaskId> taskIdsOfTypeSpareParts = getSelectedSparePartsTaskIds(context);
 		if (taskIdsOfTypeSpareParts.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no spare parts tasks selected");

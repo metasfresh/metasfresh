@@ -23,14 +23,22 @@
 package de.metas.servicerepair.project.service;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.material.planning.ProductPlanningService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.CreateProjectRequest;
@@ -40,8 +48,11 @@ import de.metas.request.RequestId;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import de.metas.servicerepair.project.repository.ServiceRepairProjectConsumptionSummaryRepository;
 import de.metas.servicerepair.project.repository.ServiceRepairProjectCostCollectorRepository;
 import de.metas.servicerepair.project.repository.ServiceRepairProjectTaskRepository;
@@ -50,15 +61,25 @@ import de.metas.servicerepair.project.repository.requests.CreateProjectTaskReque
 import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjectCommand;
 import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderCreateRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -66,6 +87,8 @@ public class ServiceRepairProjectService
 {
 	public static final AdWindowId AD_WINDOW_ID = AdWindowId.ofRepoId(541015); // FIXME hardcoded
 
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final ProductPlanningService productPlanningService;
 	private final HUReservationService huReservationService;
 	private final RepairCustomerReturnsService repairCustomerReturnsService;
 	private final ProjectService projectService;
@@ -74,6 +97,7 @@ public class ServiceRepairProjectService
 	private final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository;
 
 	public ServiceRepairProjectService(
+			@NonNull final ProductPlanningService productPlanningService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final ProjectService projectService,
 			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService,
@@ -81,6 +105,7 @@ public class ServiceRepairProjectService
 			@NonNull final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository,
 			@NonNull final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository)
 	{
+		this.productPlanningService = productPlanningService;
 		this.huReservationService = huReservationService;
 		this.projectService = projectService;
 		this.repairCustomerReturnsService = repairCustomerReturnsService;
@@ -89,9 +114,39 @@ public class ServiceRepairProjectService
 		this.projectConsumptionSummaryRepository = projectConsumptionSummaryRepository;
 	}
 
-	public I_C_Project getById(@NonNull final ProjectId projectId)
+	public ServiceRepairProjectInfo getById(@NonNull final ProjectId projectId)
 	{
-		return projectService.getById(projectId);
+		return getByIdIfRepairProject(projectId)
+				.orElseThrow(() -> new AdempiereException("Not a Service/Repair project: " + projectId));
+	}
+
+	private Optional<ServiceRepairProjectInfo> getByIdIfRepairProject(@NonNull final ProjectId projectId)
+	{
+		return toServiceRepairProjectInfo(projectService.getById(projectId));
+	}
+
+	private static Optional<ServiceRepairProjectInfo> toServiceRepairProjectInfo(@NonNull final I_C_Project record)
+	{
+		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory());
+		if (!projectCategory.isServiceOrRepair())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(ServiceRepairProjectInfo.builder()
+				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
+				.dateContract(TimeUtil.asLocalDate(record.getDateContract()))
+				.dateFinish(TimeUtil.asZonedDateTime(record.getDateFinish()))
+				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.bpartnerContactId(BPartnerContactId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getAD_User_ID()))
+				.salesRepId(UserId.ofRepoIdOrNullIfSystem(record.getSalesRep_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
+				.paymentTermId(PaymentTermId.ofRepoIdOrNull(record.getC_PaymentTerm_ID()))
+				.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(record.getM_PriceList_Version_ID()))
+				.campaignId(record.getC_Campaign_ID())
+				.build());
 	}
 
 	public ProjectId createProjectFromRequest(final RequestId requestId)
@@ -106,14 +161,7 @@ public class ServiceRepairProjectService
 
 	public boolean isServiceOrRepair(@NonNull final ProjectId projectId)
 	{
-		final I_C_Project project = getById(projectId);
-		return isServiceOrRepair(project);
-	}
-
-	public boolean isServiceOrRepair(@NonNull final I_C_Project project)
-	{
-		final ProjectCategory projectCategory = ProjectCategory.ofNullableCodeOrGeneral(project.getProjectCategory());
-		return projectCategory.isServiceOrRepair();
+		return getByIdIfRepairProject(projectId).isPresent();
 	}
 
 	public ProjectId createProjectHeader(@NonNull final CreateProjectRequest request)
@@ -142,6 +190,11 @@ public class ServiceRepairProjectService
 	public ServiceRepairProjectTask getTaskById(@NonNull final ServiceRepairProjectTaskId taskId)
 	{
 		return projectTaskRepository.getById(taskId);
+	}
+
+	public List<ServiceRepairProjectTask> getTaskByIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
+	{
+		return projectTaskRepository.getByIds(taskIds);
 	}
 
 	public OrderId createQuotationFromProject(final ProjectId projectId)
@@ -205,7 +258,7 @@ public class ServiceRepairProjectService
 
 	public ImmutableSet<ServiceRepairProjectTaskId> retainIdsOfTypeSpareParts(final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
 	{
-		return projectTaskRepository.retainIdsOfTypeSpareParts(taskIds);
+		return projectTaskRepository.retainIdsOfType(taskIds, ServiceRepairProjectTaskType.SPARE_PARTS);
 	}
 
 	public void releaseReservedSpareParts(final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
@@ -266,5 +319,57 @@ public class ServiceRepairProjectService
 				.collect(ImmutableSet.toImmutableSet());
 
 		huReservationService.transferReservation(from, HUReservationDocRef.ofProjectId(toProjectId));
+	}
+
+	public void createRepairOrders(@NonNull final List<ServiceRepairProjectTask> tasks)
+	{
+		Check.assumeNotEmpty(tasks, "tasks list shall not be empty");
+
+		final ProjectId projectId = CollectionUtils.extractSingleElement(tasks, ServiceRepairProjectTask::getProjectId);
+		final ServiceRepairProjectInfo project = getById(projectId);
+
+		tasks.forEach(task -> createRepairOrder(project, task));
+	}
+
+	private void createRepairOrder(
+			@NonNull final ServiceRepairProjectInfo project,
+			@NonNull final ServiceRepairProjectTask task)
+	{
+		if (!ServiceRepairProjectTaskType.REPAIR_ORDER.equals(task.getType()))
+		{
+			throw new AdempiereException("Not an repair order task: " + task);
+		}
+		if (!ServiceRepairProjectTaskStatus.NOT_STARTED.equals(task.getStatus()))
+		{
+			throw new AdempiereException("Task already started: " + task);
+		}
+		if (task.getRepairOrderId() != null)
+		{
+			throw new AdempiereException("A Repair Order was already created: " + task);
+		}
+
+		final WarehouseId warehouseId = project.getWarehouseId();
+		if (warehouseId == null)
+		{
+			throw new AdempiereException("No warehouse for " + project);
+		}
+		final ResourceId plantId = productPlanningService.getPlantOfWarehouse(warehouseId)
+				.orElseThrow(() -> new AdempiereException("No plant for warehouse " + warehouseId));
+
+		final Instant now = SystemTime.asInstant();
+		ppOrderBL.createOrder(PPOrderCreateRequest.builder()
+				.clientAndOrgId(task.getClientAndOrgId())
+				.warehouseId(warehouseId)
+				.plantId(plantId)
+				//
+				.productId(task.getProductId())
+				// TODO .attributeSetInstanceId()
+				.qtyRequired(task.getQtyRequired())
+				//
+				.dateOrdered(now)
+				.datePromised(now)
+				.dateStartSchedule(now)
+				//
+				.build());
 	}
 }
