@@ -32,6 +32,7 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -92,6 +93,32 @@ public class ServiceRepairProjectTask
 
 	private ServiceRepairProjectTaskStatus computeStatus()
 	{
+		final @NonNull ServiceRepairProjectTaskType type = getType();
+		switch (type)
+		{
+			case REPAIR_ORDER:
+				return computeStatusForRepairOrderType();
+			case SPARE_PARTS:
+				return computeStatusForSparePartsType();
+			default:
+				throw new AdempiereException("Unknown type for " + this);
+		}
+	}
+
+	private ServiceRepairProjectTaskStatus computeStatusForRepairOrderType()
+	{
+		if (getRepairOrderId() == null)
+		{
+			return ServiceRepairProjectTaskStatus.NOT_STARTED;
+		}
+		else
+		{
+			return ServiceRepairProjectTaskStatus.IN_PROGRESS;
+		}
+	}
+
+	private ServiceRepairProjectTaskStatus computeStatusForSparePartsType()
+	{
 		if (getQtyToReserve().signum() <= 0)
 		{
 			return ServiceRepairProjectTaskStatus.COMPLETED;
@@ -104,5 +131,13 @@ public class ServiceRepairProjectTask
 		{
 			return ServiceRepairProjectTaskStatus.IN_PROGRESS;
 		}
+	}
+
+	public ServiceRepairProjectTask withRepairOrderId(@NonNull final PPOrderId repairOrderId)
+	{
+		return toBuilder()
+				.repairOrderId(repairOrderId)
+				.build()
+				.withUpdatedStatus();
 	}
 }

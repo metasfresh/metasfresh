@@ -1,5 +1,7 @@
 package de.metas.material.planning.pporder.impl;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -7,10 +9,13 @@ import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
@@ -52,6 +57,7 @@ final class PPOrderBOMCreateCommand
 	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 	private final IProductBOMBL productBOMsBL = Services.get(IProductBOMBL.class);
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final PPOrderBOMBL ppOrderBOMsBL;
 
 	// parameters
@@ -153,14 +159,41 @@ final class PPOrderBOMCreateCommand
 		// Warehouse and Locator
 		PPOrderUtil.updateBOMLineWarehouseAndLocatorFromOrder(orderBOMLine, ppOrder);
 
-		//
-		// Set Qtys
-		final Quantity qtyFinishedGood = ppOrderBOMsBL.getQuantities(ppOrder).getQtyRequiredToProduce();
-		final Quantity qtyRequired = ppOrderBOMsBL.computeQtyRequiredByQtyOfFinishedGoods(orderBOMLine, qtyFinishedGood);
+		final Quantity qtyRequired = computeQtyRequired(orderBOMLine);
 		PPOrderBOMBL.setQuantities(orderBOMLine, OrderBOMLineQuantities.ofQtyRequired(qtyRequired));
 
 		//
 		// Save & return
 		ppOrderBOMsRepo.save(orderBOMLine);
+	}
+
+	private Quantity computeQtyRequired(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		final Quantity qtyRequired;
+		final String docBaseType = getOrderDocBaseType();
+		if (X_C_DocType.DOCBASETYPE_ServiceRepairOrder.equals(docBaseType))
+		{
+			final UomId uomId = UomId.ofRepoId(orderBOMLine.getC_UOM_ID());
+			return Quantitys.createZero(uomId);
+		}
+		else
+		{
+			final Quantity qtyFinishedGood = ppOrderBOMsBL.getQuantities(ppOrder).getQtyRequiredToProduce();
+			return ppOrderBOMsBL.computeQtyRequiredByQtyOfFinishedGoods(orderBOMLine, qtyFinishedGood);
+		}
+	}
+
+	private String getOrderDocBaseType()
+	{
+		final DocTypeId docTypeId = getOrderDocTypeId();
+		return docTypeDAO.getDocBaseAndSubTypeById(docTypeId)
+				.getDocBaseType();
+
+	}
+
+	private DocTypeId getOrderDocTypeId()
+	{
+		return DocTypeId.optionalOfRepoId(ppOrder.getC_DocTypeTarget_ID())
+				.orElseGet(() -> DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()));
 	}
 }

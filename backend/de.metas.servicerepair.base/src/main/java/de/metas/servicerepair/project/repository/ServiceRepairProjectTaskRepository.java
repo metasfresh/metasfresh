@@ -140,6 +140,8 @@ class ServiceRepairProjectTaskRepository
 		record.setQtyRequired(from.getQtyRequired().toBigDecimal());
 		record.setQtyReserved(from.getQtyReserved().toBigDecimal());
 		record.setQtyConsumed(from.getQtyConsumed().toBigDecimal());
+
+		record.setRepair_Order_ID(PPOrderId.toRepoId(from.getRepairOrderId()));
 	}
 
 	public ServiceRepairProjectTask changeById(
@@ -159,6 +161,13 @@ class ServiceRepairProjectTaskRepository
 		InterfaceWrapperHelper.saveRecord(record);
 
 		return changedTask;
+	}
+
+	public void save(ServiceRepairProjectTask task)
+	{
+		final I_C_Project_Repair_Task record = getRecordById(task.getId());
+		updateRecord(record, task);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	public ImmutableSet<ServiceRepairProjectTaskId> retainIdsOfType(

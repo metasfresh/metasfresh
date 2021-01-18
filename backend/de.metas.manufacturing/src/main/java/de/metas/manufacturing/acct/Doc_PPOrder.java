@@ -47,7 +47,7 @@ public class Doc_PPOrder extends Doc<DocLine<Doc_PPOrder>>
 
 	public Doc_PPOrder(final AcctDocContext ctx)
 	{
-		super(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		super(ctx);
 
 		final I_PP_Order ppOrder = getModel(I_PP_Order.class);
 		setDateAcct(ppOrder.getDateOrdered());

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Product_BOM, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -405366253L;
+	private static final long serialVersionUID = 985149621L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (final Properties ctx, final int PP_Product_BOM_ID, @Nullable final String trxName)
@@ -58,7 +58,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	/** Make-To-Kit = K */
 	public static final String BOMTYPE_Make_To_Kit = "K";
 	@Override
-	public void setBOMType (final java.lang.String BOMType)
+	public void setBOMType (final @Nullable java.lang.String BOMType)
 	{
 		set_Value (COLUMNNAME_BOMType, BOMType);
 	}
@@ -87,7 +87,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	/** Phantom = H */
 	public static final String BOMUSE_Phantom = "H";
 	@Override
-	public void setBOMUse (final java.lang.String BOMUse)
+	public void setBOMUse (final @Nullable java.lang.String BOMUse)
 	{
 		set_Value (COLUMNNAME_BOMUse, BOMUse);
 	}
@@ -114,7 +114,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setCopyFrom (final java.lang.String CopyFrom)
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
 	{
 		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
 	}
@@ -126,7 +126,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -138,7 +138,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
@@ -150,7 +150,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
@@ -270,7 +270,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setRevision (final java.lang.String Revision)
+	public void setRevision (final @Nullable java.lang.String Revision)
 	{
 		set_Value (COLUMNNAME_Revision, Revision);
 	}
@@ -321,7 +321,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public void setValidTo (final java.sql.Timestamp ValidTo)
+	public void setValidTo (final @Nullable java.sql.Timestamp ValidTo)
 	{
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}

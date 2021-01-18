@@ -17,6 +17,7 @@ import de.metas.material.planning.DurationUnitCodeUtils;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -282,7 +283,8 @@ public class MRPTestHelper
 		return new org.eevolution.model.LiberoValidator(
 				ppOrderConverter,
 				postMaterialEventService,
-				new DocumentNoBuilderFactory(Optional.empty()));
+				new DocumentNoBuilderFactory(Optional.empty()),
+				new PPOrderBOMBL());
 	}
 
 	public Timestamp getToday()
@@ -379,7 +381,7 @@ public class MRPTestHelper
 		warehouse.setValue(name);
 		warehouse.setName(name);
 		warehouse.setIsInTransit(false);
-		warehouse.setPP_Plant(plant);
+		warehouse.setPP_Plant_ID(plant != null ? plant.getS_Resource_ID() : -1);
 		InterfaceWrapperHelper.save(warehouse);
 
 		return warehouse;
@@ -589,7 +591,7 @@ public class MRPTestHelper
 
 		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
 		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
-		ppOrder.setAD_Workflow(this.workflow_Standard);
+		ppOrder.setAD_Workflow_ID(this.workflow_Standard.getAD_Workflow_ID());
 		ppOrder.setM_Warehouse_ID(this.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(this.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));

@@ -70,9 +70,12 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -357,7 +360,8 @@ public class ServiceRepairProjectService
 				.orElseThrow(() -> new AdempiereException("No plant for warehouse " + warehouseId));
 
 		final Instant now = SystemTime.asInstant();
-		ppOrderBL.createOrder(PPOrderCreateRequest.builder()
+		final I_PP_Order repairOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_ServiceRepairOrder)
 				.clientAndOrgId(task.getClientAndOrgId())
 				.warehouseId(warehouseId)
 				.plantId(plantId)
@@ -370,6 +374,11 @@ public class ServiceRepairProjectService
 				.datePromised(now)
 				.dateStartSchedule(now)
 				//
+				.completeDocument(true)
+				//
 				.build());
+		final PPOrderId repairOrderId = PPOrderId.ofRepoId(repairOrder.getPP_Order_ID());
+
+		projectTaskRepository.save(task.withRepairOrderId(repairOrderId));
 	}
 }

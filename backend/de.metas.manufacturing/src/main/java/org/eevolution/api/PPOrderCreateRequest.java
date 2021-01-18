@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.X_C_DocType;
 import org.eevolution.api.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -51,6 +52,7 @@ import lombok.Value;
 @JsonDeserialize(builder = PPOrderCreateRequestBuilder.class)
 public class PPOrderCreateRequest
 {
+	@NonNull String docBaseType;
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@Nullable ProductPlanningId productPlanningId;
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
@@ -74,6 +76,7 @@ public class PPOrderCreateRequest
 
 	@Builder
 	PPOrderCreateRequest(
+			@Nullable final String docBaseType,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
@@ -99,6 +102,7 @@ public class PPOrderCreateRequest
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
+		this.docBaseType = docBaseType != null ? docBaseType : X_C_DocType.DOCBASETYPE_ManufacturingOrder;
 		this.clientAndOrgId = clientAndOrgId;
 		this.productPlanningId = productPlanningId;
 		this.materialDispoGroupId = materialDispoGroupId;

@@ -240,7 +240,8 @@ public class FactAcctReset extends JavaProcess
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_PP_Order.Table_Name))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_ManufacturingOrder
 				+ "','" + X_C_DocType.DOCBASETYPE_MaintenanceOrder
-				+ "','" + X_C_DocType.DOCBASETYPE_QualityOrder + "')";
+				+ "','" + X_C_DocType.DOCBASETYPE_QualityOrder
+				+ "','" + X_C_DocType.DOCBASETYPE_ServiceRepairOrder + "')";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_DD_Order.Table_Name))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_DistributionOrder+ "'";
 		else if (AD_Table_ID == X_HR_Process.Table_ID)
