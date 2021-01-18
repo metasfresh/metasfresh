@@ -48,8 +48,6 @@ class DailyNav extends React.Component<Props> {
     const renderedCaption = isStatic ? staticDay : store.app.dayCaption;
     const renderedDay = isStatic ? staticCaption : prettyDate({ lang, date });
 
-    console.log(renderedDay);
-
     return (
       <div className="daily-nav">
         <div className="columns is-mobile">
