@@ -1,5 +1,5 @@
 import { useContext, createContext } from 'react';
-import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
+import { types, flow, Instance, onSnapshot, getSnapshot } from 'mobx-state-tree';
 
 import { fetchDailyReport, fetchWeeklyReport, loginRequest } from '../api';
 import { i18n } from './i18n';
@@ -42,7 +42,15 @@ export const Store = types
 
         self.app.setCurrentDay(date);
         self.app.setDayCaption(dayCaption);
-        self.dailyProducts.updateProductList(products);
+        const existingProducts = [...getSnapshot(self.dailyProducts.products)];
+        const newProducts = [...products];
+        newProducts.map((item) => {
+          const target = existingProducts.find(
+            (existingItem) => existingItem.productId === item.productId && existingItem.isEdited
+          );
+          return target ? target : item;
+        });
+        self.dailyProducts.updateProductList(newProducts);
       } catch (error) {
         console.error('Failed to fetch', error);
       }
@@ -50,7 +58,7 @@ export const Store = types
     fetchWeeklyReport: flow(function* weeklyReport(reportWeek: string) {
       try {
         const {
-          data: { week, weekCaption, products, nextWeek, previousWeek },
+          data: { week, weekCaption, nextWeek, previousWeek },
         } = yield fetchWeeklyReport(reportWeek);
 
         self.app.setCurrentWeek(week);
