@@ -79,7 +79,7 @@ class JsonWeeklyReportProducer
 		this.user = user;
 		this.locale = locale;
 		this.week = week;
-		this.singleProductId = singleProductId;
+		this.singleProductId = singleProductId > 0 ? singleProductId : -1;
 	}
 
 	public JsonWeeklyReport execute()
