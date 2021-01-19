@@ -55,4 +55,8 @@ public class JsonWeeklyReport
 
 	@NonNull
 	private final List<JsonWeeklyProductReport> products;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable
+	Long countUnconfirmed;
 }

@@ -23,11 +23,14 @@
 package de.metas.procurement.webui.rest.rfq;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.With;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -65,4 +68,9 @@ public class JsonRfq
 	List<JsonRfqQty> quantities;
 
 	boolean confirmedByUser;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable
+	@With
+	Long countUnconfirmed;
 }

@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.util.List;
 
-public interface IRfQService
+public interface IRfQService extends UserConfirmationHandler
 {
 	List<Rfq> getActiveRfqs(@Nullable User user);
 
@@ -49,8 +49,9 @@ public interface IRfQService
 
 	Rfq changeActiveRfq(final JsonChangeRfqRequest request, final User loggedUser);
 
-	long countUnconfirmed(@NonNull BPartner bpartner);
+	@Override
+	long getCountUnconfirmed(User user);
 
-	@Transactional
-	void confirmUserChanges(@NonNull BPartner bpartner);
+	@Override
+	void confirmUserEntries(User user);
 }

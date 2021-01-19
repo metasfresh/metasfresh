@@ -23,11 +23,11 @@
 package de.metas.procurement.webui.rest.session;
 
 import de.metas.procurement.webui.Application;
-import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.service.IRfQService;
+import de.metas.procurement.webui.service.UserConfirmationService;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.LanguageKey;
 import de.metas.procurement.webui.util.YearWeekUtil;
@@ -50,17 +50,14 @@ public class SessionRestController
 	static final String ENDPOINT = Application.ENDPOINT_ROOT + "/session";
 
 	private final ILoginService loginService;
-	private final IProductSuppliesService productSuppliesService;
-	private final IRfQService rfqService;
+	private final UserConfirmationService userConfirmationService;
 
 	public SessionRestController(
 			@NonNull final ILoginService loginService,
-			@NonNull final IProductSuppliesService productSuppliesService,
-			@NonNull final IRfQService rfqService)
+			@NonNull final UserConfirmationService userConfirmationService)
 	{
 		this.loginService = loginService;
-		this.productSuppliesService = productSuppliesService;
-		this.rfqService = rfqService;
+		this.userConfirmationService = userConfirmationService;
 	}
 
 	@GetMapping("/")
@@ -69,8 +66,7 @@ public class SessionRestController
 		final User user = loginService.getLoggedInUser();
 		final Locale locale = loginService.getLocale();
 
-		final long countUnconfirmed = productSuppliesService.countUnconfirmedUserEnteredQtys(user.getBpartner())
-				+ rfqService.countUnconfirmed(user.getBpartner());
+		final long countUnconfirmed = userConfirmationService.getCountUnconfirmed(user);
 
 		final LocalDate today = LocalDate.now();
 		final YearWeek week = YearWeekUtil.ofLocalDate(today);
@@ -135,8 +131,7 @@ public class SessionRestController
 	@PostMapping("/confirmDataEntry")
 	public void confirmDataEntry()
 	{
-		final BPartner bpartner = loginService.getLoggedInUser().getBpartner();
-		productSuppliesService.confirmUserEnteredQtys(bpartner);
-		rfqService.confirmUserChanges(bpartner);
+		final User user = loginService.getLoggedInUser();
+		userConfirmationService.confirmUserEntries(user);
 	}
 }

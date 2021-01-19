@@ -31,6 +31,7 @@ import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.service.IRfQService;
+import de.metas.procurement.webui.service.UserConfirmationService;
 import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,15 +57,18 @@ public class RfQRestController
 	private final ILoginService loginService;
 	private final IRfQService rfqService;
 	private final IProductSuppliesService productSuppliesService;
+	private final UserConfirmationService userConfirmationService;
 
 	public RfQRestController(
 			@NonNull final ILoginService loginService,
 			@NonNull final IRfQService rfqService,
-			@NonNull final IProductSuppliesService productSuppliesService)
+			@NonNull final IProductSuppliesService productSuppliesService,
+			@NonNull final UserConfirmationService userConfirmationService)
 	{
 		this.loginService = loginService;
 		this.rfqService = rfqService;
 		this.productSuppliesService = productSuppliesService;
+		this.userConfirmationService = userConfirmationService;
 	}
 
 	@GetMapping
@@ -90,7 +94,8 @@ public class RfQRestController
 	{
 		final User loggedUser = loginService.getLoggedInUser();
 		final Rfq rfq = rfqService.changeActiveRfq(request, loggedUser);
-		return toJsonRfq(rfq, loginService.getLocale());
+		return toJsonRfq(rfq, loginService.getLocale())
+				.withCountUnconfirmed(userConfirmationService.getCountUnconfirmed(loggedUser));
 	}
 
 	private JsonRfqsList toJsonRfqsList(final List<Rfq> rfqsList, @NonNull final Locale locale)

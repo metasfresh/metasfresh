@@ -142,15 +142,16 @@ public class RfQService implements IRfQService
 	}
 
 	@Override
-	public long countUnconfirmed(@NonNull final BPartner bpartner)
+	public long getCountUnconfirmed(@NonNull final User user)
 	{
-		return rfqRepo.countUnconfirmed(bpartner);
+		return rfqRepo.countUnconfirmed(user.getBpartner());
 	}
 
 	@Override
 	@Transactional
-	public void confirmUserChanges(@NonNull final BPartner bpartner)
+	public void confirmUserEntries(@NonNull final User user)
 	{
+		final BPartner bpartner = user.getBpartner();
 		final List<Rfq> rfqs = rfqRepo.findUnconfirmed(bpartner);
 		for (final Rfq rfq : rfqs)
 		{

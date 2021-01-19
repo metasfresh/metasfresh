@@ -35,6 +35,7 @@ import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.UserConfirmationService;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.YearWeekUtil;
 import lombok.Builder;
@@ -55,6 +56,8 @@ class JsonWeeklyReportProducer
 {
 	@NonNull
 	private final IProductSuppliesService productSuppliesService;
+	@NonNull
+	private final UserConfirmationService userConfirmationService;
 
 	@NonNull
 	private final User user;
@@ -70,12 +73,14 @@ class JsonWeeklyReportProducer
 	@Builder
 	private JsonWeeklyReportProducer(
 			@NonNull final IProductSuppliesService productSuppliesService,
+			@NonNull final UserConfirmationService userConfirmationService,
 			@NonNull final User user,
 			@NonNull final Locale locale,
 			@NonNull final YearWeek week,
 			final long singleProductId)
 	{
 		this.productSuppliesService = productSuppliesService;
+		this.userConfirmationService = userConfirmationService;
 		this.user = user;
 		this.locale = locale;
 		this.week = week;
@@ -179,6 +184,7 @@ class JsonWeeklyReportProducer
 				.nextWeekCaption(YearWeekUtil.toDisplayName(week.plusWeeks(1)))
 				.singleProductId(singleProductId > 0 ? String.valueOf(singleProductId) : null)
 				.products(resultProducts)
+				.countUnconfirmed(userConfirmationService.getCountUnconfirmed(user))
 				.build();
 	}
 
