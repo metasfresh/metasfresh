@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
-
+import { updateSourceFile } from 'typescript';
 interface RouteParams {
   productId?: string;
 }
@@ -28,7 +28,16 @@ const ProductScreen: React.FunctionComponent = observer(() => {
     <View>
       <div>
         <DailyNav isStatic={true} staticDay={currentDay} staticCaption={currentCaption} />
-        <div className="mt-1 p-4" />
+        <div className="mt-5 p-4">
+          <input
+            className="product-input"
+            type="number"
+            value={product.qty}
+            onChange={(e) => {
+              store.dailyProducts.updateProductQty(product.productId, e.target.value);
+            }}
+          />
+        </div>
       </div>
     </View>
   );

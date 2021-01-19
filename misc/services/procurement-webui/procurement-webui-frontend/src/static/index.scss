@@ -144,3 +144,18 @@ footer {
 .preserve-new-lines {
   white-space: pre-wrap;
 }
+
+input[type=number]::-webkit-inner-spin-button {
+  cursor: pointer;
+}
+.product-input {
+  font-size: 80px;
+  width: 100%;
+  text-align: right;
+  color: $product-input;
+  font-weight: 500;
+}
+.product-input:focus {
+  outline-color: $base-color;
+  color: $base-elements;
+}

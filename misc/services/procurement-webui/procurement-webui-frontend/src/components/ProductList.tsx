@@ -19,17 +19,20 @@ class ProductList extends React.Component<Props> {
     return (
       <div className="mt-4">
         {products &&
-          products.map((product) => (
-            <Product
-              key={product.productId}
-              id={product.productId}
-              productName={product.productName}
-              packingInfo={product.packingInfo}
-              qty={product.qty}
-              isEdited={product.isEdited}
-              editedItemsNo={0}
-            />
-          ))}
+          products.map((product) => {
+            // otherwise normal product rendering
+            return (
+              <Product
+                key={product.productId}
+                id={product.productId}
+                productName={product.productName}
+                packingInfo={product.packingInfo}
+                qty={product.qty}
+                isEdited={product.isEdited}
+                editedItemsNo={0}
+              />
+            );
+          })}
       </div>
     );
   }
