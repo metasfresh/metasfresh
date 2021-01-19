@@ -35,15 +35,19 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               store.dailyProducts.updateProductQty(product.productId, e.target.value);
             }}
             onBlur={() => {
-              store.postDailyReport({
-                items: [
-                  {
-                    date: currentDay,
-                    productId: product.productId,
-                    qty: product.qty,
-                  },
-                ],
-              });
+              store
+                .postDailyReport({
+                  items: [
+                    {
+                      date: currentDay,
+                      productId: product.productId,
+                      qty: product.qty,
+                    },
+                  ],
+                })
+                .then(() => {
+                  store.fetchDailyReport(store.app.currentDay);
+                });
             }}
           />
         </div>

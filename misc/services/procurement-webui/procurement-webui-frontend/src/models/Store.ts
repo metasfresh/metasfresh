@@ -37,7 +37,6 @@ export const Store = types
     postDailyReport: flow(function* postDailyReportLocal(dataObj: unknown) {
       try {
         yield postDailyReport(dataObj);
-        fetchDailyReport;
       } catch (error) {
         console.error('Failed to post', error);
       }
