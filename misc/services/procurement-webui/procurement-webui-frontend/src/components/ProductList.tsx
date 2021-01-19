@@ -30,6 +30,7 @@ class ProductList extends React.Component<Props> {
                 qty={product.qty}
                 isEdited={product.isEdited}
                 editedItemsNo={0}
+                confirmedByUser={product.confirmedByUser}
               />
             );
           })}

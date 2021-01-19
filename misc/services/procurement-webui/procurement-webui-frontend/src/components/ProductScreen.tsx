@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
+import { postDailyReport } from '../api';
 
 import DailyNav from './DailyNav';
 import View from './View';
@@ -34,6 +35,17 @@ const ProductScreen: React.FunctionComponent = observer(() => {
             value={product.qty}
             onChange={(e) => {
               store.dailyProducts.updateProductQty(product.productId, e.target.value);
+            }}
+            onBlur={() => {
+              postDailyReport({
+                items: [
+                  {
+                    date: currentDay,
+                    productId: product.productId,
+                    qty: product.qty,
+                  },
+                ],
+              });
             }}
           />
         </div>

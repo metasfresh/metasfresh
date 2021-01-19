@@ -79,7 +79,10 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
           <a
             className="link is-flex is-flex-direction-column is-justify-content-center is-relative"
             key="2"
-            onClick={confirmDataEntry}
+            onClick={() => {
+              confirmDataEntry();
+              store.fetchDailyReport(store.app.currentDay);
+            }}
           >
             <i className="fas fa-check" />
             <span className="link-text">{translate('DailyReportingView.sendButton')}</span>

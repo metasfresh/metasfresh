@@ -1,5 +1,5 @@
 import { useContext, createContext } from 'react';
-import { types, flow, Instance, onSnapshot, getSnapshot } from 'mobx-state-tree';
+import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
 
 import { fetchDailyReport, fetchWeeklyReport, loginRequest } from '../api';
 import { i18n } from './i18n';
@@ -42,15 +42,6 @@ export const Store = types
 
         self.app.setCurrentDay(date);
         self.app.setDayCaption(dayCaption);
-        // const existingProducts = [...getSnapshot(self.dailyProducts.products)];
-        // let newProducts = [...products];
-        // newProducts = newProducts.map((item) => {
-        //   const target = existingProducts.find(
-        //     (existingItem) => existingItem.productId === item.productId && existingItem.isEdited
-        //   );
-        //   return target ? target : item;
-        // });
-        // self.dailyProducts.updateProductList(newProducts);
         self.dailyProducts.updateProductList(products);
       } catch (error) {
         console.error('Failed to fetch', error);

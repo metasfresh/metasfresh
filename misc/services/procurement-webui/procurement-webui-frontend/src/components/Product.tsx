@@ -45,8 +45,8 @@ const Product: FunctionComponent<Props> = ({
               <div className="column green-check is-hidden-mobile">
                 <i className="fas fa-check"></i>
               </div>
-              {confirmedByUser && <div className="column mt-4 is-hidden-desktop is-hidden-tablet">&nbsp;</div>}
-              {!confirmedByUser && (
+              {!confirmedByUser && <div className="column mt-4 is-hidden-desktop is-hidden-tablet">&nbsp;</div>}
+              {confirmedByUser && (
                 <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet">
                   <i className="fas fa-check"></i>
                 </div>
