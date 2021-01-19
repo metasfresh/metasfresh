@@ -43,8 +43,8 @@ export const Store = types
         self.app.setCurrentDay(date);
         self.app.setDayCaption(dayCaption);
         const existingProducts = [...getSnapshot(self.dailyProducts.products)];
-        const newProducts = [...products];
-        newProducts.map((item) => {
+        let newProducts = [...products];
+        newProducts = newProducts.map((item) => {
           const target = existingProducts.find(
             (existingItem) => existingItem.productId === item.productId && existingItem.isEdited
           );
