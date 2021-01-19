@@ -1,6 +1,6 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
 
-import { getUserSession, logoutRequest } from '../api';
+import { getUserSession, logoutRequest, passwordResetRequest } from '../api';
 import { formDate, slashSeparatedYYYYmmdd } from '../utils/date';
 
 export const App = types
@@ -57,6 +57,10 @@ export const App = types
       return response;
     });
 
+    const requestPasswordReset = flow(function* requestPasswordReset(email: string) {
+      return yield passwordResetRequest(email);
+    });
+
     const setInitialData = function setInitialData(dataToSet: Partial<SnapshotIn<typeof self>>) {
       Object.assign(self, dataToSet);
     };
@@ -96,6 +100,7 @@ export const App = types
     return {
       logIn,
       logOut,
+      requestPasswordReset,
       getUserSession: getSession,
       setInitialData,
       setResponseError,
