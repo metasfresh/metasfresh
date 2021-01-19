@@ -1,4 +1,4 @@
-import { types, cast, SnapshotOrInstance, getSnapshot } from 'mobx-state-tree';
+import { types, cast, SnapshotOrInstance } from 'mobx-state-tree';
 
 import { DailyProduct } from './DailyProduct';
 

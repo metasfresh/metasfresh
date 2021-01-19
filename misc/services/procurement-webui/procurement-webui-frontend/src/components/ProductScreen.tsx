@@ -6,7 +6,6 @@ import { useParams } from 'react-router-dom';
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
-import { updateSourceFile } from 'typescript';
 interface RouteParams {
   productId?: string;
 }
