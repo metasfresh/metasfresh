@@ -8,7 +8,6 @@ import View from './View';
 import { RootInstance } from '../models/Store';
 
 interface Props {
-  splat?: string;
   store?: RootInstance;
 }
 
@@ -40,10 +39,16 @@ const Login: FunctionComponent<Props> = inject('store')(
         });
       };
 
+      const handleForgotPassword = (event) => {
+        event.preventDefault();
+
+        history.push('/forgottenPassword');
+      };
+
       return (
         <View>
           <div className="container p-4">
-            <h1 className="title">{translate('LoginView.fields.loginButton')}</h1>
+            <h1 className="title">{store.navigation.topViewName}</h1>
             <form>
               <div className="field">
                 <p className="control has-icons-left has-icons-right">
@@ -78,12 +83,19 @@ const Login: FunctionComponent<Props> = inject('store')(
                   </span>
                 </p>
               </div>
+
               <div className="field">
                 <p className="control">
+                  <a onClick={handleForgotPassword}>{translate('LoginView.fields.forgotPasswordButton')}</a>
+                </p>
+              </div>
+
+              <div className="field">
+                <div className="control">
                   <button type="submit" className="button is-success" onClick={handleSubmit}>
                     {translate('LoginView.fields.loginButton')}
                   </button>
-                </p>
+                </div>
                 {app.loginError ? <p className="help is-danger">{app.loginError}</p> : null}
               </div>
             </form>
