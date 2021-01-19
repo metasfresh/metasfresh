@@ -23,7 +23,6 @@ import org.compiere.model.IQuery;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -195,35 +194,12 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		// Guard: make sure all those HUs are really top level
 		// Normally, this shall not happen. But we could have the case when the TU was joined to a LU later and the HU assignment was not updated.
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		for (final Iterator<I_M_HU> husTopLevelIterator = husTopLevel.iterator(); husTopLevelIterator.hasNext();)
-		{
-			final I_M_HU hu = husTopLevelIterator.next();
-			if (!handlingUnitsBL.isTopLevel(hu))
-			{
-				husTopLevelIterator.remove();
-				continue;
-			}
-		}
+		husTopLevel.removeIf(hu -> !handlingUnitsBL.isTopLevel(hu));
 
 		// NOTE: this method will NOT exclude destroyed HUs.
 		// Before changing this, please carefully check the depending API.
 
 		return husTopLevel;
-	}
-
-	@Override
-	public List<I_M_HU> retrieveTUHUsForModel(final Object model)
-	{
-		final IQueryBuilder<I_M_HU> queryBuilder = retrieveTUHUAssignmentsForModelQuery(model)
-				.andCollect(I_M_HU_Assignment.COLUMN_M_TU_HU_ID);
-
-		queryBuilder.orderBy()
-				.addColumn(I_M_HU.COLUMN_M_HU_ID);
-
-		// NOTE: this method will NOT exclude destroyed HUs.
-		// Before changing this, please carefully check the depending API.
-
-		return queryBuilder.create().list();
 	}
 
 	@Override
@@ -341,27 +317,11 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public List<I_M_HU_Assignment> retrieveTableHUAssignments(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
-	{
-		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQuery(contextProvider, adTableId, hu);
-		return queryBuilder.create()
-				.list(I_M_HU_Assignment.class);
-	}
-
-	@Override
 	public List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilter(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQueryNoTopLevel(contextProvider, adTableId, hu);
 		return queryBuilder.create()
 				.list(I_M_HU_Assignment.class);
-	}
-
-	@Override
-	public int retrieveTableHUAssignmentsCount(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
-	{
-		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQuery(contextProvider, adTableId, hu);
-		return queryBuilder.create()
-				.count();
 	}
 
 	@Override
@@ -383,47 +343,6 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId);
 		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
 		return queryBuilder;
-	}
-
-	@Override
-	public boolean hasDerivedTradingUnitAssignmentsOnLUTU(final Properties ctx, final Object model, final I_M_HU topLevelHU, final I_M_HU luHU, final I_M_HU tuHU, final String trxName)
-	{
-		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, model, topLevelHU, luHU, tuHU, trxName)
-				.create()
-				.anyMatch();
-	}
-
-	@Override
-	public boolean hasDerivedTradingUnitAssignments(final Properties ctx, final Object model, final I_M_HU topLevelHU, final I_M_HU luHU, final I_M_HU tuHU, final String trxName)
-	{
-		final int recordId = InterfaceWrapperHelper.getId(model);
-
-		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, model, topLevelHU, luHU, tuHU, trxName)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
-				//
-				.create()
-				.anyMatch();
-	}
-
-	private IQueryBuilder<I_M_HU_Assignment> getDerivedTradingUnitAssignmentsQueryBuilder(final Properties ctx,
-																						  final Object model,
-																						  final I_M_HU topLevelHU,
-																						  final I_M_HU luHU,
-																						  final I_M_HU tuHU,
-																						  final String trxName)
-	{
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
-
-		final Integer luHUId = luHU == null ? null : luHU.getM_HU_ID();
-		final Integer tuHUId = tuHU == null ? null : tuHU.getM_HU_ID();
-
-		return queryBL.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
-				//
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, topLevelHU.getM_HU_ID())
-				//
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, luHUId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, tuHUId);
 	}
 
 	@Override
@@ -493,8 +412,6 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final ImmutableList.Builder<HuAssignment> result = ImmutableList.builder();
 		for (final I_M_HU_Assignment huAssignmentRecord : huAssignmentRecords)
 		{
-			// final boolean isDetailRecord = huAssignmentRecord.getM_LU_HU_ID() > 0 || huAssignmentRecord.getM_TU_HU_ID() > 0 || huAssignmentRecord.getVHU_ID() > 0;
-			// boolean canBeAdded = false;
 			if (huAssignmentRecord.getVHU_ID() > 0)
 			{
 				if (alreadySeenHuIds.add(huAssignmentRecord.getVHU_ID()))
@@ -502,7 +419,6 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 					result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
 					addIfNotZero(alreadySeenHuIds, huAssignmentRecord.getM_TU_HU_ID());
 					addIfNotZero(alreadySeenHuIds, huAssignmentRecord.getM_LU_HU_ID());
-					continue;
 				}
 			}
 			else if (huAssignmentRecord.getM_TU_HU_ID() > 0)
@@ -511,7 +427,6 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				{
 					result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
 					addIfNotZero(alreadySeenHuIds, huAssignmentRecord.getM_LU_HU_ID());
-					continue;
 				}
 			}
 			else if (huAssignmentRecord.getM_LU_HU_ID() > 0)
@@ -519,13 +434,11 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				if (alreadySeenHuIds.add(huAssignmentRecord.getM_LU_HU_ID()))
 				{
 					result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
-					continue;
 				}
 			}
 			else if (alreadySeenHuIds.add(huAssignmentRecord.getM_HU_ID()))
 			{
 				result.add(HuAssignment.ofDataRecord(huAssignmentRecord));
-				continue;
 			}
 		}
 		return result.build();
@@ -549,7 +462,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.list();
 	}
 
-	private void addIfNotZero(Set<Integer> alreadySeenHuIds, int id)
+	private void addIfNotZero(final Set<Integer> alreadySeenHuIds, final int id)
 	{
 		if (id > 0)
 		{
