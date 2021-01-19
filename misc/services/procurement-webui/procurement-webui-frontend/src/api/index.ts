@@ -87,10 +87,6 @@ export function fetchDailyReport(date: string): Promise<AxiosResponse> {
   return axios.get(`/rest/dailyReport/${date}`);
 }
 
-export function postDailyReport(data: unknown): Promise<AxiosResponse> {
-  return axios.post(`/rest/dailyReport`, data);
-}
-
 export function fetchWeeklyReport(weekYear: string): Promise<AxiosResponse> {
   return axios.get(`/rest/weeklyReport/${weekYear}`);
 }
@@ -111,6 +107,12 @@ export function loginRequest(username: string, password: string): Promise<AxiosR
   return axios.post(`/rest/session/login`, {
     email: username,
     password,
+  });
+}
+
+export function passwordResetRequest(email: string): Promise<AxiosResponse> {
+  return axios.get(`/rest/session/resetUserPassword`, {
+    email,
   });
 }
 

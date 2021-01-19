@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import { RootInstance } from './models/Store';
+import { translate } from './utils/translate';
 
 import Header from './components/Header';
 import Weekly from './components/Weekly';
@@ -20,6 +21,7 @@ import Info from './components/Info';
 import RfQ from './components/RfQ';
 import ProductScreen from './components/ProductScreen';
 import ProductAdd from './components/ProductAdd';
+import PasswordRecovery from './components/PasswordRecovery';
 
 interface IProps {
   store?: RootInstance;
@@ -104,25 +106,35 @@ function PrivateRoute({ loggedIn, ...rest }) {
 @observer
 class App extends React.Component<IProps, IState> {
   render() {
-    const { loggedIn } = this.props.store.app;
+    const { store } = this.props;
+    const { loggedIn } = store.app;
+
+    const loginRedirect = () => {
+      store.navigation.setViewNames(translate('LoginView.fields.loginButton'));
+
+      return <Login />;
+    }
 
     return(
       <BrowserRouter>
         <>
           <Switch>
             <Route exact path="/login">
-              {loggedIn ? <Redirect to="/" /> : <Login />}
+              {loggedIn ? <Redirect to="/" /> : loginRedirect()}
             </Route>
             <Route
               path="/forgottenPassword"
               component={({ location }) => (
-                <Login splat={location.pathname.replace('/', '')} />
+                <PasswordRecovery splat={location.pathname.replace('/', '')} />
               )}
             />
             <Route
               path="/resetPassword"
               component={({ location }) => (
-                <Login splat={location.pathname.replace('/', '')} />
+                <PasswordRecovery
+                  splat={location.pathname.replace('/', '')}
+                  token={location.query.token}
+                />
               )}
             />
             <PrivateRoute path="/" loggedIn={loggedIn} />
