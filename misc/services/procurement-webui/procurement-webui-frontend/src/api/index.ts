@@ -111,9 +111,7 @@ export function loginRequest(username: string, password: string): Promise<AxiosR
 }
 
 export function passwordResetRequest(email: string): Promise<AxiosResponse> {
-  return axios.get(`/rest/session/resetUserPassword`, {
-    email,
-  });
+  return axios.get(`/rest/session/resetUserPassword?${email}`);
 }
 
 export function getUserSession(): Promise<AxiosResponse> {
