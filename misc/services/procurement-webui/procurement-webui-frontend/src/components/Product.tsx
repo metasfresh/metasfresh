@@ -11,7 +11,7 @@ interface Props {
   editedItemsNo: number;
 }
 
-const Product: FunctionComponent<Props> = ({ id, productName, qty, packingInfo }: Props): ReactElement => {
+const Product: FunctionComponent<Props> = ({ id, productName, qty, packingInfo, isEdited }: Props): ReactElement => {
   const history = useHistory();
 
   return (
@@ -38,9 +38,11 @@ const Product: FunctionComponent<Props> = ({ id, productName, qty, packingInfo }
               <div className="column green-check is-hidden-mobile">
                 <i className="fas fa-check"></i>
               </div>
-              <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet">
-                <i className="fas fa-check"></i>
-              </div>
+              {!isEdited && (
+                <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet">
+                  <i className="fas fa-check"></i>
+                </div>
+              )}
             </div>
           </div>
         </div>
