@@ -42,15 +42,16 @@ export const Store = types
 
         self.app.setCurrentDay(date);
         self.app.setDayCaption(dayCaption);
-        const existingProducts = [...getSnapshot(self.dailyProducts.products)];
-        let newProducts = [...products];
-        newProducts = newProducts.map((item) => {
-          const target = existingProducts.find(
-            (existingItem) => existingItem.productId === item.productId && existingItem.isEdited
-          );
-          return target ? target : item;
-        });
-        self.dailyProducts.updateProductList(newProducts);
+        // const existingProducts = [...getSnapshot(self.dailyProducts.products)];
+        // let newProducts = [...products];
+        // newProducts = newProducts.map((item) => {
+        //   const target = existingProducts.find(
+        //     (existingItem) => existingItem.productId === item.productId && existingItem.isEdited
+        //   );
+        //   return target ? target : item;
+        // });
+        // self.dailyProducts.updateProductList(newProducts);
+        self.dailyProducts.updateProductList(products);
       } catch (error) {
         console.error('Failed to fetch', error);
       }

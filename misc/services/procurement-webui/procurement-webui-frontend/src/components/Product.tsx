@@ -9,9 +9,16 @@ interface Props {
   qty: number;
   isEdited: boolean;
   editedItemsNo: number;
+  confirmedByUser?: boolean;
 }
 
-const Product: FunctionComponent<Props> = ({ id, productName, qty, packingInfo, isEdited }: Props): ReactElement => {
+const Product: FunctionComponent<Props> = ({
+  id,
+  productName,
+  qty,
+  packingInfo,
+  confirmedByUser,
+}: Props): ReactElement => {
   const history = useHistory();
 
   return (
@@ -38,7 +45,8 @@ const Product: FunctionComponent<Props> = ({ id, productName, qty, packingInfo, 
               <div className="column green-check is-hidden-mobile">
                 <i className="fas fa-check"></i>
               </div>
-              {!isEdited && (
+              {confirmedByUser && <div className="column mt-4 is-hidden-desktop is-hidden-tablet">&nbsp;</div>}
+              {!confirmedByUser && (
                 <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet">
                   <i className="fas fa-check"></i>
                 </div>
