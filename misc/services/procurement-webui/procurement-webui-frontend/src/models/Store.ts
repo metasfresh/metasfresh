@@ -1,7 +1,7 @@
 import { useContext, createContext } from 'react';
 import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
 
-import { fetchDailyReport, fetchWeeklyReport, loginRequest } from '../api';
+import { fetchDailyReport, fetchWeeklyReport, loginRequest, postDailyReport } from '../api';
 import { i18n } from './i18n';
 import { Info } from './Info';
 import Navigation from './Navigation';
@@ -33,6 +33,14 @@ export const Store = types
       }
 
       return self.app.logIn(result);
+    }),
+    postDailyReport: flow(function* postDailyReportLocal(dataObj: unknown) {
+      try {
+        yield postDailyReport(dataObj);
+        fetchDailyReport;
+      } catch (error) {
+        console.error('Failed to post', error);
+      }
     }),
     fetchDailyReport: flow(function* dailyReport(reportDate: string) {
       try {

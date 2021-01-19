@@ -2,8 +2,6 @@ import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
-import { postDailyReport } from '../api';
-
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
@@ -37,7 +35,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               store.dailyProducts.updateProductQty(product.productId, e.target.value);
             }}
             onBlur={() => {
-              postDailyReport({
+              store.postDailyReport({
                 items: [
                   {
                     date: currentDay,

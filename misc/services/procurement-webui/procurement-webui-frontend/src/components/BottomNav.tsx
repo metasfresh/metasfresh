@@ -80,8 +80,9 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             className="link is-flex is-flex-direction-column is-justify-content-center is-relative"
             key="2"
             onClick={() => {
-              confirmDataEntry();
-              store.fetchDailyReport(store.app.currentDay);
+              confirmDataEntry().then(() =>{
+                store.fetchDailyReport(store.app.currentDay);
+              });
             }}
           >
             <i className="fas fa-check" />
