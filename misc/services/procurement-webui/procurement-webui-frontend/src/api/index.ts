@@ -88,7 +88,7 @@ export function fetchDailyReport(date: string): Promise<AxiosResponse> {
 }
 
 export function postDailyReport(data: unknown): Promise<AxiosResponse> {
-  return axios.get(`/rest/dailyReport`, data);
+  return axios.post(`/rest/dailyReport`, data);
 }
 
 export function fetchWeeklyReport(weekYear: string): Promise<AxiosResponse> {
