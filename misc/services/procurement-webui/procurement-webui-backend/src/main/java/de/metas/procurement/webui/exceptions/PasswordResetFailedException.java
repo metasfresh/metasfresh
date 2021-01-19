@@ -22,6 +22,10 @@ package de.metas.procurement.webui.exceptions;
  * #L%
  */
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(code = HttpStatus.UNAUTHORIZED)
 public class PasswordResetFailedException extends RuntimeException
 {
 	public PasswordResetFailedException(final String message)
