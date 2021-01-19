@@ -72,15 +72,19 @@ import lombok.ToString;
 @Data
 final class PricingResult implements IPricingResult
 {
-	private boolean calculated = false;
+	private boolean calculated;
 
 	private PricingSystemId pricingSystemId;
+	@Nullable
 	private PriceListId priceListId;
+	@Nullable
 	private PriceListVersionId priceListVersionId;
+	@Nullable
 	private CurrencyId currencyId;
 	private UomId priceUomId;
 	private CurrencyPrecision precision;
 
+	@Nullable
 	private ProductId productId;
 	private ProductCategoryId productCategoryId;
 
@@ -90,6 +94,7 @@ final class PricingResult implements IPricingResult
 	private PricingConditionsResult pricingConditions;
 
 	private BigDecimal priceList = BigDecimal.ZERO;
+	@Nullable
 	private BigDecimal priceStd = BigDecimal.ZERO;
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
@@ -98,7 +103,7 @@ final class PricingResult implements IPricingResult
 	private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
 
 	private boolean usesDiscountSchema = false;
-	private boolean disallowDiscount = false;
+	private boolean disallowDiscount;
 
 	private final LocalDate priceDate;
 
@@ -154,6 +159,7 @@ final class PricingResult implements IPricingResult
 	 * @return discount, never {@code null}
 	 */
 	@Override
+	@NonNull
 	public Percent getDiscount()
 	{
 		return CoalesceUtil.coalesce(discount, Percent.ZERO);
@@ -167,7 +173,7 @@ final class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public void addPricingRuleApplied(@NonNull IPricingRule rule)
+	public void addPricingRuleApplied(@NonNull final IPricingRule rule)
 	{
 		rulesApplied.add(rule);
 	}
@@ -192,7 +198,7 @@ final class PricingResult implements IPricingResult
 	/**
 	 * Supposed to be called by the pricing engine.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/4376
+	 * task https://github.com/metasfresh/metasfresh/issues/4376
 	 */
 	public void updatePriceScales()
 	{
@@ -201,6 +207,7 @@ final class PricingResult implements IPricingResult
 		priceList = scaleToPrecision(priceList);
 	}
 
+	@Nullable
 	private BigDecimal scaleToPrecision(@Nullable final BigDecimal priceToRound)
 	{
 		if (priceToRound == null || precision == null)

@@ -39,6 +39,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * Result of a pricing calculation
@@ -78,6 +79,7 @@ public interface IPricingResult
 	/**
 	 * @return discount (between 0 and 100); never null
 	 */
+	@NonNull
 	Percent getDiscount();
 
 	void setDiscount(Percent discount);
