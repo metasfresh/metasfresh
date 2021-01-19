@@ -91,7 +91,7 @@ export const App = types
 
     const setUnconfirmed = function (unconfirmedNo: number) {
       self.countUnconfirmed = unconfirmedNo;
-    }
+    };
 
     return {
       logIn,
