@@ -8,8 +8,6 @@ import {
   withRouter,
 } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
-import { onAction } from 'mobx-state-tree';
-
 import { RootInstance } from './models/Store';
 
 import Header from './components/Header';
