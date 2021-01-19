@@ -89,6 +89,10 @@ export const App = types
       self.nextWeek = newNextWeek;
     };
 
+    const setUnconfirmed = function (unconfirmedNo: number) {
+      self.countUnconfirmed = unconfirmedNo;
+    }
+
     return {
       logIn,
       logOut,
@@ -101,5 +105,6 @@ export const App = types
       setPrevWeek,
       setCurrentWeek,
       setNextWeek,
+      setUnconfirmed,
     };
   });
