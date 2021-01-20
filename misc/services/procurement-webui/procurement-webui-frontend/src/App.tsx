@@ -8,6 +8,8 @@ import {
   withRouter,
 } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
+import qs from 'qs';
+
 import { RootInstance } from './models/Store';
 import { translate } from './utils/translate';
 
@@ -109,18 +111,12 @@ class App extends React.Component<IProps, IState> {
     const { store } = this.props;
     const { loggedIn } = store.app;
 
-    const loginRedirect = () => {
-      store.navigation.setViewNames(translate('LoginView.fields.loginButton'));
-
-      return <Login />;
-    }
-
     return(
       <BrowserRouter>
         <>
           <Switch>
             <Route exact path="/login">
-              {loggedIn ? <Redirect to="/" /> : loginRedirect()}
+              {loggedIn ? <Redirect to="/" /> : <Login />}
             </Route>
             <Route
               path="/forgottenPassword"
@@ -130,12 +126,16 @@ class App extends React.Component<IProps, IState> {
             />
             <Route
               path="/resetPassword"
-              component={({ location }) => (
-                <PasswordRecovery
-                  splat={location.pathname.replace('/', '')}
-                  token={location.query.token}
-                />
-              )}
+              component={({ location }) => {
+                const query = qs.parse(location.search, { ignoreQueryPrefix: true });
+
+                return (
+                  <PasswordRecovery
+                    splat={location.pathname.replace('/', '')}
+                    token={query.token}
+                  />
+                );
+              }}
             />
             <PrivateRoute path="/" loggedIn={loggedIn} />
           </Switch>
