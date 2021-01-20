@@ -157,6 +157,7 @@ public class CampaignPricingRule implements IPricingRule
 
 		result.setPriceStd(campaignPriceBD);
 		result.setCalculated(true);
+		result.setDisallowDiscount(false); // avoid an exception if a preceding rule advised against changing the discount anymore
 		result.setDiscount(Percent.ZERO);
 		result.setDisallowDiscount(true); // this is the end price, don't apply any other discounts
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
