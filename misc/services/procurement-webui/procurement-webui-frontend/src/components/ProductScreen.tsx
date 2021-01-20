@@ -22,35 +22,65 @@ const ProductScreen: React.FunctionComponent = observer(() => {
     store.navigation.setTopViewName(product.productName);
   }, [store]);
 
+  const saveQty = (newQty: number) => {
+    store
+      .postDailyReport({
+        items: [
+          {
+            date: currentDay,
+            productId: product.productId,
+            qty: newQty,
+          },
+        ],
+      })
+      .then(() => {
+        store.fetchDailyReport(store.app.currentDay);
+        store.app.getUserSession();
+      });
+  };
+
+  const qtyInput = React.createRef<HTMLInputElement>();
+
   return (
     <View>
       <div>
         <DailyNav isStatic={true} staticDay={currentDay} staticCaption={currentCaption} />
         <div className="mt-5 p-4">
-          <input
-            className="product-input"
-            type="number"
-            value={product.qty}
-            onChange={(e) => {
-              store.dailyProducts.updateProductQty(product.productId, e.target.value);
-            }}
-            onBlur={() => {
-              store
-                .postDailyReport({
-                  items: [
-                    {
-                      date: currentDay,
-                      productId: product.productId,
-                      qty: product.qty,
-                    },
-                  ],
-                })
-                .then(() => {
-                  store.fetchDailyReport(store.app.currentDay);
-                  store.app.getUserSession();
-                });
-            }}
-          />
+          <div className="columns is-mobile">
+            <div className="column is-11">
+              <input
+                className="product-input"
+                type="number"
+                ref={qtyInput}
+                step="1"
+                value={product.qty}
+                onChange={(e) => {
+                  store.dailyProducts.updateProductQty(product.productId, e.target.value);
+                }}
+                onBlur={(e) => saveQty(parseInt(e.target.value))}
+              />
+            </div>
+            {/* The arrows */}
+            <div className="columns pt-4 green-color">
+              <div
+                className="column is-6"
+                onClick={() => {
+                  saveQty(parseInt(qtyInput.current.value) + 1);
+                }}
+              >
+                <i className="fas fa-2x fa-arrow-up"></i>
+              </div>
+              <div
+                className="column is-6"
+                onClick={() => {
+                  const currentQty = parseInt(qtyInput.current.value);
+                  currentQty > 0 && saveQty(currentQty - 1);
+                }}
+              >
+                <i className="fas fa-2x fa-arrow-down"></i>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </View>
