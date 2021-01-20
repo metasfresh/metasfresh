@@ -25,7 +25,6 @@ package de.metas.ui.web.pporder;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
-import org.eevolution.api.PPOrderId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -49,6 +48,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
@@ -141,6 +141,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		return ImmutableList.of(
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class),
+				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Pick.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_IssueServiceProduct.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ReverseCandidate.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Planning.class),
