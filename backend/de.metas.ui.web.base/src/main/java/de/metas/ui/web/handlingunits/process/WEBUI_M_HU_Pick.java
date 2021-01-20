@@ -1,16 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Objects;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -42,6 +33,13 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -68,9 +66,7 @@ import lombok.Value;
 public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private static final Logger logger = LogManager.getLogger(WEBUI_M_HU_Pick.class);
-
-	@Autowired
-	private PickingCandidateService pickingCandidateService;
+	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
 	private int pickingSlotIdInt;
@@ -100,7 +96,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		
+
 		if (!isEligibleHU())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
@@ -113,7 +109,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	{
 		final HURow row = getSingleHURow();
 		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(row.getHuId());
-		
+
 		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
 		return Services.get(IHUContextFactory.class)
 				.createMutableHUContext()
@@ -125,7 +121,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	private Stream<HURow> streamHURows()
 	{
 		return streamSelectedRows()
-				.map(row -> toHURowOrNull(row))
+				.map(WEBUI_M_HU_Pick::toHURowOrNull)
 				.filter(Objects::nonNull)
 				.filter(HURow::isTopLevelHU)
 				.filter(HURow::isHuStatusActive);
@@ -176,6 +172,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return filler.getPickingSlotValues(context);
 	}
 
+	@Nullable
 	private OrderLineId getSalesOrderLineId()
 	{
 		final IView view = getView();
@@ -225,7 +222,8 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		invalidateView();
 	}
 
-	private static final HURow toHURowOrNull(final IViewRow row)
+	@Nullable
+	private static HURow toHURowOrNull(final IViewRow row)
 	{
 		if (row instanceof HUEditorRow)
 		{
@@ -258,6 +256,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		}
 		else
 		{
+			//noinspection ThrowableNotThrown
 			new AdempiereException("Row type not supported: " + row).throwIfDeveloperModeOrLogWarningElse(logger);
 			return null;
 		}
@@ -265,10 +264,10 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 
 	@Value
 	@Builder
-	private static final class HURow
+	private static class HURow
 	{
-		private final HuId huId;
-		private final boolean topLevelHU;
-		private final boolean huStatusActive;
+		HuId huId;
+		boolean topLevelHU;
+		boolean huStatusActive;
 	}
 }
