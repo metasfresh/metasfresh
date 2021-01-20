@@ -49,24 +49,29 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-@ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String, viewTypes = {})
+@ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String)
 public class PPOrderLinesViewFactory implements IViewFactory
 {
-	@Autowired
-	private ASIRepository asiRepository;
-	@Autowired
-	private DefaultHUEditorViewFactory huEditorViewFactory;
-
-	@Autowired
-	private HUReservationService huReservationService;
+	private final ASIRepository asiRepository;
+	private final DefaultHUEditorViewFactory huEditorViewFactory;
+	private final HUReservationService huReservationService;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
+
+	public PPOrderLinesViewFactory(
+			@NonNull final ASIRepository asiRepository,
+			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
+			@NonNull final HUReservationService huReservationService)
+	{
+		this.asiRepository = asiRepository;
+		this.huEditorViewFactory = huEditorViewFactory;
+		this.huReservationService = huReservationService;
+	}
 
 	@Override
 	public PPOrderLinesView createView(final @NonNull CreateViewRequest request)
@@ -120,7 +125,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		return layouts.getOrLoad(windowId, () -> createViewLayout(windowId));
 	}
 
-	private final ViewLayout createViewLayout(final WindowId windowId)
+	private ViewLayout createViewLayout(final WindowId windowId)
 	{
 		return ViewLayout.builder()
 				.setWindowId(windowId)
@@ -152,7 +157,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_IssueTuQty.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_M_Source_HU_IssueCUQty.class),
 				createProcessDescriptorForIssueReceiptWindow(de.metas.ui.web.pporder.process.WEBUI_PP_Order_PrintLabel.class));
-		
+
 	}
 
 	private static RelatedProcessDescriptor createProcessDescriptorForIssueReceiptWindow(@NonNull final Class<?> processClass)

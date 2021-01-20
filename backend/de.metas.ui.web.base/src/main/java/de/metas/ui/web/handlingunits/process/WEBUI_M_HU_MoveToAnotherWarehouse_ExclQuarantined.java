@@ -1,15 +1,14 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -37,7 +36,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 {
 	public static final AdMessageKey MSG_WEBUI_HUs_IN_Quarantine = AdMessageKey.of("WEBUI_HUs_IN_Quarantine");
 
-	private final transient HULotNumberQuarantineService lotNumberQuarantineService = Adempiere.getBean(HULotNumberQuarantineService.class);
+	private final transient HULotNumberQuarantineService lotNumberQuarantineService = SpringContextHolder.instance.getBean(HULotNumberQuarantineService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -62,11 +61,8 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 
 	}
 
-	private boolean isQuarantineHUs(Stream<I_M_HU> streamSelectedHUs)
+	private boolean isQuarantineHUs(final Stream<I_M_HU> streamSelectedHUs)
 	{
-		return streamSelectedHUs
-				.filter(huRecord -> lotNumberQuarantineService.isQuarantineHU(huRecord))
-				.findAny()
-				.isPresent();
+		return streamSelectedHUs.anyMatch(lotNumberQuarantineService::isQuarantineHU);
 	}
 }

@@ -1,9 +1,6 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
@@ -17,6 +14,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -44,22 +42,19 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
-	@Autowired
-	private HUReservationService huReservationService;
-
-	@Autowired
-	private SalesOrderLineRepository salesOrderLineRepository;
+	private final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
+	private final SalesOrderLineRepository salesOrderLineRepository = SpringContextHolder.instance.getBean(SalesOrderLineRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(),salesOrderLineRepository)
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
 				.orElse(null);
-		if(salesOrderLine == null)
+		if (salesOrderLine == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No sales order was set");
 		}
-		
+
 		final ProductId productId = salesOrderLine.getProductId();
 		final Quantity unreservableQty = retrieveUnreservableQuantity(productId);
 		if (unreservableQty.signum() <= 0)
@@ -74,8 +69,7 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	{
 		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
 				streamSelectedHUIds(Select.ALL), productId);
-		final Quantity reservableQty = huReservationService.retrieveUnreservableQty(request);
-		return reservableQty;
+		return huReservationService.retrieveUnreservableQty(request);
 	}
 
 	@Override

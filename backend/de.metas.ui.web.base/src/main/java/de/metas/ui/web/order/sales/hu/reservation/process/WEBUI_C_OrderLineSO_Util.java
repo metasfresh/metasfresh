@@ -1,10 +1,6 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
 import de.metas.order.OrderLineId;
@@ -14,6 +10,9 @@ import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -54,14 +53,11 @@ final class WEBUI_C_OrderLineSO_Util
 			@NonNull final Stream<HuId> selectedHUIdStream,
 			@NonNull final ProductId productId)
 	{
-		final ImmutableList<HuId> selectedHuIds = selectedHUIdStream
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<HuId> selectedHuIds = selectedHUIdStream.collect(ImmutableList.toImmutableList());
 
-		final RetrieveHUsQtyRequest request = RetrieveHUsQtyRequest
-				.builder()
+		return RetrieveHUsQtyRequest.builder()
 				.huIds(selectedHuIds)
 				.productId(productId)
 				.build();
-		return request;
 	}
 }

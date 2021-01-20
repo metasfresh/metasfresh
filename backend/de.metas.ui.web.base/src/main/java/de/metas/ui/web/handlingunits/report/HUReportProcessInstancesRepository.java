@@ -189,10 +189,10 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.getAll()
 				.stream()
 				.filter(descriptor -> checkApplies(descriptor, viewContext))
-				.map(descriptor -> descriptor.toWebuiRelatedProcessDescriptor());
+				.map(WebuiHUProcessDescriptor::toWebuiRelatedProcessDescriptor);
 	}
 
-	private boolean checkApplies(final WebuiHUProcessDescriptor descriptor, @NonNull ViewAsPreconditionsContext viewContext)
+	private boolean checkApplies(final WebuiHUProcessDescriptor descriptor, @NonNull final ViewAsPreconditionsContext viewContext)
 	{
 		final DocumentIdsSelection rowIds = viewContext.getSelectedRowIds();
 		if (rowIds.isEmpty())
@@ -255,7 +255,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	@Override
 	public <R> R forProcessInstanceReadonly(final DocumentId pinstanceId, @NonNull final Function<IProcessInstanceController, R> processor)
 	{
-		try (final IAutoCloseable readLock = getInstance(pinstanceId).lockForReading())
+		try (final IAutoCloseable ignored = getInstance(pinstanceId).lockForReading())
 		{
 			final HUReportProcessInstance processInstance = getInstance(pinstanceId)
 					.copyReadonly();
@@ -267,7 +267,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	@Override
 	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final IDocumentChangesCollector changesCollector, @NonNull final Function<IProcessInstanceController, R> processor)
 	{
-		try (final IAutoCloseable readLock = getInstance(pinstanceId).lockForWriting())
+		try (final IAutoCloseable ignored = getInstance(pinstanceId).lockForWriting())
 		{
 			final HUReportProcessInstance processInstance = getInstance(pinstanceId)
 					.copyReadWrite(changesCollector);
