@@ -1,17 +1,46 @@
-import React, { FunctionComponent, ReactElement } from 'react';
-
+import React, { useEffect, useContext } from 'react';
+import { observer } from 'mobx-react';
 import ProductAddItem from './ProductAddItem';
 import ProductsNotContracted from './ProductsNotContracted';
+import { RootStoreContext } from '../models/Store';
 
-const ProductAddList: FunctionComponent = (): ReactElement => {
+const ProductAddList: React.FunctionComponent = observer(() => {
+  const store = useContext(RootStoreContext);
+
+  useEffect(() => {
+    store.productSelection.fetchSelectionProducts();
+  }, [store]);
+
+  const { products, moreProducts } = store.productSelection;
+
   return (
     <div className="mt-1">
-      <ProductAddItem id={`prodId1`} name={`Karotten Bund`} packType={`G2 x 6Stk`} />
-      <ProductAddItem id={`prodId2`} name={`Auberiginen`} packType={`BLL6423 x 5 kg`} />
-
+      {/* Listing the items from the products first */}
+      {products.length &&
+        products.map((product) => {
+          return (
+            <ProductAddItem
+              key={product.getProductId}
+              id={product.getProductId}
+              name={product.getName}
+              packType={product.getPackingInfo}
+            />
+          );
+        })}
+      {moreProducts.length &&
+        moreProducts.map((productItem) => {
+          return (
+            <ProductAddItem
+              key={productItem.getProductId}
+              id={productItem.getProductId}
+              name={productItem.getName}
+              packType={productItem.getPackingInfo}
+            />
+          );
+        })}
       <ProductsNotContracted />
     </div>
   );
-};
+});
 
 export default ProductAddList;
