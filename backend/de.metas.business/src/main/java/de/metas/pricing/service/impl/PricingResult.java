@@ -57,16 +57,15 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
- *
  * NOTEs to developers:
  * <ul>
  * <li>if you want to add a new field here which will be copied from {@link IPricingContext}, please check {@link de.metas.pricing.service.impl.PricingBL#createInitialResult(IPricingContext)}.
  * </ul>
  *
  * @author tsa
- *
  */
 @ToString
 @Data
@@ -166,9 +165,14 @@ final class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public void setDiscount(final Percent discount)
+	public void setDiscount(@NonNull final Percent discount)
 	{
-		Check.assume(!isDisallowDiscount(), "Method caller is respecting the 'disallowDiscount' property");
+		if (isDisallowDiscount())
+		{
+			throw new AdempiereException("Attempt to set the discount although isDisallowDiscount()==true")
+					.appendParametersToMessage()
+					.setParameter("this", this);
+		}
 		this.discount = discount;
 	}
 
@@ -197,7 +201,7 @@ final class PricingResult implements IPricingResult
 
 	/**
 	 * Supposed to be called by the pricing engine.
-	 *
+	 * <p>
 	 * task https://github.com/metasfresh/metasfresh/issues/4376
 	 */
 	public void updatePriceScales()
