@@ -211,9 +211,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		{
 			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
 			final MQMSpecification qms = new Query(getCtx(), I_QM_Specification.Table_Name, whereClause, get_TrxName())
-					.setParameters(new Object[] { getPP_Product_BOM_ID(), getAD_Workflow_ID() })
+					.setParameters(getPP_Product_BOM_ID(), getAD_Workflow_ID())
 					.firstOnly(MQMSpecification.class);
-			return qms != null ? qms.isValid(getM_AttributeSetInstance_ID()) : true;
+			return qms == null || qms.isValid(getM_AttributeSetInstance_ID());
 		}
 		else
 		{
@@ -251,11 +251,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-
-		//
-		// Mark BOM Lines as processed
-		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 
 		//
 		// Implicit Approval
