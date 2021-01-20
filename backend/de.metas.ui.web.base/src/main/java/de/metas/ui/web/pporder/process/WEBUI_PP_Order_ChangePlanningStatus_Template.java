@@ -1,17 +1,14 @@
 package de.metas.ui.web.pporder.process;
 
-import org.compiere.Adempiere;
-import org.eevolution.api.PPOrderPlanningStatus;
-
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.view.IViewsRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderPlanningStatus;
 
 /*
  * #%L
@@ -38,10 +35,9 @@ import lombok.NonNull;
 class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
+	// private final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
 	private final PPOrderPlanningStatus targetPlanningStatus;
-	
 
 	WEBUI_PP_Order_ChangePlanningStatus_Template(@NonNull final PPOrderPlanningStatus targetPlanningStatus)
 	{
@@ -51,7 +47,13 @@ class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Templa
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final PPOrderPlanningStatus planningStatus = getView().getPlanningStatus();
+		final PPOrderLinesView view = getView();
+		if (!view.getDocBaseType().isManufacturingOrder())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a manufacturing order");
+		}
+
+		final PPOrderPlanningStatus planningStatus = view.getPlanningStatus();
 		if (!huPPOrderBL.canChangePlanningStatus(planningStatus, targetPlanningStatus))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not applicable for current status");
@@ -72,8 +74,8 @@ class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Templa
 	{
 		final PPOrderLinesView ppOrderLinesView = getView();
 		ppOrderLinesView.invalidateAll();
-		
+
 		final PPOrderId ppOrderId = ppOrderLinesView.getPpOrderId();
-		viewsRepo.notifyRecordsChangedAsync(I_PP_Order.Table_Name, ppOrderId.getRepoId());
+		getViewsRepo().notifyRecordsChangedAsync(I_PP_Order.Table_Name, ppOrderId.getRepoId());
 	}
 }

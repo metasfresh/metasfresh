@@ -40,6 +40,7 @@ public abstract class WEBUI_PP_Order_Template
 		extends ViewBasedProcessTemplate
 // implements IProcessPrecondition // let the extending class activate this interface
 {
+	@SuppressWarnings("MethodDoesntCallSuperMethod")
 	@Override
 	protected final PPOrderLinesView getView()
 	{

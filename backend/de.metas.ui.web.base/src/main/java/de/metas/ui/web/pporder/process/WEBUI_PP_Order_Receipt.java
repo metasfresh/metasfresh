@@ -31,8 +31,6 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -50,7 +48,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
@@ -62,8 +61,9 @@ public class WEBUI_PP_Order_Receipt
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
-	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
 
 	// parameters
@@ -125,13 +125,13 @@ public class WEBUI_PP_Order_Receipt
 		if (type == PPOrderLineType.MainProduct)
 		{
 			final PPOrderId ppOrderId = row.getOrderId();
-			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
+			final I_PP_Order ppOrder = huPPOrderBL.getById(ppOrderId);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
 			final PPOrderBOMLineId ppOrderBOMLineId = row.getOrderBOMLineId();
-			final I_PP_Order_BOMLine ppOrderBOMLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(ppOrderBOMLineId);
+			final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMDAO.getOrderBOMLineById(ppOrderBOMLineId);
 			return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine);
 		}
 		else
@@ -149,6 +149,10 @@ public class WEBUI_PP_Order_Receipt
 		}
 
 		final PPOrderLinesView ppOrder = getView();
+		if (ppOrder.getDocBaseType().isRepairOrder())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("receiving HUs not allowed for repair orders");
+		}
 		if (!(ppOrder.isStatusPlanning() || ppOrder.isStatusReview()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not planning or in review");
@@ -190,7 +194,7 @@ public class WEBUI_PP_Order_Receipt
 	/**
 	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
+	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
 	public LookupValuesList getM_HU_PI_Item_Products()
 	{
 		return getPackingInfoParams().getM_HU_PI_Item_Products();

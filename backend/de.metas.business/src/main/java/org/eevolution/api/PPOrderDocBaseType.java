@@ -49,6 +49,8 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 
 	public static PPOrderDocBaseType ofCode(@NonNull final String code) { return index.ofCode(code); }
 
+	public boolean isManufacturingOrder() { return MANUFACTURING_ORDER.equals(this); }
+
 	public boolean isQualityOrder() { return QUALITY_ORDER.equals(this); }
 
 	public boolean isRepairOrder() { return REPAIR_ORDER.equals(this); }
