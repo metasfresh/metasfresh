@@ -84,6 +84,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             onClick={() => {
               confirmDataEntry().then(() => {
                 store.fetchDailyReport(store.app.currentDay);
+                store.app.getUserSession();
               });
             }}
           >
