@@ -135,9 +135,17 @@ footer {
 .unconfirmed-count {
   position: absolute;
   color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 10px;
+  width: 22px;
+  height: 22px;
+  top: 5px;
+  text-align: center;
+  line-height: 1rem;
+  padding-top: 3px;
+  right: 8px;
+  padding-left: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border-radius: 11px;
   background-color: $danger-red;
 }
 
@@ -158,4 +166,10 @@ input[type=number]::-webkit-inner-spin-button {
 .product-input:focus {
   outline-color: $base-color;
   color: $base-elements;
+}
+
+.reset-password-form {
+  .is-text {
+    color: black;
+  }
 }
