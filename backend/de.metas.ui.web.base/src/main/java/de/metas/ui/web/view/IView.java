@@ -226,7 +226,7 @@ public interface IView
 		return ViewActionDescriptorsList.EMPTY;
 	}
 
-	default boolean isConsiderTableRelatedProcessDescriptors()
+	default boolean isConsiderTableRelatedProcessDescriptors(@NonNull final DocumentIdsSelection selectedRowIds)
 	{
 		return true;
 	}

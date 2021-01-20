@@ -58,12 +58,13 @@ import java.util.Objects;
 @Value
 public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 {
-	public static final ViewAsPreconditionsContext cast(final IProcessPreconditionsContext context)
+	public static ViewAsPreconditionsContext cast(final IProcessPreconditionsContext context)
 	{
 		return (ViewAsPreconditionsContext)context;
 	}
 
-	public static final ViewAsPreconditionsContext castOrNull(final IProcessPreconditionsContext context)
+	@Nullable
+	public static ViewAsPreconditionsContext castOrNull(final IProcessPreconditionsContext context)
 	{
 		if (context instanceof ViewAsPreconditionsContext)
 		{
@@ -77,19 +78,20 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	private static final Logger logger = LogManager.getLogger(ViewAsPreconditionsContext.class);
 
-	private final IView view;
-	private final ViewProfileId viewProfileId;
-	private final String tableName;
-	private final AdWindowId adWindowId;
+	IView view;
+	ViewProfileId viewProfileId;
+	String tableName;
+	AdWindowId adWindowId;
 
-	private final ViewRowIdsSelection viewRowIdsSelection;
-	private final ViewRowIdsSelection parentViewRowIdsSelection;
-	private final ViewRowIdsSelection childViewRowIdsSelection;
+	ViewRowIdsSelection viewRowIdsSelection;
+	ViewRowIdsSelection parentViewRowIdsSelection;
+	ViewRowIdsSelection childViewRowIdsSelection;
 
-	private final DisplayPlace displayPlace;
+	DisplayPlace displayPlace;
 
-	@Getter(AccessLevel.NONE)
-	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
+	boolean considerTableRelatedProcessDescriptors;
+
+	@Getter(AccessLevel.NONE) MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
 	@Builder
 	private ViewAsPreconditionsContext(
@@ -119,6 +121,8 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		}
 
 		this.displayPlace = displayPlace;
+
+		this.considerTableRelatedProcessDescriptors = view.isConsiderTableRelatedProcessDescriptors(selectedRowIds);
 	}
 
 	public DocumentIdsSelection getSelectedRowIds()
@@ -126,16 +130,10 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		return viewRowIdsSelection.getRowIds();
 	}
 
-	public <T extends IView> T getView(final Class<T> viewType)
+	public <T extends IView> T getView(@SuppressWarnings("unused") final Class<T> viewType)
 	{
 		@SuppressWarnings("unchecked") final T viewCasted = (T)view;
 		return viewCasted;
-	}
-
-	@Override
-	public boolean isConsiderTableRelatedProcessDescriptors()
-	{
-		return view.isConsiderTableRelatedProcessDescriptors();
 	}
 
 	@Override
@@ -204,7 +202,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		return getSelectedRowIds().isMoreThanOneDocumentId();
 	}
 
-	private final SelectedModelsList retrieveSelectedModels(final Class<?> modelClass)
+	private SelectedModelsList retrieveSelectedModels(final Class<?> modelClass)
 	{
 		final List<?> models = view.retrieveModelsByIds(getSelectedRowIds(), modelClass);
 		return SelectedModelsList.of(models, modelClass);

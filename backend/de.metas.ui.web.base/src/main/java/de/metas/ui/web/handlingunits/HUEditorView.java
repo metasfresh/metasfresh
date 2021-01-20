@@ -193,7 +193,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public boolean isConsiderTableRelatedProcessDescriptors()
+	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final DocumentIdsSelection selectedRowIds)
 	{
 		return considerTableRelatedProcessDescriptors;
 	}

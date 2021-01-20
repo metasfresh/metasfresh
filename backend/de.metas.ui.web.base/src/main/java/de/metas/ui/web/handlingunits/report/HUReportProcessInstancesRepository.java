@@ -180,7 +180,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		// NOTE: atm there is no need for a separate flag for allowing table related processes and allowing HU reports,
 		// so we are reusing the same flag.
 		final IView huEditorView = viewContext.getView();
-		if (!huEditorView.isConsiderTableRelatedProcessDescriptors())
+		if (!huEditorView.isConsiderTableRelatedProcessDescriptors(viewContext.getSelectedRowIds()))
 		{
 			return Stream.empty();
 		}
