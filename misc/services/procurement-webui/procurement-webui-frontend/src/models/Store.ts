@@ -7,6 +7,7 @@ import { Info } from './Info';
 import Navigation from './Navigation';
 import { DailyProductList } from './DailyProductList';
 import { App } from './App';
+import { ProductSelection } from './ProductSelection';
 
 export const Store = types
   .model('Store', {
@@ -15,6 +16,7 @@ export const Store = types
     dailyProducts: DailyProductList,
     app: App,
     info: Info,
+    productSelection: ProductSelection,
   })
   .actions((self) => ({
     logIn: flow(function* logIn(email: string, password: string) {
@@ -90,6 +92,7 @@ let initialState = Store.create({
     nextWeek: '',
   },
   info: { content: '' },
+  productSelection: {},
 });
 
 const data = localStorage.getItem('initialState');

@@ -1,13 +1,20 @@
 /**
  * ProductAdd - main component for listing the products that follow to be added
  */
-
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { translate } from '../utils/translate';
 import View from './View';
 import ProductAddList from './ProductAddList';
+import { observer } from 'mobx-react';
+import { RootStoreContext } from '../models/Store';
 
-const ProductAdd: FunctionComponent = (): ReactElement => {
+const ProductAdd: React.FunctionComponent = observer(() => {
+  const store = useContext(RootStoreContext);
+
+  useEffect(() => {
+    store.productSelection.fetchSelectionProducts();
+  }, [store]);
+
   return (
     <View>
       <div>
@@ -18,6 +25,6 @@ const ProductAdd: FunctionComponent = (): ReactElement => {
       </div>
     </View>
   );
-};
+});
 
 export default ProductAdd;
