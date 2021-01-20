@@ -65,6 +65,7 @@ public class WEBUI_DD_OrderLine_MoveSelected_HU extends ViewBasedProcessTemplate
 	@Param(parameterName = PARAM_LOCATOR_TO_ID, mandatory = true)
 	private int paramLocatorToId;
 
+	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		if (getSelectedRowIds().isEmpty())

@@ -51,6 +51,7 @@ public class WEBUI_MoveHUs_HUEditor_Launcher extends ViewBasedProcessTemplate im
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		if (getSelectedRowIds().isEmpty())
