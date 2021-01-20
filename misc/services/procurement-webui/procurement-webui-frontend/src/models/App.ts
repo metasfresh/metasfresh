@@ -1,6 +1,6 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
 
-import { getUserSession, logoutRequest, passwordResetRequest } from '../api';
+import { getUserSession, logoutRequest, passwordResetRequest, passwordResetConfirm } from '../api';
 import { formDate, slashSeparatedYYYYmmdd } from '../utils/date';
 
 export const App = types
@@ -51,14 +51,42 @@ export const App = types
         setInitialData(response.data);
       } catch (e) {
         // 401 (Unauthorized)
-        logOut();
+        if (self.loggedIn) {
+          logOut();
+        }
       }
 
       return response;
     });
 
     const requestPasswordReset = flow(function* requestPasswordReset(email: string) {
-      return yield passwordResetRequest(email);
+      let response;
+
+      // This is because right now we're getting 500 for all backend errors and we would not
+      // get the error message.
+      response = yield passwordResetRequest(email);
+
+      if (response.status !== 200) {
+        response = response.data.message;
+
+        return Promise.reject(response);
+      }
+
+      return response;
+    });
+
+    const confirmPasswordReset = flow(function* requestPasswordReset(token: string) {
+      let response;
+
+      response = yield passwordResetConfirm(token);
+
+      if (response.status !== 200) {
+        response = response.data.message;
+
+        return Promise.reject(response);
+      }
+
+      return response;
     });
 
     const setInitialData = function setInitialData(dataToSet: Partial<SnapshotIn<typeof self>>) {
@@ -101,6 +129,7 @@ export const App = types
       logIn,
       logOut,
       requestPasswordReset,
+      confirmPasswordReset,
       getUserSession: getSession,
       setInitialData,
       setResponseError,

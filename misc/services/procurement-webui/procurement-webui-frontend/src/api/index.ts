@@ -115,7 +115,19 @@ export function loginRequest(username: string, password: string): Promise<AxiosR
 }
 
 export function passwordResetRequest(email: string): Promise<AxiosResponse> {
-  return axios.get(`/rest/session/resetUserPassword?${email}`);
+  return axios.get(`/rest/session/resetUserPassword?email=${email}`, {
+    validateStatus: () => {
+      // returning true so that we can get the error message
+      // TODO: This is temporary, as in the final solution we will have 400's for errors - not 500
+      return true;
+    },
+  });
+}
+
+export function passwordResetConfirm(token: string): Promise<AxiosResponse> {
+  return axios.get(`/rest/session/resetUserPasswordConfirm?token=${token}`, {
+    validateStatus: () => true,
+  });
 }
 
 export function getUserSession(): Promise<AxiosResponse> {
