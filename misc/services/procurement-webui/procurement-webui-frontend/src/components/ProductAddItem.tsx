@@ -4,11 +4,12 @@ interface Props {
   id: string;
   name: string;
   packType: string;
+  handleClick?: (productId: string) => void;
 }
 
-const ProductAddItem: FunctionComponent<Props> = ({ name, packType }: Props): ReactElement => {
+const ProductAddItem: FunctionComponent<Props> = ({ id, name, packType, handleClick }: Props): ReactElement => {
   return (
-    <div className="product">
+    <div className="product" onClick={() => handleClick(id)}>
       <div className="box">
         <div className="columns is-mobile">
           <div className="column is-12">

@@ -15,6 +15,12 @@ const ProductAddList: React.FunctionComponent = observer(() => {
 
   const { products, moreProducts, showMoreBtnVisible } = store.productSelection;
 
+  const handleClick = (productId: string) => {
+    store.productSelection.favoriteAdd([productId]).then(() => {
+      // TODO: tomorrow - this should go to daily view
+    });
+  };
+
   return (
     <div className="mt-1">
       {/* Listing the items from the products first */}
@@ -26,6 +32,7 @@ const ProductAddList: React.FunctionComponent = observer(() => {
               id={product.getProductId}
               name={product.getName}
               packType={product.getPackingInfo}
+              handleClick={handleClick}
             />
           );
         })}
@@ -46,6 +53,7 @@ const ProductAddList: React.FunctionComponent = observer(() => {
               id={productItem.getProductId}
               name={productItem.getName}
               packType={productItem.getPackingInfo}
+              handleClick={handleClick}
             />
           );
         })}

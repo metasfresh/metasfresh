@@ -105,11 +105,11 @@ export function getMessages(): Promise<AxiosResponse> {
 
 /** products-rest-controller */
 export function favoriteAdd(data: Array<string>): Promise<AxiosResponse> {
-  return axios.post(`/rest/products/favorite/add`, data);
+  return axios.post(`/rest/products/favorite/add`, { productIds: data });
 }
 
 export function favoriteRemove(data: Array<string>): Promise<AxiosResponse> {
-  return axios.post(`/rest/products/favorite/remove`, data);
+  return axios.post(`/rest/products/favorite/remove`, { productIds: data });
 }
 
 export function getNotFavorite(): Promise<AxiosResponse> {

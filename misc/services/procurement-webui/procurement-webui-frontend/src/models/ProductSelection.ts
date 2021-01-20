@@ -1,5 +1,5 @@
 import { types, flow } from 'mobx-state-tree';
-import { getNotFavorite } from '../api';
+import { getNotFavorite, favoriteAdd, favoriteRemove } from '../api';
 import { ProductSelectionItem } from './ProductSelectionItem';
 
 const ProductSelectionArray = types.array(ProductSelectionItem);
@@ -27,6 +27,20 @@ export const ProductSelection = types
     setShowMoreVisibility(visibility: boolean) {
       self.showMoreBtnVisible = visibility;
     },
+    favoriteAdd: flow(function* favAddGen(dataObj: Array<string>) {
+      try {
+        yield favoriteAdd(dataObj);
+      } catch (error) {
+        console.error('Failed to post', error);
+      }
+    }),
+    favoriteRemove: flow(function* favRemGen(dataObj: Array<string>) {
+      try {
+        yield favoriteRemove(dataObj);
+      } catch (error) {
+        console.error('Failed to post', error);
+      }
+    }),
   }))
   .views((self) => ({
     get retrieveProducts() {
