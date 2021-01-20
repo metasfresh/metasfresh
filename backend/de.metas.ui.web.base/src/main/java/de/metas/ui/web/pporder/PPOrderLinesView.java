@@ -10,6 +10,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
@@ -145,6 +146,8 @@ public class PPOrderLinesView implements IView
 		return PPOrderPlanningStatus.REVIEW.equals(getPlanningStatus());
 	}
 
+	@Override
+	public ViewHeaderProperties getHeaderProperties() { return getData().getHeaderProperties(); }
 
 	/**
 	 * @param documentId may be {@code null}; in that case, the method also returns {@code null}

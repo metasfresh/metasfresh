@@ -17,6 +17,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -33,12 +34,16 @@ import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.handlingunits.util.IHUPackingInfo;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.ViewHeaderProperties;
+import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
+import de.metas.ui.web.view.ViewHeaderProperty;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
@@ -73,11 +78,11 @@ import java.util.function.Function;
  * #L%
  */
 
-class PPOrderLinesLoader
+class PPOrderLinesViewDataLoader
 {
-	public static PPOrderLinesLoaderBuilder builder(final WindowId viewWindowId)
+	public static PPOrderLinesViewDataLoaderBuilder builder(final WindowId viewWindowId)
 	{
-		return new PPOrderLinesLoaderBuilder().viewWindowId(viewWindowId);
+		return new PPOrderLinesViewDataLoaderBuilder().viewWindowId(viewWindowId);
 	}
 
 	//
@@ -89,13 +94,15 @@ class PPOrderLinesLoader
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
 	private final ASIViewRowAttributesProvider asiAttributesProvider;
 
 	@Builder
-	public PPOrderLinesLoader(
+	public PPOrderLinesViewDataLoader(
 			final WindowId viewWindowId,
 			final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
@@ -130,6 +137,23 @@ class PPOrderLinesLoader
 				.finishedGoodRow(finishedGoodRow)
 				.bomLineRows(bomLineRows)
 				.sourceHURows(sourceHuRowsForIssueProducts)
+				.headerProperties(extractHeaderProperties(ppOrder))
+				.build();
+	}
+
+	public ViewHeaderProperties extractHeaderProperties(final I_PP_Order ppOrder)
+	{
+		return ViewHeaderProperties.builder()
+				.group(ViewHeaderPropertiesGroup.builder()
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable(I_PP_Order.COLUMNNAME_DocumentNo))
+								.value(ppOrder.getDocumentNo())
+								.build())
+						.entry(ViewHeaderProperty.builder()
+								.caption(msgBL.translatable(I_PP_Order.COLUMNNAME_PlanningStatus))
+								.value(adReferenceDAO.retrieveListNameTranslatableString(PPOrderPlanningStatus.AD_REFERENCE_ID, ppOrder.getPlanningStatus()))
+								.build())
+						.build())
 				.build();
 	}
 

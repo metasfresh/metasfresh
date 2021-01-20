@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
@@ -55,6 +56,9 @@ final class PPOrderLinesViewData
 	@Getter
 	private final PPOrderLineRow finishedGoodRow;
 
+	@Getter
+	private final ViewHeaderProperties headerProperties;
+
 	/**
 	 * All records (included ones too) indexed by DocumentId
 	 */
@@ -66,12 +70,14 @@ final class PPOrderLinesViewData
 			@NonNull final PPOrderPlanningStatus planningStatus,
 			@NonNull final PPOrderLineRow finishedGoodRow,
 			@NonNull final List<PPOrderLineRow> bomLineRows,
-			@NonNull final List<PPOrderLineRow> sourceHURows)
+			@NonNull final List<PPOrderLineRow> sourceHURows,
+			@NonNull final ViewHeaderProperties headerProperties)
 	{
 		this.description = description;
 		this.planningStatus = planningStatus;
-
 		this.finishedGoodRow = finishedGoodRow;
+		this.headerProperties = headerProperties;
+
 		this.topLevelRows = ImmutableList.<PPOrderLineRow>builder()
 				.add(finishedGoodRow)
 				.addAll(bomLineRows)
@@ -135,22 +141,6 @@ final class PPOrderLinesViewData
 	public Stream<PPOrderLineRow> stream()
 	{
 		return topLevelRows.stream();
-	}
-
-	public Stream<PPOrderLineRow> streamRecursive()
-	{
-		return topLevelRows.stream()
-				.map(PPOrderLinesViewData::streamRecursive)
-				.reduce(Stream::concat)
-				.orElse(Stream.of());
-	}
-
-	private static Stream<PPOrderLineRow> streamRecursive(@NonNull final PPOrderLineRow row)
-	{
-		return row.getIncludedRows()
-				.stream()
-				.map(PPOrderLinesViewData::streamRecursive)
-				.reduce(Stream.of(row), Stream::concat);
 	}
 
 	public long size()

@@ -1,16 +1,15 @@
 package de.metas.ui.web.pporder;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
 import de.metas.handlingunits.reservation.HUReservationService;
-import org.eevolution.api.PPOrderId;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -37,7 +36,7 @@ import lombok.NonNull;
 public class PPOrderLinesViewDataSupplier
 {
 	private final ASIViewRowAttributesProvider asiAttributesProvider;
-	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> rowsSupplier;
+	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> dataSupplier;
 
 	@Builder
 	private PPOrderLinesViewDataSupplier(
@@ -48,8 +47,8 @@ public class PPOrderLinesViewDataSupplier
 			@NonNull final HUReservationService huReservationService)
 	{
 		this.asiAttributesProvider = asiAttributesProvider;
-		rowsSupplier = ExtendedMemorizingSupplier
-				.of(() -> PPOrderLinesLoader
+		dataSupplier = ExtendedMemorizingSupplier
+				.of(() -> PPOrderLinesViewDataLoader
 						.builder(viewWindowId)
 						.asiAttributesProvider(asiAttributesProvider)
 						.huSQLViewBinding(huSQLViewBinding)
@@ -60,12 +59,12 @@ public class PPOrderLinesViewDataSupplier
 
 	public PPOrderLinesViewData getData()
 	{
-		return rowsSupplier.get();
+		return dataSupplier.get();
 	}
 
 	public void invalidate()
 	{
-		rowsSupplier.forget();
+		dataSupplier.forget();
 		if (asiAttributesProvider != null)
 		{
 			asiAttributesProvider.invalidateAll();
