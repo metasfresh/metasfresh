@@ -8,6 +8,7 @@ const ProductAddList: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
 
   useEffect(() => {
+    store.productSelection.setShowMoreVisibility(true);
     store.productSelection.fetchSelectionProducts();
   }, [store]);
 
@@ -30,7 +31,7 @@ const ProductAddList: React.FunctionComponent = observer(() => {
 
       <div className="mt-4">
         {showMoreBtnVisible && (
-          <div className="box" onClick={() => store.productSelection.toggleShowMore()}>
+          <div className="box" onClick={() => store.productSelection.setShowMoreVisibility(false)}>
             {translate('SelectProductView.showMeNotContractedButton')}
           </div>
         )}

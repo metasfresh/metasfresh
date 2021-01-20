@@ -24,8 +24,8 @@ export const ProductSelection = types
         console.error('Could not fetch the products due to:', error);
       }
     }),
-    toggleShowMore() {
-      self.showMoreBtnVisible = !self.showMoreBtnVisible;
+    setShowMoreVisibility(visibility: boolean) {
+      self.showMoreBtnVisible = visibility;
     },
   }))
   .views((self) => ({
