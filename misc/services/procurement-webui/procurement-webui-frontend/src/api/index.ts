@@ -103,6 +103,10 @@ export function getMessages(): Promise<AxiosResponse> {
   return axios.get('/rest/i18n/messages');
 }
 
+export function getNotFavorite(): Promise<AxiosResponse> {
+  return axios.get(`/rest/products/notFavorite`);
+}
+
 export function logoutRequest(): Promise<AxiosResponse> {
   return axios.get(`/rest/session/logout`);
 }
