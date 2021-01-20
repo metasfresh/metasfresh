@@ -1,12 +1,5 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.stream.Stream;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.compiere.SpringContextHolder;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import de.metas.process.ClientOnlyProcess;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -24,9 +17,12 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -60,8 +56,7 @@ import lombok.NonNull;
 @ClientOnlyProcess
 public abstract class ViewBasedProcessTemplate extends JavaProcess
 {
-	@Autowired
-	private transient IViewsRepository viewsRepo;
+	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
 
 	//
 	// View (internal) parameters
@@ -74,19 +69,19 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	private String p_WebuiViewSelectedIdsStr;
 	//
 	static final String PARAM_ParentViewId = "$WEBUI_ParentViewId";
-	@Param(parameterName = PARAM_ParentViewId, mandatory = false)
+	@Param(parameterName = PARAM_ParentViewId)
 	private String p_WebuiParentViewId;
 	//
 	public static final String PARAM_ParentViewSelectedIds = "$WEBUI_ParentViewSelectedIds";
-	@Param(parameterName = PARAM_ParentViewSelectedIds, mandatory = false)
+	@Param(parameterName = PARAM_ParentViewSelectedIds)
 	private String p_WebuiParentViewSelectedIdsStr;
 	//
 	public static final String PARAM_ChildViewId = "$WEBUI_ChildViewId";
-	@Param(parameterName = PARAM_ChildViewId, mandatory = false)
+	@Param(parameterName = PARAM_ChildViewId)
 	private String p_WebuiChildViewId;
 	//
 	public static final String PARAM_ChildViewSelectedIds = "$WEBUI_ChildViewSelectedIds";
-	@Param(parameterName = PARAM_ChildViewSelectedIds, mandatory = false)
+	@Param(parameterName = PARAM_ChildViewSelectedIds)
 	private String p_WebuiChildViewSelectedIdsStr;
 
 	private IView _view;
@@ -95,8 +90,6 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	private ViewRowIdsSelection _parentViewRowIdsSelection;
 	private ViewRowIdsSelection _childViewRowIdsSelection;
 	
-	private transient JSONOptions _jsonOptions; // lazy
-
 	protected ViewBasedProcessTemplate()
 	{
 		SpringContextHolder.instance.autowire(this);
@@ -111,10 +104,8 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	 * Please implement {@link #checkPreconditionsApplicable()} instead of this.
 	 *
 	 * WARNING: The preconditions will be checked only if the extending class implements the {@link de.metas.process.IProcessPrecondition} interface.
-	 *
-	 * @param context
 	 */
-	public final ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public final ProcessPreconditionsResolution checkPreconditionsApplicable(@SuppressWarnings("unused") final IProcessPreconditionsContext context)
 	{
 		return checkPreconditionsApplicable();
 	}
@@ -166,7 +157,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _viewProfileId;
 	}
 
-	private final void setViewInfos(@NonNull final ViewAsPreconditionsContext viewContext)
+	private void setViewInfos(@NonNull final ViewAsPreconditionsContext viewContext)
 	{
 		_view = viewContext.getView();
 		_viewProfileId = viewContext.getViewProfileId();
@@ -175,7 +166,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		_childViewRowIdsSelection = viewContext.getChildViewRowIdsSelection();
 
 		// Update result from view
-		// Do this only when view is not null to avoid reseting previous set info (shall not happen)
+		// Do this only when view is not null to avoid resetting previous set info (shall not happen)
 		final ProcessExecutionResult result = getResultOrNull();
 		if (result != null // might be null when preconditions are checked (for example)
 				&& _view != null)
@@ -198,6 +189,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _view;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	protected final <T extends IView> boolean isViewClass(@NonNull final Class<T> expectedViewClass)
 	{
 		final IView view = _view;
@@ -266,6 +258,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _childViewRowIdsSelection;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	protected final <T extends IView> T getChildView(@NonNull final Class<T> viewType)
 	{
 		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
@@ -279,22 +272,5 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	{
 		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
 		return childViewRowIdsSelection != null ? childViewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
-	}
-
-	protected IViewRow getChildViewSingleSelectedRow()
-	{
-		final DocumentIdsSelection selectedRowIds = getChildViewSelectedRowIds();
-		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
-		return getChildView(IView.class).getById(rowId);
-	}
-
-	protected final JSONOptions getJSONOptions()
-	{
-		JSONOptions jsonOptions = this._jsonOptions;
-		if (jsonOptions == null)
-		{
-			jsonOptions = this._jsonOptions = JSONOptions.newInstance();
-		}
-		return jsonOptions;
 	}
 }
