@@ -8,6 +8,7 @@ const ProductAddList: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
 
   useEffect(() => {
+    store.navigation.setViewNames(translate('SelectProductView.caption'));
     store.productSelection.setShowMoreVisibility(true);
     store.productSelection.fetchSelectionProducts();
   }, [store]);
