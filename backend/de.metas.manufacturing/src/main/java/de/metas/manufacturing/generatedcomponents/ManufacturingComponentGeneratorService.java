@@ -59,6 +59,7 @@ public class ManufacturingComponentGeneratorService
 				.existingAttributes(request.getAttributes())
 				.parameters(generator.getParams())
 				.clientId(request.getClientId())
+				.overrideExistingValues(request.isOverrideExistingValues())
 				.build());
 	}
 
