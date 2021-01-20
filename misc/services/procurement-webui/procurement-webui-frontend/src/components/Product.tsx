@@ -33,13 +33,13 @@ const Product: FunctionComponent<Props> = ({
         }
       >
         <div className="columns is-mobile">
-          <div className="column is-9">
+          <div className="column is-8">
             <div className="columns">
               <div className="column is-size-4-mobile no-p">{productName}</div>
               <div className="column is-size-7 no-p">{packingInfo}</div>
             </div>
           </div>
-          <div className="column is-3 no-p">
+          <div className="column is-4 no-p">
             <div className="columns is-mobile">
               <div className="column mt-2 is-size-2-mobile no-p">{qty}</div>
               <div className="column green-check is-hidden-mobile">
