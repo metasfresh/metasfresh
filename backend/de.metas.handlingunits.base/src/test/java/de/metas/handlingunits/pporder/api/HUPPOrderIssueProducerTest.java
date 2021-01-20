@@ -47,6 +47,7 @@ import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order;
@@ -494,7 +495,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	private I_PP_Order createPP_OrderAndValidateBomLine(final String qtyOrderedStr, final I_PP_Product_BOM productBOM)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		docType.setDocBaseType(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode());
 		saveRecord(docType);
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), I_PP_Order.class, ITrx.TRXNAME_None);

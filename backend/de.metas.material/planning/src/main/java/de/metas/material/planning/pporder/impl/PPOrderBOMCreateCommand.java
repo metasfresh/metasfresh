@@ -1,5 +1,6 @@
 package de.metas.material.planning.pporder.impl;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.logging.LogManager;
@@ -15,9 +16,9 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -169,9 +170,8 @@ final class PPOrderBOMCreateCommand
 
 	private Quantity computeQtyRequired(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final Quantity qtyRequired;
-		final String docBaseType = getOrderDocBaseType();
-		if (X_C_DocType.DOCBASETYPE_ServiceRepairOrder.equals(docBaseType))
+		final PPOrderDocBaseType docBaseType = getOrderDocBaseType();
+		if (docBaseType.isRepairOrder())
 		{
 			final UomId uomId = UomId.ofRepoId(orderBOMLine.getC_UOM_ID());
 			return Quantitys.createZero(uomId);
@@ -183,12 +183,11 @@ final class PPOrderBOMCreateCommand
 		}
 	}
 
-	private String getOrderDocBaseType()
+	private PPOrderDocBaseType getOrderDocBaseType()
 	{
 		final DocTypeId docTypeId = getOrderDocTypeId();
-		return docTypeDAO.getDocBaseAndSubTypeById(docTypeId)
-				.getDocBaseType();
-
+		final DocBaseAndSubType docBaseAndSubTypeId = docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
+		return PPOrderDocBaseType.ofCode(docBaseAndSubTypeId.getDocBaseType());
 	}
 
 	private DocTypeId getOrderDocTypeId()

@@ -1,7 +1,7 @@
 package org.eevolution.model.validator;
 
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
@@ -48,7 +48,7 @@ public class PP_Order
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
@@ -175,21 +175,22 @@ public class PP_Order
 		if (changeType.isNew()
 				|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_C_DocType_ID))
 		{
-			final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID());
-			final I_C_DocType docType = docTypeId != null
-					? docTypeDAO.getById(docTypeId)
-					: null;
+			final I_C_DocType docType = DocTypeId.optionalOfRepoId(ppOrder.getC_DocType_ID())
+					.map(docTypeBL::getById)
+					.orElse(null);
 			if (docType != null)
 			{
 				ppOrder.setOrderType(docType.getDocSubType());
+				ppOrder.setDocBaseType(docType.getDocBaseType());
 			}
 			else
 			{
 				ppOrder.setOrderType(null);
+				ppOrder.setDocBaseType(null);
 			}
 		}
-		
-		if(changeType.isNew() || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_CanBeExportedFrom))
+
+		if (changeType.isNew() || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_CanBeExportedFrom))
 		{
 			ppOrderBL.updateCanBeExportedAfter(ppOrder);
 		}
@@ -209,7 +210,7 @@ public class PP_Order
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl
 		}
 
-		 final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
+		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
 		deleteWorkflowAndBOM(orderId);

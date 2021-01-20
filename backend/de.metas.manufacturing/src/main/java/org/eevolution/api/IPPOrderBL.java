@@ -27,7 +27,7 @@ public interface IPPOrderBL extends ISingletonService
 	/**
 	 * Set QtyBatchSize and QtyBatchs using Workflow and QtyOrdered
 	 *
-	 * @param order    MO
+	 * @param order                    MO
 	 * @param alwaysUpdateQtyBatchSize if true, will set QtyBatchSize even if is already set (QtyBatchSize!=0)
 	 */
 	void updateQtyBatchs(
@@ -64,7 +64,7 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	void setDocType(
 			I_PP_Order ppOrder,
-			String docBaseType,
+			PPOrderDocBaseType docBaseType,
 			@Nullable String docSubType);
 
 	void closeOrder(PPOrderId ppOrderId);

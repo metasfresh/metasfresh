@@ -60,6 +60,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.util.DDNetworkBuilder;
@@ -228,7 +229,7 @@ public class MRPTestHelper
 		this.bpGroupDefault = createBPGroup("Default");
 
 		createDocType(X_C_DocType.DOCBASETYPE_DistributionOrder);
-		createDocType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		createDocType(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode());
 		createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 
 		createMRPMessage(ErrorCodes.MRP_ERROR_999_Unknown);
@@ -606,7 +607,7 @@ public class MRPTestHelper
 
 	private void setCommonProperties(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, null);
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
 		final Timestamp t1 = SystemTime.asTimestamp();

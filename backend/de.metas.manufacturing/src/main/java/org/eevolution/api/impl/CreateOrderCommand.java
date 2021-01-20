@@ -30,6 +30,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -274,11 +275,11 @@ final class CreateOrderCommand
 	}
 
 	private DocTypeId getDocTypeId(
-			@NonNull final String docBaseType,
+			@NonNull final PPOrderDocBaseType docBaseType,
 			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(docBaseType.getCode())
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build());

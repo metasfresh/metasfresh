@@ -52,7 +52,7 @@ import lombok.Value;
 @JsonDeserialize(builder = PPOrderCreateRequestBuilder.class)
 public class PPOrderCreateRequest
 {
-	@NonNull String docBaseType;
+	@NonNull PPOrderDocBaseType docBaseType;
 	@NonNull ClientAndOrgId clientAndOrgId;
 	@Nullable ProductPlanningId productPlanningId;
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
@@ -76,7 +76,7 @@ public class PPOrderCreateRequest
 
 	@Builder
 	PPOrderCreateRequest(
-			@Nullable final String docBaseType,
+			@Nullable final PPOrderDocBaseType docBaseType,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
@@ -102,7 +102,7 @@ public class PPOrderCreateRequest
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
-		this.docBaseType = docBaseType != null ? docBaseType : X_C_DocType.DOCBASETYPE_ManufacturingOrder;
+		this.docBaseType = docBaseType != null ? docBaseType : PPOrderDocBaseType.MANUFACTURING_ORDER;
 		this.clientAndOrgId = clientAndOrgId;
 		this.productPlanningId = productPlanningId;
 		this.materialDispoGroupId = materialDispoGroupId;

@@ -48,7 +48,10 @@ import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -57,6 +60,8 @@ import java.util.function.Supplier;
 @ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String)
 public class PPOrderLinesViewFactory implements IViewFactory
 {
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final ASIRepository asiRepository;
 	private final DefaultHUEditorViewFactory huEditorViewFactory;
 	private final HUReservationService huReservationService;
@@ -78,6 +83,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		final ViewId viewId = request.getViewId();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(request.getSingleFilterOnlyId());
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final PPOrderDocBaseType ppOrderDocBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
 
 		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier
 				.builder()
@@ -95,6 +102,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.viewType(request.getViewType())
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())
 				.ppOrderId(ppOrderId)
+				.docBaseType(ppOrderDocBaseType)
 				.dataSupplier(dataSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
@@ -160,10 +168,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 
 	}
 
-	private static RelatedProcessDescriptor createProcessDescriptorForIssueReceiptWindow(@NonNull final Class<?> processClass)
+	private RelatedProcessDescriptor createProcessDescriptorForIssueReceiptWindow(@NonNull final Class<?> processClass)
 	{
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);
 
 		return RelatedProcessDescriptor.builder()

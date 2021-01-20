@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -27,6 +27,7 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.GuavaCollectors;
@@ -66,20 +67,23 @@ import java.util.stream.Stream;
 public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private static final Logger logger = LogManager.getLogger(WEBUI_M_HU_Pick.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_PickingSlot_ID, mandatory = true)
-	private int pickingSlotIdInt;
+	private PickingSlotId pickingSlotId;
 
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, mandatory = true)
-	private int shipmentScheduleIdInt;
+	private ShipmentScheduleId shipmentScheduleId;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (HUsToPickViewFactory.WINDOW_ID.equals(getWindowId()))
+		final ProcessPreconditionsResolution eligibleView = checkEligibleView();
+		if (!eligibleView.isAccepted())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not needed in HUsToPick view");
+			return eligibleView;
 		}
 
 		final ImmutableList<HURow> firstRows = streamHURows().limit(2).collect(ImmutableList.toImmutableList());
@@ -105,13 +109,31 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	private ProcessPreconditionsResolution checkEligibleView()
+	{
+		final IView view = getView();
+		final WindowId windowId = view.getViewId().getWindowId();
+		if (WindowId.equals(windowId, HUsToPickViewFactory.WINDOW_ID))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not needed in HUsToPick view");
+		}
+		else if (view instanceof PPOrderLinesView)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not needed for PPOrderLinesView view");
+		}
+		else
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+	}
+
 	private boolean isEligibleHU()
 	{
 		final HURow row = getSingleHURow();
-		final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(row.getHuId());
+		final I_M_HU hu = handlingUnitsBL.getById(row.getHuId());
 
 		// Multi product HUs are not allowed - see https://github.com/metasfresh/metasfresh/issues/6709
-		return Services.get(IHUContextFactory.class)
+		return huContextFactory
 				.createMutableHUContext()
 				.getHUStorageFactory()
 				.getStorage(hu)
@@ -166,7 +188,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	{
 		final WEBUI_M_HU_Pick_ParametersFiller filler = WEBUI_M_HU_Pick_ParametersFiller
 				.pickingSlotFillerBuilder()
-				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleIdInt))
+				.shipmentScheduleId(shipmentScheduleId)
 				.build();
 
 		return filler.getPickingSlotValues(context);
@@ -188,7 +210,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final HURow row = getSingleHURow();
 		pickHU(row);
@@ -199,8 +221,6 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	private void pickHU(final HURow row)
 	{
 		final HuId huId = row.getHuId();
-		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlotIdInt);
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleIdInt);
 		pickingCandidateService.pickHU(PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFrom(PickFrom.ofHuId(huId))

@@ -25,11 +25,13 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order;
@@ -68,14 +70,21 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class PPOrderLinesView implements IView
 {
+	@Getter
 	private final ViewId parentViewId;
+	@Getter
 	private final DocumentId parentRowId;
 
+	@Getter
 	private final ViewId viewId;
+	@Getter
 	private final JSONViewDataType viewType;
+	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
 	private final PPOrderId ppOrderId;
+	@Getter
+	private final PPOrderDocBaseType docBaseType;
 	private final OrderLineId salesOrderLineId;
 
 	private final PPOrderLinesViewDataSupplier dataSupplier;
@@ -95,6 +104,7 @@ public class PPOrderLinesView implements IView
 			@NonNull final JSONViewDataType viewType,
 			@Nullable final Set<DocumentPath> referencingDocumentPaths,
 			@NonNull final PPOrderId ppOrderId,
+			@NonNull final PPOrderDocBaseType docBaseType,
 			@NonNull final PPOrderLinesViewDataSupplier dataSupplier,
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
@@ -107,6 +117,7 @@ public class PPOrderLinesView implements IView
 		this.additionalRelatedProcessDescriptors = ImmutableList.copyOf(additionalRelatedProcessDescriptors);
 
 		this.ppOrderId = ppOrderId;
+		this.docBaseType = docBaseType;
 		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
 		this.salesOrderLineId = OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID());
 
@@ -134,35 +145,6 @@ public class PPOrderLinesView implements IView
 		return PPOrderPlanningStatus.REVIEW.equals(getPlanningStatus());
 	}
 
-	@Override
-	public ViewId getParentViewId()
-	{
-		return parentViewId;
-	}
-
-	@Override
-	public DocumentId getParentRowId()
-	{
-		return parentRowId;
-	}
-
-	@Override
-	public ViewId getViewId()
-	{
-		return viewId;
-	}
-
-	@Override
-	public JSONViewDataType getViewType()
-	{
-		return viewType;
-	}
-
-	@Override
-	public ImmutableSet<DocumentPath> getReferencingDocumentPaths()
-	{
-		return referencingDocumentPaths;
-	}
 
 	/**
 	 * @param documentId may be {@code null}; in that case, the method also returns {@code null}
@@ -334,12 +316,6 @@ public class PPOrderLinesView implements IView
 	public Stream<PPOrderLineRow> streamByIds(final DocumentIdsSelection documentIds)
 	{
 		return getData().streamByIds(documentIds);
-	}
-
-	/** @return top level rows and included rows recursive stream */
-	public Stream<PPOrderLineRow> streamAllRecursive()
-	{
-		return getData().streamRecursive();
 	}
 
 	@Override

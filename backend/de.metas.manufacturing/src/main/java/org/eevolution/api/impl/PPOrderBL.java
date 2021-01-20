@@ -40,6 +40,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -145,7 +146,7 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setProcessed(false);
 		ppOrder.setProcessing(false);
 		ppOrder.setPosted(false);
-		setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, /* docSubType */null);
+		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, /* docSubType */null);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
@@ -286,11 +287,11 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void setDocType(
 			@NonNull final I_PP_Order ppOrder,
-			@NonNull final String docBaseType,
+			@NonNull final PPOrderDocBaseType docBaseType,
 			@Nullable final String docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(docBaseType.getCode())
 				.docSubType(docSubType)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())

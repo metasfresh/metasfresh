@@ -36,6 +36,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -159,7 +160,7 @@ public class PPOrderRequestedEventHandlerTests
 		save(warehouse);
 
 		docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		docType.setDocBaseType(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode());
 		save(docType);
 
 		final I_PP_Product_BOMLine bomCoProductLine;

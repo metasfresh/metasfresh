@@ -24,7 +24,6 @@ package org.eevolution.model;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -42,7 +41,6 @@ import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
@@ -55,6 +53,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -206,8 +205,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
-		if (X_C_DocType.DOCBASETYPE_QualityOrder.equals(docType.getDocBaseType()))
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
+		if (docBaseType.isQualityOrder())
 		{
 			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
 			final MQMSpecification qms = new Query(getCtx(), I_QM_Specification.Table_Name, whereClause, get_TrxName())

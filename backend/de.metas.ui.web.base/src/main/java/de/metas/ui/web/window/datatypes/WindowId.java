@@ -1,18 +1,16 @@
 package de.metas.ui.web.window.datatypes;
 
-import java.util.OptionalInt;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -45,6 +43,7 @@ public final class WindowId
 		return new WindowId(json);
 	}
 
+	@Nullable
 	public static WindowId fromNullableJson(@Nullable final String json)
 	{
 		return json != null ? fromJson(json) : null;
@@ -72,6 +71,7 @@ public final class WindowId
 		}
 	}
 
+	@Nullable
 	public static WindowId ofNullable(@Nullable final AdWindowId adWindowId)
 	{
 		return adWindowId != null ? new WindowId(adWindowId.getRepoId()) : null;
@@ -140,6 +140,7 @@ public final class WindowId
 		}
 	}
 
+	@Nullable
 	public AdWindowId toAdWindowIdOrNull()
 	{
 		return AdWindowId.ofRepoIdOrNull(toIntOr(-1));
@@ -157,7 +158,7 @@ public final class WindowId
 			toInt();
 			return true;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			return false;
 		}
@@ -166,5 +167,10 @@ public final class WindowId
 	public DocumentId toDocumentId()
 	{
 		return DocumentId.of(value);
+	}
+
+	public static boolean equals(@Nullable final WindowId id1, @Nullable final WindowId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

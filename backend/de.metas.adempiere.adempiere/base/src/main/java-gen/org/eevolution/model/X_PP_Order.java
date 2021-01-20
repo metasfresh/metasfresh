@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -518911341L;
+	private static final long serialVersionUID = 580093825L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -449,6 +449,97 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public java.lang.String getDocAction() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocAction);
+	}
+
+	/** 
+	 * DocBaseType AD_Reference_ID=183
+	 * Reference name: C_DocType DocBaseType
+	 */
+	public static final int DOCBASETYPE_AD_Reference_ID=183;
+	/** GLJournal = GLJ */
+	public static final String DOCBASETYPE_GLJournal = "GLJ";
+	/** GLDocument = GLD */
+	public static final String DOCBASETYPE_GLDocument = "GLD";
+	/** APInvoice = API */
+	public static final String DOCBASETYPE_APInvoice = "API";
+	/** APPayment = APP */
+	public static final String DOCBASETYPE_APPayment = "APP";
+	/** ARInvoice = ARI */
+	public static final String DOCBASETYPE_ARInvoice = "ARI";
+	/** ARReceipt = ARR */
+	public static final String DOCBASETYPE_ARReceipt = "ARR";
+	/** SalesOrder = SOO */
+	public static final String DOCBASETYPE_SalesOrder = "SOO";
+	/** ARProFormaInvoice = ARF */
+	public static final String DOCBASETYPE_ARProFormaInvoice = "ARF";
+	/** MaterialDelivery = MMS */
+	public static final String DOCBASETYPE_MaterialDelivery = "MMS";
+	/** MaterialReceipt = MMR */
+	public static final String DOCBASETYPE_MaterialReceipt = "MMR";
+	/** MaterialMovement = MMM */
+	public static final String DOCBASETYPE_MaterialMovement = "MMM";
+	/** PurchaseOrder = POO */
+	public static final String DOCBASETYPE_PurchaseOrder = "POO";
+	/** PurchaseRequisition = POR */
+	public static final String DOCBASETYPE_PurchaseRequisition = "POR";
+	/** MaterialPhysicalInventory = MMI */
+	public static final String DOCBASETYPE_MaterialPhysicalInventory = "MMI";
+	/** APCreditMemo = APC */
+	public static final String DOCBASETYPE_APCreditMemo = "APC";
+	/** ARCreditMemo = ARC */
+	public static final String DOCBASETYPE_ARCreditMemo = "ARC";
+	/** BankStatement = CMB */
+	public static final String DOCBASETYPE_BankStatement = "CMB";
+	/** CashJournal = CMC */
+	public static final String DOCBASETYPE_CashJournal = "CMC";
+	/** PaymentAllocation = CMA */
+	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
+	/** MatchInvoice = MXI */
+	public static final String DOCBASETYPE_MatchInvoice = "MXI";
+	/** MatchPO = MXP */
+	public static final String DOCBASETYPE_MatchPO = "MXP";
+	/** ProjectIssue = PJI */
+	public static final String DOCBASETYPE_ProjectIssue = "PJI";
+	/** MaintenanceOrder = MOF */
+	public static final String DOCBASETYPE_MaintenanceOrder = "MOF";
+	/** ManufacturingOrder = MOP */
+	public static final String DOCBASETYPE_ManufacturingOrder = "MOP";
+	/** QualityOrder = MQO */
+	public static final String DOCBASETYPE_QualityOrder = "MQO";
+	/** Payroll = HRP */
+	public static final String DOCBASETYPE_Payroll = "HRP";
+	/** DistributionOrder = DOO */
+	public static final String DOCBASETYPE_DistributionOrder = "DOO";
+	/** ManufacturingCostCollector = MCC */
+	public static final String DOCBASETYPE_ManufacturingCostCollector = "MCC";
+	/** Gehaltsrechnung (Angestellter) = AEI */
+	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
+	/** Interne Rechnung (Lieferant) = AVI */
+	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
+	/** Speditionsauftrag/Ladeliste = MST */
+	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** CustomerContract = CON */
+	public static final String DOCBASETYPE_CustomerContract = "CON";
+	/** DunningDoc = DUN */
+	public static final String DOCBASETYPE_DunningDoc = "DUN";
+	/** Shipment Declaration = SDD */
+	public static final String DOCBASETYPE_ShipmentDeclaration = "SDD";
+	/** Shipment Declaration Correction = SDC */
+	public static final String DOCBASETYPE_ShipmentDeclarationCorrection = "SDC";
+	/** Customs Invoice = CUI */
+	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
+	/** ServiceRepairOrder = MRO */
+	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	@Override
+	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
+	{
+		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
+	}
+
+	@Override
+	public java.lang.String getDocBaseType() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocBaseType);
 	}
 
 	/** 

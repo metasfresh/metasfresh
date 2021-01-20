@@ -41,6 +41,7 @@ import org.compiere.model.MMovement;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
@@ -238,10 +239,10 @@ public class FactAcctReset extends JavaProcess
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_M_MatchPO.Table_Name))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MatchPO + "'";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_PP_Order.Table_Name))
-			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_ManufacturingOrder
-				+ "','" + X_C_DocType.DOCBASETYPE_MaintenanceOrder
-				+ "','" + X_C_DocType.DOCBASETYPE_QualityOrder
-				+ "','" + X_C_DocType.DOCBASETYPE_ServiceRepairOrder + "')";
+			docBaseType = "IN ('" + PPOrderDocBaseType.MANUFACTURING_ORDER.getCode()
+				+ "','" + PPOrderDocBaseType.MAINTENANCE_ORDER.getCode()
+				+ "','" + PPOrderDocBaseType.QUALITY_ORDER.getCode()
+				+ "','" + PPOrderDocBaseType.REPAIR_ORDER.getCode() + "')";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_DD_Order.Table_Name))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_DistributionOrder+ "'";
 		else if (AD_Table_ID == X_HR_Process.Table_ID)

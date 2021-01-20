@@ -79,6 +79,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
@@ -371,7 +372,7 @@ public class ServiceRepairProjectService
 
 		final Instant now = SystemTime.asInstant();
 		final I_PP_Order repairOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_ServiceRepairOrder)
+				.docBaseType(PPOrderDocBaseType.REPAIR_ORDER)
 				.clientAndOrgId(task.getClientAndOrgId())
 				.warehouseId(warehouseId)
 				.plantId(plantId)

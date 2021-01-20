@@ -652,6 +652,29 @@ public interface I_PP_Order
 	String COLUMNNAME_DocAction = "DocAction";
 
 	/**
+	 * Set Document Base Type.
+	 * Logical type of document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocBaseType (@Nullable java.lang.String DocBaseType);
+
+	/**
+	 * Get Document Base Type.
+	 * Logical type of document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocBaseType();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_DocBaseType = new ModelColumn<>(I_PP_Order.class, "DocBaseType", null);
+	String COLUMNNAME_DocBaseType = "DocBaseType";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List
