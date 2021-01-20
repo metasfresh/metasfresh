@@ -22,13 +22,17 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import java.util.Collection;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IHUAssignmentBL extends ISingletonService
 {
@@ -114,4 +118,6 @@ public interface IHUAssignmentBL extends ISingletonService
 	IHUAssignmentBuilder createHUAssignmentBuilder();
 
 	void copyHUAssignments(Object sourceModel, Object targetModel);
+
+	ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull Set<TableRecordReference> recordRefs);
 }

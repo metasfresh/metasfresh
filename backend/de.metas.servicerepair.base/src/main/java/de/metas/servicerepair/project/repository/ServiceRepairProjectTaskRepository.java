@@ -24,6 +24,7 @@ package de.metas.servicerepair.project.repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -32,7 +33,8 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
-import de.metas.servicerepair.project.repository.requests.CreateProjectTaskRequest;
+import de.metas.servicerepair.project.repository.requests.CreateRepairProjectTaskRequest;
+import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjectTaskRequest;
 import de.metas.servicerepair.repository.model.I_C_Project_Repair_Task;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -54,12 +56,12 @@ class ServiceRepairProjectTaskRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createNew(@NonNull final CreateProjectTaskRequest request)
+	public void createNew(@NonNull final CreateRepairProjectTaskRequest request)
 	{
 		final I_C_Project_Repair_Task record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Task.class);
 		record.setC_Project_ID(request.getProjectId().getRepoId());
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
-		record.setType(request.getType().getCode());
+		record.setType(ServiceRepairProjectTaskType.REPAIR_ORDER.getCode());
 		record.setStatus(ServiceRepairProjectTaskStatus.NOT_STARTED.getCode());
 
 		if (request.getCustomerReturnLineId() != null)
@@ -67,6 +69,25 @@ class ServiceRepairProjectTaskRepository
 			record.setCustomerReturn_InOut_ID(request.getCustomerReturnLineId().getInOutId().getRepoId());
 			record.setCustomerReturn_InOutLine_ID(request.getCustomerReturnLineId().getInOutLineId().getRepoId());
 		}
+
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setC_UOM_ID(request.getQtyRequired().getUomId().getRepoId());
+		record.setQtyRequired(request.getQtyRequired().toBigDecimal());
+		record.setQtyReserved(BigDecimal.ZERO);
+		record.setQtyConsumed(BigDecimal.ZERO);
+
+		record.setRepair_VHU_ID(request.getRepairVhuId().getRepoId());
+
+		InterfaceWrapperHelper.save(record);
+	}
+
+	public void createNew(@NonNull final CreateSparePartsProjectTaskRequest request)
+	{
+		final I_C_Project_Repair_Task record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Task.class);
+		record.setC_Project_ID(request.getProjectId().getRepoId());
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setType(ServiceRepairProjectTaskType.SPARE_PARTS.getCode());
+		record.setStatus(ServiceRepairProjectTaskStatus.NOT_STARTED.getCode());
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setC_UOM_ID(request.getQtyRequired().getUomId().getRepoId());
@@ -118,6 +139,7 @@ class ServiceRepairProjectTaskRepository
 				//
 				.customerReturnLineId(InOutAndLineId.ofRepoIdOrNull(record.getCustomerReturn_InOut_ID(), record.getCustomerReturn_InOutLine_ID()))
 				.repairOrderId(PPOrderId.ofRepoIdOrNull(record.getRepair_Order_ID()))
+				.repairVhuId(HuId.ofRepoIdOrNull(record.getRepair_VHU_ID()))
 				//
 				.build();
 	}
@@ -163,7 +185,7 @@ class ServiceRepairProjectTaskRepository
 		return changedTask;
 	}
 
-	public void save(ServiceRepairProjectTask task)
+	public void save(final ServiceRepairProjectTask task)
 	{
 		final I_C_Project_Repair_Task record = getRecordById(task.getId());
 		updateRecord(record, task);

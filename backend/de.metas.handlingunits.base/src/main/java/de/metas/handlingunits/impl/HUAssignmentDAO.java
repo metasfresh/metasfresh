@@ -2,6 +2,8 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
@@ -16,9 +18,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -155,6 +160,25 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		return retrieveHUAssignmentsForModelQuery(ctx, adTableId, recordId, trxName)
 				.create()
 				.list(I_M_HU_Assignment.class);
+	}
+
+	@Override
+	public ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull final Set<TableRecordReference> recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final Properties ctx = Env.getCtx();
+		return recordRefs.stream()
+				.map(recordRef -> retrieveHUAssignmentsForModelQuery(ctx, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), ITrx.TRXNAME_ThreadInherited).create())
+				.reduce(IQuery.unionDistict())
+				.get()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						huAssignment -> TableRecordReference.of(huAssignment.getAD_Table_ID(), huAssignment.getRecord_ID()),
+						huAssignment -> HuId.ofRepoId(huAssignment.getM_HU_ID())));
 	}
 
 	@Override
@@ -328,8 +352,8 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	public final IQueryBuilder<I_M_HU_Assignment> retrieveTableHUAssignmentsQuery(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, contextProvider)
-		// .addOnlyActiveRecordsFilter()
-		;
+				// .addOnlyActiveRecordsFilter()
+				;
 
 		applyCommonTopLevelFilters(queryBuilder, adTableId)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());

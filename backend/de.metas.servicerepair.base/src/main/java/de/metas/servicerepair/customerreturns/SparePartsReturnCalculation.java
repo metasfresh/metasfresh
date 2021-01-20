@@ -24,6 +24,7 @@ package de.metas.servicerepair.customerreturns;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -48,12 +49,12 @@ import java.util.stream.Stream;
 public class SparePartsReturnCalculation
 {
 	@Getter
-	private final ImmutableList<FinishedGood> finishedGoods;
+	private final ImmutableList<FinishedGoodToRepair> finishedGoods;
 	private final ImmutableList<SparePart> spareParts;
 
 	@Builder
 	private SparePartsReturnCalculation(
-			@Singular @NonNull final ImmutableList<FinishedGood> finishedGoods,
+			@Singular @NonNull final ImmutableList<FinishedGoodToRepair> finishedGoods,
 			@Singular @NonNull final ImmutableList<SparePart> spareParts)
 	{
 		this.finishedGoods = finishedGoods;
@@ -63,7 +64,7 @@ public class SparePartsReturnCalculation
 	public ImmutableSet<ProductId> getAllowedSparePartIds()
 	{
 		return finishedGoods.stream()
-				.flatMap(FinishedGood::streamComponentIds)
+				.flatMap(FinishedGoodToRepair::streamComponentIds)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -125,10 +126,11 @@ public class SparePartsReturnCalculation
 
 	@Value
 	@Builder
-	public static class FinishedGood
+	public static class FinishedGoodToRepair
 	{
 		@NonNull Quantity qty;
 		@NonNull QtyCalculationsBOM sparePartsBOM;
+		@NonNull HuId repairVhuId;
 		@NonNull InOutAndLineId customerReturnLineId;
 
 		public Stream<ProductId> streamComponentIds()

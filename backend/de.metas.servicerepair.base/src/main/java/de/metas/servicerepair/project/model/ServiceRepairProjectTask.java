@@ -22,6 +22,7 @@
 
 package de.metas.servicerepair.project.model;
 
+import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -54,8 +55,8 @@ public class ServiceRepairProjectTask
 	@Nullable
 	InOutAndLineId customerReturnLineId;
 
-	@Nullable
-	PPOrderId repairOrderId;
+	@Nullable PPOrderId repairOrderId;
+	@Nullable HuId repairVhuId;
 
 	public ProjectId getProjectId() { return getId().getProjectId(); }
 

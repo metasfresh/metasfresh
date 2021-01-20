@@ -25,6 +25,7 @@ package de.metas.servicerepair.customerreturns;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
@@ -38,6 +39,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
 import de.metas.handlingunits.model.I_M_HU;
@@ -46,10 +48,12 @@ import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -76,6 +80,7 @@ public class RepairCustomerReturnsService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IHUInOutBL huInoutBL = Services.get(IHUInOutBL.class);
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 
@@ -176,18 +181,13 @@ public class RepairCustomerReturnsService
 
 	public SparePartsReturnCalculation getSparePartsCalculation(final InOutId customerReturnId)
 	{
-		final List<I_M_InOutLine> customerReturnLines = inoutBL.getLines(customerReturnId)
-				.stream()
-				.filter(customerReturnLine -> ProductId.ofRepoIdOrNull(customerReturnLine.getM_Product_ID()) != null)
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableSet<ProductId> productIds = customerReturnLines.stream()
-				.map(customerReturnLine -> ProductId.ofRepoId(customerReturnLine.getM_Product_ID()))
-				.collect(ImmutableSet.toImmutableSet());
+		final List<I_M_InOutLine> customerReturnLines = getCustomerReturnLines(customerReturnId);
 
 		final ImmutableMap<ProductId, QtyCalculationsBOM> sparePartsBOMs = Maps.uniqueIndex(
-				productBOMBL.getQtyCalculationBOMs(productIds, BOMType.PreviousSpare),
+				productBOMBL.getQtyCalculationBOMs(extractProductIds(customerReturnLines), BOMType.PreviousSpare),
 				QtyCalculationsBOM::getBomProductId);
+
+		final ImmutableSetMultimap<InOutLineId, HuId> vhuIdsByCustomerReturnLineId = huInoutBL.getHUIdsByInOutLineIds(extractInOutLineIds(customerReturnLines));
 
 		final SparePartsReturnCalculation.SparePartsReturnCalculationBuilder resultBuilder = SparePartsReturnCalculation.builder();
 		for (final I_M_InOutLine customerReturnLine : customerReturnLines)
@@ -199,10 +199,14 @@ public class RepairCustomerReturnsService
 			final QtyCalculationsBOM sparePartsBOM = sparePartsBOMs.get(productId);
 			if (sparePartsBOM != null)
 			{
-				resultBuilder.finishedGood(SparePartsReturnCalculation.FinishedGood.builder()
+				final ImmutableSet<HuId> vhuIds = vhuIdsByCustomerReturnLineId.get(customerReturnLineId.getInOutLineId());
+				final HuId repairVhuId = CollectionUtils.singleElement(vhuIds);
+
+				resultBuilder.finishedGood(SparePartsReturnCalculation.FinishedGoodToRepair.builder()
 						.sparePartsBOM(sparePartsBOM)
 						.qty(qtyReturned)
 						.customerReturnLineId(customerReturnLineId)
+						.repairVhuId(repairVhuId)
 						.build());
 			}
 			else
@@ -216,5 +220,27 @@ public class RepairCustomerReturnsService
 		}
 
 		return resultBuilder.build();
+	}
+
+	private List<I_M_InOutLine> getCustomerReturnLines(final InOutId customerReturnId)
+	{
+		return inoutBL.getLines(customerReturnId)
+				.stream()
+				.filter(customerReturnLine -> ProductId.ofRepoIdOrNull(customerReturnLine.getM_Product_ID()) != null)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static ImmutableSet<ProductId> extractProductIds(final List<I_M_InOutLine> customerReturnLines)
+	{
+		return customerReturnLines.stream()
+				.map(customerReturnLine -> ProductId.ofRepoId(customerReturnLine.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private ImmutableSet<InOutLineId> extractInOutLineIds(final List<I_M_InOutLine> customerReturnLines)
+	{
+		return customerReturnLines.stream()
+				.map(customerReturnLine -> InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

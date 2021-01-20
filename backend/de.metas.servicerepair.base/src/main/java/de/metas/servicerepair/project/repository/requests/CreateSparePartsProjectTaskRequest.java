@@ -22,26 +22,20 @@
 
 package de.metas.servicerepair.project.repository.requests;
 
-import de.metas.inout.InOutAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
-import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class CreateProjectTaskRequest
+public class CreateSparePartsProjectTaskRequest
 {
 	@NonNull ProjectId projectId;
 	@NonNull OrgId orgId;
-	@NonNull ServiceRepairProjectTaskType type;
-	@Nullable InOutAndLineId customerReturnLineId;
 
 	@NonNull ProductId productId;
 	@NonNull Quantity qtyRequired;

@@ -327,6 +327,27 @@ public interface I_C_Project_Repair_Task
 	String COLUMNNAME_Repair_Order_ID = "Repair_Order_ID";
 
 	/**
+	 * Set Repair CU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRepair_VHU_ID (int Repair_VHU_ID);
+
+	/**
+	 * Get Repair CU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRepair_VHU_ID();
+
+	ModelColumn<I_C_Project_Repair_Task, Object> COLUMN_Repair_VHU_ID = new ModelColumn<>(I_C_Project_Repair_Task.class, "Repair_VHU_ID", null);
+	String COLUMNNAME_Repair_VHU_ID = "Repair_VHU_ID";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List

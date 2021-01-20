@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -36,6 +38,7 @@ import de.metas.material.planning.ProductPlanningService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ResourceId;
@@ -57,7 +60,8 @@ import de.metas.servicerepair.project.repository.ServiceRepairProjectConsumption
 import de.metas.servicerepair.project.repository.ServiceRepairProjectCostCollectorRepository;
 import de.metas.servicerepair.project.repository.ServiceRepairProjectTaskRepository;
 import de.metas.servicerepair.project.repository.requests.CreateProjectCostCollectorRequest;
-import de.metas.servicerepair.project.repository.requests.CreateProjectTaskRequest;
+import de.metas.servicerepair.project.repository.requests.CreateRepairProjectTaskRequest;
+import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjectTaskRequest;
 import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjectCommand;
 import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
@@ -68,6 +72,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.X_C_DocType;
@@ -91,6 +96,7 @@ public class ServiceRepairProjectService
 	public static final AdWindowId AD_WINDOW_ID = AdWindowId.ofRepoId(541015); // FIXME hardcoded
 
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final ProductPlanningService productPlanningService;
 	private final HUReservationService huReservationService;
 	private final RepairCustomerReturnsService repairCustomerReturnsService;
@@ -172,7 +178,11 @@ public class ServiceRepairProjectService
 		return projectService.createProject(request);
 	}
 
-	public void createProjectTask(@NonNull final CreateProjectTaskRequest request)
+	public void createProjectTask(@NonNull final CreateSparePartsProjectTaskRequest request)
+	{
+		projectTaskRepository.createNew(request);
+	}
+	public void createProjectTask(@NonNull final CreateRepairProjectTaskRequest request)
 	{
 		projectTaskRepository.createNew(request);
 	}
@@ -378,6 +388,17 @@ public class ServiceRepairProjectService
 				//
 				.build());
 		final PPOrderId repairOrderId = PPOrderId.ofRepoId(repairOrder.getPP_Order_ID());
+
+		huPPOrderQtyDAO.save(CreateReceiptCandidateRequest.builder()
+				.orderId(repairOrderId)
+				.orgId(OrgId.ofRepoId(repairOrder.getAD_Org_ID()))
+				.date(TimeUtil.asZonedDateTime(now))
+				.locatorId(LocatorId.ofRepoId(repairOrder.getM_Warehouse_ID(), repairOrder.getM_Locator_ID()))
+				.topLevelHUId(task.getRepairVhuId())
+				.productId(task.getProductId())
+				.qtyToReceive(task.getQtyRequired())
+				.alreadyProcessed(true)
+				.build());
 
 		projectTaskRepository.save(task.withRepairOrderId(repairOrderId));
 	}

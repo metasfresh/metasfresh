@@ -46,8 +46,8 @@ import de.metas.request.RequestId;
 import de.metas.request.api.IRequestBL;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.servicerepair.customerreturns.SparePartsReturnCalculation;
-import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
-import de.metas.servicerepair.project.repository.requests.CreateProjectTaskRequest;
+import de.metas.servicerepair.project.repository.requests.CreateRepairProjectTaskRequest;
+import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjectTaskRequest;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
@@ -111,15 +111,15 @@ public class CreateServiceRepairProjectCommand
 
 		final SparePartsReturnCalculation sparePartsCalculation = customerReturnsService.getSparePartsCalculation(customerReturnId);
 
-		for (final SparePartsReturnCalculation.FinishedGood finishedGood : sparePartsCalculation.getFinishedGoods())
+		for (final SparePartsReturnCalculation.FinishedGoodToRepair productToRepair : sparePartsCalculation.getFinishedGoods())
 		{
-			projectService.createProjectTask(CreateProjectTaskRequest.builder()
+			projectService.createProjectTask(CreateRepairProjectTaskRequest.builder()
 					.projectId(projectId)
 					.orgId(orgId)
-					.type(ServiceRepairProjectTaskType.REPAIR_ORDER)
-					.customerReturnLineId(finishedGood.getCustomerReturnLineId())
-					.productId(finishedGood.getProductId())
-					.qtyRequired(finishedGood.getQty())
+					.customerReturnLineId(productToRepair.getCustomerReturnLineId())
+					.productId(productToRepair.getProductId())
+					.qtyRequired(productToRepair.getQty())
+					.repairVhuId(productToRepair.getRepairVhuId())
 					.build());
 		}
 
@@ -131,11 +131,9 @@ public class CreateServiceRepairProjectCommand
 				continue;
 			}
 
-			projectService.createProjectTask(CreateProjectTaskRequest.builder()
+			projectService.createProjectTask(CreateSparePartsProjectTaskRequest.builder()
 					.projectId(projectId)
 					.orgId(orgId)
-					.type(ServiceRepairProjectTaskType.SPARE_PARTS)
-					.customerReturnLineId(null)
 					.productId(sparePartId)
 					.qtyRequired(qtyRequired)
 					.build());

@@ -22,6 +22,7 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -40,6 +41,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IHUAssignmentDAO extends ISingletonService
 {
@@ -146,6 +148,8 @@ public interface IHUAssignmentDAO extends ISingletonService
 	}
 
 	IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(Object model);
+
+	ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull Set<TableRecordReference> recordRefs);
 
 	/**
 	 * @see #retrieveTopLevelHUsForModel(Object, String)
