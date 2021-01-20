@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -17,13 +17,11 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
-import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -41,12 +39,11 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 
 import javax.annotation.Nullable;
@@ -90,7 +87,7 @@ class PPOrderLinesLoader
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IHUPPOrderQtyDAO ppOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	//
@@ -197,19 +194,9 @@ class PPOrderLinesLoader
 
 	private ITranslatableString extractDocTypeName(final I_PP_Order ppOrder)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID());
-		final I_C_DocType docType = docTypeId != null
-				? docTypeDAO.getById(docTypeId)
-				: null;
-		if (docType != null)
-		{
-			final IModelTranslationMap docTypeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(docType);
-			return docTypeTrlMap.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
-		}
-		else
-		{
-			return TranslatableStrings.empty();
-		}
+		return DocTypeId.optionalOfRepoId(ppOrder.getC_DocType_ID())
+				.map(docTypeBL::getNameById)
+				.orElseGet(TranslatableStrings::empty);
 	}
 
 	private PPOrderLineRow createRowForFinishedGoodProduct(

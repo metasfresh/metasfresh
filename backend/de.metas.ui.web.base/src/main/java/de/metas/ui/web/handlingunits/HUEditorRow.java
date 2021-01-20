@@ -544,13 +544,6 @@ public final class HUEditorRow implements IViewRow
 		return productLV != null ? ProductId.ofRepoId(productLV.getKeyAsInt()) : null;
 	}
 
-	@Nullable
-	public String getM_Product_DisplayName()
-	{
-		final JSONLookupValue productLV = getProduct();
-		return productLV == null ? null : productLV.getCaption();
-	}
-
 	public String getPackingInfo()
 	{
 		return packingInfo;
@@ -666,8 +659,10 @@ public final class HUEditorRow implements IViewRow
 		private BPartnerId bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
+		@Nullable
 		private OrderLineId orderLineReservation = null;
 
+		@Nullable
 		private HUEditorRowAttributesProvider attributesProvider;
 
 		private Builder(@NonNull final WindowId windowId)
@@ -836,6 +831,7 @@ public final class HUEditorRow implements IViewRow
 			return bpartnerId;
 		}
 
+		@Nullable
 		private HUEditorRowAttributesProvider getAttributesProviderOrNull()
 		{
 			return attributesProvider;
