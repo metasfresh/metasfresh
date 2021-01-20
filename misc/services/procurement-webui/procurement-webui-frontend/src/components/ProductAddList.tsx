@@ -1,8 +1,8 @@
 import React, { useEffect, useContext } from 'react';
 import { observer } from 'mobx-react';
 import ProductAddItem from './ProductAddItem';
-import ProductsNotContracted from './ProductsNotContracted';
 import { RootStoreContext } from '../models/Store';
+import { translate } from '../utils/translate';
 
 const ProductAddList: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
@@ -11,7 +11,7 @@ const ProductAddList: React.FunctionComponent = observer(() => {
     store.productSelection.fetchSelectionProducts();
   }, [store]);
 
-  const { products, moreProducts } = store.productSelection;
+  const { products, moreProducts, showMoreBtnVisible } = store.productSelection;
 
   return (
     <div className="mt-1">
@@ -27,7 +27,16 @@ const ProductAddList: React.FunctionComponent = observer(() => {
             />
           );
         })}
+
+      <div className="mt-4">
+        {showMoreBtnVisible && (
+          <div className="box" onClick={() => store.productSelection.toggleShowMore()}>
+            {translate('SelectProductView.showMeNotContractedButton')}
+          </div>
+        )}
+      </div>
       {moreProducts.length &&
+        !showMoreBtnVisible &&
         moreProducts.map((productItem) => {
           return (
             <ProductAddItem
@@ -38,7 +47,6 @@ const ProductAddList: React.FunctionComponent = observer(() => {
             />
           );
         })}
-      <ProductsNotContracted />
     </div>
   );
 });

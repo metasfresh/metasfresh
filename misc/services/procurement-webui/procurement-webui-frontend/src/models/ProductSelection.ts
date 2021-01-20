@@ -8,6 +8,7 @@ export const ProductSelection = types
   .model({
     products: types.optional(ProductSelectionArray, []),
     moreProducts: types.optional(ProductSelectionArray, []),
+    showMoreBtnVisible: types.optional(types.boolean, true),
   })
   .actions((self) => ({
     fetchSelectionProducts: flow(function* getSelectionProducts() {
@@ -23,6 +24,9 @@ export const ProductSelection = types
         console.error('Could not fetch the products due to:', error);
       }
     }),
+    toggleShowMore() {
+      self.showMoreBtnVisible = !self.showMoreBtnVisible;
+    },
   }))
   .views((self) => ({
     get retrieveProducts() {
