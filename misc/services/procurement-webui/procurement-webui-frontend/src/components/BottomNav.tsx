@@ -7,10 +7,14 @@ import { confirmDataEntry } from '../api';
 import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
 
+interface ForcedState {
+  path: string;
+  text?: string;
+}
 interface Props {
   store?: RootInstance;
   location?: LocationState;
-  forcedState?: any;
+  forcedState?: ForcedState;
 }
 
 interface LocationState {
