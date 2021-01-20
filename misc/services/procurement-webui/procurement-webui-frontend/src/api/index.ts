@@ -103,6 +103,15 @@ export function getMessages(): Promise<AxiosResponse> {
   return axios.get('/rest/i18n/messages');
 }
 
+/** products-rest-controller */
+export function favoriteAdd(data: Array<string>): Promise<AxiosResponse> {
+  return axios.post(`/rest/products/favorite/add`, data);
+}
+
+export function favoriteRemove(data: Array<string>): Promise<AxiosResponse> {
+  return axios.post(`/rest/products/favorite/remove`, data);
+}
+
 export function getNotFavorite(): Promise<AxiosResponse> {
   return axios.get(`/rest/products/notFavorite`);
 }
