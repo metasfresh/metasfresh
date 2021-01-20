@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent, ReactElement } from 'react';
+import React, { useState, useEffect, FunctionComponent, ReactElement } from 'react';
 import { useHistory } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 
@@ -20,6 +20,12 @@ const Login: FunctionComponent<Props> = inject('store')(
         password: '',
       });
       const { app } = store;
+
+      useEffect(() => {
+        if (!(state.email || state.password)) {
+          store.navigation.setViewNames(translate('LoginView.fields.loginButton'));
+        }
+      });
 
       const handleChange = (e) => {
         const { id, value } = e.target;

@@ -10,6 +10,7 @@ import { RootInstance } from '../models/Store';
 interface Props {
   store?: RootInstance;
   location?: LocationState;
+  forcedState?: any;
 }
 
 interface LocationState {
@@ -19,12 +20,13 @@ interface LocationState {
 
 const BottomNav: FunctionComponent<Props> = inject('store')(
   observer(
-    ({ store }): ReactElement => {
+    ({ store, forcedState }): ReactElement => {
       const location = useLocation<LocationState>();
 
       const { navigation, app } = store;
-      const { state, pathname } = location;
       const { countUnconfirmed } = app;
+      const { pathname } = location;
+      const state = forcedState || location.state;
       let links = null;
       let classes = '';
       const path = state ? state.path : null;

@@ -5,6 +5,7 @@ import { observer, inject } from 'mobx-react';
 import { translate } from '../utils/translate';
 
 import View from './View';
+import BottomNav from './BottomNav';
 import { RootInstance } from '../models/Store';
 
 interface Props {
@@ -22,13 +23,19 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
         password: '',
         edited: false,
         error: '',
+        resetSent: false,
       });
-      const { app } = store;
 
       useEffect(() => {
+        // user somehow got here without a valid reset token so redirect him to login
+        if (splat.includes('reset') && !token) {
+          history.push('/login');
+        }
+
         // only set the title on initial load
         if (!state.edited) {
-          store.navigation.setViewNames(translate('LoginView.passwordReset.notification.title'));
+          store.navigation.setTopViewName(translate('LoginView.passwordReset.notification.title'));
+          store.navigation.setBottomViewName(translate('LoginView.fields.loginButton'));
         }
       }, [store, state]);
 
@@ -45,25 +52,40 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
       const handleSubmit = (event) => {
         event.preventDefault();
 
-        const { email, password } = state;
+        const { email, resetSent } = state;
 
         if (token) {
-          // store.app
-          //     .requestPasswordReset(email)
-          //     .then((response) => {
-          //       console.log('RESET RESPONSE: ', response);
-          //     })
-          //     .catch((err) => {
-          //       setState((prevState) => ({
-          //         ...prevState,
-          //         error: err,
-          //       }));
-          //     });
+          // after resetting token user is authenticated so redirect him to the app
+          if (resetSent) {
+            store.app.getUserSession().then(() => {
+              history.push('/');
+            });
+          } else {
+            store.app
+              .confirmPasswordReset(token)
+              .then(({ data }) => {
+                setState((prevState) => ({
+                  ...prevState,
+                  email: data.email,
+                  password: data.newPassword,
+                  resetSent: true,
+                }));
+              })
+              .catch((err) => {
+                setState((prevState) => ({
+                  ...prevState,
+                  error: err,
+                }));
+              });
+          }
         } else {
           store.app
             .requestPasswordReset(email)
-            .then((response) => {
-              console.log('RESET RESPONSE: ', response);
+            .then(() => {
+              setState((prevState) => ({
+                ...prevState,
+                resetSent: true,
+              }));
             })
             .catch((err) => {
               setState((prevState) => ({
@@ -75,6 +97,16 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
       };
 
       const renderForgottenPasswordForm = () => {
+        if (state.resetSent) {
+          return (
+            <div className="field">
+              <div className="block">
+                <p className="is-text">{translate('LoginView.passwordReset.notification.message')}</p>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="field">
             <p className="control has-icons-left has-icons-right">
@@ -90,47 +122,67 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
                 <i className="fas fa-envelope"></i>
               </span>
             </p>
+            <div className="block">
+              <p className="is-text">{translate('LoginView.passwordReset.error.fillEmail')}</p>
+            </div>
           </div>
         );
       };
 
       const renderResetPasswordForm = () => {
+        if (state.resetSent) {
+          return (
+            <div className="block">
+              <p className="is-text">Your new password is {state.password}</p>
+            </div>
+          );
+        }
         return (
-          <div className="field">
-            <p className="control has-icons-left">
-              <input
-                className="input"
-                id="password"
-                type="password"
-                value={state.password}
-                placeholder={translate('LoginView.fields.password')}
-                onChange={handleChange}
-              />
-              <span className="icon is-small is-left">
-                <i className="fas fa-lock"></i>
-              </span>
-            </p>
+          <div className="block">
+            <p className="is-text">Token: {token}</p>
           </div>
         );
       };
 
+      let buttonDisabled = false;
+      if (!token) {
+        buttonDisabled = !!(!state.email || state.error);
+      }
+
+      const forcedState = {
+        path: '/login',
+        text: store.navigation.bottomViewName,
+      };
+
       return (
-        <View>
-          <div className="container p-4">
-            <h1 className="title">{store.navigation.topViewName}</h1>
-            <form>
-              {token ? renderResetPasswordForm() : renderForgottenPasswordForm()}
-              <div className="field">
-                <p className="control">
-                  <button type="submit" className="button is-success" onClick={handleSubmit}>
-                    {translate('LoginView.passwordReset.notification.title')}
-                  </button>
-                </p>
-                {state.error ? <p className="help is-danger">{state.error}</p> : null}
-              </div>
-            </form>
-          </div>
-        </View>
+        <>
+          <View>
+            <div className="container p-4">
+              <h5 className="title is-4">{store.navigation.topViewName}</h5>
+              <form className="reset-password-form">
+                {token ? renderResetPasswordForm() : renderForgottenPasswordForm()}
+                <div className="field">
+                  <p className="control">
+                    {state.resetSent && !token ? null : (
+                      <button
+                        type="submit"
+                        className="button is-success"
+                        onClick={handleSubmit}
+                        disabled={buttonDisabled}
+                      >
+                        {state.resetSent && token
+                          ? translate('LoginView.fields.loginButton')
+                          : translate('LoginView.passwordReset.notification.title')}
+                      </button>
+                    )}
+                  </p>
+                  {state.error ? <p className="help is-danger">{state.error}</p> : null}
+                </div>
+              </form>
+            </div>
+          </View>
+          {!(token && state.resetSent) ? <BottomNav forcedState={forcedState} /> : null}
+        </>
       );
     }
   )
