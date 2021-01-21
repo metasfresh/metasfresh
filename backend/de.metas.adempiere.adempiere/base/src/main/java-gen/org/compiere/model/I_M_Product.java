@@ -191,27 +191,6 @@ public interface I_M_Product
 	String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
 
 	/**
-	 * Set Haddex Check Date.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDateHaddexCheck (@Nullable java.sql.Timestamp DateHaddexCheck);
-
-	/**
-	 * Get Haddex Check Date.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getDateHaddexCheck();
-
-	ModelColumn<I_M_Product, Object> COLUMN_DateHaddexCheck = new ModelColumn<>(I_M_Product.class, "DateHaddexCheck", null);
-	String COLUMNNAME_DateHaddexCheck = "DateHaddexCheck";
-
-	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -494,26 +473,6 @@ public interface I_M_Product
 	ModelColumn<I_M_Product, Object> COLUMN_HaddexCheck = new ModelColumn<>(I_M_Product.class, "HaddexCheck", null);
 	String COLUMNNAME_HaddexCheck = "HaddexCheck";
 
-	/**
-	 * Set Haddex Control Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHaddexControlNr (@Nullable java.lang.String HaddexControlNr);
-
-	/**
-	 * Get Haddex Control Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getHaddexControlNr();
-
-	ModelColumn<I_M_Product, Object> COLUMN_HaddexControlNr = new ModelColumn<>(I_M_Product.class, "HaddexControlNr", null);
-	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
 
 	/**
 	 * Set Help.
