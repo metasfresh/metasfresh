@@ -8,12 +8,14 @@ import Navigation from './Navigation';
 import { DailyProductList } from './DailyProductList';
 import { App } from './App';
 import { ProductSelection } from './ProductSelection';
+import { WeeklyProductList } from './WeeklyProductList';
 
 export const Store = types
   .model('Store', {
     i18n: i18n,
     navigation: Navigation,
     dailyProducts: DailyProductList,
+    weeklyProducts: WeeklyProductList,
     app: App,
     info: Info,
     productSelection: ProductSelection,
@@ -79,6 +81,7 @@ let initialState = Store.create({
   i18n: { lang: '' },
   navigation: { topViewName: '', bottomViewName: '' },
   dailyProducts: {},
+  weeklyProducts: {},
   app: {
     loggedIn: false,
     loginError: '',
