@@ -24,6 +24,7 @@ import RfQ from './components/RfQ';
 import ProductScreen from './components/ProductScreen';
 import ProductAdd from './components/ProductAdd';
 import PasswordRecovery from './components/PasswordRecovery';
+import ProductWeeklyScreen from './components/ProductWeeklyScreen';
 
 interface IProps {
   store?: RootInstance;
@@ -37,6 +38,7 @@ const routes = [
   { path: '/', name: 'Daily Reporting', Component: Daily },
   { path: '/daily/:productId', name: 'Daily Reporting Details', Component: Daily },
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
+  { path: '/weekly/:productId', name: 'Weekly Product', Component: ProductWeeklyScreen },
   { path: '/products', name: 'Products', Component: ProductAdd },
   { path: '/products/:productId', name: 'Product', Component: ProductScreen },
   { path: '/info', name: 'Info/News', Component: Info },
