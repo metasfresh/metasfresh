@@ -195,7 +195,7 @@ public class C_OrderLine
 
 	}
 
-	private int getMaxHaddexAgeInMonths(int clientID, int orgID)
+	private int getMaxHaddexAgeInMonths(final int clientID, final int orgID)
 	{
 		final int months = sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS, 24, clientID, orgID);
 		if (months > 0)
