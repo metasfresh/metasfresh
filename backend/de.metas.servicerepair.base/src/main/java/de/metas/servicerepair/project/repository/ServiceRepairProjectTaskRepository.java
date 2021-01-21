@@ -28,6 +28,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutAndLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -47,6 +48,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -101,7 +103,7 @@ class ServiceRepairProjectTaskRepository
 	public ServiceRepairProjectTask getById(@NonNull final ServiceRepairProjectTaskId taskId)
 	{
 		final I_C_Project_Repair_Task record = getRecordById(taskId);
-		return toServiceRepairProjectTask(record);
+		return fromRecord(record);
 	}
 
 	private I_C_Project_Repair_Task getRecordById(@NonNull final ServiceRepairProjectTaskId taskId)
@@ -118,11 +120,11 @@ class ServiceRepairProjectTaskRepository
 
 		final List<I_C_Project_Repair_Task> recordIds = InterfaceWrapperHelper.loadByRepoIdAwares(taskIds, I_C_Project_Repair_Task.class);
 		return recordIds.stream()
-				.map(ServiceRepairProjectTaskRepository::toServiceRepairProjectTask)
+				.map(ServiceRepairProjectTaskRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ServiceRepairProjectTask toServiceRepairProjectTask(final I_C_Project_Repair_Task record)
+	private static ServiceRepairProjectTask fromRecord(final I_C_Project_Repair_Task record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 
@@ -139,6 +141,7 @@ class ServiceRepairProjectTaskRepository
 				//
 				.customerReturnLineId(InOutAndLineId.ofRepoIdOrNull(record.getCustomerReturn_InOut_ID(), record.getCustomerReturn_InOutLine_ID()))
 				.repairOrderId(PPOrderId.ofRepoIdOrNull(record.getRepair_Order_ID()))
+				.isRepairOrderDone(record.isRepairOrderDone())
 				.repairVhuId(HuId.ofRepoIdOrNull(record.getRepair_VHU_ID()))
 				//
 				.build();
@@ -171,7 +174,7 @@ class ServiceRepairProjectTaskRepository
 			@NonNull final UnaryOperator<ServiceRepairProjectTask> mapper)
 	{
 		final I_C_Project_Repair_Task record = getRecordById(taskId);
-		final ServiceRepairProjectTask task = toServiceRepairProjectTask(record);
+		final ServiceRepairProjectTask task = fromRecord(record);
 
 		final ServiceRepairProjectTask changedTask = mapper.apply(task);
 		if (Objects.equals(task, changedTask))
@@ -210,5 +213,17 @@ class ServiceRepairProjectTaskRepository
 		return taskIds.stream()
 				.filter(taskId -> eligibleRepoIds.contains(taskId.getRepoId()))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Optional<ServiceRepairProjectTaskId> getTaskIdByRepairOrderId(
+			@NonNull final ProjectId projectId,
+			@NonNull final PPOrderId repairOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_Task.class)
+				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_Type, ServiceRepairProjectTaskType.REPAIR_ORDER.getCode())
+				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_C_Project_ID, projectId)
+				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_Repair_Order_ID, repairOrderId)
+				.create()
+				.firstIdOnlyOptional(repoId -> ServiceRepairProjectTaskId.ofRepoId(projectId, repoId));
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.servicerepair.project.repository.requests;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -30,11 +31,12 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderAndCostCollectorId;
 
 import javax.annotation.Nullable;
 
 @Value
-@Builder
 public class CreateProjectCostCollectorRequest
 {
 	@NonNull ServiceRepairProjectTaskId taskId;
@@ -42,8 +44,32 @@ public class CreateProjectCostCollectorRequest
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
-	@Nullable
-	HuId reservedVhuId;
+	@Nullable HuId reservedVhuId;
+
+	@Nullable PPOrderAndCostCollectorId repairOrderCostCollectorId;
+
+	@Builder
+	private CreateProjectCostCollectorRequest(
+			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final ProductId productId,
+			@Nullable final Quantity qtyReserved,
+			@Nullable final Quantity qtyConsumed,
+			@Nullable final HuId reservedVhuId,
+			@Nullable final PPOrderAndCostCollectorId repairOrderCostCollectorId)
+	{
+		final Quantity qtyFirstNotNull = CoalesceUtil.coalesce(qtyReserved, qtyConsumed);
+		if (qtyFirstNotNull == null)
+		{
+			throw new AdempiereException("At least one qty shall be set");
+		}
+
+		this.taskId = taskId;
+		this.productId = productId;
+		this.qtyReserved = qtyReserved != null ? qtyReserved : qtyFirstNotNull.toZero();
+		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : qtyFirstNotNull.toZero();
+		this.reservedVhuId = reservedVhuId;
+		this.repairOrderCostCollectorId = repairOrderCostCollectorId;
+	}
 
 	public UomId getUomId()
 	{

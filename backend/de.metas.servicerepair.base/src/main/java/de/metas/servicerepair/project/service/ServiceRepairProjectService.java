@@ -26,22 +26,16 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
-import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
-import de.metas.material.planning.ProductPlanningService;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.CreateProjectRequest;
@@ -49,12 +43,12 @@ import de.metas.project.service.ProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
+import de.metas.servicerepair.project.model.ServiceRepairProjectConsumptionSummary;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
-import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import de.metas.servicerepair.project.repository.ServiceRepairProjectConsumptionSummaryRepository;
 import de.metas.servicerepair.project.repository.ServiceRepairProjectCostCollectorRepository;
@@ -65,60 +59,53 @@ import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjec
 import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjectCommand;
 import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
+import de.metas.servicerepair.repair_order.RepairManufacturingOrderService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.PPOrderCreateRequest;
-import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 @Service
 public class ServiceRepairProjectService
 {
 	public static final AdWindowId AD_WINDOW_ID = AdWindowId.ofRepoId(541015); // FIXME hardcoded
 
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final ProductPlanningService productPlanningService;
 	private final HUReservationService huReservationService;
 	private final RepairCustomerReturnsService repairCustomerReturnsService;
+	private final RepairManufacturingOrderService repairManufacturingOrderService;
 	private final ProjectService projectService;
 	private final ServiceRepairProjectTaskRepository projectTaskRepository;
 	private final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository;
 	private final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository;
 
 	public ServiceRepairProjectService(
-			@NonNull final ProductPlanningService productPlanningService,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final ProjectService projectService,
 			@NonNull final RepairCustomerReturnsService repairCustomerReturnsService,
+			@NonNull final RepairManufacturingOrderService repairManufacturingOrderService,
 			@NonNull final ServiceRepairProjectTaskRepository projectTaskRepository,
 			@NonNull final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository,
 			@NonNull final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository)
 	{
-		this.productPlanningService = productPlanningService;
 		this.huReservationService = huReservationService;
 		this.projectService = projectService;
 		this.repairCustomerReturnsService = repairCustomerReturnsService;
+		this.repairManufacturingOrderService = repairManufacturingOrderService;
 		this.projectTaskRepository = projectTaskRepository;
 		this.projectCostCollectorRepository = projectCostCollectorRepository;
 		this.projectConsumptionSummaryRepository = projectConsumptionSummaryRepository;
@@ -183,6 +170,7 @@ public class ServiceRepairProjectService
 	{
 		projectTaskRepository.createNew(request);
 	}
+
 	public void createProjectTask(@NonNull final CreateRepairProjectTaskRequest request)
 	{
 		projectTaskRepository.createNew(request);
@@ -190,15 +178,29 @@ public class ServiceRepairProjectService
 
 	private void addQtyToProjectTask(@NonNull final AddQtyToProjectTaskRequest request)
 	{
-		final ServiceRepairProjectTask changedTask = projectTaskRepository.changeById(
+		final ServiceRepairProjectTask changedTask = changeTask(
 				request.getTaskId(),
 				task -> task.reduce(request));
 
 		projectConsumptionSummaryRepository.change(
-				request.getTaskId().getProjectId(),
-				changedTask.getProductId(),
-				request.getUomId(),
+				ServiceRepairProjectConsumptionSummary.GroupingKey.builder()
+						.projectId(request.getTaskId().getProjectId())
+						.productId(changedTask.getProductId())
+						.uomId(request.getUomId())
+						.build(),
 				summary -> summary.reduce(request));
+	}
+
+	public ServiceRepairProjectTask changeTask(
+			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final UnaryOperator<ServiceRepairProjectTask> mapper)
+	{
+		return projectTaskRepository.changeById(taskId, mapper);
+	}
+
+	public void saveTask(@NonNull final ServiceRepairProjectTask task)
+	{
+		projectTaskRepository.save(task);
 	}
 
 	public ServiceRepairProjectTask getTaskById(@NonNull final ServiceRepairProjectTaskId taskId)
@@ -222,12 +224,12 @@ public class ServiceRepairProjectService
 
 	public List<ServiceRepairProjectCostCollector> getCostCollectorsByProjectButNotInProposal(@NonNull final ProjectId projectId)
 	{
-		return projectCostCollectorRepository.getCostCollectorsByProjectButNotInProposal(projectId);
+		return projectCostCollectorRepository.getByProjectIdButNotInProposal(projectId);
 	}
 
 	public void setCustomerQuotationToCostCollectors(@NonNull final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
 	{
-		projectCostCollectorRepository.setCustomerQuotationToCostCollectors(map);
+		projectCostCollectorRepository.setCustomerQuotation(map);
 	}
 
 	public void reserveSparePartsFromHUs(
@@ -253,21 +255,21 @@ public class ServiceRepairProjectService
 		for (final HuId vhuId : huReservation.getVhuIds())
 		{
 			final Quantity qtyReserved = huReservation.getReservedQtyByVhuId(vhuId);
-			final Quantity qtyConsumed = qtyReserved.toZero();
 
-			projectCostCollectorRepository.createNew(CreateProjectCostCollectorRequest.builder()
+			createCostCollector(CreateProjectCostCollectorRequest.builder()
 					.taskId(task.getId())
 					.productId(task.getProductId())
 					.qtyReserved(qtyReserved)
-					.qtyConsumed(qtyConsumed)
+					.qtyConsumed(qtyReserved.toZero())
 					.reservedVhuId(vhuId)
 					.build());
 		}
+	}
 
-		addQtyToProjectTask(AddQtyToProjectTaskRequest.builder()
-				.taskId(task.getId())
-				.qtyReserved(huReservation.getReservedQtySum())
-				.build());
+	public void createCostCollector(@NonNull final CreateProjectCostCollectorRequest request)
+	{
+		final ServiceRepairProjectCostCollector costCollector = projectCostCollectorRepository.createNew(request);
+		addQtyToProjectTask(extractAddQtyToProjectTaskRequest(costCollector));
 	}
 
 	public ImmutableSet<ServiceRepairProjectTaskId> retainIdsOfTypeSpareParts(final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
@@ -289,16 +291,23 @@ public class ServiceRepairProjectService
 				.map(ServiceRepairProjectCostCollector::getReservedSparePartsVHUId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+
 		huReservationService.deleteReservations(reservedSparePartsVHUIds);
 
 		for (final ServiceRepairProjectCostCollector costCollector : costCollectors)
 		{
-			addQtyToProjectTask(AddQtyToProjectTaskRequest.builder()
-					.taskId(costCollector.getTaskId())
-					.qtyReserved(costCollector.getQtyReserved().negate())
-					.qtyConsumed(costCollector.getQtyConsumed().negate())
-					.build());
+			addQtyToProjectTask(extractAddQtyToProjectTaskRequest(costCollector).negate());
 		}
+	}
+
+	private static AddQtyToProjectTaskRequest extractAddQtyToProjectTaskRequest(final ServiceRepairProjectCostCollector costCollector)
+	{
+		return AddQtyToProjectTaskRequest.builder()
+				.taskId(costCollector.getTaskId())
+				.productId(costCollector.getProductId())
+				.qtyReserved(costCollector.getQtyReserved())
+				.qtyConsumed(costCollector.getQtyConsumed())
+				.build();
 	}
 
 	public boolean isSparePartsTask(@NonNull final ServiceRepairProjectTaskId taskId)
@@ -342,65 +351,36 @@ public class ServiceRepairProjectService
 		final ProjectId projectId = CollectionUtils.extractSingleElement(tasks, ServiceRepairProjectTask::getProjectId);
 		final ServiceRepairProjectInfo project = getById(projectId);
 
-		tasks.forEach(task -> createRepairOrder(project, task));
+		for (final ServiceRepairProjectTask task : tasks)
+		{
+			final PPOrderId repairOrderId = repairManufacturingOrderService.createRepairOrder(project, task);
+			saveTask(task.withRepairOrderId(repairOrderId));
+		}
 	}
 
-	private void createRepairOrder(
-			@NonNull final ServiceRepairProjectInfo project,
-			@NonNull final ServiceRepairProjectTask task)
+	public Optional<ServiceRepairProjectTaskId> getTaskIdByRepairOrderId(@NonNull final ProjectId projectId, @NonNull final PPOrderId repairOrderId)
 	{
-		if (!ServiceRepairProjectTaskType.REPAIR_ORDER.equals(task.getType()))
+		return projectTaskRepository.getTaskIdByRepairOrderId(projectId, repairOrderId);
+	}
+
+	public void recalculateSummary(@NonNull final ProjectId projectId)
+	{
+		final LinkedHashMap<ServiceRepairProjectConsumptionSummary.GroupingKey, ServiceRepairProjectConsumptionSummary> aggregates = new LinkedHashMap<>();
+		for (final ServiceRepairProjectCostCollector costCollector : projectCostCollectorRepository.getByProjectId(projectId))
 		{
-			throw new AdempiereException("Not an repair order task: " + task);
-		}
-		if (!ServiceRepairProjectTaskStatus.NOT_STARTED.equals(task.getStatus()))
-		{
-			throw new AdempiereException("Task already started: " + task);
-		}
-		if (task.getRepairOrderId() != null)
-		{
-			throw new AdempiereException("A Repair Order was already created: " + task);
+			final ServiceRepairProjectConsumptionSummary aggregate = ServiceRepairProjectConsumptionSummary.builder()
+					.groupingKey(ServiceRepairProjectConsumptionSummary.GroupingKey.builder()
+							.projectId(costCollector.getId().getProjectId())
+							.productId(costCollector.getProductId())
+							.uomId(costCollector.getUomId())
+							.build())
+					.qtyReserved(costCollector.getQtyReserved())
+					.qtyConsumed(costCollector.getQtyConsumed())
+					.build();
+
+			aggregates.merge(aggregate.getGroupingKey(), aggregate, ServiceRepairProjectConsumptionSummary::combine);
 		}
 
-		final WarehouseId warehouseId = project.getWarehouseId();
-		if (warehouseId == null)
-		{
-			throw new AdempiereException("No warehouse for " + project);
-		}
-		final ResourceId plantId = productPlanningService.getPlantOfWarehouse(warehouseId)
-				.orElseThrow(() -> new AdempiereException("No plant for warehouse " + warehouseId));
-
-		final Instant now = SystemTime.asInstant();
-		final I_PP_Order repairOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
-				.docBaseType(PPOrderDocBaseType.REPAIR_ORDER)
-				.clientAndOrgId(task.getClientAndOrgId())
-				.warehouseId(warehouseId)
-				.plantId(plantId)
-				//
-				.productId(task.getProductId())
-				// TODO .attributeSetInstanceId()
-				.qtyRequired(task.getQtyRequired())
-				//
-				.dateOrdered(now)
-				.datePromised(now)
-				.dateStartSchedule(now)
-				//
-				.completeDocument(true)
-				//
-				.build());
-		final PPOrderId repairOrderId = PPOrderId.ofRepoId(repairOrder.getPP_Order_ID());
-
-		huPPOrderQtyDAO.save(CreateReceiptCandidateRequest.builder()
-				.orderId(repairOrderId)
-				.orgId(OrgId.ofRepoId(repairOrder.getAD_Org_ID()))
-				.date(TimeUtil.asZonedDateTime(now))
-				.locatorId(LocatorId.ofRepoId(repairOrder.getM_Warehouse_ID(), repairOrder.getM_Locator_ID()))
-				.topLevelHUId(task.getRepairVhuId())
-				.productId(task.getProductId())
-				.qtyToReceive(task.getQtyRequired())
-				.alreadyProcessed(true)
-				.build());
-
-		projectTaskRepository.save(task.withRepairOrderId(repairOrderId));
+		projectConsumptionSummaryRepository.saveProject(projectId, aggregates.values());
 	}
 }

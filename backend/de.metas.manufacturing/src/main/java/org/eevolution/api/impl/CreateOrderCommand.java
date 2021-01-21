@@ -18,6 +18,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
@@ -147,9 +148,10 @@ final class CreateOrderCommand
 		ppOrderRecord.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
 
 		//
-		// Inherit values from MRP demand
+		// Dimensions / References
 		ppOrderRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderRecord.setC_BPartner_ID(BPartnerId.toRepoId(getCustomerIdOrNull(request)));
+		ppOrderRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
 
 		ppOrderRecord.setIsPickingOrder(productPlanning != null && productPlanning.isPickingOrder());
 

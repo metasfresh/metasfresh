@@ -56,6 +56,7 @@ public class ServiceRepairProjectTask
 	InOutAndLineId customerReturnLineId;
 
 	@Nullable PPOrderId repairOrderId;
+	boolean isRepairOrderDone;
 	@Nullable HuId repairVhuId;
 
 	public ProjectId getProjectId() { return getId().getProjectId(); }
@@ -77,6 +78,11 @@ public class ServiceRepairProjectTask
 
 	public ServiceRepairProjectTask reduce(@NonNull final AddQtyToProjectTaskRequest request)
 	{
+		if (!ProductId.equals(getProductId(), request.getProductId()))
+		{
+			return this;
+		}
+		
 		return toBuilder()
 				.qtyReserved(getQtyReserved().add(request.getQtyReserved()))
 				.qtyConsumed(getQtyConsumed().add(request.getQtyConsumed()))
@@ -114,7 +120,9 @@ public class ServiceRepairProjectTask
 		}
 		else
 		{
-			return ServiceRepairProjectTaskStatus.IN_PROGRESS;
+			return isRepairOrderDone()
+					? ServiceRepairProjectTaskStatus.COMPLETED
+					: ServiceRepairProjectTaskStatus.IN_PROGRESS;
 		}
 	}
 
@@ -138,6 +146,14 @@ public class ServiceRepairProjectTask
 	{
 		return toBuilder()
 				.repairOrderId(repairOrderId)
+				.build()
+				.withUpdatedStatus();
+	}
+
+	public ServiceRepairProjectTask withRepairOrderDone(final boolean isRepairOrderDone)
+	{
+		return toBuilder()
+				.isRepairOrderDone(isRepairOrderDone)
 				.build()
 				.withUpdatedStatus();
 	}

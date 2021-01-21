@@ -1,17 +1,7 @@
 package org.eevolution.api;
 
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.X_C_DocType;
-import org.eevolution.api.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
@@ -19,12 +9,19 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 /*
  * #%L
@@ -71,6 +68,7 @@ public class PPOrderCreateRequest
 
 	@Nullable OrderLineId salesOrderLineId;
 	@Nullable BPartnerId customerId;
+	@Nullable ProjectId projectId;
 
 	@Nullable Boolean completeDocument;
 
@@ -95,6 +93,7 @@ public class PPOrderCreateRequest
 			//
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final BPartnerId customerId,
+			@Nullable final ProjectId projectId,
 			//
 			final boolean pickingOrder,
 			//
@@ -121,6 +120,7 @@ public class PPOrderCreateRequest
 
 		this.salesOrderLineId = salesOrderLineId;
 		this.customerId = customerId;
+		this.projectId = projectId;
 
 		this.completeDocument = completeDocument;
 	}

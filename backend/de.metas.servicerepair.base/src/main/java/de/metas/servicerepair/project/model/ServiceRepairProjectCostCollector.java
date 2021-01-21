@@ -27,6 +27,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,8 +39,7 @@ import javax.annotation.Nullable;
 public class ServiceRepairProjectCostCollector
 {
 	@NonNull ServiceRepairProjectCostCollectorId id;
-	@Nullable
-	ServiceRepairProjectTaskId taskId;
+	@Nullable ServiceRepairProjectTaskId taskId;
 
 	@NonNull ProductId productId;
 	@NonNull Quantity qtyReserved;
@@ -71,6 +71,11 @@ public class ServiceRepairProjectCostCollector
 		this.qtyConsumed = qtyConsumed;
 		this.reservedSparePartsVHUId = reservedSparePartsVHUId;
 		this.customerQuotationLineId = customerQuotationLineId;
+	}
+
+	public UomId getUomId()
+	{
+		return Quantity.getCommonUomIdOfAll(qtyReserved, qtyConsumed);
 	}
 
 	public Quantity getQtyReservedOrConsumed()

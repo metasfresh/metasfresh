@@ -40,14 +40,11 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import org.eevolution.api.PPOrderDocBaseType;
-import org.eevolution.api.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
-import org.eevolution.api.QtyCalculationsBOM;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -66,7 +63,6 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
@@ -75,11 +71,14 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
+import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
@@ -387,7 +386,7 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void closeAllActivities(@NonNull final PPOrderId orderId)
 	{
-		reportQtyToProcessOnNotStartedActivities(orderId);
+		reportQtyToProcessOnNotStartedActivitiesIfApplies(orderId);
 
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 
@@ -404,10 +403,16 @@ public class PPOrderBL implements IPPOrderBL
 		orderRoutingRepo.save(orderRouting);
 	}
 
-	private void reportQtyToProcessOnNotStartedActivities(final PPOrderId orderId)
+	private void reportQtyToProcessOnNotStartedActivitiesIfApplies(final PPOrderId orderId)
 	{
-		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(orderRecord.getDocBaseType());
+		if(docBaseType.isRepairOrder())
+		{
+			return;
+		}
+
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		final ZonedDateTime reportDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())

@@ -36,23 +36,37 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class ServiceRepairProjectConsumptionSummary
 {
-	@NonNull ProjectId projectId;
-	@NonNull ProductId productId;
+	@Value
+	@Builder
+	public static class GroupingKey
+	{
+		@NonNull ProjectId projectId;
+		@NonNull ProductId productId;
+		@NonNull UomId uomId;
+	}
+
+	@NonNull GroupingKey groupingKey;
+
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
-	public UomId getUomId()
-	{
-		return Quantity.getCommonUomIdOfAll(qtyReserved, qtyConsumed);
-	}
-
 	public ServiceRepairProjectConsumptionSummary reduce(@NonNull final AddQtyToProjectTaskRequest request)
 	{
-		Check.assumeEquals(projectId, request.getTaskId().getProjectId(), "projectId not matching: {}, {}", this, request);
+		Check.assumeEquals(groupingKey.getProjectId(), request.getTaskId().getProjectId(), "projectId not matching: {}, {}", this, request);
 
 		return toBuilder()
 				.qtyReserved(getQtyReserved().add(request.getQtyReserved()))
 				.qtyConsumed(getQtyConsumed().add(request.getQtyConsumed()))
+				.build();
+	}
+
+	public ServiceRepairProjectConsumptionSummary combine(@NonNull final ServiceRepairProjectConsumptionSummary other)
+	{
+		Check.assumeEquals(groupingKey, other.groupingKey, "groupingKey not matching: {}, {}", this, other);
+
+		return toBuilder()
+				.qtyReserved(getQtyReserved().add(other.getQtyReserved()))
+				.qtyConsumed(getQtyConsumed().add(other.getQtyConsumed()))
 				.build();
 	}
 

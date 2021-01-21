@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_Task extends org.compiere.model.PO implements I_C_Project_Repair_Task, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1252638536L;
+	private static final long serialVersionUID = -1519958520L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_Task (final Properties ctx, final int C_Project_Repair_Task_ID, @Nullable final String trxName)
@@ -132,6 +132,18 @@ public class X_C_Project_Repair_Task extends org.compiere.model.PO implements I_
 	public int getCustomerReturn_InOutLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_CustomerReturn_InOutLine_ID);
+	}
+
+	@Override
+	public void setIsRepairOrderDone (final boolean IsRepairOrderDone)
+	{
+		set_Value (COLUMNNAME_IsRepairOrderDone, IsRepairOrderDone);
+	}
+
+	@Override
+	public boolean isRepairOrderDone() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRepairOrderDone);
 	}
 
 	@Override

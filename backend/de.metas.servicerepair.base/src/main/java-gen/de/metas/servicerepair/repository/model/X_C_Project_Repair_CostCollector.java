@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO implements I_C_Project_Repair_CostCollector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -937147969L;
+	private static final long serialVersionUID = 1449852723L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_CostCollector (final Properties ctx, final int C_Project_Repair_CostCollector_ID, @Nullable final String trxName)
@@ -105,6 +105,60 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getFrom_Rapair_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_From_Rapair_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setFrom_Rapair_Order(final org.eevolution.model.I_PP_Order From_Rapair_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_From_Rapair_Order_ID, org.eevolution.model.I_PP_Order.class, From_Rapair_Order);
+	}
+
+	@Override
+	public void setFrom_Rapair_Order_ID (final int From_Rapair_Order_ID)
+	{
+		if (From_Rapair_Order_ID < 1) 
+			set_Value (COLUMNNAME_From_Rapair_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_From_Rapair_Order_ID, From_Rapair_Order_ID);
+	}
+
+	@Override
+	public int getFrom_Rapair_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_From_Rapair_Order_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Cost_Collector getFrom_Repair_Cost_Collector()
+	{
+		return get_ValueAsPO(COLUMNNAME_From_Repair_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class);
+	}
+
+	@Override
+	public void setFrom_Repair_Cost_Collector(final org.eevolution.model.I_PP_Cost_Collector From_Repair_Cost_Collector)
+	{
+		set_ValueFromPO(COLUMNNAME_From_Repair_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class, From_Repair_Cost_Collector);
+	}
+
+	@Override
+	public void setFrom_Repair_Cost_Collector_ID (final int From_Repair_Cost_Collector_ID)
+	{
+		if (From_Repair_Cost_Collector_ID < 1) 
+			set_Value (COLUMNNAME_From_Repair_Cost_Collector_ID, null);
+		else 
+			set_Value (COLUMNNAME_From_Repair_Cost_Collector_ID, From_Repair_Cost_Collector_ID);
+	}
+
+	@Override
+	public int getFrom_Repair_Cost_Collector_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_From_Repair_Cost_Collector_ID);
 	}
 
 	@Override

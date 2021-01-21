@@ -167,6 +167,56 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set From Repair Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFrom_Rapair_Order_ID (int From_Rapair_Order_ID);
+
+	/**
+	 * Get From Repair Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFrom_Rapair_Order_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getFrom_Rapair_Order();
+
+	void setFrom_Rapair_Order(@Nullable org.eevolution.model.I_PP_Order From_Rapair_Order);
+
+	ModelColumn<I_C_Project_Repair_CostCollector, org.eevolution.model.I_PP_Order> COLUMN_From_Rapair_Order_ID = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "From_Rapair_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_From_Rapair_Order_ID = "From_Rapair_Order_ID";
+
+	/**
+	 * Set From Repair Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFrom_Repair_Cost_Collector_ID (int From_Repair_Cost_Collector_ID);
+
+	/**
+	 * Get From Repair Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFrom_Repair_Cost_Collector_ID();
+
+	@Nullable org.eevolution.model.I_PP_Cost_Collector getFrom_Repair_Cost_Collector();
+
+	void setFrom_Repair_Cost_Collector(@Nullable org.eevolution.model.I_PP_Cost_Collector From_Repair_Cost_Collector);
+
+	ModelColumn<I_C_Project_Repair_CostCollector, org.eevolution.model.I_PP_Cost_Collector> COLUMN_From_Repair_Cost_Collector_ID = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "From_Repair_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
+	String COLUMNNAME_From_Repair_Cost_Collector_ID = "From_Repair_Cost_Collector_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

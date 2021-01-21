@@ -35,7 +35,6 @@ import org.eevolution.api.PPOrderPlanningStatus;
 class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	// private final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
 	private final PPOrderPlanningStatus targetPlanningStatus;
 
@@ -48,11 +47,6 @@ class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Templa
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		final PPOrderLinesView view = getView();
-		if (!view.getDocBaseType().isManufacturingOrder())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not a manufacturing order");
-		}
-
 		final PPOrderPlanningStatus planningStatus = view.getPlanningStatus();
 		if (!huPPOrderBL.canChangePlanningStatus(planningStatus, targetPlanningStatus))
 		{
@@ -63,7 +57,7 @@ class WEBUI_PP_Order_ChangePlanningStatus_Template extends WEBUI_PP_Order_Templa
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		huPPOrderBL.processPlanning(targetPlanningStatus, getView().getPpOrderId());
 		return MSG_OK;

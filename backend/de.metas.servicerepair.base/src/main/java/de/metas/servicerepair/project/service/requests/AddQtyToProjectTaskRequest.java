@@ -23,12 +23,14 @@
 package de.metas.servicerepair.project.service.requests;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -36,26 +38,41 @@ import javax.annotation.Nullable;
 public class AddQtyToProjectTaskRequest
 {
 	@NonNull ServiceRepairProjectTaskId taskId;
+	@NonNull ProductId productId;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private AddQtyToProjectTaskRequest(
 			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final ProductId productId,
 			@Nullable final Quantity qtyReserved,
 			@Nullable final Quantity qtyConsumed)
 	{
-		this.taskId = taskId;
-
+		final Quantity firstQtyNotNull = CoalesceUtil.coalesce(qtyReserved, qtyConsumed);
+		if (firstQtyNotNull == null)
+		{
+			throw new AdempiereException("At least one qty shall be specified");
+		}
 		Quantity.getCommonUomIdOfAll(qtyReserved, qtyConsumed); // assume same UOM
-		final Quantity zero = CoalesceUtil.coalesce(qtyReserved, qtyConsumed).toZero();
 
-		this.qtyReserved = qtyReserved != null ? qtyReserved : zero;
-		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : zero;
+		this.taskId = taskId;
+		this.productId = productId;
+		this.qtyReserved = qtyReserved != null ? qtyReserved : firstQtyNotNull.toZero();
+		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : firstQtyNotNull.toZero();
 	}
 
 	public UomId getUomId()
 	{
 		return Quantity.getCommonUomIdOfAll(qtyReserved, qtyConsumed);
 	}
+
+	public AddQtyToProjectTaskRequest negate()
+	{
+		return toBuilder()
+				.qtyReserved(qtyReserved.negate())
+				.qtyConsumed(qtyConsumed.negate())
+				.build();
+	}
+
 }

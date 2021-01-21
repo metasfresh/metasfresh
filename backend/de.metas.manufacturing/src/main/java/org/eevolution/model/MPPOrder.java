@@ -24,6 +24,7 @@ package org.eevolution.model;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -44,7 +45,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -344,8 +344,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Check already closed
-		String docStatus = getDocStatus();
-		if (IDocument.STATUS_Closed.equals(docStatus))
+		DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if (docStatus.isClosed())
 		{
 			return true;
 		}
@@ -353,19 +353,25 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// If DocStatus is not Completed => complete it now
 		// TODO: don't know if this approach is ok, i think we shall throw an exception instead
-		if (!IDocument.STATUS_Completed.equals(docStatus))
+		if (!docStatus.isCompleted())
 		{
-			docStatus = completeIt();
-			setDocStatus(docStatus);
+			final String newDocStatus = completeIt();
+			docStatus = DocStatus.ofCode(newDocStatus);
+			setDocStatus(newDocStatus);
 			setDocAction(ACTION_None);
 		}
 
 		//
 		// Create usage variances
-		createVariances();
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
+		if (!docBaseType.isRepairOrder())
+		{
+			createVariances();
+		}
 
 		//
 		// Update BOM Lines and set QtyRequired=QtyDelivered
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
 		for (final I_PP_Order_BOMLine line : getLines())
 		{
@@ -375,12 +381,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Close all the activity do not reported
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
-		Services.get(IPPOrderBL.class).closeAllActivities(orderId);
+		ppOrderBL.closeAllActivities(orderId);
 
 		//
 		// Set QtyOrdered=QtyDelivered
 		// Clear Ordered Quantities
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		ppOrderBL.closeQtyOrdered(this);
 
 		if (getDateDelivered() == null)
@@ -400,8 +405,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Call Model Validator: AFTER_CLOSE
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 
-		final PPOrderChangedEvent changeEvent = eventFactory
-				.inspectPPOrderAfterChange();
+		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
 
 		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(changeEvent);

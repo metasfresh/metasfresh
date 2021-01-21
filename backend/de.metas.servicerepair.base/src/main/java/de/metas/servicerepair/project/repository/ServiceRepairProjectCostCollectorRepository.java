@@ -53,7 +53,7 @@ class ServiceRepairProjectCostCollectorRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createNew(@NonNull final CreateProjectCostCollectorRequest request)
+	public ServiceRepairProjectCostCollector createNew(@NonNull final CreateProjectCostCollectorRequest request)
 	{
 		final I_C_Project_Repair_CostCollector record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_CostCollector.class);
 		record.setC_Project_ID(request.getTaskId().getProjectId().getRepoId());
@@ -64,6 +64,8 @@ class ServiceRepairProjectCostCollectorRepository
 		record.setQtyConsumed(request.getQtyConsumed().toBigDecimal());
 		record.setVHU_ID(HuId.toRepoId(request.getReservedVhuId()));
 		InterfaceWrapperHelper.saveRecord(record);
+
+		return toServiceRepairProjectCostCollector(record);
 	}
 
 	public List<ServiceRepairProjectCostCollector> getAndDeleteByTaskIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
@@ -127,11 +129,11 @@ class ServiceRepairProjectCostCollectorRepository
 				.build();
 	}
 
-	public List<ServiceRepairProjectCostCollector> getCostCollectorsByProjectButNotInProposal(@NonNull final ProjectId projectId)
+	public List<ServiceRepairProjectCostCollector> getByProjectIdButNotInProposal(@NonNull final ProjectId projectId)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
 				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)
-				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_Order_ID, null)
+				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_Order_ID, null) // not already included in customer proposal/quotation
 				.orderBy(I_C_Project_Repair_CostCollector.COLUMN_C_Project_Repair_CostCollector_ID)
 				.create()
 				.stream()
@@ -139,7 +141,18 @@ class ServiceRepairProjectCostCollectorRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void setCustomerQuotationToCostCollectors(final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
+	public List<ServiceRepairProjectCostCollector> getByProjectId(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
+				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)
+				.orderBy(I_C_Project_Repair_CostCollector.COLUMN_C_Project_Repair_CostCollector_ID)
+				.create()
+				.stream()
+				.map(ServiceRepairProjectCostCollectorRepository::toServiceRepairProjectCostCollector)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void setCustomerQuotation(@NonNull final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
 	{
 		if (map.isEmpty())
 		{

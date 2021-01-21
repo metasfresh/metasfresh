@@ -215,6 +215,27 @@ public interface I_C_Project_Repair_Task
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Repair Order Done.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRepairOrderDone (boolean IsRepairOrderDone);
+
+	/**
+	 * Get Repair Order Done.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRepairOrderDone();
+
+	ModelColumn<I_C_Project_Repair_Task, Object> COLUMN_IsRepairOrderDone = new ModelColumn<>(I_C_Project_Repair_Task.class, "IsRepairOrderDone", null);
+	String COLUMNNAME_IsRepairOrderDone = "IsRepairOrderDone";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *

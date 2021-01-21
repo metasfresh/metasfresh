@@ -22,6 +22,8 @@
 
 package de.metas.servicerepair.project.repository;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
@@ -32,10 +34,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
@@ -46,28 +52,25 @@ class ServiceRepairProjectConsumptionSummaryRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public void change(
-			@NonNull final ProjectId projectId,
-			@NonNull final ProductId productId,
-			@NonNull final UomId uomId,
+			@NonNull final ServiceRepairProjectConsumptionSummary.GroupingKey groupingKey,
 			@NonNull final UnaryOperator<ServiceRepairProjectConsumptionSummary> mapper)
 	{
-		I_C_Project_Repair_Consumption_Summary record = getRecordByGrouppingKey(projectId, productId, uomId);
+		I_C_Project_Repair_Consumption_Summary record = retrieveRecordByGroupingKey(groupingKey);
 		final ServiceRepairProjectConsumptionSummary summary;
 		if (record == null)
 		{
 			record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Consumption_Summary.class);
 
-			final Quantity zero = Quantitys.createZero(uomId);
+			final Quantity zero = Quantitys.createZero(groupingKey.getUomId());
 			summary = ServiceRepairProjectConsumptionSummary.builder()
-					.projectId(projectId)
-					.productId(productId)
+					.groupingKey(groupingKey)
 					.qtyReserved(zero)
 					.qtyConsumed(zero)
 					.build();
 		}
 		else
 		{
-			summary = toSummary(record);
+			summary = fromRecord(record);
 		}
 
 		final ServiceRepairProjectConsumptionSummary summaryChanged = mapper.apply(summary);
@@ -80,14 +83,22 @@ class ServiceRepairProjectConsumptionSummaryRepository
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
-	private static ServiceRepairProjectConsumptionSummary toSummary(final I_C_Project_Repair_Consumption_Summary record)
+	private static ServiceRepairProjectConsumptionSummary fromRecord(final I_C_Project_Repair_Consumption_Summary record)
 	{
-		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+		final ServiceRepairProjectConsumptionSummary.GroupingKey groupingKey = extractGroupingKey(record);
 		return ServiceRepairProjectConsumptionSummary.builder()
+				.groupingKey(groupingKey)
+				.qtyReserved(Quantitys.create(record.getQtyReserved(), groupingKey.getUomId()))
+				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), groupingKey.getUomId()))
+				.build();
+	}
+
+	private static ServiceRepairProjectConsumptionSummary.GroupingKey extractGroupingKey(final I_C_Project_Repair_Consumption_Summary record)
+	{
+		return ServiceRepairProjectConsumptionSummary.GroupingKey.builder()
 				.projectId(ProjectId.ofRepoId(record.getC_Project_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
-				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.build();
 	}
 
@@ -95,24 +106,56 @@ class ServiceRepairProjectConsumptionSummaryRepository
 			@NonNull final I_C_Project_Repair_Consumption_Summary record,
 			@NonNull final ServiceRepairProjectConsumptionSummary from)
 	{
-		record.setC_Project_ID(from.getProjectId().getRepoId());
-		record.setM_Product_ID(from.getProductId().getRepoId());
-		record.setC_UOM_ID(from.getUomId().getRepoId());
+		record.setC_Project_ID(from.getGroupingKey().getProjectId().getRepoId());
+		record.setM_Product_ID(from.getGroupingKey().getProductId().getRepoId());
+		record.setC_UOM_ID(from.getGroupingKey().getUomId().getRepoId());
 		record.setQtyReserved(from.getQtyReserved().toBigDecimal());
 		record.setQtyConsumed(from.getQtyConsumed().toBigDecimal());
 	}
 
 	@Nullable
-	private I_C_Project_Repair_Consumption_Summary getRecordByGrouppingKey(
-			@NonNull final ProjectId projectId,
-			@NonNull final ProductId productId,
-			@NonNull final UomId uomId)
+	private I_C_Project_Repair_Consumption_Summary retrieveRecordByGroupingKey(@NonNull final ServiceRepairProjectConsumptionSummary.GroupingKey groupingKey)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_Consumption_Summary.class)
+				.addEqualsFilter(I_C_Project_Repair_Consumption_Summary.COLUMNNAME_C_Project_ID, groupingKey.getProjectId())
+				.addEqualsFilter(I_C_Project_Repair_Consumption_Summary.COLUMNNAME_M_Product_ID, groupingKey.getProductId())
+				.addEqualsFilter(I_C_Project_Repair_Consumption_Summary.COLUMNNAME_C_UOM_ID, groupingKey.getUomId())
+				.create()
+				.firstOnly(I_C_Project_Repair_Consumption_Summary.class);
+	}
+
+	private List<I_C_Project_Repair_Consumption_Summary> retrieveRecordByProjectId(@NonNull final ProjectId projectId)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_Repair_Consumption_Summary.class)
 				.addEqualsFilter(I_C_Project_Repair_Consumption_Summary.COLUMNNAME_C_Project_ID, projectId)
-				.addEqualsFilter(I_C_Project_Repair_Consumption_Summary.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_C_Project_Repair_Consumption_Summary.COLUMNNAME_C_UOM_ID, uomId)
 				.create()
-				.firstOnly(I_C_Project_Repair_Consumption_Summary.class);
+				.listImmutable(I_C_Project_Repair_Consumption_Summary.class);
+	}
+
+	public void saveProject(
+			@NonNull final ProjectId projectId,
+			@NonNull final Collection<ServiceRepairProjectConsumptionSummary> newValues)
+	{
+		if (newValues.stream().anyMatch(newValue -> !ProjectId.equals(newValue.getGroupingKey().getProjectId(), projectId)))
+		{
+			throw new AdempiereException("all values shall match " + projectId + ": " + newValues);
+		}
+
+		final HashMap<ServiceRepairProjectConsumptionSummary.GroupingKey, I_C_Project_Repair_Consumption_Summary> existingRecordsByGroupingKey = new HashMap<>(Maps.uniqueIndex(
+				retrieveRecordByProjectId(projectId),
+				ServiceRepairProjectConsumptionSummaryRepository::extractGroupingKey));
+
+		for (final ServiceRepairProjectConsumptionSummary newValue : newValues)
+		{
+			final I_C_Project_Repair_Consumption_Summary existingRecord = existingRecordsByGroupingKey.remove(newValue.getGroupingKey());
+			final I_C_Project_Repair_Consumption_Summary record = existingRecord != null
+					? existingRecord
+					: InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Consumption_Summary.class);
+
+			updateRecord(record, newValue);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+
+		InterfaceWrapperHelper.deleteAll(existingRecordsByGroupingKey.values());
 	}
 }
