@@ -88,7 +88,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 		<groupExpression><![CDATA[$F{value}]]></groupExpression>
 		<groupFooter>
 			<band height="24">
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-13" x="579" y="4" width="100" height="16" forecolor="#000000" uuid="cae18e76-d403-45b9-8ce4-d08027c92cc2"/>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="Arial" size="10" isBold="true"/>
@@ -96,7 +96,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 					</textElement>
 					<textFieldExpression><![CDATA[$V{SUM_GrandTotal_BP}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement key="textField-13" x="687" y="4" width="100" height="16" forecolor="#000000" uuid="fb7e1616-3f56-4b1b-acb8-fc06b3938871"/>
 					<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 						<font fontName="Arial" size="10" isBold="true"/>
@@ -275,7 +275,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				</textElement>
 				<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="579" y="3" width="100" height="18" forecolor="#000000" uuid="01e2caa7-dc56-4b7c-8372-20790b1d3b01"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="Arial" size="10" isBold="false"/>
@@ -283,7 +283,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="687" y="3" width="100" height="18" forecolor="#000000" uuid="9f0b3d71-0a87-4692-9eb9-c54d42557ab4"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font fontName="Arial" size="10" isBold="false"/>
@@ -293,6 +293,34 @@ join C_Period p on i.dateinvoiced >= p.startdate
 			</textField>
 		</band>
 	</detail>
+	<columnFooter>
+		<band height="39">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="579" y="8" width="100" height="16" forecolor="#000000" uuid="bbcac802-9f29-40d1-9f06-52b865590a29"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+					<paragraph rightIndent="4"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUM_GrandTotal}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="687" y="8" width="100" height="16" forecolor="#000000" uuid="759da7dc-68f9-445f-893c-ad8496854f5f"/>
+				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+					<paragraph rightIndent="4"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUM_EURO}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="100" y="8" width="170" height="15" forecolor="#000000" uuid="d8c53280-7a01-4ccb-abf2-9a6da49d8abc"/>
+				<textElement verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="11" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Total "]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
 	<pageFooter>
 		<band height="35">
 			<textField pattern="" isBlankWhenNull="false">
@@ -324,9 +352,9 @@ join C_Period p on i.dateinvoiced >= p.startdate
 		</band>
 	</pageFooter>
 	<summary>
-		<band height="120">
+		<band height="80" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="100" y="57" width="255" height="15" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="22e15ab0-e3c8-43f7-8ade-61f02692f125"/>
+				<reportElement key="textField-13" x="100" y="14" width="255" height="15" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="22e15ab0-e3c8-43f7-8ade-61f02692f125"/>
 				<textElement verticalAlignment="Top" markup="none">
 					<font fontName="Arial" size="12" isBold="true"/>
 					<paragraph leftIndent="5"/>
@@ -334,7 +362,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{Recap}]]></textFieldExpression>
 			</textField>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="91" width="841" height="14" uuid="53676f99-8b75-43ef-97a3-82bde6d68838">
+				<reportElement key="subreport-3" x="0" y="48" width="841" height="14" uuid="53676f99-8b75-43ef-97a3-82bde6d68838">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
@@ -350,30 +378,6 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/intracommunity/report_summary.jasper"]]></subreportExpression>
 			</subreport>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="100" y="8" width="170" height="15" forecolor="#000000" uuid="285716c5-aca1-4963-920e-5ff3ab4e6a6c"/>
-				<textElement verticalAlignment="Top" markup="none">
-					<font fontName="Arial" size="11" isBold="true"/>
-					<paragraph leftIndent="5"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Total "]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="579" y="8" width="100" height="16" forecolor="#000000" uuid="58382fd1-f2ef-4898-be69-76672434138b"/>
-				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font fontName="Arial" size="11" isBold="true"/>
-					<paragraph rightIndent="4"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{SUM_GrandTotal}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="687" y="8" width="100" height="16" forecolor="#000000" uuid="2452c23e-1fc2-4f58-ac44-e781df8adf03"/>
-				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font fontName="Arial" size="11" isBold="true"/>
-					<paragraph rightIndent="4"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{SUM_EURO}]]></textFieldExpression>
-			</textField>
 		</band>
 	</summary>
 </jasperReport>
