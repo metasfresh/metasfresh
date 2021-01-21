@@ -35,7 +35,7 @@ UPDATE AD_Process_Para SET AD_Reference_ID=19, AD_Val_Rule_ID=199, IsMandatory='
 
 -- 2020-09-24T14:22:56.439Z
 -- URL zum Konzept
-UPDATE AD_Process SET SQLStatement='select * from de_metas_endcustomer_ic114.IntraTradeShipments(@C_Period_ID@)',Updated=TO_TIMESTAMP('2020-09-24 16:22:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584748
+UPDATE AD_Process SET SQLStatement='select * from de_metas_endcustomer_fresh_reports.IntraTradeShipments(@C_Period_ID@)',Updated=TO_TIMESTAMP('2020-09-24 16:22:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584748
 ;
 
 -- 2020-09-24T14:23:47.632Z
