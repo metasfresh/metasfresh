@@ -63,9 +63,15 @@ class ServiceRepairProjectCostCollectorRepository
 		record.setQtyReserved(request.getQtyReserved().toBigDecimal());
 		record.setQtyConsumed(request.getQtyConsumed().toBigDecimal());
 		record.setVHU_ID(HuId.toRepoId(request.getReservedVhuId()));
+		if(request.getRepairOrderCostCollectorId() != null)
+		{
+			record.setFrom_Rapair_Order_ID(request.getRepairOrderCostCollectorId().getOrderId().getRepoId());
+			record.setFrom_Repair_Cost_Collector_ID(request.getRepairOrderCostCollectorId().getCostCollectorId().getRepoId());
+		}
+
 		InterfaceWrapperHelper.saveRecord(record);
 
-		return toServiceRepairProjectCostCollector(record);
+		return fromRecord(record);
 	}
 
 	public List<ServiceRepairProjectCostCollector> getAndDeleteByTaskIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
@@ -77,7 +83,7 @@ class ServiceRepairProjectCostCollectorRepository
 
 		final List<I_C_Project_Repair_CostCollector> records = retrieveRecordsByTaskIds(taskIds);
 		final ImmutableList<ServiceRepairProjectCostCollector> result = records.stream()
-				.map(ServiceRepairProjectCostCollectorRepository::toServiceRepairProjectCostCollector)
+				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 
 		InterfaceWrapperHelper.deleteAll(records);
@@ -115,7 +121,7 @@ class ServiceRepairProjectCostCollectorRepository
 		return ServiceRepairProjectCostCollectorId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Repair_CostCollector_ID());
 	}
 
-	private static ServiceRepairProjectCostCollector toServiceRepairProjectCostCollector(@NonNull final I_C_Project_Repair_CostCollector record)
+	private static ServiceRepairProjectCostCollector fromRecord(@NonNull final I_C_Project_Repair_CostCollector record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 		return ServiceRepairProjectCostCollector.builder()
@@ -137,7 +143,7 @@ class ServiceRepairProjectCostCollectorRepository
 				.orderBy(I_C_Project_Repair_CostCollector.COLUMN_C_Project_Repair_CostCollector_ID)
 				.create()
 				.stream()
-				.map(ServiceRepairProjectCostCollectorRepository::toServiceRepairProjectCostCollector)
+				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -148,7 +154,7 @@ class ServiceRepairProjectCostCollectorRepository
 				.orderBy(I_C_Project_Repair_CostCollector.COLUMN_C_Project_Repair_CostCollector_ID)
 				.create()
 				.stream()
-				.map(ServiceRepairProjectCostCollectorRepository::toServiceRepairProjectCostCollector)
+				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -188,7 +194,7 @@ class ServiceRepairProjectCostCollectorRepository
 				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_OrderLine_ID, OrderAndLineId.getOrderLineIds(quotationLineIds))
 				.create()
 				.stream()
-				.map(ServiceRepairProjectCostCollectorRepository::toServiceRepairProjectCostCollector)
+				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 }
