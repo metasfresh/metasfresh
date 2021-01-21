@@ -35,6 +35,9 @@ export const WeeklyProductList = types
     get getProducts() {
       return self.products;
     },
+    findProductById(productId: string) {
+      return self.products.find((item) => item.productId === productId);
+    },
   }));
 
 export default WeeklyProductList;
