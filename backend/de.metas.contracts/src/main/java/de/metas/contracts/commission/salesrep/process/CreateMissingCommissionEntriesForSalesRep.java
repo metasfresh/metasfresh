@@ -120,8 +120,8 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 				.addLog("*** DEBUG: number of preliminary qualified bPartnerIds for recalculation={}", preliminaryQualifiedBPIds.size());
 
 		long count = 0;
-		long countError=0;
-		for(final BPartnerId bPartnerId:preliminaryQualifiedBPIds)
+		long countError = 0;
+		for (final BPartnerId bPartnerId : preliminaryQualifiedBPIds)
 		{
 			try
 			{
@@ -134,7 +134,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 						, bPartnerId, e.getMessage(), e);
 				countError++;
 			}
-		};
+		}
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("*** DEBUG: iterated {} preliminary qualified bPartnerIds; countError={}", count, countError);
 	}
@@ -156,21 +156,25 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
 		final BPartnerId initialSalesRepBPartnerId = BPartnerId.ofRepoIdOrNull(bPartner.getC_BPartner_SalesRep_ID());
-
-		recalculateCommissionCriteriaList.forEach(criteria -> {
-			try
-			{
-				trxManager.runInNewTrx(() -> recalculateCommissionForCriteria(criteria));
-			}
-			catch (final RuntimeException e)
-			{
-				Loggables.withLogger(logger, Level.ERROR)
-						.addLog("*** ERROR: recalculateCommissionForCriteria failed for Criteria :{}, errorMessage: {}! ", criteria, e.getLocalizedMessage());
-			}
-		});
-
-		//preserve the initial state of the BPartner.BPartnerSalesRepId
-		bPartnerBL.setBPartnerSalesRepId(bPartnerId, initialSalesRepBPartnerId);
+		try
+		{
+			recalculateCommissionCriteriaList.forEach(criteria -> {
+				try
+				{
+					trxManager.runInNewTrx(() -> recalculateCommissionForCriteria(criteria));
+				}
+				catch (final RuntimeException e)
+				{
+					Loggables.withLogger(logger, Level.ERROR)
+							.addLog("*** ERROR: recalculateCommissionForCriteria failed for Criteria :{}, errorMessage: {}! ", criteria, e.getLocalizedMessage());
+				}
+			});
+		}
+		finally
+		{
+			//preserve the initial state of the BPartner.BPartnerSalesRepId
+			bPartnerBL.setBPartnerSalesRepId(bPartnerId, initialSalesRepBPartnerId);
+		}
 	}
 
 	@NonNull
@@ -186,14 +190,14 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 				? mapValueByInterval(salesRepChangeLogEntries, targetTimeframe)
 				//if no log entries were found, it means the present situation applies for the whole target timeframe
 				: (bPartner.getSalesRep_ID() > 0
-					? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()))
-					: ImmutableMap.of());
+				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()))
+				: ImmutableMap.of());
 
 		final Map<InstantInterval, String> bPartnerSalesRepValueByInterval = !bPartnerSalesRepChangeLogEntries.isEmpty()
 				? mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe)
 				: (bPartner.getC_BPartner_SalesRep_ID() > 0
-					? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()))
-					: ImmutableMap.of());
+				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()))
+				: ImmutableMap.of());
 
 		final ImmutableList.Builder<RecalculateCommissionCriteria> commissionCriteriaListBuilder = ImmutableList.builder();
 
@@ -260,7 +264,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 					valueByInterval.put(newValueInterval, logEntry.getNewValue());
 				}
 			}
-			else if (logEntry.getOldValue() != null )
+			else if (logEntry.getOldValue() != null)
 			{
 				final InstantInterval oldValueInterval = InstantInterval.of(currentFrom, logEntry.getChangeTimestamp());
 
@@ -282,7 +286,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		{
 			Loggables.withLogger(logger, Level.WARN)
 					.addLog("*** WARN during calculation for bPartnerId: {}:"
-									+ " salesRepUser value: {} cannot be converted to int! Skipping.. ", superSalesRepUserIdValue);
+							+ " salesRepUser value: {} cannot be converted to int! Skipping.. ", superSalesRepUserIdValue);
 			return Optional.empty();
 		}
 
@@ -292,7 +296,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		{
 			Loggables.withLogger(logger, Level.WARN)
 					.addLog("*** WARN during calculation for bPartnerId: {}:"
-									+ " salesRepUser: {} doesn't have a bPartner! Skipping.. ", salesRepId, superSalesRepUser.getAD_User_ID());
+							+ " salesRepUser: {} doesn't have a bPartner! Skipping.. ", salesRepId, superSalesRepUser.getAD_User_ID());
 			return Optional.empty();
 		}
 		else
@@ -316,7 +320,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 	public void recalculateCommissionForCriteria(@NonNull final RecalculateCommissionCriteria commissionCriteria)
 	{
-		bPartnerBL.setBPartnerSalesRepId(commissionCriteria.getBPartnerId(), commissionCriteria.getTopLevelSalesRepId());
+		bPartnerBL.setBPartnerSalesRepId(commissionCriteria.getBPartnerId(), commissionCriteria.getTopLevelSalesRepId()); // set within the current transaction
 
 		final InvoiceCandidateQuery invoiceCandidateQuery = InvoiceCandidateQuery.builder()
 				.dateToInvoiceInterval(commissionCriteria.getTargetInterval())
@@ -328,8 +332,8 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByQuery(multiQuery);
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: recalculating commission for criteria: {}, found {} ICs",
-														 commissionCriteria, invoiceCandidates.size());
-		invoiceCandidates.forEach( invoiceCandidate -> {
+				commissionCriteria, invoiceCandidates.size());
+		invoiceCandidates.forEach(invoiceCandidate -> {
 			try
 			{
 				trxManager.runInNewTrx(() -> invoiceCandFacadeService.syncICToCommissionInstance(invoiceCandidate, false));
