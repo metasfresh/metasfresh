@@ -61,7 +61,7 @@ export const Store = types
     fetchWeeklyReport: flow(function* weeklyReport(reportWeek: string) {
       try {
         const {
-          data: { week, weekCaption, nextWeek, previousWeek },
+          data: { week, weekCaption, nextWeek, previousWeek, products, nextWeekCaption },
         } = yield fetchWeeklyReport(reportWeek);
 
         self.app.setCurrentWeek(week);
@@ -69,8 +69,13 @@ export const Store = types
         self.app.setNextWeek(nextWeek);
         self.app.setPrevWeek(previousWeek);
 
-        // TODO: Should we just have `products` for both week and day ?
-        // self.dailyProducts.updateProductList(products);
+        self.weeklyProducts.updateProductList(products);
+        // update the model values also even if the week info are held on the app... Not really necessarry but for the sake of clear data
+        self.weeklyProducts.updateNextWeek(nextWeek);
+        self.weeklyProducts.updateNextCaption(nextWeekCaption);
+        self.weeklyProducts.updatePreviousWeek(previousWeek);
+        self.weeklyProducts.updateWeek(week);
+        self.weeklyProducts.updateWeekCaption(weekCaption);
       } catch (error) {
         console.error('Failed to fetch', error);
       }
