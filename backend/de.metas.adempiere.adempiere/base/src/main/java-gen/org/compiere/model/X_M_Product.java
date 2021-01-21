@@ -113,18 +113,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setDateHaddexCheck (final java.sql.Timestamp DateHaddexCheck)
-	{
-		set_Value (COLUMNNAME_DateHaddexCheck, DateHaddexCheck);
-	}
-
-	@Override
-	public java.sql.Timestamp getDateHaddexCheck() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateHaddexCheck);
-	}
-
-	@Override
 	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -296,18 +284,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public boolean isHaddexCheck() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_HaddexCheck);
-	}
-
-	@Override
-	public void setHaddexControlNr (final java.lang.String HaddexControlNr)
-	{
-		set_Value (COLUMNNAME_HaddexControlNr, HaddexControlNr);
-	}
-
-	@Override
-	public java.lang.String getHaddexControlNr() 
-	{
-		return get_ValueAsString(COLUMNNAME_HaddexControlNr);
 	}
 
 	@Override
