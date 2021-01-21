@@ -41,13 +41,13 @@ const Product: FunctionComponent<Props> = ({
           </div>
           <div className="column is-4 no-p">
             <div className="columns is-mobile">
-              <div className="column mt-2 is-size-2-mobile no-p">{qty}</div>
+              <div className="column mt-2 is-size-2-mobile no-p has-text-right">{qty}</div>
               <div className="column green-check is-hidden-mobile">
                 <i className="fas fa-check"></i>
               </div>
-              {!confirmedByUser && <div className="column mt-4 is-hidden-desktop is-hidden-tablet">&nbsp;</div>}
+              {!confirmedByUser && <div className="column mt-4 is-hidden-desktop is-hidden-tablet is-4">&nbsp;</div>}
               {confirmedByUser && (
-                <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet">
+                <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet is-4">
                   <i className="fas fa-check"></i>
                 </div>
               )}
