@@ -1,73 +1,18 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.IQueryOrderByBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency_Acct;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import ch.qos.logback.classic.Level;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
@@ -105,8 +50,61 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
-import de.metas.util.time.SystemTime;
+import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
 
 /*
  * #%L
@@ -1746,6 +1744,37 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (billBPartnerId != null)
 		{
 			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, billBPartnerId);
+		}
+
+		final BPartnerId salesRepBPartnerId = query.getSalesRepBPartnerId();
+		if (salesRepBPartnerId != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId);
+		}
+
+		final InstantInterval dateToInvoiceInterval = query.getDateToInvoiceInterval();
+		if (dateToInvoiceInterval != null)
+		{
+			final Timestamp from = TimeUtil.asTimestamp(dateToInvoiceInterval.getFrom());
+			final Timestamp to = TimeUtil.asTimestamp(dateToInvoiceInterval.getTo());
+
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> dateToInvoiceOvrFilter =
+					queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+							.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, null)
+							.addBetweenFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, from, to);
+
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> dateToInvoiceFilter =
+					queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+							.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, null)
+							.addBetweenFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice, from, to);
+
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> dateToInvoiceIntervalFilter =
+					queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+					.setJoinOr()
+					.addFilter(dateToInvoiceOvrFilter)
+					.addFilter(dateToInvoiceFilter);
+
+			filter.addFilter(dateToInvoiceIntervalFilter);
 		}
 
 		final LocalDate dateToInvoice = query.getDateToInvoice();

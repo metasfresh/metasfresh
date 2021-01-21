@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.services;
 
 import java.util.Optional;
 
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -96,6 +97,7 @@ public class CommissionInstanceRequestFactory
 				.configs(configs)
 				.hierarchy(hierarchy)
 				.trigger(trigger)
+				.startingHierarchyLevel(HierarchyLevel.ZERO)
 				.build();
 		return request;
 	}
