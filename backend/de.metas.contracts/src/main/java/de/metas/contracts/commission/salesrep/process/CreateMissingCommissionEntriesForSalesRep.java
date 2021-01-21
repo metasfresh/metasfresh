@@ -117,19 +117,26 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		final ImmutableSet<BPartnerId> preliminaryQualifiedBPIds = retrieveAllBPsWithASalesRep(targetInterval, salesRepRelatedBPTableInfo);
 
 		Loggables.withLogger(logger, Level.DEBUG)
-				.addLog("*** DEBUG: preliminary qualified bPartnerIds for recalculation {}", preliminaryQualifiedBPIds);
+				.addLog("*** DEBUG: number of preliminary qualified bPartnerIds for recalculation={}", preliminaryQualifiedBPIds.size());
 
-		preliminaryQualifiedBPIds.forEach(bPartnerId -> {
+		long count = 0;
+		long countError=0;
+		for(final BPartnerId bPartnerId:preliminaryQualifiedBPIds)
+		{
 			try
 			{
+				count++;
 				processBPId(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
 			}
 			catch (final Exception e)
 			{
 				Loggables.withLogger(logger, Level.ERROR).addLog("*** ERROR while trying to calculate commission for bpartnerId: {}, message: {}"
 						, bPartnerId, e.getMessage(), e);
+				countError++;
 			}
-		});
+		};
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("*** DEBUG: iterated {} preliminary qualified bPartnerIds; countError={}", count, countError);
 	}
 
 	private void recalculateForBPartnerId(
