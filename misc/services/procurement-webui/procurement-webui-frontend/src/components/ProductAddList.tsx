@@ -20,7 +20,7 @@ const ProductAddList: React.FunctionComponent = observer(() => {
     store.productSelection.favoriteAdd([productId]).then(() => {
       history.push({
         pathname: `/`,
-        state: { path: `/`, text: translate('DailyReportingView.caption') },
+        state: {},
       });
     });
   };
