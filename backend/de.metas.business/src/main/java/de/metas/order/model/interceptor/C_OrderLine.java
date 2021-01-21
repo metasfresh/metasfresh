@@ -1,6 +1,7 @@
 package de.metas.order.model.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
@@ -30,6 +31,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.CalloutOrder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
@@ -75,11 +77,12 @@ public class C_OrderLine
 
 	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
-	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.producthadexerror");
+	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
 
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
@@ -156,11 +159,23 @@ public class C_OrderLine
 
 		final I_M_Product product = productDAO.getById(orderLine.getM_Product_ID());
 
-		if (product.isHaddexCheck() && product.getDateHaddexCheck() != null)
+		if(!product.isHaddexCheck())
+		{
+			return;
+		}
+
+		final I_C_BPartner partner = partnerDAO.getById(order.getC_BPartner_ID());
+
+		if(!partner.isHaddexCheck())
+		{
+			return;
+		}
+
+		if (partner.getDateHaddexCheck() != null)
 		{
 			final long differenceBetweenHaddexCheckDateAndPromisedDateInMonths = Math.abs(
 					ChronoUnit.MONTHS.between(
-							TimeUtil.asZonedDateTime(product.getDateHaddexCheck()),
+							TimeUtil.asZonedDateTime(partner.getDateHaddexCheck()),
 							TimeUtil.asZonedDateTime(order.getDatePromised())
 							));
 
@@ -195,7 +210,7 @@ public class C_OrderLine
 
 	/**
 	 * Set qtyOrdered, to make sure is up2date. Note that this value is also set in
-	 * {@link CalloutOrder#amt(java.util.Properties, int, org.compiere.model.GridTab, org.compiere.model.GridField, Object)}.
+	 * {@link CalloutOrder#amt(org.adempiere.ad.callout.api.ICalloutField))}.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
