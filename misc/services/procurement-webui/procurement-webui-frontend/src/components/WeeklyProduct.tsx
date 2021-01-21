@@ -1,15 +1,22 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 
 interface Props {
+  productId: string;
   name: string;
   packType: string;
   qty: number;
   handleClick?: (productId: string) => void;
 }
 
-const WeeklyProduct: FunctionComponent<Props> = ({ qty, name, packType, handleClick }: Props): ReactElement => {
+const WeeklyProduct: FunctionComponent<Props> = ({
+  productId,
+  qty,
+  name,
+  packType,
+  handleClick,
+}: Props): ReactElement => {
   return (
-    <div className="product" onClick={() => handleClick('test')}>
+    <div className="product" onClick={() => handleClick(productId)}>
       <div className="box">
         <div className="columns is-mobile">
           <div className="column is-8">

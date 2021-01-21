@@ -23,6 +23,7 @@ const WeeklyProductList: React.FunctionComponent<Props> = observer(
             return (
               <WeeklyProduct
                 key={product.getName}
+                productId={product.getId}
                 name={product.getName}
                 packType={product.getPack}
                 qty={product.getQty}
