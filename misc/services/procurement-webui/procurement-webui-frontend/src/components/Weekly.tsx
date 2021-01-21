@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import View from './View';
 import WeeklyNav from './WeeklyNav';
+import WeeklyProductList from './WeeklyProductList';
 
 const Weekly: FunctionComponent = (): ReactElement => {
   return (
@@ -8,7 +9,7 @@ const Weekly: FunctionComponent = (): ReactElement => {
       <div>
         <WeeklyNav />
         <div className="mt-1 p-4">
-          <p className="subtitle">Some content</p>
+          <WeeklyProductList headerText={``} />
         </div>
       </div>
     </View>
