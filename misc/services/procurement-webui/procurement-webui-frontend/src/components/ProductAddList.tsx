@@ -1,4 +1,5 @@
 import React, { useEffect, useContext } from 'react';
+import { useHistory } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import ProductAddItem from './ProductAddItem';
 import { RootStoreContext } from '../models/Store';
@@ -6,7 +7,7 @@ import { translate } from '../utils/translate';
 
 const ProductAddList: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
-
+  const history = useHistory();
   useEffect(() => {
     store.navigation.setViewNames(translate('SelectProductView.caption'));
     store.productSelection.setShowMoreVisibility(true);
@@ -17,7 +18,10 @@ const ProductAddList: React.FunctionComponent = observer(() => {
 
   const handleClick = (productId: string) => {
     store.productSelection.favoriteAdd([productId]).then(() => {
-      // TODO: tomorrow - this should go to daily view
+      history.push({
+        pathname: `/`,
+        state: { path: `/`, text: translate('DailyReportingView.caption') },
+      });
     });
   };
 
