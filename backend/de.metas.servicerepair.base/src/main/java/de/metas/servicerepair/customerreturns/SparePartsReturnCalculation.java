@@ -36,6 +36,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.api.QtyCalculationsBOMLine;
@@ -130,6 +131,7 @@ public class SparePartsReturnCalculation
 	{
 		@NonNull Quantity qty;
 		@NonNull QtyCalculationsBOM sparePartsBOM;
+		@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 		@NonNull HuId repairVhuId;
 		@NonNull InOutAndLineId customerReturnLineId;
 

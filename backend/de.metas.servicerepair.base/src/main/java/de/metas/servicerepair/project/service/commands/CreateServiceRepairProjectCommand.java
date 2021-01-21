@@ -118,6 +118,7 @@ public class CreateServiceRepairProjectCommand
 					.orgId(orgId)
 					.customerReturnLineId(productToRepair.getCustomerReturnLineId())
 					.productId(productToRepair.getProductId())
+					.asiId(productToRepair.getAsiId())
 					.qtyRequired(productToRepair.getQty())
 					.repairVhuId(productToRepair.getRepairVhuId())
 					.build());

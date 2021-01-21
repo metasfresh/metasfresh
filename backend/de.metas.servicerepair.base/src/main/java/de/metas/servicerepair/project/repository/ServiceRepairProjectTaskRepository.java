@@ -41,6 +41,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Repository;
@@ -73,6 +74,7 @@ class ServiceRepairProjectTaskRepository
 		}
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setM_AttributeSetInstance_ID(request.getAsiId().getRepoId());
 		record.setC_UOM_ID(request.getQtyRequired().getUomId().getRepoId());
 		record.setQtyRequired(request.getQtyRequired().toBigDecimal());
 		record.setQtyReserved(BigDecimal.ZERO);
@@ -92,6 +94,7 @@ class ServiceRepairProjectTaskRepository
 		record.setStatus(ServiceRepairProjectTaskStatus.NOT_STARTED.getCode());
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		record.setC_UOM_ID(request.getQtyRequired().getUomId().getRepoId());
 		record.setQtyRequired(request.getQtyRequired().toBigDecimal());
 		record.setQtyReserved(BigDecimal.ZERO);
@@ -135,6 +138,7 @@ class ServiceRepairProjectTaskRepository
 				.status(ServiceRepairProjectTaskStatus.ofCode(record.getStatus()))
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.qtyRequired(Quantitys.create(record.getQtyRequired(), uomId))
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
@@ -161,6 +165,7 @@ class ServiceRepairProjectTaskRepository
 		record.setCustomerReturn_InOutLine_ID(customerReturnLineId != null ? customerReturnLineId.getInOutLineId().getRepoId() : -1);
 
 		record.setM_Product_ID(from.getProductId().getRepoId());
+		record.setM_AttributeSetInstance_ID(from.getAsiId().getRepoId());
 		record.setC_UOM_ID(from.getUomId().getRepoId());
 		record.setQtyRequired(from.getQtyRequired().toBigDecimal());
 		record.setQtyReserved(from.getQtyReserved().toBigDecimal());

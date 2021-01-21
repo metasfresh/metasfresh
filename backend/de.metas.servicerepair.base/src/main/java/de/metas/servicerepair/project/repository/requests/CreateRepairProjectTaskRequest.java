@@ -31,6 +31,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 @Value
 @Builder
@@ -41,6 +42,7 @@ public class CreateRepairProjectTaskRequest
 	@NonNull InOutAndLineId customerReturnLineId;
 
 	@NonNull ProductId productId;
+	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 	@NonNull Quantity qtyRequired;
 
 	@NonNull HuId repairVhuId;

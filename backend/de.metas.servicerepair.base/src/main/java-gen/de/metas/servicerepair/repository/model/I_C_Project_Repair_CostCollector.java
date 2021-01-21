@@ -283,7 +283,7 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_QtyConsumed = "QtyConsumed";
 
 	/**
-	 * Set Open Qty.
+	 * Set Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity
@@ -293,7 +293,7 @@ public interface I_C_Project_Repair_CostCollector
 	void setQtyReserved (BigDecimal QtyReserved);
 
 	/**
-	 * Get Open Qty.
+	 * Get Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity

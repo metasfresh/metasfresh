@@ -148,7 +148,7 @@ public class RepairManufacturingOrderService
 				.plantId(plantId)
 				//
 				.productId(task.getProductId())
-				// TODO .attributeSetInstanceId()
+				.attributeSetInstanceId(task.getAsiId())
 				.qtyRequired(task.getQtyRequired())
 				//
 				.dateOrdered(now)

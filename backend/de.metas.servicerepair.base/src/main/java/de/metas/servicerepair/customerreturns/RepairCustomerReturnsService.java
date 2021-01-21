@@ -204,6 +204,7 @@ public class RepairCustomerReturnsService
 
 				resultBuilder.finishedGood(SparePartsReturnCalculation.FinishedGoodToRepair.builder()
 						.sparePartsBOM(sparePartsBOM)
+						.asiId(AttributeSetInstanceId.ofRepoIdOrNone(customerReturnLine.getM_AttributeSetInstance_ID()))
 						.qty(qtyReturned)
 						.customerReturnLineId(customerReturnLineId)
 						.repairVhuId(repairVhuId)

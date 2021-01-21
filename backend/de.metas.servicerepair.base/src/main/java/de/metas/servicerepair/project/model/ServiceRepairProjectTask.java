@@ -34,6 +34,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
@@ -48,6 +49,7 @@ public class ServiceRepairProjectTask
 	@NonNull ServiceRepairProjectTaskStatus status;
 
 	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId asiId;
 	@NonNull Quantity qtyRequired;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
@@ -82,7 +84,7 @@ public class ServiceRepairProjectTask
 		{
 			return this;
 		}
-		
+
 		return toBuilder()
 				.qtyReserved(getQtyReserved().add(request.getQtyReserved()))
 				.qtyConsumed(getQtyConsumed().add(request.getQtyConsumed()))
