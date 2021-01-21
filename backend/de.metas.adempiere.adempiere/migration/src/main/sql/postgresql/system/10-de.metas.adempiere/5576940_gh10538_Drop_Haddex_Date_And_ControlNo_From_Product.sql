@@ -100,3 +100,18 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=572311
 DELETE FROM AD_Column WHERE AD_Column_ID=572311
 ;
 
+
+
+
+
+
+
+
+
+
+
+-- 2021-01-21T16:33:50.554Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=576003
+;
+
