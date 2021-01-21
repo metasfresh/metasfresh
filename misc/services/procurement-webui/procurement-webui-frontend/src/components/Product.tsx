@@ -1,7 +1,8 @@
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { ReactElement, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
-
+import { RootStoreContext } from '../models/Store';
+import { useSwipeable } from 'react-swipeable';
 interface Props {
   id: string;
   productName: string;
@@ -12,7 +13,7 @@ interface Props {
   confirmedByUser?: boolean;
 }
 
-const Product: FunctionComponent<Props> = ({
+const Product: React.FunctionComponent<Props> = ({
   id,
   productName,
   qty,
@@ -20,9 +21,22 @@ const Product: FunctionComponent<Props> = ({
   confirmedByUser,
 }: Props): ReactElement => {
   const history = useHistory();
+  const store = useContext(RootStoreContext);
+  const removeProduct = (productId: string) => {
+    store.productSelection.favoriteRemove([productId]).then(() => {
+      store.fetchDailyReport(store.app.currentDay);
+    });
+  };
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => removeProduct(id),
+    onSwipedRight: () => removeProduct(id),
+    preventDefaultTouchmoveEvent: true,
+    trackMouse: true,
+  });
 
   return (
-    <div className="product">
+    <div {...handlers} className="product">
       <div
         className="box"
         onClick={() =>
