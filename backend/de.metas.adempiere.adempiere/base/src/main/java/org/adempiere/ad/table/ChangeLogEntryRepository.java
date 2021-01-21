@@ -87,11 +87,14 @@ public class ChangeLogEntryRepository
 
 	private ChangeLogEntry toRecordChangeLogEntry(@NonNull final I_AD_ChangeLog changeLog)
 	{
+		final boolean oldValueIsNull = changeLog.getOldValue() == null || changeLog.getOldValue().equals("NULL");
+		final boolean newValueIsNull = changeLog.getNewValue() == null || changeLog.getNewValue().equals("NULL");
+
 		return ChangeLogEntry.builder()
 				.recordId(changeLog.getRecord_ID())
 				.changeLogId(changeLog.getAD_ChangeLog_ID())
-				.oldValue(changeLog.getOldValue().equals("NULL") ? null : changeLog.getOldValue())
-				.newValue(changeLog.getNewValue().equals("NULL") ? null : changeLog.getNewValue())
+				.oldValue(oldValueIsNull ? null : changeLog.getOldValue())
+				.newValue(newValueIsNull ? null : changeLog.getNewValue())
 				.adColumnId(AdColumnId.ofRepoId(changeLog.getAD_Column_ID()))
 				.adTableId(AdTableId.ofRepoId(changeLog.getAD_Table_ID()))
 				.changeTimestamp(TimeUtil.asInstant(changeLog.getCreated()))
