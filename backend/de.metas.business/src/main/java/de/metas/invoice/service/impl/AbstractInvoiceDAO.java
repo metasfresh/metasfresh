@@ -418,7 +418,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_Invoice> retrieveBy(@NonNull final BPartnerId salesRepBPartnerId, @NonNull final InstantInterval invoicedDateInterval)
+	public List<I_C_Invoice> retrieveBySalesrepPartnerId(@NonNull final BPartnerId salesRepBPartnerId, @NonNull final InstantInterval invoicedDateInterval)
 	{
 		final Timestamp from = TimeUtil.asTimestamp(invoicedDateInterval.getFrom());
 		final Timestamp to = TimeUtil.asTimestamp(invoicedDateInterval.getTo());

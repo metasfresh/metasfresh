@@ -33,7 +33,7 @@ import lombok.Value;
 public class RecalculateCommissionCriteria
 {
 	@NonNull
-	BPartnerId bPartnerId;
+	BPartnerId salesrepPartnerId;
 
 	@NonNull
 	InstantInterval targetInterval;
@@ -42,12 +42,12 @@ public class RecalculateCommissionCriteria
 	BPartnerId topLevelSalesRepId;
 
 	public static RecalculateCommissionCriteria of(
-			@NonNull final BPartnerId bPartnerId,
+			@NonNull final BPartnerId salesrepPartnerId,
 			@NonNull final InstantInterval interval,
 			@NonNull final BPartnerId topLevelSalesRepId)
 	{
 		return RecalculateCommissionCriteria.builder()
-				.bPartnerId(bPartnerId)
+				.salesrepPartnerId(salesrepPartnerId)
 				.targetInterval(interval)
 				.topLevelSalesRepId(topLevelSalesRepId)
 				.build();

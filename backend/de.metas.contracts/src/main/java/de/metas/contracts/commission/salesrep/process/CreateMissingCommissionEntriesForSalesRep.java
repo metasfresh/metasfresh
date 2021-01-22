@@ -342,7 +342,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 	public void recalculateCommissionForCriteria(@NonNull final RecalculateCommissionCriteria commissionCriteria)
 	{
-		bPartnerBL.setBPartnerSalesRepIdOutOfTrx(commissionCriteria.getBPartnerId(), commissionCriteria.getTopLevelSalesRepId());
+		bPartnerBL.setBPartnerSalesRepIdOutOfTrx(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTopLevelSalesRepId());
 
 		recalculateStartingFromInvoiceCand(commissionCriteria);
 
@@ -422,7 +422,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 	{
 		final InvoiceCandidateQuery invoiceCandidateQuery = InvoiceCandidateQuery.builder()
 				.dateOrderedInterval(commissionCriteria.getTargetInterval())
-				.salesRepBPartnerId(commissionCriteria.getBPartnerId())
+				.salesRepBPartnerId(commissionCriteria.getSalesrepPartnerId())
 				.build();
 
 		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder().query(invoiceCandidateQuery).build();
@@ -452,7 +452,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 	private void recalculateStartingFromInvoice(@NonNull final RecalculateCommissionCriteria commissionCriteria)
 	{
-		final List<I_C_Invoice> invoices = invoiceDAO.retrieveBy(commissionCriteria.getBPartnerId(), commissionCriteria.getTargetInterval());
+		final List<I_C_Invoice> invoices = invoiceDAO.retrieveBySalesrepPartnerId(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTargetInterval());
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: found {} Invoices while recalculating commission for criteria: {}",
 														 invoices.size(), commissionCriteria);
