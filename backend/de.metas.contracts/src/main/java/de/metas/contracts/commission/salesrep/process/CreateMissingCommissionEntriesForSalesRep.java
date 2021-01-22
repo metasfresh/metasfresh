@@ -26,13 +26,16 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.contracts.commission.commissioninstance.interceptor.C_InvoiceFacadeService;
 import de.metas.contracts.commission.commissioninstance.interceptor.C_Invoice_CandidateFacadeService;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
@@ -82,12 +85,14 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 	private final ChangeLogEntryRepository changeLogEntryRepository = SpringContextHolder.instance.getBean(ChangeLogEntryRepository.class);
 	private final C_Invoice_CandidateFacadeService invoiceCandFacadeService = SpringContextHolder.instance.getBean(C_Invoice_CandidateFacadeService.class);
+	private final C_InvoiceFacadeService invoiceFacadeService = SpringContextHolder.instance.getBean(C_InvoiceFacadeService.class);
 
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private static final String FROM_DATE = "2020-01-01";
@@ -162,6 +167,11 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 					.addLog("*** DEBUG recalculating for bpId: {} : empty criteria list! Skipping...", bPartnerId);
 			return;
 		}
+		else
+		{
+			Loggables.withLogger(logger, Level.DEBUG)
+					.addLog("*** DEBUG: recalculating for bpId: {}: recalculateCommissionCriteriaList: {}! ", bPartnerId, recalculateCommissionCriteriaList);
+		}
 
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
 		final BPartnerId initialSalesRepBPartnerId = BPartnerId.ofRepoIdOrNull(bPartner.getC_BPartner_SalesRep_ID());
@@ -202,14 +212,14 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 				? mapValueByInterval(salesRepChangeLogEntries, targetTimeframe)
 				//if no log entries were found, it means the present situation applies for the whole target timeframe
 				: (bPartner.getSalesRep_ID() > 0
-				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()))
-				: ImmutableMap.of());
+					? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()))
+					: ImmutableMap.of());
 
 		final Map<InstantInterval, String> bPartnerSalesRepValueByInterval = !bPartnerSalesRepChangeLogEntries.isEmpty()
 				? mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe)
 				: (bPartner.getC_BPartner_SalesRep_ID() > 0
-				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()))
-				: ImmutableMap.of());
+					? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()))
+					: ImmutableMap.of());
 
 		final ImmutableList.Builder<RecalculateCommissionCriteria> commissionCriteriaListBuilder = ImmutableList.builder();
 
@@ -334,33 +344,9 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 	{
 		bPartnerBL.setBPartnerSalesRepIdOutOfTrx(commissionCriteria.getBPartnerId(), commissionCriteria.getTopLevelSalesRepId());
 
-		final InvoiceCandidateQuery invoiceCandidateQuery = InvoiceCandidateQuery.builder()
-				.dateOrderedInterval(commissionCriteria.getTargetInterval())
-				.salesRepBPartnerId(commissionCriteria.getBPartnerId())
-				.build();
+		recalculateStartingFromInvoiceCand(commissionCriteria);
 
-		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder().query(invoiceCandidateQuery).build();
-
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByQuery(multiQuery);
-
-		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: recalculating commission for criteria: {}, found {} ICs",
-				commissionCriteria, invoiceCandidates.size());
-		invoiceCandidates.forEach(invoiceCandidate -> {
-			try
-			{
-				invoiceCandFacadeService.syncICToCommissionInstance(invoiceCandidate, false);
-			}
-			catch (final Exception e)
-			{
-				Loggables.withLogger(logger, Level.DEBUG)
-						.addLog("recalculateCommissionForCriteria failed for IC_ID ={}: Error message {}",
-								invoiceCandidate.getC_Invoice_Candidate_ID(), e.getLocalizedMessage());
-
-				throw AdempiereException.wrapIfNeeded(e)
-						.appendParametersToMessage()
-						.setParameter("C_Invoice_Candidate_ID", invoiceCandidate.getC_Invoice_Candidate_ID());
-			}
-		});
+		recalculateStartingFromInvoice(commissionCriteria);
 	}
 
 	private void processBPId(
@@ -430,6 +416,63 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 				.salesRepColumnId(salesRepColumnId)
 				.bPartnerSalesRepColumnId(bPartnerSalesRepColumnId)
 				.build();
+	}
+
+	private void recalculateStartingFromInvoiceCand(@NonNull final RecalculateCommissionCriteria commissionCriteria)
+	{
+		final InvoiceCandidateQuery invoiceCandidateQuery = InvoiceCandidateQuery.builder()
+				.dateOrderedInterval(commissionCriteria.getTargetInterval())
+				.salesRepBPartnerId(commissionCriteria.getBPartnerId())
+				.build();
+
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder().query(invoiceCandidateQuery).build();
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByQuery(multiQuery);
+
+		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: found {} ICs while recalculating commission for criteria: {} ",
+														 invoiceCandidates.size(), commissionCriteria);
+
+		invoiceCandidates.forEach(invoiceCandidate -> {
+			try
+			{
+				invoiceCandFacadeService.syncICToCommissionInstance(invoiceCandidate, false);
+			}
+			catch (final Exception e)
+			{
+				Loggables.withLogger(logger, Level.DEBUG)
+						.addLog("recalculateCommissionForCriteria failed for IC_ID ={}: Error message {}",
+								invoiceCandidate.getC_Invoice_Candidate_ID(), e.getLocalizedMessage());
+
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage()
+						.setParameter("C_Invoice_Candidate_ID", invoiceCandidate.getC_Invoice_Candidate_ID());
+			}
+		});
+	}
+
+	private void recalculateStartingFromInvoice(@NonNull final RecalculateCommissionCriteria commissionCriteria)
+	{
+		final List<I_C_Invoice> invoices = invoiceDAO.retrieveBy(commissionCriteria.getBPartnerId(), commissionCriteria.getTargetInterval());
+
+		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: found {} Invoices while recalculating commission for criteria: {}",
+														 invoices.size(), commissionCriteria);
+
+		invoices.forEach(invoice -> {
+			try
+			{
+				invoiceFacadeService.syncInvoiceToCommissionInstance(invoice);
+			}
+			catch (final Exception e)
+			{
+				Loggables.withLogger(logger, Level.DEBUG)
+						.addLog("recalculateCommissionForCriteria failed for C_Invoice_Id ={}: Error message {}",
+								invoice.getC_Invoice_ID(), e.getLocalizedMessage());
+
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage()
+						.setParameter("C_Invoice_Id", invoice.getC_Invoice_ID());
+			}
+		});
 	}
 
 	@Value

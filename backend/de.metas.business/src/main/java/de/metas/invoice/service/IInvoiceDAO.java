@@ -32,6 +32,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
+import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_Org;
@@ -182,4 +183,6 @@ public interface IInvoiceDAO extends ISingletonService
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
 	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
+
+	List<I_C_Invoice> retrieveBy(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
 }
