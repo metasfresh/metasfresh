@@ -16,6 +16,7 @@ import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandl
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -23,6 +24,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -56,6 +58,8 @@ public class C_PurchaseCandidate_PostMaterialEvent
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final ReplenishInfoRepository replenishInfoRepository;
+
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public C_PurchaseCandidate_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
@@ -145,9 +149,11 @@ public class C_PurchaseCandidate_PostMaterialEvent
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
 
 		final ProductId productId = ProductId.ofRepoId(purchaseCandidateRecord.getM_Product_ID());
+
+		final I_C_UOM uom = uomDAO.getById(purchaseCandidateRecord.getC_UOM_ID());
 		final Quantity purchaseQty = Services.get(IUOMConversionBL.class)
 				.convertToProductUOM(
-						Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), purchaseCandidateRecord.getC_UOM()),
+						Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), uom),
 						productId);
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()

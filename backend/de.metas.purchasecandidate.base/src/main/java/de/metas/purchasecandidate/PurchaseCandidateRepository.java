@@ -496,9 +496,9 @@ public class PurchaseCandidateRepository
 	{
 		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false) // not processed
-				.addNotNull(I_C_PurchaseCandidate.COLUMN_Vendor_ID)
-				.addNotNull(I_C_PurchaseCandidate.COLUMN_ReminderDate)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Processed, false) // not processed
+				.addNotNull(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID)
+				.addNotNull(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
 				.create()
 				.listDistinct(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
 				.stream()
