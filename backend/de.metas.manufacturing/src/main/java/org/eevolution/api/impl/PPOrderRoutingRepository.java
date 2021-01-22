@@ -514,7 +514,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 	private void updateOrderNodeRecord(final I_PP_Order_Node record, final PPOrderRoutingActivity from)
 	{
-		final TemporalUnit durationUnit = from.getDurationUnit().getTemporalUnit();
+		final WFDurationUnit durationUnit = from.getDurationUnit();
 
 		record.setIsActive(true);
 		record.setValue(from.getCode().getAsString());
@@ -533,25 +533,25 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		//
 		// Standard values
-		record.setSetupTime(DurationUtils.toInt(from.getSetupTime(), durationUnit));
-		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTime(), durationUnit));
-		record.setMovingTime(DurationUtils.toInt(from.getMovingTime(), durationUnit));
-		record.setWaitingTime(DurationUtils.toInt(from.getWaitingTime(), durationUnit));
-		record.setQueuingTime(DurationUtils.toInt(from.getQueuingTime(), durationUnit));
-		record.setDuration(DurationUtils.toInt(from.getDurationPerOneUnit(), durationUnit));
-		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
+		record.setSetupTime(durationUnit.toInt(from.getSetupTime()));
+		record.setSetupTimeRequiered(durationUnit.toInt(from.getSetupTime()));
+		record.setMovingTime(durationUnit.toInt(from.getMovingTime()));
+		record.setWaitingTime(durationUnit.toInt(from.getWaitingTime()));
+		record.setQueuingTime(durationUnit.toInt(from.getQueuingTime()));
+		record.setDuration(durationUnit.toInt(from.getDurationPerOneUnit()));
+		record.setDurationRequiered(durationUnit.toInt(from.getDurationRequired()));
 
 		//
 		// Planned values
-		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTimeRequired(), durationUnit));
-		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
+		record.setSetupTimeRequiered(durationUnit.toInt(from.getSetupTimeRequired()));
+		record.setDurationRequiered(durationUnit.toInt(from.getDurationRequired()));
 		record.setQtyRequiered(from.getQtyRequired().toBigDecimal());
 		record.setC_UOM_ID(from.getQtyRequired().getUomId().getRepoId());
 
 		//
 		// Reported values
-		record.setSetupTimeReal(DurationUtils.toInt(from.getSetupTimeReal(), durationUnit));
-		record.setDurationReal(DurationUtils.toInt(from.getDurationReal(), durationUnit));
+		record.setSetupTimeReal(durationUnit.toInt(from.getSetupTimeReal()));
+		record.setDurationReal(durationUnit.toInt(from.getDurationReal()));
 		record.setQtyDelivered(from.getQtyDelivered().toBigDecimal());
 		record.setQtyScrap(from.getQtyScrapped().toBigDecimal());
 		record.setQtyReject(from.getQtyRejected().toBigDecimal());

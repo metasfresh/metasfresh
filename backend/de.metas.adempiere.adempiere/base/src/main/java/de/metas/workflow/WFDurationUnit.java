@@ -32,8 +32,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Workflow;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
@@ -75,12 +75,13 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 		return typesByCode.ofCode(code);
 	}
 
+	@SuppressWarnings("unused")
 	public static WFDurationUnit ofTemporalUnit(@NonNull final TemporalUnit temporalUnit)
 	{
 		final WFDurationUnit type = typesByTemporalUnit.get(temporalUnit);
-		if(type == null)
+		if (type == null)
 		{
-			throw new AdempiereException("No "+WFDurationUnit.class.getSimpleName()+" found for temporal unit: "+temporalUnit);
+			throw new AdempiereException("No " + WFDurationUnit.class.getSimpleName() + " found for temporal unit: " + temporalUnit);
 		}
 		return type;
 	}
@@ -88,6 +89,11 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 	public BigDecimal toBigDecimal(@NonNull final Duration duration)
 	{
 		return DurationUtils.toBigDecimal(duration, getTemporalUnit());
+	}
+
+	public int toInt(@NonNull final Duration duration)
+	{
+		return DurationUtils.toInt(duration, getTemporalUnit());
 	}
 
 	public Duration toDuration(@NonNull final BigDecimal durationBD)

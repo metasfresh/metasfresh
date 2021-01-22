@@ -23,7 +23,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,7 +40,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -101,7 +99,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 	private PPRouting toRouting(final I_AD_Workflow routingRecord)
 	{
 		final PPRoutingId routingId = PPRoutingId.ofRepoId(routingRecord.getAD_Workflow_ID());
-		final WFDurationUnit durationUnit = WFDurationUnit.ofCode(Objects.requireNonNull(routingRecord.getDurationUnit()));
+		final WFDurationUnit durationUnit = extractDurationUnit(routingRecord);
 		final Duration duration = Duration.of(routingRecord.getDuration(), durationUnit.getTemporalUnit());
 		final BigDecimal qtyPerBatch = extractQtyPerBatch(routingRecord);
 
@@ -129,6 +127,11 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.firstActivityId(firstActivityId)
 				.activities(activities)
 				.build();
+	}
+
+	private static WFDurationUnit extractDurationUnit(final I_AD_Workflow routingRecord)
+	{
+		return WFDurationUnit.ofCode(Objects.requireNonNull(routingRecord.getDurationUnit()));
 	}
 
 	private static BigDecimal extractQtyPerBatch(final I_AD_Workflow routingRecord)
@@ -248,26 +251,26 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				routingRecord.setYield(changeRequest.getYield().toInt());
 			}
 
-			final TemporalUnit durationUnit = WFDurationUnit.ofCode(routingRecord.getDurationUnit()).getTemporalUnit();
+			final WFDurationUnit durationUnit = extractDurationUnit(routingRecord);
 			if (changeRequest.getQueuingTime() != null)
 			{
-				routingRecord.setQueuingTime(DurationUtils.toInt(changeRequest.getQueuingTime(), durationUnit));
+				routingRecord.setQueuingTime(durationUnit.toInt(changeRequest.getQueuingTime()));
 			}
 			if (changeRequest.getSetupTime() != null)
 			{
-				routingRecord.setSetupTime(DurationUtils.toInt(changeRequest.getSetupTime(), durationUnit));
+				routingRecord.setSetupTime(durationUnit.toInt(changeRequest.getSetupTime()));
 			}
 			if (changeRequest.getDurationPerOneUnit() != null)
 			{
-				routingRecord.setDuration(DurationUtils.toInt(changeRequest.getDurationPerOneUnit(), durationUnit));
+				routingRecord.setDuration(durationUnit.toInt(changeRequest.getDurationPerOneUnit()));
 			}
 			if (changeRequest.getWaitingTime() != null)
 			{
-				routingRecord.setWaitingTime(DurationUtils.toInt(changeRequest.getWaitingTime(), durationUnit));
+				routingRecord.setWaitingTime(durationUnit.toInt(changeRequest.getWaitingTime()));
 			}
 			if (changeRequest.getMovingTime() != null)
 			{
-				routingRecord.setMovingTime(DurationUtils.toInt(changeRequest.getMovingTime(), durationUnit));
+				routingRecord.setMovingTime(durationUnit.toInt(changeRequest.getMovingTime()));
 			}
 
 			//

@@ -80,6 +80,6 @@ public class WorkingTime
 
 	public BigDecimal toBigDecimalUsingActivityTimeUnit()
 	{
-		return DurationUtils.toBigDecimal(getDuration(), activityTimeUnit.getTemporalUnit());
+		return activityTimeUnit.toBigDecimal(getDuration());
 	}
 }

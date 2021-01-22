@@ -44,6 +44,8 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.workflow.WFDurationUnit;
+import lombok.NonNull;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductBL;
@@ -363,7 +365,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 
 		final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
-		final TemporalUnit durationUnit = activity.getDurationUnit().getTemporalUnit();
+		final WFDurationUnit durationUnit = activity.getDurationUnit();
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activity.getId())
@@ -371,8 +373,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 				.qtyProcessed(qtys.getMovementQty())
 				.qtyScrapped(qtys.getScrappedQty())
 				.qtyRejected(qtys.getRejectedQty())
-				.duration(DurationUtils.toDuration(getDurationReal(), durationUnit))
-				.setupTime(DurationUtils.toDuration(getSetupTimeReal(), durationUnit))
+				.duration(durationUnit.toDuration(getDurationReal()))
+				.setupTime(durationUnit.toDuration(getSetupTimeReal()))
 				.build());
 
 		orderRoutingsRepo.save(orderRouting);
@@ -405,12 +407,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		final PPOrderRouting orderRouting = getOrderRouting();
 		final PPOrderRoutingActivityId activityId = getActivityId();
-		final TemporalUnit durationUnit = orderRouting.getActivityById(activityId).getDurationUnit().getTemporalUnit();
+		final WFDurationUnit durationUnit = orderRouting.getActivityById(activityId).getDurationUnit();
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activityId)
-				.setupTime(DurationUtils.toDuration(getSetupTimeReal(), durationUnit))
-				.duration(DurationUtils.toDuration(getDurationReal(), durationUnit))
+				.setupTime(durationUnit.toDuration(getSetupTimeReal()))
+				.duration(durationUnit.toDuration(getDurationReal()))
 				.build());
 
 		orderRoutingsRepo.save(orderRouting);
