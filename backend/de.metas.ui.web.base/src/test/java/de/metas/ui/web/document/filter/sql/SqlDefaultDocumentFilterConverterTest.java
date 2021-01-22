@@ -1,14 +1,13 @@
 package de.metas.ui.web.document.filter.sql;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
+import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
-import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
-import de.metas.ui.web.window.model.sql.SqlOptions;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -71,6 +70,85 @@ public class SqlDefaultDocumentFilterConverterTest
 
 			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(columnSql, sqlOpts).toSqlString())
 					.isEqualTo("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla");
+		}
+	}
+
+	@Nested
+	public class buildSqlWhereClause_IsNull
+	{
+		@Test
+		public void any()
+		{
+			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.ANY))
+					.isEqualTo("");
+		}
+
+		@Test
+		public void isNull()
+		{
+			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NULL))
+					.isEqualTo("MyColumn IS NULL");
+		}
+
+		@Test
+		public void isNotNull()
+		{
+			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NOT_NULL))
+					.isEqualTo("MyColumn IS NOT NULL");
+		}
+	}
+
+	@Nested
+	public class buildSqlWhereClause_Equals
+	{
+		@Test
+		public void nullValue()
+		{
+			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
+					"MyColumn",
+					null,
+					false,
+					SqlParamsCollector.notCollecting());
+			assertThat(result).isEqualTo("MyColumn IS NULL");
+		}
+
+		@Test
+		public void nullValue_negate()
+		{
+			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Equals(
+					"MyColumn",
+					null,
+					true,
+					SqlParamsCollector.notCollecting());
+			assertThat(result).isEqualTo("MyColumn IS NOT NULL");
+		}
+	}
+
+	@Nested
+	public class buildSqlWhereClause_Like
+	{
+		@Test
+		public void nullValue()
+		{
+			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
+					"MyColumn",
+					false,
+					false,
+					null,
+					SqlParamsCollector.notCollecting());
+			assertThat(result).isEqualTo("MyColumn IS NULL");
+		}
+
+		@Test
+		public void nullValue_negate()
+		{
+			final String result = SqlDefaultDocumentFilterConverter.buildSqlWhereClause_Like(
+					"MyColumn",
+					true,
+					false,
+					null,
+					SqlParamsCollector.notCollecting());
+			assertThat(result).isEqualTo("MyColumn IS NOT NULL");
 		}
 	}
 }

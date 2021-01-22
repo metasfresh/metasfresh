@@ -301,8 +301,8 @@ import java.util.List;
 			}
 			case NOT_NULL_IF_TRUE:
 			{
-				final Object isApplyFilterFlag = filterParam.getValue();
-				return buildSqlWhereClause_NotNullIfFlagTrue(columnSqlString, isApplyFilterFlag);
+				final Boolean notNullFlag = StringUtils.toBoolean(filterParam.getValue(), null);
+				return buildSqlWhereClause_IsNull(columnSqlString, NullOperator.ofNotNullFlag(notNullFlag));
 			}
 			default:
 			{
@@ -311,11 +311,12 @@ import java.util.List;
 		}
 	}
 
-	private static String buildSqlWhereClause_Equals(final String sqlColumnExpr, @Nullable final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
+	@VisibleForTesting
+	static String buildSqlWhereClause_Equals(final String sqlColumnExpr, @Nullable final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
-			return buildSqlWhereClause_IsNull(sqlColumnExpr, negate);
+			return buildSqlWhereClause_IsNull(sqlColumnExpr, NullOperator.IS_NULL.negateIf(negate));
 		}
 
 		return sqlColumnExpr
@@ -323,9 +324,22 @@ import java.util.List;
 				+ sqlParams.placeholder(sqlValue);
 	}
 
-	private static String buildSqlWhereClause_IsNull(final String sqlColumnExpr, final boolean negate)
+	@VisibleForTesting
+	static String buildSqlWhereClause_IsNull(
+			@NonNull final String sqlColumnExpr,
+			@NonNull final NullOperator operator)
 	{
-		return sqlColumnExpr + (negate ? " IS NOT NULL" : " IS NULL");
+		switch (operator)
+		{
+			case IS_NULL:
+				return sqlColumnExpr + " IS NULL";
+			case IS_NOT_NULL:
+				return sqlColumnExpr + " IS NOT NULL";
+			case ANY:
+				return "";
+			default:
+				throw new AdempiereException("Unknown operator: " + operator);
+		}
 	}
 
 	private static String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
@@ -356,11 +370,12 @@ import java.util.List;
 		return sql;
 	}
 
-	private static String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
+	@VisibleForTesting
+	static String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
-			return buildSqlWhereClause_IsNull(sqlColumnExpr, negate);
+			return buildSqlWhereClause_IsNull(sqlColumnExpr, NullOperator.IS_NULL.negateIf(negate));
 		}
 
 		String sqlValueStr = sqlValue.toString().trim();
@@ -405,17 +420,6 @@ import java.util.List;
 		}
 
 		return sqlColumnExpr + " BETWEEN " + sqlParams.placeholder(sqlValue) + " AND " + sqlParams.placeholder(sqlValueTo);
-	}
-
-	private String buildSqlWhereClause_NotNullIfFlagTrue(final String sqlColumnExpr, final Object isApplyFilterFlagObj)
-	{
-		final boolean applyFilter = StringUtils.toBoolean(isApplyFilterFlagObj);
-		if (!applyFilter)
-		{
-			return "";
-		}
-
-		return sqlColumnExpr + " IS NOT NULL";
 	}
 
 	@VisibleForTesting
