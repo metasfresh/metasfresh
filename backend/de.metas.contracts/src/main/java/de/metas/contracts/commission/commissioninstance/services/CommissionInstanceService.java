@@ -87,7 +87,7 @@ public class CommissionInstanceService
 				.stream()
 				.filter(share -> share.getLevel() != null)
 				.map(SalesCommissionShare::getLevel)
-				.min(HierarchyLevel::compareTo);
+				.max(HierarchyLevel::compareTo);
 
 		final HierarchyLevel startingHierarchyLevel = existingSharesHierarchyTopLevel.isPresent()
 				? existingSharesHierarchyTopLevel.get().incByOne()
