@@ -91,17 +91,24 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
       } else {
         classes = 'p4 back-bottom-nav';
         links = (
-          <a
-            className="link is-flex is-flex-direction-column is-justify-content-center is-relative"
-            key="2"
-            onClick={() => {
-              navigation.removeViewFromHistory();
-              history.goBack();
-            }}
-          >
-            <i className="fas fa-chevron-left" />
-            <span className="pl-3 is-size-4">{text}</span>
-          </a>
+          <div className="container">
+            <div
+              className="columns pl-5 is-mobile"
+              onClick={() => {
+                navigation.removeViewFromHistory();
+                history.goBack();
+              }}
+            >
+              <div className="column green-color mt-1 is-11 is-size-3">
+                <div className="mt-2 is-pulled-left">
+                  <i className="fas fa-chevron-left" />
+                </div>
+                <div className="is-pulled-left pt-1 pl-2">
+                  <span className="is-size-4">{text}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         );
       }
 
