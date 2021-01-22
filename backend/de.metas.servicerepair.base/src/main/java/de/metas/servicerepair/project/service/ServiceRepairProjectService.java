@@ -189,11 +189,11 @@ public class ServiceRepairProjectService
 				summary -> summary.reduce(request));
 	}
 
-	public ServiceRepairProjectTask changeTask(
+	public void changeTask(
 			@NonNull final ServiceRepairProjectTaskId taskId,
 			@NonNull final UnaryOperator<ServiceRepairProjectTask> mapper)
 	{
-		return projectTaskRepository.changeById(taskId, mapper);
+		projectTaskRepository.changeById(taskId, mapper);
 	}
 
 	public void saveTask(@NonNull final ServiceRepairProjectTask task)
