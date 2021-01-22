@@ -1,5 +1,5 @@
-import { types, cast, SnapshotOrInstance } from 'mobx-state-tree';
-
+import { types, cast, SnapshotOrInstance, flow } from 'mobx-state-tree';
+import { postNextWeekTrend } from '../api';
 import { WeeklyProduct } from './WeeklyProduct';
 
 export const WeeklyProductList = types
@@ -12,6 +12,13 @@ export const WeeklyProductList = types
     weekCaption: types.optional(types.string, ''),
   })
   .actions((self) => ({
+    postNextWeekTrend: flow(function* updateTrend(data: { productId: string; trend: string; week: string }) {
+      try {
+        yield postNextWeekTrend(data);
+      } catch (error) {
+        console.error('Failed to update the trend', error);
+      }
+    }),
     updateNextWeek(nextWeek: string) {
       self.nextWeek = nextWeek;
     },

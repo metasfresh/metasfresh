@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
 import Prognose from './Prognose';
+import { string } from 'prop-types';
 interface RouteParams {
   productId?: string;
 }
@@ -38,9 +39,22 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
 
   //const qtyInput = React.createRef<HTMLInputElement>();
 
+  const prognoseChange = (data: { productId: string; trend: string; week: string }) => {
+    store.weeklyProducts.postNextWeekTrend(data).then(() => {
+      store.fetchWeeklyReport(data.week);
+    });
+  };
+
   return (
     <View>
-      <Prognose nextWeek={store.weeklyProducts.nextWeekCaption} trend={product.nextWeekTrend} />
+      <Prognose
+        nextWeek={store.weeklyProducts.nextWeek}
+        nextWeekCaption={store.weeklyProducts.nextWeekCaption}
+        trend={product.nextWeekTrend}
+        prognoseChange={prognoseChange}
+        productId={product.getId}
+        currentWeek={store.app.week}
+      />
       <div>
         <section className="section pt-0">
           {dailyQuantities.length &&

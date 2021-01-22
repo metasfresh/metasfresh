@@ -95,6 +95,10 @@ export function fetchWeeklyReport(weekYear: string): Promise<AxiosResponse> {
   return axios.get(`/rest/weeklyReport/${weekYear}`);
 }
 
+export function postNextWeekTrend(data: { productId: string; trend: string; week: string }): Promise<AxiosResponse> {
+  return axios.post(`/rest/weeklyReport/nextWeekTrend`, data);
+}
+
 export function confirmDataEntry(): Promise<AxiosResponse> {
   return axios.post(`/rest/session/confirmDataEntry`);
 }
