@@ -53,7 +53,7 @@ public class InstantInterval
 	}
 
 	@NonNull
-	public Optional<InstantInterval> getIntersection(@NonNull final InstantInterval intervalToIntersect)
+	public Optional<InstantInterval> getIntersectionWith(@NonNull final InstantInterval intervalToIntersect)
 	{
 		if (intervalToIntersect.getFrom().compareTo(from) >= 0 && intervalToIntersect.getTo().compareTo(to) <= 0)
 		{

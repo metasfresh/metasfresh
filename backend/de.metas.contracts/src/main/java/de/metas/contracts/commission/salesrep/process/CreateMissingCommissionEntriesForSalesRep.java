@@ -208,49 +208,73 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 	@NonNull
 	private ImmutableList<RecalculateCommissionCriteria> extractCommissionCriteriaList(
 			@NonNull final BPartnerId bPartnerId,
-			@NonNull final ImmutableList<ChangeLogEntry> salesRepChangeLogEntries,
+			@NonNull final ImmutableList<ChangeLogEntry> userSalesRepChangeLogEntries,
 			@NonNull final ImmutableList<ChangeLogEntry> bPartnerSalesRepChangeLogEntries,
 			@NonNull final InstantInterval targetTimeframe)
 	{
 		final I_C_BPartner bPartner = bPartnerBL.getById(bPartnerId);
 
-		final ImmutableMap<InstantInterval, String> salesRepValueByInterval = !salesRepChangeLogEntries.isEmpty()
-				? mapValueByInterval(salesRepChangeLogEntries, targetTimeframe)
-				//if no log entries were found, it means the present situation applies for the whole target timeframe
-				: (bPartner.getSalesRep_ID() > 0
-				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()))
-				: ImmutableMap.of());
+		// get SalesRep_IDs (not yet parsed to int) at different intervals
+		final ImmutableMap<InstantInterval, String> userSalesRepIdByInterval;
+		if (!userSalesRepChangeLogEntries.isEmpty())
+		{ // there are SalesRep_ID change log entries with their respective time intervals
+			userSalesRepIdByInterval = mapValueByInterval(userSalesRepChangeLogEntries, targetTimeframe);
+		}
+		else if (bPartner.getSalesRep_ID() > 0)
+		{ // if no log entries were found, it means the present SalesRep_ID applies for the whole timeframe
+			userSalesRepIdByInterval = ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()));
+		}
+		else
+		{ // no changelog and also no current sales rep set
+			userSalesRepIdByInterval = ImmutableMap.of();
+		}
 
-		final Map<InstantInterval, String> bPartnerSalesRepValueByInterval = !bPartnerSalesRepChangeLogEntries.isEmpty()
-				? mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe)
-				: (bPartner.getC_BPartner_SalesRep_ID() > 0
-				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()))
-				: ImmutableMap.of());
+		// get C_BPartner_SalesRep_IDs (not yet parsed to int) at different intervals
+		final Map<InstantInterval, String> bPartnerSalesRepIdByInterval;
+		if (!userSalesRepChangeLogEntries.isEmpty())
+		{ // there are C_BPartner_SalesRep_ID change log entries with their respective time intervals
+			bPartnerSalesRepIdByInterval = mapValueByInterval(userSalesRepChangeLogEntries, targetTimeframe);
+		}
+		else if (bPartner.getC_BPartner_SalesRep_ID() > 0)
+		{ // if no log entries were found, it means the present C_BPartner_SalesRep_ID applies for the whole timeframe
+			bPartnerSalesRepIdByInterval = ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()));
+		}
+		else
+		{ // no changelog and also no current C_BPartner_SalesRep_ID
+			bPartnerSalesRepIdByInterval = ImmutableMap.of();
+		}
 
 		final ImmutableList.Builder<RecalculateCommissionCriteria> commissionCriteriaListBuilder = ImmutableList.builder();
 
-		salesRepValueByInterval.forEach((userSalesRepInterval, userSalesRepValue) -> {
+		userSalesRepIdByInterval.forEach((userSalesRepInterval, userSalesRepIdAsString) -> {
 			{
-				final Optional<BPartnerId> superSalesRepBPId = getSuperSalesRepBPId(userSalesRepValue, bPartnerId);
+				final Optional<BPartnerId> superSalesRepBPId = getSuperSalesRepBPId(userSalesRepIdAsString, bPartnerId);
 
 				if (superSalesRepBPId.isPresent())
-				{
-					//remove those time intervals when the BP had also a bp_salesrep_id
-					final ImmutableList<InstantInterval> overlappingIntervals = bPartnerSalesRepValueByInterval.keySet()
+				{   // If the BP had both a SalesRep_ID and a C_BPartner_SalesRep_ID at the certain intervals then remove thome intervals.
+					// I.e in the end, a "direct" C_BPartner_SalesRep_ID reference takes preference over an indirect via-SalesRep_ID-reference
+					final ImmutableList<InstantInterval> intersectingIntervals = bPartnerSalesRepIdByInterval.keySet()
 							.stream()
-							.map(userSalesRepInterval::getIntersection)
+							.map(userSalesRepInterval::getIntersectionWith) // intersect userSalesRepInterval with the current bPartnerSalesRepInterval
 							.filter(Optional::isPresent)
 							.map(Optional::get)
 							.collect(ImmutableList.toImmutableList());
 
-					Loggables.withLogger(logger, Level.DEBUG)
-							.addLog("*** DEBUG: userSalesRepInterval: {}, overlappingIntervals (to be removed): {} ",
-									userSalesRepInterval, overlappingIntervals);
+					if (intersectingIntervals.isEmpty())
+					{ // just add userSalesRepInterval as-is
+						commissionCriteriaListBuilder.add(RecalculateCommissionCriteria.of(bPartnerId, userSalesRepInterval, superSalesRepBPId.get()));
+					}
+					else
+					{ // trim and split userSalesRepInterval by cutting out the intersecting intervals, and add the result(s)
+						Loggables.withLogger(logger, Level.DEBUG)
+								.addLog("*** DEBUG: SalesRep_ID-interval={} is intersected by C_BPartner_SalesRep_ID-intervals={}; (those will be removed from the SalesRep_ID-interval)",
+										userSalesRepInterval, intersectingIntervals);
 
-					IntervalUtils.intervalDiff(ImmutableList.of(userSalesRepInterval), overlappingIntervals)
-							.stream()
-							.map(interval -> RecalculateCommissionCriteria.of(bPartnerId, interval, superSalesRepBPId.get()))
-							.forEach(commissionCriteriaListBuilder::add);
+						IntervalUtils.intervalDiff(ImmutableList.of(userSalesRepInterval), intersectingIntervals)
+								.stream()
+								.map(interval -> RecalculateCommissionCriteria.of(bPartnerId, interval, superSalesRepBPId.get()))
+								.forEach(commissionCriteriaListBuilder::add);
+					}
 				}
 			}
 		});
@@ -305,6 +329,10 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		return ImmutableMap.copyOf(valueByInterval);
 	}
 
+	/**
+	 * @param superSalesRepUserIdValue parse this to an {@link UserId} and get the AD_User's C_BPartner_ID, if any
+	 * @param salesRepId               only given as context info for log messages
+	 */
 	private Optional<BPartnerId> getSuperSalesRepBPId(@NonNull final String superSalesRepUserIdValue, @NonNull final BPartnerId salesRepId)
 	{
 		final int userId = NumberUtils.asInt(superSalesRepUserIdValue, -1);
@@ -313,18 +341,16 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		if (superSalesRepUserId == null)
 		{
 			Loggables.withLogger(logger, Level.WARN)
-					.addLog("*** WARN during calculation for bPartnerId: {}:"
-							+ " salesRepUser value: {} cannot be converted to int! Skipping.. ", superSalesRepUserIdValue);
+					.addLog("*** WARN during calculation for bPartnerId: {}: salesRepUser value: {} cannot be converted to int! Skipping.. ", superSalesRepUserIdValue);
 			return Optional.empty();
 		}
 
 		final I_AD_User superSalesRepUser = userDAO.getById(superSalesRepUserId);
-
 		if (superSalesRepUser.getC_BPartner_ID() <= 0)
 		{
 			// this might be OK; we did not take care to assign a bpartner the user if there were no actial commission instance with base-points > 0
 			logger.debug("*** WARN during calculation for bPartnerId={} salesRepUserId={} doesn't have a bPartner! Skipping.. ",
-							RepoIdAwares.toRepoId(salesRepId), superSalesRepUser.getAD_User_ID());
+					RepoIdAwares.toRepoId(salesRepId), superSalesRepUser.getAD_User_ID());
 			return Optional.empty();
 		}
 		else
