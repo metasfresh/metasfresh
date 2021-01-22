@@ -1,8 +1,9 @@
 import React, { ReactElement, useContext } from 'react';
 import { useHistory } from 'react-router-dom';
-import { translate } from '../utils/translate';
-import { RootStoreContext } from '../models/Store';
 import { useSwipeable } from 'react-swipeable';
+
+import { RootStoreContext } from '../models/Store';
+
 interface Props {
   id: string;
   productName: string;
@@ -37,15 +38,7 @@ const Product: React.FunctionComponent<Props> = ({
 
   return (
     <div {...handlers} className="product">
-      <div
-        className="box"
-        onClick={() =>
-          history.push({
-            pathname: `/products/${id}`,
-            state: { path: '/', text: translate('DailyReportingView.caption') },
-          })
-        }
-      >
+      <div className="box" onClick={() => history.push({ pathname: `/products/${id}` })}>
         <div className="columns is-mobile">
           <div className="column is-8">
             <div className="columns">

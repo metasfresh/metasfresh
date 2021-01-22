@@ -1,9 +1,9 @@
-import React, { ReactElement, useContext } from 'react';
+import React, { ReactElement, useContext, useEffect } from 'react';
+import { observer } from 'mobx-react';
+
+import { translate } from '../utils/translate';
 import { RootStoreContext } from '../models/Store';
 import WeeklyProduct from './WeeklyProduct';
-import { observer } from 'mobx-react';
-import { useHistory } from 'react-router-dom';
-import { translate } from '../utils/translate';
 
 interface Props {
   headerText: string;
@@ -12,16 +12,12 @@ interface Props {
 const WeeklyProductList: React.FunctionComponent<Props> = observer(
   ({}: Props): ReactElement => {
     const store = useContext(RootStoreContext);
-    const history = useHistory();
     const products = store.weeklyProducts.getProducts;
+    const weeklyNavCaption = translate('WeeklyReportingView.caption');
 
-    const handleClick = (productId: string) => {
-      const weeklyNavCaption = translate('WeeklyReportingView.caption');
-      history.push({
-        pathname: `/weekly/${productId}`,
-        state: { path: '/weekly', text: weeklyNavCaption },
-      });
-    };
+    useEffect(() => {
+      store.navigation.setViewNames(weeklyNavCaption);
+    }, []);
 
     return (
       <div className="mt-1">
@@ -34,7 +30,6 @@ const WeeklyProductList: React.FunctionComponent<Props> = observer(
                 name={product.getName}
                 packType={product.getPack}
                 qty={product.getQty}
-                handleClick={handleClick}
               />
             );
           })}

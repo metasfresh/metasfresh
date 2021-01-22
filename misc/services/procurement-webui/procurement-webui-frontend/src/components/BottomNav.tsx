@@ -1,5 +1,5 @@
 import React, { FunctionComponent, ReactElement } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useHistory } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import classnames from 'classnames';
 
@@ -25,46 +25,24 @@ interface LocationState {
 const BottomNav: FunctionComponent<Props> = inject('store')(
   observer(
     ({ store, forcedState }): ReactElement => {
+      const history = useHistory();
       const location = useLocation<LocationState>();
-
       const { navigation, app } = store;
       const { countUnconfirmed } = app;
       const { pathname } = location;
-      const state = forcedState || location.state;
       let links = null;
       let classes = '';
-      const path = state ? state.path : null;
-      const text = state ? state.text : null;
-      const navigateBackObject = {
-        path: pathname,
-        text: navigation.bottomViewName,
-      };
+      const text = forcedState ? forcedState.text : navigation.getLastView();
 
       if (['login', 'password'].indexOf(pathname) >= 0) {
         return null;
       }
 
-      if (path) {
-        classes = 'p4 back-bottom-nav';
-        links = (
-          <Link
-            to={{
-              pathname: path,
-            }}
-            className="is-flex is-align-items-center link p-4"
-          >
-            <i className="fas fa-chevron-left" />
-            <span className="pl-3 is-size-4">{text}</span>
-          </Link>
-        );
-      } else {
+      if (pathname === '/') {
         classes = 'p0 icons-bottom-nav ';
         links = [
           <Link
-            to={{
-              pathname: '/weekly',
-              state: navigateBackObject,
-            }}
+            to={{ pathname: '/weekly' }}
             className="link is-flex is-flex-direction-column is-justify-content-center"
             key="0"
           >
@@ -72,10 +50,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             <span className="link-text">{translate('DailyReportingView.weekViewButton')}</span>
           </Link>,
           <Link
-            to={{
-              pathname: '/products',
-              state: navigateBackObject,
-            }}
+            to={{ pathname: '/products' }}
             className="link is-flex is-flex-direction-column is-justify-content-center"
             key="1"
           >
@@ -97,10 +72,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             {countUnconfirmed ? <span className="unconfirmed-count">{countUnconfirmed}</span> : null}
           </a>,
           <Link
-            to={{
-              pathname: '/info',
-              state: navigateBackObject,
-            }}
+            to={{ pathname: '/info' }}
             className="link is-flex is-flex-direction-column is-justify-content-center"
             key="3"
           >
@@ -108,10 +80,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             <span className="link-text">{translate('InfoMessageView.caption.short')}</span>
           </Link>,
           <Link
-            to={{
-              pathname: '/quotations',
-              state: navigateBackObject,
-            }}
+            to={{ pathname: '/quotations' }}
             className="link is-flex is-flex-direction-column is-justify-content-center"
             key="4"
           >
@@ -119,6 +88,21 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             <span className="link-text">{translate('RfQView.caption')}</span>
           </Link>,
         ];
+      } else {
+        classes = 'p4 back-bottom-nav';
+        links = (
+          <a
+            className="link is-flex is-flex-direction-column is-justify-content-center is-relative"
+            key="2"
+            onClick={() => {
+              navigation.removeViewFromHistory();
+              history.goBack();
+            }}
+          >
+            <i className="fas fa-chevron-left" />
+            <span className="pl-3 is-size-4">{text}</span>
+          </a>
+        );
       }
 
       return <footer className={classnames('navbar is-flex is-fixed-bottom', classes)}>{links}</footer>;

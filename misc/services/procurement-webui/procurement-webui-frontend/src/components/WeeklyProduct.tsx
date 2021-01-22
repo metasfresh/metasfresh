@@ -1,22 +1,23 @@
 import React, { FunctionComponent, ReactElement } from 'react';
+import { useHistory } from 'react-router-dom';
 
 interface Props {
   productId: string;
   name: string;
   packType: string;
   qty: number;
-  handleClick?: (productId: string) => void;
 }
 
-const WeeklyProduct: FunctionComponent<Props> = ({
-  productId,
-  qty,
-  name,
-  packType,
-  handleClick,
-}: Props): ReactElement => {
+const WeeklyProduct: FunctionComponent<Props> = ({ productId, qty, name, packType }: Props): ReactElement => {
+  const history = useHistory();
+  const handleClick = (): void => {
+    history.push({
+      pathname: `/weekly/${productId}`,
+    });
+  };
+
   return (
-    <div className="product" onClick={() => handleClick(productId)}>
+    <div className="product" onClick={handleClick}>
       <div className="box">
         <div className="columns is-mobile">
           <div className="column is-8">

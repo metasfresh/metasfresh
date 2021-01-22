@@ -2,9 +2,11 @@ import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
+
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
+
 interface RouteParams {
   productId?: string;
 }
@@ -19,7 +21,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
   const currentCaption = store.app.dayCaption;
 
   useEffect(() => {
-    store.navigation.setTopViewName(product.productName);
+    store.navigation.setViewNames(product.productName);
   }, [store]);
 
   const saveQty = (newQty: number) => {

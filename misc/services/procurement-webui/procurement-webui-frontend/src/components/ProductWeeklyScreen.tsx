@@ -12,14 +12,10 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
   const { productId } = useParams<RouteParams>();
   const store = useContext(RootStoreContext);
   const product = store.weeklyProducts.findProductById(productId);
-
   const { dailyQuantities } = getSnapshot(product);
-  console.log('Product:', dailyQuantities);
-  //const currentCaption = store.app.dayCaption;
 
   useEffect(() => {
-    store.navigation.setTopViewName(product.productName);
-    store.navigation.setBottomViewName(product.productName);
+    store.navigation.setViewNames(product.productName);
   }, [store]);
 
   //   const saveQty = (newQty: number) => {
