@@ -139,7 +139,7 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 
 		final int durationInt = duration.setScale(0, RoundingMode.UP).intValueExact();
 
-		return Duration.of(durationInt, activity.getDurationUnit());
+		return Duration.of(durationInt, activity.getDurationUnit().getTemporalUnit());
 	}
 
 	@Override

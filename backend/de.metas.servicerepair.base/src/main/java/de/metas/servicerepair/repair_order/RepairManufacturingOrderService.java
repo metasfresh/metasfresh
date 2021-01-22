@@ -27,6 +27,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.material.planning.ProductPlanningService;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -140,12 +142,16 @@ public class RepairManufacturingOrderService
 		final ResourceId plantId = productPlanningService.getPlantOfWarehouse(warehouseId)
 				.orElseThrow(() -> new AdempiereException("No plant for warehouse " + warehouseId));
 
+		final PPRoutingId routingId = productPlanningService.getDefaultRoutingId(PPRoutingType.Repair)
+				.orElse(PPRoutingId.NONE);
+
 		final Instant now = SystemTime.asInstant();
 		final I_PP_Order repairOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
 				.docBaseType(PPOrderDocBaseType.REPAIR_ORDER)
 				.clientAndOrgId(task.getClientAndOrgId())
 				.warehouseId(warehouseId)
 				.plantId(plantId)
+				.routingId(routingId)
 				//
 				.productId(task.getProductId())
 				.attributeSetInstanceId(task.getAsiId())

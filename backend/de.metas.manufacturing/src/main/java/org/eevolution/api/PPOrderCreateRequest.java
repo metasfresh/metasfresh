@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -58,6 +59,7 @@ public class PPOrderCreateRequest
 	@Nullable UserId plannerId;
 
 	@Nullable ProductBOMId bomId;
+	@Nullable PPRoutingId routingId;
 	@NonNull ProductId productId;
 	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 	@NonNull Quantity qtyRequired;
@@ -83,6 +85,8 @@ public class PPOrderCreateRequest
 			@Nullable final UserId plannerId,
 			//
 			@Nullable final ProductBOMId bomId,
+			@Nullable final PPRoutingId routingId,
+			//
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final Quantity qtyRequired,
@@ -110,6 +114,8 @@ public class PPOrderCreateRequest
 		this.plannerId = plannerId;
 
 		this.bomId = bomId;
+		this.routingId = routingId;
+
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.qtyRequired = qtyRequired;

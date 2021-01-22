@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflow, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 865252099L;
+	private static final long serialVersionUID = -544179067L;
 
     /** Standard Constructor */
     public X_AD_Workflow (final Properties ctx, final int AD_Workflow_ID, @Nullable final String trxName)
@@ -612,8 +612,8 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	public static final String WORKFLOWTYPE_Manufacturing = "M";
 	/** Quality = Q */
 	public static final String WORKFLOWTYPE_Quality = "Q";
-	/** R = R */
-	public static final String WORKFLOWTYPE_R = "R";
+	/** Repair = R */
+	public static final String WORKFLOWTYPE_Repair = "R";
 	@Override
 	public void setWorkflowType (final java.lang.String WorkflowType)
 	{

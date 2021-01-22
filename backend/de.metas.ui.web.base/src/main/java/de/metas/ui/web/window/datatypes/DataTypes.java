@@ -13,11 +13,11 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -313,7 +313,7 @@ public final class DataTypes
 		{
 			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
-			return lookupValue.getIdAsInt();
+			return lookupValue != null ? lookupValue.getIdAsInt() : null;
 		}
 		else if (value instanceof RepoIdAware)
 		{
@@ -348,7 +348,7 @@ public final class DataTypes
 			final int valueInt = (int)value;
 			return BigDecimal.valueOf(valueInt);
 		}
-		else if(value instanceof Quantity)
+		else if (value instanceof Quantity)
 		{
 			return ((Quantity)value).toBigDecimal();
 		}
@@ -384,15 +384,14 @@ public final class DataTypes
 				valueToConv = value;
 			}
 
-			return DisplayType.toBoolean(valueToConv, Boolean.FALSE);
+			return StringUtils.toBoolean(valueToConv);
 		}
 	}
 
 	@Nullable
 	public static IntegerLookupValue convertToIntegerLookupValue(@Nullable final Object value)
 	{
-		final LookupValueByIdSupplier lookupDataSource = null;
-		return convertToIntegerLookupValue(value, lookupDataSource);
+		return convertToIntegerLookupValue(value, null);
 	}
 
 	@Nullable
@@ -419,7 +418,11 @@ public final class DataTypes
 			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 
-			if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
+			if(lookupValue == null)
+			{
+				return null;
+			}
+			else if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
 			{
 				// corner case: the frontend sent a lookup value like '{ 1234567 : "" }'
 				// => we need to resolve the name against the lookup
@@ -444,8 +447,7 @@ public final class DataTypes
 			{
 				throw new ValueConversionException()
 						.setFromValue(value)
-						.setTargetType(IntegerLookupValue.class)
-						.setLookupDataSource(lookupDataSource);
+						.setTargetType(IntegerLookupValue.class);
 			}
 		}
 		else if (value instanceof Number)
@@ -461,8 +463,7 @@ public final class DataTypes
 			{
 				throw new ValueConversionException()
 						.setFromValue(value)
-						.setTargetType(IntegerLookupValue.class)
-						.setLookupDataSource(lookupDataSource);
+						.setTargetType(IntegerLookupValue.class);
 			}
 		}
 		else if (value instanceof String)
@@ -483,8 +484,7 @@ public final class DataTypes
 			{
 				throw new ValueConversionException()
 						.setFromValue(value)
-						.setTargetType(IntegerLookupValue.class)
-						.setLookupDataSource(lookupDataSource);
+						.setTargetType(IntegerLookupValue.class);
 			}
 		}
 		else
@@ -522,8 +522,7 @@ public final class DataTypes
 	@Nullable
 	public static StringLookupValue convertToStringLookupValue(final Object value)
 	{
-		final LookupValueByIdSupplier lookupDataSource = null;
-		return convertToStringLookupValue(value, lookupDataSource);
+		return convertToStringLookupValue(value, null);
 	}
 
 	@Nullable
@@ -568,6 +567,11 @@ public final class DataTypes
 			final String valueStr = (String)value;
 			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
 		}
+		else if (value instanceof ReferenceListAwareEnum)
+		{
+			final String valueStr = ((ReferenceListAwareEnum)value).getCode();
+			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
+		}
 		else if (value instanceof Boolean)
 		{
 			// corner case: happens for Posted field which is generated as Boolean but is defined as List of "_Posted Status".
@@ -605,8 +609,7 @@ public final class DataTypes
 		{
 			throw new ValueConversionException()
 					.setFromValue(valueStr)
-					.setTargetType(StringLookupValue.class)
-					.setLookupDataSource(lookupDataSource);
+					.setTargetType(StringLookupValue.class);
 		}
 	}
 
@@ -718,7 +721,6 @@ public final class DataTypes
 		}
 	}
 
-	@SuppressWarnings("serial")
 	private static class ValueConversionException extends AdempiereException
 	{
 		public static ValueConversionException wrapIfNeeded(final Throwable ex)

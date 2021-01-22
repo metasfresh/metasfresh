@@ -22,6 +22,9 @@ package de.metas.material.planning;
  * #L%
  */
 
+import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -37,6 +40,7 @@ import java.util.Optional;
 @Service
 public class ProductPlanningService
 {
+	private final IPPRoutingRepository routingRepository = Services.get(IPPRoutingRepository.class);
 	/**
 	 * Duration to have this Qty available (i.e. Lead Time + Transfer Time)
 	 *
@@ -58,4 +62,8 @@ public class ProductPlanningService
 		return ResourceId.optionalOfRepoId(warehouse.getPP_Plant_ID());
 	}
 
+	public Optional<PPRoutingId> getDefaultRoutingId(@NonNull final PPRoutingType type)
+	{
+		return routingRepository.getDefaultRoutingIdByType(type);
+	}
 }

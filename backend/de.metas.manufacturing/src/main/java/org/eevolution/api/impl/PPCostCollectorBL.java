@@ -40,7 +40,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -77,7 +77,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
@@ -142,10 +141,10 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, cc.getPP_Order_Node_ID());
 
 		final PPOrderRoutingActivity activity = orderRoutingsRepo.getOrderRoutingActivity(activityId);
-		final TemporalUnit durationUnit = activity.getDurationUnit();
+		final WFDurationUnit durationUnit = activity.getDurationUnit();
 
-		final Duration setupTimeReported = DurationUtils.toDuration(cc.getSetupTimeReal(), durationUnit);
-		final Duration runningTimeReported = DurationUtils.toDuration(cc.getDurationReal(), durationUnit);
+		final Duration setupTimeReported = durationUnit.toDuration(cc.getSetupTimeReal());
+		final Duration runningTimeReported = durationUnit.toDuration(cc.getDurationReal());
 		return setupTimeReported.plus(runningTimeReported);
 	}
 
@@ -586,9 +585,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			cc.setPP_Order_Node_ID(orderActivity.getId().getRepoId());
 			cc.setIsSubcontracting(orderActivity.isSubcontracting());
 
-			final TemporalUnit durationUnit = orderActivity.getDurationUnit();
-			cc.setSetupTimeReal(DurationUtils.toBigDecimal(request.getDurationSetup(), durationUnit));
-			cc.setDurationReal(DurationUtils.toBigDecimal(request.getDuration(), durationUnit));
+			final WFDurationUnit durationUnit = orderActivity.getDurationUnit();
+			cc.setSetupTimeReal(durationUnit.toBigDecimal(request.getDurationSetup()));
+			cc.setDurationReal(durationUnit.toBigDecimal(request.getDuration()));
 		}
 
 		// If this is an material issue, we should use BOM Line's UOM

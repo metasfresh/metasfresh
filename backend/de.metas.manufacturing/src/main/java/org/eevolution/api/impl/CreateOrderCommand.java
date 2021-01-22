@@ -126,7 +126,7 @@ final class CreateOrderCommand
 
 		//
 		// BOM & Workflow
-		ppOrderRecord.setPP_Product_BOM_ID(getBOMId(request, productPlanning).getRepoId());
+		ppOrderRecord.setPP_Product_BOM_ID(getBOMId(productPlanning).getRepoId());
 		ppOrderRecord.setAD_Workflow_ID(getRoutingId(productPlanning).getRepoId());
 
 		//
@@ -213,9 +213,7 @@ final class CreateOrderCommand
 		return null;
 	}
 
-	private ProductBOMId getBOMId(
-			@NonNull final PPOrderCreateRequest request,
-			@Nullable final I_PP_Product_Planning productPlanning)
+	private ProductBOMId getBOMId(@Nullable final I_PP_Product_Planning productPlanning)
 	{
 		if (request.getBomId() != null)
 		{
@@ -244,8 +242,13 @@ final class CreateOrderCommand
 				.setParameter("productPlanning", productPlanning);
 	}
 
-	private static PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
+	private PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
 	{
+		if (request.getRoutingId() != null)
+		{
+			return request.getRoutingId();
+		}
+
 		if (productPlanning != null)
 		{
 			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());

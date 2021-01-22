@@ -1,25 +1,21 @@
 package de.metas.material.planning.pporder;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
-
 import de.metas.user.UserId;
 import de.metas.util.lang.Percent;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -47,42 +43,18 @@ import lombok.Value;
 @Value
 public class PPRouting
 {
-	@NonNull
-	PPRoutingId id;
-
-	@Default
-	boolean valid = true;
-	@NonNull
-	@Default
-	Range<LocalDate> validDates = Range.all();
-
-	@NonNull
-	String code;
-
-	@NonNull
-	TemporalUnit durationUnit;
-
-	@NonNull
-	Duration duration;
-
-	@NonNull
-	@Default
-	final BigDecimal qtyPerBatch = BigDecimal.ONE;
-
+	@NonNull PPRoutingId id;
+	@Default boolean valid = true;
+	@NonNull @Default Range<LocalDate> validDates = Range.all();
+	@NonNull String code;
+	@NonNull WFDurationUnit durationUnit;
+	@NonNull Duration duration;
+	@NonNull @Default BigDecimal qtyPerBatch = BigDecimal.ONE;
 	/** The Yield is the percentage of a lot that is expected to be of acceptable quality may fall below 100 percent */
-	@NonNull
-	@Default
-	Percent yield = Percent.ONE_HUNDRED;
-
-	@Nullable
-	UserId userInChargeId;
-
-	@NonNull
-	PPRoutingActivityId firstActivityId;
-
-	@NonNull
-	@Default
-	ImmutableList<PPRoutingActivity> activities = ImmutableList.of();
+	@NonNull @Default Percent yield = Percent.ONE_HUNDRED;
+	@Nullable UserId userInChargeId;
+	@NonNull PPRoutingActivityId firstActivityId;
+	@NonNull @Default ImmutableList<PPRoutingActivity> activities = ImmutableList.of();
 
 	public boolean isValidAtDate(final LocalDateTime dateTime)
 	{
@@ -102,11 +74,4 @@ public class PPRouting
 	{
 		return getActivityById(getFirstActivityId());
 	}
-
-	public ImmutableSet<PPRoutingActivityId> getNextActivityIds(@NonNull final PPRoutingActivityId activityId)
-	{
-		final PPRoutingActivity activity = getActivityById(activityId);
-		return activity.getNextActivityIds();
-	}
-
 }

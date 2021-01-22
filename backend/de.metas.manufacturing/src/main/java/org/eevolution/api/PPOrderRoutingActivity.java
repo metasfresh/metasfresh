@@ -1,23 +1,15 @@
 package org.eevolution.api;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.slf4j.Logger;
-
 import com.google.common.base.Objects;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.workflow.WFDurationUnit;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -26,6 +18,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -58,23 +55,18 @@ public final class PPOrderRoutingActivity
 {
 	private static final Logger logger = LogManager.getLogger(PPOrderRoutingActivity.class);
 
-	@Nullable
-	private PPOrderRoutingActivityId id;
-	@NonNull
-	private final PPOrderRoutingActivityCode code;
-	@NonNull
-	private final PPRoutingActivityId routingActivityId;
+	@Nullable private PPOrderRoutingActivityId id;
+	@NonNull private final PPOrderRoutingActivityCode code;
+	@NonNull private final PPRoutingActivityId routingActivityId;
 
 	private final boolean subcontracting;
 	private final BPartnerId subcontractingVendorId;
 
 	private final boolean milestone;
 
-	@Nullable
-	private PPRoutingActivityTemplateId activityTemplateId;
+	@Nullable private PPRoutingActivityTemplateId activityTemplateId;
 
-	@NonNull
-	private final ResourceId resourceId;
+	@NonNull private final ResourceId resourceId;
 
 	@NonNull
 	@Default
@@ -83,18 +75,12 @@ public final class PPOrderRoutingActivity
 
 	//
 	// Standard values
-	@NonNull
-	private final TemporalUnit durationUnit;
-	@NonNull
-	private final Duration queuingTime;
-	@NonNull
-	private final Duration setupTime;
-	@NonNull
-	private final Duration waitingTime;
-	@NonNull
-	private final Duration movingTime;
-	@NonNull
-	private final Duration durationPerOneUnit;
+	@NonNull private final WFDurationUnit durationUnit;
+	@NonNull private final Duration queuingTime;
+	@NonNull private final Duration setupTime;
+	@NonNull private final Duration waitingTime;
+	@NonNull private final Duration movingTime;
+	@NonNull private final Duration durationPerOneUnit;
 	/**
 	 * how many items can be manufactured on a production line in given duration unit.
 	 */
@@ -102,31 +88,19 @@ public final class PPOrderRoutingActivity
 
 	//
 	// Planned values
-	@NonNull
-	private Duration setupTimeRequired;
-	@NonNull
-	private Duration durationRequired;
-	@NonNull
-	private Quantity qtyRequired;
+	@NonNull private Duration setupTimeRequired;
+	@NonNull private Duration durationRequired;
+	@NonNull private Quantity qtyRequired;
 
 	//
 	// Reported values
-	@NonNull
-	@Default
-	private Duration setupTimeReal = Duration.ZERO;
-	@NonNull
-	@Default
-	private Duration durationReal = Duration.ZERO;
-	@NonNull
-	private Quantity qtyDelivered;
-	@NonNull
-	private Quantity qtyScrapped;
-	@NonNull
-	private Quantity qtyRejected;
-	@Nullable
-	private LocalDateTime dateStart;
-	@Nullable
-	private LocalDateTime dateFinish;
+	@NonNull @Default private Duration setupTimeReal = Duration.ZERO;
+	@NonNull @Default private Duration durationReal = Duration.ZERO;
+	@NonNull private Quantity qtyDelivered;
+	@NonNull private Quantity qtyScrapped;
+	@NonNull private Quantity qtyRejected;
+	@Nullable private LocalDateTime dateStart;
+	@Nullable private LocalDateTime dateFinish;
 
 	public PPOrderId getOrderId()
 	{
