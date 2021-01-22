@@ -177,3 +177,10 @@ input[type=number]::-webkit-inner-spin-button {
 .green-color {
   color: $base-elements;
 }
+
+.prognose-box {
+  margin-top: -20px;
+  border-top: 1px solid $grey-light;
+  border-bottom: 1px solid $grey-light;
+  color: $product-input;
+}
