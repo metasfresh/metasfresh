@@ -4,6 +4,7 @@ import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
+import Prognose from './Prognose';
 interface RouteParams {
   productId?: string;
 }
@@ -15,7 +16,7 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
   const { dailyQuantities } = getSnapshot(product);
 
   useEffect(() => {
-    store.navigation.setViewNames(product.productName);
+    store.navigation.setViewNames(`${product.productName} (${store.app.weekCaption})`);
   }, [store]);
 
   //   const saveQty = (newQty: number) => {
@@ -39,6 +40,7 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
 
   return (
     <View>
+      <Prognose />
       <div>
         <section className="section pt-0">
           {dailyQuantities.length &&
