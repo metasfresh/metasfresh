@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingType;
@@ -33,6 +34,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
@@ -43,6 +45,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderAndCostCollectorId;
@@ -53,8 +56,10 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -63,6 +68,7 @@ public class RepairManufacturingOrderService
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final ProductPlanningService productPlanningService;
 
 	public RepairManufacturingOrderService(
@@ -103,18 +109,39 @@ public class RepairManufacturingOrderService
 	{
 		return ppCostCollectorBL.getByOrderId(repairOrderId)
 				.stream()
-				.filter(ppCostCollectorBL::isAnyComponentIssue)
-				.map(this::fromRecord)
+				.map(this::fromRecordIfEligible)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private RepairManufacturingCostCollector fromRecord(@NonNull final I_PP_Cost_Collector ppCostCollector)
+	@Nullable
+	private RepairManufacturingCostCollector fromRecordIfEligible(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
-		return RepairManufacturingCostCollector.builder()
-				.id(PPOrderAndCostCollectorId.ofRepoId(ppCostCollector.getPP_Order_ID(), ppCostCollector.getPP_Cost_Collector_ID()))
-				.productId(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()))
-				.qtyConsumed(ppCostCollectorBL.getMovementQty(ppCostCollector))
-				.build();
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(ppCostCollector.getCostCollectorType());
+		if (costCollectorType.isComponentIssue())
+		{
+			return RepairManufacturingCostCollector.builder()
+					.id(PPOrderAndCostCollectorId.ofRepoId(ppCostCollector.getPP_Order_ID(), ppCostCollector.getPP_Cost_Collector_ID()))
+					.productId(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()))
+					.qtyConsumed(ppCostCollectorBL.getMovementQty(ppCostCollector))
+					.build();
+		}
+		else if (costCollectorType.isActivityControl())
+		{
+			final ResourceId resourceId = ResourceId.ofRepoId(ppCostCollector.getS_Resource_ID());
+			final ProductId productId = resourceProductService.getProductIdByResourceId(resourceId);
+			final Quantity duration = ppCostCollectorBL.getTotalDurationReportedAsQuantity(ppCostCollector);
+
+			return RepairManufacturingCostCollector.builder()
+					.id(PPOrderAndCostCollectorId.ofRepoId(ppCostCollector.getPP_Order_ID(), ppCostCollector.getPP_Cost_Collector_ID()))
+					.productId(productId)
+					.qtyConsumed(duration)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	public PPOrderId createRepairOrder(

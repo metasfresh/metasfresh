@@ -24,6 +24,8 @@ public interface IPPCostCollectorBL extends ISingletonService
 
 	Quantity getMovementQtyInStockingUOM(I_PP_Cost_Collector cc);
 
+	Quantity getTotalDurationReportedAsQuantity(@NonNull I_PP_Cost_Collector cc);
+
 	Duration getTotalDurationReported(I_PP_Cost_Collector cc);
 
 	default boolean isMaterialReceiptOrCoProduct(final I_PP_Cost_Collector cc)

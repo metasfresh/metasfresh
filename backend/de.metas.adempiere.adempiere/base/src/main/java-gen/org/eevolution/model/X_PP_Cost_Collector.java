@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_Cost_Collector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1873101211L;
+	private static final long serialVersionUID = -1396466864L;
 
     /** Standard Constructor */
     public X_PP_Cost_Collector (final Properties ctx, final int PP_Cost_Collector_ID, @Nullable final String trxName)
@@ -333,6 +333,35 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DurationReal);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	/** 
+	 * DurationUnit AD_Reference_ID=299
+	 * Reference name: WF_DurationUnit
+	 */
+	public static final int DURATIONUNIT_AD_Reference_ID=299;
+	/** Year = Y */
+	public static final String DURATIONUNIT_Year = "Y";
+	/** Month = M */
+	public static final String DURATIONUNIT_Month = "M";
+	/** Day = D */
+	public static final String DURATIONUNIT_Day = "D";
+	/** Hour = h */
+	public static final String DURATIONUNIT_Hour = "h";
+	/** Minute = m */
+	public static final String DURATIONUNIT_Minute = "m";
+	/** Second = s */
+	public static final String DURATIONUNIT_Second = "s";
+	@Override
+	public void setDurationUnit (final @Nullable java.lang.String DurationUnit)
+	{
+		set_Value (COLUMNNAME_DurationUnit, DurationUnit);
+	}
+
+	@Override
+	public java.lang.String getDurationUnit() 
+	{
+		return get_ValueAsString(COLUMNNAME_DurationUnit);
 	}
 
 	@Override

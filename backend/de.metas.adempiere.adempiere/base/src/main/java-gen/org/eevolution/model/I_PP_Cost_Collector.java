@@ -413,6 +413,29 @@ public interface I_PP_Cost_Collector
 	String COLUMNNAME_DurationReal = "DurationReal";
 
 	/**
+	 * Set Duration Unit.
+	 * Unit of Duration
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDurationUnit (@Nullable java.lang.String DurationUnit);
+
+	/**
+	 * Get Duration Unit.
+	 * Unit of Duration
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDurationUnit();
+
+	ModelColumn<I_PP_Cost_Collector, Object> COLUMN_DurationUnit = new ModelColumn<>(I_PP_Cost_Collector.class, "DurationUnit", null);
+	String COLUMNNAME_DurationUnit = "DurationUnit";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

@@ -60,13 +60,11 @@ import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivity;
-import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -82,7 +80,6 @@ import java.util.List;
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IPPCostCollectorDAO costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -135,17 +132,31 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public Duration getTotalDurationReported(final I_PP_Cost_Collector cc)
+	public Quantity getTotalDurationReportedAsQuantity(@NonNull final I_PP_Cost_Collector cc)
 	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
-		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, cc.getPP_Order_Node_ID());
+		final WFDurationUnit durationUnit = getDurationUnit(cc);
+		final I_C_UOM uom = uomDAO.getByTemporalUnit(durationUnit.getTemporalUnit());
+		final BigDecimal totalDurationBD = getTotalDurationReportedBD(cc);
+		return Quantity.of(totalDurationBD, uom);
+	}
 
-		final PPOrderRoutingActivity activity = orderRoutingsRepo.getOrderRoutingActivity(activityId);
-		final WFDurationUnit durationUnit = activity.getDurationUnit();
+	@Override
+	public Duration getTotalDurationReported(@NonNull final I_PP_Cost_Collector cc)
+	{
+		final WFDurationUnit durationUnit = getDurationUnit(cc);
+		final BigDecimal totalDurationBD = getTotalDurationReportedBD(cc);
+		return durationUnit.toDuration(totalDurationBD);
+	}
 
-		final Duration setupTimeReported = durationUnit.toDuration(cc.getSetupTimeReal());
-		final Duration runningTimeReported = durationUnit.toDuration(cc.getDurationReal());
-		return setupTimeReported.plus(runningTimeReported);
+	private static WFDurationUnit getDurationUnit(@NonNull final I_PP_Cost_Collector cc)
+	{
+		//noinspection ConstantConditions
+		return WFDurationUnit.ofCode(cc.getDurationUnit());
+	}
+
+	private static BigDecimal getTotalDurationReportedBD(@NonNull final I_PP_Cost_Collector cc)
+	{
+		return cc.getSetupTimeReal().add(cc.getDurationReal());
 	}
 
 	/**
@@ -586,6 +597,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			cc.setIsSubcontracting(orderActivity.isSubcontracting());
 
 			final WFDurationUnit durationUnit = orderActivity.getDurationUnit();
+			cc.setDurationUnit(durationUnit.getCode());
 			cc.setSetupTimeReal(durationUnit.toBigDecimal(request.getDurationSetup()));
 			cc.setDurationReal(durationUnit.toBigDecimal(request.getDuration()));
 		}
