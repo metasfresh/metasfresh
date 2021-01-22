@@ -204,6 +204,14 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		return resource.getName();
 	}
 
+	@Override
+	public PPOrderRoutingActivity getFirstActivity(@NonNull final PPOrderId orderId)
+	{
+		final I_PP_Order_Workflow orderWorkflow = retrieveOrderWorkflowOrNull(orderId);
+		final PPOrderRoutingActivityId firstActivityId = PPOrderRoutingActivityId.ofRepoId(orderId, orderWorkflow.getPP_Order_Node_ID());
+		return getOrderRoutingActivity(firstActivityId);
+	}
+
 	private PPOrderRoutingActivity toPPOrderRoutingActivity(
 			@NonNull final I_PP_Order_Node record,
 			@NonNull final WFDurationUnit durationUnit,

@@ -24,6 +24,8 @@ package de.metas.ui.web.pporder.process;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -34,7 +36,9 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.workflow.WFDurationUnit;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -43,29 +47,31 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_Node;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.HashMap;
 
 public class PP_Order_RecordWork
 		extends JavaProcess
-		implements IProcessPrecondition, IProcessParametersCallout
+		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
 	private final IPPOrderBL orderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderRoutingRepository orderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
 	private final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
 
-	private static final String PARAM_PP_Order_Node_ID = I_PP_Order_Node.COLUMNNAME_PP_Order_Node_ID;
+	private static final String PARAM_PP_Order_Node_ID = "PP_Order_Node_ID";
 	@Param(parameterName = PARAM_PP_Order_Node_ID, mandatory = true)
 	private int orderRoutingActivityRepoId;
 
-	@Param(parameterName = "DurationUnit", mandatory = true)
+	private static final String PARAM_DurationUnit = "DurationUnit";
+	@Param(parameterName = PARAM_DurationUnit, mandatory = true)
 	private WFDurationUnit durationUnit;
 
 	@Param(parameterName = "Duration", mandatory = true)
 	private int duration;
 
+	private DefaultParams _defaultParams; // lazy
 	private final HashMap<PPOrderId, I_PP_Order> ordersCache = new HashMap<>();
 
 	@Override
@@ -95,6 +101,45 @@ public class PP_Order_RecordWork
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_PP_Order_Node_ID.equals(parameter.getColumnName()))
+		{
+			return getDefaultParameters().getActivityId();
+		}
+		if (PARAM_DurationUnit.equals(parameter.getColumnName()))
+		{
+			return getDefaultParameters().getDurationUnit();
+		}
+		else
+		{
+			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+		}
+	}
+
+	@Value
+	@Builder
+	private static class DefaultParams
+	{
+		PPOrderRoutingActivityId activityId;
+		WFDurationUnit durationUnit;
+	}
+
+	private DefaultParams getDefaultParameters()
+	{
+		if (_defaultParams == null)
+		{
+			final PPOrderRoutingActivity firstActivity = orderRoutingRepository.getFirstActivity(getOrderId());
+			_defaultParams = DefaultParams.builder()
+					.activityId(firstActivity.getId())
+					.durationUnit(firstActivity.getDurationUnit())
+					.build();
+		}
+		return _defaultParams;
 	}
 
 	@Override
