@@ -383,8 +383,6 @@ public class C_Order
 	}, ifColumnsChanged = {
 			I_C_Order.COLUMNNAME_C_BPartner_ID,
 			I_C_Order.COLUMNNAME_DatePromised })
-	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_ID,
-			I_C_Order.COLUMNNAME_DatePromised })
 	public void validateHaddexOnChange(final I_C_Order order)
 	{
 		validateHaddex(order);
