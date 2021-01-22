@@ -104,7 +104,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 
 			for (final HierarchyConfig hierarchyConfig : hierarchyConfigs)
 			{
-				try (final MDCCloseable beneficiaryMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, beneficiary.getBPartnerId()))
+				try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, beneficiary.getBPartnerId()))
 				{
 					final CommissionContract contract = hierarchyConfig.getContractFor(beneficiary);
 					if (contract == null)

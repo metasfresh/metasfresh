@@ -136,6 +136,11 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 			try
 			{
 				count++;
+				if (count % 1000 == 0)
+				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG {} of {} preliminaryQualifiedBPIds are done", count, preliminaryQualifiedBPIds.size());
+				}
+
 				processBPId(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
 			}
 			catch (final Exception e)
@@ -212,14 +217,14 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 				? mapValueByInterval(salesRepChangeLogEntries, targetTimeframe)
 				//if no log entries were found, it means the present situation applies for the whole target timeframe
 				: (bPartner.getSalesRep_ID() > 0
-					? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()))
-					: ImmutableMap.of());
+				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getSalesRep_ID()))
+				: ImmutableMap.of());
 
 		final Map<InstantInterval, String> bPartnerSalesRepValueByInterval = !bPartnerSalesRepChangeLogEntries.isEmpty()
 				? mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe)
 				: (bPartner.getC_BPartner_SalesRep_ID() > 0
-					? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()))
-					: ImmutableMap.of());
+				? ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()))
+				: ImmutableMap.of());
 
 		final ImmutableList.Builder<RecalculateCommissionCriteria> commissionCriteriaListBuilder = ImmutableList.builder();
 
@@ -430,7 +435,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByQuery(multiQuery);
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: found {} ICs while recalculating commission for criteria: {} ",
-														 invoiceCandidates.size(), commissionCriteria);
+				invoiceCandidates.size(), commissionCriteria);
 
 		invoiceCandidates.forEach(invoiceCandidate -> {
 			try
@@ -455,7 +460,7 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		final List<I_C_Invoice> invoices = invoiceDAO.retrieveBySalesrepPartnerId(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTargetInterval());
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: found {} Invoices while recalculating commission for criteria: {}",
-														 invoices.size(), commissionCriteria);
+				invoices.size(), commissionCriteria);
 
 		invoices.forEach(invoice -> {
 			try
