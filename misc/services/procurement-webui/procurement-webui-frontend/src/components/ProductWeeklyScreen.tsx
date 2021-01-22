@@ -40,7 +40,7 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
 
   return (
     <View>
-      <Prognose nextWeek={store.weeklyProducts.nextWeekCaption} />
+      <Prognose nextWeek={store.weeklyProducts.nextWeekCaption} trend={product.nextWeekTrend} />
       <div>
         <section className="section pt-0">
           {dailyQuantities.length &&
