@@ -39,6 +39,7 @@ import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -171,6 +172,12 @@ public class PP_Order_RecordWork
 	@Override
 	protected String doIt()
 	{
+		final Duration duration = getDuration();
+		if(duration.isNegative() || duration.isZero())
+		{
+			throw new FillMandatoryException("Duration");
+		}
+
 		final PPOrderRoutingActivityId orderRoutingActivityId = getOrderRoutingActivityId();
 		final PPOrderId orderId = orderRoutingActivityId.getOrderId();
 
@@ -186,7 +193,7 @@ public class PP_Order_RecordWork
 				.movementDate(SystemTime.asZonedDateTime())
 				.qtyMoved(Quantitys.createZero(finishedGoodsUomId))
 				.durationSetup(Duration.ZERO)
-				.duration(getDuration())
+				.duration(duration)
 				.build());
 
 		return MSG_OK;
