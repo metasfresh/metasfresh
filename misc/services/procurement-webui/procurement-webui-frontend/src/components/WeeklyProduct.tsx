@@ -39,7 +39,7 @@ const WeeklyProduct: FunctionComponent<Props> = ({
               <div className="column green-check is-hidden-mobile">
                 <i className="fas fa-check"></i>
               </div>
-              <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet is-4">
+              <div className="column mt-4 is-hidden-desktop is-hidden-tablet is-4">
                 <Trend trend={nextWeekTrend} />
                 {/* Trend listing in here */}
               </div>

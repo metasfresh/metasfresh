@@ -8,10 +8,10 @@ const Trend: React.FunctionComponent<Props> = ({ trend }: Props): ReactElement =
     <div>
       <i
         className={classnames('', {
-          'fas fa-lg fa-arrow-up': trend === 'trend-up',
-          'fas fa-lg fa-arrow-down': trend === 'trend-down',
-          'fas fa-lg fa-arrow-right': trend === 'trend-even',
-          'fas fa-lg fa-times': trend === 'trend-zero',
+          'fas fa-lg fa-arrow-up up': trend === 'trend-up',
+          'fas fa-lg fa-arrow-down down': trend === 'trend-down',
+          'fas fa-lg fa-arrow-right right': trend === 'trend-even',
+          'fas fa-lg fa-times disabled': trend === 'trend-zero',
         })}
       ></i>
     </div>
