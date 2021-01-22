@@ -174,7 +174,7 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Is Tax Included in Amount.
 	 *
-	 * @param tax   optional
+	 * @param tax optional
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
 	 * <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
 	 */
@@ -210,8 +210,7 @@ public interface IOrderBL extends ISingletonService
 	 * </ul>
 	 * from the sums of the order's lines.
 	 *
-	 * @param order
-	 * task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
+	 * @param order task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	void updateOrderQtySums(I_C_Order order);
 
@@ -242,4 +241,10 @@ public interface IOrderBL extends ISingletonService
 	 * @return organization's timezone or system timezone; never returns null
 	 */
 	ZoneId getTimeZone(I_C_Order order);
+
+	void validateHaddexOrder(I_C_Order order);
+
+	void validateHaddexDate(I_C_Order order);
+
+	boolean isHaddexOrder(I_C_Order order);
 }

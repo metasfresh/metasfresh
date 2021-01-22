@@ -363,7 +363,7 @@ public class C_Order
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE
+			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
 			I_C_Order.COLUMNNAME_DropShip_Location_ID
 	})
@@ -376,5 +376,30 @@ public class C_Order
 		}
 
 		Services.get(IOrderBL.class).setPriceList(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_BPartner_ID,
+			I_C_Order.COLUMNNAME_DatePromised })
+	public void validateHaddexOnChange(final I_C_Order order)
+	{
+		validateHaddex(order);
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateHaddexOnComplete(final I_C_Order order)
+	{
+		// validate on order completion to prevent cases when a partner or product became haddex relevant after the order was created but before it was completed
+		validateHaddex(order);
+	}
+
+	private void validateHaddex(final I_C_Order order)
+	{
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+		orderBL.validateHaddexOrder(order);
 	}
 }
