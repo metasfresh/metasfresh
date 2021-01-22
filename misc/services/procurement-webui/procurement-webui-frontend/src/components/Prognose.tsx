@@ -6,7 +6,6 @@ interface Props {
   trend?: string;
 }
 const Prognose: React.FunctionComponent<Props> = ({ nextWeek, trend }: Props): ReactElement => {
-  console.log(trend);
   let prognoseHeader = translate('WeeklyDetailedReportingView.toolbar.caption');
   prognoseHeader = prognoseHeader.replace(`{0}`, nextWeek);
   return (
