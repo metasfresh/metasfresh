@@ -59,15 +59,6 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Haddex Check', PrintName='Hadd
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578664,'en_US') 
 ;
 
--- 2021-01-21T11:49:06.982Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET Help=NULL, ColumnName='IsHaddexCheck', Description=NULL, AD_Element_ID=578664, Name='Haddex Prüfung erforderlich',Updated=TO_TIMESTAMP('2021-01-21 13:49:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572470
-;
-
--- 2021-01-21T11:49:06.985Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(578664) 
-;
 
 -- 2021-01-21T11:49:08.170Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
