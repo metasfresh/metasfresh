@@ -50,6 +50,15 @@ public class ServiceRepairProjectConsumptionSummary
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
+	public static GroupingKey extractGroupingKey(@NonNull final AddQtyToProjectTaskRequest request)
+	{
+		return GroupingKey.builder()
+				.projectId(request.getTaskId().getProjectId())
+				.productId(request.getProductId())
+				.uomId(request.getUomId())
+				.build();
+	}
+
 	public ServiceRepairProjectConsumptionSummary reduce(@NonNull final AddQtyToProjectTaskRequest request)
 	{
 		Check.assumeEquals(groupingKey.getProjectId(), request.getTaskId().getProjectId(), "projectId not matching: {}, {}", this, request);

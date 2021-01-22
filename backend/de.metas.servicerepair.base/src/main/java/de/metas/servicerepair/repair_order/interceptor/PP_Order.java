@@ -22,11 +22,7 @@
 
 package de.metas.servicerepair.repair_order.interceptor;
 
-import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
-import de.metas.servicerepair.project.repository.requests.CreateProjectCostCollectorRequest;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
-import de.metas.servicerepair.repair_order.RepairManufacturingCostCollector;
-import de.metas.servicerepair.repair_order.RepairManufacturingOrderInfo;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -39,14 +35,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class PP_Order
 {
-	private final ServiceRepairProjectService serviceRepairProjectService;
+	private final ServiceRepairProjectService repairProjectService;
 	private final RepairManufacturingOrderService repairManufacturingOrderService;
 
 	public PP_Order(
-			@NonNull final ServiceRepairProjectService serviceRepairProjectService,
+			@NonNull final ServiceRepairProjectService repairProjectService,
 			@NonNull final RepairManufacturingOrderService repairManufacturingOrderService)
 	{
-		this.serviceRepairProjectService = serviceRepairProjectService;
+		this.repairProjectService = repairProjectService;
 		this.repairManufacturingOrderService = repairManufacturingOrderService;
 	}
 
@@ -55,40 +51,12 @@ public class PP_Order
 	{
 		repairManufacturingOrderService
 				.extractFromRecord(record)
-				.ifPresent(this::importCostsFromRepairOrder);
+				.ifPresent(repairProjectService::importCostsFromRepairOrderIfApplies);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_UNCLOSE)
 	public void onBeforeUnClose(@NonNull final I_PP_Order repairOrder)
 	{
 		//serviceRepairProjectService.
-	}
-
-	private void importCostsFromRepairOrder(final RepairManufacturingOrderInfo repairOrder)
-	{
-		final ServiceRepairProjectTaskId taskId = serviceRepairProjectService
-				.getTaskIdByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
-				.orElse(null);
-		if (taskId == null)
-		{
-			return;
-		}
-
-		for (final RepairManufacturingCostCollector mfgCostCollector : repairManufacturingOrderService.getCostCollectors(repairOrder.getId()))
-		{
-			serviceRepairProjectService.createCostCollector(toCreateProjectCostCollectorRequest(taskId, mfgCostCollector));
-		}
-
-		serviceRepairProjectService.changeTask(taskId, task -> task.withRepairOrderDone(true));
-	}
-
-	private static CreateProjectCostCollectorRequest toCreateProjectCostCollectorRequest(final ServiceRepairProjectTaskId taskId, final RepairManufacturingCostCollector mfgCostCollector)
-	{
-		return CreateProjectCostCollectorRequest.builder()
-				.taskId(taskId)
-				.productId(mfgCostCollector.getProductId())
-				.qtyConsumed(mfgCostCollector.getQtyConsumed())
-				.repairOrderCostCollectorId(mfgCostCollector.getId())
-				.build();
 	}
 }

@@ -853,8 +853,8 @@ public interface I_C_Project
 	/**
 	 * Set Process Now.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setProcessing (boolean Processing);
@@ -862,8 +862,8 @@ public interface I_C_Project
 	/**
 	 * Get Process Now.
 	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isProcessing();
