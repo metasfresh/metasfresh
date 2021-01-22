@@ -141,6 +141,7 @@ public class C_OrderLine
 	}, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_M_Product_ID
 	})
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void validateHaddex(final I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
