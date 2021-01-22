@@ -48,6 +48,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import de.metas.util.time.InstantInterval;
 import de.metas.util.time.IntervalUtils;
 import lombok.Builder;
@@ -321,9 +322,9 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 		if (superSalesRepUser.getC_BPartner_ID() <= 0)
 		{
-			Loggables.withLogger(logger, Level.WARN)
-					.addLog("*** WARN during calculation for bPartnerId: {}:"
-							+ " salesRepUser: {} doesn't have a bPartner! Skipping.. ", salesRepId, superSalesRepUser.getAD_User_ID());
+			// this might be OK; we did not take care to assign a bpartner the user if there were no actial commission instance with base-points > 0
+			logger.debug("*** WARN during calculation for bPartnerId={} salesRepUserId={} doesn't have a bPartner! Skipping.. ",
+							RepoIdAwares.toRepoId(salesRepId), superSalesRepUser.getAD_User_ID());
 			return Optional.empty();
 		}
 		else
@@ -333,8 +334,8 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 			if (!superSalesRepBPartner.isSalesRep())
 			{
 				Loggables.withLogger(logger, Level.WARN)
-						.addLog("*** WARN during calculation for bPartnerId: {}: missing 'isSalesRep' flag on regional manager: {}! Skipping.. ",
-								salesRepId, superSalesRepBPartner.getC_BPartner_ID());
+						.addLog("*** WARN during calculation for salesRepId={}: missing 'isSalesRep' flag on regional manager id={}! Skipping.. ",
+								RepoIdAwares.toRepoId(salesRepId), superSalesRepBPartner.getC_BPartner_ID());
 
 				return Optional.empty();
 			}
