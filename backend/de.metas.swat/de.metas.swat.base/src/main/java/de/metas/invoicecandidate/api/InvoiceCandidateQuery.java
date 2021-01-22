@@ -32,7 +32,7 @@ public class InvoiceCandidateQuery
 	LocalDate dateToInvoice;
 	String headerAggregationKey;
 	BPartnerId salesRepBPartnerId;
-	InstantInterval dateToInvoiceInterval;
+	InstantInterval dateOrderedInterval;
 
 	// Any of the following properties may or may not be part of a valid query.
 	InvoiceCandidateId excludeC_Invoice_Candidate_ID;
@@ -48,7 +48,7 @@ public class InvoiceCandidateQuery
 			@Nullable final BPartnerId billBPartnerId,
 			@Nullable final LocalDate dateToInvoice,
 			@Nullable final BPartnerId salesRepBPartnerId,
-			@Nullable final InstantInterval dateToInvoiceInterval,
+			@Nullable final InstantInterval dateOrderedInterval,
 			@Nullable final String headerAggregationKey,
 			@Nullable final InvoiceCandidateId excludeC_Invoice_Candidate_ID,
 			@Nullable final InvoiceCandidateId maxManualC_Invoice_Candidate_ID,
@@ -61,7 +61,7 @@ public class InvoiceCandidateQuery
 		this.billBPartnerId = billBPartnerId;
 		this.dateToInvoice = dateToInvoice;
 		this.salesRepBPartnerId = salesRepBPartnerId;
-		this.dateToInvoiceInterval = dateToInvoiceInterval;
+		this.dateOrderedInterval = dateOrderedInterval;
 		this.headerAggregationKey = headerAggregationKey;
 		this.excludeC_Invoice_Candidate_ID = excludeC_Invoice_Candidate_ID;
 		this.maxManualC_Invoice_Candidate_ID = maxManualC_Invoice_Candidate_ID;
@@ -81,12 +81,12 @@ public class InvoiceCandidateQuery
 				&& billBPartnerId == null
 				&& dateToInvoice == null
 				&& salesRepBPartnerId == null
-				&& dateToInvoiceInterval == null
+				&& dateOrderedInterval == null
 				&& isEmpty(headerAggregationKey, true))
 		{
 			throw new AdempiereException("Invalid invoiceCandidateQuery. "
 					+ "To restrict the number of results, at least one of the following properties has to be specified: "
-					+ "invoiceCandidateId or externalIds or billBPartnerId or dateToInvoice or headerAggregationKey or salesRepBPartnerId or dateToInvoiceInterval")
+					+ "invoiceCandidateId or externalIds or billBPartnerId or dateToInvoice or headerAggregationKey or salesRepBPartnerId or dateOrderedInterval")
 							.appendParametersToMessage()
 							.setParameter("invoiceCandidateQuery", this);
 		}
@@ -99,7 +99,7 @@ public class InvoiceCandidateQuery
 				.billBPartnerId(billBPartnerId)
 				.dateToInvoice(dateToInvoice)
 				.salesRepBPartnerId(salesRepBPartnerId)
-				.dateToInvoiceInterval(dateToInvoiceInterval)
+				.dateOrderedInterval(dateOrderedInterval)
 				.headerAggregationKey(headerAggregationKey)
 				.excludeC_Invoice_Candidate_ID(excludeC_Invoice_Candidate_ID)
 				.maxManualC_Invoice_Candidate_ID(maxManualC_Invoice_Candidate_ID)

@@ -130,6 +130,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public void saveOutOfTrx(@NonNull final I_C_BPartner bpartner)
+	{
+		InterfaceWrapperHelper.save(bpartner, ITrx.TRXNAME_None);
+	}
+
+	@Override
 	public void save(@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		InterfaceWrapperHelper.saveRecord(bpartnerLocation);
@@ -152,6 +158,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	public <T extends I_C_BPartner> T getById(final int bpartnerId, final Class<T> modelClass)
 	{
 		return getById(BPartnerId.ofRepoId(bpartnerId), modelClass);
+	}
+
+	@Override
+	public I_C_BPartner getByIdOutOfTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return loadOutOfTrx(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override

@@ -1752,29 +1752,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId);
 		}
 
-		final InstantInterval dateToInvoiceInterval = query.getDateToInvoiceInterval();
-		if (dateToInvoiceInterval != null)
+		final InstantInterval dateOrderedInterval = query.getDateOrderedInterval();
+		if (dateOrderedInterval != null)
 		{
-			final Timestamp from = TimeUtil.asTimestamp(dateToInvoiceInterval.getFrom());
-			final Timestamp to = TimeUtil.asTimestamp(dateToInvoiceInterval.getTo());
+			final Timestamp from = TimeUtil.asTimestamp(dateOrderedInterval.getFrom());
+			final Timestamp to = TimeUtil.asTimestamp(dateOrderedInterval.getTo());
 
-			final ICompositeQueryFilter<I_C_Invoice_Candidate> dateToInvoiceOvrFilter =
-					queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-							.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, null)
-							.addBetweenFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, from, to);
-
-			final ICompositeQueryFilter<I_C_Invoice_Candidate> dateToInvoiceFilter =
-					queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-							.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, null)
-							.addBetweenFilter(I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice, from, to);
-
-			final ICompositeQueryFilter<I_C_Invoice_Candidate> dateToInvoiceIntervalFilter =
-					queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-					.setJoinOr()
-					.addFilter(dateToInvoiceOvrFilter)
-					.addFilter(dateToInvoiceFilter);
-
-			filter.addFilter(dateToInvoiceIntervalFilter);
+			filter.addBetweenFilter(I_C_Invoice_Candidate.COLUMNNAME_DateOrdered, from, to);
 		}
 
 		final LocalDate dateToInvoice = query.getDateToInvoice();
