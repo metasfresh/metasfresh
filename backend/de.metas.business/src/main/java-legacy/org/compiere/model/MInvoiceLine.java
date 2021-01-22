@@ -293,8 +293,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// 07442
 		// Do not change the activity if it was already set
 
-		final I_C_Activity activity = getC_Activity();
-		if (activity == null)
+		final int activityId = getC_Activity_ID();
+		if (activityId <= 0)
 		{
 			setC_Activity_ID(oLine.getC_Activity_ID());
 		}
@@ -318,8 +318,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// get tax and activity. they will be checked in several places in this method
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
-
-		final I_C_Activity activity = getC_Activity();
 
 		setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 		setC_OrderLine_ID(sLine.getC_OrderLine_ID());
@@ -423,7 +421,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setC_ProjectTask_ID(sLine.getC_ProjectTask_ID());
 		// 07442
 		// Do not change the activity if it was already set
-		if (activity == null)
+		if (getC_Activity_ID() <= 0)
 		{
 			setC_Activity_ID(sLine.getC_Activity_ID());
 		}
@@ -1719,8 +1717,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// 07442
 		// Do not change the activity if it was already set
 
-		final I_C_Activity activity = getC_Activity();
-		if (activity == null)
+		final int activityId = getC_Activity_ID();
+		if (activityId <= 0)
 		{
 			setC_Activity_ID(rmaLine.getC_Activity_ID());
 		}

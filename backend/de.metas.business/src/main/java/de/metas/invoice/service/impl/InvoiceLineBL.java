@@ -1,6 +1,7 @@
 package de.metas.invoice.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -12,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -242,7 +244,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		if (invoiceLine.getC_Charge_ID() > 0)
 		{
-			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
+			final I_C_Charge chargeRecord = loadOutOfTrx(invoiceLine.getC_Charge_ID(), I_C_Charge.class);
+			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
