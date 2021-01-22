@@ -11,12 +11,10 @@ import { observer, inject } from 'mobx-react';
 import qs from 'qs';
 
 import { RootInstance } from './models/Store';
-import { translate } from './utils/translate';
 
 import Header from './components/Header';
 import Weekly from './components/Weekly';
 import Daily from './components/Daily';
-import Error404 from './components/Error404';
 import Login from './components/Login';
 import BottomNav from './components/BottomNav';
 import Info from './components/Info';
@@ -40,7 +38,7 @@ const routes = [
   { path: '/weekly', name: 'Weekly Reporting', Component: Weekly },
   { path: '/weekly/:productId', name: 'Weekly Product', Component: ProductWeeklyScreen },
   { path: '/products', name: 'Products', Component: ProductAdd },
-  { path: '/products/:productId', name: 'Product', Component: ProductScreen },
+  { path: '/products/:productId/:targetDay?/:targetDayCaption?', name: 'Product', Component: ProductScreen },
   { path: '/info', name: 'Info/News', Component: Info },
   { path: '/quotations', name: 'RfQ', Component: RfQ },
   { path: '/quotations/:quotationId', name: 'RfQ Details', Component: RfQ },

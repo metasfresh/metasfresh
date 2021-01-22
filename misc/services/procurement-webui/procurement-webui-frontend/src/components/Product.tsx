@@ -38,7 +38,10 @@ const Product: React.FunctionComponent<Props> = ({
 
   return (
     <div {...handlers} className="product">
-      <div className="box" onClick={() => history.push({ pathname: `/products/${id}` })}>
+      <div
+        className="box"
+        onClick={() => history.push({ pathname: `/products/${id}/${store.app.currentDay}/${store.app.dayCaption}` })}
+      >
         <div className="columns is-mobile">
           <div className="column is-8">
             <div className="columns">

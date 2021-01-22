@@ -9,16 +9,18 @@ import { RootStoreContext } from '../models/Store';
 
 interface RouteParams {
   productId?: string;
+  targetDay?: string;
+  targetDayCaption?: string;
 }
 
 const ProductScreen: React.FunctionComponent = observer(() => {
-  const { productId } = useParams<RouteParams>();
+  const { productId, targetDay, targetDayCaption } = useParams<RouteParams>();
   const store = useContext(RootStoreContext);
   const products = getSnapshot(store.dailyProducts.products);
   const product = products.find((prod) => prod.productId === productId);
 
-  const currentDay = store.app.currentDay;
-  const currentCaption = store.app.dayCaption;
+  const currentDay = targetDay ? targetDay : store.app.currentDay;
+  const currentCaption = targetDayCaption ? targetDayCaption : store.app.dayCaption;
 
   useEffect(() => {
     store.navigation.setViewNames(product.productName);
@@ -36,7 +38,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
         ],
       })
       .then(() => {
-        store.fetchDailyReport(store.app.currentDay);
+        store.fetchDailyReport(currentDay);
         store.app.getUserSession();
       });
   };

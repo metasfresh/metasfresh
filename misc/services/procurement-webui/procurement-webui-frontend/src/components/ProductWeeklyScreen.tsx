@@ -4,6 +4,7 @@ import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
+import { useHistory } from 'react-router-dom';
 import Prognose from './Prognose';
 interface RouteParams {
   productId?: string;
@@ -25,6 +26,13 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
     });
   };
 
+  const history = useHistory();
+  const handleClick = (productId: string, date: string, dayCaption: string): void => {
+    history.push({
+      pathname: `/products/${productId}/${date}/${dayCaption}`,
+    });
+  };
+
   return (
     <View>
       <Prognose
@@ -40,7 +48,11 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
           {dailyQuantities.length &&
             dailyQuantities.map((dItem) => {
               return (
-                <div key={dItem.dayCaption} className="product">
+                <div
+                  key={dItem.dayCaption}
+                  className="product"
+                  onClick={() => handleClick(product.getId, dItem.date, dItem.dayCaption)}
+                >
                   <div className="box">
                     <div className="columns is-mobile">
                       <div className="column is-8">
