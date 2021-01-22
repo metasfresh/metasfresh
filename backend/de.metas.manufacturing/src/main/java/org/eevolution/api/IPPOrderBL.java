@@ -82,6 +82,8 @@ public interface IPPOrderBL extends ISingletonService
 
 	void closeAllActivities(PPOrderId orderId);
 
+	void uncloseActivities(@NonNull PPOrderId orderId);
+
 	Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(PPOrderId pickingOrderId);
 
 	void updateCanBeExportedAfter(@NonNull I_PP_Order order);

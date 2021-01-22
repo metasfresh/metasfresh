@@ -153,7 +153,7 @@ public final class Check
 		assume(cond, defaultExClazz, errMsg, params);
 	}
 
-	public static <T> void assumeEquals(final T obj1, final T obj2, final String objectName)
+	public static <T> void assumeEquals(@Nullable final T obj1, @Nullable final T obj2, final String objectName)
 	{
 		assume(Objects.equals(obj1, obj2), "assumed same {} but they were different: {}, {}", objectName, obj1, obj2);
 	}

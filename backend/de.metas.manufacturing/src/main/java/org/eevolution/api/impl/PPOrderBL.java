@@ -448,6 +448,23 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public void uncloseActivities(@NonNull final PPOrderId orderId)
+	{
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
+
+		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
+		{
+			final PPOrderRoutingActivityStatus activityStatus = activity.getStatus();
+			if (activityStatus == PPOrderRoutingActivityStatus.CLOSED)
+			{
+				orderRouting.uncloseActivity(activity.getId());
+			}
+		}
+
+		orderRoutingRepo.save(orderRouting);
+	}
+
+	@Override
 	public Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(@NonNull final PPOrderId pickingOrderId)
 	{
 		final I_PP_Order pickingOrder = ppOrdersRepo.getById(pickingOrderId);

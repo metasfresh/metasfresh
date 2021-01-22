@@ -193,4 +193,10 @@ public class PPOrderRouting
 	{
 		getActivityById(activityId).closeIt();
 	}
+
+	public void uncloseActivity(final PPOrderRoutingActivityId activityId)
+	{
+		getActivityById(activityId).uncloseIt();
+	}
+
 }

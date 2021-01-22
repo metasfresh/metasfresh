@@ -212,6 +212,17 @@ public final class PPOrderRoutingActivity
 		}
 	}
 
+	void uncloseIt()
+	{
+		if (getStatus() != PPOrderRoutingActivityStatus.CLOSED)
+		{
+			logger.warn("Only Closed activities can be unclosed - {}", this);
+			return;
+		}
+
+		changeStatusTo(PPOrderRoutingActivityStatus.IN_PROGRESS);
+	}
+
 	void voidIt()
 	{
 		if (getStatus() == PPOrderRoutingActivityStatus.VOIDED)
