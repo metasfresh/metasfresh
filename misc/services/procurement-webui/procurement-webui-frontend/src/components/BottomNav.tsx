@@ -80,7 +80,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             <span className="link-text">{translate('InfoMessageView.caption.short')}</span>
           </Link>,
           <Link
-            to={{ pathname: '/quotations' }}
+            to={{ pathname: '/rfq' }}
             className="link is-flex is-flex-direction-column is-justify-content-center"
             key="4"
           >

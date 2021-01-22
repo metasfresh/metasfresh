@@ -9,6 +9,7 @@ import { DailyProductList } from './DailyProductList';
 import { App } from './App';
 import { ProductSelection } from './ProductSelection';
 import { WeeklyProductList } from './WeeklyProductList';
+import { RFQList } from './RFQList';
 
 export const Store = types
   .model('Store', {
@@ -19,6 +20,7 @@ export const Store = types
     app: App,
     info: Info,
     productSelection: ProductSelection,
+    rfqs: RFQList,
   })
   .actions((self) => ({
     logIn: flow(function* logIn(email: string, password: string) {
@@ -71,6 +73,7 @@ export const Store = types
 
         self.weeklyProducts.updateProductList(products);
         // update the model values also even if the week info are held on the app... Not really necessarry but for the sake of clear data
+        // Todo: WAT ? - Kuba
         self.weeklyProducts.updateNextWeek(nextWeek);
         self.weeklyProducts.updateNextCaption(nextWeekCaption);
         self.weeklyProducts.updatePreviousWeek(previousWeek);
@@ -101,6 +104,7 @@ let initialState = Store.create({
   },
   info: { content: '' },
   productSelection: {},
+  rfqs: {},
 });
 
 const data = localStorage.getItem('initialState');

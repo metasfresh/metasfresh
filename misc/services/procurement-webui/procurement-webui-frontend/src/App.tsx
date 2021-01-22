@@ -18,7 +18,8 @@ import Daily from './components/Daily';
 import Login from './components/Login';
 import BottomNav from './components/BottomNav';
 import Info from './components/Info';
-import RfQ from './components/RfQ';
+import RfQDetails from './components/RfQDetails';
+import RfQList from './components/RfQList';
 import ProductScreen from './components/ProductScreen';
 import ProductAdd from './components/ProductAdd';
 import PasswordRecovery from './components/PasswordRecovery';
@@ -40,8 +41,8 @@ const routes = [
   { path: '/products', name: 'Products', Component: ProductAdd },
   { path: '/products/:productId/:targetDay?/:targetDayCaption?', name: 'Product', Component: ProductScreen },
   { path: '/info', name: 'Info/News', Component: Info },
-  { path: '/quotations', name: 'RfQ', Component: RfQ },
-  { path: '/quotations/:quotationId', name: 'RfQ Details', Component: RfQ },
+  { path: '/rfq', name: 'RfQ', Component: RfQList },
+  { path: '/rfq/:quotationId', name: 'RfQ Details', Component: RfQDetails },
 ];
 
 const childRoutes = (
@@ -103,7 +104,6 @@ function PrivateRoute({ loggedIn, ...rest }) {
   );
 }
 
-// TODO: We should try making this a PureComponent
 @inject('store')
 @observer
 class App extends React.Component<IProps, IState> {

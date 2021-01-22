@@ -151,10 +151,10 @@ export function getUserSession(): Promise<AxiosResponse> {
   return axios.get(`/rest/session/`);
 }
 
-export function fetchQuotations(): Promise<AxiosResponse> {
-  return axios.get(`/rest/session/`);
-}
-
 export function infoMessages(): Promise<AxiosResponse> {
   return axios.get(`/rest/infoMessages`);
+}
+
+export function fetchRFQuotations(): Promise<AxiosResponse> {
+  return axios.get(`/rest/rfq`);
 }

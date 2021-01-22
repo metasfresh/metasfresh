@@ -1,17 +1,49 @@
 import React, { FunctionComponent, ReactElement } from 'react';
-import View from './View';
+import { useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
 
-const RfQ: FunctionComponent = (): ReactElement => {
+interface Props {
+  id: string;
+  name: string;
+  dateStart: string;
+  dateEnd: string;
+  quantityPromised: string;
+}
+
+const RfQ: FunctionComponent<Props> = ({ id, name, dateStart, dateEnd, quantityPromised }: Props): ReactElement => {
+  const history = useHistory();
+
   return (
-    <View>
-      <div>
-        <h1 className="title p-4">{translate('RfQView.caption')}</h1>
-        <div className="mt-1 p-4">
-          <p className="subtitle">Some content</p>
+    <div className="product">
+      <div
+        className="box"
+        onClick={() =>
+          history.push({
+            pathname: `/rfq/${id}`,
+            state: { text: translate('RfQsListView.caption') },
+          })
+        }
+      >
+        <div className="columns is-mobile">
+          <div className="column is-8">
+            <div className="columns">
+              <div className="column is-size-4-mobile no-p">{name}</div>
+              <div className="column is-size-7 no-p">
+                {dateStart} - {dateEnd}
+              </div>
+            </div>
+          </div>
+          <div className="column is-4 no-p">
+            <div className="columns is-mobile">
+              <div className="column mt-2 is-size-2-mobile no-p">{quantityPromised}</div>
+              <div className="column green-check is-hidden-mobile">
+                <i className="fas fa-check"></i>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </View>
+    </div>
   );
 };
 
