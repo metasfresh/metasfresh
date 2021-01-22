@@ -117,6 +117,8 @@ public final class PPOrderRoutingActivity
 		return getSetupTimeRequired().minus(getSetupTimeReal());
 	}
 
+	public Duration getDurationTotalBooked() { return getSetupTimeReal().plus(getDurationReal());}
+
 	public boolean isSomethingProcessed()
 	{
 		return getQtyDelivered().signum() != 0

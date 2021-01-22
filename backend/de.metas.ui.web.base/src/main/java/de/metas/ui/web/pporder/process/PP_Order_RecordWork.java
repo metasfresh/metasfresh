@@ -71,6 +71,10 @@ public class PP_Order_RecordWork
 	@Param(parameterName = "Duration", mandatory = true)
 	private int duration;
 
+	private static final String PARAM_DurationBooked = "DurationBooked";
+	@Param(parameterName = PARAM_DurationBooked, mandatory = true)
+	private int durationAlreadyBooked;
+
 	private DefaultParams _defaultParams; // lazy
 	private final HashMap<PPOrderId, I_PP_Order> ordersCache = new HashMap<>();
 
@@ -115,6 +119,10 @@ public class PP_Order_RecordWork
 		{
 			return getDefaultParameters().getDurationUnit();
 		}
+		if (PARAM_DurationBooked.equals(parameter.getColumnName()))
+		{
+			return getDefaultParameters().getDurationAlreadyBooked();
+		}
 		else
 		{
 			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
@@ -127,6 +135,7 @@ public class PP_Order_RecordWork
 	{
 		PPOrderRoutingActivityId activityId;
 		WFDurationUnit durationUnit;
+		int durationAlreadyBooked;
 	}
 
 	private DefaultParams getDefaultParameters()
@@ -134,9 +143,11 @@ public class PP_Order_RecordWork
 		if (_defaultParams == null)
 		{
 			final PPOrderRoutingActivity firstActivity = orderRoutingRepository.getFirstActivity(getOrderId());
+			final WFDurationUnit durationUnit = firstActivity.getDurationUnit();
 			_defaultParams = DefaultParams.builder()
 					.activityId(firstActivity.getId())
-					.durationUnit(firstActivity.getDurationUnit())
+					.durationUnit(durationUnit)
+					.durationAlreadyBooked(durationUnit.toInt(firstActivity.getDurationTotalBooked()))
 					.build();
 		}
 		return _defaultParams;
@@ -152,6 +163,7 @@ public class PP_Order_RecordWork
 			{
 				final PPOrderRoutingActivity orderRoutingActivity = orderRoutingRepository.getOrderRoutingActivity(orderRoutingActivityId);
 				this.durationUnit = orderRoutingActivity.getDurationUnit();
+				this.durationAlreadyBooked = durationUnit.toInt(orderRoutingActivity.getDurationTotalBooked());
 			}
 		}
 	}
