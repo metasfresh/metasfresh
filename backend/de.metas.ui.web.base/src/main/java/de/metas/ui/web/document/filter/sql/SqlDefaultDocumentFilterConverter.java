@@ -318,25 +318,19 @@ import java.util.List;
 			return buildSqlWhereClause_IsNull(sqlColumnExpr, negate);
 		}
 
-		return new StringBuilder()
-				.append(sqlColumnExpr)
-				.append(negate ? " <> " : " = ")
-				.append(sqlParams.placeholder(sqlValue))
-				.toString();
+		return sqlColumnExpr
+				+ (negate ? " <> " : " = ")
+				+ sqlParams.placeholder(sqlValue);
 	}
 
 	private static String buildSqlWhereClause_IsNull(final String sqlColumnExpr, final boolean negate)
 	{
-		return new StringBuilder()
-				.append(sqlColumnExpr).append(negate ? " IS NOT NULL" : " IS NULL")
-				.toString();
+		return sqlColumnExpr + (negate ? " IS NOT NULL" : " IS NULL");
 	}
 
 	private static String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, @Nullable final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
-		return new StringBuilder()
-				.append(sqlColumnExpr).append(sqlOperator).append(sqlParams.placeholder(sqlValue))
-				.toString();
+		return sqlColumnExpr + sqlOperator + sqlParams.placeholder(sqlValue);
 	}
 
 	@Nullable
@@ -388,11 +382,9 @@ import java.util.List;
 
 		final String sqlOperator = (negate ? " NOT " : " ") + (ignoreCase ? "ILIKE " : "LIKE ");
 
-		return new StringBuilder()
-				.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(sqlColumnExpr).append(", 1)")
-				.append(sqlOperator)
-				.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(sqlParams.placeholder(sqlValueStr)).append(", 1)")
-				.toString();
+		return DBConstants.FUNCNAME_unaccent_string + "(" + sqlColumnExpr + ", 1)"
+				+ sqlOperator
+				+ DBConstants.FUNCNAME_unaccent_string + "(" + sqlParams.placeholder(sqlValueStr) + ", 1)";
 	}
 
 	private static String buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo, final SqlParamsCollector sqlParams)
@@ -412,9 +404,7 @@ import java.util.List;
 			return buildSqlWhereClause_Compare(sqlColumnExpr, ">=", sqlValue, sqlParams);
 		}
 
-		return new StringBuilder()
-				.append(sqlColumnExpr).append(" BETWEEN ").append(sqlParams.placeholder(sqlValue)).append(" AND ").append(sqlParams.placeholder(sqlValueTo))
-				.toString();
+		return sqlColumnExpr + " BETWEEN " + sqlParams.placeholder(sqlValue) + " AND " + sqlParams.placeholder(sqlValueTo);
 	}
 
 	private String buildSqlWhereClause_NotNullIfFlagTrue(final String sqlColumnExpr, final Object isApplyFilterFlagObj)
@@ -480,7 +470,7 @@ import java.util.List;
 
 		final LabelsLookup lookup = paramDescriptor.getLookupDescriptor()
 				.map(LabelsLookup::cast)
-				.get();
+				.orElseThrow(() -> new AdempiereException("No lookup defined for " + paramDescriptor));
 		final String labelsTableName = lookup.getLabelsTableName();
 		final String labelsLinkColumnName = lookup.getLabelsLinkColumnName();
 		final String linkColumnName = lookup.getLinkColumnName();
@@ -496,10 +486,10 @@ import java.util.List;
 
 			final Object labelValue = lookup.isLabelsValuesUseNumericKey() ? lookupValue.getIdAsInt() : lookupValue.getIdAsString();
 
-			sql.append("EXISTS (SELECT 1 FROM " + labelsTableName + " labels "
-					+ " WHERE labels." + labelsLinkColumnName + "=" + tableAlias + "." + linkColumnName
-					+ " AND labels." + labelsValueColumnName + "=" + sqlParams.placeholder(labelValue)
-					+ ")");
+			sql.append("EXISTS (SELECT 1 FROM ").append(labelsTableName).append(" labels ")
+					.append(" WHERE labels.").append(labelsLinkColumnName).append("=").append(tableAlias).append(".").append(linkColumnName)
+					.append(" AND labels.").append(labelsValueColumnName).append("=").append(sqlParams.placeholder(labelValue))
+					.append(")");
 		}
 
 		return sql.toString();
@@ -522,7 +512,7 @@ import java.util.List;
 		}
 		else
 		{
-			throw new AdempiereException("Connot convert " + valueObj + " to " + LookupValuesList.class + " for " + filterParam);
+			throw new AdempiereException("Cannot convert " + valueObj + " to " + LookupValuesList.class + " for " + filterParam);
 		}
 	}
 
