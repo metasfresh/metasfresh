@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
 import Prognose from './Prognose';
-import { string } from 'prop-types';
 interface RouteParams {
   productId?: string;
 }
@@ -19,25 +18,6 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
   useEffect(() => {
     store.navigation.setViewNames(`${product.productName} (${store.app.weekCaption})`);
   }, [store]);
-
-  //   const saveQty = (newQty: number) => {
-  //     store
-  //       .postDailyReport({
-  //         items: [
-  //           {
-  //             date: currentDay,
-  //             productId: product.productId,
-  //             qty: newQty,
-  //           },
-  //         ],
-  //       })
-  //       .then(() => {
-  //         store.fetchDailyReport(store.app.currentDay);
-  //         store.app.getUserSession();
-  //       });
-  //   };
-
-  //const qtyInput = React.createRef<HTMLInputElement>();
 
   const prognoseChange = (data: { productId: string; trend: string; week: string }) => {
     store.weeklyProducts.postNextWeekTrend(data).then(() => {
