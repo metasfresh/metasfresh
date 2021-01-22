@@ -192,4 +192,6 @@ public interface IProductBL extends ISingletonService
 	ProductCategoryId getDefaultProductCategoryId();
 
 	ITranslatableString getProductNameTrl(@NonNull ProductId productId);
+
+	boolean isHaddexProduct(ProductId productId);
 }

@@ -37,6 +37,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
@@ -59,6 +60,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
@@ -77,6 +79,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
@@ -97,6 +100,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -107,6 +111,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 public class OrderBL implements IOrderBL
 {
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
+	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
+
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
@@ -670,7 +681,7 @@ public class OrderBL implements IOrderBL
 				if (order.getC_BPartner_Location_ID() == 0)
 				{
 					order.setC_BPartner_Location_ID(locations.get(0)
-							.getC_BPartner_Location_ID());
+															.getC_BPartner_Location_ID());
 				}
 			}
 		}
@@ -1050,5 +1061,78 @@ public class OrderBL implements IOrderBL
 
 		final OrgId orgId = OrgId.ofRepoIdOrAny(order.getAD_Org_ID());
 		return orgsRepo.getTimeZone(orgId);
+	}
+
+	@Override
+	public void validateHaddexOrder(final I_C_Order order)
+	{
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		if (!isHaddexOrder(order))
+		{
+			return;
+		}
+
+		boolean hasHaddexLine = orderDAO.retrieveOrderLines(order)
+				.stream()
+				.anyMatch(lineId -> productBL.isHaddexProduct(ProductId.ofRepoId(lineId.getM_Product_ID())));
+
+		if (!hasHaddexLine)
+		{
+			return;
+		}
+
+		validateHaddexDate(order);
+	}
+
+	@Override
+	public void validateHaddexDate(final I_C_Order order)
+	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+		final org.compiere.model.I_C_BPartner partner = partnerDAO.getById(order.getC_BPartner_ID());
+		final long differenceBetweenHaddexCheckDateAndPromisedDateInMonths = Math.abs(
+				ChronoUnit.MONTHS.between(
+						TimeUtil.asZonedDateTime(partner.getDateHaddexCheck()),
+						TimeUtil.asZonedDateTime(order.getDatePromised())
+				));
+
+		if (differenceBetweenHaddexCheckDateAndPromisedDateInMonths > getMaxHaddexAgeInMonths(order.getAD_Client_ID(), order.getAD_Org_ID()))
+		{
+			throw new AdempiereException(MSG_HADDEX_CHECK_ERROR).markAsUserValidationError();
+		}
+	}
+
+	@Override
+	public boolean isHaddexOrder(final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			return false;
+		}
+
+		final org.compiere.model.I_C_BPartner partner = partnerDAO.getById(order.getC_BPartner_ID());
+
+		if (!partner.isHaddexCheck())
+		{
+			return false;
+		}
+
+		if (partner.getDateHaddexCheck() == null)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private int getMaxHaddexAgeInMonths(int clientID, int orgID)
+	{
+		final int months = sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS, 24, clientID, orgID);
+		if (months > 0)
+		{
+			return months;
+		}
+		return Integer.MAX_VALUE;
 	}
 }
