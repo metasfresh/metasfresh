@@ -1,14 +1,21 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { useHistory } from 'react-router-dom';
-
+import Trend from './Trend';
 interface Props {
   productId: string;
   name: string;
   packType: string;
   qty: number;
+  nextWeekTrend: string;
 }
 
-const WeeklyProduct: FunctionComponent<Props> = ({ productId, qty, name, packType }: Props): ReactElement => {
+const WeeklyProduct: FunctionComponent<Props> = ({
+  productId,
+  qty,
+  name,
+  packType,
+  nextWeekTrend,
+}: Props): ReactElement => {
   const history = useHistory();
   const handleClick = (): void => {
     history.push({
@@ -33,6 +40,7 @@ const WeeklyProduct: FunctionComponent<Props> = ({ productId, qty, name, packTyp
                 <i className="fas fa-check"></i>
               </div>
               <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet is-4">
+                <Trend trend={nextWeekTrend} />
                 {/* Trend listing in here */}
               </div>
             </div>

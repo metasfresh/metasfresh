@@ -40,4 +40,7 @@ export const WeeklyProduct = types
     get getQty() {
       return self.qty;
     },
+    get getTrend() {
+      return self.nextWeekTrend;
+    },
   }));

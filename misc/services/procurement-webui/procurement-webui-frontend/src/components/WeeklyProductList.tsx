@@ -30,6 +30,7 @@ const WeeklyProductList: React.FunctionComponent<Props> = observer(
                 name={product.getName}
                 packType={product.getPack}
                 qty={product.getQty}
+                nextWeekTrend={product.getTrend}
               />
             );
           })}
