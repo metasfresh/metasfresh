@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
@@ -59,7 +58,8 @@ public interface IProductBL extends ISingletonService
 	String getMMPolicy(int productId);
 
 	/**
-	 * @return true if service (resource, online)
+	 * @param product
+	 * @return true if service (resource, online), i.e. not {@link #isItem(I_M_Product)}
 	 * @deprecated please use {@link #getProductType(ProductId)} and {@link ProductType#isService()} instead
 	 */
 	@Deprecated
@@ -137,6 +137,8 @@ public interface IProductBL extends ISingletonService
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
 	 *
+	 * @param product
+	 * @param uomTo
 	 * @return product's standard weight in <code>uomTo</code>
 	 */
 	BigDecimal getWeight(I_M_Product product, I_C_UOM uomTo);
@@ -146,6 +148,7 @@ public interface IProductBL extends ISingletonService
 	 * <p>
 	 * A product is considered a Trading Product when it is Purchased and it is also Sold.
 	 *
+	 * @param product
 	 * @return true if it's a trading product
 	 */
 	boolean isTradingProduct(I_M_Product product);
@@ -153,6 +156,7 @@ public interface IProductBL extends ISingletonService
 	/**
 	 * Check if ASI is mandatory
 	 *
+	 * @param product
 	 * @param isSOTrx is outgoing trx?
 	 * @return true if ASI is mandatory, false otherwise
 	 */
@@ -169,7 +173,7 @@ public interface IProductBL extends ISingletonService
 
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
-	String getProductValueAndName(@Nullable ProductId productId);
+	String getProductValueAndName(ProductId productId);
 
 	@Deprecated
 	default String getProductValueAndName(final int productId)
@@ -189,6 +193,5 @@ public interface IProductBL extends ISingletonService
 
 	ITranslatableString getProductNameTrl(@NonNull ProductId productId);
 
-	@Nullable
-	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
+	boolean isHaddexProduct(ProductId productId);
 }

@@ -38,7 +38,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
-import org.compiere.model.MProductCategory;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -368,7 +367,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public String getProductValueAndName(@Nullable final ProductId productId)
+	public String getProductValueAndName(final ProductId productId)
 	{
 		if (productId == null)
 		{
@@ -481,8 +480,10 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public ProductId retrieveMappedProductIdOrNull(final ProductId productId, final OrgId orgId)
+	public boolean isHaddexProduct(final ProductId productId)
 	{
-		return productsRepo.retrieveMappedProductIdOrNull(productId, orgId);
+		final org.compiere.model.I_M_Product product = getById(productId);
+
+		return product.isHaddexCheck();
 	}
 }
