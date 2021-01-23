@@ -83,9 +83,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
+public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 {
-	private static final Logger logger = LogManager.getLogger(CreateMissingCommissionEntriesForSalesRep.class);
+	private static final Logger logger = LogManager.getLogger(C_Commission_Share_CreateMissingForSalesRep.class);
 
 	private final ChangeLogEntryRepository changeLogEntryRepository = SpringContextHolder.instance.getBean(ChangeLogEntryRepository.class);
 	private final C_Invoice_CandidateFacadeService invoiceCandFacadeService = SpringContextHolder.instance.getBean(C_Invoice_CandidateFacadeService.class);
