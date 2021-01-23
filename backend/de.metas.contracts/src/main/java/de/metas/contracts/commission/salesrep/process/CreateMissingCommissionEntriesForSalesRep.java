@@ -33,6 +33,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.commissioninstance.interceptor.C_InvoiceFacadeService;
 import de.metas.contracts.commission.commissioninstance.interceptor.C_Invoice_CandidateFacadeService;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -42,9 +43,11 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
+import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -99,6 +102,12 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 	private static final String FROM_DATE = "2020-01-01";
 	private static final String TO_DATE = "2020-12-31";
 
+	/**
+	 * Allows to run the full process with just one particular bpartner.
+	 */
+	@Param(parameterName = I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
+	private BPartnerId bPartnerId;
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -111,7 +120,16 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 			final InstantInterval targetInterval = InstantInterval.of(from.toInstant(), to.toInstant());
 
-			recalculateCommission(targetInterval);
+			final SalesRepRelatedBPTableInfo salesRepRelatedBPTableInfo = getSalesRepRelatedBPTableInfo();
+
+			if (bPartnerId == null)
+			{
+				recalculateCommission(salesRepRelatedBPTableInfo, targetInterval);
+			}
+			else
+			{
+				recalculateCommissionForSalesRep(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
+			}
 		}
 		catch (final Exception e)
 		{
@@ -121,9 +139,9 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		return MSG_OK;
 	}
 
-	private void recalculateCommission(@NonNull final InstantInterval targetInterval)
+	private void recalculateCommission(
+			@NonNull final SalesRepRelatedBPTableInfo salesRepRelatedBPTableInfo, @NonNull final InstantInterval targetInterval)
 	{
-		final SalesRepRelatedBPTableInfo salesRepRelatedBPTableInfo = getSalesRepRelatedBPTableInfo();
 
 		final ImmutableSet<BPartnerId> preliminaryQualifiedBPIds = retrieveAllBPsWithASalesRep(targetInterval, salesRepRelatedBPTableInfo);
 
@@ -134,20 +152,15 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		long countError = 0;
 		for (final BPartnerId bPartnerId : preliminaryQualifiedBPIds)
 		{
-			try
+			count++;
+			if (count % 1000 == 0)
 			{
-				count++;
-				if (count % 1000 == 0)
-				{
-					Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG {} of {} preliminaryQualifiedBPIds are done", count, preliminaryQualifiedBPIds.size());
-				}
-
-				processBPId(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
+				Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG {} of {} preliminaryQualifiedBPIds are done", count, preliminaryQualifiedBPIds.size());
 			}
-			catch (final Exception e)
+
+			final boolean success = recalculateCommissionForSalesRep(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
+			if (!success)
 			{
-				Loggables.withLogger(logger, Level.ERROR).addLog("*** ERROR while trying to calculate commission for bpartnerId: {}, message: {}"
-						, bPartnerId, e.getMessage(), e);
 				countError++;
 			}
 		}
@@ -161,22 +174,20 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 			@NonNull final ImmutableList<ChangeLogEntry> bPartnerSalesRepChangeLogEntries,
 			@NonNull final InstantInterval targetTimeframe)
 	{
-		Loggables.withLogger(logger, Level.DEBUG)
-				.addLog("*** DEBUG: start recalculating for bpartnerId: {}! ", bPartnerId);
+		final ILoggable loggableDebug = Loggables.withLogger(logger, Level.DEBUG);
+		loggableDebug.addLog("*** DEBUG: start recalculating for sales-rep bpartnerId={}! ", bPartnerId);
 
 		final List<RecalculateCommissionCriteria> recalculateCommissionCriteriaList =
 				extractCommissionCriteriaList(bPartnerId, salesRepChangeLogEntries, bPartnerSalesRepChangeLogEntries, targetTimeframe);
 
 		if (recalculateCommissionCriteriaList.isEmpty())
 		{
-			Loggables.withLogger(logger, Level.DEBUG)
-					.addLog("*** DEBUG recalculating for bpId: {} : empty criteria list! Skipping...", bPartnerId);
+			loggableDebug.addLog("*** DEBUG recalculating for for sales-rep bpartnerId: {} : empty criteria list! Skipping...", RepoIdAwares.toRepoId(bPartnerId));
 			return;
 		}
 		else
 		{
-			Loggables.withLogger(logger, Level.DEBUG)
-					.addLog("*** DEBUG: recalculating for bpId: {}: recalculateCommissionCriteriaList: {}! ", bPartnerId, recalculateCommissionCriteriaList);
+			loggableDebug.addLog("*** DEBUG: recalculating for for sales-rep bpartnerId: {}: recalculateCommissionCriteriaList: {}! ", RepoIdAwares.toRepoId(bPartnerId), recalculateCommissionCriteriaList);
 		}
 
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
@@ -193,8 +204,8 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 					final AdIssueId adIssueId = errorManager.createIssue(e);
 
 					Loggables.withLogger(logger, Level.ERROR)
-							.addLog("*** ERROR: recalculateCommissionForCriteria failed for Criteria :{}, errorMessage: {}! adIssueId: {}",
-									criteria, e.getLocalizedMessage(), adIssueId);
+							.addLog("*** ERROR: recalculateCommissionForCriteria failed for Criteria :{}, errorMessage: {}! AD_Issue_ID={}",
+									criteria, e.getLocalizedMessage(), RepoIdAwares.toRepoId(adIssueId));
 				}
 			});
 		}
@@ -231,9 +242,9 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 
 		// get C_BPartner_SalesRep_IDs (not yet parsed to int) at different intervals
 		final Map<InstantInterval, String> bPartnerSalesRepIdByInterval;
-		if (!userSalesRepChangeLogEntries.isEmpty())
+		if (!bPartnerSalesRepChangeLogEntries.isEmpty())
 		{ // there are C_BPartner_SalesRep_ID change log entries with their respective time intervals
-			bPartnerSalesRepIdByInterval = mapValueByInterval(userSalesRepChangeLogEntries, targetTimeframe);
+			bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
 		}
 		else if (bPartner.getC_BPartner_SalesRep_ID() > 0)
 		{ // if no log entries were found, it means the present C_BPartner_SalesRep_ID applies for the whole timeframe
@@ -381,31 +392,42 @@ public class CreateMissingCommissionEntriesForSalesRep extends JavaProcess
 		recalculateStartingFromInvoice(commissionCriteria);
 	}
 
-	private void processBPId(
+	private boolean recalculateCommissionForSalesRep(
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final SalesRepRelatedBPTableInfo tableInfo,
 			@NonNull final InstantInterval targetInterval)
 	{
-		final ChangeLogEntryQuery changeLogEntryQuery = ChangeLogEntryQuery.builder()
-				.adTableId(tableInfo.getBPartnerTableId())
-				.adColumnIds(ImmutableSet.of(tableInfo.getSalesRepColumnId(), tableInfo.getBPartnerSalesRepColumnId()))
-				.from(targetInterval.getFrom())
-				.to(targetInterval.getTo())
-				.recordId(bPartnerId.getRepoId())
-				.build();
+		try
+		{
+			final ChangeLogEntryQuery changeLogEntryQuery = ChangeLogEntryQuery.builder()
+					.adTableId(tableInfo.getBPartnerTableId())
+					.adColumnIds(ImmutableSet.of(tableInfo.getSalesRepColumnId(), tableInfo.getBPartnerSalesRepColumnId()))
+					.from(targetInterval.getFrom())
+					.to(targetInterval.getTo())
+					.recordId(bPartnerId.getRepoId())
+					.build();
 
-		final ImmutableList<ChangeLogEntry> changeLogEntries = changeLogEntryRepository.getLogEntriesFor(changeLogEntryQuery);
+			final ImmutableList<ChangeLogEntry> changeLogEntries = changeLogEntryRepository.getLogEntriesFor(changeLogEntryQuery);
 
-		//split the change logs by column
-		final ImmutableList<ChangeLogEntry> salesRepLogEntries = changeLogEntries.stream()
-				.filter(logEntry -> logEntry.getAdColumnId().getRepoId() == tableInfo.getSalesRepColumnId().getRepoId())
-				.collect(ImmutableList.toImmutableList());
+			//split the change logs by column
+			final ImmutableList<ChangeLogEntry> salesRepLogEntries = changeLogEntries.stream()
+					.filter(logEntry -> logEntry.getAdColumnId().getRepoId() == tableInfo.getSalesRepColumnId().getRepoId())
+					.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<ChangeLogEntry> bpSalesRepLogEntries = changeLogEntries.stream()
-				.filter(logEntry -> logEntry.getAdColumnId().getRepoId() == tableInfo.getBPartnerSalesRepColumnId().getRepoId())
-				.collect(ImmutableList.toImmutableList());
+			final ImmutableList<ChangeLogEntry> bpSalesRepLogEntries = changeLogEntries.stream()
+					.filter(logEntry -> logEntry.getAdColumnId().getRepoId() == tableInfo.getBPartnerSalesRepColumnId().getRepoId())
+					.collect(ImmutableList.toImmutableList());
 
-		recalculateForBPartnerId(bPartnerId, salesRepLogEntries, bpSalesRepLogEntries, targetInterval);
+			recalculateForBPartnerId(bPartnerId, salesRepLogEntries, bpSalesRepLogEntries, targetInterval);
+			return true;
+		}
+		catch (final Exception e)
+		{
+			Loggables.withLogger(logger, Level.ERROR).addLog("*** ERROR while trying to calculate commission for bpartnerId: {}, message: {}"
+					, bPartnerId, e.getMessage(), e);
+			return false;
+
+		}
 	}
 
 	@NonNull
