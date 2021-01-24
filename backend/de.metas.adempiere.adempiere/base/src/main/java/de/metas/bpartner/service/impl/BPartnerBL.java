@@ -638,6 +638,18 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public void setBPartnerSalesRepIdOutOfTrx(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepBPartnerId)
+	{
+		final I_C_BPartner bPartnerRecord = bpartnersRepo.getByIdOutOfTrx(bPartnerId);
+
+		final int salesRepBPartnerIdInt = salesRepBPartnerId != null ? salesRepBPartnerId.getRepoId() : -1;
+
+		bPartnerRecord.setC_BPartner_SalesRep_ID(salesRepBPartnerIdInt);
+
+		bpartnersRepo.saveOutOfTrx(bPartnerRecord);
+	}
+
+	@Override
 	public UserId setSalesRepId(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final UserId salesRepId)

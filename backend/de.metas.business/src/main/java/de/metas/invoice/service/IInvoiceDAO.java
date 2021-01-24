@@ -32,6 +32,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
+import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_Org;
@@ -90,9 +91,6 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
 	 *
-	 * @param ctx
-	 * @param invoiceNo
-	 * @param bPartnerID
 	 * @return the I_C_Invoice object if the value was found, null otherwise
 	 */
 	I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, BPartnerId bpartnerId);
@@ -100,9 +98,6 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Gets all open invoices for the specific organization.<br>
 	 * Not guaranteed iterator. Do not use if modifying the "IsPaid" column.
-	 *
-	 * @param adOrg
-	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(I_AD_Org adOrg);
 
@@ -137,8 +132,6 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Retrieves the reversal line for the given invoice line and C_Invoice_ID, using the line's <code>C_InvoiceLine.Line</code> value.
 	 *
-	 * @param line
-	 * @param reversalInvoiceId
 	 * @return the reversal line or <code>null</code> if the reversal invoice has no line with the given <code>line</code>'s number.
 	 */
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
@@ -146,26 +139,16 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
-	 *
-	 * @param ctx
-	 * @param startDate
-	 * @return
 	 */
 	List<I_C_Invoice> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
 	/**
 	 * Retrieve all Adjustment Charge entries that were created based on the given invoice
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveAdjustmentChargesForInvoice(I_C_Invoice invoice);
 
 	/**
 	 * Retrieve all Credit Memo entries that were created based on the given invoice
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
 
@@ -182,4 +165,6 @@ public interface IInvoiceDAO extends ISingletonService
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
 	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
+
+	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
 }

@@ -2689,7 +2689,8 @@ public abstract class PO
 		boolean logIfKeyOnly = false;
 		if (isInsertChangeLogEvent)
 		{
-			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "Y", adClientId);
+			// note that i never needed this value to be Y, so i'm now setting the default to N
+			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "N", adClientId);
 			if ("Y".equals(insertChangeLogType))
 			{
 				// log everything allowed

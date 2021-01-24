@@ -21,6 +21,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,8 +38,10 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -410,6 +413,20 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
+				.create()
+				.list();
+	}
+
+	@Override
+	public List<I_C_Invoice> retrieveBySalesrepPartnerId(@NonNull final BPartnerId salesRepBPartnerId, @NonNull final InstantInterval invoicedDateInterval)
+	{
+		final Timestamp from = TimeUtil.asTimestamp(invoicedDateInterval.getFrom());
+		final Timestamp to = TimeUtil.asTimestamp(invoicedDateInterval.getTo());
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId.getRepoId())
+				.addBetweenFilter(I_C_Invoice.COLUMNNAME_DateInvoiced, from, to)
 				.create()
 				.list();
 	}

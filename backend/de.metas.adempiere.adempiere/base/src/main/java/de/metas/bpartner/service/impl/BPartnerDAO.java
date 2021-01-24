@@ -75,6 +75,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
+import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -129,6 +130,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public void saveOutOfTrx(@NonNull final I_C_BPartner bpartner)
+	{
+		InterfaceWrapperHelper.save(bpartner, ITrx.TRXNAME_None);
+	}
+
+	@Override
 	public void save(@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
 		InterfaceWrapperHelper.saveRecord(bpartnerLocation);
@@ -151,6 +158,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	public <T extends I_C_BPartner> T getById(final int bpartnerId, final Class<T> modelClass)
 	{
 		return getById(BPartnerId.ofRepoId(bpartnerId), modelClass);
+	}
+
+	@Override
+	public I_C_BPartner getByIdOutOfTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return loadOutOfTrx(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override
@@ -1334,6 +1347,16 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 
 			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMN_C_BPartner_ID, bpartnerIdsForGLN);
+		}
+
+		// UserSalesRepSet
+		if (BooleanUtils.isTrue(query.getUserSalesRepSet()))
+		{
+			queryBuilder.addNotEqualsFilter(I_C_BPartner.COLUMNNAME_SalesRep_ID, null);
+		}
+		else if (BooleanUtils.isFalse(query.getUserSalesRepSet()))
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_SalesRep_ID, null);
 		}
 
 		//

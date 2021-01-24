@@ -161,7 +161,7 @@ public interface IBPartnerBL extends ISingletonService
 	int getDiscountSchemaId(BPartnerId bpartnerId, SOTrx soTrx);
 
 	/**
-	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link ContactQuery}.
+	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first.
 	 */
 	User retrieveContactOrNull(RetrieveContactRequest request);
 
@@ -170,6 +170,8 @@ public interface IBPartnerBL extends ISingletonService
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
 	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
+
+	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId,BPartnerId salesRepBPartnerId);
 
 	/**
 	 * @return previous sales rep or null
