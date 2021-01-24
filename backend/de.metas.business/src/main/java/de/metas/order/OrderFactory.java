@@ -8,17 +8,24 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -105,7 +112,7 @@ public class OrderFactory
 		{
 			if (orderLineBuilders.isEmpty())
 			{
-				throw new AdempiereException("no lines");
+				throw new AdempiereException("Cannot create an order without lines");
 			}
 
 			createDraftOrderHeader();
@@ -201,38 +208,38 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory shipperId(final int shipperId)
+	public OrderFactory shipperId(@Nullable final ShipperId shipperId)
 	{
 		assertNotBuilt();
-		order.setM_Shipper_ID(shipperId);
+		order.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 		return this;
 	}
 
-	public OrderFactory freightCostRule(final String freightCostRule)
+	public OrderFactory freightCostRule(@NonNull final FreightCostRule freightCostRule)
 	{
 		assertNotBuilt();
-		order.setFreightCostRule(freightCostRule);
+		order.setFreightCostRule(freightCostRule.getCode());
 		return this;
 	}
 
-	public OrderFactory paymentRule(final String paymentRule)
+	public OrderFactory paymentRule(@NonNull final PaymentRule paymentRule)
 	{
 		assertNotBuilt();
-		order.setPaymentRule(paymentRule);
+		order.setPaymentRule(paymentRule.getCode());
 		return this;
 	}
 
-	public OrderFactory paymentTermId(final int paymentTermId)
+	public OrderFactory paymentTermId(@Nullable final PaymentTermId paymentTermId)
 	{
 		assertNotBuilt();
-		order.setC_PaymentTerm_ID(paymentTermId);
+		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 		return this;
 	}
 
-	public OrderFactory invoiceRule(final String invoiceRule)
+	public OrderFactory invoiceRule(@NonNull final InvoiceRule invoiceRule)
 	{
 		assertNotBuilt();
-		order.setInvoiceRule(invoiceRule);
+		order.setInvoiceRule(invoiceRule.getCode());
 		return this;
 	}
 
@@ -249,10 +256,10 @@ public class OrderFactory
 		}
 	}
 
-	public OrderFactory warehouseId(final int warehouseId)
+	public OrderFactory warehouseId(@Nullable final WarehouseId warehouseId)
 	{
 		assertNotBuilt();
-		order.setM_Warehouse_ID(warehouseId);
+		order.setM_Warehouse_ID(WarehouseId.toRepoId(warehouseId));
 		return this;
 	}
 
@@ -338,17 +345,17 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory salesRepId(final int salesRepId)
+	public OrderFactory salesRepId(@Nullable final UserId salesRepId)
 	{
 		assertNotBuilt();
-		order.setSalesRep_ID(salesRepId);
+		order.setSalesRep_ID(UserId.toRepoId(salesRepId));
 		return this;
 	}
 
-	public OrderFactory projectId(final int projectId)
+	public OrderFactory projectId(@Nullable final ProjectId projectId)
 	{
 		assertNotBuilt();
-		order.setC_Project_ID(projectId);
+		order.setC_Project_ID(ProjectId.toRepoId(projectId));
 		return this;
 	}
 

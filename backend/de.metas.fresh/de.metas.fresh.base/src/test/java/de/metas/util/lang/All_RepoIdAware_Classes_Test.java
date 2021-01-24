@@ -6,6 +6,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -68,7 +70,12 @@ public class All_RepoIdAware_Classes_Test
 			.skip(org.eevolution.api.PPOrderRoutingActivityId.class)
 			.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class)
 			//
-			.skip(de.metas.printing.HardwareTrayId.class);
+			.skip(de.metas.printing.HardwareTrayId.class)
+			//
+			.skip(ServiceRepairProjectCostCollectorId.class)
+			.skip(ServiceRepairProjectTaskId.class)
+			//
+			;
 
 	private static ObjectMapper jsonMapper;
 
@@ -91,7 +98,7 @@ public class All_RepoIdAware_Classes_Test
 		testSerializableAsNumber(repoIdClass);
 	}
 
-	private void testEquals(Class<? extends RepoIdAware> repoIdClass)
+	private void testEquals(final Class<? extends RepoIdAware> repoIdClass)
 	{
 		final RepoIdAware repoId1 = RepoIdAwares.ofRepoId(100, repoIdClass);
 		final RepoIdAware repoId2 = RepoIdAwares.ofRepoId(100, repoIdClass);
@@ -161,14 +168,14 @@ public class All_RepoIdAware_Classes_Test
 	public static class RepoIdAwareArgumentsProvider implements ArgumentsProvider
 	{
 		@Override
-		public Stream<? extends Arguments> provideArguments(ExtensionContext context)
+		public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
 		{
 			return provideClasses().map(Arguments::of);
 		}
 
 		private Stream<Class<? extends RepoIdAware>> provideClasses()
 		{
-			Stopwatch stopwatch = Stopwatch.createStarted();
+			final Stopwatch stopwatch = Stopwatch.createStarted();
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 					.addUrls(ClasspathHelper.forClassLoader())

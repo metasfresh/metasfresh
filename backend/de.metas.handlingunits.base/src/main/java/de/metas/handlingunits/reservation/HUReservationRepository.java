@@ -7,23 +7,27 @@ import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.order.OrderLineId;
-import de.metas.project.ProjectAndLineId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -61,7 +65,10 @@ public class HUReservationRepository
 
 	public Optional<HUReservation> getByDocumentRef(@NonNull final HUReservationDocRef documentRef)
 	{
-		final List<I_M_HU_Reservation> huReservationRecords = retrieveRecordsByDocumentRef(documentRef);
+		final Set<HuId> onlyVHUIds = ImmutableSet.of();
+		final List<I_M_HU_Reservation> huReservationRecords = retrieveRecordsByDocumentRef(
+				ImmutableSet.of(documentRef),
+				onlyVHUIds);
 		if (huReservationRecords.isEmpty())
 		{
 			return Optional.empty();
@@ -71,20 +78,45 @@ public class HUReservationRepository
 		return Optional.of(huReservation);
 	}
 
-	private List<I_M_HU_Reservation> retrieveRecordsByDocumentRef(final HUReservationDocRef documentRef)
+	private List<I_M_HU_Reservation> retrieveRecordsByDocumentRef(
+			@NonNull final Collection<HUReservationDocRef> documentRefs,
+			@NonNull final Set<HuId> onlyVHUIds)
 	{
+		Check.assumeNotEmpty(documentRefs, "documentRefs shall not be empty");
+
+		final HashSet<OrderLineId> salesOrderLineIds = new HashSet<>();
+		final HashSet<ProjectId> projectIds = new HashSet<>();
+		for (final HUReservationDocRef documentRef : documentRefs)
+		{
+			if (documentRef.getSalesOrderLineId() != null)
+			{
+				salesOrderLineIds.add(documentRef.getSalesOrderLineId());
+			}
+			else if (documentRef.getProjectId() != null)
+			{
+				projectIds.add(documentRef.getProjectId());
+			}
+			else
+			{
+				throw new AdempiereException("Document reference not supported: " + documentRef);
+			}
+		}
+
 		final IQueryBuilder<I_M_HU_Reservation> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU_Reservation.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (documentRef.getSalesOrderLineId() != null)
+		if (!salesOrderLineIds.isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, documentRef.getSalesOrderLineId());
+			queryBuilder.addInArrayFilter(I_M_HU_Reservation.COLUMN_C_OrderLineSO_ID, salesOrderLineIds);
 		}
-		else if (documentRef.getProjectAndLineId() != null)
+		if (!projectIds.isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, documentRef.getProjectAndLineId().getProjectId());
-			queryBuilder.addEqualsFilter(I_M_HU_Reservation.COLUMNNAME_C_ProjectLine_ID, documentRef.getProjectAndLineId().getProjectLineRepoId());
+			queryBuilder.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_C_Project_ID, projectIds);
+		}
+		if (!onlyVHUIds.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_HU_Reservation.COLUMNNAME_VHU_ID, onlyVHUIds);
 		}
 
 		return queryBuilder.create().list();
@@ -139,8 +171,7 @@ public class HUReservationRepository
 			@NonNull final HUReservationDocRef documentRef)
 	{
 		record.setC_OrderLineSO_ID(OrderLineId.toRepoId(documentRef.getSalesOrderLineId()));
-		record.setC_Project_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectId().getRepoId() : -1);
-		record.setC_ProjectLine_ID(documentRef.getProjectAndLineId() != null ? documentRef.getProjectAndLineId().getProjectLineRepoId() : -1);
+		record.setC_Project_ID(documentRef.getProjectId() != null ? documentRef.getProjectId().getRepoId() : -1);
 	}
 
 	private I_M_HU_Reservation retrieveOrCreateByVhuId(@NonNull final HuId vhuId)
@@ -242,20 +273,21 @@ public class HUReservationRepository
 	{
 		return HUReservationDocRef.builder()
 				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLineSO_ID()))
-				.projectAndLineId(ProjectAndLineId.ofRepoIdOrNull(record.getC_Project_ID(), record.getC_ProjectLine_ID()))
+				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.build();
 	}
 
 	public void transferReservation(
-			@NonNull final HUReservationDocRef from,
-			@NonNull final HUReservationDocRef to)
+			@NonNull final Collection<HUReservationDocRef> from,
+			@NonNull final HUReservationDocRef to,
+			@NonNull final Set<HuId> onlyVHUIds)
 	{
-		if (Objects.equals(from, to))
+		if (from.size() == 1 && Objects.equals(from.iterator().next(), to))
 		{
 			return;
 		}
 
-		final List<I_M_HU_Reservation> records = retrieveRecordsByDocumentRef(from);
+		final List<I_M_HU_Reservation> records = retrieveRecordsByDocumentRef(from, onlyVHUIds);
 		if (records.isEmpty())
 		{
 			return;

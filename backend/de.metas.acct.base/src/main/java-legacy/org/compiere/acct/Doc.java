@@ -1,39 +1,41 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.doc.PostingException;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountAcct;
+import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.engine.IDocument;
+import de.metas.error.AdIssueId;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.lang.SOTrx;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -56,43 +58,21 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaGeneralLedger;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.acct.doc.AcctDocRequiredServicesFacade;
-import de.metas.acct.doc.PostingException;
-import de.metas.banking.BankAccount;
-import de.metas.banking.BankAccountAcct;
-import de.metas.banking.BankAccountId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.currency.exceptions.NoCurrencyRateFoundException;
-import de.metas.document.engine.IDocument;
-import de.metas.error.AdIssueId;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
-import de.metas.lang.SOTrx;
-import de.metas.location.LocationId;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.lang.RepoIdAware;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.IntFunction;
 
 /**
  * Posting Document Root.
@@ -191,8 +171,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	public static final String DOCTYPE_MatInventory = "MMI";
 	/** Material Movement */
 	public static final String DOCTYPE_MatMovement = "MMM";
-	/** Material Production */
-	public static final String DOCTYPE_MatProduction = "MMP";
+	// /** Material Production */
+	// public static final String DOCTYPE_MatProduction = "MMP";
 	/** Match Invoice */
 	public static final String DOCTYPE_MatMatchInv = "MXI";
 	/** Match PO */
@@ -211,10 +191,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/** Log per Document */
 	private static final Logger log = LogManager.getLogger(Doc.class);
 
-	/**
-	 * @param ctx construction parameters
-	 */
-	/* package */ Doc(final AcctDocContext ctx)
+	protected Doc(final AcctDocContext ctx)
 	{
 		this(ctx, (String)null); // defaultDocBaseType=null
 	}
@@ -223,7 +200,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param ctx construction parameters
 	 * @param defaultDocBaseType suggested DocBaseType to be used
 	 */
-	protected Doc(@NonNull final AcctDocContext ctx, final String defaultDocBaseType)
+	protected Doc(@NonNull final AcctDocContext ctx, @Nullable final String defaultDocBaseType)
 	{
 		services = ctx.getServices();
 		acctSchemas = ctx.getAcctSchemas();
@@ -272,24 +249,24 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private MPeriod m_period = null;
 	/** Period ID */
 	private int m_C_Period_ID = 0;
-	private final LocationId locationFromId = null;
-	private final LocationId locationToId = null;
+	@Nullable private final LocationId locationFromId = null;
+	@Nullable private final LocationId locationToId = null;
 	private LocalDate _dateAcct = null;
 	private LocalDate _dateDoc = null;
 	/** Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced) */
 	private boolean m_MultiCurrency = false;
 	/** BP Sales Region */
 	private int m_BP_C_SalesRegion_ID = -1;
-	private Optional<BPartnerId> _bpartnerId; // lazy
+	@Nullable private Optional<BPartnerId> _bpartnerId; // lazy
 
 	/** Bank Account */
-	private Optional<BankAccountId> _bankAccountId = null; // lazy
-	private BankAccount bankAccount = null;
+	@Nullable private Optional<BankAccountId> _bankAccountId = null; // lazy
+	@Nullable private BankAccount bankAccount = null;
 	/** Cach Book */
 	private int m_C_CashBook_ID = -1;
 
-	private Optional<CurrencyId> _currencyId; // lazy
-	private CurrencyPrecision _currencyPrecision; // lazy
+	@Nullable private Optional<CurrencyId> _currencyId; // lazy
+	@Nullable private CurrencyPrecision _currencyPrecision; // lazy
 
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
@@ -317,7 +294,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return po
 	 */
-	private final PO getPO()
+	private PO getPO()
 	{
 		return p_po;
 	}	// getPO
@@ -396,7 +373,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		});
 	}
 
-	private final void post0(final boolean force, final boolean repost)
+	private void post0(final boolean force, final boolean repost)
 	{
 		//
 		// Validate document's DocStatus
@@ -497,7 +474,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 		//
 		// Dispose facts
-		for (Fact fact : facts)
+		for (final Fact fact : facts)
 		{
 			fact.dispose();
 		}
@@ -528,18 +505,13 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return skip;
 	}
 
-	/**
-	 * Delete Accounting
-	 *
-	 * @return number of records deleted
-	 */
-	private final int deleteAcct()
+	private void deleteAcct()
 	{
 		final Object documentPO = getPO();
-		return services.deleteFactAcctByDocumentModel(documentPO);
-	}	// deleteAcct
+		services.deleteFactAcctByDocumentModel(documentPO);
+	}
 
-	private final List<Fact> postLogic(final AcctSchema acctSchema)
+	private List<Fact> postLogic(final AcctSchema acctSchema)
 	{
 		// rejectUnbalanced
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
@@ -669,7 +641,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param repost true if is document re-posting; i.e. it will assume the document was not already posted
 	 * @throws PostingException
 	 */
-	private final void lock(final boolean force, final boolean repost)
+	private void lock(final boolean force, final boolean repost)
 	{
 		final String tableName = get_TableName();
 		final int recordId = get_ID();
@@ -705,7 +677,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 	}
 
-	private final void unlock(final PostingException exception)
+	private void unlock(final PostingException exception)
 	{
 		final String tableName = get_TableName();
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
@@ -735,7 +707,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		//
 		// PostingError_Issue_ID
 		final String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
-		boolean hasPostingIssueColumn = poInfo.hasColumnName(COLUMNNAME_PostingError_Issue_ID);
+		final boolean hasPostingIssueColumn = poInfo.hasColumnName(COLUMNNAME_PostingError_Issue_ID);
 		if (hasPostingIssueColumn)
 		{
 			final AdIssueId postingErrorIssueId = exception != null
@@ -797,7 +769,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @param docBaseType optional document base type to be used.
 	 */
-	private final void setDocumentType(final String docBaseType)
+	private void setDocumentType(@Nullable final String docBaseType)
 	{
 		if (docBaseType != null)
 		{
@@ -828,8 +800,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			finally
 			{
 				DB.close(rsDT, pstmt);
-				rsDT = null;
-				pstmt = null;
 			}
 		}
 		if (m_DocumentType == null)
@@ -910,7 +880,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return true if (source) balanced
 	 */
-	private final boolean isBalanced()
+	private boolean isBalanced()
 	{
 		// Multi-Currency documents are source balanced by definition
 		if (isMultiCurrency())
@@ -989,7 +959,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/**
 	 * Calculate Period from DateAcct. m_C_Period_ID is set to -1 of not open to 0 if not found
 	 */
-	private final void setPeriod()
+	private void setPeriod()
 	{
 		if (m_period != null)
 		{
@@ -1033,7 +1003,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 *
 	 * @return true if period is open
 	 */
-	private final boolean isPeriodOpen()
+	private boolean isPeriodOpen()
 	{
 		setPeriod();
 		final boolean open = m_C_Period_ID > 0;
@@ -1047,8 +1017,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 		return open;
 	}	// isPeriodOpen
-
-	/*************************************************************************/
 
 	/** Amount Type - Invoice - Gross */
 	public static final int AMTTYPE_Gross = 0;
@@ -1066,6 +1034,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param AmtType see AMTTYPE_*
 	 * @return Amount
 	 */
+	@Nullable
 	protected final BigDecimal getAmount(final int AmtType)
 	{
 		if (AmtType < 0 || AmtType >= m_Amounts.length)
@@ -1117,7 +1086,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		final String sql;
 		final List<Object> sqlParams;
 
-		/** Account Type - Invoice */
+		// Account Type - Invoice
 		if (acctType == AccountType.Charge)	// see getChargeAccount in DocLine
 		{
 			final int cmp = getAmount(AMTTYPE_Charge).compareTo(BigDecimal.ZERO);
@@ -1170,7 +1139,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
 
-		/** Account Type - Payment */
+		// Account Type - Payment
 		else if (acctType == AccountType.UnallocatedCash)
 		{
 			return getBankAccountAcct(acctSchemaId).getUnallocatedCashAcct();
@@ -1188,7 +1157,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return getBankAccountAcct(acctSchemaId).getPaymentBankFeeAcct();
 		}
 
-		/** Account Type - Allocation */
+		// Account Type - Allocation
 		else if (acctType == AccountType.DiscountExp)
 		{
 			sql = "SELECT a.PayDiscount_Exp_Acct FROM C_BP_Group_Acct a, C_BPartner bp "
@@ -1208,7 +1177,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
 
-		/** Account Type - Bank Statement */
+		// Account Type - Bank Statement
 		else if (acctType == AccountType.BankAsset)
 		{
 			return getBankAccountAcct(acctSchemaId).getBankAssetAcct();
@@ -1222,7 +1191,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return getBankAccountAcct(acctSchemaId).getInterestExpenseAcct();
 		}
 
-		/** Account Type - Cash */
+		// Account Type - Cash
 		else if (acctType == AccountType.CashAsset)
 		{
 			sql = "SELECT CB_Asset_Acct FROM C_CashBook_Acct WHERE C_CashBook_ID=? AND C_AcctSchema_ID=?";
@@ -1249,7 +1218,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sqlParams = Arrays.asList(getC_CashBook_ID(), acctSchemaId);
 		}
 
-		/** Inventory Accounts */
+		// Inventory Accounts
 		else if (acctType == AccountType.InvDifferences)
 		{
 			sql = "SELECT W_Differences_Acct FROM M_Warehouse_Acct WHERE M_Warehouse_ID=? AND C_AcctSchema_ID=?";
@@ -1263,7 +1232,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sqlParams = Arrays.asList(getBPartnerId(), acctSchemaId);
 		}
 
-		/** Project Accounts */
+		// Project Accounts
 		else if (acctType == AccountType.ProjectAsset)
 		{
 			sql = "SELECT PJ_Asset_Acct FROM C_Project_Acct WHERE C_Project_ID=? AND C_AcctSchema_ID=?";
@@ -1275,7 +1244,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			sqlParams = Arrays.asList(getC_Project_ID(), acctSchemaId);
 		}
 
-		/** GL Accounts */
+		// GL Accounts
 		else if (acctType == AccountType.PPVOffset)
 		{
 			return acctSchema.getGeneralLedger().getPurchasePriceVarianceOffsetAcctId();
@@ -1322,8 +1291,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	}	// getAccount_ID
 
@@ -1346,6 +1313,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	 * @param acctSchema accounting schema
 	 * @return Account or <code>null</code>
 	 */
+	@Nullable
 	protected final MAccount getAccount(final AccountType acctType, final AcctSchema acctSchema)
 	{
 		final AccountId accountId = getValidCombinationId(acctType, acctSchema);
@@ -1520,7 +1488,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		_dateDoc = dateDoc;
 	}
 
-	private final boolean isPosted()
+	private boolean isPosted()
 	{
 		final Boolean posted = getValueAsBoolean("Posted", null);
 		if (posted == null)
@@ -1547,8 +1515,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		}
 
 		// fallback
-		final int docTypeTargetId = getValueAsIntOrZero("C_DocTypeTarget_ID");
-		return docTypeTargetId;
+		return getValueAsIntOrZero("C_DocTypeTarget_ID");
 	}
 
 	protected final int getC_Charge_ID()
@@ -1556,6 +1523,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("C_Charge_ID");
 	}
 
+	@Nullable
 	protected final UserId getSalesRepId()
 	{
 		return getValueAsIdOrNull("SalesRep_ID", UserId::ofRepoIdOrNull);
@@ -1675,6 +1643,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		m_BP_C_SalesRegion_ID = C_SalesRegion_ID;
 	}
 
+	@Nullable
 	protected final ActivityId getActivityId()
 	{
 		return ActivityId.ofRepoIdOrNull(getValueAsIntOrZero("C_Activity_ID"));
@@ -1685,21 +1654,25 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return getValueAsIntOrZero("C_Campaign_ID");
 	}
 
+	@Nullable
 	protected final ProductId getProductId()
 	{
 		return getValueAsIdOrNull("M_Product_ID", ProductId::ofRepoIdOrNull);
 	}
 
+	@Nullable
 	protected final OrgId getOrgTrxId()
 	{
 		return getValueAsIdOrNull("AD_OrgTrx_ID", OrgId::ofRepoIdOrNull);
 	}
 
+	@Nullable
 	protected final LocationId getLocationFromId()
 	{
 		return locationFromId;
 	}
 
+	@Nullable
 	protected final LocationId getLocationToId()
 	{
 		return locationToId;
@@ -1724,13 +1697,14 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final Integer ii = (Integer)po.get_Value(index);
 			if (ii != null)
 			{
-				return ii.intValue();
+				return ii;
 			}
 		}
 		return 0;
 	}
 
-	private final <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
+	@Nullable
+	private <T extends RepoIdAware> T getValueAsIdOrNull(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -1746,17 +1720,17 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return null;
 		}
 
-		final T id = idOrNullMapper.apply(valueInt);
-		return id;
+		return idOrNullMapper.apply(valueInt);
 	}
 
-	private final <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
+	private <T extends RepoIdAware> Optional<T> getValueAsOptionalId(final String columnName, final IntFunction<T> idOrNullMapper)
 	{
 		final T id = getValueAsIdOrNull(columnName, idOrNullMapper);
 		return Optional.ofNullable(id);
 	}
 
-	private final LocalDate getValueAsLocalDateOrNull(final String columnName)
+	@Nullable
+	private LocalDate getValueAsLocalDateOrNull(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -1768,7 +1742,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return null;
 	}
 
-	private final Boolean getValueAsBoolean(final String columnName, final Boolean defaultValue)
+	@Nullable
+	private Boolean getValueAsBoolean(final String columnName, @Nullable final Boolean defaultValue)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -1781,7 +1756,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return defaultValue;
 	}
 
-	private final String getValueAsString(final String columnName)
+	@Nullable
+	private String getValueAsString(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);
@@ -1828,7 +1804,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return newPostingException(e);
 	}
 
-	protected final PostingException newPostingException(final Throwable e)
+	protected final PostingException newPostingException(@Nullable final Throwable e)
 	{
 		final PostingException postingException;
 		if (e == null)
@@ -1853,7 +1829,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return postingException;
 	}
 
-	private final void createErrorNote(final PostingException ex)
+	private void createErrorNote(final PostingException ex)
 	{
 		DB.saveConstraints();
 		try
@@ -1864,11 +1840,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			final AdMessageKey AD_MessageValue = postingStatus.getAD_Message();
 			final PO po = getPO();
 			final int AD_User_ID = po.getUpdatedBy();
-			final Properties ctx = Env.getCtx();
-			final String adLanguage = Env.getAD_Language(ctx);
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 			final MNote note = new MNote(
-					ctx,
+					Env.getCtx(),
 					AD_MessageValue.toAD_Message(),
 					AD_User_ID,
 					getClientId().getRepoId(),

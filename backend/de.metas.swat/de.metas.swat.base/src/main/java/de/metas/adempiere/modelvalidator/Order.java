@@ -76,7 +76,7 @@ public class Order implements ModelValidator
 			final I_C_Order order = InterfaceWrapperHelper.create(po, I_C_Order.class);
 			final org.compiere.model.I_C_BPartner bpartner = order.getC_BPartner();
 
-			final boolean isQuotation = Services.get(IOrderBL.class).isQuotation(order);
+			final boolean isQuotation = Services.get(IOrderBL.class).isSalesProposalOrQuotation(order);
 			final boolean convertToCustomer = order.isSOTrx() && !isQuotation;
 
 			if (bpartner.isProspect() && convertToCustomer)

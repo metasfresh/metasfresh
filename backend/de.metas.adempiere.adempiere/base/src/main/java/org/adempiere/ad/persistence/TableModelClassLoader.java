@@ -31,11 +31,11 @@ import java.util.concurrent.ExecutionException;
 
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Phase;
+import org.compiere.model.I_C_Task;
 import org.compiere.model.MAccount;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.MKCategory;
-import org.compiere.model.MProjectTypePhase;
-import org.compiere.model.MProjectTypeTask;
 import org.compiere.model.MRequestCategory;
 import org.compiere.model.MTree_Base;
 import org.compiere.model.M_Element;
@@ -139,8 +139,8 @@ public class TableModelClassLoader
 		specialTableName2className.put("GL_Category", MGLCategory.class.getName());
 		specialTableName2className.put("K_Category", MKCategory.class.getName());
 		specialTableName2className.put("C_ValidCombination", MAccount.class.getName());
-		specialTableName2className.put("C_Phase", MProjectTypePhase.class.getName());
-		specialTableName2className.put("C_Task", MProjectTypeTask.class.getName());
+		specialTableName2className.put("C_Phase", I_C_Phase.class.getName());
+		specialTableName2className.put("C_Task", I_C_Task.class.getName());
 	}
 
 	public void registerSpecialClassName(@NonNull final String tableName, @NonNull final String className)

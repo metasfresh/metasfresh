@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1174151094L;
+	private static final long serialVersionUID = 604754548L;
 
     /** Standard Constructor */
     public X_M_HU_Item (final Properties ctx, final int M_HU_Item_ID, @Nullable final String trxName)
@@ -49,7 +49,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	/** HUAggregate = HA */
 	public static final String ITEMTYPE_HUAggregate = "HA";
 	@Override
-	public void setItemType (final java.lang.String ItemType)
+	public void setItemType (final @Nullable java.lang.String ItemType)
 	{
 		set_Value (COLUMNNAME_ItemType, ItemType);
 	}
@@ -157,7 +157,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	}
 
 	@Override
-	public void setQty (final BigDecimal Qty)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}

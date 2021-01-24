@@ -26,6 +26,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -35,7 +36,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
-import org.eevolution.model.validator.PP_Order_PostMaterialEvent;
 
 /**
  * Libero Validator
@@ -55,22 +55,26 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	private final IPPOrderBOMBL ppOrderBOMBL;
 
 	public LiberoValidator()
 	{
 		this(SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
 				SpringContextHolder.instance.getBean(PostMaterialEventService.class),
-				SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class));
+				SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class),
+				SpringContextHolder.instance.getBean(IPPOrderBOMBL.class));
 	}
 
 	public LiberoValidator(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
 			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
+			@NonNull final IPPOrderBOMBL ppOrderBOMBL)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
+		this.ppOrderBOMBL = ppOrderBOMBL;
 	}
 
 	@Override
@@ -86,7 +90,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(
 				ppOrderConverter,
 				materialEventService,
-				documentNoBuilderFactory));
+				documentNoBuilderFactory,
+				ppOrderBOMBL));
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService)); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM());
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine());

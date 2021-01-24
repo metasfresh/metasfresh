@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO implements I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 589574531L;
+	private static final long serialVersionUID = 1759764899L;
 
     /** Standard Constructor */
     public X_RV_M_Material_Tracking_HU_Details (final Properties ctx, final int RV_M_Material_Tracking_HU_Details_ID, @Nullable final String trxName)
@@ -68,7 +68,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
 	@Override
-	public void setHUStatus (final java.lang.String HUStatus)
+	public void setHUStatus (final @Nullable java.lang.String HUStatus)
 	{
 		set_ValueNoCheck (COLUMNNAME_HUStatus, HUStatus);
 	}
@@ -92,7 +92,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setLot (final java.lang.String Lot)
+	public void setLot (final @Nullable java.lang.String Lot)
 	{
 		set_ValueNoCheck (COLUMNNAME_Lot, Lot);
 	}
@@ -259,7 +259,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/** WaitingConfirmation = WC */
 	public static final String PP_ORDER_ISSUE_DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setPP_Order_Issue_DocStatus (final java.lang.String PP_Order_Issue_DocStatus)
+	public void setPP_Order_Issue_DocStatus (final @Nullable java.lang.String PP_Order_Issue_DocStatus)
 	{
 		set_ValueNoCheck (COLUMNNAME_PP_Order_Issue_DocStatus, PP_Order_Issue_DocStatus);
 	}
@@ -342,7 +342,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/** WaitingConfirmation = WC */
 	public static final String PP_ORDER_RECEIPT_DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setPP_Order_Receipt_DocStatus (final java.lang.String PP_Order_Receipt_DocStatus)
+	public void setPP_Order_Receipt_DocStatus (final @Nullable java.lang.String PP_Order_Receipt_DocStatus)
 	{
 		set_ValueNoCheck (COLUMNNAME_PP_Order_Receipt_DocStatus, PP_Order_Receipt_DocStatus);
 	}
@@ -396,7 +396,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setQty (final BigDecimal Qty)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_ValueNoCheck (COLUMNNAME_Qty, Qty);
 	}
@@ -409,7 +409,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public void setQualityInspectionCycle (final java.lang.String QualityInspectionCycle)
+	public void setQualityInspectionCycle (final @Nullable java.lang.String QualityInspectionCycle)
 	{
 		set_ValueNoCheck (COLUMNNAME_QualityInspectionCycle, QualityInspectionCycle);
 	}

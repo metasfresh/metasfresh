@@ -25,7 +25,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
@@ -85,7 +84,7 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.demandCandidateId(50)
 				.build();
 
-		final MRPContextFactory mrpContextFactory = new MRPContextFactory(new ProductPlanningBL());
+		final MRPContextFactory mrpContextFactory = new MRPContextFactory();
 		final IMutableMRPContext mrpContext = mrpContextFactory.createInitialMRPContext();
 		mrpContext.setProductPlanning(productPlanningRecord);
 

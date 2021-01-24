@@ -42,8 +42,7 @@ public class TaxDAO implements ITaxDAO
 	@Override
 	public I_C_Tax getTaxById(final int taxRepoId)
 	{
-		Check.assumeGreaterThanZero(taxRepoId, "taxRepoId");
-		return loadOutOfTrx(taxRepoId, I_C_Tax.class);
+		return getTaxById(TaxId.ofRepoId(taxRepoId));
 	}
 
 	@Override

@@ -22,118 +22,31 @@ package org.eevolution.mrp.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.compiere.util.TrxRunnable;
-import org.eevolution.model.I_PP_MRP;
-import org.eevolution.model.I_PP_MRP_Alternative;
-import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPAllocDAO;
-import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPContextRunnable;
-import org.eevolution.mrp.api.MRPFirmType;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
-import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPSegment;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.eevolution.model.I_PP_MRP;
+import org.eevolution.model.I_PP_MRP_Alternative;
+import org.eevolution.model.X_PP_MRP;
+import org.eevolution.mrp.api.IMRPBL;
+import org.eevolution.mrp.api.MRPFirmType;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
 
 public class MRPBL implements IMRPBL
 {
 	private static final transient Logger logger = LogManager.getLogger(MRPBL.class);
-
-	@Override
-	public I_PP_MRP createMRP(final Object contextProvider)
-	{
-		final I_PP_MRP mrp = InterfaceWrapperHelper.newInstance(I_PP_MRP.class, contextProvider);
-
-		updateMRPFromContext(mrp);
-
-		mrp.setValue("MRP");
-		mrp.setName("MRP");
-		mrp.setDateSimulation(SystemTime.asTimestamp());
-
-		//
-		// The available flag should be handled by MRP engine. Initial it should be disabled.
-		// see : [ 2593359 ] Calculate Material Plan error related to MRP-060 notice
-		// https://sourceforge.net/tracker/?func=detail&atid=934929&aid=2593359&group_id=176962
-		//
-		// NOTE: if this is triggered while calculating material plan,
-		// the org.eevolution.mrp.api.IMRPExecutor.onMRPRecordBeforeCreate(I_PP_MRP) can also change the IsAvailable flag.
-		// But, by default we consider it not available.
-		mrp.setIsAvailable(false);
-
-		return mrp;
-	}
-
-	@Override
-	public I_PP_MRP_Alternative createMRPAlternative(final I_PP_MRP mrp)
-	{
-		I_PP_MRP_Alternative mrpAlternative = InterfaceWrapperHelper.newInstance(I_PP_MRP_Alternative.class, mrp);
-		mrpAlternative.setPP_MRP(mrp);
-
-		return mrpAlternative;
-	}
-
-	@Override
-	public void updateMRPFromContext(final I_PP_MRP mrp)
-	{
-		final IMaterialPlanningContext mrpContext = mrpContextThreadLocal.get();
-		if (mrpContext == null)
-		{
-			return;
-		}
-
-		// TODO: shall we update the PP_MRP_Parent even if the mrp is not new?
-
-		final I_PP_MRP parentMRPRecord = mrpContext.getPP_MRP();
-		mrp.setPP_MRP_Parent(parentMRPRecord);
-		if (parentMRPRecord != null)
-		{
-			mrp.setC_OrderLineSO_ID(parentMRPRecord.getC_OrderLineSO_ID());
-			mrp.setS_Resource_ID(parentMRPRecord.getS_Resource_ID()); // Plant
-		}
-	}
-
-	@Override
-	public void createMRPAllocationsFromContext(final I_PP_MRP mrpSupply)
-	{
-		final IMaterialPlanningContext mrpContext = mrpContextThreadLocal.get();
-		if (mrpContext == null)
-		{
-			return;
-		}
-
-		final List<I_PP_MRP> mrpDemands = mrpContext.getMRPDemands();
-		if (mrpDemands.isEmpty())
-		{
-			return;
-		}
-
-		final IMRPAllocDAO mrpAllocDAO = Services.get(IMRPAllocDAO.class);
-		mrpAllocDAO.createMRPAllocs()
-				.setMRPSupply(mrpSupply)
-				.setMRPDemands(mrpDemands)
-				.build();
-	}
 
 	@Override
 	public boolean isReleased(final I_PP_MRP mrp)
@@ -231,71 +144,6 @@ public class MRPBL implements IMRPBL
 	}
 
 	@Override
-	public void executeInMRPContext(final IMaterialPlanningContext mrpContext, final IMRPContextRunnable runnable)
-	{
-		Check.assumeNotNull(mrpContext, LiberoException.class, "mrpContext not null");
-		Check.assumeNotNull(runnable, LiberoException.class, "runnable not null");
-
-		// services
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);
-
-		//
-		// Execute in transaction
-		// TODO: maybe it would be a bit more performant to not create a savepoint in case we are already running in a transaction
-		// (e.g. see how we did it on org.compiere.model.ModelValidationEngine.executeInTrx(String, int, Runnable) )
-		trxManager.run(mrpContext.getTrxName(), new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				//
-				// Create a local MRPContext for our transaction
-				// based on the mrp context that we got as parameter
-				final IMutableMRPContext mrpContextLocal = mrpContextFactory.createMRPContext(mrpContext);
-				mrpContextLocal.setTrxName(localTrxName);
-
-				// Make sure the supply is created in the current context, with the correct parent
-				final IMaterialPlanningContext mrpContextFromThreadLocal = mrpContextThreadLocal.get();
-				mrpContextThreadLocal.set(mrpContextLocal);
-				try
-				{
-					//
-					runnable.run(mrpContextLocal);
-				}
-				finally
-				{
-					// After creating the supply, set back the old mrp context so it doesn't interfere with the old open tasks
-					mrpContextThreadLocal.set(mrpContextFromThreadLocal);
-				}
-			}
-		});
-	}
-
-	private final transient InheritableThreadLocal<IMaterialPlanningContext> mrpContextThreadLocal = new InheritableThreadLocal<>();
-
-	@Override
-	public BigDecimal getQtyAbs(final I_PP_MRP mrp)
-	{
-		Check.assumeNotNull(mrp, LiberoException.class, "mrp not null");
-		final BigDecimal qty = mrp.getQty();
-		final String typeMRP = mrp.getTypeMRP();
-
-		if (X_PP_MRP.TYPEMRP_Demand.equals(typeMRP))
-		{
-			return qty.negate();
-		}
-		else if (X_PP_MRP.TYPEMRP_Supply.equals(typeMRP))
-		{
-			return qty;
-		}
-		else
-		{
-			throw new LiberoException("Unknown TypeMRP '" + typeMRP + "' for " + mrp);
-		}
-	}
-
-	@Override
 	public IMRPSegment createMRPSegment(final I_PP_MRP mrp)
 	{
 		Check.assumeNotNull(mrp, "mrp not null");
@@ -321,12 +169,7 @@ public class MRPBL implements IMRPBL
 		}
 
 		final String orderType = mrpSupply.getOrderType();
-		if (!X_PP_MRP.ORDERTYPE_QuantityOnHandReservation.equals(orderType))
-		{
-			return false;
-		}
-
-		return true;
+		return X_PP_MRP.ORDERTYPE_QuantityOnHandReservation.equals(orderType);
 	}
 
 	@Override
@@ -341,12 +184,7 @@ public class MRPBL implements IMRPBL
 		}
 
 		final String orderType = mrpSupply.getOrderType();
-		if (!X_PP_MRP.ORDERTYPE_QuantityOnHandInTransit.equals(orderType))
-		{
-			return false;
-		}
-
-		return true;
+		return X_PP_MRP.ORDERTYPE_QuantityOnHandInTransit.equals(orderType);
 	}
 
 	@Override

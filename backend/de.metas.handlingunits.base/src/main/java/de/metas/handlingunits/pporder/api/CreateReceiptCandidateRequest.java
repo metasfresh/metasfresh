@@ -69,6 +69,8 @@ public final class CreateReceiptCandidateRequest
 	@Nullable
 	private final PickingCandidateId pickingCandidateId;
 
+	private final boolean alreadyProcessed;
+
 	public static class CreateReceiptCandidateRequestBuilder
 	{
 		public CreateReceiptCandidateRequestBuilder addQtyToReceive(@NonNull final Quantity qtyToAdd)

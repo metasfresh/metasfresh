@@ -105,8 +105,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public void issueServiceProduct(final PPOrderIssueServiceProductRequest request)
 	{
+		final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService = SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class);
+
 		PPOrderIssueServiceProductCommand.builder()
-				.manufacturingComponentGeneratorService(SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class))
+				.manufacturingComponentGeneratorService(manufacturingComponentGeneratorService)
 				.request(request)
 				.build()
 				.execute();

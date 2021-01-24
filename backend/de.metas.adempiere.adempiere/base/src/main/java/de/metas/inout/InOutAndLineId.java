@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -43,6 +45,25 @@ public class InOutAndLineId
 	{
 		return new InOutAndLineId(InOutId.ofRepoId(inOutRepoId), InOutLineId.ofRepoId(inOutLineRepoId));
 	}
+
+	@Nullable
+	public static InOutAndLineId ofRepoIdOrNull(final int inOutRepoId, final int inOutLineRepoId)
+	{
+		final InOutId inoutId = InOutId.ofRepoIdOrNull(inOutRepoId);
+		if(inoutId == null)
+		{
+			return null;
+		}
+
+		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(inOutLineRepoId);
+		if(inoutLineId == null)
+		{
+			return null;
+		}
+
+		return new InOutAndLineId(inoutId, inoutLineId);
+	}
+
 
 	@JsonProperty("inOutId")
 	InOutId inOutId;

@@ -165,14 +165,14 @@ import de.metas.util.Services;
  *         <li>BF [ 2876892 ] Save included tab before calling button action
  *         https://sourceforge.net/tracker/?func=detail&aid=2876892&group_id=176962&atid=879332
  * @author victor.perez@e-evolution.com
- * @see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
+ * See FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
  * @autor tobi42, metas GmBH
  *        <li>BF [ 2799362 ] You can press New button a lot of times
  * @author Cristina Ghita, www.arhipac.ro
- * @see FR [ 2877111 ] See identifiers columns when delete records https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2877111&group_id=176962
+ * See FR [ 2877111 ] See identifiers columns when delete records https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2877111&group_id=176962
  *
  * @author hengsin, hengsin.low@idalica.com
- * @see FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962
+ * See FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962
  * @sponsor www.metas.de
  */
 // metas: removed final modifier
@@ -1472,7 +1472,7 @@ public class APanel extends CPanel
 
 		aNew.setEnabled(((inserting && changedColumn > 0) || !inserting) && insertRecord);
 		aCopy.setEnabled(!changed && insertRecord);
-		aCopyDetails.setEnabled(!changed && insertRecord && CopyRecordFactory.isEnabled(m_curTab));
+		aCopyDetails.setEnabled(!changed && insertRecord && CopyRecordFactory.isEnabledForTableName(m_curTab.getTableName()));
 		aRefresh.setEnabled(!changed);
 		aDelete.setEnabled(!changed && deleteRecord);
 		aDeleteSelection.setEnabled(!changed && deleteRecord); // same as "aDelete"

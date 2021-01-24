@@ -41,9 +41,9 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
-import java.util.Properties;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -103,8 +103,8 @@ public interface IOrderBL extends ISingletonService
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
 	 * <ul>
 	 * <li><code>IsSOTrx</code> value
-	 * <li><code>Bill_BPartner</code>'s pricing system, see {@link org.adempiere.bpPartner.service.IBPartnerDAO#retrievePricingSystemId(Properties, int, boolean, String)}
-	 * <li>location's <code>C_Country</code>, see {@link #retrievePriceListId(I_C_Order)}
+	 * <li><code>Bill_BPartner</code>'s pricing system
+	 * <li>location's <code>C_Country</code>
 	 * </ul>
 	 *
 	 * @param overridePricingSystem true if pricing system shall be set even if is already set
@@ -129,7 +129,7 @@ public interface IOrderBL extends ISingletonService
 	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, DocTypeId docTypeId);
 
 	@Deprecated
-	default void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, int docTypeId)
+	default void setDocTypeTargetIdAndUpdateDescription(final I_C_Order order, final int docTypeId)
 	{
 		setDocTypeTargetIdAndUpdateDescription(order, DocTypeId.ofRepoId(docTypeId));
 	}
@@ -182,7 +182,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.
-	 * Also update the order line's reservation via {@link IOrderPA#reserveStock(I_C_Order, I_C_OrderLine...)}.
+	 * Also update the order line's reservation
 	 * <p>
 	 * This method is saving the order line.
 	 * <p>
@@ -219,7 +219,7 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * @return true if the order is a quotation, i.e. C_Order's (target-)docType's DocBaseType = SSO and DocSubType in ('OB' , 'ON' = Quotation or Proposal)
 	 */
-	boolean isQuotation(I_C_Order order);
+	boolean isSalesProposalOrQuotation(I_C_Order order);
 
 	boolean isPrepay(OrderId orderId);
 
@@ -227,12 +227,15 @@ public interface IOrderBL extends ISingletonService
 
 	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
 
+	@Nullable
 	I_C_DocType getDocTypeOrNull(I_C_Order order);
 
 	I_C_BPartner getBPartner(I_C_Order order);
 
+	@Nullable
 	I_C_BPartner getBPartnerOrNull(I_C_Order order);
 
+	@Nullable
 	ProjectId getProjectIdOrNull(OrderLineId orderLineId);
 
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_C_Order order);

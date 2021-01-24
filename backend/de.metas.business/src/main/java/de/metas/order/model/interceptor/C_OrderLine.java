@@ -2,6 +2,7 @@ package de.metas.order.model.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -64,17 +65,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 @Component
 public class C_OrderLine
 {
+	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
+
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
-
-	private final OrderGroupCompensationChangesHandler groupChangesHandler;
-
-	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
-
 	private final IProductBL productBL = Services.get(IProductBL.class);
-
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
 	{
@@ -87,9 +85,8 @@ public class C_OrderLine
 	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
 	 * FRESH-386: likewise, also make sure that counter document lines are unlinked as well.
 	 *
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
+	 * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
+	 * Task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
@@ -186,8 +183,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
+	 * Task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
@@ -224,7 +220,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/3298
+	 * Task https://github.com/metasfresh/metasfresh/issues/3298
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -255,8 +251,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
+	 * Task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_QtyOrdered,
@@ -351,8 +346,6 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void ensureOrderLineHasShipper(final I_C_OrderLine orderLine)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 		if (orderLine.getM_Shipper_ID() <= 0)
 		{
 			logger.debug("Making sure {} has a M_Shipper_ID", orderLine);
@@ -364,13 +357,13 @@ public class C_OrderLine
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void updateProductDescriptionFromProductBOMIfConfigured(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
+		orderLineBL.updateProductDescriptionFromProductBOMIfConfigured(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateProductDocumentNote(orderLine);
+		orderLineBL.updateProductDocumentNote(orderLine);
 	}
 }

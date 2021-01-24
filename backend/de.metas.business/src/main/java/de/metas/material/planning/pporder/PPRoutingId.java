@@ -1,15 +1,15 @@
 package de.metas.material.planning.pporder;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -50,6 +50,7 @@ public class PPRoutingId implements RepoIdAware
 		}
 	}
 
+	@Nullable
 	public static PPRoutingId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -60,7 +61,7 @@ public class PPRoutingId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final PPRoutingId PPOrderId)
+	public static int toRepoId(@Nullable final PPRoutingId PPOrderId)
 	{
 		return PPOrderId != null ? PPOrderId.getRepoId() : -1;
 	}

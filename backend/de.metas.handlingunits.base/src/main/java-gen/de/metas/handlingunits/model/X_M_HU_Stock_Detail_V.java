@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_HU_Stock_Detail_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -858717964L;
+	private static final long serialVersionUID = -683013165L;
 
     /** Standard Constructor */
     public X_M_HU_Stock_Detail_V (final Properties ctx, final int M_HU_Stock_Detail_V_ID, @Nullable final String trxName)
@@ -36,7 +36,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setAttributeValue (final java.lang.String AttributeValue)
+	public void setAttributeValue (final @Nullable java.lang.String AttributeValue)
 	{
 		set_ValueNoCheck (COLUMNNAME_AttributeValue, AttributeValue);
 	}
@@ -95,7 +95,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
 	@Override
-	public void setHUStatus (final java.lang.String HUStatus)
+	public void setHUStatus (final @Nullable java.lang.String HUStatus)
 	{
 		set_ValueNoCheck (COLUMNNAME_HUStatus, HUStatus);
 	}
@@ -233,7 +233,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setQty (final BigDecimal Qty)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_ValueNoCheck (COLUMNNAME_Qty, Qty);
 	}

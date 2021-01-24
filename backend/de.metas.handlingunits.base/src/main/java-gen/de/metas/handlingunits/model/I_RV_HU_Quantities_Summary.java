@@ -232,7 +232,7 @@ public interface I_RV_HU_Quantities_Summary
 
 	/**
 	 * Set Open Qty.
-	 * Offene Menge
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -242,7 +242,7 @@ public interface I_RV_HU_Quantities_Summary
 
 	/**
 	 * Get Open Qty.
-	 * Offene Menge
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

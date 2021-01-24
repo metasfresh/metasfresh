@@ -33,6 +33,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-material-planning
@@ -160,7 +162,7 @@ public class PPOrderPojoConverter
 
 	public static void setMaterialDispoGroupId(
 			@NonNull final I_PP_Order ppOrderRecord,
-			final MaterialDispoGroupId materialDispoGroupId)
+			@Nullable final MaterialDispoGroupId materialDispoGroupId)
 	{
 		ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, materialDispoGroupId);
 	}

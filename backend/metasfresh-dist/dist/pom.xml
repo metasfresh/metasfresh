@@ -556,6 +556,14 @@ note: when adding new records, please roughly order them by alphabet.
 			<type>zip</type>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.servicerepair</groupId>
+			<artifactId>de.metas.servicerepair.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
 		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
 		<dependency>
 			<groupId>jp.osdn.ocra</groupId>

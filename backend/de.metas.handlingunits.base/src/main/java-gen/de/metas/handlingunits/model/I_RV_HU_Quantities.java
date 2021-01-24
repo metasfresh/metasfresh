@@ -391,7 +391,7 @@ public interface I_RV_HU_Quantities
 
 	/**
 	 * Set Open Qty.
-	 * Offene Menge
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -401,7 +401,7 @@ public interface I_RV_HU_Quantities
 
 	/**
 	 * Get Open Qty.
-	 * Offene Menge
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
