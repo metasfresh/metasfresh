@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Source_HU extends org.compiere.model.PO implements I_M_Source_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1024435334L;
+	private static final long serialVersionUID = 1877649145L;
 
     /** Standard Constructor */
     public X_M_Source_HU (final Properties ctx, final int M_Source_HU_ID, @Nullable final String trxName)
@@ -77,7 +77,7 @@ public class X_M_Source_HU extends org.compiere.model.PO implements I_M_Source_H
 	}
 
 	@Override
-	public void setPreDestroy_Snapshot_UUID (final java.lang.String PreDestroy_Snapshot_UUID)
+	public void setPreDestroy_Snapshot_UUID (final @Nullable java.lang.String PreDestroy_Snapshot_UUID)
 	{
 		set_Value (COLUMNNAME_PreDestroy_Snapshot_UUID, PreDestroy_Snapshot_UUID);
 	}

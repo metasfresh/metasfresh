@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.material.planning;
 
 /*
@@ -32,14 +29,16 @@ import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.ResourceId;
 
+import javax.annotation.Nullable;
+
 /**
- * Rounting(Workflow Service)
+ * Routing (Workflow Service)
  *
  * @author Teo Sarca, www.arhipac.ro
  */
 public interface RoutingService
 {
-	public WorkingTime estimateWorkingTimePerOneUnit(PPRoutingActivity activity);
+	WorkingTime estimateWorkingTimePerOneUnit(PPRoutingActivity activity);
 
 	/**
 	 * Calculate node duration for 1 item, AD_Workflow.DurationUnit UOM will be used
@@ -47,20 +46,19 @@ public interface RoutingService
 	 * @param activity operation
 	 * @return node duration for 1 item (AD_Workflow.DurationUnit UOM)
 	 */
-	public Duration calculateDuration(PPRoutingActivity activity);
+	Duration calculateDuration(PPRoutingActivity activity);
 
 	/**
 	 * Calculate workflow duration for given qty.
 	 *
 	 * @return node duration for 1 item (AD_Workflow.DurationUnit UOM)
 	 */
-	public int calculateDurationDays(PPRoutingId routingId, ResourceId plantId, BigDecimal qty);
+	int calculateDurationDays(PPRoutingId routingId, @Nullable ResourceId plantId, BigDecimal qty);
 
 	/**
 	 * Return node base value in resource UOM (e.g. duration)
 	 *
-	 * @param activity
 	 * @return value (e.g. duration)
 	 */
-	public Duration getResourceBaseValue(PPRoutingActivity activity);
+	Duration getResourceBaseValue(PPRoutingActivity activity);
 }

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implements I_M_HU_Instance_Properties_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 161346200L;
+	private static final long serialVersionUID = 279740664L;
 
     /** Standard Constructor */
     public X_M_HU_Instance_Properties_v (final Properties ctx, final int M_HU_Instance_Properties_v_ID, @Nullable final String trxName)
@@ -36,7 +36,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setAttributeName (final java.lang.String AttributeName)
+	public void setAttributeName (final @Nullable java.lang.String AttributeName)
 	{
 		set_ValueNoCheck (COLUMNNAME_AttributeName, AttributeName);
 	}
@@ -53,7 +53,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	 */
 	public static final int DOCUMENTNAME_AD_Reference_ID=53258;
 	@Override
-	public void setDocumentName (final java.lang.String DocumentName)
+	public void setDocumentName (final @Nullable java.lang.String DocumentName)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentName, DocumentName);
 	}
@@ -65,7 +65,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
@@ -107,7 +107,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setPIName (final java.lang.String PIName)
+	public void setPIName (final @Nullable java.lang.String PIName)
 	{
 		set_ValueNoCheck (COLUMNNAME_PIName, PIName);
 	}
@@ -119,7 +119,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setValue (final java.lang.String Value)
+	public void setValue (final @Nullable java.lang.String Value)
 	{
 		set_ValueNoCheck (COLUMNNAME_Value, Value);
 	}
@@ -131,7 +131,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setValueNumber (final BigDecimal ValueNumber)
+	public void setValueNumber (final @Nullable BigDecimal ValueNumber)
 	{
 		set_ValueNoCheck (COLUMNNAME_ValueNumber, ValueNumber);
 	}

@@ -37,4 +37,6 @@ public class PPOrderIssueServiceProductRequest
 
 	@NonNull
 	PPOrderBOMLineId ppOrderBOMLineId;
+
+	boolean overrideExistingValues;
 }

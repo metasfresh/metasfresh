@@ -21,8 +21,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
 
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Product;
@@ -56,6 +59,7 @@ import de.metas.util.Services;
 public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 {
 	private static final Logger logger = LogManager.getLogger(Doc_ProjectIssue.class);
+	private final ProjectRepository projectRepository = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	public Doc_ProjectIssue(final AcctDocContext ctx)
 	{
@@ -87,7 +91,8 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	@Override
 	public String getDocumentNo()
 	{
-		I_C_Project project = m_issue.getC_Project();
+		final ProjectId projectId = ProjectId.ofRepoId(m_issue.getC_Project_ID());
+		final I_C_Project project = projectRepository.getById(projectId);
 		if (project != null)
 		{
 			return project.getValue() + " #" + m_issue.getLine();

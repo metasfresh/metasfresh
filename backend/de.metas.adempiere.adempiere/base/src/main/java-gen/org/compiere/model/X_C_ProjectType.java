@@ -8,10 +8,11 @@ import javax.annotation.Nullable;
 /** Generated Model for C_ProjectType
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_ProjectType extends org.compiere.model.PO implements I_C_ProjectType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 107383079L;
+	private static final long serialVersionUID = -596423106L;
 
     /** Standard Constructor */
     public X_C_ProjectType (final Properties ctx, final int C_ProjectType_ID, @Nullable final String trxName)
@@ -76,7 +77,7 @@ public class X_C_ProjectType extends org.compiere.model.PO implements I_C_Projec
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -88,7 +89,7 @@ public class X_C_ProjectType extends org.compiere.model.PO implements I_C_Projec
 	}
 
 	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}

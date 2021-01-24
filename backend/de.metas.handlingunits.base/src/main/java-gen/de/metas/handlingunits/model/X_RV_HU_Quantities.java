@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU_Quantities, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1225170930L;
+	private static final long serialVersionUID = -866062641L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities (final Properties ctx, final int RV_HU_Quantities_ID, @Nullable final String trxName)
@@ -36,7 +36,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setASIKey (final java.lang.String ASIKey)
+	public void setASIKey (final @Nullable java.lang.String ASIKey)
 	{
 		set_Value (COLUMNNAME_ASIKey, ASIKey);
 	}
@@ -48,7 +48,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setASIKeyName (final java.lang.String ASIKeyName)
+	public void setASIKeyName (final @Nullable java.lang.String ASIKeyName)
 	{
 		set_Value (COLUMNNAME_ASIKeyName, ASIKeyName);
 	}
@@ -99,7 +99,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product (final java.lang.String M_HU_PI_Item_Product)
+	public void setM_HU_PI_Item_Product (final @Nullable java.lang.String M_HU_PI_Item_Product)
 	{
 		set_Value (COLUMNNAME_M_HU_PI_Item_Product, M_HU_PI_Item_Product);
 	}
@@ -141,7 +141,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setProductName (final java.lang.String ProductName)
+	public void setProductName (final @Nullable java.lang.String ProductName)
 	{
 		set_Value (COLUMNNAME_ProductName, ProductName);
 	}
@@ -153,7 +153,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setProductValue (final java.lang.String ProductValue)
+	public void setProductValue (final @Nullable java.lang.String ProductValue)
 	{
 		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}
@@ -165,7 +165,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setQtyAvailable (final BigDecimal QtyAvailable)
+	public void setQtyAvailable (final @Nullable BigDecimal QtyAvailable)
 	{
 		set_Value (COLUMNNAME_QtyAvailable, QtyAvailable);
 	}
@@ -178,7 +178,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setQtyOnHand (final BigDecimal QtyOnHand)
+	public void setQtyOnHand (final @Nullable BigDecimal QtyOnHand)
 	{
 		set_Value (COLUMNNAME_QtyOnHand, QtyOnHand);
 	}
@@ -191,7 +191,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setQtyOrdered (final BigDecimal QtyOrdered)
+	public void setQtyOrdered (final @Nullable BigDecimal QtyOrdered)
 	{
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
@@ -204,7 +204,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public void setQtyReserved (final BigDecimal QtyReserved)
+	public void setQtyReserved (final @Nullable BigDecimal QtyReserved)
 	{
 		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
 	}

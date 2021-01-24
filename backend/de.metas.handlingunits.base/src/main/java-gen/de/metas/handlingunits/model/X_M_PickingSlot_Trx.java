@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_PickingSlot_Trx, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 65785277L;
+	private static final long serialVersionUID = 244760188L;
 
     /** Standard Constructor */
     public X_M_PickingSlot_Trx (final Properties ctx, final int M_PickingSlot_Trx_ID, @Nullable final String trxName)
@@ -48,7 +48,7 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 	/** Close_Current_HU = C */
 	public static final String ACTION_Close_Current_HU = "C";
 	@Override
-	public void setAction (final java.lang.String Action)
+	public void setAction (final @Nullable java.lang.String Action)
 	{
 		set_Value (COLUMNNAME_Action, Action);
 	}

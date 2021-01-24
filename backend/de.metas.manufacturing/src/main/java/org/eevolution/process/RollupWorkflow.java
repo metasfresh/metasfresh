@@ -1,20 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
- * Contributor(s): Victor Perez www.e-evolution.com *
- * Bogdan Ioan, www.arhipac.ro *
- *****************************************************************************/
-
 package org.eevolution.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -318,7 +301,7 @@ public class RollupWorkflow extends JavaProcess
 
 		final Duration duration = routingService.getResourceBaseValue(activity);
 
-		final CostAmount cost = rate.multiply(duration, activity.getDurationUnit())
+		final CostAmount cost = rate.multiply(duration, activity.getDurationUnit().getTemporalUnit())
 				.roundToPrecisionIfNeeded(precision);
 
 		return RoutingActivitySegmentCost.of(cost, activity.getId(), costSegmentAndElement.getCostElementId());
@@ -353,9 +336,6 @@ public class RollupWorkflow extends JavaProcess
 
 	/**
 	 * Create Cost Rollup Notice
-	 *
-	 * @param product
-	 * @param msg
 	 */
 	private void createNotice(final I_M_Product product, final String msg)
 	{

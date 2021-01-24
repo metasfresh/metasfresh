@@ -1395,7 +1395,7 @@ public final class Env
 	 * @param system System level preferences (vs. user defined)
 	 * @return preference value
 	 */
-	public static String getPreference(final Properties ctx, final AdWindowId adWindowId, final String context, final boolean system)
+	public static String getPreference(final Properties ctx, @Nullable final AdWindowId adWindowId, final String context, final boolean system)
 	{
 		if (ctx == null || context == null)
 		{
@@ -1531,6 +1531,7 @@ public final class Env
 	 * @param ctx context
 	 * @return AD_Language eg. en_US
 	 */
+	@Nullable
 	public static String getAD_Language(final Properties ctx)
 	{
 		if (ctx != null)

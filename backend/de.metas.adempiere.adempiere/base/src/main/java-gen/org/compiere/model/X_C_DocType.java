@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1805973587L;
+	private static final long serialVersionUID = 1104002225L;
 
     /** Standard Constructor */
     public X_C_DocType (final Properties ctx, final int C_DocType_ID, @Nullable final String trxName)
@@ -179,7 +179,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -267,6 +267,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_ShipmentDeclarationCorrection = "SDC";
 	/** Customs Invoice = CUI */
 	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
+	/** ServiceRepairOrder = MRO */
+	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{
@@ -392,7 +394,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	/** SR = SR */
 	public static final String DOCSUBTYPE_SR = "SR";
 	@Override
-	public void setDocSubType (final java.lang.String DocSubType)
+	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
 		set_Value (COLUMNNAME_DocSubType, DocSubType);
 	}
@@ -416,7 +418,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	}
 
 	@Override
-	public void setDocumentNote (final java.lang.String DocumentNote)
+	public void setDocumentNote (final @Nullable java.lang.String DocumentNote)
 	{
 		set_Value (COLUMNNAME_DocumentNote, DocumentNote);
 	}

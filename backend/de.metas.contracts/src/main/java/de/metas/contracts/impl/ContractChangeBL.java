@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.order.createFrom.LegacyOrderCopyCommand;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -69,7 +70,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderPA;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -332,9 +332,13 @@ public class ContractChangeBL implements IContractChangeBL
 	{
 		final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
 		final I_C_Order currentTermOrder = currentTermOl.getC_Order();
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
 		final String trxName = InterfaceWrapperHelper.getTrxName(currentTerm);
-		final I_C_Order termChangeOrder = orderPA.copyOrder(currentTermOrder, false, trxName);
+		final I_C_Order termChangeOrder = LegacyOrderCopyCommand.builder()
+				.originalOrder(currentTermOrder)
+				.copyLines(false)
+				.trxName(trxName)
+				.build()
+				.execute();
 		final PricingSystemId pricingSystemId = getPricingSystemId(currentTerm, changeConditions);
 		termChangeOrder.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 

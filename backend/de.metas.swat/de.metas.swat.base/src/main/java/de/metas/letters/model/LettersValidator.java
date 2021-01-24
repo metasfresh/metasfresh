@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.letters.model;
 
 /*
@@ -25,14 +22,13 @@ package de.metas.letters.model;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.interfaces.I_M_Movement;
+import de.metas.letters.api.ITextTemplateBL;
+import de.metas.letters.api.impl.TextTemplateBL;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BPartner;
@@ -53,25 +49,27 @@ import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
-import org.compiere.model.MDocType;
 import org.compiere.model.MTable;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_HR_Process;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.interfaces.I_M_Movement;
-import de.metas.letters.api.ITextTemplateBL;
-import de.metas.letters.api.impl.TextTemplateBL;
-import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
 
 /**
  * @author teo_sarca
@@ -81,7 +79,7 @@ public class LettersValidator implements ModelValidator
 {
 	private int m_AD_Client_ID = -1;
 
-	private static Map<ArrayKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<>();
+	private static final Map<ArrayKey, Set<MADBoilerPlateVar>> s_cacheVars = new HashMap<>();
 
 	@Override
 	public int getAD_Client_ID()
@@ -90,7 +88,7 @@ public class LettersValidator implements ModelValidator
 	}
 
 	@Override
-	public void initialize(ModelValidationEngine engine, MClient client)
+	public void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
 			m_AD_Client_ID = client.getAD_Client_ID();
@@ -128,13 +126,13 @@ public class LettersValidator implements ModelValidator
 	}
 
 	@Override
-	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		return null;
 	}
 
 	@Override
-	public String modelChange(PO po, int type) throws Exception
+	public String modelChange(final PO po, final int type) throws Exception
 	{
 		if (I_C_DunningRunEntry.Table_Name.equals(po.get_TableName())
 				&& TYPE_BEFORE_NEW == type)
@@ -146,10 +144,10 @@ public class LettersValidator implements ModelValidator
 	}
 
 	@Override
-	public String docValidate(PO po, int timing)
+	public String docValidate(final PO po, final int timing)
 	{
 		final Set<MADBoilerPlateVar> vars = getVars(po, timing);
-		if (vars == null || vars.isEmpty())
+		if (vars.isEmpty())
 			return null;
 		//
 		for (final MColumn c : MTable.get(po.getCtx(), po.get_Table_ID()).getColumns(false))
@@ -167,42 +165,44 @@ public class LettersValidator implements ModelValidator
 	private static final Map<String, String> s_mapDocBaseTypeToTableName = new HashMap<>(20);
 	static
 	{
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_GLJournal, I_GL_Journal.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_GLDocument, I_GL_Journal.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_APInvoice, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_APPayment, I_C_Payment.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ARInvoice, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ARReceipt, I_C_Payment.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_SalesOrder, I_C_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ARProFormaInvoice, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MaterialDelivery, I_M_InOut.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MaterialReceipt, I_M_InOut.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MaterialMovement, I_M_Movement.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_PurchaseOrder, I_C_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_PurchaseRequisition, I_M_Requisition.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MaterialPhysicalInventory, I_M_Inventory.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_APCreditMemo, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ARCreditMemo, I_C_Invoice.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_BankStatement, I_C_BankStatement.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_CashJournal, I_C_Cash.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_PaymentAllocation, I_C_AllocationHdr.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MatchInvoice, I_M_MatchInv.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MatchPO, I_M_MatchPO.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ProjectIssue, I_C_ProjectIssue.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_MaintenanceOrder, I_PP_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ManufacturingOrder, I_PP_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_QualityOrder, I_PP_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_Payroll, I_HR_Process.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_DistributionOrder, I_DD_Order.Table_Name);
-		s_mapDocBaseTypeToTableName.put(MDocType.DOCBASETYPE_ManufacturingCostCollector, I_PP_Cost_Collector.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_GLJournal, I_GL_Journal.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_GLDocument, I_GL_Journal.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_APInvoice, I_C_Invoice.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_APPayment, I_C_Payment.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARInvoice, I_C_Invoice.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARReceipt, I_C_Payment.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_SalesOrder, I_C_Order.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARProFormaInvoice, I_C_Invoice.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialDelivery, I_M_InOut.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialReceipt, I_M_InOut.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialMovement, I_M_Movement.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_PurchaseOrder, I_C_Order.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_PurchaseRequisition, I_M_Requisition.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory, I_M_Inventory.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_APCreditMemo, I_C_Invoice.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ARCreditMemo, I_C_Invoice.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_BankStatement, I_C_BankStatement.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_CashJournal, I_C_Cash.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_PaymentAllocation, I_C_AllocationHdr.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MatchInvoice, I_M_MatchInv.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_MatchPO, I_M_MatchPO.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ProjectIssue, I_C_ProjectIssue.Table_Name);
+		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.MAINTENANCE_ORDER.getCode(), I_PP_Order.Table_Name);
+		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode(), I_PP_Order.Table_Name);
+		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.QUALITY_ORDER.getCode(), I_PP_Order.Table_Name);
+		s_mapDocBaseTypeToTableName.put(PPOrderDocBaseType.REPAIR_ORDER.getCode(), I_PP_Order.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_Payroll, I_HR_Process.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_DistributionOrder, I_DD_Order.Table_Name);
+		s_mapDocBaseTypeToTableName.put(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector, I_PP_Cost_Collector.Table_Name);
 	}
 
-	private static String getTableNameByDocBaseType(String docBaseType)
+	private static String getTableNameByDocBaseType(final String docBaseType)
 	{
 		return s_mapDocBaseTypeToTableName.get(docBaseType);
 	}
 
-	private static String getEvalTime(int timing)
+	@Nullable
+	private static String getEvalTime(final int timing)
 	{
 		if (TIMING_AFTER_PREPARE == timing)
 			return MADBoilerPlateVarEval.EVALTIME_DocumentAfterPrepare;
@@ -224,7 +224,7 @@ public class LettersValidator implements ModelValidator
 			return null;
 	}
 
-	private static Set<MADBoilerPlateVar> getVars(PO po, int timing)
+	private static Set<MADBoilerPlateVar> getVars(final PO po, final int timing)
 	{
 		final int AD_Client_ID = Env.getAD_Client_ID(po.getCtx());
 		final String tableName = po.get_TableName();
@@ -238,29 +238,29 @@ public class LettersValidator implements ModelValidator
 		return vars;
 	}
 
-	private static int getC_DocType_ID(PO po)
+	private static int getC_DocType_ID(final PO po)
 	{
 		int index = po.get_ColumnIndex("C_DocType_ID");
 		if (index != -1)
 		{
 			Integer ii = (Integer)po.get_Value(index);
 			// DocType does not exist - get DocTypeTarget
-			if (ii != null && ii.intValue() == 0)
+			if (ii != null && ii <= 0)
 			{
 				index = po.get_ColumnIndex("C_DocTypeTarget_ID");
-				if (index != -1)
+				if (index > 0)
 					ii = (Integer)po.get_Value(index);
 			}
 			if (ii != null)
-				return ii.intValue();
+				return ii;
 		}
 		return -1;
 	}
 
-	private static void parseField(PO po, String columnName, Collection<MADBoilerPlateVar> vars)
+	private static void parseField(final PO po, final String columnName, final Collection<MADBoilerPlateVar> vars)
 	{
 		final String text = po.get_ValueAsString(columnName);
-		if (Check.isEmpty(text, true))
+		if (text == null || Check.isBlank(text))
 			return;
 		//
 		final BoilerPlateContext attributes = BoilerPlateContext.builder()
@@ -300,7 +300,7 @@ public class LettersValidator implements ModelValidator
 		po.set_ValueOfColumn(columnName, textParsed);
 	}
 
-	private static void setDunningRunEntryNote(I_C_DunningRunEntry dre)
+	private static void setDunningRunEntryNote(final I_C_DunningRunEntry dre)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(dre);
 		final String trxName = InterfaceWrapperHelper.getTrxName(dre);

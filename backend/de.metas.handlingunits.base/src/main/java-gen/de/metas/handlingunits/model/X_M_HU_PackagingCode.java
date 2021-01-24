@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PackagingCode extends org.compiere.model.PO implements I_M_HU_PackagingCode, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2026522582L;
+	private static final long serialVersionUID = -1348078474L;
 
     /** Standard Constructor */
     public X_M_HU_PackagingCode (final Properties ctx, final int M_HU_PackagingCode_ID, @Nullable final String trxName)
@@ -35,7 +35,7 @@ public class X_M_HU_PackagingCode extends org.compiere.model.PO implements I_M_H
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -58,7 +58,7 @@ public class X_M_HU_PackagingCode extends org.compiere.model.PO implements I_M_H
 	/** VirtualPI = V */
 	public static final String HU_UNITTYPE_VirtualPI = "V";
 	@Override
-	public void setHU_UnitType (final java.lang.String HU_UnitType)
+	public void setHU_UnitType (final @Nullable java.lang.String HU_UnitType)
 	{
 		set_Value (COLUMNNAME_HU_UnitType, HU_UnitType);
 	}

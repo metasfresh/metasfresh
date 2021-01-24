@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_Reservation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1049244976L;
+	private static final long serialVersionUID = 1748134686L;
 
     /** Standard Constructor */
     public X_M_HU_Reservation (final Properties ctx, final int M_HU_Reservation_ID, @Nullable final String trxName)
@@ -90,33 +90,6 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_ProjectLine getC_ProjectLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_ProjectLine_ID, org.compiere.model.I_C_ProjectLine.class);
-	}
-
-	@Override
-	public void setC_ProjectLine(final org.compiere.model.I_C_ProjectLine C_ProjectLine)
-	{
-		set_ValueFromPO(COLUMNNAME_C_ProjectLine_ID, org.compiere.model.I_C_ProjectLine.class, C_ProjectLine);
-	}
-
-	@Override
-	public void setC_ProjectLine_ID (final int C_ProjectLine_ID)
-	{
-		if (C_ProjectLine_ID < 1) 
-			set_Value (COLUMNNAME_C_ProjectLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_ProjectLine_ID, C_ProjectLine_ID);
-	}
-
-	@Override
-	public int getC_ProjectLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_ProjectLine_ID);
 	}
 
 	@Override

@@ -267,7 +267,7 @@ final class CreatePPOrderCostsCommand
 		final ResourceId resourceId = activity.getResourceId();
 		final ProductId resourceProductId = resourceProductService.getProductIdByResourceId(resourceId);
 
-		final UomId durationUomId = uomDAO.getUomIdByTemporalUnit(activity.getDurationUnit());
+		final UomId durationUomId = uomDAO.getUomIdByTemporalUnit(activity.getDurationUnit().getTemporalUnit());
 		return PPOrderCostCandidate.builder()
 				.trxType(PPOrderCostTrxType.ResourceUtilization)
 				.costSegment(prepareCostSegment(resourceProductId)

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_InventoryLine_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1218019914L;
+	private static final long serialVersionUID = -1755209737L;
 
     /** Standard Constructor */
     public X_M_InventoryLine_HU (final Properties ctx, final int M_InventoryLine_HU_ID, @Nullable final String trxName)
@@ -147,7 +147,7 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setQtyBook (final BigDecimal QtyBook)
+	public void setQtyBook (final @Nullable BigDecimal QtyBook)
 	{
 		set_Value (COLUMNNAME_QtyBook, QtyBook);
 	}
@@ -160,7 +160,7 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setQtyCount (final BigDecimal QtyCount)
+	public void setQtyCount (final @Nullable BigDecimal QtyCount)
 	{
 		set_Value (COLUMNNAME_QtyCount, QtyCount);
 	}
@@ -173,7 +173,7 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setQtyInternalUse (final BigDecimal QtyInternalUse)
+	public void setQtyInternalUse (final @Nullable BigDecimal QtyInternalUse)
 	{
 		set_Value (COLUMNNAME_QtyInternalUse, QtyInternalUse);
 	}

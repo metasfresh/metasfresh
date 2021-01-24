@@ -48,8 +48,8 @@ public class SerialNoGenerator implements IComponentGenerator
 			return ImmutableAttributeSet.EMPTY;
 		}
 
-		final String existingSerialNo = existingAttributes.getValueAsString(AttributeConstants.ATTR_SerialNo);
-		if (Check.isNotBlank(existingSerialNo))
+		if (!context.isOverrideExistingValues()
+				&& Check.isNotBlank(existingAttributes.getValueAsString(AttributeConstants.ATTR_SerialNo)))
 		{
 			// don't override existing serial no
 			return ImmutableAttributeSet.EMPTY;

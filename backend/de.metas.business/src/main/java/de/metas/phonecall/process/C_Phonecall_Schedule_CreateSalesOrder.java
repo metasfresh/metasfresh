@@ -11,6 +11,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
 import de.metas.organization.IOrgDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
 import de.metas.phonecall.service.PhonecallScheduleRepository;
@@ -93,7 +94,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 				// .shipBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId())
 				//
 				.docType(docTypeId)
-				.paymentTermId(partnerRecord.getC_PaymentTerm_ID())
+				.paymentTermId(PaymentTermId.ofRepoIdOrNull(partnerRecord.getC_PaymentTerm_ID()))
 				.datePromised(datePromisedEndOfDay)
 				.createDraftOrderHeader();
 
