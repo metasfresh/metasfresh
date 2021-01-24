@@ -115,8 +115,8 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		try
 		{
 			final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			final ZonedDateTime from = LocalDate.parse(FROM_DATE, formatter).atStartOfDay(ZoneId.of("UTC-8"));
-			final ZonedDateTime to = LocalDate.parse(TO_DATE, formatter).atStartOfDay(ZoneId.of("UTC-8"));
+			final ZonedDateTime from = LocalDate.parse(FROM_DATE, formatter).atStartOfDay(ZoneId.of("Europe/Berlin"));
+			final ZonedDateTime to = LocalDate.parse(TO_DATE, formatter).atStartOfDay(ZoneId.of("Europe/Berlin"));
 
 			final InstantInterval targetInterval = InstantInterval.of(from.toInstant(), to.toInstant());
 
