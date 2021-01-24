@@ -100,7 +100,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private static final String FROM_DATE = "2020-01-01";
-	private static final String TO_DATE = "2020-12-31";
+	private static final String TO_DATE = "2021-01-01"; // the earlies possible time at that date is the interval's end
 
 	/**
 	 * Allows to run the full process with just one particular bpartner.
