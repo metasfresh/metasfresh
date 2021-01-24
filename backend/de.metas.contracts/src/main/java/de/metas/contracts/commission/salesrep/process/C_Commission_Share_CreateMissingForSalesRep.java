@@ -47,10 +47,12 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAwares;
 import de.metas.util.time.InstantInterval;
 import de.metas.util.time.IntervalUtils;
@@ -69,6 +71,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -108,6 +111,9 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 	@Param(parameterName = I_C_Commission_Share.COLUMNNAME_C_BPartner_SalesRep_ID)
 	private BPartnerId bPartnerId;
 
+	@Param(parameterName = "SalesRepIds")
+	private String bPartnerIdsAsString;
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -122,13 +128,23 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 
 			final SalesRepRelatedBPTableInfo salesRepRelatedBPTableInfo = getSalesRepRelatedBPTableInfo();
 
-			if (bPartnerId == null)
+			final boolean bPartnerIdSet = bPartnerId !=null;
+
+			if (bPartnerIdSet)
 			{
-				recalculateCommission(salesRepRelatedBPTableInfo, targetInterval);
+				recalculateCommissionForSalesRep(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
+			}
+			else if(Check.isNotBlank(bPartnerIdsAsString))
+			{
+				recalculateCommission(
+						ImmutableSet.copyOf(RepoIdAwares.ofCommaSeparatedList(bPartnerIdsAsString,BPartnerId.class)),
+						salesRepRelatedBPTableInfo, targetInterval);
 			}
 			else
 			{
-				recalculateCommissionForSalesRep(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
+				recalculateCommission(
+						null,
+						salesRepRelatedBPTableInfo, targetInterval);
 			}
 		}
 		catch (final Exception e)
@@ -139,12 +155,23 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		return MSG_OK;
 	}
 
+	/**
+	 * @param salesRepIds if null, then go with all
+	 */
 	private void recalculateCommission(
-			@NonNull final SalesRepRelatedBPTableInfo salesRepRelatedBPTableInfo, @NonNull final InstantInterval targetInterval)
+			@Nullable final ImmutableSet<BPartnerId> salesRepIds,
+			@NonNull final SalesRepRelatedBPTableInfo salesRepRelatedBPTableInfo,
+			@NonNull final InstantInterval targetInterval)
 	{
-
-		final ImmutableSet<BPartnerId> preliminaryQualifiedBPIds = retrieveAllBPsWithASalesRep(targetInterval, salesRepRelatedBPTableInfo);
-
+		final ImmutableSet<BPartnerId> preliminaryQualifiedBPIds;
+		if (salesRepIds == null)
+		{
+			preliminaryQualifiedBPIds = retrieveAllBPsWithASalesRep(targetInterval, salesRepRelatedBPTableInfo);
+		}
+		else
+		{
+			preliminaryQualifiedBPIds = salesRepIds;
+		}
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("*** DEBUG: number of preliminary qualified bPartnerIds for recalculation={}", preliminaryQualifiedBPIds.size());
 
@@ -244,7 +271,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		final Map<InstantInterval, String> bPartnerSalesRepIdByInterval;
 		//if (!bPartnerSalesRepChangeLogEntries.isEmpty())
 		// { // there are C_BPartner_SalesRep_ID change log entries with their respective time intervals
-		// 	bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
+ 		// 	bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
 		//}
 		// else if (bPartner.getC_BPartner_SalesRep_ID() > 0) // don't allow a C_BPartner_SalesRep_ID value that is set *now* to override the whole history of SalesRep_IDs
 		// { // if no log entries were found, it means the present C_BPartner_SalesRep_ID applies for the whole timeframe

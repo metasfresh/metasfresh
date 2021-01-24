@@ -22,6 +22,7 @@ package de.metas.util;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.adempiere.util.lang.IPair;
@@ -94,6 +95,28 @@ public final class StringUtils
 		return strTrim;
 	}
 
+	/**
+	 * TODO: consider using this method to improve {@link de.metas.util.lang.RepoIdAwares#ofCommaSeparatedList(String, Class)}.
+	 */
+	public static ImmutableList<Integer> tokenizeStringToIntegers(@Nullable final String str)
+	{
+		if (Check.isBlank(str))
+		{
+			return ImmutableList.of();
+		}
+		final ImmutableList.Builder<Integer> result = ImmutableList.builder();
+		final String[] integerStrings = str.split("[^0-9]");
+		for (final String integerString : integerStrings)
+		{
+			if (Check.isBlank(integerString))
+			{
+				continue;
+			}
+			result.add(Integer.parseInt(integerString));
+		}
+		return result.build();
+	}
+
 	public enum TruncateAt
 	{
 		STRING_START, STRING_END
@@ -162,9 +185,6 @@ public final class StringUtils
 
 	/**
 	 * Casts a string to BigDecimal. Returns BigDecimal.ZERO if the operation fails.
-	 *
-	 * @param str
-	 * @return
 	 */
 	public static BigDecimal toBigDecimalOrZero(final String str)
 	{
@@ -193,7 +213,6 @@ public final class StringUtils
 	 * </ul>
 	 *
 	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
-	 * @return
 	 */
 	@Nullable
 	public static Boolean toBooleanOrNull(@Nullable final String strBoolean)
@@ -221,10 +240,10 @@ public final class StringUtils
 	 * @param value,        may be null
 	 * @param defaultValue, may be null
 	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li><code>defaultValue</code> if value is null or other
-	 *         </ul>
+	 * <li>true if value is boolean true, "true" or "Y"
+	 * <li>false if value is boolean false, "false" or "N"
+	 * <li><code>defaultValue</code> if value is null or other
+	 * </ul>
 	 */
 	@Nullable
 	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
@@ -262,10 +281,10 @@ public final class StringUtils
 	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
 	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li>false if value is null or other
-	 *         </ul>
+	 * <li>true if value is boolean true, "true" or "Y"
+	 * <li>false if value is boolean false, "false" or "N"
+	 * <li>false if value is null or other
+	 * </ul>
 	 */
 	public static boolean toBoolean(final Object value)
 	{
@@ -278,10 +297,10 @@ public final class StringUtils
 	 *
 	 * @param value
 	 * @return <ul>
-	 *         <li><code>null</code> if value is null
-	 *         <li>"Y" if value is true
-	 *         <li>"N" if value is false
-	 *         </ul>
+	 * <li><code>null</code> if value is null
+	 * <li>"Y" if value is true
+	 * <li>"N" if value is false
+	 * </ul>
 	 */
 	public static String ofBoolean(@Nullable final Boolean value)
 	{
@@ -682,7 +701,7 @@ public final class StringUtils
 	}
 
 	/**
-	 * @param value       note: <code>null</code> is threaded like ""
+	 * @param value note: <code>null</code> is threaded like ""
 	 */
 	public static String lpadZero(final String value, final int size, final String description)
 	{
@@ -986,7 +1005,7 @@ public final class StringUtils
 			}
 		}
 		return new String(data);
-	}	// initCap
+	}    // initCap
 
 	/**
 	 * @param in input {@link String}
