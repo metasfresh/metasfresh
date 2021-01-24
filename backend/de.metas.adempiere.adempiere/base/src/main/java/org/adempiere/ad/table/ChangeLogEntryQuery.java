@@ -49,10 +49,10 @@ public class ChangeLogEntryQuery
 	ImmutableSet<AdColumnId> adColumnIds;
 
 	@Nullable
-	Instant from;
+	Instant createdFrom;
 
 	@Nullable
-	Instant to;
+	Instant createdTo;
 
 	public boolean isEmpty()
 	{
@@ -60,7 +60,7 @@ public class ChangeLogEntryQuery
 				&& adTableId == null
 				&& adColumnId == null
 				&& Check.isEmpty(adColumnIds)
-				&& from == null
-				&& to == null;
+				&& createdFrom == null
+				&& createdTo == null;
 	}
 }

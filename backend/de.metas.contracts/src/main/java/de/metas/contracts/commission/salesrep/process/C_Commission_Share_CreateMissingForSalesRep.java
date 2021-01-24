@@ -242,18 +242,18 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 
 		// get C_BPartner_SalesRep_IDs (not yet parsed to int) at different intervals
 		final Map<InstantInterval, String> bPartnerSalesRepIdByInterval;
-		if (!bPartnerSalesRepChangeLogEntries.isEmpty())
-		{ // there are C_BPartner_SalesRep_ID change log entries with their respective time intervals
-			bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
-		}
+		//if (!bPartnerSalesRepChangeLogEntries.isEmpty())
+		// { // there are C_BPartner_SalesRep_ID change log entries with their respective time intervals
+		// 	bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
+		//}
 		// else if (bPartner.getC_BPartner_SalesRep_ID() > 0) // don't allow a C_BPartner_SalesRep_ID value that is set *now* to override the whole history of SalesRep_IDs
 		// { // if no log entries were found, it means the present C_BPartner_SalesRep_ID applies for the whole timeframe
 		// 	bPartnerSalesRepIdByInterval = ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()));
 		// }
-		else
-		{ // no changelog
+		//else
+		//{ // no changelog
 			bPartnerSalesRepIdByInterval = ImmutableMap.of();
-		}
+		//}
 
 		final ImmutableList.Builder<RecalculateCommissionCriteria> commissionCriteriaListBuilder = ImmutableList.builder();
 
@@ -262,7 +262,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 				final Optional<BPartnerId> superSalesRepBPId = getSuperSalesRepBPId(userSalesRepIdAsString, bPartnerId);
 
 				if (superSalesRepBPId.isPresent())
-				{   // If the BP had both a SalesRep_ID and a C_BPartner_SalesRep_ID at the certain intervals then remove thome intervals.
+				{   // If the BP had both a SalesRep_ID and a C_BPartner_SalesRep_ID at the certain intervals then "merge" those intervals.
 					// I.e in the end, a "direct" C_BPartner_SalesRep_ID reference takes preference over an indirect via-SalesRep_ID-reference
 					final ImmutableList<InstantInterval> intersectingIntervals = bPartnerSalesRepIdByInterval.keySet()
 							.stream()
@@ -402,8 +402,8 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 			final ChangeLogEntryQuery changeLogEntryQuery = ChangeLogEntryQuery.builder()
 					.adTableId(tableInfo.getBPartnerTableId())
 					.adColumnIds(ImmutableSet.of(tableInfo.getSalesRepColumnId(), tableInfo.getBPartnerSalesRepColumnId()))
-					.from(targetInterval.getFrom())
-					.to(targetInterval.getTo())
+					.createdFrom(targetInterval.getFrom())
+					.createdTo(targetInterval.getTo())
 					.recordId(bPartnerId.getRepoId())
 					.build();
 
@@ -439,8 +439,8 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		final ChangeLogEntryQuery changeLogEntryQuery = ChangeLogEntryQuery.builder()
 				.adColumnId(salesRepRelatedBPTableInfo.getSalesRepColumnId())
 				.adTableId(salesRepRelatedBPTableInfo.getBPartnerTableId())
-				.from(interval.getFrom())
-				.to(interval.getTo())
+				.createdFrom(interval.getFrom())
+				.createdTo(interval.getTo())
 				.build();
 
 		final Set<BPartnerId> preliminaryQualifiedBPIdSet = changeLogEntryRepository.getLogEntriesFor(changeLogEntryQuery)

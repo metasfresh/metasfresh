@@ -62,9 +62,9 @@ public class ChangeLogEntryRepository
 			queryBuilder.addEqualsFilter(I_AD_ChangeLog.COLUMNNAME_AD_Column_ID, changeLogEntryQuery.getAdColumnId());
 		}
 
-		if (changeLogEntryQuery.getFrom() != null && changeLogEntryQuery.getTo() != null)
+		if (changeLogEntryQuery.getCreatedFrom() != null && changeLogEntryQuery.getCreatedTo() != null)
 		{
-			queryBuilder.addBetweenFilter(I_AD_ChangeLog.COLUMNNAME_Created, changeLogEntryQuery.getFrom(), changeLogEntryQuery.getTo());
+			queryBuilder.addBetweenFilter(I_AD_ChangeLog.COLUMNNAME_Created, changeLogEntryQuery.getCreatedFrom(), changeLogEntryQuery.getCreatedTo());
 		}
 
 		if (changeLogEntryQuery.getRecordId() != null)
