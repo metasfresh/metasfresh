@@ -246,8 +246,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		{ // there are C_BPartner_SalesRep_ID change log entries with their respective time intervals
 			bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
 		}
-		// don't allow a C_BPartner_SalesRep_ID value that is set *now* to override the whole history of SalesRep_IDs
-		// else if (bPartner.getC_BPartner_SalesRep_ID() > 0)
+		// else if (bPartner.getC_BPartner_SalesRep_ID() > 0) // don't allow a C_BPartner_SalesRep_ID value that is set *now* to override the whole history of SalesRep_IDs
 		// { // if no log entries were found, it means the present C_BPartner_SalesRep_ID applies for the whole timeframe
 		// 	bPartnerSalesRepIdByInterval = ImmutableMap.of(targetTimeframe, String.valueOf(bPartner.getC_BPartner_SalesRep_ID()));
 		// }
