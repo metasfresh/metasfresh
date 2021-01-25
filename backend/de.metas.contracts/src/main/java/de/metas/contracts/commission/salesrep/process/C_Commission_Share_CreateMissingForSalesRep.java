@@ -66,6 +66,7 @@ import org.adempiere.ad.table.ChangeLogEntryRepository;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -128,16 +129,16 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 
 			final SalesRepRelatedBPTableInfo salesRepRelatedBPTableInfo = getSalesRepRelatedBPTableInfo();
 
-			final boolean bPartnerIdSet = bPartnerId !=null;
+			final boolean bPartnerIdSet = bPartnerId != null;
 
 			if (bPartnerIdSet)
 			{
 				recalculateCommissionForSalesRep(bPartnerId, salesRepRelatedBPTableInfo, targetInterval);
 			}
-			else if(Check.isNotBlank(bPartnerIdsAsString))
+			else if (Check.isNotBlank(bPartnerIdsAsString))
 			{
 				recalculateCommission(
-						ImmutableSet.copyOf(RepoIdAwares.ofCommaSeparatedList(bPartnerIdsAsString,BPartnerId.class)),
+						ImmutableSet.copyOf(RepoIdAwares.ofCommaSeparatedList(bPartnerIdsAsString, BPartnerId.class)),
 						salesRepRelatedBPTableInfo, targetInterval);
 			}
 			else
@@ -271,7 +272,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		final Map<InstantInterval, String> bPartnerSalesRepIdByInterval;
 		//if (!bPartnerSalesRepChangeLogEntries.isEmpty())
 		// { // there are C_BPartner_SalesRep_ID change log entries with their respective time intervals
- 		// 	bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
+		// 	bPartnerSalesRepIdByInterval = mapValueByInterval(bPartnerSalesRepChangeLogEntries, targetTimeframe);
 		//}
 		// else if (bPartner.getC_BPartner_SalesRep_ID() > 0) // don't allow a C_BPartner_SalesRep_ID value that is set *now* to override the whole history of SalesRep_IDs
 		// { // if no log entries were found, it means the present C_BPartner_SalesRep_ID applies for the whole timeframe
@@ -279,7 +280,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		// }
 		//else
 		//{ // no changelog
-			bPartnerSalesRepIdByInterval = ImmutableMap.of();
+		bPartnerSalesRepIdByInterval = ImmutableMap.of();
 		//}
 
 		final ImmutableList.Builder<RecalculateCommissionCriteria> commissionCriteriaListBuilder = ImmutableList.builder();
@@ -520,29 +521,36 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 			invoiceCandidateQueryBuilder.salesRepBPartnerId(commissionCriteria.getSalesrepPartnerId());
 		}
 
-		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder().query(invoiceCandidateQueryBuilder.build()).build();
+		final ILoggable loggableDebug = Loggables.withLogger(logger, Level.DEBUG);
 
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder().query(invoiceCandidateQueryBuilder.build()).build();
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByQuery(multiQuery);
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog(logMsg,
-				invoiceCandidates.size(), RepoIdAwares.toRepoId(commissionCriteria.getSalesrepPartnerId()), commissionCriteria);
+		final int bpartnerSalesRepIdInt = RepoIdAwares.toRepoId(commissionCriteria.getSalesrepPartnerId());
+		loggableDebug.addLog(logMsg, invoiceCandidates.size(), bpartnerSalesRepIdInt, commissionCriteria);
 
-		invoiceCandidates.forEach(invoiceCandidate -> {
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
 			try
 			{
+				if (salesRepAsCustomer && invoiceCandidate.getC_BPartner_SalesRep_ID() != bpartnerSalesRepIdInt)
+				{
+					loggableDebug.addLog("*** DEBUG: C_Invoice_Candidate_ID={} has C_BPartner_SalesRep_ID={}; -> fix it to C_BPartner_SalesRep_ID={}",
+							invoiceCandidate.getC_Invoice_Candidate_ID(), invoiceCandidate.getC_BPartner_SalesRep_ID(), bpartnerSalesRepIdInt);
+					invoiceCandidate.setC_BPartner_SalesRep_ID(bpartnerSalesRepIdInt);
+					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
+				}
 				invoiceCandFacadeService.syncICToCommissionInstance(invoiceCandidate, false);
 			}
 			catch (final Exception e)
 			{
-				Loggables.withLogger(logger, Level.DEBUG)
-						.addLog("recalculateCommissionForCriteria failed for IC_ID ={}: Error message {}",
+				loggableDebug.addLog("recalculateCommissionForCriteria failed for IC_ID ={}: Error message {}",
 								invoiceCandidate.getC_Invoice_Candidate_ID(), e.getLocalizedMessage());
 
 				throw AdempiereException.wrapIfNeeded(e)
-						.appendParametersToMessage()
-						.setParameter("C_Invoice_Candidate_ID", invoiceCandidate.getC_Invoice_Candidate_ID());
+						.appendParametersToMessage().setParameter("C_Invoice_Candidate_ID", invoiceCandidate.getC_Invoice_Candidate_ID());
 			}
-		});
+		}
 	}
 
 	private void recalculateStartingFromInvoice(@NonNull final RecalculateCommissionCriteria commissionCriteria,
