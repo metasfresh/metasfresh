@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1695520132L;
+	private static final long serialVersionUID = 900147432L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -66,7 +66,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setBase_Commission_Points_Per_Price_UOM (final BigDecimal Base_Commission_Points_Per_Price_UOM)
+	public void setBase_Commission_Points_Per_Price_UOM (final @Nullable BigDecimal Base_Commission_Points_Per_Price_UOM)
 	{
 		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
 	}
@@ -94,7 +94,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
@@ -433,7 +433,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setDateDelivered (final java.sql.Timestamp DateDelivered)
+	public void setDateDelivered (final @Nullable java.sql.Timestamp DateDelivered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateDelivered, DateDelivered);
 	}
@@ -445,7 +445,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setDateInvoiced (final java.sql.Timestamp DateInvoiced)
+	public void setDateInvoiced (final @Nullable java.sql.Timestamp DateInvoiced)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateInvoiced, DateInvoiced);
 	}
@@ -469,7 +469,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setDatePromised (final java.sql.Timestamp DatePromised)
+	public void setDatePromised (final @Nullable java.sql.Timestamp DatePromised)
 	{
 		set_Value (COLUMNNAME_DatePromised, DatePromised);
 	}
@@ -481,7 +481,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -493,7 +493,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setDiscount (final BigDecimal Discount)
+	public void setDiscount (final @Nullable BigDecimal Discount)
 	{
 		set_Value (COLUMNNAME_Discount, Discount);
 	}
@@ -592,7 +592,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/** PriceAndQty = Q */
 	public static final String GROUPCOMPENSATIONAMTTYPE_PriceAndQty = "Q";
 	@Override
-	public void setGroupCompensationAmtType (final java.lang.String GroupCompensationAmtType)
+	public void setGroupCompensationAmtType (final @Nullable java.lang.String GroupCompensationAmtType)
 	{
 		set_Value (COLUMNNAME_GroupCompensationAmtType, GroupCompensationAmtType);
 	}
@@ -604,7 +604,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setGroupCompensationBaseAmt (final BigDecimal GroupCompensationBaseAmt)
+	public void setGroupCompensationBaseAmt (final @Nullable BigDecimal GroupCompensationBaseAmt)
 	{
 		set_Value (COLUMNNAME_GroupCompensationBaseAmt, GroupCompensationBaseAmt);
 	}
@@ -617,7 +617,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setGroupCompensationPercentage (final BigDecimal GroupCompensationPercentage)
+	public void setGroupCompensationPercentage (final @Nullable BigDecimal GroupCompensationPercentage)
 	{
 		set_Value (COLUMNNAME_GroupCompensationPercentage, GroupCompensationPercentage);
 	}
@@ -639,7 +639,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/** Discount = D */
 	public static final String GROUPCOMPENSATIONTYPE_Discount = "D";
 	@Override
-	public void setGroupCompensationType (final java.lang.String GroupCompensationType)
+	public void setGroupCompensationType (final @Nullable java.lang.String GroupCompensationType)
 	{
 		set_Value (COLUMNNAME_GroupCompensationType, GroupCompensationType);
 	}
@@ -976,7 +976,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setM_Product_DocumentNote (final java.lang.String M_Product_DocumentNote)
+	public void setM_Product_DocumentNote (final @Nullable java.lang.String M_Product_DocumentNote)
 	{
 		set_ValueNoCheck (COLUMNNAME_M_Product_DocumentNote, M_Product_DocumentNote);
 	}
@@ -1102,7 +1102,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setOrderDiscount (final BigDecimal OrderDiscount)
+	public void setOrderDiscount (final @Nullable BigDecimal OrderDiscount)
 	{
 		set_Value (COLUMNNAME_OrderDiscount, OrderDiscount);
 	}
@@ -1115,7 +1115,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPaymentDiscount (final BigDecimal PaymentDiscount)
+	public void setPaymentDiscount (final @Nullable BigDecimal PaymentDiscount)
 	{
 		set_Value (COLUMNNAME_PaymentDiscount, PaymentDiscount);
 	}
@@ -1128,7 +1128,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPOCallOrderDate (final java.sql.Timestamp POCallOrderDate)
+	public void setPOCallOrderDate (final @Nullable java.sql.Timestamp POCallOrderDate)
 	{
 		set_Value (COLUMNNAME_POCallOrderDate, POCallOrderDate);
 	}
@@ -1167,7 +1167,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPresetDateInvoiced (final java.sql.Timestamp PresetDateInvoiced)
+	public void setPresetDateInvoiced (final @Nullable java.sql.Timestamp PresetDateInvoiced)
 	{
 		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
 	}
@@ -1179,7 +1179,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPresetDateShipped (final java.sql.Timestamp PresetDateShipped)
+	public void setPresetDateShipped (final @Nullable java.sql.Timestamp PresetDateShipped)
 	{
 		set_Value (COLUMNNAME_PresetDateShipped, PresetDateShipped);
 	}
@@ -1204,7 +1204,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPriceCost (final BigDecimal PriceCost)
+	public void setPriceCost (final @Nullable BigDecimal PriceCost)
 	{
 		set_Value (COLUMNNAME_PriceCost, PriceCost);
 	}
@@ -1243,7 +1243,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPriceLimitNote (final java.lang.String PriceLimitNote)
+	public void setPriceLimitNote (final @Nullable java.lang.String PriceLimitNote)
 	{
 		set_Value (COLUMNNAME_PriceLimitNote, PriceLimitNote);
 	}
@@ -1268,7 +1268,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPriceList_Std (final BigDecimal PriceList_Std)
+	public void setPriceList_Std (final @Nullable BigDecimal PriceList_Std)
 	{
 		set_Value (COLUMNNAME_PriceList_Std, PriceList_Std);
 	}
@@ -1281,7 +1281,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setPriceStd (final BigDecimal PriceStd)
+	public void setPriceStd (final @Nullable BigDecimal PriceStd)
 	{
 		set_Value (COLUMNNAME_PriceStd, PriceStd);
 	}
@@ -1321,7 +1321,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setProductDescription (final java.lang.String ProductDescription)
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
@@ -1333,7 +1333,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setProfitPriceActual (final BigDecimal ProfitPriceActual)
+	public void setProfitPriceActual (final @Nullable BigDecimal ProfitPriceActual)
 	{
 		set_Value (COLUMNNAME_ProfitPriceActual, ProfitPriceActual);
 	}
@@ -1372,7 +1372,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setQtyEnteredInPriceUOM (final BigDecimal QtyEnteredInPriceUOM)
+	public void setQtyEnteredInPriceUOM (final @Nullable BigDecimal QtyEnteredInPriceUOM)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyEnteredInPriceUOM, QtyEnteredInPriceUOM);
 	}
@@ -1398,7 +1398,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setQtyItemCapacity (final BigDecimal QtyItemCapacity)
+	public void setQtyItemCapacity (final @Nullable BigDecimal QtyItemCapacity)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
 	}
@@ -1437,7 +1437,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setQtyOrderedOverUnder (final BigDecimal QtyOrderedOverUnder)
+	public void setQtyOrderedOverUnder (final @Nullable BigDecimal QtyOrderedOverUnder)
 	{
 		set_Value (COLUMNNAME_QtyOrderedOverUnder, QtyOrderedOverUnder);
 	}
@@ -1490,7 +1490,34 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setRRAmt (final BigDecimal RRAmt)
+	public org.compiere.model.I_C_OrderLine getRef_ProposalLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_Ref_ProposalLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setRef_ProposalLine(final org.compiere.model.I_C_OrderLine Ref_ProposalLine)
+	{
+		set_ValueFromPO(COLUMNNAME_Ref_ProposalLine_ID, org.compiere.model.I_C_OrderLine.class, Ref_ProposalLine);
+	}
+
+	@Override
+	public void setRef_ProposalLine_ID (final int Ref_ProposalLine_ID)
+	{
+		if (Ref_ProposalLine_ID < 1) 
+			set_Value (COLUMNNAME_Ref_ProposalLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_Ref_ProposalLine_ID, Ref_ProposalLine_ID);
+	}
+
+	@Override
+	public int getRef_ProposalLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Ref_ProposalLine_ID);
+	}
+
+	@Override
+	public void setRRAmt (final @Nullable BigDecimal RRAmt)
 	{
 		set_Value (COLUMNNAME_RRAmt, RRAmt);
 	}
@@ -1503,7 +1530,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setRRStartDate (final java.sql.Timestamp RRStartDate)
+	public void setRRStartDate (final @Nullable java.sql.Timestamp RRStartDate)
 	{
 		set_Value (COLUMNNAME_RRStartDate, RRStartDate);
 	}
@@ -1536,7 +1563,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/** Expiring_First = E */
 	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First = "E";
 	@Override
-	public void setShipmentAllocation_BestBefore_Policy (final java.lang.String ShipmentAllocation_BestBefore_Policy)
+	public void setShipmentAllocation_BestBefore_Policy (final @Nullable java.lang.String ShipmentAllocation_BestBefore_Policy)
 	{
 		set_Value (COLUMNNAME_ShipmentAllocation_BestBefore_Policy, ShipmentAllocation_BestBefore_Policy);
 	}
@@ -1563,7 +1590,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setTaxAmtInfo (final BigDecimal TaxAmtInfo)
+	public void setTaxAmtInfo (final @Nullable BigDecimal TaxAmtInfo)
 	{
 		set_Value (COLUMNNAME_TaxAmtInfo, TaxAmtInfo);
 	}
@@ -1576,7 +1603,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setTraded_Commission_Percent (final BigDecimal Traded_Commission_Percent)
+	public void setTraded_Commission_Percent (final @Nullable BigDecimal Traded_Commission_Percent)
 	{
 		set_Value (COLUMNNAME_Traded_Commission_Percent, Traded_Commission_Percent);
 	}
@@ -1643,7 +1670,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setUserElementString1 (final java.lang.String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -1655,7 +1682,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setUserElementString2 (final java.lang.String UserElementString2)
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
@@ -1667,7 +1694,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setUserElementString3 (final java.lang.String UserElementString3)
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
@@ -1679,7 +1706,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setUserElementString4 (final java.lang.String UserElementString4)
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
@@ -1691,7 +1718,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setUserElementString5 (final java.lang.String UserElementString5)
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
@@ -1703,7 +1730,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setUserElementString6 (final java.lang.String UserElementString6)
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
@@ -1715,7 +1742,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setUserElementString7 (final java.lang.String UserElementString7)
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}

@@ -43,7 +43,13 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				//.userElement1Id(record.getUser)
+				.userElementString1(record.getUserElementString1())
+				.userElementString2(record.getUserElementString2())
+				.userElementString3(record.getUserElementString3())
+				.userElementString4(record.getUserElementString4())
+				.userElementString5(record.getUserElementString5())
+				.userElementString6(record.getUserElementString6())
+				.userElementString7(record.getUserElementString7())
 				.build();
 	}
 
@@ -53,6 +59,13 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		//...
+		record.setUserElementString1(from.getUserElementString1());
+		record.setUserElementString2(from.getUserElementString2());
+		record.setUserElementString3(from.getUserElementString3());
+		record.setUserElementString4(from.getUserElementString4());
+		record.setUserElementString5(from.getUserElementString5());
+		record.setUserElementString6(from.getUserElementString6());
+		record.setUserElementString7(from.getUserElementString7());
+
 	}
 }

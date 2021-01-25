@@ -2134,8 +2134,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
 
 	/**
-	 * Set Open Qty.
-	 * Offene Menge
+	 * Set Qty Reserved.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -2144,8 +2144,8 @@ public interface I_C_OrderLine
 	void setQtyReserved (BigDecimal QtyReserved);
 
 	/**
-	 * Get Open Qty.
-	 * Offene Menge
+	 * Get Qty Reserved.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -2182,6 +2182,31 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, org.compiere.model.I_C_OrderLine> COLUMN_Ref_OrderLine_ID = new ModelColumn<>(I_C_OrderLine.class, "Ref_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_Ref_OrderLine_ID = "Ref_OrderLine_ID";
+
+	/**
+	 * Set Proposal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRef_ProposalLine_ID (int Ref_ProposalLine_ID);
+
+	/**
+	 * Get Proposal Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRef_ProposalLine_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getRef_ProposalLine();
+
+	void setRef_ProposalLine(@Nullable org.compiere.model.I_C_OrderLine Ref_ProposalLine);
+
+	ModelColumn<I_C_OrderLine, org.compiere.model.I_C_OrderLine> COLUMN_Ref_ProposalLine_ID = new ModelColumn<>(I_C_OrderLine.class, "Ref_ProposalLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_Ref_ProposalLine_ID = "Ref_ProposalLine_ID";
 
 	/**
 	 * Set Revenue Recognition Amt.
