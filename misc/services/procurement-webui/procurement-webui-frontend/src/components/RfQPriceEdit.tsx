@@ -24,23 +24,13 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
     store.navigation.setViewNames(translate('RfQView.Price'));
   }, [store]);
 
-  const saveQty = (newQty: number) => {
-    console.log('Saving: ', newQty);
-    // store
-    //   .postDailyReport({
-    //     items: [
-    //       {
-    //         date: currentDay,
-    //         productId: product.productId,
-    //         qty: newQty,
-    //       },
-    //     ],
-    //   })
-    //   .then(() => {
-    //     store.fetchDailyReport(currentDay);
-    //     store.fetchWeeklyReport(store.app.week);
-    //     store.app.getUserSession();
-    //   });
+  const saveQty = (newPrice: number) => {
+    store.rfqs.updateRfQ({ price: newPrice, rfqId }).then(() => {
+      // also update the store with the received data
+      // store.fetchDailyReport(currentDay);
+      // store.fetchWeeklyReport(store.app.week);
+      // store.app.getUserSession();
+    });
   };
 
   //

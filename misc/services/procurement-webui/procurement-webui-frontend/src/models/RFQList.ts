@@ -1,6 +1,6 @@
-import { types, flow } from 'mobx-state-tree';
+import { types, flow, getSnapshot } from 'mobx-state-tree';
 
-import { fetchRFQuotations } from '../api';
+import { fetchRFQuotations, postRfQ } from '../api';
 import { RFQ, Quantity } from './RFQ';
 
 export const RFQList = types
@@ -29,8 +29,22 @@ export const RFQList = types
 
       self.quotations = elements;
     };
+
+    const updateRfQ = flow(function* updateSingleRfQ({ price, rfqId }: { price: number; rfqId: string }) {
+      try {
+        const { data } = yield postRfQ({ price, rfqId });
+        getSnapshot(self.quotations).forEach((item, index) => {
+          if (item.rfqId === data.rfqId) {
+            self.quotations[index] = data;
+          }
+        });
+      } catch (error) {
+        console.error('Failed to update', error);
+      }
+    });
     return {
       fetchRFQs,
+      updateRfQ,
     };
   });
 
