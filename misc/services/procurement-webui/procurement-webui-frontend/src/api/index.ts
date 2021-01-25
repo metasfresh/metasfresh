@@ -99,6 +99,15 @@ export function postNextWeekTrend(data: { productId: string; trend: string; week
   return axios.post(`/rest/weeklyReport/nextWeekTrend`, data);
 }
 
+/** changeRfq */
+export function postRfQ(data: {
+  price: string;
+  quantities: { date: string; qtyPromised: number }[];
+  rfqId: string;
+}): Promise<AxiosResponse> {
+  return axios.post(`/rest/rfq`, data);
+}
+
 export function confirmDataEntry(): Promise<AxiosResponse> {
   return axios.post(`/rest/session/confirmDataEntry`);
 }

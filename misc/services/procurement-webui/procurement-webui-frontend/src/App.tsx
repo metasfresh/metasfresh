@@ -25,6 +25,7 @@ import ProductAdd from './components/ProductAdd';
 import PasswordRecovery from './components/PasswordRecovery';
 import ProductWeeklyScreen from './components/ProductWeeklyScreen';
 import ProductWeeklyEdit from './components/ProductWeeklyEdit';
+import RfQPriceEdit from './components/RfQPriceEdit';
 
 interface IProps {
   store?: RootInstance;
@@ -45,6 +46,7 @@ const routes = [
   { path: '/info', name: 'Info/News', Component: Info },
   { path: '/rfq', name: 'RfQ', Component: RfQList },
   { path: '/rfq/:quotationId', name: 'RfQ Details', Component: RfQDetails },
+  { path: '/rfq/price/:rfqId', name: 'RfQ Price Edit', Component: RfQPriceEdit },
 ];
 
 const childRoutes = (
