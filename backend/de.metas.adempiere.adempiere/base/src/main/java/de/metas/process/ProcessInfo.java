@@ -291,18 +291,13 @@ public final class ProcessInfo implements Serializable
 		return className.orElse(null);
 	}
 
-	/**
-	 * Creates a new instance of {@link #getClassName()}.
-	 * If the classname is empty, null will be returned.
-	 *
-	 * @return new instance or null
-	 */
-	public JavaProcess newProcessClassInstanceOrNull()
+	@NonNull
+	public JavaProcess newProcessClassInstance()
 	{
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
 		{
-			return null;
+			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo",this);
 		}
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -322,17 +317,28 @@ public final class ProcessInfo implements Serializable
 
 			return processClassInstance;
 		}
-		catch (final Throwable e)
+		catch (final Exception e)
 		{
-			if (isServerProcess() && Ini.isSwingClient())
-			{
-				// NOTE: in case of server process, it might be that the class is not present, which could be fine
-				logger.debug("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
-			else
-			{
-				logger.warn("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo",this);
+		}
+	}
+
+	/**
+	 * Creates a new instance of {@link #getClassName()}.
+	 * If the classname is empty, null will be returned.
+	 *
+	 * @return new instance or null
+	 */
+	@Nullable
+	public JavaProcess newProcessClassInstanceOrNull()
+	{
+		try
+		{
+			return newProcessClassInstance();
+		}
+		catch (final AdempiereException e)
+		{
+			logger.warn("Failed instantiating class '{}'. Skipped.", this.getClassName(), e);
 			return null;
 		}
 	}
@@ -376,6 +382,7 @@ public final class ProcessInfo implements Serializable
 		return recordId;
 	}
 
+	@Nullable
 	public TableRecordReference getRecordRefOrNull()
 	{
 		if (adTableId <= 0 || recordId < 0)
@@ -393,7 +400,6 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID using ITrx#TRXNAME_ThreadInherited.
 	 *
-	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
@@ -405,7 +411,6 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
-	 * @param modelClass
 	 * @param trxName transaction to be used when loading the record
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
@@ -441,9 +446,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
-	 * @param modelClass
-	 * @param trxName
-	 * @return record or {@link Optional#absent()} if record does not exist or it does not match given <code>modelClass</code>
+	 * @return record or empty optional if record does not exist or it does not match given <code>modelClass</code>
 	 */
 	public <ModelType> Optional<ModelType> getRecordIfApplies(final Class<ModelType> modelClass, final String trxName)
 	{
@@ -585,7 +588,7 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * @return the whereClause <b>but without org restrictions</b>
-	 * @deprecated please use {@link #getQueryFilter()} instead
+	 * @deprecated please use {@link #getQueryFilterOrElse(IQueryFilter)} instead.
 	 */
 	@Deprecated
 	public String getWhereClause()
@@ -599,9 +602,10 @@ public final class ProcessInfo implements Serializable
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
 	 *         gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
 	 *
-	 * @task 03685
+	 * task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
+	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything
@@ -622,6 +626,7 @@ public final class ProcessInfo implements Serializable
 	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
 	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
 	 */
+	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElse(final IQueryFilter<T> defaultQueryFilter)
 	{
 		final IQueryFilter<T> whereFilter;
@@ -677,6 +682,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * @return AD_Language used to reports; could BE <code>null</code>
 	 */
+	@Nullable
 	public String getReportAD_Language()
 	{
 		return reportLanguage == null ? null : reportLanguage.getAD_Language();
@@ -1682,7 +1688,6 @@ public final class ProcessInfo implements Serializable
 		/**
 		 * Extracts reporting language.
 		 *
-		 * @param pi
 		 * @return Language; never returns null
 		 */
 		private Language findReportingLanguage()

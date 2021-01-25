@@ -230,10 +230,9 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 				catch (final RuntimeException e)
 				{
 					final AdIssueId adIssueId = errorManager.createIssue(e);
-
 					Loggables.withLogger(logger, Level.ERROR)
-							.addLog("*** ERROR: recalculateCommissionForCriteria failed for Criteria :{}, errorMessage: {}! AD_Issue_ID={}",
-									criteria, e.getLocalizedMessage(), RepoIdAwares.toRepoId(adIssueId));
+							.addLog("*** ERROR: recalculateCommissionForCriteria failed for Criteria :{}; Created AD_Issue_ID={}; errorMessage: {}",
+									criteria, RepoIdAwares.toRepoId(adIssueId), e.getLocalizedMessage());
 				}
 			});
 		}
@@ -535,8 +534,11 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 			{
 				if (salesRepAsCustomer && invoiceCandidate.getC_BPartner_SalesRep_ID() != bpartnerSalesRepIdInt)
 				{
-					loggableDebug.addLog("*** DEBUG: C_Invoice_Candidate_ID={} has C_BPartner_SalesRep_ID={}; -> fix it to C_BPartner_SalesRep_ID={}",
-							invoiceCandidate.getC_Invoice_Candidate_ID(), invoiceCandidate.getC_BPartner_SalesRep_ID(), bpartnerSalesRepIdInt);
+					if (salesRepAsCustomer && invoiceCandidate.getC_BPartner_SalesRep_ID() == 0)
+					{
+						loggableDebug.addLog("*** DEBUG: C_Invoice_Candidate_ID={} has C_BPartner_SalesRep_ID={}; -> fix it to C_BPartner_SalesRep_ID={}",
+								invoiceCandidate.getC_Invoice_Candidate_ID(), invoiceCandidate.getC_BPartner_SalesRep_ID(), bpartnerSalesRepIdInt);
+					}
 					invoiceCandidate.setC_BPartner_SalesRep_ID(bpartnerSalesRepIdInt);
 					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
 				}
@@ -545,7 +547,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 			catch (final Exception e)
 			{
 				loggableDebug.addLog("recalculateCommissionForCriteria failed for IC_ID ={}: Error message {}",
-								invoiceCandidate.getC_Invoice_Candidate_ID(), e.getLocalizedMessage());
+						invoiceCandidate.getC_Invoice_Candidate_ID(), e.getLocalizedMessage());
 
 				throw AdempiereException.wrapIfNeeded(e)
 						.appendParametersToMessage().setParameter("C_Invoice_Candidate_ID", invoiceCandidate.getC_Invoice_Candidate_ID());
@@ -569,23 +571,28 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 			invoices = invoiceDAO.retrieveBySalesrepPartnerId(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTargetInterval());
 		}
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog(logMsg,
-				invoices.size(), RepoIdAwares.toRepoId(commissionCriteria.getSalesrepPartnerId()), commissionCriteria);
+		final int bpartnerSalesRepIdInt = RepoIdAwares.toRepoId(commissionCriteria.getSalesrepPartnerId());
+		final ILoggable loggableDebug = Loggables.withLogger(logger, Level.DEBUG);
+		loggableDebug.addLog(logMsg, invoices.size(), bpartnerSalesRepIdInt, commissionCriteria);
 
 		invoices.forEach(invoice -> {
 			try
 			{
+				if (salesRepAsCustomer && invoice.getC_BPartner_SalesRep_ID() != bpartnerSalesRepIdInt)
+				{
+					loggableDebug.addLog("*** DEBUG: C_Invoice_ID={} has C_BPartner_SalesRep_ID={}; -> fix it to C_BPartner_SalesRep_ID={}",
+							invoice.getC_Invoice_ID(), invoice.getC_BPartner_SalesRep_ID(), bpartnerSalesRepIdInt);
+
+					invoice.setC_BPartner_SalesRep_ID(bpartnerSalesRepIdInt);
+					InterfaceWrapperHelper.saveRecord(invoice);
+				}
 				invoiceFacadeService.syncInvoiceToCommissionInstance(invoice);
 			}
 			catch (final Exception e)
 			{
-				Loggables.withLogger(logger, Level.DEBUG)
-						.addLog("recalculateCommissionForCriteria failed for C_Invoice_Id ={}: Error message {}",
-								invoice.getC_Invoice_ID(), e.getLocalizedMessage());
-
 				throw AdempiereException.wrapIfNeeded(e)
 						.appendParametersToMessage()
-						.setParameter("C_Invoice_Id", invoice.getC_Invoice_ID());
+						.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID());
 			}
 		});
 	}
