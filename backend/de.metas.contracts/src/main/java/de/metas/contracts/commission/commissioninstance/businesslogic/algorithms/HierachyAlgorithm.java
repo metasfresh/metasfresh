@@ -109,7 +109,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 					final CommissionContract contract = hierarchyConfig.getContractFor(beneficiary);
 					if (contract == null)
 					{
-						logger.debug("Beneficiary is part of hierarchy but has no contract; -> skip level={}", currentHierarchyLevel);
+						logger.debug("Beneficiary C_BPartner_ID={} is part of hierarchy but has no contract; -> skip level={}", beneficiary.getBPartnerId().getRepoId(), currentHierarchyLevel);
 						continue;
 					}
 
@@ -172,7 +172,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				}
 
 				final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(share.getConfig());
-				try (final MDCCloseable configSettingsMDC = TableRecordMDC.putTableRecordReference(I_C_HierarchyCommissionSettings.Table_Name, hierarchyConfig.getId()))
+				try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_HierarchyCommissionSettings.Table_Name, hierarchyConfig.getId()))
 				{
 					logger.debug("Create commission shares and facts");
 

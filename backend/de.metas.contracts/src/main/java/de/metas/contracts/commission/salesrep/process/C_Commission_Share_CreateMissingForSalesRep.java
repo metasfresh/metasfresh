@@ -41,6 +41,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -52,7 +53,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAwares;
 import de.metas.util.time.InstantInterval;
 import de.metas.util.time.IntervalUtils;
@@ -414,9 +414,11 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 	{
 		bPartnerBL.setBPartnerSalesRepIdOutOfTrx(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTopLevelSalesRepId());
 
-		recalculateStartingFromInvoiceCand(commissionCriteria);
+		recalculateStartingFromInvoiceCand(commissionCriteria, false);
+		recalculateStartingFromInvoiceCand(commissionCriteria, true); // also cover the cases where the VP is acting as Endcustomer
 
-		recalculateStartingFromInvoice(commissionCriteria);
+		recalculateStartingFromInvoice(commissionCriteria, true);
+		recalculateStartingFromInvoice(commissionCriteria, false); // also cover the cases where the VP is acting as Endcustomer
 	}
 
 	private boolean recalculateCommissionForSalesRep(
@@ -499,19 +501,31 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 				.build();
 	}
 
-	private void recalculateStartingFromInvoiceCand(@NonNull final RecalculateCommissionCriteria commissionCriteria)
+	private void recalculateStartingFromInvoiceCand(
+			@NonNull final RecalculateCommissionCriteria commissionCriteria,
+			final boolean salesRepAsCustomer)
 	{
-		final InvoiceCandidateQuery invoiceCandidateQuery = InvoiceCandidateQuery.builder()
-				.dateOrderedInterval(commissionCriteria.getTargetInterval())
-				.salesRepBPartnerId(commissionCriteria.getSalesrepPartnerId())
-				.build();
+		final InvoiceCandidateQuery.InvoiceCandidateQueryBuilder invoiceCandidateQueryBuilder = InvoiceCandidateQuery.builder()
+				.soTrx(SOTrx.SALES)
+				.dateOrderedInterval(commissionCriteria.getTargetInterval());
+		final String logMsg;
+		if (salesRepAsCustomer)
+		{
+			logMsg = "*** DEBUG: found {} ICs while recalculating commission for criteria with C_BPartner_ID={} as *customer*; commissionCriteria={}";
+			invoiceCandidateQueryBuilder.billBPartnerId(commissionCriteria.getSalesrepPartnerId());
+		}
+		else
+		{
+			logMsg = "*** DEBUG: found {} ICs while recalculating commission for criteria with C_BPartner_ID={} as *sales-rep*; commissionCriteria={}";
+			invoiceCandidateQueryBuilder.salesRepBPartnerId(commissionCriteria.getSalesrepPartnerId());
+		}
 
-		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder().query(invoiceCandidateQuery).build();
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder().query(invoiceCandidateQueryBuilder.build()).build();
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByQuery(multiQuery);
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: found {} ICs while recalculating commission for criteria: {} ",
-				invoiceCandidates.size(), commissionCriteria);
+		Loggables.withLogger(logger, Level.DEBUG).addLog(logMsg,
+				invoiceCandidates.size(), RepoIdAwares.toRepoId(commissionCriteria.getSalesrepPartnerId()), commissionCriteria);
 
 		invoiceCandidates.forEach(invoiceCandidate -> {
 			try
@@ -531,12 +545,24 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		});
 	}
 
-	private void recalculateStartingFromInvoice(@NonNull final RecalculateCommissionCriteria commissionCriteria)
+	private void recalculateStartingFromInvoice(@NonNull final RecalculateCommissionCriteria commissionCriteria,
+			final boolean salesRepAsCustomer)
 	{
-		final List<I_C_Invoice> invoices = invoiceDAO.retrieveBySalesrepPartnerId(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTargetInterval());
+		final List<I_C_Invoice> invoices;
+		final String logMsg;
+		if (salesRepAsCustomer)
+		{
+			logMsg = "*** DEBUG: found {} Invoices while recalculating commission for criteria with C_BPartner_ID={} as *customer*; commissionCriteria={}";
+			invoices = invoiceDAO.retrieveSalesInvoiceByPartnerId(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTargetInterval());
+		}
+		else
+		{
+			logMsg = "*** DEBUG: found {} Invoices while recalculating commission for criteria with C_BPartner_ID={} as *sales-rep*; commissionCriteria={}";
+			invoices = invoiceDAO.retrieveBySalesrepPartnerId(commissionCriteria.getSalesrepPartnerId(), commissionCriteria.getTargetInterval());
+		}
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog("*** DEBUG: found {} Invoices while recalculating commission for criteria: {}",
-				invoices.size(), commissionCriteria);
+		Loggables.withLogger(logger, Level.DEBUG).addLog(logMsg,
+				invoices.size(), RepoIdAwares.toRepoId(commissionCriteria.getSalesrepPartnerId()), commissionCriteria);
 
 		invoices.forEach(invoice -> {
 			try

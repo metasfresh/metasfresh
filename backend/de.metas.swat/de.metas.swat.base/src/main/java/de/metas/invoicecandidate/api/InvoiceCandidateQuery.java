@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.time.InstantInterval;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -34,6 +35,8 @@ public class InvoiceCandidateQuery
 	BPartnerId salesRepBPartnerId;
 	InstantInterval dateOrderedInterval;
 
+	SOTrx soTrx;
+
 	// Any of the following properties may or may not be part of a valid query.
 	InvoiceCandidateId excludeC_Invoice_Candidate_ID;
 	InvoiceCandidateId maxManualC_Invoice_Candidate_ID;
@@ -52,6 +55,7 @@ public class InvoiceCandidateQuery
 			@Nullable final String headerAggregationKey,
 			@Nullable final InvoiceCandidateId excludeC_Invoice_Candidate_ID,
 			@Nullable final InvoiceCandidateId maxManualC_Invoice_Candidate_ID,
+			@Nullable final SOTrx soTrx,
 			@Nullable final Boolean processed,
 			@Nullable final Boolean error)
 	{
@@ -65,6 +69,7 @@ public class InvoiceCandidateQuery
 		this.headerAggregationKey = headerAggregationKey;
 		this.excludeC_Invoice_Candidate_ID = excludeC_Invoice_Candidate_ID;
 		this.maxManualC_Invoice_Candidate_ID = maxManualC_Invoice_Candidate_ID;
+		this.soTrx = soTrx;
 		this.processed = processed;
 		this.error = error;
 
@@ -103,6 +108,7 @@ public class InvoiceCandidateQuery
 				.headerAggregationKey(headerAggregationKey)
 				.excludeC_Invoice_Candidate_ID(excludeC_Invoice_Candidate_ID)
 				.maxManualC_Invoice_Candidate_ID(maxManualC_Invoice_Candidate_ID)
+				.soTrx(soTrx)
 				.processed(processed)
 				.error(error)
 				.build();
@@ -121,5 +127,4 @@ public class InvoiceCandidateQuery
 		}
 		return orgId;
 	}
-
 }

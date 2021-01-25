@@ -35,6 +35,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -1732,6 +1733,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (orgId != null)
 		{
 			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		final SOTrx soTrx = query.getSoTrx();
+		if (soTrx != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, soTrx.isSales());
 		}
 
 		final InvoiceCandidateId invoiceCandidateId = query.getInvoiceCandidateId();

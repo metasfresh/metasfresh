@@ -430,4 +430,19 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.list();
 	}
+
+	@Override
+	public List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(@NonNull final BPartnerId bpartnerId, @NonNull final InstantInterval invoicedDateInterval)
+	{
+		final Timestamp from = TimeUtil.asTimestamp(invoicedDateInterval.getFrom());
+		final Timestamp to = TimeUtil.asTimestamp(invoicedDateInterval.getTo());
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
+				.addBetweenFilter(I_C_Invoice.COLUMNNAME_DateInvoiced, from, to)
+				.create()
+				.list();
+	}
 }

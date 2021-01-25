@@ -107,7 +107,7 @@ public class CommissionInstanceService
 
 		if (sparsedOutRequest.getConfigs().isEmpty())
 		{
-			logger.debug("There are no CommissionConfigs that were not already applied to the commision instance");
+			logger.debug("There are no CommissionConfigs that were not already applied to the commission instance");
 			return;
 		}
 

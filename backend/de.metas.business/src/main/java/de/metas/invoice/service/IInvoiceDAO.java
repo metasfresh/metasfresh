@@ -167,4 +167,6 @@ public interface IInvoiceDAO extends ISingletonService
 	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
 
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+
+	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
 }
