@@ -111,14 +111,14 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
+	public List<I_C_Flatrate_Term> retrieveTerms(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 		final Properties ctx = getCtx(ic);
 		final String trxName = getTrxName(ic);
 
-		final int bill_BPartner_ID = ic.getBill_BPartner_ID();
+		final ImmutableList<Integer> bPartnerIds = ImmutableList.of(ic.getBill_BPartner_ID());
 		final Timestamp dateOrdered = ic.getDateOrdered();
 
 		final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
@@ -126,7 +126,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final int m_Product_ID = ic.getM_Product_ID();
 		final int c_Charge_ID = ic.getC_Charge_ID();
 
-		return retrieveTerms(ctx, bill_BPartner_ID, dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName);
+		return retrieveTerms(ctx, bPartnerIds, dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName, OrgId.ofRepoId(ic.getAD_Org_ID()));
 	}
 
 	@Override
