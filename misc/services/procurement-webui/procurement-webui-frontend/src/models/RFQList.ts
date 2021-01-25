@@ -29,7 +29,6 @@ export const RFQList = types
 
       self.quotations = elements;
     };
-
     return {
       fetchRFQs,
     };
