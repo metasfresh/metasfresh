@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_C_BPartner;
@@ -64,16 +65,21 @@ public class TestCommissionContract
 	/** The flatrate term is created with start = date minus 10 days and end = date plus 10 days. */
 	LocalDate date;
 
+	@Nullable
+	OrgId orgId;
+
 	private TestCommissionContract(
 			@NonNull final String salesRepName,
 			@Nullable final String contractName,
 			@Nullable final String parentSalesRepName,
-			@Nullable final LocalDate date)
+			@Nullable final LocalDate date,
+			@Nullable final OrgId orgId)
 	{
 		this.salesRepName = salesRepName;
 		this.contractName = contractName;
 		this.parentSalesRepName = parentSalesRepName;
 		this.date = coalesceSuppliers(() -> date, () -> SystemTime.asLocalDate());
+		this.orgId = orgId;
 	}
 
 	/** Supposed to be invoked from {@link TestCommissionConfig}. */
@@ -106,6 +112,11 @@ public class TestCommissionContract
 		termRecord.setM_Product_ID(commissionProductId.getRepoId());
 		termRecord.setStartDate(TimeUtil.asTimestamp(date.minusDays(10)));
 		termRecord.setEndDate(TimeUtil.asTimestamp(date.plusDays(10)));
+
+		if (orgId != null)
+		{
+			termRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 
 		saveRecord(termRecord);
 

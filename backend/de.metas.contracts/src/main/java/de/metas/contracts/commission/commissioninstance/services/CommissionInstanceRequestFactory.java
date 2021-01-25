@@ -74,6 +74,7 @@ public class CommissionInstanceRequestFactory
 				.salesRepBPartnerId(salesRepBPartnerId)
 				.commissionDate(commissionTriggerDocument.getCommissionDate())
 				.salesProductId(commissionTriggerDocument.getProductId())
+				.orgId(commissionTriggerDocument.getOrgId())
 				.build();
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
 		if (configs.isEmpty())
