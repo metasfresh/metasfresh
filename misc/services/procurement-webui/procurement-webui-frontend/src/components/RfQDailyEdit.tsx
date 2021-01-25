@@ -17,7 +17,8 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   const rfQs = getSnapshot(store.rfqs);
   const { quotations } = rfQs;
   const rfq = quotations.find((rfqItem) => rfqItem.rfqId === rfqId);
-
+  const quantity = rfq.quantities.find((qItem) => qItem.date === targetDate);
+  console.log(quantity);
   const currentDay = targetDate ? targetDate : store.app.currentDay;
 
   useEffect(() => {
@@ -25,8 +26,9 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
     store.navigation.setViewNames(qtyEditorCaption.replace('{0}', currentDay));
   }, [store]);
 
-  const saveQty = (newPrice: number) => {
-    store.rfqs.updateRfQ({ price: newPrice, rfqId });
+  const saveQty = (newQty: number) => {
+    console.log('newQty:', newQty);
+    // store.rfqs.updateRfQ({ price: newPrice, rfqId });
   };
 
   const qtyInput = React.createRef<HTMLInputElement>();
@@ -42,7 +44,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
                 type="number"
                 ref={qtyInput}
                 step="1"
-                value={rfq.qtyPromised}
+                value={quantity.qtyPromised}
                 onChange={(e) => {
                   // store.weeklyProducts.updateProductQty(product.productId, e.target.value, currentDay);
                 }}
