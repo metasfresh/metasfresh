@@ -80,7 +80,7 @@ const RfQDetails: React.FunctionComponent = observer(() => {
               onClick={() => history.push({ pathname: `/rfq/${quotation.rfqId}/dailyQty/${qItem.date}` })}
             >
               <div className="column is-6">{qItem.date}</div>
-              <div className="column is-3">{qItem.qtyPromised}</div>
+              <div className="column is-3">{qItem.qtyPromisedRendered}</div>
               <div className="column is-3 green-color">{qItem.confirmedByUser && <i className="fas fa-check"></i>}</div>
             </div>
           ))}

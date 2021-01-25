@@ -5,6 +5,7 @@ export const Quantity = types.model({
   date: types.string,
   dayCaption: types.string,
   qtyPromised: types.number,
+  qtyPromisedRendered: types.string,
 });
 
 export const RFQ = types.model({
