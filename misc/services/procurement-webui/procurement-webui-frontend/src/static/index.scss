@@ -180,48 +180,6 @@ input[type=number]::-webkit-inner-spin-button {
   color: $base-elements;
 }
 
-.prognose-box {
-  position: fixed;
-  bottom: calc(4rem + 1px);
-  width: 100%;
-  border-top: 1px solid $grey-light;
-  border-bottom: 1px solid $grey-light;
-  color: $product-input;
-
-  svg {
-    font-size: 30px;
-  }
-
-  .up-active {
-    color: $white-background;
-    background: $base-elements;
-  }
-  .up {
-    color: $base-elements;
-    background: $white-background;
-  }
-  .down-active {
-    color: $white-background;
-    background: $arrow-down;
-  }
-  .down {
-    color: $arrow-down;
-    background: $white-background
-  }
-  .right-active {
-    color: $white-background;
-    background: $arrow-right;
-  }
-  .right {
-    color: $arrow-right;
-    background: $white-background
-  }
-  .disabled-active {
-    color: $white-background;
-    background: $disabled;
-  }
-  .disabled {
-    color: $disabled;
-    background: $white-background
-  }
+.week-days {
+  margin-bottom: calc(9rem + 1px);
 }

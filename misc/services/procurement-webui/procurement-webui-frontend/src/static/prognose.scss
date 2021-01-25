@@ -1,9 +1,18 @@
 .prognose-box {
-  margin-top: -20px;
+  position: fixed;
+  bottom: calc(4rem + 1px);
+  width: 100%;
   border-top: 1px solid $grey-light;
   border-bottom: 1px solid $grey-light;
   color: $product-input;
-}
+  background: $white-background;
+
+  svg {
+    font-size: 30px;
+  }
+}  
+
+/** This must be outside the prognose-box - used also in weekly report to display the trend */
 .up-active {
   color: $white-background;
   background: $base-elements;

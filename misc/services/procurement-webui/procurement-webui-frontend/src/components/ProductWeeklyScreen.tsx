@@ -43,7 +43,7 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
         productId={product.getId}
         currentWeek={store.app.week}
       />
-      <div>
+      <div className="week-days">
         <section className="section pt-0">
           {dailyQuantities.length &&
             dailyQuantities.map((dItem) => {
