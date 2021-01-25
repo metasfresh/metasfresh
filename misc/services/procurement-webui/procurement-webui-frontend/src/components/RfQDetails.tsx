@@ -74,7 +74,11 @@ const RfQDetails: React.FunctionComponent = observer(() => {
         </div>
         {quotation.quantities &&
           quotation.quantities.map((qItem) => (
-            <div key={qItem.date} className="columns is-mobile box p-1">
+            <div
+              key={qItem.date}
+              className="columns is-mobile box p-1"
+              onClick={() => history.push({ pathname: `/rfq/${quotation.rfqId}/dailyQty/${qItem.date}` })}
+            >
               <div className="column is-6">{qItem.date}</div>
               <div className="column is-3">{qItem.qtyPromised}</div>
               <div className="column is-3 green-color">{qItem.confirmedByUser && <i className="fas fa-check"></i>}</div>
