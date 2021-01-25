@@ -52,6 +52,15 @@ const RfQDetails: React.FunctionComponent = observer(() => {
           <div className="column pt-1 pb-1">{quotation.qtyPromised}</div>
         </div>
       </section>
+      <section className="mt-4 pl-4 pr-4">
+        <div className="columns is-mobile">
+          <div className="column is-12 pb-1 has-text-weight-bold">{translate('RfQView.Price')}</div>
+        </div>
+        <div className="columns is-mobile bt-1 bb-1">
+          <div className="column pl-3 pt-3">{translate('RfQView.Price')}</div>
+          <div className="column pr-4 pt-3">X</div>
+        </div>
+      </section>
     </View>
   );
 });
