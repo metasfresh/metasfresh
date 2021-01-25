@@ -187,7 +187,7 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 
 	/**
 	 * Set Open Qty.
-	 * Offene Menge
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -197,7 +197,7 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 
 	/**
 	 * Get Open Qty.
-	 * Offene Menge
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

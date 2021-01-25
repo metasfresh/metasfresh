@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ProjectLine;
 import org.springframework.stereotype.Repository;
 
@@ -50,14 +51,19 @@ public class ProjectLineRepository
 
 	public List<ProjectLine> retrieveLines(@NonNull final ProjectId projectId)
 	{
+		return queryLineRecordsByProjectId(projectId)
+				.stream()
+				.map(this::toProjectLine)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private IQuery<I_C_ProjectLine> queryLineRecordsByProjectId(final ProjectId projectId)
+	{
 		return queryBL.createQueryBuilder(I_C_ProjectLine.class)
 				.addEqualsFilter(I_C_ProjectLine.COLUMNNAME_C_Project_ID, projectId)
 				.orderBy(I_C_ProjectLine.COLUMNNAME_Line)
 				.orderBy(I_C_ProjectLine.COLUMNNAME_C_ProjectLine_ID)
-				.create()
-				.stream()
-				.map(this::toProjectLine)
-				.collect(ImmutableList.toImmutableList());
+				.create();
 	}
 
 	public ProjectLine retrieveLineById(@NonNull final ProjectAndLineId projectLineId)
@@ -167,4 +173,23 @@ public class ProjectLineRepository
 		record.setC_OrderLine_ID(orderLineId.getOrderLineRepoId());
 		save(record);
 	}
+
+	public void markLinesAsProcessed(@NonNull final ProjectId projectId)
+	{
+		for (final I_C_ProjectLine lineRecord : queryLineRecordsByProjectId(projectId).list())
+		{
+			lineRecord.setProcessed(true);
+			InterfaceWrapperHelper.saveRecord(lineRecord);
+		}
+	}
+
+	public void markLinesAsNotProcessed(@NonNull final ProjectId projectId)
+	{
+		for (final I_C_ProjectLine lineRecord : queryLineRecordsByProjectId(projectId).list())
+		{
+			lineRecord.setProcessed(false);
+			InterfaceWrapperHelper.saveRecord(lineRecord);
+		}
+	}
+
 }

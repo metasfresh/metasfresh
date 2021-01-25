@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.PO implements I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 29631940L;
+	private static final long serialVersionUID = 1809833829L;
 
     /** Standard Constructor */
     public X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v (final Properties ctx, final int EDI_M_HU_PI_Item_Product_Lookup_UPC_v_ID, @Nullable final String trxName)
@@ -50,7 +50,7 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 	}
 
 	@Override
-	public void setUPC (final java.lang.String UPC)
+	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}

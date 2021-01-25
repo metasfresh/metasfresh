@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -770103693L;
+	private static final long serialVersionUID = 1416206995L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Line (final Properties ctx, final int M_HU_Trx_Line_ID, @Nullable final String trxName)
@@ -95,7 +95,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
 	@Override
-	public void setHUStatus (final java.lang.String HUStatus)
+	public void setHUStatus (final @Nullable java.lang.String HUStatus)
 	{
 		set_Value (COLUMNNAME_HUStatus, HUStatus);
 	}
@@ -272,7 +272,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	}
 
 	@Override
-	public void setQty (final BigDecimal Qty)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}

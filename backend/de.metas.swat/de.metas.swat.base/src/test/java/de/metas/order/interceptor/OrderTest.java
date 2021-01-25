@@ -46,7 +46,7 @@ public class OrderTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Order.INSTANCE);
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order());
 	}
 
 	@Test

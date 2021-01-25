@@ -45,6 +45,8 @@ public class DataEntrySection
 
 	boolean initiallyClosed;
 
+	boolean availableInApi;
+
 	ImmutableList<DataEntryLine> lines;
 
 	@Builder
@@ -54,6 +56,7 @@ public class DataEntrySection
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
 			final boolean initiallyClosed,
+			@NonNull final boolean availableInApi,
 			@Singular final List<DataEntryLine> lines)
 	{
 		this.id = id;
@@ -61,6 +64,7 @@ public class DataEntrySection
 		this.description = description;
 		this.internalName = internalName;
 		this.initiallyClosed = initiallyClosed;
+		this.availableInApi = availableInApi;
 		this.lines = ImmutableList.copyOf(lines);
 	}
 }

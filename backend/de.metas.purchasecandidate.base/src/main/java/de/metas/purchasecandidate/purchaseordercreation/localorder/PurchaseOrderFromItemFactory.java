@@ -88,7 +88,7 @@ import java.util.Set;
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
 				.orgId(orderAggregationKey.getOrgId())
-				.warehouseId(orderAggregationKey.getWarehouseId().getRepoId())
+				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised());
 

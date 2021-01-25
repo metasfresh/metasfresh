@@ -121,7 +121,7 @@ class PaymentRestEndpointTest
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
 
 		// run the "before_complete" interceptor
-		C_Order.INSTANCE.linkWithPaymentByExternalOrderId(salesOrder);
+		new C_Order().linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment
 		assertEquals(payment.getC_Payment_ID(), salesOrder.getC_Payment_ID());

@@ -123,33 +123,6 @@ public interface I_M_HU_Reservation
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Project Line.
-	 * Task or step in a project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_ProjectLine_ID (int C_ProjectLine_ID);
-
-	/**
-	 * Get Project Line.
-	 * Task or step in a project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_ProjectLine_ID();
-
-	@Nullable org.compiere.model.I_C_ProjectLine getC_ProjectLine();
-
-	void setC_ProjectLine(@Nullable org.compiere.model.I_C_ProjectLine C_ProjectLine);
-
-	ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_ProjectLine> COLUMN_C_ProjectLine_ID = new ModelColumn<>(I_M_HU_Reservation.class, "C_ProjectLine_ID", org.compiere.model.I_C_ProjectLine.class);
-	String COLUMNNAME_C_ProjectLine_ID = "C_ProjectLine_ID";
-
-	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -241,8 +214,8 @@ public interface I_M_HU_Reservation
 	String COLUMNNAME_M_HU_Reservation_ID = "M_HU_Reservation_ID";
 
 	/**
-	 * Set Offen.
-	 * Offene Menge
+	 * Set Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -251,8 +224,8 @@ public interface I_M_HU_Reservation
 	void setQtyReserved (BigDecimal QtyReserved);
 
 	/**
-	 * Get Offen.
-	 * Offene Menge
+	 * Get Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

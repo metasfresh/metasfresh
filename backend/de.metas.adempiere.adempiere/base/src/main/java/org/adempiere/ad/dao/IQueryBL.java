@@ -46,7 +46,7 @@ public interface IQueryBL extends ISingletonService
 
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Object contextProvider);
 
-	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Properties ctx, String trxName);
+	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Properties ctx, @Nullable String trxName);
 
 	IQueryBuilder<Object> createQueryBuilder(String modelTableName, Object contextProvider);
 

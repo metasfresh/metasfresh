@@ -1,5 +1,7 @@
 package de.metas.handlingunits.inout;
 
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -7,12 +9,14 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -110,4 +114,6 @@ public interface IHUInOutBL extends ISingletonService
 	void setAssignedHandlingUnits(final org.compiere.model.I_M_InOutLine inoutLine, final List<I_M_HU> hus);
 
 	void copyAssignmentsToReversal(I_M_InOut inoutRecord);
+
+	ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutLineIds(@NonNull Set<InOutLineId> inoutLineIds);
 }

@@ -43,12 +43,15 @@ public class GeneratedComponentRequest
 
 	@NonNull ClientId clientId;
 
+	boolean overrideExistingValues;
+
 	@Builder
 	public GeneratedComponentRequest(
 			@NonNull final ProductId productId,
 			final int qty,
 			@NonNull final ImmutableAttributeSet attributes,
-			@NonNull ClientId clientId)
+			@NonNull final ClientId clientId,
+			final boolean overrideExistingValues)
 	{
 		Check.errorIf(qty < 1, "qty {} must be > 0", qty);
 
@@ -56,5 +59,6 @@ public class GeneratedComponentRequest
 		this.qty = qty;
 		this.attributes = attributes;
 		this.clientId = clientId;
+		this.overrideExistingValues = overrideExistingValues;
 	}
 }

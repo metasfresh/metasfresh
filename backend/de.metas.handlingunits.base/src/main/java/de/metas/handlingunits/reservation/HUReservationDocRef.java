@@ -23,8 +23,9 @@
 package de.metas.handlingunits.reservation;
 
 import de.metas.common.util.CoalesceUtil;
+ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
-import de.metas.project.ProjectAndLineId;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,23 +39,23 @@ public class HUReservationDocRef
 	@Nullable
 	OrderLineId salesOrderLineId;
 	@Nullable
-	ProjectAndLineId projectAndLineId;
+	ProjectId projectId;
 
 	@Builder
 	private HUReservationDocRef(
 			@Nullable final OrderLineId salesOrderLineId,
-			@Nullable final ProjectAndLineId projectAndLineId)
+			@Nullable final ProjectId projectId)
 	{
-		if (CoalesceUtil.countNotNulls(salesOrderLineId, projectAndLineId) != 1)
+		if (CoalesceUtil.countNotNulls(salesOrderLineId, projectId) != 1)
 		{
 			throw new AdempiereException("One and only one document shall be set")
 					.appendParametersToMessage()
 					.setParameter("salesOrderLineId", salesOrderLineId)
-					.setParameter("projectAndLineId", projectAndLineId);
+					.setParameter("projectId", projectId);
 		}
 
 		this.salesOrderLineId = salesOrderLineId;
-		this.projectAndLineId = projectAndLineId;
+		this.projectId = projectId;
 	}
 
 	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderLineId salesOrderLineId)
@@ -62,9 +63,14 @@ public class HUReservationDocRef
 		return HUReservationDocRef.builder().salesOrderLineId(salesOrderLineId).build();
 	}
 
-	public static HUReservationDocRef ofProjectAndLineId(@NonNull final ProjectAndLineId projectAndLineId)
+	public static HUReservationDocRef ofSalesOrderLineId(@NonNull final OrderAndLineId salesOrderLineId)
 	{
-		return HUReservationDocRef.builder().projectAndLineId(projectAndLineId).build();
+		return ofSalesOrderLineId(salesOrderLineId.getOrderLineId());
+	}
+
+	public static HUReservationDocRef ofProjectId(@NonNull final ProjectId projectId)
+	{
+		return HUReservationDocRef.builder().projectId(projectId).build();
 	}
 
 }

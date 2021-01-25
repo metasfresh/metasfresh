@@ -81,7 +81,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setQty(request.getQtyToReceive().toBigDecimal());
 		record.setC_UOM_ID(request.getQtyToReceive().getUomId().getRepoId());
-		record.setProcessed(false);
+		record.setProcessed(request.isAlreadyProcessed());
 		record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(request.getPickingCandidateId()));
 		save(record);
 

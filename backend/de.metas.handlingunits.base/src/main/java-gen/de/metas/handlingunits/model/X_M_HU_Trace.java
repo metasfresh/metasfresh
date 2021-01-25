@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -155207854L;
+	private static final long serialVersionUID = 974446899L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (final Properties ctx, final int M_HU_Trace_ID, @Nullable final String trxName)
@@ -80,7 +80,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDocStatus (final java.lang.String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}

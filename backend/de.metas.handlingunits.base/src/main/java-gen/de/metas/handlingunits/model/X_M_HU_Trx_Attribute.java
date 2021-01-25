@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_HU_Trx_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1091300874L;
+	private static final long serialVersionUID = 1149433268L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Attribute (final Properties ctx, final int M_HU_Trx_Attribute_ID, @Nullable final String trxName)
@@ -222,7 +222,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	}
 
 	@Override
-	public void setValue (final java.lang.String Value)
+	public void setValue (final @Nullable java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
@@ -234,7 +234,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	}
 
 	@Override
-	public void setValueDate (final java.sql.Timestamp ValueDate)
+	public void setValueDate (final @Nullable java.sql.Timestamp ValueDate)
 	{
 		set_Value (COLUMNNAME_ValueDate, ValueDate);
 	}
@@ -246,7 +246,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	}
 
 	@Override
-	public void setValueDateInitial (final java.sql.Timestamp ValueDateInitial)
+	public void setValueDateInitial (final @Nullable java.sql.Timestamp ValueDateInitial)
 	{
 		set_Value (COLUMNNAME_ValueDateInitial, ValueDateInitial);
 	}
@@ -258,7 +258,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	}
 
 	@Override
-	public void setValueInitial (final java.lang.String ValueInitial)
+	public void setValueInitial (final @Nullable java.lang.String ValueInitial)
 	{
 		set_Value (COLUMNNAME_ValueInitial, ValueInitial);
 	}
@@ -270,7 +270,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	}
 
 	@Override
-	public void setValueNumber (final BigDecimal ValueNumber)
+	public void setValueNumber (final @Nullable BigDecimal ValueNumber)
 	{
 		set_Value (COLUMNNAME_ValueNumber, ValueNumber);
 	}
@@ -283,7 +283,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	}
 
 	@Override
-	public void setValueNumberInitial (final BigDecimal ValueNumberInitial)
+	public void setValueNumberInitial (final @Nullable BigDecimal ValueNumberInitial)
 	{
 		set_Value (COLUMNNAME_ValueNumberInitial, ValueNumberInitial);
 	}

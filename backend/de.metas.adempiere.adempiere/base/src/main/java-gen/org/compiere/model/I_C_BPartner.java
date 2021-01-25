@@ -1,14 +1,13 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-
-import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_BPartner 
 {
 
@@ -630,6 +629,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_CustomerNoAtVendor = "CustomerNoAtVendor";
 
 	/**
+	 * Set Haddex Check Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDateHaddexCheck (@Nullable java.sql.Timestamp DateHaddexCheck);
+
+	/**
+	 * Get Haddex Check Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDateHaddexCheck();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DateHaddexCheck = new ModelColumn<>(I_C_BPartner.class, "DateHaddexCheck", null);
+	String COLUMNNAME_DateHaddexCheck = "DateHaddexCheck";
+
+	/**
 	 * Set Debitoren-Nr.
 	 *
 	 * <br>Type: Integer
@@ -649,56 +669,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_DebtorId = new ModelColumn<>(I_C_BPartner.class, "DebtorId", null);
 	String COLUMNNAME_DebtorId = "DebtorId";
-
-	/**
-	 * Set Default Ship To City.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setDefaultShipTo_City (@Nullable java.lang.String DefaultShipTo_City);
-
-	/**
-	 * Get Default Ship To City.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getDefaultShipTo_City();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_DefaultShipTo_City = new ModelColumn<>(I_C_BPartner.class, "DefaultShipTo_City", null);
-	String COLUMNNAME_DefaultShipTo_City = "DefaultShipTo_City";
-
-	/**
-	 * Set Default Ship To Postal.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setDefaultShipTo_Postal (@Nullable java.lang.String DefaultShipTo_Postal);
-
-	/**
-	 * Get Default Ship To Postal.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getDefaultShipTo_Postal();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_DefaultShipTo_Postal = new ModelColumn<>(I_C_BPartner.class, "DefaultShipTo_Postal", null);
-	String COLUMNNAME_DefaultShipTo_Postal = "DefaultShipTo_Postal";
 
 	/**
 	 * Set Lieferart.
@@ -1034,6 +1004,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_GlobalId = "GlobalId";
 
 	/**
+	 * Set Haddex Control Nr..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHaddexControlNr (@Nullable java.lang.String HaddexControlNr);
+
+	/**
+	 * Get Haddex Control Nr..
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHaddexControlNr();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_HaddexControlNr = new ModelColumn<>(I_C_BPartner.class, "HaddexControlNr", null);
+	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
+
+	/**
 	 * Set Druckformat Rechnung.
 	 * Print Format for printing Invoices
 	 *
@@ -1264,27 +1255,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
-	 * Set EDI DESADV Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
-
-	/**
-	 * Get EDI DESADV Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiDesadvRecipient();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_C_BPartner.class, "IsEdiDesadvRecipient", null);
-	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
-
-	/**
 	 * Set Mitarbeiter.
 	 * Indicates if  this Business Partner is an employee
 	 *
@@ -1306,6 +1276,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsEmployee = new ModelColumn<>(I_C_BPartner.class, "IsEmployee", null);
 	String COLUMNNAME_IsEmployee = "IsEmployee";
+
+	/**
+	 * Set Haddex Check.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHaddexCheck (boolean IsHaddexCheck);
+
+	/**
+	 * Get Haddex Check.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHaddexCheck();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsHaddexCheck = new ModelColumn<>(I_C_BPartner.class, "IsHaddexCheck", null);
+	String COLUMNNAME_IsHaddexCheck = "IsHaddexCheck";
 
 	/**
 	 * Set Manufacturer.

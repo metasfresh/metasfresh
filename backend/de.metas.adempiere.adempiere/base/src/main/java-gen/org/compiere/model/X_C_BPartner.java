@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1257186138L;
+	private static final long serialVersionUID = 528758239L;
 
     /** Standard Constructor */
-    public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, final String trxName)
+    public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
     {
       super (ctx, C_BPartner_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BPartner (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_BPartner (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -416,6 +417,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setDateHaddexCheck (final java.sql.Timestamp DateHaddexCheck)
+	{
+		set_Value (COLUMNNAME_DateHaddexCheck, DateHaddexCheck);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateHaddexCheck() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateHaddexCheck);
+	}
+
+	@Override
 	public void setDebtorId (final int DebtorId)
 	{
 		set_Value (COLUMNNAME_DebtorId, DebtorId);
@@ -426,30 +439,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		return get_ValueAsInt(COLUMNNAME_DebtorId);
 	}
-
-	@Override
-	public void setDefaultShipTo_City (final java.lang.String DefaultShipTo_City)
-	{
-		throw new IllegalArgumentException ("DefaultShipTo_City is virtual column");	}
-
-	@Override
-	public java.lang.String getDefaultShipTo_City() 
-	{
-		return get_ValueAsString(COLUMNNAME_DefaultShipTo_City);
-	}
-
-	@Override
-	public void setDefaultShipTo_Postal (final java.lang.String DefaultShipTo_Postal)
-	{
-		throw new IllegalArgumentException ("DefaultShipTo_Postal is virtual column");	}
-
-	@Override
-	public java.lang.String getDefaultShipTo_Postal() 
-	{
-		return get_ValueAsString(COLUMNNAME_DefaultShipTo_Postal);
-	}
-
-	/** 
+	
+	/**
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
 	 */
@@ -675,6 +666,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setHaddexControlNr (final java.lang.String HaddexControlNr)
+	{
+		set_Value (COLUMNNAME_HaddexControlNr, HaddexControlNr);
+	}
+
+	@Override
+	public java.lang.String getHaddexControlNr() 
+	{
+		return get_ValueAsString(COLUMNNAME_HaddexControlNr);
+	}
+
+	@Override
 	public org.compiere.model.I_AD_PrintFormat getInvoice_PrintFormat()
 	{
 		return get_ValueAsPO(COLUMNNAME_Invoice_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
@@ -813,18 +816,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public void setIsEdiDesadvRecipient (final boolean IsEdiDesadvRecipient)
-	{
-		set_Value (COLUMNNAME_IsEdiDesadvRecipient, IsEdiDesadvRecipient);
-	}
-
-	@Override
-	public boolean isEdiDesadvRecipient() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
-	}
-
-	@Override
 	public void setIsEmployee (final boolean IsEmployee)
 	{
 		set_Value (COLUMNNAME_IsEmployee, IsEmployee);
@@ -834,6 +825,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isEmployee() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEmployee);
+	}
+
+	@Override
+	public void setIsHaddexCheck (final boolean IsHaddexCheck)
+	{
+		set_Value (COLUMNNAME_IsHaddexCheck, IsHaddexCheck);
+	}
+
+	@Override
+	public boolean isHaddexCheck() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHaddexCheck);
 	}
 
 	@Override

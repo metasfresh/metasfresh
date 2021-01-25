@@ -162,8 +162,8 @@ public class MProjectLine extends X_C_ProjectLine
 		//	Phase/Task
 		if (is_ValueChanged(COLUMNNAME_C_ProjectTask_ID) && getC_ProjectTask_ID() > 0)
 		{
-			final MProjectTask pt = new MProjectTask(getCtx(), getC_ProjectTask_ID(), get_TrxName());
-			if (pt.get_ID() <= 0)
+			final I_C_ProjectTask pt = InterfaceWrapperHelper.create(getCtx(), getC_ProjectTask_ID(), I_C_ProjectTask.class, get_TrxName());
+			if (pt.getC_ProjectTask_ID() <= 0)
 			{
 				throw new AdempiereException("Project Task Not Found - ID=" + getC_ProjectTask_ID());
 			}

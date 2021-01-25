@@ -54,8 +54,6 @@ public interface IOrderDAO extends ISingletonService
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
 	 *
-	 * @param orderId
-	 * @param clazz
 	 * @return order for given orderId
 	 */
 	<T extends I_C_Order> T getById(final OrderId orderId, Class<T> clazz);
@@ -84,14 +82,6 @@ public interface IOrderDAO extends ISingletonService
 	}
 
 	/**
-	 * @param ctx
-	 * @param bpartnerId
-	 * @return true if given C_BPartner has any orders which are completed/closed.
-	 */
-	boolean hasCompletedOrders(Properties ctx, int bpartnerId);
-
-	/**
-	 * @param order
 	 * @return order lines for given order
 	 */
 	List<I_C_OrderLine> retrieveOrderLines(I_C_Order order);
@@ -99,8 +89,6 @@ public interface IOrderDAO extends ISingletonService
 	/**
 	 * Similar to {@link #retrieveOrderLines(I_C_Order)}, but allows to specify which {@link org.compiere.model.I_C_OrderLine} sub-type the result shall be in.
 	 *
-	 * @param order
-	 * @param clazz
 	 * @return order lines for given order
 	 */
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
@@ -110,19 +98,11 @@ public interface IOrderDAO extends ISingletonService
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(OrderId orderId, Class<T> modelClass);
 
 	/** @return all C_OrderLine_IDs for given order, including the inactive ones */
-	List<OrderLineId> retrieveAllOrderLineIds(OrderId orderId);
+	List<OrderAndLineId> retrieveAllOrderLineIds(OrderId orderId);
 
-	/**
-	 * @param order
-	 * @param line
-	 * @param clazz
-	 */
 	<T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(I_C_Order order, int lineNo, Class<T> clazz);
 
-	/**
-	 * @return {@link I_M_InOut}s for given order
-	 */
-	List<I_M_InOut> retrieveInOuts(I_C_Order order);
+	List<I_C_OrderLine> retrieveOrderLinesByOrderIds(Set<OrderId> orderIds);
 
 	/**
 	 * @return {@link I_M_InOut}s which have at least one matching between C_OrderLine and M_InOutLine for given order

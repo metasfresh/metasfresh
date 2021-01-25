@@ -1,6 +1,7 @@
 package de.metas.document.impl;
 
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.ITranslatableString;
@@ -13,6 +14,18 @@ import org.compiere.model.X_C_DocType;
 public class DocTypeBL implements IDocTypeBL
 {
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+
+	@Override
+	public I_C_DocType getById(final DocTypeId docTypeId)
+	{
+		return docTypesRepo.getById(docTypeId);
+	}
+
+	@Override
+	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery docTypeQuery)
+	{
+		return docTypesRepo.getDocTypeIdOrNull(docTypeQuery);
+	}
 
 	@Override
 	public ITranslatableString getNameById(@NonNull final DocTypeId docTypeId)

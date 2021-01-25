@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO implements I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1068305013L;
+	private static final long serialVersionUID = 284018895L;
 
     /** Standard Constructor */
     public X_RV_M_HU_Storage_InvoiceHistory (final Properties ctx, final int RV_M_HU_Storage_InvoiceHistory_ID, @Nullable final String trxName)
@@ -36,7 +36,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setHUStorageASIKey (final java.lang.String HUStorageASIKey)
+	public void setHUStorageASIKey (final @Nullable java.lang.String HUStorageASIKey)
 	{
 		set_ValueNoCheck (COLUMNNAME_HUStorageASIKey, HUStorageASIKey);
 	}
@@ -78,7 +78,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setQtyOnHand (final BigDecimal QtyOnHand)
+	public void setQtyOnHand (final @Nullable BigDecimal QtyOnHand)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyOnHand, QtyOnHand);
 	}
@@ -91,7 +91,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setQtyOrdered (final BigDecimal QtyOrdered)
+	public void setQtyOrdered (final @Nullable BigDecimal QtyOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
@@ -104,7 +104,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setQtyReserved (final BigDecimal QtyReserved)
+	public void setQtyReserved (final @Nullable BigDecimal QtyReserved)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
 	}
