@@ -11,14 +11,13 @@ interface RouteParams {
   targetDate: string;
 }
 
-const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
+const RfQDailyEdit: React.FunctionComponent = observer(() => {
   const { rfqId, targetDate } = useParams<RouteParams>();
   const store = useContext(RootStoreContext);
   const rfQs = getSnapshot(store.rfqs);
   const { quotations } = rfQs;
   const rfq = quotations.find((rfqItem) => rfqItem.rfqId === rfqId);
   const quantity = rfq.quantities.find((qItem) => qItem.date === targetDate);
-  console.log(quantity);
   const currentDay = targetDate ? targetDate : store.app.currentDay;
 
   useEffect(() => {
@@ -78,4 +77,4 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   );
 });
 
-export default ProductWeeklyEdit;
+export default RfQDailyEdit;
