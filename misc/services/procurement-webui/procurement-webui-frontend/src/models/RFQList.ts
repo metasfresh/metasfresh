@@ -30,7 +30,15 @@ export const RFQList = types
       self.quotations = elements;
     };
 
-    const updateRfQ = flow(function* updateSingleRfQ({ price, rfqId }: { price: number; rfqId: string }) {
+    const updateRfQ = flow(function* updateSingleRfQ({
+      price,
+      quantities,
+      rfqId,
+    }: {
+      price?: number;
+      quantities?: { date: string; qtyPromised: number }[];
+      rfqId: string;
+    }) {
       try {
         const { data } = yield postRfQ({ price, rfqId });
         getSnapshot(self.quotations).forEach((item, index) => {

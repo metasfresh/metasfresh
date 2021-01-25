@@ -101,7 +101,7 @@ export function postNextWeekTrend(data: { productId: string; trend: string; week
 
 /** changeRfq */
 export function postRfQ(data: {
-  price: number;
+  price?: number;
   quantities?: { date: string; qtyPromised: number }[];
   rfqId: string;
 }): Promise<AxiosResponse> {
