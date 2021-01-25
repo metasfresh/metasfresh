@@ -128,7 +128,9 @@ public class RfQRestController
 				.build();
 	}
 
-	private static ArrayList<JsonRfqQty> toJsonRfqQtysList(final Rfq rfq, final Locale locale)
+	private static ArrayList<JsonRfqQty> toJsonRfqQtysList(
+			@NonNull final Rfq rfq,
+			@NonNull final Locale locale)
 	{
 		final ArrayList<JsonRfqQty> jsonRfqQtys = new ArrayList<>();
 
@@ -137,30 +139,40 @@ public class RfQRestController
 			final RfqQty rfqQty = rfq.getRfqQtyByDate(date);
 
 			final JsonRfqQty jsonRfqQty = rfqQty != null
-					? toJsonRfqQty(rfqQty, locale)
-					: toZeroJsonRfqQty(date, locale);
+					? toJsonRfqQty(rfqQty, rfq.getQtyCUInfo(), locale)
+					: toZeroJsonRfqQty(date, rfq.getQtyCUInfo(), locale);
 
 			jsonRfqQtys.add(jsonRfqQty);
 		}
 		return jsonRfqQtys;
 	}
 
-	private static JsonRfqQty toJsonRfqQty(@NonNull final RfqQty rfqQty, @NonNull final Locale locale)
+	private static JsonRfqQty toJsonRfqQty(
+			@NonNull final RfqQty rfqQty,
+			@NonNull final String uom,
+			@NonNull final Locale locale)
 	{
+		final BigDecimal qtyPromised = rfqQty.getQtyPromisedUserEntered();
+
 		return JsonRfqQty.builder()
 				.date(rfqQty.getDatePromised())
 				.dayCaption(DateUtils.getDayName(rfqQty.getDatePromised(), locale))
-				.qtyPromised(rfqQty.getQtyPromisedUserEntered())
+				.qtyPromised(qtyPromised)
+				.qtyPromisedRendered(renderQty(qtyPromised, uom, locale))
 				.confirmedByUser(rfqQty.isConfirmedByUser())
 				.build();
 	}
 
-	private static JsonRfqQty toZeroJsonRfqQty(@NonNull final LocalDate date, @NonNull final Locale locale)
+	private static JsonRfqQty toZeroJsonRfqQty(
+			@NonNull final LocalDate date,
+			@NonNull final String uom,
+			@NonNull final Locale locale)
 	{
 		return JsonRfqQty.builder()
 				.date(date)
 				.dayCaption(DateUtils.getDayName(date, locale))
 				.qtyPromised(BigDecimal.ZERO)
+				.qtyPromisedRendered(renderQty(BigDecimal.ZERO, uom, locale))
 				.confirmedByUser(true)
 				.build();
 	}
