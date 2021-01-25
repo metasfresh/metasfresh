@@ -117,7 +117,9 @@ public class IntervalUtils
 			}
 		}
 
-		return ImmutableList.copyOf(result);
+		return result.stream()
+				.filter(interval -> !interval.isEmpty())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Value

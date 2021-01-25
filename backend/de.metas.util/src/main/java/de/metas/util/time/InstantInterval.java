@@ -79,4 +79,9 @@ public class InstantInterval
 
 		return Optional.empty();
 	}
+
+	public boolean isEmpty()
+	{
+		return to.equals(from);
+	}
 }
