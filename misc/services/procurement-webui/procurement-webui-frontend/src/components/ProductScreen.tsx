@@ -39,6 +39,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
       })
       .then(() => {
         store.fetchDailyReport(currentDay);
+        store.fetchWeeklyReport(store.app.week);
         store.app.getUserSession();
       });
   };
