@@ -13,11 +13,13 @@ interface RouteParams {
   targetDayCaption?: string;
 }
 
-const ProductScreen: React.FunctionComponent = observer(() => {
+const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   const { productId, targetDay, targetDayCaption } = useParams<RouteParams>();
   const store = useContext(RootStoreContext);
-  const products = getSnapshot(store.dailyProducts.products);
+  const products = getSnapshot(store.weeklyProducts.products);
   const product = products.find((prod) => prod.productId === productId);
+  const dailyQuantities = product.dailyQuantities;
+  const dailyQtyItem = dailyQuantities.find((item) => item.date === targetDay);
 
   const currentDay = targetDay ? targetDay : store.app.currentDay;
   const currentCaption = targetDayCaption ? targetDayCaption : store.app.dayCaption;
@@ -39,6 +41,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
       })
       .then(() => {
         store.fetchDailyReport(currentDay);
+        store.fetchWeeklyReport(store.app.week);
         store.app.getUserSession();
       });
   };
@@ -57,9 +60,9 @@ const ProductScreen: React.FunctionComponent = observer(() => {
                 type="number"
                 ref={qtyInput}
                 step="1"
-                value={product.qty}
+                value={dailyQtyItem.qty}
                 onChange={(e) => {
-                  store.dailyProducts.updateProductQty(product.productId, e.target.value);
+                  store.weeklyProducts.updateProductQty(product.productId, e.target.value, currentDay);
                 }}
                 onBlur={(e) => saveQty(parseInt(e.target.value))}
               />
@@ -91,4 +94,4 @@ const ProductScreen: React.FunctionComponent = observer(() => {
   );
 });
 
-export default ProductScreen;
+export default ProductWeeklyEdit;

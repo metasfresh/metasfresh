@@ -29,7 +29,7 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
   const history = useHistory();
   const handleClick = (productId: string, date: string, dayCaption: string): void => {
     history.push({
-      pathname: `/products/${productId}/${date}/${dayCaption}`,
+      pathname: `/weekly/edit/${productId}/${date}/${dayCaption}`,
     });
   };
 

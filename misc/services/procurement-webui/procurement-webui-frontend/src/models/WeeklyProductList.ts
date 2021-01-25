@@ -19,6 +19,21 @@ export const WeeklyProductList = types
         console.error('Failed to update the trend', error);
       }
     }),
+    updateProductQty(productId: string, qty: string, targetDay: string) {
+      const newList = self.products.map((item) => {
+        if (item.productId === productId) {
+          item.dailyQuantities.map((dItem) => {
+            if (dItem.date === targetDay) {
+              dItem.qty = parseInt(qty);
+              return dItem;
+            }
+            return dItem;
+          });
+        }
+        return item;
+      });
+      self.products = cast(newList);
+    },
     updateNextWeek(nextWeek: string) {
       self.nextWeek = nextWeek;
     },
