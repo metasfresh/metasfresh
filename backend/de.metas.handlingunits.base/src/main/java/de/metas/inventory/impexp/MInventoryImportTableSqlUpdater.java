@@ -96,8 +96,8 @@ final class MInventoryImportTableSqlUpdater
 	{
 		// Try to set M_Warehouse_ID based on warehouse value
 		{
-			StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-					.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.WarehouseValue=w.Value) ")
+			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+					.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE i.WarehouseValue=w.Value AND w.IsActive='Y') ")
 					.append("WHERE M_Warehouse_ID IS NULL ")
 					.append("AND I_IsImported<>'Y' ")
 					.append(selection.toSqlWhereClause("i"));
@@ -106,8 +106,8 @@ final class MInventoryImportTableSqlUpdater
 
 		// Try to set M_Warehouse_ID based on locator value
 		{
-			StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-					.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.locatorvalue=l.Value) ")
+			final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+					.append("SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Locator l WHERE i.locatorvalue=l.Value AND l.IsActive='Y') ")
 					.append("WHERE M_Warehouse_ID IS NULL ")
 					.append("AND I_IsImported<>'Y' ")
 					.append(selection.toSqlWhereClause("i"));
@@ -121,7 +121,7 @@ final class MInventoryImportTableSqlUpdater
  	 */
 	private void dbUpdateOrg(@NonNull final ImportRecordsSelection selection)
 	{
-		StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
+		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
 				.append("SET AD_Org_ID=(SELECT AD_Org_ID FROM M_Warehouse w WHERE i.M_Warehouse_ID=w.M_Warehouse_ID) ")
 				.append("WHERE AD_Org_ID!=(SELECT AD_Org_ID FROM M_Warehouse w WHERE i.M_Warehouse_ID=w.M_Warehouse_ID) ")
 				.append("AND I_IsImported<>'Y' ")
@@ -224,35 +224,35 @@ final class MInventoryImportTableSqlUpdater
 
 	private void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
 	{
-		// Match by product value
+		// Match by product Value
 		dbUpdateProducts(
 				selection,
 				"i.ProductValue LIKE 'val-%'",
-				"p.Value = substr(i.ProductValue, 5)"/* use substr to get ProductValue without the "val-" */);
+				"p.Value = substr(i.ProductValue, 5) AND p.AD_Org_ID IN (i.AD_Org_ID, 0) AND p.IsActive='Y'"/* use substr to get ProductValue without the "val-" */);
 
-		// Match by product value
+		// Match by product ExternalId
 		dbUpdateProducts(
 				selection,
 				"i.ProductValue LIKE 'ext-%'",
-				"p.ExternalId = substr(i.ProductValue, 5)" /* use substr to get ProductValue without the "ext-" */);
+				"p.ExternalId = substr(i.ProductValue, 5) AND p.AD_Org_ID IN (i.AD_Org_ID, 0) AND p.IsActive='Y'" /* use substr to get ProductValue without the "ext-" */);
 
 		// Match by M_Product_ID
 		dbUpdateProducts(
 				selection,
 				"i.ProductValue ~ E'^\\\\d+$'",
-				"p.M_Product_ID = i.ProductValue::numeric");
+				"p.M_Product_ID = i.ProductValue::numeric AND p.IsActive='Y'");
 
 		// Match by UPC
 		dbUpdateProducts(
 				selection,
 				"i.UPC IS NOT NULL",
-				"p.UPC = i.UPC");
+				"p.UPC = i.UPC AND p.AD_Org_ID IN (i.AD_Org_ID, 0) AND p.IsActive='Y'");
 
 		// Fallback/backwards compatibility: Match by product value, without using the 'val-' prefix
 		dbUpdateProducts(
 				selection,
 				"i.ProductValue IS NOT NULL",
-				"p.Value = i.ProductValue");
+				"p.Value = i.ProductValue AND p.AD_Org_ID IN (i.AD_Org_ID, 0) AND p.IsActive='Y'");
 	}
 
 	private static int dbUpdateProducts(
@@ -260,7 +260,7 @@ final class MInventoryImportTableSqlUpdater
 			@NonNull final String importValueFormatMatcher,
 			@NonNull final String importValueMatchCondition)
 	{
-		final String sqlProductId = "SELECT MAX(M_Product_ID)"
+		final String sqlProductId = "SELECT M_Product_ID" // if there is >1 matching products, at least fail here!
 				+ " FROM M_Product p"
 				+ " WHERE"
 				+ " i.AD_Client_ID=p.AD_Client_ID"

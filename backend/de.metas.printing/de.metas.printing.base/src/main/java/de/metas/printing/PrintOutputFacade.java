@@ -80,7 +80,7 @@ public class PrintOutputFacade
 					continue;
 				}
 				final ImmutableList<PrintingData> printingData = printingDataFactory.createPrintingDataForQueueItem(item);
-				for (PrintingData printingDataItem : printingData)
+				for (final PrintingData printingDataItem : printingData)
 				{
 					final PrintingData printingDataToStore = printingDataItem.onlyWithType(OutputType.Store);
 					final boolean hasSegmentsToStoreOnDisk = !printingDataToStore.getSegments().isEmpty();
