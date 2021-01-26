@@ -75,11 +75,10 @@ class Index extends Component {
   componentDidMount() {
     window.addEventListener('beforeinstallprompt', (e: { preventDefault: () => void }) => {
       // e.preventDefault(); - this is going to disable the prompt if uncommented !
-      console.log('Install Prompt fired');
       this.installPrompt = e;
       // See if the app is already installed, in that case, do nothing
       if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-        console.log('Already installed');
+        // Already installed
         return false;
       }
     });
