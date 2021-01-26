@@ -9,7 +9,6 @@
 * typescript (>= 4.1.2)
 * mobx-state-tree (>= 3.6.2)
 * bulma (>=0.9.1)
-* redis
 
 # Running the app for dev
 
