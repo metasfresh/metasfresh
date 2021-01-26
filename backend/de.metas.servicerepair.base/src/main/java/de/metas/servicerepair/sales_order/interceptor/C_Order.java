@@ -23,9 +23,7 @@
 package de.metas.servicerepair.sales_order.interceptor;
 
 import de.metas.handlingunits.model.I_C_Order;
-import de.metas.servicerepair.sales_order.RepairSalesOrderInfo;
 import de.metas.servicerepair.sales_order.RepairSalesOrderService;
-import de.metas.servicerepair.sales_order.RepairSalesProposalInfo;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -48,25 +46,13 @@ public class C_Order
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(final I_C_Order order)
 	{
-		final RepairSalesProposalInfo proposalInfo = salesOrderService.extractSalesProposalInfo(order).orElse(null);
-		if (proposalInfo == null)
-		{
-			return;
-		}
-
-		salesOrderService.unlinkProposalFromProject(proposalInfo);
+		salesOrderService.extractSalesProposalInfo(order).ifPresent(salesOrderService::unlinkProposalFromProject);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(final I_C_Order order)
 	{
-		final RepairSalesOrderInfo salesOrderInfo = salesOrderService.extractSalesOrderInfo(order).orElse(null);
-		if (salesOrderInfo == null)
-		{
-			return;
-		}
-
-		salesOrderService.transferVHUsFromProjectToSalesOrderLine(salesOrderInfo);
+		salesOrderService.extractSalesOrderInfo(order).ifPresent(salesOrderService::transferVHUsFromProjectToSalesOrderLine);
 	}
 
 	@DocValidate(timings = {
@@ -75,13 +61,7 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT })
 	public void beforeVoid(final I_C_Order order)
 	{
-		final RepairSalesOrderInfo salesOrderInfo = salesOrderService.extractSalesOrderInfo(order).orElse(null);
-		if (salesOrderInfo == null)
-		{
-			return;
-		}
-
-		salesOrderService.transferVHUsFromSalesOrderToProject(salesOrderInfo);
+		salesOrderService.extractSalesOrderInfo(order).ifPresent(salesOrderService::transferVHUsFromSalesOrderToProject);
 	}
 
 }
