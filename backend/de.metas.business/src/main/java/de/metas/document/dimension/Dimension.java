@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 @Builder
 public class Dimension
 {
+	@With
 	@Nullable ProjectId projectId;
 	int campaignId;
 	@With
