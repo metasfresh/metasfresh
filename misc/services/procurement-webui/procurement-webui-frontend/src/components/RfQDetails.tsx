@@ -15,10 +15,12 @@ const RfQDetails: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
   const history = useHistory();
   const quotations = getSnapshot(store.rfqs.quotations);
+
+  //TODO: Add a view for this
   const quotation = quotations.find((qItem) => qItem.rfqId === quotationId);
 
   useEffect(() => {
-    store.navigation.setBottomViewName(translate('RfQsListView.caption'));
+    store.navigation.setViewNames(quotation.productName);
   }, [store]);
 
   return (
