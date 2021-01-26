@@ -20,7 +20,7 @@ const Header: FunctionComponent<Props> = inject('store')(
         fakeAligner = <div className="header-aligner" />;
         link = (
           <div className="logout-link">
-            <a onClick={store.app.logOut} className="button is-success">
+            <a onClick={store.app.logOut} className="button is-success is-green-bg">
               {translate('Logout.caption')}
             </a>
           </div>

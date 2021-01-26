@@ -92,13 +92,15 @@ const Login: FunctionComponent<Props> = inject('store')(
 
               <div className="field">
                 <p className="control">
-                  <a onClick={handleForgotPassword}>{translate('LoginView.fields.forgotPasswordButton')}</a>
+                  <a onClick={handleForgotPassword} className="is-green-text">
+                    {translate('LoginView.fields.forgotPasswordButton')}
+                  </a>
                 </p>
               </div>
 
               <div className="field">
                 <div className="control">
-                  <button type="submit" className="button is-success" onClick={handleSubmit}>
+                  <button type="submit" className="button is-success is-green-bg" onClick={handleSubmit}>
                     {translate('LoginView.fields.loginButton')}
                   </button>
                 </div>

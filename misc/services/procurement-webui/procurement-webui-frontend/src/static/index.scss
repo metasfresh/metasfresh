@@ -98,6 +98,7 @@ body {
       text-align: center;
       font-size: 20px;
     }
+
     .arrow-navigation {
       color: $base-elements;
       padding: 1rem 0;
@@ -193,4 +194,12 @@ input[type=number]::-webkit-inner-spin-button {
 }
 .br-0 {
   border-right: 0px !important;
+}
+
+.is-green-bg {
+  background-color: $base-elements !important;
+}
+
+.is-green-text {
+  color: $base-elements;
 }
