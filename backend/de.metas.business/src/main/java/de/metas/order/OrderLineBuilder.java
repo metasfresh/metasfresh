@@ -5,8 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -49,13 +52,13 @@ import javax.annotation.Nullable;
  * Order line builder. Used exclusively by {@link OrderFactory}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class OrderLineBuilder
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private final OrderFactory parent;
 	private boolean built = false;
@@ -68,6 +71,8 @@ public class OrderLineBuilder
 	private BigDecimal manualDiscount;
 
 	private I_C_OrderLine createdOrderLine;
+
+	private Dimension dimension;
 
 	/* package */ OrderLineBuilder(@NonNull final OrderFactory parent)
 	{
@@ -103,6 +108,11 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualDiscount(true);
 			orderLine.setDiscount(manualDiscount);
+		}
+
+		if (dimension != null)
+		{
+			dimensionService.updateRecord(orderLine, dimension);
 		}
 
 		Services.get(IOrderLineBL.class).updatePrices(orderLine);
@@ -186,6 +196,15 @@ public class OrderLineBuilder
 	{
 		return Objects.equals(getProductId(), productId)
 				&& Objects.equals(getUomId(), uomId);
+	}
+
+	public OrderLineBuilder setDimension(final Dimension dimension)
+	{
+		assertNotBuilt();
+
+		this.dimension = dimension;
+
+		return this;
 	}
 
 	@Nullable
