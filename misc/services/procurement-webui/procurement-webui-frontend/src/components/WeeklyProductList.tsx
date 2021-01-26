@@ -1,5 +1,6 @@
 import React, { ReactElement, useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
+import { v4 } from 'uuid';
 
 import { translate } from '../utils/translate';
 import { RootStoreContext } from '../models/Store';
@@ -25,7 +26,7 @@ const WeeklyProductList: React.FunctionComponent<Props> = observer(
           ? products.map((product) => {
               return (
                 <WeeklyProduct
-                  key={product.getName}
+                  key={v4()}
                   productId={product.getId}
                   name={product.getName}
                   packType={product.getPack}
