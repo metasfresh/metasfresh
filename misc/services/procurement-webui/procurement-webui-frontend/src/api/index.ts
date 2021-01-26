@@ -39,6 +39,12 @@ export function getMessages(): Promise<AxiosResponse> {
   return axios.get('/rest/i18n/messages');
 }
 
+/**
+ * API: info-messages-rest-controller
+ * GET /rest/infoMessages
+ * @method infoMessages
+ * @summary gets the existing info messages which then are displayed pre-formatated preserving <b>, <i>
+ */
 export function infoMessages(): Promise<AxiosResponse> {
   return axios.get(`/rest/infoMessages`);
 }
