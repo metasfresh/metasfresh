@@ -23,6 +23,8 @@
 package de.metas.servicerepair.customerreturns;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inout.InOutId;
 import de.metas.servicerepair.customerreturns.process.HUsToReturn_SelectHU;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -36,6 +38,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 
@@ -94,9 +97,7 @@ public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected String getAdditionalSqlWhereClause()
 	{
-		// FIXME: commented out for debugging
-		//return I_M_HU.COLUMNNAME_HUStatus + "=" + DB.TO_STRING(X_M_HU.HUSTATUS_Shipped);
-		return null;
+		return I_M_HU.COLUMNNAME_HUStatus + "=" + DB.TO_STRING(X_M_HU.HUSTATUS_Shipped);
 	}
 
 	/**
