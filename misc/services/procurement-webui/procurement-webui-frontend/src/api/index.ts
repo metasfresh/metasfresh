@@ -83,10 +83,31 @@ export function loadMirageInDev(): void {
   }
 }
 
+/**
+ * API: daily-report-rest-controller
+ * GET /rest/dailyReport/{date}
+ * @param date <string>
+ */
 export function fetchDailyReport(date: string): Promise<AxiosResponse> {
   return axios.get(`/rest/dailyReport/${date}`);
 }
 
+/**
+ * API: daily-report-rest-controller
+ * POST /rest/dailyReport
+ * @method postDailyReport
+ * @summary -
+ * @param data:
+ *        {
+ *          "items": [
+ *            {
+ *              "date": "string",
+ *              "productId": "string",
+ *              "qty": 0
+ *            }
+ *          ]
+ *        }
+ */
 export function postDailyReport(data: unknown): Promise<AxiosResponse> {
   return axios.post(`/rest/dailyReport`, data);
 }
