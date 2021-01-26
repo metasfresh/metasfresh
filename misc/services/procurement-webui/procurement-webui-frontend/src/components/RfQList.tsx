@@ -30,19 +30,20 @@ class RfQList extends React.Component<Props> {
       <View>
         <section className="section">
           <div className="mt-4">
-            {items &&
-              items.map((rfq) => {
-                return (
-                  <RFQ
-                    key={rfq.rfqId}
-                    id={rfq.rfqId}
-                    quantityPromised={rfq.qtyPromised}
-                    dateStart={rfq.dateStart}
-                    dateEnd={rfq.dateEnd}
-                    name={rfq.productName}
-                  />
-                );
-              })}
+            {items
+              ? items.map((rfq) => {
+                  return (
+                    <RFQ
+                      key={rfq.rfqId}
+                      id={rfq.rfqId}
+                      quantityPromised={rfq.qtyPromised}
+                      dateStart={rfq.dateStart}
+                      dateEnd={rfq.dateEnd}
+                      name={rfq.productName}
+                    />
+                  );
+                })
+              : null}
           </div>
         </section>
       </View>

@@ -21,19 +21,20 @@ const WeeklyProductList: React.FunctionComponent<Props> = observer(
 
     return (
       <div className="mt-1">
-        {products.length &&
-          products.map((product) => {
-            return (
-              <WeeklyProduct
-                key={product.getName}
-                productId={product.getId}
-                name={product.getName}
-                packType={product.getPack}
-                qty={product.getQty}
-                nextWeekTrend={product.getTrend}
-              />
-            );
-          })}
+        {products.length
+          ? products.map((product) => {
+              return (
+                <WeeklyProduct
+                  key={product.getName}
+                  productId={product.getId}
+                  name={product.getName}
+                  packType={product.getPack}
+                  qty={product.getQty}
+                  nextWeekTrend={product.getTrend}
+                />
+              );
+            })
+          : null}
       </div>
     );
   }
