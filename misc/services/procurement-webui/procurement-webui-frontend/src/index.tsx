@@ -8,7 +8,7 @@ import './static/index.scss';
 import App from './App';
 import { translate } from './utils/translate';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import { loadMirageInDev, getMessages } from './api';
+import { getMessages } from './api';
 import reportWebVitals from './reportWebVitals';
 import { RootStoreContext, store } from './models/Store';
 
@@ -19,7 +19,7 @@ const history = {
 };
 
 // if there is no DEV_SERVER env set up it will use the Mirage mockups - this can be later removed
-process.env.DEV_SERVER === 'undefined' && loadMirageInDev();
+process.env.DEV_SERVER === 'undefined' && console.log('Please setup the DEV_SERVER env variable');
 
 // get the messages first for i18n
 getMessages().then(async (response) => {

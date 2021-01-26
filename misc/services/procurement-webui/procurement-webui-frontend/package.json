@@ -16,7 +16,6 @@
     "axios": "^0.21.1",
     "bulma": "^0.9.1",
     "classnames": "^2.2.6",
-    "miragejs": "^0.1.41",
     "mobx": "^6.0.4",
     "mobx-react": "^7.0.5",
     "mobx-state-tree": "^4.0.2",
