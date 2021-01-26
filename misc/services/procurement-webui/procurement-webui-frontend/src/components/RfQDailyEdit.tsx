@@ -48,7 +48,6 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
                 value={quantity.qtyPromised}
                 onChange={(e) => {
                   store.rfqs.updateRfQ({
-                    price: quantity.qtyPromised,
                     quantities: [{ date: currentDay, qtyPromised: parseInt(e.target.value) }],
                     rfqId,
                   });
