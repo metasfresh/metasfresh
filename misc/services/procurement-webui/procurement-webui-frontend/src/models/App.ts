@@ -28,9 +28,11 @@ export const App = types
     };
 
     const logOut = flow(function* logOut() {
-      yield logoutRequest();
+      const response = yield logoutRequest();
 
       self.loggedIn = false;
+
+      return response;
     });
 
     const getSession = flow(function* getSession() {
@@ -51,7 +53,7 @@ export const App = types
         setInitialData(response.data);
       } catch (e) {
         // 401 (Unauthorized)
-        if (self.loggedIn) {
+        if (e.response && e.response.status === 401 && self.loggedIn) {
           logOut();
         }
       }

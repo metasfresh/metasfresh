@@ -1,5 +1,5 @@
 import { useContext, createContext } from 'react';
-import { types, flow, Instance, onSnapshot } from 'mobx-state-tree';
+import { types, flow, Instance, onSnapshot, addMiddleware, IMiddlewareEvent, IAnyStateTreeNode } from 'mobx-state-tree';
 
 import { fetchDailyReport, fetchWeeklyReport, loginRequest, postDailyReport } from '../api';
 import { i18n } from './i18n';
@@ -10,6 +10,22 @@ import { App } from './App';
 import { ProductSelection } from './ProductSelection';
 import { WeeklyProductList } from './WeeklyProductList';
 import { RFQList } from './RFQList';
+
+export default function actionCatch(store: IAnyStateTreeNode) {
+  return (
+    call: IMiddlewareEvent,
+    next: (actionCall: IMiddlewareEvent, callback?: (value: any) => any) => void
+  ): void => {
+    try {
+      return next(call);
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        store.app.logOut();
+      }
+      throw err;
+    }
+  };
+}
 
 export const Store = types
   .model('Store', {
@@ -38,50 +54,42 @@ export const Store = types
         };
       }
 
+      self.navigation.clearViewsHistory();
+
       return self.app.logIn(result);
     }),
     postDailyReport: flow(function* postDailyReportLocal(dataObj: unknown) {
-      try {
-        yield postDailyReport(dataObj);
-      } catch (error) {
-        console.error('Failed to post', error);
-      }
+      yield postDailyReport(dataObj);
     }),
     fetchDailyReport: flow(function* dailyReport(reportDate: string) {
-      try {
-        const {
-          data: { date, dayCaption, products },
-        } = yield fetchDailyReport(reportDate);
+      const {
+        data: { date, dayCaption, products },
+      } = yield fetchDailyReport(reportDate);
 
-        self.app.setCurrentDay(date);
-        self.app.setDayCaption(dayCaption);
-        self.dailyProducts.updateProductList(products);
-      } catch (error) {
-        console.error('Failed to fetch', error);
-      }
+      self.app.setCurrentDay(date);
+      self.app.setDayCaption(dayCaption);
+      self.dailyProducts.updateProductList(products);
+
+      return Promise.resolve();
     }),
     fetchWeeklyReport: flow(function* weeklyReport(reportWeek: string) {
-      try {
-        const {
-          data: { week, weekCaption, nextWeek, previousWeek, products, nextWeekCaption },
-        } = yield fetchWeeklyReport(reportWeek);
+      const {
+        data: { week, weekCaption, nextWeek, previousWeek, products, nextWeekCaption },
+      } = yield fetchWeeklyReport(reportWeek);
 
-        self.app.setCurrentWeek(week);
-        self.app.setWeekCaption(weekCaption);
-        self.app.setNextWeek(nextWeek);
-        self.app.setPrevWeek(previousWeek);
+      self.app.setCurrentWeek(week);
+      self.app.setWeekCaption(weekCaption);
+      self.app.setNextWeek(nextWeek);
+      self.app.setPrevWeek(previousWeek);
 
-        self.weeklyProducts.updateProductList(products);
-        // update the model values also even if the week info are held on the app... Not really necessarry but for the sake of clear data
-        // Todo: WAT ? - Kuba
-        self.weeklyProducts.updateNextWeek(nextWeek);
-        self.weeklyProducts.updateNextCaption(nextWeekCaption);
-        self.weeklyProducts.updatePreviousWeek(previousWeek);
-        self.weeklyProducts.updateWeek(week);
-        self.weeklyProducts.updateWeekCaption(weekCaption);
-      } catch (error) {
-        console.error('Failed to fetch', error);
-      }
+      self.weeklyProducts.updateProductList(products);
+      // update the model values also even if the week info are held on the app... Not really necessarry but for the sake of clear data
+      // Todo: WAT ? - Kuba
+      self.weeklyProducts.updateNextWeek(nextWeek);
+      self.weeklyProducts.updateNextCaption(nextWeekCaption);
+      self.weeklyProducts.updatePreviousWeek(previousWeek);
+      self.weeklyProducts.updateWeek(week);
+      self.weeklyProducts.updateWeekCaption(weekCaption);
     }),
   }));
 
@@ -114,6 +122,8 @@ if (data) {
     initialState = Store.create(json);
   }
 }
+
+addMiddleware(initialState, actionCatch(initialState));
 
 export const store = initialState;
 /**
