@@ -164,7 +164,9 @@ public class CreateServiceRepairProjectCommand
 		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(bpartnerAndLocationId.getBpartnerId(), SOTrx.SALES);
 		if (pricingSystemId == null)
 		{
-			throw new AdempiereException("@Not@Found@ @M_PricingSystem_ID@");
+			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@")
+					.setParameter("C_BPartner_ID", bpartnerDAO.getBPartnerNameById(bpartnerAndLocationId.getBpartnerId()))
+					.setParameter("SOTrx", SOTrx.SALES);
 		}
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, bpartnerAndLocationId, SOTrx.SALES);
