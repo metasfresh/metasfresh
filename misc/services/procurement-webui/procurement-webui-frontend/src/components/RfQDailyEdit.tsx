@@ -26,8 +26,11 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
   }, [store]);
 
   const saveQty = (newQty: number) => {
-    console.log('newQty:', newQty);
-    // store.rfqs.updateRfQ({ price: newPrice, rfqId });
+    store.rfqs.updateRfQ({
+      price: quantity.qtyPromised,
+      quantities: [{ date: currentDay, qtyPromised: newQty }],
+      rfqId,
+    });
   };
 
   const qtyInput = React.createRef<HTMLInputElement>();
@@ -45,7 +48,11 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
                 step="1"
                 value={quantity.qtyPromised}
                 onChange={(e) => {
-                  // store.weeklyProducts.updateProductQty(product.productId, e.target.value, currentDay);
+                  store.rfqs.updateRfQ({
+                    price: quantity.qtyPromised,
+                    quantities: [{ date: currentDay, qtyPromised: parseInt(e.target.value) }],
+                    rfqId,
+                  });
                 }}
                 onBlur={(e) => saveQty(parseInt(e.target.value))}
               />

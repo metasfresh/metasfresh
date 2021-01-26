@@ -40,7 +40,8 @@ export const RFQList = types
       rfqId: string;
     }) {
       try {
-        const { data } = yield postRfQ({ price, rfqId });
+        const response = price ? yield postRfQ({ price, rfqId }) : yield postRfQ({ price, quantities, rfqId });
+        const { data } = response;
         getSnapshot(self.quotations).forEach((item, index) => {
           if (item.rfqId === data.rfqId) {
             self.quotations[index] = data;
