@@ -25,7 +25,9 @@ package de.metas.document.dimension;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MDCandidateDimensionFactory implements DimensionFactory<I_MD_Candidate>
 {
 	@Override

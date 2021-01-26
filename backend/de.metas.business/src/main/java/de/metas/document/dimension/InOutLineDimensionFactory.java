@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,42 +20,25 @@
  * #L%
  */
 
-package de.metas.purchasecandidate.document.dimension;
+package de.metas.document.dimension;
 
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import org.compiere.model.I_M_ForecastLine;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_PurchaseCandidate>
+public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine>
 {
 	@Override
 	public String getHandledTableName()
 	{
-		return I_C_PurchaseCandidate.Table_Name;
+		return I_M_InOutLine.Table_Name;
 	}
 
 	@Override
-	public void updateRecord(final I_C_PurchaseCandidate record, final Dimension from)
-	{
-		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
-		record.setC_Campaign_ID(from.getCampaignId());
-		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setUserElementString1(from.getUserElementString1());
-		record.setUserElementString2(from.getUserElementString2());
-		record.setUserElementString3(from.getUserElementString3());
-		record.setUserElementString4(from.getUserElementString4());
-		record.setUserElementString5(from.getUserElementString5());
-		record.setUserElementString6(from.getUserElementString6());
-		record.setUserElementString7(from.getUserElementString7());
-
-	}
-
-	@Override
-	public Dimension getFromRecord(final I_C_PurchaseCandidate record)
+	public Dimension getFromRecord(final I_M_InOutLine record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
@@ -71,4 +54,18 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 				.build();
 	}
 
+	@Override
+	public void updateRecord(final I_M_InOutLine record, final Dimension from)
+	{
+		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
+		record.setC_Campaign_ID(from.getCampaignId());
+		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
+		record.setUserElementString1(from.getUserElementString1());
+		record.setUserElementString2(from.getUserElementString2());
+		record.setUserElementString3(from.getUserElementString3());
+		record.setUserElementString4(from.getUserElementString4());
+		record.setUserElementString5(from.getUserElementString5());
+		record.setUserElementString6(from.getUserElementString6());
+		record.setUserElementString7(from.getUserElementString7());
+	}
 }

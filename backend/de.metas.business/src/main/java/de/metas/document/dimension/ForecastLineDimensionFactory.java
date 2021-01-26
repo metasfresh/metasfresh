@@ -26,7 +26,9 @@ import de.metas.mforecast.interceptors.M_ForecastLine;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import org.compiere.model.I_M_ForecastLine;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ForecastLineDimensionFactory implements DimensionFactory<I_M_ForecastLine>
 {
 	@Override

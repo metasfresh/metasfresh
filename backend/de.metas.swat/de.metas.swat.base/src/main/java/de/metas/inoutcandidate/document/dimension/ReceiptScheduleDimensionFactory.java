@@ -24,11 +24,12 @@ package de.metas.inoutcandidate.document.dimension;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.tourplanning.model.I_M_ReceiptSchedule;
-import org.compiere.model.I_C_OrderLine;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_ReceiptSchedule>
 {
 	@Override
