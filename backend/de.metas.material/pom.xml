@@ -23,13 +23,4 @@
         <module>planning</module>
     </modules>
 
-    <dependencies>
-        <dependency>
-            <groupId>de.metas.business</groupId>
-            <artifactId>de.metas.business</artifactId>
-            <version>${metasfresh.version}</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
-
 </project>
