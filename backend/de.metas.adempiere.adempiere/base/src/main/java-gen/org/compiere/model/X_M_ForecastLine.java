@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_ForecastLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -375035341L;
+	private static final long serialVersionUID = -1426341560L;
 
     /** Standard Constructor */
     public X_M_ForecastLine (final Properties ctx, final int M_ForecastLine_ID, @Nullable final String trxName)
@@ -81,6 +81,33 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
+
+	@Override
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
+	}
+
+	@Override
+	public void setC_Campaign_ID (final int C_Campaign_ID)
+	{
+		if (C_Campaign_ID < 1) 
+			set_Value (COLUMNNAME_C_Campaign_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
+	}
+
+	@Override
+	public int getC_Campaign_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Period getC_Period()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
@@ -105,6 +132,21 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	public int getC_Period_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Period_ID);
+	}
+
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override
@@ -275,7 +317,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
-	public void setUserElementString1 (final java.lang.String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -287,7 +329,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
-	public void setUserElementString2 (final java.lang.String UserElementString2)
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
@@ -299,7 +341,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
-	public void setUserElementString3 (final java.lang.String UserElementString3)
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
@@ -311,7 +353,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
-	public void setUserElementString4 (final java.lang.String UserElementString4)
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
@@ -323,7 +365,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
-	public void setUserElementString5 (final java.lang.String UserElementString5)
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
@@ -335,7 +377,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
-	public void setUserElementString6 (final java.lang.String UserElementString6)
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
@@ -347,7 +389,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	}
 
 	@Override
-	public void setUserElementString7 (final java.lang.String UserElementString7)
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}
