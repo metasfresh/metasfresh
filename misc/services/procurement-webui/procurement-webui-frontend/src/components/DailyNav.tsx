@@ -24,16 +24,16 @@ class DailyNav extends React.Component<Props> {
     }
   }
 
-  updateCurrentDay = (to: string): Promise<void> => {
+  updateCurrentDay = (to: string): void => {
     const { store } = this.props;
     const date = formDate({ currentDay: new Date(store.app.currentDay), to });
     const formattedDate = slashSeparatedYYYYmmdd(date);
 
-    return store.fetchDailyReport(formattedDate);
+    store.fetchDailyReport(formattedDate);
   };
 
-  previousDay = (): Promise<void> => this.updateCurrentDay('prev');
-  nextDay = (): Promise<void> => this.updateCurrentDay('next');
+  previousDay = (): void => this.updateCurrentDay('prev');
+  nextDay = (): void => this.updateCurrentDay('next');
 
   render(): ReactElement {
     const { store, isStatic, staticDay, staticCaption } = this.props;

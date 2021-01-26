@@ -18,7 +18,7 @@ class RfQList extends React.Component<Props> {
   componentDidMount(): void {
     const { store } = this.props;
 
-    store.navigation.setTopViewName(translate('RfQsListView.caption'));
+    store.navigation.setViewNames(translate('RfQsListView.caption'));
     store.rfqs.fetchRFQs();
   }
 

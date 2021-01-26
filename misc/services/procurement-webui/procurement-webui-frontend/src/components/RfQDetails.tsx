@@ -1,7 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { useParams, useHistory } from 'react-router-dom';
-import { getSnapshot } from 'mobx-state-tree';
 import { RootStoreContext } from '../models/Store';
 import { translate } from '../utils/translate';
 import View from './View';
@@ -14,11 +13,10 @@ const RfQDetails: React.FunctionComponent = observer(() => {
   const { quotationId } = useParams<RouteParams>();
   const store = useContext(RootStoreContext);
   const history = useHistory();
-  const quotations = getSnapshot(store.rfqs.quotations);
-  const quotation = quotations.find((qItem) => qItem.rfqId === quotationId);
+  const quotation = store.rfqs.findQuotationById(quotationId);
 
   useEffect(() => {
-    store.navigation.setBottomViewName(translate('RfQsListView.caption'));
+    store.navigation.setViewNames(quotation.productName);
   }, [store]);
 
   return (
@@ -74,9 +72,13 @@ const RfQDetails: React.FunctionComponent = observer(() => {
         </div>
         {quotation.quantities &&
           quotation.quantities.map((qItem) => (
-            <div key={qItem.date} className="columns is-mobile box p-1">
+            <div
+              key={qItem.date}
+              className="columns is-mobile box p-1"
+              onClick={() => history.push({ pathname: `/rfq/${quotation.rfqId}/dailyQty/${qItem.date}` })}
+            >
               <div className="column is-6">{qItem.date}</div>
-              <div className="column is-3">{qItem.qtyPromised}</div>
+              <div className="column is-3">{qItem.qtyPromisedRendered}</div>
               <div className="column is-3 green-color">{qItem.confirmedByUser && <i className="fas fa-check"></i>}</div>
             </div>
           ))}

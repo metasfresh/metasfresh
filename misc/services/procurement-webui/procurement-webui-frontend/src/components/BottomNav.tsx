@@ -81,7 +81,7 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
           </Link>,
           <Link
             to={{ pathname: '/rfq' }}
-            className="link is-flex is-flex-direction-column is-justify-content-center"
+            className="link is-flex is-flex-direction-column is-justify-content-center br-0"
             key="4"
           >
             <i className="far fa-money-bill-alt" />

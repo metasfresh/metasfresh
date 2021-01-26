@@ -130,7 +130,8 @@ footer {
   .link {
     width: 20%;
     align-items: center;
-    border: 1px solid $base-border;
+    border-top: 1px solid $base-border;
+    border-right: 1px solid $base-elements;
   }
 }
 
@@ -189,4 +190,7 @@ input[type=number]::-webkit-inner-spin-button {
 }
 .bb-1 {
   border-bottom: 1px solid $grey-light;
+}
+.br-0 {
+  border-right: 0px !important;
 }
