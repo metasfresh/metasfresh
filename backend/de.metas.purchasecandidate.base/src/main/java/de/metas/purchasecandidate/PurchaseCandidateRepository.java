@@ -16,17 +16,21 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Objects;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -90,6 +94,7 @@ public class PurchaseCandidateRepository
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final BPPurchaseScheduleService bpPurchaseScheduleService;
+	private final DimensionService dimensionService;
 
 	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
@@ -100,11 +105,14 @@ public class PurchaseCandidateRepository
 	public PurchaseCandidateRepository(
 			@NonNull final PurchaseItemRepository purchaseItemRepository,
 			@NonNull final ReferenceGenerator referenceGenerator,
-			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService)
+			@NonNull final BPPurchaseScheduleService bpPurchaseScheduleService,
+			@NonNull final DimensionService dimensionService
+	)
 	{
 		this.purchaseItemRepository = purchaseItemRepository;
 		this.referenceGenerator = referenceGenerator;
 		this.bpPurchaseScheduleService = bpPurchaseScheduleService;
+		this.dimensionService = dimensionService;
 	}
 
 	public PurchaseCandidateId getIdByPurchaseOrderLineIdOrNull(
@@ -336,6 +344,8 @@ public class PurchaseCandidateRepository
 
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
+		dimensionService.updateRecord(record, purchaseCandidate.getDimension());
+
 		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfoOrNull());
 
 		record.setIsPrepared(purchaseCandidate.isPrepared());
@@ -410,6 +420,8 @@ public class PurchaseCandidateRepository
 		final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIdsOrNull(record.getC_OrderSO_ID(), record.getC_OrderLineSO_ID());
 		final Quantity qtyToPurchase = Quantity.of(record.getQtyToPurchase(), uomsRepo.getById(record.getC_UOM_ID()));
 
+		final Dimension recordDimension = dimensionService.getFromRecord(record);
+
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.locked(locked)
 				.id(PurchaseCandidateId.ofRepoIdOrNull(record.getC_PurchaseCandidate_ID()))
@@ -434,6 +446,8 @@ public class PurchaseCandidateRepository
 				.profitInfoOrNull(toPurchaseProfitInfo(record))
 				//
 				.aggregatePOs(record.isAggregatePO())
+				//
+				.dimension(recordDimension)
 				//
 				.build();
 

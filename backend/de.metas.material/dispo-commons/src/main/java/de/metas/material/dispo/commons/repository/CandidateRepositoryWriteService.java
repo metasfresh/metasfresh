@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -27,6 +29,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
+import de.metas.mforecast.IForecastDAO;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -37,6 +40,8 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -344,6 +349,9 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+		final IForecastDAO forecastRepo = Services.get(IForecastDAO.class);
+
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
@@ -364,6 +372,16 @@ public class CandidateRepositoryWriteService
 
 		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
+
+		final int forecastLineId = candidate.getDemandDetail().getForecastLineId();
+
+		if (forecastLineId > 0)
+		{
+			final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
+
+			final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
+			dimensionService.updateRecord(candidateRecord, forecastLineDimension);
+		}
 
 		updatCandidateRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
 
@@ -681,7 +699,7 @@ public class CandidateRepositoryWriteService
 				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
 				.seqNo(candidateRecord.getSeqNo())
 				.build(),
-				candidateRecord.getQty());
+														   candidateRecord.getQty());
 
 		deleteRecord(candidateRecord);
 		return deleteResult;
