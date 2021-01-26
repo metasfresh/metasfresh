@@ -1,7 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { useParams, useHistory } from 'react-router-dom';
-import { getSnapshot } from 'mobx-state-tree';
 import { RootStoreContext } from '../models/Store';
 import { translate } from '../utils/translate';
 import View from './View';
