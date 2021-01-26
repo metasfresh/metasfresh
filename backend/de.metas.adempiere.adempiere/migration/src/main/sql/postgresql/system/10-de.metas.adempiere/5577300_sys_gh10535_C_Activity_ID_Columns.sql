@@ -94,3 +94,21 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE M_ReceiptSchedule ADD CONSTRAINT CActivity_MReceiptSchedule FOREIGN KEY (C_Activity_ID) REFERENCES public.C_Activity DEFERRABLE INITIALLY DEFERRED
 ;
 
+
+
+
+-- 2021-01-26T09:39:39.907Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2021-01-26 11:39:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572515
+;
+
+-- 2021-01-26T09:39:48.686Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('md_candidate','C_Activity_ID','NUMERIC(10)',null,null)
+;
+
+
+
+
+
+
