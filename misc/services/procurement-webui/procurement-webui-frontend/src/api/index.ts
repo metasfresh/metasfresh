@@ -122,6 +122,10 @@ export function getMessages(): Promise<AxiosResponse> {
   return axios.get('/rest/i18n/messages');
 }
 
+export function infoMessages(): Promise<AxiosResponse> {
+  return axios.get(`/rest/infoMessages`);
+}
+
 export function fetchWeeklyReport(weekYear: string): Promise<AxiosResponse> {
   return axios.get(`/rest/weeklyReport/${weekYear}`);
 }
@@ -185,10 +189,6 @@ export function passwordResetConfirm(token: string): Promise<AxiosResponse> {
 
 export function getUserSession(): Promise<AxiosResponse> {
   return axios.get(`/rest/session/`);
-}
-
-export function infoMessages(): Promise<AxiosResponse> {
-  return axios.get(`/rest/infoMessages`);
 }
 
 export function fetchRFQuotations(): Promise<AxiosResponse> {
