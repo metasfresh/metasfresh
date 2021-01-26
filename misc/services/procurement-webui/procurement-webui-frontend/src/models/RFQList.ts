@@ -55,6 +55,14 @@ export const RFQList = types
       fetchRFQs,
       updateRfQ,
     };
-  });
+  })
+  .views((self) => ({
+    get getQuotations() {
+      return self.quotations;
+    },
+    findQuotationById(quotationId: string) {
+      return self.quotations.find((qItem) => qItem.rfqId === quotationId);
+    },
+  }));
 
 export default RFQList;

@@ -14,10 +14,7 @@ const RfQDetails: React.FunctionComponent = observer(() => {
   const { quotationId } = useParams<RouteParams>();
   const store = useContext(RootStoreContext);
   const history = useHistory();
-  const quotations = getSnapshot(store.rfqs.quotations);
-
-  //TODO: Add a view for this
-  const quotation = quotations.find((qItem) => qItem.rfqId === quotationId);
+  const quotation = store.rfqs.findQuotationById(quotationId);
 
   useEffect(() => {
     store.navigation.setViewNames(quotation.productName);
