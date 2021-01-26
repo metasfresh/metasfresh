@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_ReceiptSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 999395570L;
+	private static final long serialVersionUID = 1118049416L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (final Properties ctx, final int M_ReceiptSchedule_ID, @Nullable final String trxName)
@@ -81,7 +81,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
@@ -93,7 +93,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setBPartnerAddress_Override (final java.lang.String BPartnerAddress_Override)
+	public void setBPartnerAddress_Override (final @Nullable java.lang.String BPartnerAddress_Override)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress_Override, BPartnerAddress_Override);
 	}
@@ -120,7 +120,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setCanBeExportedFrom (final java.sql.Timestamp CanBeExportedFrom)
+	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
 	{
 		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
 	}
@@ -207,6 +207,33 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
+
+	@Override
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
+	}
+
+	@Override
+	public void setC_Campaign_ID (final int C_Campaign_ID)
+	{
+		if (C_Campaign_ID < 1) 
+			set_Value (COLUMNNAME_C_Campaign_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
+	}
+
+	@Override
+	public int getC_Campaign_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
+	}
+
+	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
@@ -276,6 +303,21 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -291,7 +333,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setDateOrdered (final java.sql.Timestamp DateOrdered)
+	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateOrdered, DateOrdered);
 	}
@@ -351,7 +393,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/** Mit nächster Abolieferung = S */
 	public static final String DELIVERYRULE_OVERRIDE_MitNaechsterAbolieferung = "S";
 	@Override
-	public void setDeliveryRule_Override (final java.lang.String DeliveryRule_Override)
+	public void setDeliveryRule_Override (final @Nullable java.lang.String DeliveryRule_Override)
 	{
 		set_Value (COLUMNNAME_DeliveryRule_Override, DeliveryRule_Override);
 	}
@@ -397,7 +439,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_OVERRIDE_Shipper = "S";
 	@Override
-	public void setDeliveryViaRule_Override (final java.lang.String DeliveryViaRule_Override)
+	public void setDeliveryViaRule_Override (final @Nullable java.lang.String DeliveryViaRule_Override)
 	{
 		set_Value (COLUMNNAME_DeliveryViaRule_Override, DeliveryViaRule_Override);
 	}
@@ -438,7 +480,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setExternalResourceURL (final java.lang.String ExternalResourceURL)
+	public void setExternalResourceURL (final @Nullable java.lang.String ExternalResourceURL)
 	{
 		set_Value (COLUMNNAME_ExternalResourceURL, ExternalResourceURL);
 	}
@@ -461,7 +503,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setHeaderAggregationKey (final java.lang.String HeaderAggregationKey)
+	public void setHeaderAggregationKey (final @Nullable java.lang.String HeaderAggregationKey)
 	{
 		set_Value (COLUMNNAME_HeaderAggregationKey, HeaderAggregationKey);
 	}
@@ -551,7 +593,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setMovementDate (final java.sql.Timestamp MovementDate)
+	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
 	{
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
@@ -658,7 +700,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/** Create Distribution Order = D */
 	public static final String ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder = "D";
 	@Override
-	public void setOnMaterialReceiptWithDestWarehouse (final java.lang.String OnMaterialReceiptWithDestWarehouse)
+	public void setOnMaterialReceiptWithDestWarehouse (final @Nullable java.lang.String OnMaterialReceiptWithDestWarehouse)
 	{
 		set_Value (COLUMNNAME_OnMaterialReceiptWithDestWarehouse, OnMaterialReceiptWithDestWarehouse);
 	}
@@ -685,7 +727,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/** Minor = 9 */
 	public static final String PRIORITYRULE_Minor = "9";
 	@Override
-	public void setPriorityRule (final java.lang.String PriorityRule)
+	public void setPriorityRule (final @Nullable java.lang.String PriorityRule)
 	{
 		set_ValueNoCheck (COLUMNNAME_PriorityRule, PriorityRule);
 	}
@@ -712,7 +754,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/** Minor = 9 */
 	public static final String PRIORITYRULE_OVERRIDE_Minor = "9";
 	@Override
-	public void setPriorityRule_Override (final java.lang.String PriorityRule_Override)
+	public void setPriorityRule_Override (final @Nullable java.lang.String PriorityRule_Override)
 	{
 		set_Value (COLUMNNAME_PriorityRule_Override, PriorityRule_Override);
 	}
@@ -736,7 +778,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyMoved (final BigDecimal QtyMoved)
+	public void setQtyMoved (final @Nullable BigDecimal QtyMoved)
 	{
 		set_Value (COLUMNNAME_QtyMoved, QtyMoved);
 	}
@@ -749,7 +791,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyMovedInCatchUOM (final BigDecimal QtyMovedInCatchUOM)
+	public void setQtyMovedInCatchUOM (final @Nullable BigDecimal QtyMovedInCatchUOM)
 	{
 		set_Value (COLUMNNAME_QtyMovedInCatchUOM, QtyMovedInCatchUOM);
 	}
@@ -775,7 +817,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyMovedWithIssuesInCatchUOM (final BigDecimal QtyMovedWithIssuesInCatchUOM)
+	public void setQtyMovedWithIssuesInCatchUOM (final @Nullable BigDecimal QtyMovedWithIssuesInCatchUOM)
 	{
 		set_Value (COLUMNNAME_QtyMovedWithIssuesInCatchUOM, QtyMovedWithIssuesInCatchUOM);
 	}
@@ -788,7 +830,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyOrdered (final BigDecimal QtyOrdered)
+	public void setQtyOrdered (final @Nullable BigDecimal QtyOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
@@ -801,7 +843,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyOrderedOverUnder (final BigDecimal QtyOrderedOverUnder)
+	public void setQtyOrderedOverUnder (final @Nullable BigDecimal QtyOrderedOverUnder)
 	{
 		set_Value (COLUMNNAME_QtyOrderedOverUnder, QtyOrderedOverUnder);
 	}
@@ -814,7 +856,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyOrderedTU (final BigDecimal QtyOrderedTU)
+	public void setQtyOrderedTU (final @Nullable BigDecimal QtyOrderedTU)
 	{
 		throw new IllegalArgumentException ("QtyOrderedTU is virtual column");	}
 
@@ -826,7 +868,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyToMove (final BigDecimal QtyToMove)
+	public void setQtyToMove (final @Nullable BigDecimal QtyToMove)
 	{
 		set_Value (COLUMNNAME_QtyToMove, QtyToMove);
 	}
@@ -839,7 +881,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQtyToMove_Override (final BigDecimal QtyToMove_Override)
+	public void setQtyToMove_Override (final @Nullable BigDecimal QtyToMove_Override)
 	{
 		set_Value (COLUMNNAME_QtyToMove_Override, QtyToMove_Override);
 	}
@@ -852,7 +894,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQualityDiscountPercent (final BigDecimal QualityDiscountPercent)
+	public void setQualityDiscountPercent (final @Nullable BigDecimal QualityDiscountPercent)
 	{
 		set_Value (COLUMNNAME_QualityDiscountPercent, QualityDiscountPercent);
 	}
@@ -865,7 +907,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setQualityNote (final java.lang.String QualityNote)
+	public void setQualityNote (final @Nullable java.lang.String QualityNote)
 	{
 		set_Value (COLUMNNAME_QualityNote, QualityNote);
 	}
@@ -892,7 +934,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setStatus (final java.lang.String Status)
+	public void setStatus (final @Nullable java.lang.String Status)
 	{
 		set_ValueNoCheck (COLUMNNAME_Status, Status);
 	}
@@ -904,7 +946,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setUserElementString1 (final java.lang.String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -916,7 +958,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setUserElementString2 (final java.lang.String UserElementString2)
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
@@ -928,7 +970,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setUserElementString3 (final java.lang.String UserElementString3)
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
@@ -940,7 +982,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setUserElementString4 (final java.lang.String UserElementString4)
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
@@ -952,7 +994,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setUserElementString5 (final java.lang.String UserElementString5)
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
@@ -964,7 +1006,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setUserElementString6 (final java.lang.String UserElementString6)
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
@@ -976,7 +1018,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public void setUserElementString7 (final java.lang.String UserElementString7)
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}
