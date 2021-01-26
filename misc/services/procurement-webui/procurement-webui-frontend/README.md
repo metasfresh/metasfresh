@@ -57,6 +57,74 @@ The structure can be served with whatever server you want nginx/Apache.
 You also have a Dockerfile in the root of the structure in case you want to run this in a container.
 
 
+# App structure
 
+```bash
+src
+├── App.tsx
+├── api
+│   └── index.ts
+├── components
+│   ├── BottomNav.tsx
+│   ├── Daily.tsx
+│   ├── DailyNav.tsx
+│   ├── Error404.tsx
+│   ├── Header.tsx
+│   ├── Info.tsx
+│   ├── Login.tsx
+│   ├── PasswordRecovery.tsx
+│   ├── Product.tsx
+│   ├── ProductAdd.tsx
+│   ├── ProductAddItem.tsx
+│   ├── ProductAddList.tsx
+│   ├── ProductList.tsx
+│   ├── ProductScreen.tsx
+│   ├── ProductWeeklyEdit.tsx
+│   ├── ProductWeeklyScreen.tsx
+│   ├── Prognose.tsx
+│   ├── RfQ.tsx
+│   ├── RfQDailyEdit.tsx
+│   ├── RfQDetails.tsx
+│   ├── RfQList.tsx
+│   ├── RfQPriceEdit.tsx
+│   ├── Trend.tsx
+│   ├── View.tsx
+│   ├── Weekly.tsx
+│   ├── WeeklyNav.tsx
+│   ├── WeeklyProduct.tsx
+│   └── WeeklyProductList.tsx
+├── index.tsx
+├── models
+│   ├── App.ts
+│   ├── DailyProduct.ts
+│   ├── DailyProductList.ts
+│   ├── DailyQuantity.ts
+│   ├── Info.ts
+│   ├── Navigation.ts
+│   ├── ProductSelection.ts
+│   ├── ProductSelectionItem.ts
+│   ├── RFQ.ts
+│   ├── RFQList.ts
+│   ├── Store.ts
+│   ├── Todo.ts
+│   ├── WeeklyProduct.ts
+│   ├── WeeklyProductList.ts
+│   └── i18n.ts
+├── react-app-env.d.ts
+├── reportWebVitals.ts
+├── service-worker.ts
+├── serviceWorkerRegistration.ts
+├── setupTests.ts
+├── static
+│   ├── index.scss
+│   ├── prognose.scss
+│   └── variables.scss
+├── tests
+│   └── App.test.tsx
+└── utils
+    ├── date.ts
+    └── translate.ts
+
+```
 
 
