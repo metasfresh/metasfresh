@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -25464802L;
+	private static final long serialVersionUID = 1590428936L;
 
     /** Standard Constructor */
     public X_MD_Candidate (final Properties ctx, final int MD_Candidate_ID, @Nullable final String trxName)
@@ -66,6 +66,33 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
+
+	@Override
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
+	}
+
+	@Override
+	public void setC_Campaign_ID (final int C_Campaign_ID)
+	{
+		if (C_Campaign_ID < 1) 
+			set_Value (COLUMNNAME_C_Campaign_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
+	}
+
+	@Override
+	public int getC_Campaign_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Order getC_OrderSO()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
@@ -90,6 +117,21 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public int getC_OrderSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
+	}
+
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override
@@ -163,7 +205,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/** INVENTORY = INVENTORY */
 	public static final String MD_CANDIDATE_BUSINESSCASE_INVENTORY = "INVENTORY";
 	@Override
-	public void setMD_Candidate_BusinessCase (final java.lang.String MD_Candidate_BusinessCase)
+	public void setMD_Candidate_BusinessCase (final @Nullable java.lang.String MD_Candidate_BusinessCase)
 	{
 		set_Value (COLUMNNAME_MD_Candidate_BusinessCase, MD_Candidate_BusinessCase);
 	}
@@ -246,7 +288,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/** processed = processed */
 	public static final String MD_CANDIDATE_STATUS_Processed = "processed";
 	@Override
-	public void setMD_Candidate_Status (final java.lang.String MD_Candidate_Status)
+	public void setMD_Candidate_Status (final @Nullable java.lang.String MD_Candidate_Status)
 	{
 		set_Value (COLUMNNAME_MD_Candidate_Status, MD_Candidate_Status);
 	}
@@ -380,7 +422,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setQty_AvailableToPromise (final BigDecimal Qty_AvailableToPromise)
+	public void setQty_AvailableToPromise (final @Nullable BigDecimal Qty_AvailableToPromise)
 	{
 		throw new IllegalArgumentException ("Qty_AvailableToPromise is virtual column");	}
 
@@ -392,7 +434,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setQty_Display (final BigDecimal Qty_Display)
+	public void setQty_Display (final @Nullable BigDecimal Qty_Display)
 	{
 		throw new IllegalArgumentException ("Qty_Display is virtual column");	}
 
@@ -404,7 +446,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setQtyFulfilled (final BigDecimal QtyFulfilled)
+	public void setQtyFulfilled (final @Nullable BigDecimal QtyFulfilled)
 	{
 		set_Value (COLUMNNAME_QtyFulfilled, QtyFulfilled);
 	}
@@ -417,7 +459,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setQtyFulfilled_Display (final BigDecimal QtyFulfilled_Display)
+	public void setQtyFulfilled_Display (final @Nullable BigDecimal QtyFulfilled_Display)
 	{
 		throw new IllegalArgumentException ("QtyFulfilled_Display is virtual column");	}
 
@@ -429,7 +471,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setQty_Planned_Display (final BigDecimal Qty_Planned_Display)
+	public void setQty_Planned_Display (final @Nullable BigDecimal Qty_Planned_Display)
 	{
 		throw new IllegalArgumentException ("Qty_Planned_Display is virtual column");	}
 
@@ -491,7 +533,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setUserElementString1 (final java.lang.String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -503,7 +545,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setUserElementString2 (final java.lang.String UserElementString2)
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
@@ -515,7 +557,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setUserElementString3 (final java.lang.String UserElementString3)
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
@@ -527,7 +569,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setUserElementString4 (final java.lang.String UserElementString4)
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
@@ -539,7 +581,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setUserElementString5 (final java.lang.String UserElementString5)
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
@@ -551,7 +593,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setUserElementString6 (final java.lang.String UserElementString6)
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
@@ -563,7 +605,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
-	public void setUserElementString7 (final java.lang.String UserElementString7)
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}
