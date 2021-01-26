@@ -25,9 +25,11 @@ package de.metas.servicerepair.sales_order.interceptor;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.servicerepair.sales_order.RepairSalesOrderInfo;
 import de.metas.servicerepair.sales_order.RepairSalesOrderService;
+import de.metas.servicerepair.sales_order.RepairSalesProposalInfo;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +43,18 @@ public class C_Order
 			@NonNull final RepairSalesOrderService salesOrderService)
 	{
 		this.salesOrderService = salesOrderService;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void beforeDelete(final I_C_Order order)
+	{
+		final RepairSalesProposalInfo proposalInfo = salesOrderService.extractSalesProposalInfo(order).orElse(null);
+		if (proposalInfo == null)
+		{
+			return;
+		}
+
+		salesOrderService.unlinkProposalFromProject(proposalInfo);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)

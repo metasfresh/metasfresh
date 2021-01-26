@@ -20,36 +20,37 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.repository.requests;
+package de.metas.servicerepair.project.model;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
-@Value
-@Builder
-public class CreateSparePartsProjectTaskRequest
+public enum PartOwnership
 {
-	@NonNull ProjectId projectId;
-	@NonNull OrgId orgId;
+	OWNED_BY_COMPANY,
+	OWNED_BY_CUSTOMER,
+	;
 
-	@NonNull ProductId productId;
-	@NonNull Quantity qtyRequired;
-
-	@NonNull @Singular ImmutableList<AlreadyReturnedQty> alreadyReturnedQtys;
-
-	@Value
-	@Builder
-	public static class AlreadyReturnedQty
+	public boolean toIsOwnedByCustomerFlag()
 	{
-		@NonNull Quantity qty;
-		@NonNull HuId sparePartsVhuId;
+		switch (this)
+		{
+			case OWNED_BY_COMPANY:
+				return false;
+			case OWNED_BY_CUSTOMER:
+				return true;
+			default:
+				throw new AdempiereException("Cannot convert " + this + " to IsOwnedByCustomer flag");
+		}
 	}
+
+	public static PartOwnership ofIsOwnedByCustomerFlag(final boolean ownedByCustomer)
+	{
+		return ownedByCustomer ? OWNED_BY_CUSTOMER : OWNED_BY_COMPANY;
+	}
+
+	public boolean isOwnedByCustomer()
+	{
+		return OWNED_BY_CUSTOMER.equals(this);
+	}
+
 }

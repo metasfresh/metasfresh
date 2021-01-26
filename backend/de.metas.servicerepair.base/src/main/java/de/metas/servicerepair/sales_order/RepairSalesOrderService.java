@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_C_Order;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -46,6 +47,7 @@ import java.util.Set;
 @Service
 public class RepairSalesOrderService
 {
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ServiceRepairProjectService projectService;
 
@@ -134,6 +136,25 @@ public class RepairSalesOrderService
 						ServiceRepairProjectCostCollector::getReservedSparePartsVHUId));
 	}
 
+	public Optional<RepairSalesProposalInfo> extractSalesProposalInfo(@NonNull final I_C_Order orderRecord)
+	{
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderRecord.getC_Project_ID());
+		if (projectId == null)
+		{
+			return Optional.empty();
+		}
+
+		if (!orderBL.isSalesProposalOrQuotation(orderRecord))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(RepairSalesProposalInfo.builder()
+				.proposalId(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
+				.projectId(projectId)
+				.build());
+	}
+
 	public void transferVHUsFromProjectToSalesOrderLine(@NonNull final RepairSalesOrderInfo salesOrderInfo)
 	{
 		for (final RepairSalesOrderLineInfo line : salesOrderInfo.getLines())
@@ -155,5 +176,10 @@ public class RepairSalesOrderService
 		projectService.transferVHUsFromSalesOrderToProject(
 				salesOrderInfo.getSalesOrderLineIds(),
 				salesOrderInfo.getProjectId());
+	}
+
+	public void unlinkProposalFromProject(@NonNull final RepairSalesProposalInfo proposalInfo)
+	{
+		projectService.unlinkQuotationFromProject(proposalInfo.getProjectId(), proposalInfo.getProposalId());
 	}
 }

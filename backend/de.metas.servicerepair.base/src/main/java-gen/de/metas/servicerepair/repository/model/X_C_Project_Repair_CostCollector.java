@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO implements I_C_Project_Repair_CostCollector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1449852723L;
+	private static final long serialVersionUID = 1392777253L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_CostCollector (final Properties ctx, final int C_Project_Repair_CostCollector_ID, @Nullable final String trxName)
@@ -159,6 +159,18 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	public int getFrom_Repair_Cost_Collector_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_From_Repair_Cost_Collector_ID);
+	}
+
+	@Override
+	public void setIsOwnedByCustomer (final boolean IsOwnedByCustomer)
+	{
+		set_Value (COLUMNNAME_IsOwnedByCustomer, IsOwnedByCustomer);
+	}
+
+	@Override
+	public boolean isOwnedByCustomer() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOwnedByCustomer);
 	}
 
 	@Override

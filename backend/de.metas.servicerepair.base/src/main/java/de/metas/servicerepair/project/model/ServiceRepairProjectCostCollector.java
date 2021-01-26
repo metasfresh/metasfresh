@@ -48,6 +48,8 @@ public class ServiceRepairProjectCostCollector
 	@Nullable
 	HuId reservedSparePartsVHUId;
 
+	@NonNull PartOwnership partOwnership;
+
 	@Nullable
 	OrderAndLineId customerQuotationLineId;
 
@@ -59,6 +61,7 @@ public class ServiceRepairProjectCostCollector
 			@NonNull final Quantity qtyReserved,
 			@NonNull final Quantity qtyConsumed,
 			@Nullable final HuId reservedSparePartsVHUId,
+			@NonNull final PartOwnership partOwnership,
 			@Nullable final OrderAndLineId customerQuotationLineId)
 	{
 		Check.assume(taskId == null || ProjectId.equals(id.getProjectId(), taskId.getProjectId()), "projectId not matching: {}, {}", id, taskId);
@@ -70,6 +73,7 @@ public class ServiceRepairProjectCostCollector
 		this.qtyReserved = qtyReserved;
 		this.qtyConsumed = qtyConsumed;
 		this.reservedSparePartsVHUId = reservedSparePartsVHUId;
+		this.partOwnership = partOwnership;
 		this.customerQuotationLineId = customerQuotationLineId;
 	}
 

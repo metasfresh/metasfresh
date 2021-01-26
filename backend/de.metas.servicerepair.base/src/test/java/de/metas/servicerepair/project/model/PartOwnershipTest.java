@@ -20,36 +20,21 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.repository.requests;
+package de.metas.servicerepair.project.model;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
-@Value
-@Builder
-public class CreateSparePartsProjectTaskRequest
+class PartOwnershipTest
 {
-	@NonNull ProjectId projectId;
-	@NonNull OrgId orgId;
-
-	@NonNull ProductId productId;
-	@NonNull Quantity qtyRequired;
-
-	@NonNull @Singular ImmutableList<AlreadyReturnedQty> alreadyReturnedQtys;
-
-	@Value
-	@Builder
-	public static class AlreadyReturnedQty
+	@ParameterizedTest
+	@EnumSource(PartOwnership.class)
+	public void fromToIsOwnedByCustomerFlag(@NonNull final PartOwnership partOwnership)
 	{
-		@NonNull Quantity qty;
-		@NonNull HuId sparePartsVhuId;
+		Assertions.assertThat(PartOwnership.ofIsOwnedByCustomerFlag(partOwnership.toIsOwnedByCustomerFlag()))
+				.isSameAs(partOwnership);
 	}
+
 }

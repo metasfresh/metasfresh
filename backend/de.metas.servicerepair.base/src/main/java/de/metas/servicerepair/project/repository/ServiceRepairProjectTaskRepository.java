@@ -85,7 +85,7 @@ class ServiceRepairProjectTaskRepository
 		InterfaceWrapperHelper.save(record);
 	}
 
-	public void createNew(@NonNull final CreateSparePartsProjectTaskRequest request)
+	public ServiceRepairProjectTask createNew(@NonNull final CreateSparePartsProjectTaskRequest request)
 	{
 		final I_C_Project_Repair_Task record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Task.class);
 		record.setC_Project_ID(request.getProjectId().getRepoId());
@@ -100,7 +100,9 @@ class ServiceRepairProjectTaskRepository
 		record.setQtyReserved(BigDecimal.ZERO);
 		record.setQtyConsumed(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.save(record);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		return fromRecord(record);
 	}
 
 	public ServiceRepairProjectTask getById(@NonNull final ServiceRepairProjectTaskId taskId)

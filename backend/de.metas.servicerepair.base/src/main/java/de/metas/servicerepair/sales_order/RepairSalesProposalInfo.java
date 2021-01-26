@@ -20,36 +20,18 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.repository.requests;
+package de.metas.servicerepair.sales_order;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
+import de.metas.order.OrderId;
 import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 @Value
 @Builder
-public class CreateSparePartsProjectTaskRequest
+public class RepairSalesProposalInfo
 {
+	@NonNull OrderId proposalId;
 	@NonNull ProjectId projectId;
-	@NonNull OrgId orgId;
-
-	@NonNull ProductId productId;
-	@NonNull Quantity qtyRequired;
-
-	@NonNull @Singular ImmutableList<AlreadyReturnedQty> alreadyReturnedQtys;
-
-	@Value
-	@Builder
-	public static class AlreadyReturnedQty
-	{
-		@NonNull Quantity qty;
-		@NonNull HuId sparePartsVhuId;
-	}
 }

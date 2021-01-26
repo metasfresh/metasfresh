@@ -27,9 +27,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
+import de.metas.servicerepair.project.model.PartOwnership;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -63,7 +65,8 @@ class ServiceRepairProjectCostCollectorRepository
 		record.setQtyReserved(request.getQtyReserved().toBigDecimal());
 		record.setQtyConsumed(request.getQtyConsumed().toBigDecimal());
 		record.setVHU_ID(HuId.toRepoId(request.getReservedVhuId()));
-		if(request.getRepairOrderCostCollectorId() != null)
+		record.setIsOwnedByCustomer(request.getPartOwnership().toIsOwnedByCustomerFlag());
+		if (request.getRepairOrderCostCollectorId() != null)
 		{
 			record.setFrom_Rapair_Order_ID(request.getRepairOrderCostCollectorId().getOrderId().getRepoId());
 			record.setFrom_Repair_Cost_Collector_ID(request.getRepairOrderCostCollectorId().getCostCollectorId().getRepoId());
@@ -131,6 +134,7 @@ class ServiceRepairProjectCostCollectorRepository
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
 				.reservedSparePartsVHUId(HuId.ofRepoIdOrNull(record.getVHU_ID()))
+				.partOwnership(PartOwnership.ofIsOwnedByCustomerFlag(record.isOwnedByCustomer()))
 				.customerQuotationLineId(OrderAndLineId.ofRepoIdsOrNull(record.getQuotation_Order_ID(), record.getQuotation_OrderLine_ID()))
 				.build();
 	}
@@ -181,6 +185,30 @@ class ServiceRepairProjectCostCollectorRepository
 			record.setQuotation_OrderLine_ID(customerQuotationLineId.getOrderLineRepoId());
 			InterfaceWrapperHelper.saveRecord(record);
 		}
+	}
+
+	public void unsetCustomerQuotation(
+			@NonNull final ProjectId projectId,
+			@NonNull final OrderId quotationId)
+	{
+		final List<I_C_Project_Repair_CostCollector> records = retrieveRecordsByQuotationId(projectId, quotationId);
+		for (final I_C_Project_Repair_CostCollector record : records)
+		{
+			record.setQuotation_Order_ID(-1);
+			record.setQuotation_OrderLine_ID(-1);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+	}
+
+	private List<I_C_Project_Repair_CostCollector> retrieveRecordsByQuotationId(
+			@NonNull final ProjectId projectId,
+			@NonNull final OrderId quotationId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_Order_ID, quotationId)
+				.create()
+				.list();
 	}
 
 	public List<ServiceRepairProjectCostCollector> getByQuotationLineIds(final Set<OrderAndLineId> quotationLineIds)

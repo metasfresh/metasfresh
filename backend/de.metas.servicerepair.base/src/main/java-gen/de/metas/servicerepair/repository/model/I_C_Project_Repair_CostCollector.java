@@ -240,6 +240,29 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Owned by Customer.
+	 * Is this part owner by customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOwnedByCustomer (boolean IsOwnedByCustomer);
+
+	/**
+	 * Get Owned by Customer.
+	 * Is this part owner by customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOwnedByCustomer();
+
+	ModelColumn<I_C_Project_Repair_CostCollector, Object> COLUMN_IsOwnedByCustomer = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "IsOwnedByCustomer", null);
+	String COLUMNNAME_IsOwnedByCustomer = "IsOwnedByCustomer";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *

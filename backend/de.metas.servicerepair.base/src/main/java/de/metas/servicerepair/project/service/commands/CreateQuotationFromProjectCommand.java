@@ -22,7 +22,6 @@
 
 package de.metas.servicerepair.project.service.commands;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -38,24 +37,30 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.servicerepair.project.model.PartOwnership;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
+import de.metas.uom.UomId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_DocType;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class CreateQuotationFromProjectCommand
 {
@@ -79,9 +84,7 @@ public class CreateQuotationFromProjectCommand
 	{
 		final ServiceRepairProjectInfo fromProject = projectService.getById(projectId);
 
-		final OrderFactory orderFactory = newOrderFactory(fromProject);
-
-		final ArrayList<ProjectCostCollectorAndOrderLine> costCollectorAndOrderLines = new ArrayList<>();
+		final QuotationAggregator quotationAggregator = newQuotationAggregator(fromProject);
 
 		for (final ServiceRepairProjectCostCollector costCollector : projectService.getCostCollectorsByProjectButNotInProposal(projectId))
 		{
@@ -90,32 +93,26 @@ public class CreateQuotationFromProjectCommand
 				continue;
 			}
 
-			final ProductId productId = costCollector.getProductId();
-			final Quantity qty = costCollector.getQtyReservedOrConsumed();
-			final OrderLineBuilder orderLineBuilder = orderFactory.orderLineByProductAndUomOrCreate(productId, qty.getUomId());
-			orderLineBuilder.addQty(qty);
-
-			costCollectorAndOrderLines.add(ProjectCostCollectorAndOrderLine.of(costCollector.getId(), orderLineBuilder));
+			quotationAggregator.add(costCollector);
 		}
 
-		final I_C_Order order = orderFactory.createDraft();
+		final I_C_Order order = quotationAggregator.createDraft();
 
-		setCustomerQuotationToCostCollectors(costCollectorAndOrderLines);
+		projectService.setCustomerQuotationToCostCollectors(quotationAggregator.getQuotationLineIdsIndexedByCostCollectorId());
 
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
 
-	private void setCustomerQuotationToCostCollectors(final ArrayList<ProjectCostCollectorAndOrderLine> costCollectorAndOrderLines)
+	private static QuotationLineKey extractQuotationLineKey(final ServiceRepairProjectCostCollector costCollector)
 	{
-		projectService.setCustomerQuotationToCostCollectors(
-				costCollectorAndOrderLines
-						.stream()
-						.collect(ImmutableMap.toImmutableMap(
-								ProjectCostCollectorAndOrderLine::getCostCollectorId,
-								ProjectCostCollectorAndOrderLine::getCustomerQuotationLineId)));
+		return QuotationLineKey.builder()
+				.productId(costCollector.getProductId())
+				.uomId(costCollector.getUomId())
+				.partOwnership(costCollector.getPartOwnership())
+				.build();
 	}
 
-	private OrderFactory newOrderFactory(@NonNull final ServiceRepairProjectInfo project)
+	private QuotationAggregator newQuotationAggregator(@NonNull final ServiceRepairProjectInfo project)
 	{
 		final OrderFactory orderFactory = OrderFactory.newSalesOrder()
 				.docType(getQuotationDocTypeId(project))
@@ -134,7 +131,9 @@ public class CreateQuotationFromProjectCommand
 
 		getPricingSystemId(project).ifPresent(orderFactory::pricingSystemId);
 
-		return orderFactory;
+		return QuotationAggregator.builder()
+				.orderFactory(orderFactory)
+				.build();
 	}
 
 	private DocTypeId getQuotationDocTypeId(@NonNull final ServiceRepairProjectInfo project)
@@ -177,11 +176,80 @@ public class CreateQuotationFromProjectCommand
 		return Optional.of(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 	}
 
-	@Value(staticConstructor = "of")
-	private static class ProjectCostCollectorAndOrderLine
+	@Value
+	@Builder
+	private static class QuotationLineKey
 	{
-		@NonNull ServiceRepairProjectCostCollectorId costCollectorId;
-		@NonNull OrderLineBuilder orderLineBuilder;
+		@NonNull ProductId productId;
+		@NonNull UomId uomId;
+		@NonNull PartOwnership partOwnership;
+	}
+
+	private static class QuotationAggregator
+	{
+		private final OrderFactory orderFactory;
+		private final LinkedHashMap<QuotationLineKey, QuotationLineAggregator> quotationLineAggregators = new LinkedHashMap<>();
+
+		@Builder
+		private QuotationAggregator(@NonNull final OrderFactory orderFactory)
+		{
+			this.orderFactory = orderFactory;
+		}
+
+		public I_C_Order createDraft()
+		{
+			return orderFactory.createDraft();
+		}
+
+		public final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> getQuotationLineIdsIndexedByCostCollectorId()
+		{
+			return quotationLineAggregators.values()
+					.stream()
+					.flatMap(QuotationLineAggregator::streamQuotationLineIdsIndexedByCostCollectorId)
+					.collect(GuavaCollectors.toImmutableMap());
+		}
+
+		public void add(@NonNull final ServiceRepairProjectCostCollector costCollector)
+		{
+			final QuotationLineAggregator quotationLineAggregator = quotationLineAggregators.computeIfAbsent(
+					extractQuotationLineKey(costCollector),
+					key -> QuotationLineAggregator.builder().orderFactory(orderFactory).key(key).build());
+
+			quotationLineAggregator.add(costCollector);
+		}
+	}
+
+	private static class QuotationLineAggregator
+	{
+		private final OrderLineBuilder orderLineBuilder;
+		private final HashSet<ServiceRepairProjectCostCollectorId> costCollectorIds = new HashSet<>();
+
+		@Builder
+		private QuotationLineAggregator(
+				@NonNull final OrderFactory orderFactory,
+				@NonNull final QuotationLineKey key)
+		{
+			orderLineBuilder = orderFactory.newOrderLine().productId(key.getProductId());
+
+			if (key.getPartOwnership().isOwnedByCustomer())
+			{
+				orderLineBuilder.manualPrice(BigDecimal.ZERO);
+			}
+		}
+
+		public void add(@NonNull final ServiceRepairProjectCostCollector costCollector)
+		{
+			final Quantity qty = costCollector.getQtyReservedOrConsumed();
+			orderLineBuilder.addQty(qty);
+
+			costCollectorIds.add(costCollector.getId());
+		}
+
+		public Stream<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> streamQuotationLineIdsIndexedByCostCollectorId()
+		{
+			final OrderAndLineId quotationLineId = getCustomerQuotationLineId();
+			return costCollectorIds.stream().map(costCollectorId -> GuavaCollectors.entry(costCollectorId, quotationLineId));
+		}
 
 		public OrderAndLineId getCustomerQuotationLineId()
 		{

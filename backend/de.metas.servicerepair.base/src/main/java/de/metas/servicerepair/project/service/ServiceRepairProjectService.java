@@ -43,6 +43,7 @@ import de.metas.project.service.ProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
+import de.metas.servicerepair.project.model.PartOwnership;
 import de.metas.servicerepair.project.model.ServiceRepairProjectConsumptionSummary;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
@@ -170,7 +171,15 @@ public class ServiceRepairProjectService
 
 	public void createProjectTask(@NonNull final CreateSparePartsProjectTaskRequest request)
 	{
-		projectTaskRepository.createNew(request);
+		final ServiceRepairProjectTask task = projectTaskRepository.createNew(request);
+
+		for (final CreateSparePartsProjectTaskRequest.AlreadyReturnedQty alreadyReturnedQty : request.getAlreadyReturnedQtys())
+		{
+			reserveSparePartsFromHUs(task,
+					alreadyReturnedQty.getQty(),
+					ImmutableSet.of(alreadyReturnedQty.getSparePartsVhuId()),
+					PartOwnership.OWNED_BY_CUSTOMER);
+		}
 	}
 
 	public void createProjectTask(@NonNull final CreateRepairProjectTaskRequest request)
@@ -234,14 +243,25 @@ public class ServiceRepairProjectService
 			@NonNull final ServiceRepairProjectTaskId taskId,
 			@NonNull final ImmutableSet<HuId> fromHUIds)
 	{
-		final I_C_Project project = projectService.getById(taskId.getProjectId());
 		final ServiceRepairProjectTask task = getTaskById(taskId);
+		final Quantity qtyToReserve = task.getQtyToReserve();
+		reserveSparePartsFromHUs(task, qtyToReserve, fromHUIds, PartOwnership.OWNED_BY_COMPANY);
+	}
 
+	private void reserveSparePartsFromHUs(
+			@NonNull final ServiceRepairProjectTask task,
+			@NonNull final Quantity qtyToReserve,
+			@NonNull final ImmutableSet<HuId> fromHUIds,
+			@NonNull final PartOwnership partOwnership)
+	{
+
+		final ProjectId projectId = task.getId().getProjectId();
+		final ServiceRepairProjectInfo project = getById(projectId);
 		final HUReservation huReservation = huReservationService.makeReservation(ReserveHUsRequest.builder()
-				.documentRef(HUReservationDocRef.ofProjectId(task.getId().getProjectId()))
+				.documentRef(HUReservationDocRef.ofProjectId(projectId))
 				.productId(task.getProductId())
-				.qtyToReserve(task.getQtyToReserve())
-				.customerId(BPartnerId.ofRepoId(project.getC_BPartner_ID()))
+				.qtyToReserve(qtyToReserve)
+				.customerId(project.getBpartnerId())
 				.huIds(fromHUIds)
 				.build())
 				.orElse(null);
@@ -260,6 +280,7 @@ public class ServiceRepairProjectService
 					.qtyReserved(qtyReserved)
 					.qtyConsumed(qtyReserved.toZero())
 					.reservedVhuId(vhuId)
+					.partOwnership(partOwnership)
 					.build());
 		}
 	}
@@ -404,4 +425,8 @@ public class ServiceRepairProjectService
 				.build();
 	}
 
+	public void unlinkQuotationFromProject(@NonNull final ProjectId projectId, @NonNull final OrderId quotationId)
+	{
+		projectCostCollectorRepository.unsetCustomerQuotation(projectId, quotationId);
+	}
 }

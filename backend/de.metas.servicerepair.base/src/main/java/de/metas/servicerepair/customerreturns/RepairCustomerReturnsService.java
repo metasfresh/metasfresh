@@ -196,10 +196,11 @@ public class RepairCustomerReturnsService
 			final Quantity qtyReturned = Quantity.of(customerReturnLine.getQtyEntered(), uomDAO.getById(customerReturnLine.getC_UOM_ID()));
 			final InOutAndLineId customerReturnLineId = InOutAndLineId.ofRepoId(customerReturnLine.getM_InOut_ID(), customerReturnLine.getM_InOutLine_ID());
 
+			final ImmutableSet<HuId> vhuIds = vhuIdsByCustomerReturnLineId.get(customerReturnLineId.getInOutLineId());
+
 			final QtyCalculationsBOM sparePartsBOM = sparePartsBOMs.get(productId);
 			if (sparePartsBOM != null)
 			{
-				final ImmutableSet<HuId> vhuIds = vhuIdsByCustomerReturnLineId.get(customerReturnLineId.getInOutLineId());
 				final HuId repairVhuId = CollectionUtils.singleElement(vhuIds);
 
 				resultBuilder.finishedGood(SparePartsReturnCalculation.FinishedGoodToRepair.builder()
@@ -212,10 +213,13 @@ public class RepairCustomerReturnsService
 			}
 			else
 			{
+				final HuId sparePartsVhuId = CollectionUtils.singleElement(vhuIds);
+
 				resultBuilder.sparePart(SparePartsReturnCalculation.SparePart.builder()
 						.sparePartId(productId)
 						.qty(qtyReturned)
 						.customerReturnLineId(customerReturnLineId)
+						.sparePartsVhuId(sparePartsVhuId)
 						.build());
 			}
 		}

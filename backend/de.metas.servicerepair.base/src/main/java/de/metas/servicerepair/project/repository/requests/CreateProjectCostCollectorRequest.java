@@ -26,6 +26,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.servicerepair.project.model.PartOwnership;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -46,6 +47,8 @@ public class CreateProjectCostCollectorRequest
 
 	@Nullable HuId reservedVhuId;
 
+	@NonNull PartOwnership partOwnership;
+
 	@Nullable PPOrderAndCostCollectorId repairOrderCostCollectorId;
 
 	@Builder
@@ -55,6 +58,7 @@ public class CreateProjectCostCollectorRequest
 			@Nullable final Quantity qtyReserved,
 			@Nullable final Quantity qtyConsumed,
 			@Nullable final HuId reservedVhuId,
+			@Nullable final PartOwnership partOwnership,
 			@Nullable final PPOrderAndCostCollectorId repairOrderCostCollectorId)
 	{
 		final Quantity qtyFirstNotNull = CoalesceUtil.coalesce(qtyReserved, qtyConsumed);
@@ -68,6 +72,7 @@ public class CreateProjectCostCollectorRequest
 		this.qtyReserved = qtyReserved != null ? qtyReserved : qtyFirstNotNull.toZero();
 		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : qtyFirstNotNull.toZero();
 		this.reservedVhuId = reservedVhuId;
+		this.partOwnership = partOwnership != null ? partOwnership : PartOwnership.OWNED_BY_COMPANY;
 		this.repairOrderCostCollectorId = repairOrderCostCollectorId;
 	}
 

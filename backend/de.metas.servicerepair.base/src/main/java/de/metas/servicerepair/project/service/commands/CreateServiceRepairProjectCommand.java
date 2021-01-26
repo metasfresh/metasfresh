@@ -50,6 +50,7 @@ import de.metas.servicerepair.project.repository.requests.CreateRepairProjectTas
 import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjectTaskRequest;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -62,6 +63,7 @@ import org.compiere.model.I_R_Request;
 import org.compiere.util.TimeUtil;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 public class CreateServiceRepairProjectCommand
 {
@@ -124,11 +126,43 @@ public class CreateServiceRepairProjectCommand
 					.build());
 		}
 
-		for (final ProductId sparePartId : sparePartsCalculation.getAllowedSparePartIds())
+		for (final ProductId sparePartId : sparePartsCalculation.getAllSparePartIds())
 		{
-			final Quantity qtyRequired = sparePartsCalculation.computeQtyOfSparePartsRequiredNet(sparePartId, uomConversionBL).orElse(null);
-			if (qtyRequired == null || qtyRequired.isZero())
+			Quantity qtyRequiredGross = sparePartsCalculation.computeQtyOfSparePartsRequiredGross(sparePartId, uomConversionBL).orElse(null);
+			final ArrayList<CreateSparePartsProjectTaskRequest.AlreadyReturnedQty> alreadyReturnedQtys = new ArrayList<>();
+
+			UomId uomId = null;
+			for (final SparePartsReturnCalculation.SparePart sparePart : sparePartsCalculation.getSpareParts(sparePartId))
 			{
+				final Quantity qtyAlreadyReturned;
+				if (uomId == null)
+				{
+					if (qtyRequiredGross == null)
+					{
+						qtyAlreadyReturned = sparePart.getQty();
+						qtyRequiredGross = qtyAlreadyReturned.toZero();
+						uomId = qtyAlreadyReturned.getUomId();
+					}
+					else
+					{
+						uomId = qtyRequiredGross.getUomId();
+						qtyAlreadyReturned = sparePart.getQty(uomId, uomConversionBL);
+					}
+				}
+				else
+				{
+					qtyAlreadyReturned = sparePart.getQty(uomId, uomConversionBL);
+				}
+
+				alreadyReturnedQtys.add(CreateSparePartsProjectTaskRequest.AlreadyReturnedQty.builder()
+						.qty(qtyAlreadyReturned)
+						.sparePartsVhuId(sparePart.getSparePartsVhuId())
+						.build());
+			}
+
+			if (qtyRequiredGross == null && alreadyReturnedQtys.isEmpty())
+			{
+				// shall not happen
 				continue;
 			}
 
@@ -136,7 +170,8 @@ public class CreateServiceRepairProjectCommand
 					.projectId(projectId)
 					.orgId(orgId)
 					.productId(sparePartId)
-					.qtyRequired(qtyRequired)
+					.qtyRequired(qtyRequiredGross)
+					.alreadyReturnedQtys(alreadyReturnedQtys)
 					.build());
 		}
 
