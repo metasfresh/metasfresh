@@ -6,7 +6,6 @@ import { observable } from 'mobx';
 import './static/index.scss';
 
 import App from './App';
-import { translate } from './utils/translate';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { getMessages } from './api';
 import reportWebVitals from './reportWebVitals';
@@ -27,9 +26,6 @@ getMessages().then(async (response) => {
     const { language, messages } = response.data;
     store.i18n.changeLang(language);
     store.i18n.changeMessages(messages);
-
-    store.navigation.clearViewsHistory();
-    store.navigation.setViewNames(translate('DailyReportingView.caption'));
   }
 
   await store.app.getUserSession();

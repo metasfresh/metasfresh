@@ -54,8 +54,6 @@ export const Store = types
         };
       }
 
-      self.navigation.clearViewsHistory();
-
       return self.app.logIn(result);
     }),
     postDailyReport: flow(function* postDailyReportLocal(dataObj: unknown) {

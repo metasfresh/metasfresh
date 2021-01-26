@@ -19,7 +19,11 @@ class DailyNav extends React.Component<Props> {
     const { store, isStatic } = this.props;
 
     if (!isStatic) {
+      // there's nothing `before` the start screen so we can safely remove anything that might've
+      // ended up there (like `login`)
+      store.navigation.clearViewsHistory();
       store.navigation.setViewNames(translate('DailyReportingView.caption'));
+
       store.fetchDailyReport(store.app.currentDay);
     }
   }
