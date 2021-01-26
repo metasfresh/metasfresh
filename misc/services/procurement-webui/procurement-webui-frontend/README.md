@@ -1,6 +1,4 @@
-```
 # Procurement App
-```
 
 # Technologies used
 
