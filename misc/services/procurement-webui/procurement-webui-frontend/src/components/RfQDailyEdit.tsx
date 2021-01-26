@@ -27,7 +27,6 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
 
   const saveQty = (newQty: number) => {
     store.rfqs.updateRfQ({
-      price: quantity.qtyPromised,
       quantities: [{ date: currentDay, qtyPromised: newQty }],
       rfqId,
     });
