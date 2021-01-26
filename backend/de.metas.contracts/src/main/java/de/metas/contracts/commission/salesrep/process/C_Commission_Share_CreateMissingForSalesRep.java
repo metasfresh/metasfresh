@@ -452,10 +452,10 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		}
 		catch (final Exception e)
 		{
-			Loggables.withLogger(logger, Level.ERROR).addLog("*** ERROR while trying to calculate commission for bpartnerId: {}, message: {}"
-					, bPartnerId, e.getMessage(), e);
+			final AdIssueId adIssueId = errorManager.createIssue(e);
+			Loggables.withLogger(logger, Level.ERROR).addLog("*** ERROR while trying to calculate commission for C_BPartner_ID={}; Created AD_Issue_ID={}; errorMessage: {}"
+					, RepoIdAwares.toRepoId(bPartnerId), RepoIdAwares.toRepoId(adIssueId), e.getLocalizedMessage());
 			return false;
-
 		}
 	}
 
