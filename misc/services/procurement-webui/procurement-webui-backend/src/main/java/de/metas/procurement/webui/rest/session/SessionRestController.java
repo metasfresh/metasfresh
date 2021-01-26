@@ -25,8 +25,6 @@ package de.metas.procurement.webui.rest.session;
 import de.metas.procurement.webui.Application;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
-import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.service.IRfQService;
 import de.metas.procurement.webui.service.UserConfirmationService;
 import de.metas.procurement.webui.util.DateUtils;
 import de.metas.procurement.webui.util.LanguageKey;
@@ -129,9 +127,13 @@ public class SessionRestController
 	}
 
 	@PostMapping("/confirmDataEntry")
-	public void confirmDataEntry()
+	public ConfirmDataEntryResponse confirmDataEntry()
 	{
 		final User user = loginService.getLoggedInUser();
 		userConfirmationService.confirmUserEntries(user);
+
+		return ConfirmDataEntryResponse.builder()
+				.countUnconfirmed(userConfirmationService.getCountUnconfirmed(user))
+				.build();
 	}
 }
