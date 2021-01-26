@@ -112,6 +112,16 @@ export function postDailyReport(data: unknown): Promise<AxiosResponse> {
   return axios.post(`/rest/dailyReport`, data);
 }
 
+/**
+ * API: i-18-n-rest-controller
+ * GET /rest/i18n/messages
+ * @method getMessages
+ * @summary gets the current active language and a messages object containing key value pairs with the translated strings
+ */
+export function getMessages(): Promise<AxiosResponse> {
+  return axios.get('/rest/i18n/messages');
+}
+
 export function fetchWeeklyReport(weekYear: string): Promise<AxiosResponse> {
   return axios.get(`/rest/weeklyReport/${weekYear}`);
 }
@@ -131,10 +141,6 @@ export function postRfQ(data: {
 
 export function confirmDataEntry(): Promise<AxiosResponse> {
   return axios.post(`/rest/session/confirmDataEntry`);
-}
-
-export function getMessages(): Promise<AxiosResponse> {
-  return axios.get('/rest/i18n/messages');
 }
 
 /** products-rest-controller */
