@@ -259,8 +259,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
 	{
@@ -1073,6 +1071,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		// services
 		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 		final BigDecimal splitAmt = ic.getSplitAmt();
 		// splitAmt may be zero, if we are going to compute&set priceactual etc later.
