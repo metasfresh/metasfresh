@@ -22,20 +22,24 @@ package org.adempiere.archive.spi;
  * #L%
  */
 
-import org.adempiere.archive.api.IArchiveEventManager;
-import org.compiere.model.I_AD_Archive;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.user.UserId;
+import org.adempiere.archive.api.IArchiveEventManager;
+import org.compiere.model.I_AD_Archive;
 
 /**
  * Implementors can be registered to {@link IArchiveEventManager#registerArchiveEventListener(IArchiveEventListener)} and can then be fired using that manager.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IArchiveEventListener
 {
+	default void onPdfUpdate(I_AD_Archive archive, UserId userId)
+	{
+		// nothing
+	}
+
 	default void onPdfUpdate(I_AD_Archive archive, UserId userId, String action)
 	{
 		// nothing

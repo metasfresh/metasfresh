@@ -1,34 +1,13 @@
 package de.metas.document.archive.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.archive.spi.IArchiveEventListener;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -43,9 +22,27 @@ import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.archive.spi.IArchiveEventListener;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Component
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
@@ -58,7 +55,13 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, final String action)
+	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId)
+	{
+		onPdfUpdate(archive, userId, X_C_Doc_Outbound_Log_Line.ACTION_PdfExport);
+	}
+
+	@Override
+	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, @NonNull final String action)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -72,6 +75,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			docExchangeLine.setAD_User_ID(userId.getRepoId());
 		}
 		save(docExchangeLine);
+
+		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
+		log.setDateLastPrint(SystemTime.asTimestamp());
+		save(log);
 	}
 
 	@Override
@@ -156,7 +163,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	/**
 	 * Creates {@link I_C_Doc_Outbound_Log_Line}.
-	 *
+	 * <p>
 	 * NOTE: it is not saving the created log line
 	 *
 	 * @param archive
