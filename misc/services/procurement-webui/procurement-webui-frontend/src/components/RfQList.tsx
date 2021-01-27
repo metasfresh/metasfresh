@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { observer, inject } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-
+import { formDate, prettyDate } from '../utils/date';
 import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
 
@@ -25,7 +25,7 @@ class RfQList extends React.Component<Props> {
   render(): ReactElement {
     const { store } = this.props;
     const items = getSnapshot(store.rfqs.quotations);
-
+    const { lang } = store.i18n;
     return (
       <View>
         <section className="section">
@@ -37,8 +37,8 @@ class RfQList extends React.Component<Props> {
                       key={rfq.rfqId}
                       id={rfq.rfqId}
                       quantityPromised={rfq.qtyPromised}
-                      dateStart={rfq.dateStart}
-                      dateEnd={rfq.dateEnd}
+                      dateStart={prettyDate({ lang, date: formDate({ currentDay: new Date(rfq.dateStart) }) })}
+                      dateEnd={prettyDate({ lang, date: formDate({ currentDay: new Date(rfq.dateEnd) }) })}
                       name={rfq.productName}
                     />
                   );

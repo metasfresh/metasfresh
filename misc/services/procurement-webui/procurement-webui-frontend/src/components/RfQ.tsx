@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { ReactElement } from 'react';
 import { useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
 
@@ -10,7 +10,13 @@ interface Props {
   quantityPromised: string;
 }
 
-const RfQ: FunctionComponent<Props> = ({ id, name, dateStart, dateEnd, quantityPromised }: Props): ReactElement => {
+const RfQ: React.FunctionComponent<Props> = ({
+  id,
+  name,
+  dateStart,
+  dateEnd,
+  quantityPromised,
+}: Props): ReactElement => {
   const history = useHistory();
 
   return (
