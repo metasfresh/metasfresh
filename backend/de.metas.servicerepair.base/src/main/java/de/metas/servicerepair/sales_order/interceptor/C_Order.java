@@ -23,8 +23,11 @@
 package de.metas.servicerepair.sales_order.interceptor;
 
 import de.metas.handlingunits.model.I_C_Order;
+import de.metas.servicerepair.sales_order.RepairSalesOrderInfo;
 import de.metas.servicerepair.sales_order.RepairSalesOrderService;
+import de.metas.servicerepair.sales_order.RepairSalesProposalInfo;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -59,9 +62,33 @@ public class C_Order
 			ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_VOID,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT })
-	public void beforeVoid(final I_C_Order order)
+	public void beforeVoid(
+			@NonNull final I_C_Order order,
+			@NonNull final DocTimingType timing)
 	{
-		salesOrderService.extractSalesOrderInfo(order).ifPresent(salesOrderService::transferVHUsFromSalesOrderToProject);
+		final RepairSalesProposalInfo proposal = salesOrderService.extractSalesProposalInfo(order).orElse(null);
+		if (proposal != null)
+		{
+			beforeVoid_Proposal(proposal, timing);
+		}
+		else
+		{
+			salesOrderService.extractSalesOrderInfo(order).ifPresent(this::beforeVoid_SalesOrder);
+		}
 	}
 
+	private void beforeVoid_Proposal(
+			@NonNull final RepairSalesProposalInfo proposal,
+			@NonNull final DocTimingType timing)
+	{
+		if (timing.isVoid() || timing.isReverse())
+		{
+			salesOrderService.unlinkProposalFromProject(proposal);
+		}
+	}
+
+	private void beforeVoid_SalesOrder(@NonNull final RepairSalesOrderInfo salesOrder)
+	{
+		salesOrderService.transferVHUsFromSalesOrderToProject(salesOrder);
+	}
 }

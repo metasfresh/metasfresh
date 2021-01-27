@@ -159,4 +159,9 @@ public class ServiceRepairProjectTask
 				.build()
 				.withUpdatedStatus();
 	}
+
+	public boolean isRepairInternalComponent(final ProductId productId)
+	{
+		return type.isRepair() && !ProductId.equals(getProductId(), productId);
+	}
 }

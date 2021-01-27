@@ -44,4 +44,9 @@ public enum ServiceRepairProjectTaskType implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	public boolean isRepair()
+	{
+		return this == REPAIR_ORDER;
+	}
 }

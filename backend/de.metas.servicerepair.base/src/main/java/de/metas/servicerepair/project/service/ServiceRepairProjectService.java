@@ -60,6 +60,7 @@ import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjec
 import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjectCommand;
 import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
+import de.metas.servicerepair.project.service.requests.CreateQuotationFromProjectRequest;
 import de.metas.servicerepair.repair_order.RepairManufacturingCostCollector;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderInfo;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderService;
@@ -223,11 +224,12 @@ public class ServiceRepairProjectService
 		return projectTaskRepository.getByIds(taskIds);
 	}
 
-	public OrderId createQuotationFromProject(final ProjectId projectId)
+	public OrderId createQuotationFromProject(@NonNull final CreateQuotationFromProjectRequest request)
 	{
 		return CreateQuotationFromProjectCommand.builder()
 				.projectService(this)
-				.projectId(projectId)
+				.projectId(request.getProjectId())
+				.serviceProductId(request.getServiceProductId())
 				.build()
 				.execute();
 	}
