@@ -128,7 +128,7 @@ export const store = initialState;
  * Create a localStorage entry from the snapshot
  */
 onSnapshot(store, (snapshot) => {
-  console.log('Snapshot: ', snapshot); // this is for debugging purposes - can be removed in prod
+  // console.log('Snapshot: ', snapshot); // this is for debugging purposes - can be removed in prod
   localStorage.setItem('initialState', JSON.stringify(snapshot));
 });
 
