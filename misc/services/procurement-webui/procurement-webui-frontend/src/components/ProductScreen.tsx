@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
-
+import { formDate, prettyDate } from '../utils/date';
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
@@ -18,7 +18,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
   const products = getSnapshot(store.dailyProducts.products);
   const product = products.find((prod) => prod.productId === productId);
-
+  const { lang } = store.i18n;
   const currentDay = targetDay ? targetDay : store.app.currentDay;
   const currentCaption = targetDayCaption ? targetDayCaption : store.app.dayCaption;
   const qtyInput = React.createRef<HTMLInputElement>();
@@ -55,7 +55,11 @@ const ProductScreen: React.FunctionComponent = observer(() => {
   return (
     <View>
       <div>
-        <DailyNav isStatic={true} staticDay={currentDay} staticCaption={currentCaption} />
+        <DailyNav
+          isStatic={true}
+          staticDay={prettyDate({ lang, date: formDate({ currentDay: new Date(currentDay) }) })}
+          staticCaption={currentCaption}
+        />
         <div className="mt-5 p-4">
           <div className="columns is-mobile">
             <div className="column is-11">
