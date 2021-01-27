@@ -22,35 +22,9 @@
 
 package de.metas.servicerepair.project.model;
 
-import org.adempiere.exceptions.AdempiereException;
-
 public enum PartOwnership
 {
 	OWNED_BY_COMPANY,
 	OWNED_BY_CUSTOMER,
 	;
-
-	public boolean toIsOwnedByCustomerFlag()
-	{
-		switch (this)
-		{
-			case OWNED_BY_COMPANY:
-				return false;
-			case OWNED_BY_CUSTOMER:
-				return true;
-			default:
-				throw new AdempiereException("Cannot convert " + this + " to IsOwnedByCustomer flag");
-		}
-	}
-
-	public static PartOwnership ofIsOwnedByCustomerFlag(final boolean ownedByCustomer)
-	{
-		return ownedByCustomer ? OWNED_BY_CUSTOMER : OWNED_BY_COMPANY;
-	}
-
-	public boolean isOwnedByCustomer()
-	{
-		return OWNED_BY_CUSTOMER.equals(this);
-	}
-
 }

@@ -130,10 +130,10 @@ public class RepairSalesOrderService
 		return projectService
 				.getCostCollectorsByQuotationLineIds(proposalLineIds)
 				.stream()
-				.filter(costCollector -> costCollector.getReservedSparePartsVHUId() != null)
+				.filter(costCollector -> costCollector.getVhuId() != null)
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						ServiceRepairProjectCostCollector::getCustomerQuotationLineId,
-						ServiceRepairProjectCostCollector::getReservedSparePartsVHUId));
+						ServiceRepairProjectCostCollector::getVhuId));
 	}
 
 	public Optional<RepairSalesProposalInfo> extractSalesProposalInfo(@NonNull final I_C_Order orderRecord)

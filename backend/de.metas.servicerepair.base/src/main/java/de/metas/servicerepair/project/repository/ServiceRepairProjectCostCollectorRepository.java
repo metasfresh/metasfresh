@@ -32,9 +32,9 @@ import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
-import de.metas.servicerepair.project.model.PartOwnership;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.repository.requests.CreateProjectCostCollectorRequest;
 import de.metas.servicerepair.repository.model.I_C_Project_Repair_CostCollector;
@@ -64,12 +64,12 @@ class ServiceRepairProjectCostCollectorRepository
 		final I_C_Project_Repair_CostCollector record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_CostCollector.class);
 		record.setC_Project_ID(request.getTaskId().getProjectId().getRepoId());
 		record.setC_Project_Repair_Task_ID(request.getTaskId().getRepoId());
+		record.setType(request.getType().getCode());
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setC_UOM_ID(request.getUomId().getRepoId());
 		record.setQtyReserved(request.getQtyReserved().toBigDecimal());
 		record.setQtyConsumed(request.getQtyConsumed().toBigDecimal());
 		record.setVHU_ID(HuId.toRepoId(request.getReservedVhuId()));
-		record.setIsOwnedByCustomer(request.getPartOwnership().toIsOwnedByCustomerFlag());
 		if (request.getRepairOrderCostCollectorId() != null)
 		{
 			record.setFrom_Rapair_Order_ID(request.getRepairOrderCostCollectorId().getOrderId().getRepoId());
@@ -134,11 +134,11 @@ class ServiceRepairProjectCostCollectorRepository
 		return ServiceRepairProjectCostCollector.builder()
 				.id(extractId(record))
 				.taskId(ServiceRepairProjectTaskId.ofRepoIdOrNull(record.getC_Project_ID(), record.getC_Project_Repair_Task_ID()))
+				.type(ServiceRepairProjectCostCollectorType.ofCode(record.getType()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
-				.reservedSparePartsVHUId(HuId.ofRepoIdOrNull(record.getVHU_ID()))
-				.partOwnership(PartOwnership.ofIsOwnedByCustomerFlag(record.isOwnedByCustomer()))
+				.vhuId(HuId.ofRepoIdOrNull(record.getVHU_ID()))
 				.customerQuotationLineId(OrderAndLineId.ofRepoIdsOrNull(record.getQuotation_Order_ID(), record.getQuotation_OrderLine_ID()))
 				.build();
 	}

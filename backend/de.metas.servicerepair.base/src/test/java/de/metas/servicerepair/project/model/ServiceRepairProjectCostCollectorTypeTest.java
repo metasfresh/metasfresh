@@ -20,12 +20,21 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
+package de.metas.servicerepair.project.model;
 
-enum QuotationLineKeyType
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class ServiceRepairProjectCostCollectorTypeTest
 {
-	SPARE_PARTS_TO_BE_INVOICED,
-	SPARE_PARTS_OWNED_BY_CUSTOMER,
-	REPAIRED_PRODUCT_TO_RETURN,
-	INTERNALLY_CONSUMED_PRODUCTS,
+
+	@Test
+	void ofSparePartOwnership()
+	{
+		Assertions.assertThat(ServiceRepairProjectCostCollectorType.ofSparePartOwnership(PartOwnership.OWNED_BY_CUSTOMER))
+				.isSameAs(ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer);
+
+		Assertions.assertThat(ServiceRepairProjectCostCollectorType.ofSparePartOwnership(PartOwnership.OWNED_BY_COMPANY))
+				.isSameAs(ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced);
+	}
 }

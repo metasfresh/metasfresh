@@ -47,6 +47,7 @@ import de.metas.servicerepair.project.model.PartOwnership;
 import de.metas.servicerepair.project.model.ServiceRepairProjectConsumptionSummary;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -275,11 +276,11 @@ public class ServiceRepairProjectService
 
 			createCostCollector(CreateProjectCostCollectorRequest.builder()
 					.taskId(task.getId())
+					.type(ServiceRepairProjectCostCollectorType.ofSparePartOwnership(partOwnership))
 					.productId(task.getProductId())
 					.qtyReserved(qtyReserved)
 					.qtyConsumed(qtyReserved.toZero())
 					.reservedVhuId(vhuId)
-					.partOwnership(partOwnership)
 					.build());
 		}
 	}
@@ -295,7 +296,7 @@ public class ServiceRepairProjectService
 		return projectTaskRepository.retainIdsOfType(taskIds, ServiceRepairProjectTaskType.SPARE_PARTS);
 	}
 
-	public void releaseReservedSpareParts(final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
+	public void releaseCompanyOwnedReservedSpareParts(final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
 	{
 		final ImmutableSet<ServiceRepairProjectTaskId> sparePartsTaskIds = retainIdsOfTypeSpareParts(taskIds);
 		if (sparePartsTaskIds.isEmpty())
@@ -306,7 +307,8 @@ public class ServiceRepairProjectService
 		final List<ServiceRepairProjectCostCollector> costCollectors = projectCostCollectorRepository.getAndDeleteByTaskIds(taskIds);
 
 		final ImmutableSet<HuId> reservedSparePartsVHUIds = costCollectors.stream()
-				.map(ServiceRepairProjectCostCollector::getReservedSparePartsVHUId)
+				.filter(costCollector -> ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced.equals(costCollector.getType()))
+				.map(ServiceRepairProjectCostCollector::getVhuId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -422,9 +424,10 @@ public class ServiceRepairProjectService
 		{
 			createCostCollector(CreateProjectCostCollectorRequest.builder()
 					.taskId(task.getId())
+					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 					.productId(repairOrder.getRepairedProductId())
 					.qtyConsumed(repairOrder.getRepairedQty())
-					.partOwnership(PartOwnership.OWNED_BY_CUSTOMER)
+					.reservedVhuId(task.getRepairVhuId())
 					.build());
 		}
 
@@ -439,15 +442,10 @@ public class ServiceRepairProjectService
 	{
 		return CreateProjectCostCollectorRequest.builder()
 				.taskId(taskId)
+				.type(ServiceRepairProjectCostCollectorType.RepairingConsumption)
 				.productId(consumedComponentOrResource.getProductId())
 				.qtyConsumed(consumedComponentOrResource.getQtyConsumed())
 				.repairOrderCostCollectorId(consumedComponentOrResource.getId())
-				//
-				// TODO: better introduce a new PartOwnership type.
-				// Atm we can use OWNED_BY_CUSTOMER because we don't want this to be invoiced
-				// and somehow sooner or later will be owned by the customer :)
-				.partOwnership(PartOwnership.OWNED_BY_CUSTOMER)
-				//
 				.build();
 	}
 

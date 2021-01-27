@@ -26,7 +26,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.servicerepair.project.model.PartOwnership;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -41,24 +41,25 @@ import javax.annotation.Nullable;
 public class CreateProjectCostCollectorRequest
 {
 	@NonNull ServiceRepairProjectTaskId taskId;
+
+	@NonNull ServiceRepairProjectCostCollectorType type;
+
 	@NonNull ProductId productId;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
 	@Nullable HuId reservedVhuId;
 
-	@NonNull PartOwnership partOwnership;
-
 	@Nullable PPOrderAndCostCollectorId repairOrderCostCollectorId;
 
 	@Builder
 	private CreateProjectCostCollectorRequest(
 			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final ServiceRepairProjectCostCollectorType type,
 			@NonNull final ProductId productId,
 			@Nullable final Quantity qtyReserved,
 			@Nullable final Quantity qtyConsumed,
 			@Nullable final HuId reservedVhuId,
-			@Nullable final PartOwnership partOwnership,
 			@Nullable final PPOrderAndCostCollectorId repairOrderCostCollectorId)
 	{
 		final Quantity qtyFirstNotNull = CoalesceUtil.coalesce(qtyReserved, qtyConsumed);
@@ -68,11 +69,11 @@ public class CreateProjectCostCollectorRequest
 		}
 
 		this.taskId = taskId;
+		this.type = type;
 		this.productId = productId;
 		this.qtyReserved = qtyReserved != null ? qtyReserved : qtyFirstNotNull.toZero();
 		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : qtyFirstNotNull.toZero();
 		this.reservedVhuId = reservedVhuId;
-		this.partOwnership = partOwnership != null ? partOwnership : PartOwnership.OWNED_BY_COMPANY;
 		this.repairOrderCostCollectorId = repairOrderCostCollectorId;
 	}
 

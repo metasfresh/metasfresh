@@ -23,6 +23,7 @@
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
 import de.metas.product.ProductId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,7 +34,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 @Builder
 class QuotationLineKey
 {
-	@NonNull QuotationLineKeyType type;
+	@NonNull ServiceRepairProjectCostCollectorType type;
 	@NonNull ProductId productId;
 	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 	@NonNull UomId uomId;

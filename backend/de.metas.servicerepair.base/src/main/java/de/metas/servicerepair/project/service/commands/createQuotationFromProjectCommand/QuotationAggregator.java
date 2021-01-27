@@ -34,6 +34,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.uom.UomId;
@@ -151,47 +152,46 @@ public class QuotationAggregator
 			@NonNull final ServiceRepairProjectTask task,
 			@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
-		if (task.getType().isRepair())
+		final ServiceRepairProjectCostCollectorType type = costCollector.getType();
+		if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
 		{
-			if (task.isRepairInternalComponent(costCollector.getProductId()))
-			{
-				return QuotationLineKey.builder()
-						.type(QuotationLineKeyType.INTERNALLY_CONSUMED_PRODUCTS)
-						.productId(serviceProductId)
-						.uomId(serviceProductUomId)
-						.build();
-			}
-			else
-			{
-				final HuId repairedVhuId = Objects.requireNonNull(task.getRepairVhuId());
-				final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(task.getProductId(), repairedVhuId);
-
-				return QuotationLineKey.builder()
-						.type(QuotationLineKeyType.REPAIRED_PRODUCT_TO_RETURN)
-						.productId(costCollector.getProductId())
-						.asiId(asiId)
-						.uomId(costCollector.getUomId())
-						.build();
-			}
+			return QuotationLineKey.builder()
+					.type(ServiceRepairProjectCostCollectorType.RepairingConsumption)
+					.productId(serviceProductId)
+					.uomId(serviceProductUomId)
+					.build();
 		}
-		else // assume we we are dealing with spare parts
+		else if (type == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 		{
-			if (costCollector.getPartOwnership().isOwnedByCustomer())
-			{
-				return QuotationLineKey.builder()
-						.type(QuotationLineKeyType.SPARE_PARTS_OWNED_BY_CUSTOMER)
-						.productId(costCollector.getProductId())
-						.uomId(costCollector.getUomId())
-						.build();
-			}
-			else
-			{
-				return QuotationLineKey.builder()
-						.type(QuotationLineKeyType.SPARE_PARTS_TO_BE_INVOICED)
-						.productId(costCollector.getProductId())
-						.uomId(costCollector.getUomId())
-						.build();
-			}
+			final HuId repairedVhuId = Objects.requireNonNull(task.getRepairVhuId());
+			final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(task.getProductId(), repairedVhuId);
+
+			return QuotationLineKey.builder()
+					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
+					.productId(costCollector.getProductId())
+					.asiId(asiId)
+					.uomId(costCollector.getUomId())
+					.build();
+		}
+		else if (type == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer)
+		{
+			return QuotationLineKey.builder()
+					.type(ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer)
+					.productId(costCollector.getProductId())
+					.uomId(costCollector.getUomId())
+					.build();
+		}
+		else if (type == ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
+		{
+			return QuotationLineKey.builder()
+					.type(ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
+					.productId(costCollector.getProductId())
+					.uomId(costCollector.getUomId())
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
 		}
 	}
 

@@ -32,6 +32,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,7 +51,7 @@ class QuotationLineAggregator
 {
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
-	@NonNull private final QuotationLineKeyType type;
+	private final @NonNull ServiceRepairProjectCostCollectorType type;
 
 	@Getter
 	@NonNull private final ProductId productId;
@@ -89,22 +90,22 @@ class QuotationLineAggregator
 
 	public void add(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
-		if (type.equals(QuotationLineKeyType.SPARE_PARTS_TO_BE_INVOICED))
+		if (type == ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
 		{
 			qty = qty.add(costCollector.getQtyReservedOrConsumed());
 			manualPrice = null;
 		}
-		else if (type.equals(QuotationLineKeyType.SPARE_PARTS_OWNED_BY_CUSTOMER))
+		else if (type == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer)
 		{
 			qty = qty.add(costCollector.getQtyReservedOrConsumed());
 			manualPrice = Money.zero(priceCalculator.getCurrencyId());
 		}
-		else if (type.equals(QuotationLineKeyType.REPAIRED_PRODUCT_TO_RETURN))
+		else if (type == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 		{
 			qty = qty.add(costCollector.getQtyReservedOrConsumed());
 			manualPrice = Money.zero(priceCalculator.getCurrencyId());
 		}
-		else if (type.equals(QuotationLineKeyType.INTERNALLY_CONSUMED_PRODUCTS))
+		else if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
 		{
 			qty = qty.toOne();
 
