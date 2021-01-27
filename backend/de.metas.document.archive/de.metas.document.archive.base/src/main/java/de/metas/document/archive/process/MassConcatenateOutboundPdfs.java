@@ -70,7 +70,7 @@ public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcess
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 		final Function<I_C_Doc_Outbound_Log, TableRecordReference> logToTableRecordReferenceFunction = log -> TableRecordReference.of(log.getAD_Table_ID(), log.getRecord_ID());
 		final Stream<AdArchive> pdfStreams = archiveDAO.streamArchivesForFilter(queryFilter, I_C_Doc_Outbound_Log.class, logToTableRecordReferenceFunction);
-		final File reportFile = File.createTempFile("MassPdfExport_" + getPinstanceId().getRepoId(), ".pdf");
+		final File reportFile = File.createTempFile("MassConcatenateOutboundPdfs_" + getPinstanceId().getRepoId(), ".pdf");
 		reportFile.deleteOnExit();
 		final Document document = new Document();
 		final AtomicInteger errorCount = new AtomicInteger();
