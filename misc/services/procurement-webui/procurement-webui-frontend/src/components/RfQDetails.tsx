@@ -58,12 +58,12 @@ const RfQDetails: React.FunctionComponent = observer(() => {
         </div>
         <div className="box">
           <div
-            className="columns is-mobile p-1"
+            className="columns is-mobile is-size-5-mobile"
             onClick={() => history.push({ pathname: `/rfq/price/${quotation.rfqId}` })}
           >
             <div className="column is-6">{translate('RfQView.Price')}</div>
-            <div className="column is-3">{quotation.priceRendered}</div>
-            <div className="column is-3 green-color">
+            <div className="column is-4">{quotation.priceRendered}</div>
+            <div className="column is-2 green-color">
               {quotation.confirmedByUser && <i className="fas fa-check"></i>}
             </div>
           </div>
@@ -78,12 +78,12 @@ const RfQDetails: React.FunctionComponent = observer(() => {
           quotation.quantities.map((qItem) => (
             <div className="box" key={qItem.date}>
               <div
-                className="columns is-mobile p-1"
+                className="columns is-mobile is-size-5-mobile"
                 onClick={() => history.push({ pathname: `/rfq/${quotation.rfqId}/dailyQty/${qItem.date}` })}
               >
                 <div className="column is-6">{qItem.date}</div>
-                <div className="column is-3">{qItem.qtyPromisedRendered}</div>
-                <div className="column is-3 green-color">
+                <div className="column is-4">{qItem.qtyPromisedRendered}</div>
+                <div className="column is-2 green-color">
                   {qItem.confirmedByUser && <i className="fas fa-check"></i>}
                 </div>
               </div>
