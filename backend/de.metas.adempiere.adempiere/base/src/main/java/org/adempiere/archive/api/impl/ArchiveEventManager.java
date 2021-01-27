@@ -48,7 +48,7 @@ public class ArchiveEventManager implements IArchiveEventManager
 	public void firePdfUpdate(
 			@NonNull final I_AD_Archive archive,
 			@Nullable final UserId userId,
-			@NonNull final String action)
+			@Nullable final String action)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{
