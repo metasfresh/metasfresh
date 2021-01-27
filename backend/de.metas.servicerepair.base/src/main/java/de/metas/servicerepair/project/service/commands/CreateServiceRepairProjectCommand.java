@@ -113,6 +113,8 @@ public class CreateServiceRepairProjectCommand
 
 		final SparePartsReturnCalculation sparePartsCalculation = customerReturnsService.getSparePartsCalculation(customerReturnId);
 
+		//
+		// Repair Tasks
 		for (final SparePartsReturnCalculation.FinishedGoodToRepair productToRepair : sparePartsCalculation.getFinishedGoods())
 		{
 			projectService.createProjectTask(CreateRepairProjectTaskRequest.builder()
@@ -126,6 +128,8 @@ public class CreateServiceRepairProjectCommand
 					.build());
 		}
 
+		//
+		// Spare Parts Tasks
 		for (final ProductId sparePartId : sparePartsCalculation.getAllSparePartIds())
 		{
 			Quantity qtyRequiredGross = sparePartsCalculation.computeQtyOfSparePartsRequiredGross(sparePartId, uomConversionBL).orElse(null);
