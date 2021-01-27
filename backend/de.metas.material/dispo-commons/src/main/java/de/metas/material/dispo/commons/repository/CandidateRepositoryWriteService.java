@@ -378,7 +378,7 @@ public class CandidateRepositoryWriteService
 		if (demandDetail != null)
 		{
 			final int forecastLineId = demandDetail.getForecastLineId();
-			if (forecastLineId > 0)
+			if (forecastLineId > 0 && forecastLineId != IdConstants.UNSPECIFIED_REPO_ID)
 			{
 				final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
 

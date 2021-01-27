@@ -92,10 +92,11 @@ public class CandiateRepositoryRetrievalTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 
 		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
