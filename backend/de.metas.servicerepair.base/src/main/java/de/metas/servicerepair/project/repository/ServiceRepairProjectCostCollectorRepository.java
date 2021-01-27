@@ -24,6 +24,7 @@ package de.metas.servicerepair.project.repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.order.OrderAndLineId;
@@ -43,11 +44,14 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 public
@@ -224,5 +228,37 @@ class ServiceRepairProjectCostCollectorRepository
 				.stream()
 				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Set<PPOrderAndCostCollectorId> retainExistingPPCostCollectorIds(
+			@NonNull final ProjectId projectId,
+			@NonNull final Set<PPOrderAndCostCollectorId> orderAndCostCollectorIds)
+	{
+		if (orderAndCostCollectorIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final Set<PPCostCollectorId> costCollectorIds = orderAndCostCollectorIds.stream().map(PPOrderAndCostCollectorId::getCostCollectorId).collect(Collectors.toSet());
+
+		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_From_Repair_Cost_Collector_ID, costCollectorIds)
+				.create()
+				.stream()
+				.map(record -> PPOrderAndCostCollectorId.ofRepoId(record.getFrom_Rapair_Order_ID(), record.getFrom_Repair_Cost_Collector_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public boolean matchesByTaskAndProduct(
+			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, taskId.getProjectId())
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_Repair_Task_ID, taskId)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.anyMatch();
 	}
 }

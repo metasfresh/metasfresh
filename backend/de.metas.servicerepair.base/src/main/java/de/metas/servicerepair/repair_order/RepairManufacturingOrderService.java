@@ -28,9 +28,9 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.ProductPlanningService;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingType;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
@@ -58,7 +58,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -75,12 +74,6 @@ public class RepairManufacturingOrderService
 			@NonNull final ProductPlanningService productPlanningService)
 	{
 		this.productPlanningService = productPlanningService;
-	}
-
-	public Optional<RepairManufacturingOrderInfo> getById(@NonNull final PPOrderId ppOrderId)
-	{
-		final I_PP_Order repairOrder = ppOrderBL.getById(ppOrderId);
-		return extractFromRecord(repairOrder);
 	}
 
 	public Optional<RepairManufacturingOrderInfo> extractFromRecord(@NonNull final I_PP_Order record)
@@ -102,10 +95,13 @@ public class RepairManufacturingOrderService
 		return Optional.of(RepairManufacturingOrderInfo.builder()
 				.id(repairOrderId)
 				.projectId(projectId)
+				.repairedProductId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.repairedQty(ppOrderBL.getQuantities(record).getQtyReceived())
+				.costCollectors(getCostCollectors(repairOrderId))
 				.build());
 	}
 
-	public List<RepairManufacturingCostCollector> getCostCollectors(final PPOrderId repairOrderId)
+	private ImmutableList<RepairManufacturingCostCollector> getCostCollectors(final PPOrderId repairOrderId)
 	{
 		return ppCostCollectorBL.getByOrderId(repairOrderId)
 				.stream()
@@ -173,37 +169,50 @@ public class RepairManufacturingOrderService
 				.orElse(PPRoutingId.NONE);
 
 		final Instant now = SystemTime.asInstant();
-		final I_PP_Order repairOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
-				.docBaseType(PPOrderDocBaseType.REPAIR_ORDER)
-				.clientAndOrgId(task.getClientAndOrgId())
-				.warehouseId(warehouseId)
-				.plantId(plantId)
-				.routingId(routingId)
-				//
-				.productId(task.getProductId())
-				.attributeSetInstanceId(task.getAsiId())
-				.qtyRequired(task.getQtyRequired())
-				//
-				.dateOrdered(now)
-				.datePromised(now)
-				.dateStartSchedule(now)
-				//
-				.projectId(project.getProjectId())
-				//
-				.completeDocument(true)
-				//
-				.build());
-		final PPOrderId repairOrderId = PPOrderId.ofRepoId(repairOrder.getPP_Order_ID());
+
+		final PPOrderId repairOrderId;
+		final LocatorId locatorId;
+		{
+			final I_PP_Order repairOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
+					.docBaseType(PPOrderDocBaseType.REPAIR_ORDER)
+					.clientAndOrgId(task.getClientAndOrgId())
+					.warehouseId(warehouseId)
+					.plantId(plantId)
+					.routingId(routingId)
+					//
+					.productId(task.getProductId())
+					.attributeSetInstanceId(task.getAsiId())
+					.qtyRequired(task.getQtyRequired())
+					//
+					.dateOrdered(now)
+					.datePromised(now)
+					.dateStartSchedule(now)
+					//
+					.projectId(project.getProjectId())
+					//
+					.completeDocument(true)
+					//
+					.build());
+
+			repairOrderId = PPOrderId.ofRepoId(repairOrder.getPP_Order_ID());
+			locatorId = LocatorId.ofRepoId(repairOrder.getM_Warehouse_ID(), repairOrder.getM_Locator_ID());
+		}
 
 		huPPOrderQtyDAO.save(CreateReceiptCandidateRequest.builder()
 				.orderId(repairOrderId)
-				.orgId(OrgId.ofRepoId(repairOrder.getAD_Org_ID()))
+				.orgId(task.getClientAndOrgId().getOrgId())
 				.date(TimeUtil.asZonedDateTime(now))
-				.locatorId(LocatorId.ofRepoId(repairOrder.getM_Warehouse_ID(), repairOrder.getM_Locator_ID()))
+				.locatorId(locatorId)
 				.topLevelHUId(task.getRepairVhuId())
 				.productId(task.getProductId())
 				.qtyToReceive(task.getQtyRequired())
 				.alreadyProcessed(true)
+				.build());
+
+		ppOrderBL.addQty(OrderQtyChangeRequest.builder()
+				.ppOrderId(repairOrderId)
+				.qtyReceivedToAdd(task.getQtyRequired())
+				.date(TimeUtil.asZonedDateTime(now))
 				.build());
 
 		return repairOrderId;

@@ -51,12 +51,11 @@ public class PP_Order
 	{
 		repairManufacturingOrderService
 				.extractFromRecord(record)
-				.ifPresent(repairProjectService::importCostsFromRepairOrderIfApplies);
+				.ifPresent(repairProjectService::importCostsFromRepairOrderAndMarkTaskCompleted);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_UNCLOSE)
 	public void onBeforeUnClose(@NonNull final I_PP_Order repairOrder)
 	{
-		//serviceRepairProjectService.
 	}
 }

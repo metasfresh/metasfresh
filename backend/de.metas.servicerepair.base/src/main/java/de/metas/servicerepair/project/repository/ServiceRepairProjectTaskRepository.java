@@ -59,7 +59,7 @@ class ServiceRepairProjectTaskRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createNew(@NonNull final CreateRepairProjectTaskRequest request)
+	public ServiceRepairProjectTaskId createNew(@NonNull final CreateRepairProjectTaskRequest request)
 	{
 		final I_C_Project_Repair_Task record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Task.class);
 		record.setC_Project_ID(request.getProjectId().getRepoId());
@@ -82,7 +82,9 @@ class ServiceRepairProjectTaskRepository
 
 		record.setRepair_VHU_ID(request.getRepairVhuId().getRepoId());
 
-		InterfaceWrapperHelper.save(record);
+		InterfaceWrapperHelper.saveRecord(record);
+
+		return extractTaskId(record);
 	}
 
 	public ServiceRepairProjectTask createNew(@NonNull final CreateSparePartsProjectTaskRequest request)
@@ -134,7 +136,7 @@ class ServiceRepairProjectTaskRepository
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 
 		return ServiceRepairProjectTask.builder()
-				.id(ServiceRepairProjectTaskId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Repair_Task_ID()))
+				.id(extractTaskId(record))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.type(ServiceRepairProjectTaskType.ofCode(record.getType()))
 				.status(ServiceRepairProjectTaskStatus.ofCode(record.getStatus()))
@@ -151,6 +153,11 @@ class ServiceRepairProjectTaskRepository
 				.repairVhuId(HuId.ofRepoIdOrNull(record.getRepair_VHU_ID()))
 				//
 				.build();
+	}
+
+	private static ServiceRepairProjectTaskId extractTaskId(final I_C_Project_Repair_Task record)
+	{
+		return ServiceRepairProjectTaskId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Repair_Task_ID());
 	}
 
 	private static void updateRecord(
@@ -176,7 +183,7 @@ class ServiceRepairProjectTaskRepository
 		record.setRepair_Order_ID(PPOrderId.toRepoId(from.getRepairOrderId()));
 	}
 
-	public ServiceRepairProjectTask changeById(
+	public void changeById(
 			@NonNull final ServiceRepairProjectTaskId taskId,
 			@NonNull final UnaryOperator<ServiceRepairProjectTask> mapper)
 	{
@@ -186,13 +193,12 @@ class ServiceRepairProjectTaskRepository
 		final ServiceRepairProjectTask changedTask = mapper.apply(task);
 		if (Objects.equals(task, changedTask))
 		{
-			return task;
+			return;
 		}
 
 		updateRecord(record, changedTask);
 		InterfaceWrapperHelper.saveRecord(record);
 
-		return changedTask;
 	}
 
 	public void save(final ServiceRepairProjectTask task)
@@ -222,7 +228,7 @@ class ServiceRepairProjectTaskRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Optional<ServiceRepairProjectTaskId> getTaskIdByRepairOrderId(
+	public Optional<ServiceRepairProjectTask> getTaskByRepairOrderId(
 			@NonNull final ProjectId projectId,
 			@NonNull final PPOrderId repairOrderId)
 	{
@@ -231,6 +237,7 @@ class ServiceRepairProjectTaskRepository
 				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_C_Project_ID, projectId)
 				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_Repair_Order_ID, repairOrderId)
 				.create()
-				.firstIdOnlyOptional(repoId -> ServiceRepairProjectTaskId.ofRepoId(projectId, repoId));
+				.firstOnlyOptional(I_C_Project_Repair_Task.class)
+				.map(ServiceRepairProjectTaskRepository::fromRecord);
 	}
 }
