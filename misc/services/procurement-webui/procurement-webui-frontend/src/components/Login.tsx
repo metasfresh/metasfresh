@@ -3,6 +3,8 @@ import { useHistory } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 
 import { translate } from '../utils/translate';
+import logo from '../static/images/logo.png';
+import poweredByLogo from '../static/images/poweredby.png';
 
 import View from './View';
 import { RootInstance } from '../models/Store';
@@ -53,13 +55,15 @@ const Login: FunctionComponent<Props> = inject('store')(
 
       return (
         <View>
-          <div className="container p-4">
-            <h1 className="title">{store.navigation.topViewName}</h1>
+          <div className="container p-4 py-6 login-view">
+            <div className="login-logo">
+              <img src={logo} className="logo" />
+            </div>
             <form>
               <div className="field">
-                <p className="control has-icons-left has-icons-right">
+                <p className="control has-icons-left">
                   <input
-                    className="input"
+                    className="input is-medium"
                     id="email"
                     type="email"
                     value={state.email}
@@ -69,15 +73,12 @@ const Login: FunctionComponent<Props> = inject('store')(
                   <span className="icon is-small is-left">
                     <i className="fas fa-envelope"></i>
                   </span>
-                  <span className="icon is-small is-right">
-                    <i className="fas fa-check"></i>
-                  </span>
                 </p>
               </div>
               <div className="field">
                 <p className="control has-icons-left">
                   <input
-                    className="input"
+                    className="input is-medium"
                     id="password"
                     type="password"
                     value={state.password}
@@ -90,9 +91,9 @@ const Login: FunctionComponent<Props> = inject('store')(
                 </p>
               </div>
 
-              <div className="field">
+              <div className="field my-4">
                 <p className="control">
-                  <a onClick={handleForgotPassword} className="is-green-text">
+                  <a onClick={handleForgotPassword} className="green-color">
                     {translate('LoginView.fields.forgotPasswordButton')}
                   </a>
                 </p>
@@ -100,13 +101,20 @@ const Login: FunctionComponent<Props> = inject('store')(
 
               <div className="field">
                 <div className="control">
-                  <button type="submit" className="button is-success is-green-bg" onClick={handleSubmit}>
+                  <button
+                    type="submit"
+                    className="button is-medium is-fullwidth is-success is-green-bg"
+                    onClick={handleSubmit}
+                  >
                     {translate('LoginView.fields.loginButton')}
                   </button>
                 </div>
                 {app.loginError ? <p className="help is-danger">{app.loginError}</p> : null}
               </div>
             </form>
+          </div>
+          <div className="login-poweredby-logo">
+            <img src={poweredByLogo} className="poweredby" />
           </div>
         </View>
       );

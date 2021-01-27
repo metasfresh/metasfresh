@@ -111,7 +111,7 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
           <div className="field">
             <p className="control has-icons-left has-icons-right">
               <input
-                className="input"
+                className="input is-medium"
                 id="email"
                 type="email"
                 value={state.email}
@@ -122,7 +122,7 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
                 <i className="fas fa-envelope"></i>
               </span>
             </p>
-            <div className="block">
+            <div className="block pt-4">
               <p className="is-text">{translate('LoginView.passwordReset.error.fillEmail')}</p>
             </div>
           </div>
@@ -157,7 +157,7 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
       return (
         <>
           <View>
-            <div className="container p-4">
+            <div className="container p-4 py-6 login-view">
               <h5 className="title is-4">{store.navigation.topViewName}</h5>
               <form className="reset-password-form">
                 {token ? renderResetPasswordForm() : renderForgottenPasswordForm()}
@@ -166,7 +166,7 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
                     {state.resetSent && !token ? null : (
                       <button
                         type="submit"
-                        className="button is-success"
+                        className="button is-medium is-green-bg is-success"
                         onClick={handleSubmit}
                         disabled={buttonDisabled}
                       >
