@@ -28,6 +28,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -83,6 +84,11 @@ public abstract class ReceiptScheduleTestBase
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
 
 		//
@@ -183,6 +189,7 @@ public abstract class ReceiptScheduleTestBase
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
 
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));

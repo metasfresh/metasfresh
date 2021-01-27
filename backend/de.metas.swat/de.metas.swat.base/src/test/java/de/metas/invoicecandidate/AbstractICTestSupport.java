@@ -38,6 +38,7 @@ import java.util.Properties;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
@@ -197,6 +198,15 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		AdempiereTestHelper.get().init();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+		dimensionFactories.add(new InvoiceLineDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+
 		final I_AD_Client client = InterfaceWrapperHelper.newInstance(I_AD_Client.class);
 		saveRecord(client);
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, client.getAD_Client_ID());
@@ -292,15 +302,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-
-
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
-		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
-
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 	}
 
 	protected void config_InvoiceCand_HeaderAggregation()
@@ -684,7 +685,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 	/**
 	 * Update given invalid invoice candidates.
-	 *
+	 * <p>
 	 * Also, please note:
 	 * <ul>
 	 * <li>this method is refreshing the invoice candidates after updating them (just to make sure we get the up2date result).
