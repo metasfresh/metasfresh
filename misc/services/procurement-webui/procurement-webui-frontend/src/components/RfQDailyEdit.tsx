@@ -3,6 +3,7 @@ import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
 import { translate } from '../utils/translate';
+import { formDate, prettyDate } from '../utils/date';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
 
@@ -20,6 +21,7 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
   const quantity = rfq.quantities.find((qItem) => qItem.date === targetDate);
   const currentDay = targetDate ? targetDate : store.app.currentDay;
   const qtyInput = React.createRef<HTMLInputElement>();
+  const { lang } = store.i18n;
 
   const selectAndFocus = () => {
     if (qtyInput.current) {
@@ -30,7 +32,9 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
 
   useEffect(() => {
     const qtyEditorCaption = translate('RfQView.QtyEditor.caption');
-    store.navigation.setViewNames(qtyEditorCaption.replace('{0}', currentDay));
+    store.navigation.setViewNames(
+      qtyEditorCaption.replace('{0}', prettyDate({ lang, date: formDate({ currentDay: new Date(currentDay) }) }))
+    );
     selectAndFocus();
   }, [store]);
 
