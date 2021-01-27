@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.document.dimension.DimensionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -58,10 +59,12 @@ public class CandidateServiceTests
 	@BeforeEach
 	public void init()
 	{
+		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				postMaterialEventService);
+				postMaterialEventService,
+				dimensionService);
 	}
 
 	@Test

@@ -105,7 +105,8 @@ public class MaterialEventHandlerRegistryTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		eventLogUserService = Mockito.spy(EventLogUserService.class);
@@ -138,7 +139,7 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, dimensionService));
 
 		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,

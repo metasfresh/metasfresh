@@ -115,7 +115,9 @@ public class DDOrderAdvisedHandlerTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -146,7 +148,7 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, postMaterialEventService));
+				new RequestMaterialOrderService(candidateRepository, postMaterialEventService, dimensionService));
 	}
 
 	/**

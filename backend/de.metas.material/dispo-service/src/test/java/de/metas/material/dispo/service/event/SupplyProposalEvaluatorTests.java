@@ -95,7 +95,9 @@ public class SupplyProposalEvaluatorTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
@@ -127,7 +129,7 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, dimensionService));
 	}
 
 	/**
