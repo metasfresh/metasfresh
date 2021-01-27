@@ -200,7 +200,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			final String additionalSqlWhereClause = getAdditionalSqlWhereClause();
 			if (Check.isNotBlank(additionalSqlWhereClause))
 			{
-				sqlWhereClause.append("\n /* additional */ AND (").append(additionalSqlWhereClause).append(")");
+				sqlWhereClause.append("\n /* ").append(getClass().getSimpleName()).append(".getAdditionalSqlWhereClause */")
+						.append(" AND (").append(additionalSqlWhereClause).append(")");
 			}
 		}
 
