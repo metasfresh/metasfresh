@@ -156,16 +156,14 @@ public class ArchiveDAO implements IArchiveDAO
 	}
 
 	@Override
-	public <T> Stream<AdArchive> streamArchivesForFilter(final IQueryFilter<T> outboundLogFilter, final Class<T> objectClass, final Function<T, TableRecordReference> tableRecordReferenceFunction)
+	public <T> Stream<AdArchive> streamArchivesForFilter(@NonNull final IQueryFilter<T> outboundLogFilter, final Class<T> objectClass)
 	{
-		Check.assumeNotNull(outboundLogFilter, "filter cannot not null");
-
 		final IQueryBuilder<T> queryBuilder = queryBL.createQueryBuilder(objectClass)
 				.addOnlyActiveRecordsFilter().filter(outboundLogFilter);
 
 		return queryBuilder.create()
 				.stream()
-				.map(log -> retrieveLastArchives(Env.getCtx(), tableRecordReferenceFunction.apply(log), 1).stream().findFirst())
+				.map(log -> retrieveLastArchives(Env.getCtx(), TableRecordReference.ofReferenced(log), 1).stream().findFirst())
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.map(arch -> AdArchive.builder().id(ArchiveId.ofRepoId(arch.getAD_Archive_ID())).archiveData(archiveBL.getBinaryData(arch)).build());
@@ -176,6 +174,6 @@ public class ArchiveDAO implements IArchiveDAO
 	{
 		queryBL.createQueryBuilder(I_AD_Archive.class, Env.getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_AD_Archive.COLUMN_AD_Archive_ID, ids).create().stream().filter(Objects::nonNull).forEach(archive -> archiveEventManager.firePdfUpdate(archive, userId, null));
+				.addInArrayFilter(I_AD_Archive.COLUMN_AD_Archive_ID, ids).create().iterateAndStream().filter(Objects::nonNull).forEach(archive -> archiveEventManager.firePdfUpdate(archive, userId));
 	}
 }

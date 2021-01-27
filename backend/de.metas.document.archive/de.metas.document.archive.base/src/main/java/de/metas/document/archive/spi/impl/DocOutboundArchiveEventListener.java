@@ -55,7 +55,13 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, @Nullable final String action)
+	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId)
+	{
+		onPdfUpdate(archive, userId, X_C_Doc_Outbound_Log_Line.ACTION_PdfExport);
+	}
+
+	@Override
+	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, @NonNull final String action)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -63,7 +69,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		}
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
-		docExchangeLine.setAction(Check.isEmpty(action) ? X_C_Doc_Outbound_Log_Line.ACTION_PdfExport : action);
+		docExchangeLine.setAction(action);
 		if (userId != null)
 		{
 			docExchangeLine.setAD_User_ID(userId.getRepoId());
@@ -157,7 +163,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	/**
 	 * Creates {@link I_C_Doc_Outbound_Log_Line}.
-	 *
+	 * <p>
 	 * NOTE: it is not saving the created log line
 	 *
 	 * @param archive
