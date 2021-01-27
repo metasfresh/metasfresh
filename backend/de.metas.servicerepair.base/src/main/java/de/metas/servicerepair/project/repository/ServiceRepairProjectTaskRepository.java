@@ -82,9 +82,14 @@ class ServiceRepairProjectTaskRepository
 
 		record.setRepair_VHU_ID(request.getRepairVhuId().getRepoId());
 
-		InterfaceWrapperHelper.saveRecord(record);
+		saveRecord(record);
 
 		return extractTaskId(record);
+	}
+
+	private void saveRecord(final I_C_Project_Repair_Task record)
+	{
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	public ServiceRepairProjectTask createNew(@NonNull final CreateSparePartsProjectTaskRequest request)
@@ -102,7 +107,7 @@ class ServiceRepairProjectTaskRepository
 		record.setQtyReserved(BigDecimal.ZERO);
 		record.setQtyConsumed(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.saveRecord(record);
+		saveRecord(record);
 
 		return fromRecord(record);
 	}
@@ -197,15 +202,14 @@ class ServiceRepairProjectTaskRepository
 		}
 
 		updateRecord(record, changedTask);
-		InterfaceWrapperHelper.saveRecord(record);
-
+		saveRecord(record);
 	}
 
-	public void save(final ServiceRepairProjectTask task)
+	public void save(@NonNull final ServiceRepairProjectTask task)
 	{
 		final I_C_Project_Repair_Task record = getRecordById(task.getId());
 		updateRecord(record, task);
-		InterfaceWrapperHelper.saveRecord(record);
+		saveRecord(record);
 	}
 
 	public ImmutableSet<ServiceRepairProjectTaskId> retainIdsOfType(
@@ -228,7 +232,7 @@ class ServiceRepairProjectTaskRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Optional<ServiceRepairProjectTask> getTaskByRepairOrderId(
+	public Optional<ServiceRepairProjectTaskId> getTaskByRepairOrderId(
 			@NonNull final ProjectId projectId,
 			@NonNull final PPOrderId repairOrderId)
 	{
@@ -238,6 +242,6 @@ class ServiceRepairProjectTaskRepository
 				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_Repair_Order_ID, repairOrderId)
 				.create()
 				.firstOnlyOptional(I_C_Project_Repair_Task.class)
-				.map(ServiceRepairProjectTaskRepository::fromRecord);
+				.map(ServiceRepairProjectTaskRepository::extractTaskId);
 	}
 }

@@ -86,4 +86,6 @@ public class ServiceRepairProjectCostCollector
 	{
 		return getQtyReserved().add(getQtyConsumed());
 	}
+
+	public boolean isNotIncludedInCustomerQuotation() { return getCustomerQuotationLineId() == null; }
 }

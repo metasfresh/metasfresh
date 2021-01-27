@@ -106,12 +106,10 @@ public class CreateQuotationFromProjectCommand
 		{
 			for (final ServiceRepairProjectCostCollector costCollector : costCollectorsByTaskId.get(task.getId()))
 			{
-				if (costCollector.getCustomerQuotationLineId() != null)
+				if (costCollector.isNotIncludedInCustomerQuotation())
 				{
-					continue;
+					quotationAggregator.add(task, costCollector);
 				}
-
-				quotationAggregator.add(task, costCollector);
 			}
 		}
 

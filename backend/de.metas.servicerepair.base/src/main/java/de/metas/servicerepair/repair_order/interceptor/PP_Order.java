@@ -55,7 +55,10 @@ public class PP_Order
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_UNCLOSE)
-	public void onBeforeUnClose(@NonNull final I_PP_Order repairOrder)
+	public void onBeforeUnClose(@NonNull final I_PP_Order record)
 	{
+		repairManufacturingOrderService
+				.extractFromRecord(record)
+				.ifPresent(repairProjectService::unimportCostsFromRepairOrder);
 	}
 }

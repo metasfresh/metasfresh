@@ -22,6 +22,7 @@
 
 package de.metas.servicerepair.project.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -78,10 +79,12 @@ import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -304,20 +307,13 @@ public class ServiceRepairProjectService
 			throw new AdempiereException("No Spare Parts tasks");
 		}
 
-		final List<ServiceRepairProjectCostCollector> costCollectors = projectCostCollectorRepository.getAndDeleteByTaskIds(taskIds);
+		final ImmutableList<ServiceRepairProjectCostCollector> costCollectorsToDelete = projectCostCollectorRepository.getByTaskIds(sparePartsTaskIds)
+				.stream()
+				.filter(ServiceRepairProjectCostCollector::isNotIncludedInCustomerQuotation)
+				.filter(costCollector -> costCollector.getType() == ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableSet<HuId> reservedSparePartsVHUIds = costCollectors.stream()
-				.filter(costCollector -> ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced.equals(costCollector.getType()))
-				.map(ServiceRepairProjectCostCollector::getVhuId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-
-		huReservationService.deleteReservations(reservedSparePartsVHUIds);
-
-		for (final ServiceRepairProjectCostCollector costCollector : costCollectors)
-		{
-			addQtyToProjectTask(extractAddQtyToProjectTaskRequest(costCollector).negate());
-		}
+		deleteCostCollectors(costCollectorsToDelete, true);
 	}
 
 	private static AddQtyToProjectTaskRequest extractAddQtyToProjectTaskRequest(final ServiceRepairProjectCostCollector costCollector)
@@ -401,7 +397,7 @@ public class ServiceRepairProjectService
 
 	public void importCostsFromRepairOrderAndMarkTaskCompleted(@NonNull final RepairManufacturingOrderInfo repairOrder)
 	{
-		ServiceRepairProjectTask task = projectTaskRepository
+		final ServiceRepairProjectTaskId taskId = projectTaskRepository
 				.getTaskByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
 				.orElseThrow(() -> new AdempiereException("No task found for " + repairOrder));
 
@@ -417,23 +413,22 @@ public class ServiceRepairProjectService
 				continue;
 			}
 
-			createCostCollector(toCreateProjectCostCollectorRequest(task.getId(), mfgCostCollector));
+			createCostCollector(toCreateProjectCostCollectorRequest(taskId, mfgCostCollector));
 		}
 
-		if (!projectCostCollectorRepository.matchesByTaskAndProduct(task.getId(), repairOrder.getRepairedProductId()))
+		if (!projectCostCollectorRepository.matchesByTaskAndProduct(taskId, repairOrder.getRepairedProductId()))
 		{
+			final ServiceRepairProjectTask task = projectTaskRepository.getById(taskId);
 			createCostCollector(CreateProjectCostCollectorRequest.builder()
 					.taskId(task.getId())
 					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 					.productId(repairOrder.getRepairedProductId())
-					.qtyConsumed(repairOrder.getRepairedQty())
+					.qtyReserved(repairOrder.getRepairedQty())
 					.reservedVhuId(task.getRepairVhuId())
 					.build());
 		}
 
-		task = task.withRepairOrderDone(true);
-
-		projectTaskRepository.save(task);
+		projectTaskRepository.changeById(taskId, task -> task.withRepairOrderDone(true));
 	}
 
 	private static CreateProjectCostCollectorRequest toCreateProjectCostCollectorRequest(
@@ -447,6 +442,49 @@ public class ServiceRepairProjectService
 				.qtyConsumed(consumedComponentOrResource.getQtyConsumed())
 				.repairOrderCostCollectorId(consumedComponentOrResource.getId())
 				.build();
+	}
+
+	public void unimportCostsFromRepairOrder(@NonNull final RepairManufacturingOrderInfo repairOrder)
+	{
+		final ServiceRepairProjectTaskId taskId = projectTaskRepository
+				.getTaskByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
+				.orElseThrow(() -> new AdempiereException("No task found for " + repairOrder));
+
+		final ImmutableList<ServiceRepairProjectCostCollector> costCollectorsToDelete = projectCostCollectorRepository
+				.getByTaskId(taskId)
+				.stream()
+				.filter(ServiceRepairProjectCostCollector::isNotIncludedInCustomerQuotation)
+				.collect(ImmutableList.toImmutableList());
+
+		deleteCostCollectors(costCollectorsToDelete, false);
+	}
+
+	private void deleteCostCollectors(
+			@NonNull final Collection<ServiceRepairProjectCostCollector> costCollectors,
+			final boolean deleteHUReservations)
+	{
+		if (costCollectors.isEmpty())
+		{
+			return;
+		}
+
+		final HashSet<HuId> reservedVHUIds = new HashSet<>();
+		final HashSet<ServiceRepairProjectCostCollectorId> costCollectorIdsToDelete = new HashSet<>();
+		final ArrayList<AddQtyToProjectTaskRequest> addQtyToProjectTaskRequests = new ArrayList<>();
+		for (final ServiceRepairProjectCostCollector costCollector : costCollectors)
+		{
+			if (deleteHUReservations && costCollector.getVhuId() != null)
+			{
+				reservedVHUIds.add(costCollector.getVhuId());
+			}
+
+			addQtyToProjectTaskRequests.add(extractAddQtyToProjectTaskRequest(costCollector).negate());
+			costCollectorIdsToDelete.add(costCollector.getId());
+		}
+
+		huReservationService.deleteReservations(reservedVHUIds);
+		projectCostCollectorRepository.deleteByIds(costCollectorIdsToDelete);
+		addQtyToProjectTaskRequests.forEach(this::addQtyToProjectTask);
 	}
 
 	public void unlinkQuotationFromProject(@NonNull final ProjectId projectId, @NonNull final OrderId quotationId)

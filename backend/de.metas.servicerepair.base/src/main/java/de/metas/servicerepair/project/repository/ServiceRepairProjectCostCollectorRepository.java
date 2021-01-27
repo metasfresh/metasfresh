@@ -48,6 +48,7 @@ import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,24 +82,12 @@ class ServiceRepairProjectCostCollectorRepository
 		return fromRecord(record);
 	}
 
-	public List<ServiceRepairProjectCostCollector> getAndDeleteByTaskIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
+	public List<ServiceRepairProjectCostCollector> getByTaskId(@NonNull final ServiceRepairProjectTaskId taskId)
 	{
-		if (taskIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<I_C_Project_Repair_CostCollector> records = retrieveRecordsByTaskIds(taskIds);
-		final ImmutableList<ServiceRepairProjectCostCollector> result = records.stream()
-				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
-
-		InterfaceWrapperHelper.deleteAll(records);
-
-		return result;
+		return getByTaskIds(ImmutableSet.of(taskId));
 	}
 
-	private List<I_C_Project_Repair_CostCollector> retrieveRecordsByTaskIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
+	public List<ServiceRepairProjectCostCollector> getByTaskIds(@NonNull final Set<ServiceRepairProjectTaskId> taskIds)
 	{
 		if (taskIds.isEmpty())
 		{
@@ -106,9 +95,11 @@ class ServiceRepairProjectCostCollectorRepository
 		}
 
 		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
-				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMN_C_Project_Repair_Task_ID, taskIds)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_Repair_Task_ID, taskIds)
 				.create()
-				.list();
+				.stream()
+				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ImmutableMap<ServiceRepairProjectCostCollectorId, I_C_Project_Repair_CostCollector> retrieveRecordsByIds(@NonNull final Set<ServiceRepairProjectCostCollectorId> ids)
@@ -148,7 +139,7 @@ class ServiceRepairProjectCostCollectorRepository
 		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
 				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)
 				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_Order_ID, null) // not already included in customer proposal/quotation
-				.orderBy(I_C_Project_Repair_CostCollector.COLUMN_C_Project_Repair_CostCollector_ID)
+				.orderBy(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_Repair_CostCollector_ID)
 				.create()
 				.stream()
 				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
@@ -159,7 +150,7 @@ class ServiceRepairProjectCostCollectorRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
 				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)
-				.orderBy(I_C_Project_Repair_CostCollector.COLUMN_C_Project_Repair_CostCollector_ID)
+				.orderBy(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_Repair_CostCollector_ID)
 				.create()
 				.stream()
 				.map(ServiceRepairProjectCostCollectorRepository::fromRecord)
@@ -260,5 +251,18 @@ class ServiceRepairProjectCostCollectorRepository
 				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.anyMatch();
+	}
+
+	public void deleteByIds(@NonNull final Collection<ServiceRepairProjectCostCollectorId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_Repair_CostCollector_ID, ids)
+				.create()
+				.delete();
 	}
 }

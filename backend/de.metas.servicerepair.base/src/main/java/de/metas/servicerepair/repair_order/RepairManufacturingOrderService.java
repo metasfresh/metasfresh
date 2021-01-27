@@ -24,6 +24,7 @@ package de.metas.servicerepair.repair_order;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.material.planning.IResourceProductService;
@@ -113,6 +114,12 @@ public class RepairManufacturingOrderService
 	@Nullable
 	private RepairManufacturingCostCollector fromRecordIfEligible(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppCostCollector.getDocStatus());
+		if (!docStatus.isCompletedOrClosed())
+		{
+			return null;
+		}
+		
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(ppCostCollector.getCostCollectorType());
 		if (costCollectorType.isComponentIssue())
 		{
