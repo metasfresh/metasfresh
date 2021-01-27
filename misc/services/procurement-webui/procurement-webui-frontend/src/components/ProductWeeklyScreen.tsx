@@ -6,6 +6,7 @@ import View from './View';
 import { RootStoreContext } from '../models/Store';
 import { useHistory } from 'react-router-dom';
 import Prognose from './Prognose';
+import { formDate, prettyDate } from '../utils/date';
 interface RouteParams {
   productId?: string;
 }
@@ -25,7 +26,7 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
       store.fetchWeeklyReport(data.week);
     });
   };
-
+  const { lang } = store.i18n;
   const history = useHistory();
   const handleClick = (productId: string, date: string, dayCaption: string): void => {
     history.push({
@@ -58,7 +59,9 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
                       <div className="column is-8">
                         <div className="columns">
                           <div className="column is-size-4-mobile no-p">{dItem.dayCaption}</div>
-                          <div className="column is-size-7 no-p">{dItem.date}</div>
+                          <div className="column is-size-7 no-p">
+                            {prettyDate({ lang, date: formDate({ currentDay: new Date(dItem.date) }) })}
+                          </div>
                         </div>
                       </div>
                       <div className="column is-4 no-p">

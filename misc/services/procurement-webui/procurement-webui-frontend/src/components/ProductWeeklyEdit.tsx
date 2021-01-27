@@ -2,11 +2,10 @@ import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { useParams } from 'react-router-dom';
-
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
-
+import { formDate, prettyDate } from '../utils/date';
 interface RouteParams {
   productId?: string;
   targetDay?: string;
@@ -55,10 +54,16 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
       });
   };
 
+  const { lang } = store.i18n;
+
   return (
     <View>
       <div>
-        <DailyNav isStatic={true} staticDay={currentDay} staticCaption={currentCaption} />
+        <DailyNav
+          isStatic={true}
+          staticDay={prettyDate({ lang, date: formDate({ currentDay: new Date(currentDay) }) })}
+          staticCaption={currentCaption}
+        />
         <div className="mt-5 p-4">
           <div className="columns is-mobile">
             <div className="column is-11">
