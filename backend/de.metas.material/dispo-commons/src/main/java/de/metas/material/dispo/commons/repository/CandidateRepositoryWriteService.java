@@ -373,17 +373,21 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
 
-		final int forecastLineId = candidate.getDemandDetail().getForecastLineId();
+		final DemandDetail demandDetail = candidate.getDemandDetail();
 
-		if (forecastLineId > 0)
+		if (demandDetail != null)
 		{
-			final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
+			final int forecastLineId = demandDetail.getForecastLineId();
+			if (forecastLineId > 0)
+			{
+				final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
 
-			final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
-			dimensionService.updateRecord(candidateRecord, forecastLineDimension);
+				final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
+				dimensionService.updateRecord(candidateRecord, forecastLineDimension);
+			}
 		}
 
-		updatCandidateRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
+		updatCandidateRecordFromDemandDetail(candidateRecord, demandDetail);
 
 		if (candidate.getBusinessCase() != null)
 		{
