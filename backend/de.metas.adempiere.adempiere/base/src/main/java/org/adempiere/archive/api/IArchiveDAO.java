@@ -81,7 +81,7 @@ public interface IArchiveDAO extends ISingletonService
 
 	I_AD_Archive retrieveArchive(ArchiveId archiveId);
 
-	<T> Stream<AdArchive> streamArchiveBinaryDataForFilter(IQueryFilter<T> outboundLogFilter, Class<T> objectClass, Function<T, TableRecordReference> tableRecordReferenceFunction);
+	<T> Stream<AdArchive> streamArchivesForFilter(IQueryFilter<T> outboundLogFilter, Class<T> objectClass, Function<T, TableRecordReference> tableRecordReferenceFunction);
 
 	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 }

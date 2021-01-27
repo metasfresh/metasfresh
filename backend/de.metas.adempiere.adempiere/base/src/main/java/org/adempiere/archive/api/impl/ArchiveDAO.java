@@ -156,7 +156,7 @@ public class ArchiveDAO implements IArchiveDAO
 	}
 
 	@Override
-	public <T> Stream<AdArchive> streamArchiveBinaryDataForFilter(final IQueryFilter<T> outboundLogFilter, final Class<T> objectClass, final Function<T, TableRecordReference> tableRecordReferenceFunction)
+	public <T> Stream<AdArchive> streamArchivesForFilter(final IQueryFilter<T> outboundLogFilter, final Class<T> objectClass, final Function<T, TableRecordReference> tableRecordReferenceFunction)
 	{
 		Check.assumeNotNull(outboundLogFilter, "filter cannot not null");
 
