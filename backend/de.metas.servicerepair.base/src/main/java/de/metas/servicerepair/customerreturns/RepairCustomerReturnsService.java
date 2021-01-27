@@ -32,7 +32,6 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -58,9 +57,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
@@ -76,9 +72,7 @@ public class RepairCustomerReturnsService
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IHUInOutBL huInoutBL = Services.get(IHUInOutBL.class);
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
@@ -157,7 +151,7 @@ public class RepairCustomerReturnsService
 			@NonNull final Quantity qtyReturned)
 	{
 		final I_M_HU clonedPlaningHU = handlingUnitsBL.copyAsPlannedHU(cloneFromHuId);
-		final AttributeSetInstanceId asiId = createASIFromHUAttributes(productId, clonedPlaningHU);
+		final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(productId, clonedPlaningHU);
 
 		final I_M_InOutLine customerReturnLine = returnsServiceFacade.createCustomerReturnLine(
 				CreateCustomerReturnLineReq.builder()
@@ -168,15 +162,6 @@ public class RepairCustomerReturnsService
 						.build());
 
 		returnsServiceFacade.assignHandlingUnitToHeaderAndLine(customerReturnLine, clonedPlaningHU);
-	}
-
-	private AttributeSetInstanceId createASIFromHUAttributes(final ProductId productId, final I_M_HU hu)
-	{
-		final ImmutableAttributeSet attributes = huContextFactory.createMutableHUContext()
-				.getHUAttributeStorageFactory()
-				.getImmutableAttributeSet(hu);
-		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIWithASFromProductAndInsertAttributeSet(productId, attributes);
-		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
 	public SparePartsReturnCalculation getSparePartsCalculation(final InOutId customerReturnId)

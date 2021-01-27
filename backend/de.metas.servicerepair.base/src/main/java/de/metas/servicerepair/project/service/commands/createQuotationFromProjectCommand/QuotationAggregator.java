@@ -24,6 +24,8 @@ package de.metas.servicerepair.project.service.commands.createQuotationFromProje
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
@@ -40,16 +42,18 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_Order;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class QuotationAggregator
 {
-	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final ServiceRepairProjectInfo project;
 	private final ProductId serviceProductId;
@@ -76,6 +80,7 @@ public class QuotationAggregator
 		this.serviceProductUomId = serviceProductUomId;
 		this.quotationDocTypeId = quotationDocTypeId;
 
+		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		this.priceCalculator = ProjectQuotationPriceCalculator.builder()
 				.pricingBL(pricingBL)
 				.pricingInfo(pricingInfo)
@@ -114,6 +119,7 @@ public class QuotationAggregator
 		{
 			final OrderLineBuilder orderLineBuilder = orderFactory.newOrderLine()
 					.productId(quotationLineAggregator.getProductId())
+					.asiId(quotationLineAggregator.getAsiId())
 					.qty(quotationLineAggregator.getQty())
 					.manualPrice(quotationLineAggregator.getManualPrice())
 					.details(quotationLineAggregator.getDetails());
@@ -157,9 +163,13 @@ public class QuotationAggregator
 			}
 			else
 			{
+				final HuId repairedVhuId = Objects.requireNonNull(task.getRepairVhuId());
+				final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(task.getProductId(), repairedVhuId);
+
 				return QuotationLineKey.builder()
 						.type(QuotationLineKeyType.REPAIRED_PRODUCT_TO_RETURN)
 						.productId(costCollector.getProductId())
+						.asiId(asiId)
 						.uomId(costCollector.getUomId())
 						.build();
 			}

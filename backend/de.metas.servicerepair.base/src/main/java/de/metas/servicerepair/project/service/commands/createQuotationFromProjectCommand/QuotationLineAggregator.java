@@ -38,6 +38,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -53,6 +54,9 @@ class QuotationLineAggregator
 
 	@Getter
 	@NonNull private final ProductId productId;
+
+	@Getter
+	@NonNull private final AttributeSetInstanceId asiId;
 
 	@Getter
 	@NonNull private Quantity qty;
@@ -77,6 +81,7 @@ class QuotationLineAggregator
 		this.priceCalculator = priceCalculator;
 		this.type = key.getType();
 		this.productId = key.getProductId();
+		this.asiId = key.getAsiId();
 
 		this.qty = Quantitys.createZero(key.getUomId());
 		this.manualPrice = null;

@@ -27,6 +27,7 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 @Value
 @Builder
@@ -34,5 +35,6 @@ public class QuotationLineKey
 {
 	@NonNull QuotationLineKeyType type;
 	@NonNull ProductId productId;
+	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 	@NonNull UomId uomId;
 }
