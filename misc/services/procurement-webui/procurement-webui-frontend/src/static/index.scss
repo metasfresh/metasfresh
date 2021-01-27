@@ -172,6 +172,11 @@ input[type=number]::-webkit-inner-spin-button {
   color: $base-elements;
 }
 
+.product-input::selection {
+  background: $base-elements;
+  color: $white-background;
+}
+
 .reset-password-form {
   .is-text {
     color: black;

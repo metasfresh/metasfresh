@@ -19,10 +19,19 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
   const rfq = quotations.find((rfqItem) => rfqItem.rfqId === rfqId);
   const quantity = rfq.quantities.find((qItem) => qItem.date === targetDate);
   const currentDay = targetDate ? targetDate : store.app.currentDay;
+  const qtyInput = React.createRef<HTMLInputElement>();
+
+  const selectAndFocus = () => {
+    if (qtyInput.current) {
+      qtyInput.current.focus();
+      qtyInput.current.select();
+    }
+  };
 
   useEffect(() => {
     const qtyEditorCaption = translate('RfQView.QtyEditor.caption');
     store.navigation.setViewNames(qtyEditorCaption.replace('{0}', currentDay));
+    selectAndFocus();
   }, [store]);
 
   const saveQty = (newQty: number) => {
@@ -31,8 +40,6 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
       rfqId,
     });
   };
-
-  const qtyInput = React.createRef<HTMLInputElement>();
 
   return (
     <View>

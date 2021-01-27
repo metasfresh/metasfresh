@@ -21,9 +21,18 @@ const ProductScreen: React.FunctionComponent = observer(() => {
 
   const currentDay = targetDay ? targetDay : store.app.currentDay;
   const currentCaption = targetDayCaption ? targetDayCaption : store.app.dayCaption;
+  const qtyInput = React.createRef<HTMLInputElement>();
+
+  const selectAndFocus = () => {
+    if (qtyInput.current) {
+      qtyInput.current.focus();
+      qtyInput.current.select();
+    }
+  };
 
   useEffect(() => {
     store.navigation.setViewNames(product.productName);
+    selectAndFocus();
   }, [store]);
 
   const saveQty = (newQty: number) => {
@@ -42,8 +51,6 @@ const ProductScreen: React.FunctionComponent = observer(() => {
         store.app.getUserSession();
       });
   };
-
-  const qtyInput = React.createRef<HTMLInputElement>();
 
   return (
     <View>

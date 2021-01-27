@@ -16,16 +16,23 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   const rfQs = getSnapshot(store.rfqs);
   const { quotations } = rfQs;
   const rfq = quotations.find((rfqItem) => rfqItem.rfqId === rfqId);
+  const qtyInput = React.createRef<HTMLInputElement>();
+
+  const selectAndFocus = () => {
+    if (qtyInput.current) {
+      qtyInput.current.focus();
+      qtyInput.current.select();
+    }
+  };
 
   useEffect(() => {
     store.navigation.setViewNames(translate('RfQView.Price'));
+    selectAndFocus();
   }, [store]);
 
   const saveQty = (newPrice: number) => {
-    store.rfqs.updateRfQ({ price: newPrice, rfqId });
+    store.rfqs.updateRfQ({ price: newPrice, rfqId }).then(() => selectAndFocus());
   };
-
-  const qtyInput = React.createRef<HTMLInputElement>();
 
   return (
     <View>
