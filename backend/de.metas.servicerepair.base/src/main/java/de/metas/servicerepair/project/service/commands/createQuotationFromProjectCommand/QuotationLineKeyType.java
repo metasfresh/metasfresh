@@ -22,7 +22,7 @@
 
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
-public enum QuotationLineKeyType
+enum QuotationLineKeyType
 {
 	SPARE_PARTS_TO_BE_INVOICED,
 	SPARE_PARTS_OWNED_BY_CUSTOMER,

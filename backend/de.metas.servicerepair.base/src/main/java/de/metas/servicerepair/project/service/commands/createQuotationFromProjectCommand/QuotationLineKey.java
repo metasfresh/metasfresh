@@ -31,7 +31,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 @Value
 @Builder
-public class QuotationLineKey
+class QuotationLineKey
 {
 	@NonNull QuotationLineKeyType type;
 	@NonNull ProductId productId;
