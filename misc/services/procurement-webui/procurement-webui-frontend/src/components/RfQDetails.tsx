@@ -21,7 +21,7 @@ const RfQDetails: React.FunctionComponent = observer(() => {
 
   return (
     <View>
-      <section className="container pl-4 pr-4">
+      <section className="container pl-4 pr-4 is-size-5-mobile">
         <div className="columns is-mobile bt-1">
           <div className="column pt-1 pb-1">{translate('RfQView.ProductName')}</div>
           <div className="column pt-1 pb-1">{quotation.productName}</div>
@@ -53,7 +53,7 @@ const RfQDetails: React.FunctionComponent = observer(() => {
       </section>
       {/* Price section */}
       <section className="mt-4 pl-4 pr-4">
-        <div className="columns is-mobile">
+        <div className="columns is-mobile is-size-5-mobile">
           <div className="column is-12 pb-1 has-text-weight-bold">{translate('RfQView.Price')}</div>
         </div>
         <div
@@ -67,7 +67,7 @@ const RfQDetails: React.FunctionComponent = observer(() => {
       </section>
       {/* Dialy quantities section */}
       <section className="mt-4 pl-4 pr-4">
-        <div className="columns is-mobile">
+        <div className="columns is-mobile is-size-5-mobile">
           <div className="column is-12 pb-1 has-text-weight-bold">{translate('RfQView.DailyQuantities')}</div>
         </div>
         {quotation.quantities &&
