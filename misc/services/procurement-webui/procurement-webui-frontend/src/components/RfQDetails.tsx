@@ -3,6 +3,7 @@ import { observer } from 'mobx-react';
 import { useParams, useHistory } from 'react-router-dom';
 import { RootStoreContext } from '../models/Store';
 import { translate } from '../utils/translate';
+import { formDate, prettyDate } from '../utils/date';
 import View from './View';
 
 interface RouteParams {
@@ -14,6 +15,7 @@ const RfQDetails: React.FunctionComponent = observer(() => {
   const store = useContext(RootStoreContext);
   const history = useHistory();
   const quotation = store.rfqs.findQuotationById(quotationId);
+  const { lang } = store.i18n;
 
   useEffect(() => {
     store.navigation.setViewNames(quotation.productName);
@@ -32,15 +34,21 @@ const RfQDetails: React.FunctionComponent = observer(() => {
         </div>
         <div className="columns is-mobile bt-1">
           <div className="column pt-1 pb-1">{translate('RfQView.DateStart')}</div>
-          <div className="column pt-1 pb-1">{quotation.dateStart}</div>
+          <div className="column pt-1 pb-1">
+            {prettyDate({ lang, date: formDate({ currentDay: new Date(quotation.dateStart) }) })}
+          </div>
         </div>
         <div className="columns is-mobile bt-1">
           <div className="column pt-1 pb-1">{translate('RfQView.DateEnd')}</div>
-          <div className="column pt-1 pb-1">{quotation.dateEnd}</div>
+          <div className="column pt-1 pb-1">
+            {prettyDate({ lang, date: formDate({ currentDay: new Date(quotation.dateEnd) }) })}
+          </div>
         </div>
         <div className="columns is-mobile bt-1">
           <div className="column pt-1 pb-1">{translate('RfQView.DateClose')}</div>
-          <div className="column pt-1 pb-1">{quotation.dateClose}</div>
+          <div className="column pt-1 pb-1">
+            {prettyDate({ lang, date: formDate({ currentDay: new Date(quotation.dateClose) }) })}
+          </div>
         </div>
         <div className="columns is-mobile bt-1">
           <div className="column pt-1 pb-1">{translate('RfQView.QtyRequested')}</div>
@@ -81,7 +89,9 @@ const RfQDetails: React.FunctionComponent = observer(() => {
                 className="columns is-mobile is-size-5-mobile"
                 onClick={() => history.push({ pathname: `/rfq/${quotation.rfqId}/dailyQty/${qItem.date}` })}
               >
-                <div className="column is-6">{qItem.date}</div>
+                <div className="column is-6">
+                  {prettyDate({ lang, date: formDate({ currentDay: new Date(qItem.date) }) })}
+                </div>
                 <div className="column is-4">{qItem.qtyPromisedRendered}</div>
                 <div className="column is-2 green-color">
                   {qItem.confirmedByUser && <i className="fas fa-check"></i>}
