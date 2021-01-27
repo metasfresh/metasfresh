@@ -162,7 +162,7 @@ public class ArchiveDAO implements IArchiveDAO
 				.addOnlyActiveRecordsFilter().filter(outboundLogFilter);
 
 		return queryBuilder.create()
-				.stream()
+				.iterateAndStream()
 				.map(log -> retrieveLastArchives(Env.getCtx(), TableRecordReference.ofReferenced(log), 1).stream().findFirst())
 				.filter(Optional::isPresent)
 				.map(Optional::get)
