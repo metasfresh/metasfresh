@@ -1,7 +1,7 @@
 import { useContext, createContext } from 'react';
 import { types, flow, Instance, onSnapshot, addMiddleware, IMiddlewareEvent, IAnyStateTreeNode } from 'mobx-state-tree';
 
-import { fetchDailyReport, fetchWeeklyReport, loginRequest, postDailyReport } from '../api';
+import { fetchDailyReport, fetchWeeklyReport, loginRequest, postDailyReport, getMessages } from '../api';
 import { i18n } from './i18n';
 import { Info } from './Info';
 import Navigation from './Navigation';
@@ -46,7 +46,13 @@ export const Store = types
       try {
         const { data } = yield loginRequest(email, password);
         yield self.app.getUserSession();
-
+        getMessages().then(async (response) => {
+          if (response.status === 200 && response.data) {
+            const { language, messages } = response.data;
+            self.i18n.changeLang(language);
+            self.i18n.changeMessages(messages);
+          }
+        });
         result = { ...data };
       } catch (error) {
         result = {
