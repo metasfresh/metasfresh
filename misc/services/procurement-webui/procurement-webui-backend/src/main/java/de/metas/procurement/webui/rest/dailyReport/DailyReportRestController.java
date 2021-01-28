@@ -23,6 +23,7 @@
 package de.metas.procurement.webui.rest.dailyReport;
 
 import de.metas.procurement.webui.Application;
+import de.metas.procurement.webui.exceptions.BadRequestException;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Contracts;
@@ -31,6 +32,7 @@ import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.IContractsService;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.UserConfirmationService;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping(DailyReportRestController.ENDPOINT)
@@ -51,50 +54,77 @@ public class DailyReportRestController
 	private final ILoginService loginService;
 	private final IProductSuppliesService productSuppliesService;
 	private final IContractsService contractsService;
+	private final UserConfirmationService userConfirmationService;
 
 	public DailyReportRestController(
 			@NonNull final ILoginService loginService,
 			@NonNull final IProductSuppliesService productSuppliesService,
-			@NonNull final IContractsService contractsService)
+			@NonNull final IContractsService contractsService,
+			@NonNull final UserConfirmationService userConfirmationService)
 	{
 		this.loginService = loginService;
 		this.productSuppliesService = productSuppliesService;
 		this.contractsService = contractsService;
+		this.userConfirmationService = userConfirmationService;
 	}
 
 	@GetMapping("/{date}")
 	public JsonDailyReport getDailyReport(@PathVariable("date") @NonNull final String dateStr)
 	{
+		final LocalDate date = LocalDate.parse(dateStr);
+		return getDailyReport(date);
+	}
+
+	private JsonDailyReport getDailyReport(@NonNull final LocalDate date)
+	{
 		return JsonDailyReportProducer.builder()
 				.productSuppliesService(productSuppliesService)
 				.user(loginService.getLoggedInUser())
 				.locale(loginService.getLocale())
-				.date(LocalDate.parse(dateStr))
+				.date(date)
 				.build()
 				.execute();
 	}
 
 	@PostMapping
-	public void postDailyReport(@RequestBody @NonNull final JsonDailyReportRequest request)
+	public JsonDailyReport postDailyReport(@RequestBody @NonNull final JsonDailyReportRequest request)
 	{
+		final JsonDailyReportItemRequest requestItem = extractRequestItem(request);
 		final User user = loginService.getLoggedInUser();
 		final BPartner bpartner = user.getBpartner();
 		final Contracts contracts = contractsService.getContracts(bpartner);
 
-		for (final JsonDailyReportItemRequest requestItem : request.getItems())
+		final LocalDate date = requestItem.getDate();
+		final long productId = Long.parseLong(requestItem.getProductId());
+		final Product product = productSuppliesService.getProductById(productId);
+		final ContractLine contractLine = contracts.getContractLineOrNull(product, date);
+		final BigDecimal qty = requestItem.getQty();
+		productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+				.bpartner(bpartner)
+				.contractLine(contractLine)
+				.productId(productId)
+				.date(date)
+				.qty(qty)
+				.build());
+
+		return getDailyReport(date)
+				.withCountUnconfirmed(userConfirmationService.getCountUnconfirmed(user));
+	}
+
+	private static JsonDailyReportItemRequest extractRequestItem(final JsonDailyReportRequest request)
+	{
+		final List<JsonDailyReportItemRequest> requestItems = request.getItems();
+		if (requestItems.isEmpty())
 		{
-			final LocalDate date = requestItem.getDate();
-			final long productId = Long.parseLong(requestItem.getProductId());
-			final Product product = productSuppliesService.getProductById(productId);
-			final ContractLine contractLine = contracts.getContractLineOrNull(product, date);
-			final BigDecimal qty = requestItem.getQty();
-			productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
-					.bpartner(bpartner)
-					.contractLine(contractLine)
-					.productId(productId)
-					.date(date)
-					.qty(qty)
-					.build());
+			throw new BadRequestException("No request items mentioned");
+		}
+		else if (requestItems.size() != 1)
+		{
+			throw new BadRequestException("Only one item is allowed");
+		}
+		else
+		{
+			return requestItems.get(0);
 		}
 	}
 }

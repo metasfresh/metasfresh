@@ -364,8 +364,9 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Override
 	@Transactional
-	public void confirmUserEnteredQtys(@NonNull final BPartner bpartner)
+	public void confirmUserEntries(@NonNull final User user)
 	{
+		final BPartner bpartner = user.getBpartner();
 		final List<ProductSupply> productSupplies = productSupplyRepository.findUnconfirmed(bpartner);
 		for (final ProductSupply productSupply : productSupplies)
 		{
@@ -375,8 +376,8 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public long countUnconfirmedUserEnteredQtys(@NonNull final BPartner bpartner)
+	public long getCountUnconfirmed(@NonNull final User user)
 	{
-		return productSupplyRepository.countUnconfirmed(bpartner);
+		return productSupplyRepository.countUnconfirmed(user.getBpartner());
 	}
 }
