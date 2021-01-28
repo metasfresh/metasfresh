@@ -20,7 +20,7 @@
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list 
 			of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
@@ -318,6 +318,12 @@
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.servicerepair</groupId>
+			<artifactId>de.metas.servicerepair.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

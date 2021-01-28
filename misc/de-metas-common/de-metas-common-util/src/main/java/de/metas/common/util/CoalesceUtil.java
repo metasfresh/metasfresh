@@ -54,6 +54,7 @@ public class CoalesceUtil
 	 * @see #coalesce(Object...)
 	 */
 	// NOTE: this method is optimized for common usage
+	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
@@ -85,12 +86,14 @@ public class CoalesceUtil
 	 * Note that it also works if some of the given supplier themselves are {@code null}.
 	 */
 	@SafeVarargs
-	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
+	@Nullable
+	public static <T> T coalesceSuppliers(final Supplier<T>... values)
 	{
 		return firstValidValue(Objects::nonNull, values);
 	}
 
 	@SafeVarargs
+	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
 	{
 		if (values == null || values.length == 0)
@@ -114,10 +117,9 @@ public class CoalesceUtil
 	/**
 	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
 	 *
-	 * @param values
 	 * @return first greater than zero value or zero
 	 */
-	public int firstGreaterThanZero(int... values)
+	public int firstGreaterThanZero(final int... values)
 	{
 		if (values == null || values.length == 0)
 		{
@@ -154,15 +156,35 @@ public class CoalesceUtil
 	/**
 	 * @return the first non-empty string or {@code null}.
 	 */
+	@Nullable
 	public String firstNotEmptyTrimmed(@NonNull final String... values)
 	{
-		for (int i = 0; i < values.length; i++)
+		for (final String value : values)
 		{
-			if (EmptyUtil.isNotBlank(values[i]))
+			if (EmptyUtil.isNotBlank(value))
 			{
-				return values[i].trim();
+				return value.trim();
 			}
 		}
 		return null;
+	}
+
+	public int countNotNulls(@Nullable final Object... values)
+	{
+		if (values == null || values.length <= 0)
+		{
+			return 0;
+		}
+
+		int count = 0;
+		for (final Object value : values)
+		{
+			if (value != null)
+			{
+				count++;
+			}
+		}
+
+		return count;
 	}
 }

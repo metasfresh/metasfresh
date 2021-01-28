@@ -78,6 +78,8 @@ public interface IWarehouseDAO extends ISingletonService
 	@Nullable
 	LocatorId getLocatorIdByRepoIdOrNull(int locatorId);
 
+	LocatorId getLocatorIdByRepoId(int locatorId);
+
 	I_M_Locator getLocatorById(final LocatorId locatorId);
 
 	<T extends I_M_Locator> T getLocatorById(final LocatorId locatorId, Class<T> modelClass);

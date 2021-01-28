@@ -623,7 +623,8 @@ public final class ProcessInfo implements Serializable
 	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
 	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
 	 */
-	public <T> IQueryFilter<T> getQueryFilterOrElse(final IQueryFilter<T> defaultQueryFilter)
+	@Nullable
+	public <T> IQueryFilter<T> getQueryFilterOrElse(@Nullable final IQueryFilter<T> defaultQueryFilter)
 	{
 		final IQueryFilter<T> whereFilter;
 		if (Check.isEmpty(whereClause, true))

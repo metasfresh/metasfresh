@@ -414,7 +414,7 @@ public class HU2PackingItemsAllocator
 
 	private static IAllocationRequest createShipmentScheduleAllocationRequest(final IHUContext huContext, final PackingItemPart part)
 	{
-		return AllocationUtils.createAllocationRequestBuilder()
+		return AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(part.getProductId())
 				.setQuantity(part.getQty())

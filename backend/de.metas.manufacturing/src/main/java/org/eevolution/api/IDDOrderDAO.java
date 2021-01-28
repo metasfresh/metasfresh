@@ -24,14 +24,11 @@ package org.eevolution.api;
 
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
-import org.eevolution.model.I_PP_Order;
 
 import java.util.List;
 
@@ -41,32 +38,11 @@ public interface IDDOrderDAO extends ISingletonService
 	I_DD_Order getById(int ddOrderId);
 
 	/**
-	 *
-	 * @param order
 	 * @return active {@link I_DD_OrderLine}s
 	 */
 	List<I_DD_OrderLine> retrieveLines(I_DD_Order order);
 
-	/**
-	 * Gets a filter which is matching only those DD Orders that have a line which has given <code>targetWarehouseId</code> as target/destination warehouse.
-	 *
-	 * @param targetWarehouseId
-	 * @return filter
-	 */
-	IQueryFilter<I_DD_Order> getDDOrdersForTargetWarehouseQueryFilter(int targetWarehouseId);
-
 	List<I_DD_OrderLine_Alternative> retrieveAllAlternatives(I_DD_OrderLine ddOrderLine);
-
-	/**
-	 * Gets all movement lines which are linked to given <code>ddOrderLine</code>.
-	 *
-	 * This method will NOT retrieve the movement lines which are linked to an {@link I_DD_OrderLine_Alternative} of given DD Order Line.
-	 *
-	 * @param ddOrderLine
-	 * @param movementLineClass
-	 * @return movement lines linked to given DD Order Line
-	 */
-	<T extends I_M_MovementLine> List<T> retriveMovementLines(I_DD_OrderLine ddOrderLine, Class<T> movementLineClass);
 
 	/**
 	 * Retrieve Forward DD_OrderLines of this DD_Order.
@@ -77,7 +53,6 @@ public interface IDDOrderDAO extends ISingletonService
 	 * <li>demanding DD Order Lines
 	 * </ul>
 	 *
-	 * @param ddOrder
 	 * @return forward {@link I_DD_OrderLine}s
 	 */
 	IQueryBuilder<I_DD_OrderLine> retrieveForwardDDOrderLinesQuery(I_DD_Order ddOrder);
@@ -91,14 +66,11 @@ public interface IDDOrderDAO extends ISingletonService
 	 * <li>supply DD_OrderLInes
 	 * </ul>
 	 *
-	 * @param ddOrder
 	 * @return backward {@link I_DD_OrderLine}s
 	 */
 	IQueryBuilder<I_DD_OrderLine> retrieveBackwardDDOrderLinesQuery(I_DD_Order ddOrder);
 
 	IQueryBuilder<I_DD_OrderLine> retrieveBackwardDDOrderLinesQuery(I_M_Forecast forecast);
-
-	IQueryBuilder<I_DD_OrderLine> retrieveForwardDDOrderLinesQuery(I_PP_Order ppOrder);
 
 	void save(I_DD_Order ddOrder);
 

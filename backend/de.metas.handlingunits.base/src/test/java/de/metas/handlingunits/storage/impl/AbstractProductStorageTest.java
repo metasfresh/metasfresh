@@ -423,7 +423,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 		final Quantity quantity = new Quantity(qty, uom);
 		final IMutableHUContext huContext = helper.getHUContext();
-		return AllocationUtils.createAllocationRequestBuilder()
+		return AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setDate(date)
 				.setFromReferencedModel(null)

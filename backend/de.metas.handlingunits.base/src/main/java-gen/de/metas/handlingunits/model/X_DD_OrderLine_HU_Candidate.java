@@ -1,68 +1,52 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for DD_OrderLine_HU_Candidate
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implements I_DD_OrderLine_HU_Candidate, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -897281505L;
+	private static final long serialVersionUID = 368342671L;
 
     /** Standard Constructor */
-    public X_DD_OrderLine_HU_Candidate (Properties ctx, int DD_OrderLine_HU_Candidate_ID, String trxName)
+    public X_DD_OrderLine_HU_Candidate (final Properties ctx, final int DD_OrderLine_HU_Candidate_ID, @Nullable final String trxName)
     {
       super (ctx, DD_OrderLine_HU_Candidate_ID, trxName);
-      /** if (DD_OrderLine_HU_Candidate_ID == 0)
-        {
-			setDD_OrderLine_HU_Candidate_ID (0);
-			setDD_OrderLine_ID (0);
-			setM_HU_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_DD_OrderLine_HU_Candidate (Properties ctx, ResultSet rs, String trxName)
+    public X_DD_OrderLine_HU_Candidate (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Distribution Order Line HU Candidate.
-		@param DD_OrderLine_HU_Candidate_ID Distribution Order Line HU Candidate	  */
+	/** Load Meta Data */
 	@Override
-	public void setDD_OrderLine_HU_Candidate_ID (int DD_OrderLine_HU_Candidate_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setDD_OrderLine_HU_Candidate_ID (final int DD_OrderLine_HU_Candidate_ID)
 	{
 		if (DD_OrderLine_HU_Candidate_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_HU_Candidate_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_HU_Candidate_ID, Integer.valueOf(DD_OrderLine_HU_Candidate_ID));
+			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_HU_Candidate_ID, DD_OrderLine_HU_Candidate_ID);
 	}
 
-	/** Get Distribution Order Line HU Candidate.
-		@return Distribution Order Line HU Candidate	  */
 	@Override
-	public int getDD_OrderLine_HU_Candidate_ID () 
+	public int getDD_OrderLine_HU_Candidate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DD_OrderLine_HU_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DD_OrderLine_HU_Candidate_ID);
 	}
 
 	@Override
@@ -72,31 +56,24 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setDD_OrderLine(org.eevolution.model.I_DD_OrderLine DD_OrderLine)
+	public void setDD_OrderLine(final org.eevolution.model.I_DD_OrderLine DD_OrderLine)
 	{
 		set_ValueFromPO(COLUMNNAME_DD_OrderLine_ID, org.eevolution.model.I_DD_OrderLine.class, DD_OrderLine);
 	}
 
-	/** Set Distribution Order Line.
-		@param DD_OrderLine_ID Distribution Order Line	  */
 	@Override
-	public void setDD_OrderLine_ID (int DD_OrderLine_ID)
+	public void setDD_OrderLine_ID (final int DD_OrderLine_ID)
 	{
 		if (DD_OrderLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_ID, Integer.valueOf(DD_OrderLine_ID));
+			set_ValueNoCheck (COLUMNNAME_DD_OrderLine_ID, DD_OrderLine_ID);
 	}
 
-	/** Get Distribution Order Line.
-		@return Distribution Order Line	  */
 	@Override
-	public int getDD_OrderLine_ID () 
+	public int getDD_OrderLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DD_OrderLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DD_OrderLine_ID);
 	}
 
 	@Override
@@ -106,30 +83,23 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 }

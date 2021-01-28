@@ -58,7 +58,7 @@ services:
   frontend:
     image: ${dockerImage.procurement_frontend}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:8085:80"
     networks:
       - rmq_backend
 networks:

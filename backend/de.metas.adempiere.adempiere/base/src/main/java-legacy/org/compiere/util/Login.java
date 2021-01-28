@@ -274,7 +274,7 @@ public class Login
 		//
 		if (roles.isEmpty())
 		{
-			throw new AdempiereException("No roles").markAsUserValidationError(); // TODO: specific exception
+			throw new AdempiereException("@NoRoles@").markAsUserValidationError(); // TODO: specific exception
 		}
 
 		log.debug("User={}, roles={}", username, roles);
@@ -475,7 +475,6 @@ public class Login
 	 *
 	 * @param org org information
 	 * @param timestamp optional date
-	 * @param printerName optional printer info
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(

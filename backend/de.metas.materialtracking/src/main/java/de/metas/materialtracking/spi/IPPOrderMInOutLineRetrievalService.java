@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.eevolution.model.I_PP_Cost_Collector;
 
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.util.ISingletonService;
 

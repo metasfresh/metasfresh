@@ -6,6 +6,10 @@ import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeBL extends ISingletonService
 {
+	I_C_DocType getById(DocTypeId docTypeId);
+
+	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
 	/**
@@ -45,5 +49,4 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isPrepay(I_C_DocType dt);
 
 	boolean hasRequestType(DocTypeId docTypeId);
-
 }

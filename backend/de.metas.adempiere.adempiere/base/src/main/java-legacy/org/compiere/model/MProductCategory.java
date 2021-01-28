@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 import java.math.BigDecimal;
@@ -33,11 +17,12 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 
+import javax.annotation.Nullable;
+
 /**
  *	Product Category Model
  *	
  *  @author Jorg Janke
- *  @version $Id: MProductCategory.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
  */
 public class MProductCategory extends X_M_Product_Category
 {
@@ -53,7 +38,8 @@ public class MProductCategory extends X_M_Product_Category
 	 *	@param M_Product_Category_ID id
 	 *	@return category or null
 	 */
-	public static MProductCategory get (Properties ctx, int M_Product_Category_ID)
+	@Nullable
+	public static MProductCategory get (final Properties ctx, final int M_Product_Category_ID)
 	{
 		if (M_Product_Category_ID <= 0)
 		{
@@ -67,19 +53,12 @@ public class MProductCategory extends X_M_Product_Category
 	private static final Logger log = LogManager.getLogger(MProductCategory.class);
 
 	
-	/**************************************************************************
-	 * 	Default Constructor
-	 *	@param ctx context
-	 *	@param M_Product_Category_ID id
-	 *	@param trxName transaction
-	 */
-	public MProductCategory (Properties ctx, int M_Product_Category_ID, String trxName)
+	@SuppressWarnings("unused")
+	public MProductCategory (final Properties ctx, final int M_Product_Category_ID, final String trxName)
 	{
 		super(ctx, M_Product_Category_ID, trxName);
-		if (M_Product_Category_ID == 0)
+		if (is_new())
 		{
-		//	setName (null);
-		//	setValue (null);
 			setMMPolicy (MMPOLICY_FiFo);	// F
 			setPlannedMargin (BigDecimal.ZERO);
 			setIsDefault (false);
@@ -87,13 +66,8 @@ public class MProductCategory extends X_M_Product_Category
 		}
 	}	//	MProductCategory
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
-	public MProductCategory(Properties ctx, ResultSet rs, String trxName)
+	@SuppressWarnings("unused")
+	public MProductCategory(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}	//	MProductCategory
@@ -104,7 +78,7 @@ public class MProductCategory extends X_M_Product_Category
 	 *	@return true
 	 */
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave (final boolean newRecord)
 	{
 		assertNoLoopInTree(this);
 		
@@ -118,7 +92,7 @@ public class MProductCategory extends X_M_Product_Category
 	 *	@return success
 	 */
 	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
+	protected boolean afterSave (final boolean newRecord, final boolean success)
 	{
 		if (newRecord && success)
 			insert_Accounting("M_Product_Category_Acct", "C_AcctSchema_Default", null);
@@ -155,20 +129,15 @@ public class MProductCategory extends X_M_Product_Category
 	
 	/**
 	 *	Loop detection of product category tree.
-	 * @param productCategoryId 
-	 * @param newParentCategoryId 
-	 *
-	 *  @param newParentCategoryId New Parent Category
-	 *  @return "" or error message
 	 */
 	private static boolean hasLoopInTree (final I_M_Product_Category productCategory)
 	{
-		int productCategoryId = productCategory.getM_Product_Category_ID();
-		int newParentCategoryId = productCategory.getM_Product_Category_Parent_ID();
+		final int productCategoryId = productCategory.getM_Product_Category_ID();
+		final int newParentCategoryId = productCategory.getM_Product_Category_Parent_ID();
 		//	get values
 		ResultSet rs = null;
 		PreparedStatement pstmt = null;
-		String sql = " SELECT M_Product_Category_ID, M_Product_Category_Parent_ID FROM M_Product_Category";
+		final String sql = " SELECT M_Product_Category_ID, M_Product_Category_Parent_ID FROM M_Product_Category";
 		final Vector<SimpleTreeNode> categories = new Vector<>(100);
 		try {
 			pstmt = DB.prepareStatement(sql, null);
@@ -180,14 +149,13 @@ public class MProductCategory extends X_M_Product_Category
 			}
  			if (hasLoop(newParentCategoryId, categories, productCategoryId))
 				return true;
-		} catch (SQLException e) {
+		} catch (final SQLException e) {
 			log.error(sql, e);
 			return true;
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
 		}
 		return false;
 	}	//	hasLoopInTree
@@ -196,16 +164,12 @@ public class MProductCategory extends X_M_Product_Category
 	/**
 	 * Recursive search for parent nodes - climbs the to the root.
 	 * If there is a circle there is no root but it comes back to the start node.
-	 * @param parentCategoryId
-	 * @param categories
-	 * @param loopIndicatorId
-	 * @return
 	 */
-	private static boolean hasLoop(int parentCategoryId, Vector<SimpleTreeNode> categories, int loopIndicatorId) {
+	private static boolean hasLoop(final int parentCategoryId, final Vector<SimpleTreeNode> categories, final int loopIndicatorId) {
 		final Iterator<SimpleTreeNode> iter = categories.iterator();
 		boolean ret = false;
 		while (iter.hasNext()) {
-			SimpleTreeNode node = iter.next();
+			final SimpleTreeNode node = iter.next();
 			if(node.getNodeId()==parentCategoryId){
 				if (node.getParentId()==0) {
 					//root node, all fine
@@ -228,16 +192,11 @@ public class MProductCategory extends X_M_Product_Category
 	 */
 	private static class SimpleTreeNode {
 		/** id of the node */
-		private int nodeId;
+		private final int nodeId;
 		/** id of the nodes parent */
-		private int parentId;
+		private final int parentId;
 
-		/**
-		 * Constructor.
-		 * @param nodeId
-		 * @param parentId
-		 */
-		public SimpleTreeNode(int nodeId, int parentId) {
+		public SimpleTreeNode(final int nodeId, final int parentId) {
 			this.nodeId = nodeId;
 			this.parentId = parentId;
 		}

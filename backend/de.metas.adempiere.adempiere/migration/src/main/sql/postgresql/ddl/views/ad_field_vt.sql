@@ -73,8 +73,9 @@ c_trl.ad_language
 -- Filtering
 , c.IsSelectionColumn
 , c.SelectionColumnSeqNo
-, c.IsRangeFilter
+, c.filteroperator
 , c.IsShowFilterIncrementButtons
+, c.IsShowFilterInline
 , c.FilterDefaultValue
 , c.IsFacetFilter
 , c.FacetFilterSeqNo

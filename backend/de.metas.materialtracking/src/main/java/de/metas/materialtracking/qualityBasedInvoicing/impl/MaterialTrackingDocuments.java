@@ -30,6 +30,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.impl.PricingBL;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -61,7 +64,7 @@ import lombok.NonNull;
 	private final transient IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 	private final transient IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 	private final IMaterialTrackingPPOrderDAO materialTrackingPPOrderDAO = Services.get(IMaterialTrackingPPOrderDAO.class);
-
+	private final transient IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	// Parameters
 	private final I_M_Material_Tracking _materialTracking;
 
@@ -241,9 +244,9 @@ import lombok.NonNull;
 		{
 			final I_M_Material_Tracking materialTracking = getM_Material_Tracking();
 			final I_C_Flatrate_Term flatrateTerm = Services.get(IFlatrateDAO.class).getById(materialTracking.getC_Flatrate_Term_ID());
-			final I_M_PricingSystem pricingSystem = flatrateTerm
+			final I_M_PricingSystem pricingSystem = priceListsRepo.getPricingSystemById(PricingSystemId.ofRepoIdOrNull(flatrateTerm
 					.getC_Flatrate_Conditions()
-					.getM_PricingSystem();
+					.getM_PricingSystem_ID()));
 
 			pricingInfo = MaterialTrackingDocumentsPricingInfo
 					.builder()

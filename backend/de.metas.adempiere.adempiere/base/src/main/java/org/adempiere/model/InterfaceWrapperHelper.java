@@ -644,7 +644,7 @@ public class InterfaceWrapperHelper
 		return modelToSave;
 	}
 
-	public static void save(final Object model, final String trxName)
+	public static void save(final Object model, @Nullable final String trxName)
 	{
 		if (model == null)
 		{

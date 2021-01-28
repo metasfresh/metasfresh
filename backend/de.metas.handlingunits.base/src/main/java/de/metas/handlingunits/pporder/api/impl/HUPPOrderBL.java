@@ -19,8 +19,8 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -105,8 +105,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public void issueServiceProduct(final PPOrderIssueServiceProductRequest request)
 	{
+		final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService = SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class);
+
 		PPOrderIssueServiceProductCommand.builder()
-				.manufacturingComponentGeneratorService(SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class))
+				.manufacturingComponentGeneratorService(manufacturingComponentGeneratorService)
 				.request(request)
 				.build()
 				.execute();

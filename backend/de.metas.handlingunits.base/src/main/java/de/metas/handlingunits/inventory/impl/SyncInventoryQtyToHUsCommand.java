@@ -263,7 +263,7 @@ public class SyncInventoryQtyToHUsCommand
 		final IMutableHUContext huContextwithOrgId = huContextFactory.createMutableHUContext(contextAware);
 
 		HULoader.of(source, destination)
-				.load(AllocationUtils.createAllocationRequestBuilder()
+				.load(AllocationUtils.builder()
 						.setHUContext(huContextwithOrgId)
 						.setDateAsToday()
 						.setProduct(inventoryLine.getProductId())

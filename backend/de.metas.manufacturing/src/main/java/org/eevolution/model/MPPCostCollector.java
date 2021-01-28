@@ -44,8 +44,10 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.workflow.WFDurationUnit;
+import lombok.NonNull;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -106,6 +108,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	 */
 	private boolean m_justPrepared = false;
 
+	@SuppressWarnings("unused")
 	public MPPCostCollector(final Properties ctx, final int PP_Cost_Collector_ID, final String trxName)
 	{
 		super(ctx, PP_Cost_Collector_ID, trxName);
@@ -122,6 +125,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MPPCostCollector(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -247,11 +251,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		{
 			completeIt_MethodChangedVariance();
 		}
-		else
-		{
-			// nothing
-		}
-		//
 
 		//
 		// Create Rate and Method Variances
@@ -366,7 +365,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 
 		final PPCostCollectorQuantities qtys = costCollectorBL.getQuantities(this);
-		final TemporalUnit durationUnit = activity.getDurationUnit();
+		final WFDurationUnit durationUnit = activity.getDurationUnit();
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activity.getId())
@@ -374,8 +373,8 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 				.qtyProcessed(qtys.getMovementQty())
 				.qtyScrapped(qtys.getScrappedQty())
 				.qtyRejected(qtys.getRejectedQty())
-				.duration(DurationUtils.toDuration(getDurationReal(), durationUnit))
-				.setupTime(DurationUtils.toDuration(getSetupTimeReal(), durationUnit))
+				.duration(durationUnit.toDuration(getDurationReal()))
+				.setupTime(durationUnit.toDuration(getSetupTimeReal()))
 				.build());
 
 		orderRoutingsRepo.save(orderRouting);
@@ -408,12 +407,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		final PPOrderRouting orderRouting = getOrderRouting();
 		final PPOrderRoutingActivityId activityId = getActivityId();
-		final TemporalUnit durationUnit = orderRouting.getActivityById(activityId).getDurationUnit();
+		final WFDurationUnit durationUnit = orderRouting.getActivityById(activityId).getDurationUnit();
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activityId)
-				.setupTime(DurationUtils.toDuration(getSetupTimeReal(), durationUnit))
-				.duration(DurationUtils.toDuration(getDurationReal(), durationUnit))
+				.setupTime(durationUnit.toDuration(getSetupTimeReal()))
+				.duration(durationUnit.toDuration(getDurationReal()))
 				.build());
 
 		orderRoutingsRepo.save(orderRouting);
@@ -591,10 +590,5 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		return PPOrderRoutingActivityId.ofRepoId(orderId, getPP_Order_Node_ID());
-	}
-
-	private I_C_UOM getProductStockingUOM()
-	{
-		return Services.get(IProductBL.class).getStockUOM(getM_Product_ID());
 	}
 }

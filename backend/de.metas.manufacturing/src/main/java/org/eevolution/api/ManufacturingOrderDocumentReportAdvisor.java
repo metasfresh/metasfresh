@@ -26,11 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
-import de.metas.report.PrintFormatId;
 import de.metas.report.DocumentReportInfo;
+import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -108,11 +107,7 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 
 	private DocTypeId extractDocTypeId(@NonNull final I_PP_Order manufacturingOrder)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(manufacturingOrder.getC_DocType_ID());
-		if (docTypeId != null)
-		{
-			return docTypeId;
-		}
-		throw new AdempiereException("No document type set");
+		return DocTypeId.optionalOfRepoId(manufacturingOrder.getC_DocType_ID())
+				.orElseThrow(() -> new AdempiereException("No document type set"));
 	}
 }

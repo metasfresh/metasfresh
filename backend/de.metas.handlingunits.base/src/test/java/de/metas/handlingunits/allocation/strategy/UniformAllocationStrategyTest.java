@@ -340,7 +340,7 @@ public class UniformAllocationStrategyTest
 				allocationStrategyType);
 
 		HULoader.of(source, destination)
-				.load(AllocationUtils.createAllocationRequestBuilder()
+				.load(AllocationUtils.builder()
 						.setHUContext(helper.createMutableHUContextForProcessingOutOfTrx())
 						.setDateAsToday()
 						.setProduct(lutuConfig.productId)
@@ -368,7 +368,7 @@ public class UniformAllocationStrategyTest
 				allocationStrategyType);
 
 		HULoader.of(source, destination)
-				.load(AllocationUtils.createAllocationRequestBuilder()
+				.load(AllocationUtils.builder()
 						.setHUContext(helper.createMutableHUContextForProcessingOutOfTrx())
 						.setDateAsToday()
 						.setProduct(lutuConfig.productId)

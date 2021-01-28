@@ -30,8 +30,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -42,7 +40,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -62,11 +60,11 @@ import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPCostCollectorQuantities;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivity;
-import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.ReceiptCostCollectorCandidate;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -77,7 +75,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.time.temporal.TemporalUnit;
+import java.util.List;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
@@ -85,6 +83,11 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	private final IPPCostCollectorDAO costCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public I_PP_Cost_Collector getById(final PPCostCollectorId costCollectorId)
@@ -129,18 +132,31 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public Duration getTotalDurationReported(final I_PP_Cost_Collector cc)
+	public Quantity getTotalDurationReportedAsQuantity(@NonNull final I_PP_Cost_Collector cc)
 	{
-		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
-		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, cc.getPP_Order_Node_ID());
+		final WFDurationUnit durationUnit = getDurationUnit(cc);
+		final I_C_UOM uom = uomDAO.getByTemporalUnit(durationUnit.getTemporalUnit());
+		final BigDecimal totalDurationBD = getTotalDurationReportedBD(cc);
+		return Quantity.of(totalDurationBD, uom);
+	}
 
-		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
-		final PPOrderRoutingActivity activity = orderRoutingsRepo.getOrderRoutingActivity(activityId);
-		final TemporalUnit durationUnit = activity.getDurationUnit();
+	@Override
+	public Duration getTotalDurationReported(@NonNull final I_PP_Cost_Collector cc)
+	{
+		final WFDurationUnit durationUnit = getDurationUnit(cc);
+		final BigDecimal totalDurationBD = getTotalDurationReportedBD(cc);
+		return durationUnit.toDuration(totalDurationBD);
+	}
 
-		final Duration setupTimeReported = DurationUtils.toDuration(cc.getSetupTimeReal(), durationUnit);
-		final Duration runningTimeReported = DurationUtils.toDuration(cc.getDurationReal(), durationUnit);
-		return setupTimeReported.plus(runningTimeReported);
+	private static WFDurationUnit getDurationUnit(@NonNull final I_PP_Cost_Collector cc)
+	{
+		//noinspection ConstantConditions
+		return WFDurationUnit.ofCode(cc.getDurationUnit());
+	}
+
+	private static BigDecimal getTotalDurationReportedBD(@NonNull final I_PP_Cost_Collector cc)
+	{
+		return cc.getSetupTimeReal().add(cc.getDurationReal());
 	}
 
 	/**
@@ -169,7 +185,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	{
 		final I_PP_Order_BOMLine orderBOMLine = request.getOrderBOMLine();
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_C_UOM bomLineUOM = Services.get(IPPOrderBOMBL.class).getBOMLineUOM(orderBOMLine);
+		final I_C_UOM bomLineUOM = ppOrderBOMBL.getBOMLineUOM(orderBOMLine);
 		final CostCollectorType costCollectorType = extractCostCollectorTypeToUseForComponentIssue(orderBOMLine);
 		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		//
@@ -178,7 +194,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		//
 		// Convert our Qtys from their qtyUOM to BOM's UOM
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 		final Quantity qtyIssueConv = uomConversionBL.convertQuantityTo(request.getQtyIssue(), conversionCtx, bomLineUOM);
 		final Quantity qtyScrapConv = uomConversionBL.convertQuantityTo(request.getQtyScrap(), conversionCtx, bomLineUOM);
@@ -304,7 +319,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	{
 		final int ppOrderBOMLineId = cc.getPP_Order_BOMLine_ID();
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order_BOMLine.class)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_BOMLine_ID, ppOrderBOMLineId)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, BOMComponentIssueMethod.FloorStock.getCode())
@@ -324,7 +339,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		cc.setAD_OrgTrx_ID(from.getAD_OrgTrx_ID());
 		cc.setC_Activity_ID(from.getC_Activity_ID());
 		cc.setC_Campaign_ID(from.getC_Campaign_ID());
-		// cc.setC_Project_ID(from.getC_Project_ID()); Taken out because the Project is no longer a physical column in PP_Order #5328
+		cc.setC_Project_ID(from.getC_Project_ID());
 		cc.setUser1_ID(from.getUser1_ID());
 		cc.setUser2_ID(from.getUser2_ID());
 		cc.setDescription(from.getDescription());
@@ -337,16 +352,16 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public I_PP_Cost_Collector createActivityControl(final ActivityControlCreateRequest request)
+	public void createActivityControl(final ActivityControlCreateRequest request)
 	{
 		final I_PP_Order order = request.getOrder();
 		final ProductId mainProductId = ProductId.ofRepoId(order.getM_Product_ID());
 		final AttributeSetInstanceId mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(order.getM_AttributeSetInstance_ID());
-		final LocatorId receiptLocatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(order.getM_Locator_ID());
+		final LocatorId receiptLocatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(order.getM_Locator_ID());
 
 		final PPOrderRoutingActivity orderActivity = request.getOrderActivity();
 
-		return createCollector(
+		createCollector(
 				CostCollectorCreateRequest.builder()
 						.costCollectorType(CostCollectorType.ActivityControl)
 						.order(order)
@@ -382,9 +397,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		final Quantity qtyUsageVariance;
 		{
-			final IPPOrderBOMBL orderBOMsService = Services.get(IPPOrderBOMBL.class);
-
-			final Quantity qtyOpen = orderBOMsService.getQtyToIssue(line);
+			final Quantity qtyOpen = ppOrderBOMBL.getQtyToIssue(line);
 
 			final BigDecimal qtyUsageVariancePrevBD = costCollectorDAO.getQtyUsageVariance(ppOrderBOMLineId); // Previous booked usage variance
 			final Quantity qtyUsageVariancePrev = Quantity.of(qtyUsageVariancePrevBD, qtyOpen.getUOM());
@@ -403,7 +416,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		{
 			locatorRepoId = ppOrder.getM_Locator_ID();
 		}
-		final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(locatorRepoId);
 
 		//
 		createCollector(
@@ -426,7 +439,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	{
 		final ProductId mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		final AttributeSetInstanceId mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
-		final LocatorId receiptLocatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrder.getM_Locator_ID());
+		final LocatorId receiptLocatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(ppOrder.getM_Locator_ID());
 
 		//
 		final Duration setupTimeReported = activity.getSetupTimeReal();
@@ -541,10 +554,10 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	@NonNull
 	private I_PP_Cost_Collector createCollector(@NonNull final CostCollectorCreateRequest request)
 	{
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		trxManager.assertThreadInheritedTrxExists();
 
 		final I_PP_Order ppOrder = request.getOrder();
-		final DocTypeId docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
@@ -583,9 +596,10 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			cc.setPP_Order_Node_ID(orderActivity.getId().getRepoId());
 			cc.setIsSubcontracting(orderActivity.isSubcontracting());
 
-			final TemporalUnit durationUnit = orderActivity.getDurationUnit();
-			cc.setSetupTimeReal(DurationUtils.toBigDecimal(request.getDurationSetup(), durationUnit));
-			cc.setDurationReal(DurationUtils.toBigDecimal(request.getDuration(), durationUnit));
+			final WFDurationUnit durationUnit = orderActivity.getDurationUnit();
+			cc.setDurationUnit(durationUnit.getCode());
+			cc.setSetupTimeReal(durationUnit.toBigDecimal(request.getDurationSetup()));
+			cc.setDurationReal(durationUnit.toBigDecimal(request.getDuration()));
 		}
 
 		// If this is an material issue, we should use BOM Line's UOM
@@ -603,11 +617,17 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		//
 		// Process the Cost Collector
-		Services.get(IDocumentBL.class).processEx(cc,
+		documentBL.processEx(cc,
 				X_PP_Cost_Collector.DOCACTION_Complete,
 				null // expectedDocStatus
 		);
 
 		return cc;
+	}
+
+	@Override
+	public List<I_PP_Cost_Collector> getByOrderId(final PPOrderId ppOrderId)
+	{
+		return costCollectorDAO.getByOrderId(ppOrderId);
 	}
 }

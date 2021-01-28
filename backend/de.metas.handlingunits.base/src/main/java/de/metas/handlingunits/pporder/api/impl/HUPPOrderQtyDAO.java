@@ -32,8 +32,8 @@ import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -81,7 +81,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setQty(request.getQtyToReceive().toBigDecimal());
 		record.setC_UOM_ID(request.getQtyToReceive().getUomId().getRepoId());
-		record.setProcessed(false);
+		record.setProcessed(request.isAlreadyProcessed());
 		record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(request.getPickingCandidateId()));
 		save(record);
 

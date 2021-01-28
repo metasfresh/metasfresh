@@ -1,61 +1,39 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Workflow
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflow, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -83830051L;
+	private static final long serialVersionUID = -544179067L;
 
     /** Standard Constructor */
-    public X_AD_Workflow (Properties ctx, int AD_Workflow_ID, String trxName)
+    public X_AD_Workflow (final Properties ctx, final int AD_Workflow_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Workflow_ID, trxName);
-      /** if (AD_Workflow_ID == 0)
-        {
-			setAccessLevel (null);
-			setAD_Workflow_ID (0);
-			setAuthor (null);
-			setCost (BigDecimal.ZERO);
-			setDuration (0);
-			setEntityType (null); // U
-			setIsBetaFunctionality (false); // N
-			setIsDefault (false);
-			setIsValid (false);
-			setName (null);
-			setPublishStatus (null); // U
-			setValue (null);
-			setVersion (0);
-			setWaitingTime (0);
-			setWorkflowType (null); // G
-			setWorkingTime (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Workflow (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Workflow (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	/** 
 	 * AccessLevel AD_Reference_ID=5
@@ -74,373 +52,203 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	public static final String ACCESSLEVEL_SystemPlusClient = "6";
 	/** ClientOnly = 2 */
 	public static final String ACCESSLEVEL_ClientOnly = "2";
-	/** Set Berechtigungsstufe.
-		@param AccessLevel 
-		Access Level required
-	  */
 	@Override
-	public void setAccessLevel (java.lang.String AccessLevel)
+	public void setAccessLevel (final java.lang.String AccessLevel)
 	{
-
 		set_Value (COLUMNNAME_AccessLevel, AccessLevel);
 	}
 
-	/** Get Berechtigungsstufe.
-		@return Access Level required
-	  */
 	@Override
-	public java.lang.String getAccessLevel () 
+	public java.lang.String getAccessLevel() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccessLevel);
+		return get_ValueAsString(COLUMNNAME_AccessLevel);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
-	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class, AD_User_InCharge);
-	}
-
-	/** Set Betreuer.
-		@param AD_User_InCharge_ID 
-		Person, die bei einem fachlichen Problem vom System informiert wird.
-	  */
-	@Override
-	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
+	public void setAD_User_InCharge_ID (final int AD_User_InCharge_ID)
 	{
 		if (AD_User_InCharge_ID < 1) 
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, AD_User_InCharge_ID);
 	}
 
-	/** Get Betreuer.
-		@return Person, die bei einem fachlichen Problem vom System informiert wird.
-	  */
 	@Override
-	public int getAD_User_InCharge_ID () 
+	public int getAD_User_InCharge_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Node getAD_WF_Node() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class);
-	}
-
-	@Override
-	public void setAD_WF_Node(org.compiere.model.I_AD_WF_Node AD_WF_Node)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Node_ID, org.compiere.model.I_AD_WF_Node.class, AD_WF_Node);
-	}
-
-	/** Set Knoten.
-		@param AD_WF_Node_ID 
-		Workflow Node (activity), step or process
-	  */
-	@Override
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID)
+	public void setAD_WF_Node_ID (final int AD_WF_Node_ID)
 	{
 		if (AD_WF_Node_ID < 1) 
 			set_Value (COLUMNNAME_AD_WF_Node_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_WF_Node_ID, Integer.valueOf(AD_WF_Node_ID));
+			set_Value (COLUMNNAME_AD_WF_Node_ID, AD_WF_Node_ID);
 	}
 
-	/** Get Knoten.
-		@return Workflow Node (activity), step or process
-	  */
 	@Override
-	public int getAD_WF_Node_ID () 
+	public int getAD_WF_Node_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_WF_Node_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
-	}
-
-	@Override
-	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class, AD_WF_Responsible);
-	}
-
-	/** Set Workflow - Verantwortlicher.
-		@param AD_WF_Responsible_ID 
-		Responsible for Workflow Execution
-	  */
-	@Override
-	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID)
+	public void setAD_WF_Responsible_ID (final int AD_WF_Responsible_ID)
 	{
 		if (AD_WF_Responsible_ID < 1) 
 			set_Value (COLUMNNAME_AD_WF_Responsible_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_WF_Responsible_ID, Integer.valueOf(AD_WF_Responsible_ID));
+			set_Value (COLUMNNAME_AD_WF_Responsible_ID, AD_WF_Responsible_ID);
 	}
 
-	/** Get Workflow - Verantwortlicher.
-		@return Responsible for Workflow Execution
-	  */
 	@Override
-	public int getAD_WF_Responsible_ID () 
+	public int getAD_WF_Responsible_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Responsible_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_WF_Responsible_ID);
 	}
 
-	/** Set Workflow.
-		@param AD_Workflow_ID 
-		Workflow or combination of tasks
-	  */
 	@Override
-	public void setAD_Workflow_ID (int AD_Workflow_ID)
+	public void setAD_Workflow_ID (final int AD_Workflow_ID)
 	{
 		if (AD_Workflow_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Workflow_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Workflow_ID, Integer.valueOf(AD_Workflow_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Workflow_ID, AD_Workflow_ID);
 	}
 
-	/** Get Workflow.
-		@return Workflow or combination of tasks
-	  */
 	@Override
-	public int getAD_Workflow_ID () 
+	public int getAD_Workflow_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workflow_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Workflow_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_WorkflowProcessor getAD_WorkflowProcessor() throws RuntimeException
+	public org.compiere.model.I_AD_WorkflowProcessor getAD_WorkflowProcessor()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_WorkflowProcessor_ID, org.compiere.model.I_AD_WorkflowProcessor.class);
 	}
 
 	@Override
-	public void setAD_WorkflowProcessor(org.compiere.model.I_AD_WorkflowProcessor AD_WorkflowProcessor)
+	public void setAD_WorkflowProcessor(final org.compiere.model.I_AD_WorkflowProcessor AD_WorkflowProcessor)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_WorkflowProcessor_ID, org.compiere.model.I_AD_WorkflowProcessor.class, AD_WorkflowProcessor);
 	}
 
-	/** Set Workflow - Prozessor.
-		@param AD_WorkflowProcessor_ID 
-		Workflow Processor Server
-	  */
 	@Override
-	public void setAD_WorkflowProcessor_ID (int AD_WorkflowProcessor_ID)
+	public void setAD_WorkflowProcessor_ID (final int AD_WorkflowProcessor_ID)
 	{
 		if (AD_WorkflowProcessor_ID < 1) 
 			set_Value (COLUMNNAME_AD_WorkflowProcessor_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_WorkflowProcessor_ID, Integer.valueOf(AD_WorkflowProcessor_ID));
+			set_Value (COLUMNNAME_AD_WorkflowProcessor_ID, AD_WorkflowProcessor_ID);
 	}
 
-	/** Get Workflow - Prozessor.
-		@return Workflow Processor Server
-	  */
 	@Override
-	public int getAD_WorkflowProcessor_ID () 
+	public int getAD_WorkflowProcessor_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WorkflowProcessor_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_WorkflowProcessor_ID);
 	}
 
-	/** Set Author.
-		@param Author 
-		Author/Creator of the Entity
-	  */
 	@Override
-	public void setAuthor (java.lang.String Author)
+	public void setAuthor (final java.lang.String Author)
 	{
 		set_Value (COLUMNNAME_Author, Author);
 	}
 
-	/** Get Author.
-		@return Author/Creator of the Entity
-	  */
 	@Override
-	public java.lang.String getAuthor () 
+	public java.lang.String getAuthor() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Author);
+		return get_ValueAsString(COLUMNNAME_Author);
 	}
 
-	/** Set Kosten.
-		@param Cost 
-		Cost information
-	  */
 	@Override
-	public void setCost (java.math.BigDecimal Cost)
+	public void setCost (final BigDecimal Cost)
 	{
 		set_Value (COLUMNNAME_Cost, Cost);
 	}
 
-	/** Get Kosten.
-		@return Cost information
-	  */
 	@Override
-	public java.math.BigDecimal getCost () 
+	public BigDecimal getCost() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Cost);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Cost);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Document Value Logic.
-		@param DocValueLogic 
-		Logic to determine Workflow Start - If true, a workflow process is started for the document
-	  */
 	@Override
-	public void setDocValueLogic (java.lang.String DocValueLogic)
+	public void setDocValueLogic (final @Nullable java.lang.String DocValueLogic)
 	{
 		set_Value (COLUMNNAME_DocValueLogic, DocValueLogic);
 	}
 
-	/** Get Document Value Logic.
-		@return Logic to determine Workflow Start - If true, a workflow process is started for the document
-	  */
 	@Override
-	public java.lang.String getDocValueLogic () 
+	public java.lang.String getDocValueLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocValueLogic);
+		return get_ValueAsString(COLUMNNAME_DocValueLogic);
 	}
 
-	/** Set Duration.
-		@param Duration 
-		Normal Duration in Duration Unit
-	  */
 	@Override
-	public void setDuration (int Duration)
+	public void setDuration (final int Duration)
 	{
-		set_Value (COLUMNNAME_Duration, Integer.valueOf(Duration));
+		set_Value (COLUMNNAME_Duration, Duration);
 	}
 
-	/** Get Duration.
-		@return Normal Duration in Duration Unit
-	  */
 	@Override
-	public int getDuration () 
+	public int getDuration() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Duration);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Duration);
 	}
 
-	/** Set Duration Limit.
-		@param DurationLimit 
-		Maximum Duration in Duration Unit
-	  */
 	@Override
-	public void setDurationLimit (int DurationLimit)
+	public void setDurationLimit (final int DurationLimit)
 	{
-		set_Value (COLUMNNAME_DurationLimit, Integer.valueOf(DurationLimit));
+		set_Value (COLUMNNAME_DurationLimit, DurationLimit);
 	}
 
-	/** Get Duration Limit.
-		@return Maximum Duration in Duration Unit
-	  */
 	@Override
-	public int getDurationLimit () 
+	public int getDurationLimit() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DurationLimit);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DurationLimit);
 	}
 
 	/** 
@@ -460,24 +268,16 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	public static final String DURATIONUNIT_Minute = "m";
 	/** Second = s */
 	public static final String DURATIONUNIT_Second = "s";
-	/** Set Duration Unit.
-		@param DurationUnit 
-		Unit of Duration
-	  */
 	@Override
-	public void setDurationUnit (java.lang.String DurationUnit)
+	public void setDurationUnit (final @Nullable java.lang.String DurationUnit)
 	{
-
 		set_Value (COLUMNNAME_DurationUnit, DurationUnit);
 	}
 
-	/** Get Duration Unit.
-		@return Unit of Duration
-	  */
 	@Override
-	public java.lang.String getDurationUnit () 
+	public java.lang.String getDurationUnit() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DurationUnit);
+		return get_ValueAsString(COLUMNNAME_DurationUnit);
 	}
 
 	/** 
@@ -485,203 +285,113 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Beta-Funktionalität.
-		@param IsBetaFunctionality 
-		This functionality is considered Beta
-	  */
 	@Override
-	public void setIsBetaFunctionality (boolean IsBetaFunctionality)
+	public void setIsBetaFunctionality (final boolean IsBetaFunctionality)
 	{
-		set_Value (COLUMNNAME_IsBetaFunctionality, Boolean.valueOf(IsBetaFunctionality));
+		set_Value (COLUMNNAME_IsBetaFunctionality, IsBetaFunctionality);
 	}
 
-	/** Get Beta-Funktionalität.
-		@return This functionality is considered Beta
-	  */
 	@Override
-	public boolean isBetaFunctionality () 
+	public boolean isBetaFunctionality() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsBetaFunctionality);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsBetaFunctionality);
 	}
 
-	/** Set Standard.
-		@param IsDefault 
-		Default value
-	  */
 	@Override
-	public void setIsDefault (boolean IsDefault)
+	public void setIsDefault (final boolean IsDefault)
 	{
-		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+		set_Value (COLUMNNAME_IsDefault, IsDefault);
 	}
 
-	/** Get Standard.
-		@return Default value
-	  */
 	@Override
-	public boolean isDefault () 
+	public boolean isDefault() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
 	}
 
-	/** Set Gültig.
-		@param IsValid 
-		Element is valid
-	  */
 	@Override
-	public void setIsValid (boolean IsValid)
+	public void setIsValid (final boolean IsValid)
 	{
-		set_Value (COLUMNNAME_IsValid, Boolean.valueOf(IsValid));
+		set_Value (COLUMNNAME_IsValid, IsValid);
 	}
 
-	/** Get Gültig.
-		@return Element is valid
-	  */
 	@Override
-	public boolean isValid () 
+	public boolean isValid() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsValid);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsValid);
 	}
 
-	/** Set Moving Time.
-		@param MovingTime Moving Time	  */
 	@Override
-	public void setMovingTime (int MovingTime)
+	public void setMovingTime (final int MovingTime)
 	{
-		set_Value (COLUMNNAME_MovingTime, Integer.valueOf(MovingTime));
+		set_Value (COLUMNNAME_MovingTime, MovingTime);
 	}
 
-	/** Get Moving Time.
-		@return Moving Time	  */
 	@Override
-	public int getMovingTime () 
+	public int getMovingTime() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MovingTime);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_MovingTime);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Overlap Units.
-		@param OverlapUnits 
-		Overlap Units are number of units that must be completed before they are moved the next activity
-	  */
 	@Override
-	public void setOverlapUnits (java.math.BigDecimal OverlapUnits)
+	public void setOverlapUnits (final @Nullable BigDecimal OverlapUnits)
 	{
 		set_Value (COLUMNNAME_OverlapUnits, OverlapUnits);
 	}
 
-	/** Get Overlap Units.
-		@return Overlap Units are number of units that must be completed before they are moved the next activity
-	  */
 	@Override
-	public java.math.BigDecimal getOverlapUnits () 
+	public BigDecimal getOverlapUnits() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverlapUnits);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OverlapUnits);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Priorität.
-		@param Priority 
-		Indicates if this request is of a high, medium or low priority.
-	  */
 	@Override
-	public void setPriority (int Priority)
+	public void setPriority (final int Priority)
 	{
-		set_Value (COLUMNNAME_Priority, Integer.valueOf(Priority));
+		set_Value (COLUMNNAME_Priority, Priority);
 	}
 
-	/** Get Priorität.
-		@return Indicates if this request is of a high, medium or low priority.
-	  */
 	@Override
-	public int getPriority () 
+	public int getPriority() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Priority);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Priority);
 	}
 
 	/** 
@@ -701,21 +411,16 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	public static final String PROCESSTYPE_MixedRepetitiveFlow = "MR";
 	/** Plant = PL */
 	public static final String PROCESSTYPE_Plant = "PL";
-	/** Set Process Type.
-		@param ProcessType Process Type	  */
 	@Override
-	public void setProcessType (java.lang.String ProcessType)
+	public void setProcessType (final @Nullable java.lang.String ProcessType)
 	{
-
 		set_Value (COLUMNNAME_ProcessType, ProcessType);
 	}
 
-	/** Get Process Type.
-		@return Process Type	  */
 	@Override
-	public java.lang.String getProcessType () 
+	public java.lang.String getProcessType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProcessType);
+		return get_ValueAsString(COLUMNNAME_ProcessType);
 	}
 
 	/** 
@@ -731,260 +436,165 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	public static final String PUBLISHSTATUS_UnderRevision = "U";
 	/** Löschen = V */
 	public static final String PUBLISHSTATUS_Loeschen = "V";
-	/** Set Publication Status.
-		@param PublishStatus 
-		Status of Publication
-	  */
 	@Override
-	public void setPublishStatus (java.lang.String PublishStatus)
+	public void setPublishStatus (final java.lang.String PublishStatus)
 	{
-
 		set_Value (COLUMNNAME_PublishStatus, PublishStatus);
 	}
 
-	/** Get Publication Status.
-		@return Status of Publication
-	  */
 	@Override
-	public java.lang.String getPublishStatus () 
+	public java.lang.String getPublishStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PublishStatus);
+		return get_ValueAsString(COLUMNNAME_PublishStatus);
 	}
 
-	/** Set Qty Batch Size.
-		@param QtyBatchSize Qty Batch Size	  */
 	@Override
-	public void setQtyBatchSize (java.math.BigDecimal QtyBatchSize)
+	public void setQtyBatchSize (final @Nullable BigDecimal QtyBatchSize)
 	{
 		set_Value (COLUMNNAME_QtyBatchSize, QtyBatchSize);
 	}
 
-	/** Get Qty Batch Size.
-		@return Qty Batch Size	  */
 	@Override
-	public java.math.BigDecimal getQtyBatchSize () 
+	public BigDecimal getQtyBatchSize() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBatchSize);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Queuing Time.
-		@param QueuingTime Queuing Time	  */
-	@Override
-	public void setQueuingTime (int QueuingTime)
-	{
-		set_Value (COLUMNNAME_QueuingTime, Integer.valueOf(QueuingTime));
-	}
-
-	/** Get Queuing Time.
-		@return Queuing Time	  */
-	@Override
-	public int getQueuingTime () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_QueuingTime);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyBatchSize);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public void setQueuingTime (final int QueuingTime)
+	{
+		set_Value (COLUMNNAME_QueuingTime, QueuingTime);
+	}
+
+	@Override
+	public int getQueuingTime() 
+	{
+		return get_ValueAsInt(COLUMNNAME_QueuingTime);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}
 
 	@Override
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
 	{
 		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
-	/** Set Ressource.
-		@param S_Resource_ID 
-		Resource
-	  */
 	@Override
-	public void setS_Resource_ID (int S_Resource_ID)
+	public void setS_Resource_ID (final int S_Resource_ID)
 	{
 		if (S_Resource_ID < 1) 
 			set_Value (COLUMNNAME_S_Resource_ID, null);
 		else 
-			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
 	}
 
-	/** Get Ressource.
-		@return Resource
-	  */
 	@Override
-	public int getS_Resource_ID () 
+	public int getS_Resource_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Resource_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
-	/** Set Setup Time.
-		@param SetupTime 
-		Setup time before starting Production
-	  */
 	@Override
-	public void setSetupTime (int SetupTime)
+	public void setSetupTime (final int SetupTime)
 	{
-		set_Value (COLUMNNAME_SetupTime, Integer.valueOf(SetupTime));
+		set_Value (COLUMNNAME_SetupTime, SetupTime);
 	}
 
-	/** Get Setup Time.
-		@return Setup time before starting Production
-	  */
 	@Override
-	public int getSetupTime () 
+	public int getSetupTime() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SetupTime);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SetupTime);
 	}
 
-	/** Set Units by Cycles.
-		@param UnitsCycles 
-		The Units by Cycles are defined for process type  Flow Repetitive Dedicated and  indicated the product to be manufactured on a production line for duration unit.
-	  */
 	@Override
-	public void setUnitsCycles (java.math.BigDecimal UnitsCycles)
+	public void setUnitsCycles (final @Nullable BigDecimal UnitsCycles)
 	{
 		set_Value (COLUMNNAME_UnitsCycles, UnitsCycles);
 	}
 
-	/** Get Units by Cycles.
-		@return The Units by Cycles are defined for process type  Flow Repetitive Dedicated and  indicated the product to be manufactured on a production line for duration unit.
-	  */
 	@Override
-	public java.math.BigDecimal getUnitsCycles () 
+	public BigDecimal getUnitsCycles() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_UnitsCycles);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UnitsCycles);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Workflow validieren.
-		@param ValidateWorkflow Workflow validieren	  */
 	@Override
-	public void setValidateWorkflow (java.lang.String ValidateWorkflow)
+	public void setValidateWorkflow (final @Nullable java.lang.String ValidateWorkflow)
 	{
 		set_Value (COLUMNNAME_ValidateWorkflow, ValidateWorkflow);
 	}
 
-	/** Get Workflow validieren.
-		@return Workflow validieren	  */
 	@Override
-	public java.lang.String getValidateWorkflow () 
+	public java.lang.String getValidateWorkflow() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValidateWorkflow);
+		return get_ValueAsString(COLUMNNAME_ValidateWorkflow);
 	}
 
-	/** Set Gültig ab.
-		@param ValidFrom 
-		Valid from including this date (first day)
-	  */
 	@Override
-	public void setValidFrom (java.sql.Timestamp ValidFrom)
+	public void setValidFrom (final @Nullable java.sql.Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
 
-	/** Get Gültig ab.
-		@return Valid from including this date (first day)
-	  */
 	@Override
-	public java.sql.Timestamp getValidFrom () 
+	public java.sql.Timestamp getValidFrom() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
+		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
 	}
 
-	/** Set Gültig bis.
-		@param ValidTo 
-		Valid to including this date (last day)
-	  */
 	@Override
-	public void setValidTo (java.sql.Timestamp ValidTo)
+	public void setValidTo (final @Nullable java.sql.Timestamp ValidTo)
 	{
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}
 
-	/** Get Gültig bis.
-		@return Valid to including this date (last day)
-	  */
 	@Override
-	public java.sql.Timestamp getValidTo () 
+	public java.sql.Timestamp getValidTo() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidTo);
+		return get_ValueAsTimestamp(COLUMNNAME_ValidTo);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Suchschlüssel.
-		@return Search key for the record in the format required - must be unique
-	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 
-	/** Set Version.
-		@param Version 
-		Version of the table definition
-	  */
 	@Override
-	public void setVersion (int Version)
+	public void setVersion (final int Version)
 	{
-		set_Value (COLUMNNAME_Version, Integer.valueOf(Version));
+		set_Value (COLUMNNAME_Version, Version);
 	}
 
-	/** Get Version.
-		@return Version of the table definition
-	  */
 	@Override
-	public int getVersion () 
+	public int getVersion() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Version);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Version);
 	}
 
-	/** Set Waiting Time.
-		@param WaitingTime 
-		Workflow Simulation Waiting time
-	  */
 	@Override
-	public void setWaitingTime (int WaitingTime)
+	public void setWaitingTime (final int WaitingTime)
 	{
-		set_Value (COLUMNNAME_WaitingTime, Integer.valueOf(WaitingTime));
+		set_Value (COLUMNNAME_WaitingTime, WaitingTime);
 	}
 
-	/** Get Waiting Time.
-		@return Workflow Simulation Waiting time
-	  */
 	@Override
-	public int getWaitingTime () 
+	public int getWaitingTime() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WaitingTime);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WaitingTime);
 	}
 
 	/** 
@@ -1002,67 +612,41 @@ public class X_AD_Workflow extends org.compiere.model.PO implements I_AD_Workflo
 	public static final String WORKFLOWTYPE_Manufacturing = "M";
 	/** Quality = Q */
 	public static final String WORKFLOWTYPE_Quality = "Q";
-	/** Set Workflow Type.
-		@param WorkflowType 
-		Type of Worflow
-	  */
+	/** Repair = R */
+	public static final String WORKFLOWTYPE_Repair = "R";
 	@Override
-	public void setWorkflowType (java.lang.String WorkflowType)
+	public void setWorkflowType (final java.lang.String WorkflowType)
 	{
-
 		set_Value (COLUMNNAME_WorkflowType, WorkflowType);
 	}
 
-	/** Get Workflow Type.
-		@return Type of Worflow
-	  */
 	@Override
-	public java.lang.String getWorkflowType () 
+	public java.lang.String getWorkflowType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WorkflowType);
+		return get_ValueAsString(COLUMNNAME_WorkflowType);
 	}
 
-	/** Set Working Time.
-		@param WorkingTime 
-		Workflow Simulation Execution Time
-	  */
 	@Override
-	public void setWorkingTime (int WorkingTime)
+	public void setWorkingTime (final int WorkingTime)
 	{
-		set_Value (COLUMNNAME_WorkingTime, Integer.valueOf(WorkingTime));
+		set_Value (COLUMNNAME_WorkingTime, WorkingTime);
 	}
 
-	/** Get Working Time.
-		@return Workflow Simulation Execution Time
-	  */
 	@Override
-	public int getWorkingTime () 
+	public int getWorkingTime() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WorkingTime);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WorkingTime);
 	}
 
-	/** Set Yield %.
-		@param Yield 
-		The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
-	  */
 	@Override
-	public void setYield (int Yield)
+	public void setYield (final int Yield)
 	{
-		set_Value (COLUMNNAME_Yield, Integer.valueOf(Yield));
+		set_Value (COLUMNNAME_Yield, Yield);
 	}
 
-	/** Get Yield %.
-		@return The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
-	  */
 	@Override
-	public int getYield () 
+	public int getYield() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Yield);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Yield);
 	}
 }

@@ -46,6 +46,7 @@ public class OrderLinePriceUpdateRequest
 	public static OrderLinePriceUpdateRequestBuilder prepare(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		return builder()
+				.updateLineNetAmt(true)
 				.orderLine(InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class))
 				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW);
 	}

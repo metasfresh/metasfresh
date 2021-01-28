@@ -22,6 +22,8 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentBuilder;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -35,6 +37,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -43,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public class HUAssignmentBL implements IHUAssignmentBL
 {
@@ -158,7 +162,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		return builder;
 	}
 
-	private void updateHUAssignment(final IHUAssignmentBuilder builder, final I_M_HU hu, final Object model, final Boolean isTransferPackingMaterials, final String trxName)
+	private void updateHUAssignment(final IHUAssignmentBuilder builder, final I_M_HU hu, final Object model, @Nullable final Boolean isTransferPackingMaterials, final String trxName)
 	{
 		//
 		// Make sure HU is assignable to given model
@@ -208,9 +212,8 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	/**
-	 * @return assignment which was built / saved
 	 */
-	private I_M_HU_Assignment updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU topLevelHU, final Boolean isTransferPackingMaterials)
+	private void updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU topLevelHU, @Nullable final Boolean isTransferPackingMaterials)
 	{
 		builder.setModel(model);
 		builder.setIsActive(true);
@@ -221,7 +224,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 
 		builder.setTopLevelHU(topLevelHU);
 
-		return builder.build();
+		builder.build();
 	}
 
 	@Override
@@ -372,5 +375,11 @@ public class HUAssignmentBL implements IHUAssignmentBL
 					.setModel(targetModel)
 					.build();
 		}
+	}
+
+	@Override
+	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final Set<TableRecordReference> recordRefs)
+	{
+		return huAssignmentDAO.retrieveHUsByRecordRefs(recordRefs);
 	}
 }

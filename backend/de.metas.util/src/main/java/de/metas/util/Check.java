@@ -109,8 +109,7 @@ public final class Check
 		try
 		{
 			final Constructor<? extends RuntimeException> c = exClazz.getConstructor(String.class);
-			final RuntimeException ex = c.newInstance(msgToUse.toString());
-			return ex;
+			return c.newInstance(msgToUse.toString());
 		}
 		catch (final Exception e)
 		{
@@ -154,7 +153,7 @@ public final class Check
 		assume(cond, defaultExClazz, errMsg, params);
 	}
 
-	public static <T> void assumeEquals(final T obj1, final T obj2, final String objectName)
+	public static <T> void assumeEquals(@Nullable final T obj1, @Nullable final T obj2, final String objectName)
 	{
 		assume(Objects.equals(obj1, obj2), "assumed same {} but they were different: {}, {}", objectName, obj1, obj2);
 	}
@@ -264,7 +263,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static void assumeNull(final Object object, final String assumptionMessage, final Object... params)
+	public static void assumeNull(@Nullable final Object object, final String assumptionMessage, final Object... params)
 	{
 		assumeNull(object, defaultExClazz, assumptionMessage, params);
 	}
