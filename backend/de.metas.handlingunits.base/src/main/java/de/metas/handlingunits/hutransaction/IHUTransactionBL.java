@@ -5,6 +5,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 /**
@@ -32,6 +33,6 @@ public interface IHUTransactionBL extends ISingletonService
 	 *
 	 * @return {@code true} if for the given huId there is no HU-transaction after the one which references the given referencedRecord.
 	 */
-	boolean isLatestHUTrx(HuId huId, TableRecordReference tableRecordReference);
+	boolean isLatestHUTrx(@NonNull final HuId huId, @NonNull final TableRecordReference tableRecordReference);
 
 }

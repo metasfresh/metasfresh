@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -34,7 +35,7 @@ public class HUTransactionBL implements IHUTransactionBL
 	}
 
 	@Override
-	public boolean isLatestHUTrx(HuId huId, TableRecordReference tableRecordReference)
+	public boolean isLatestHUTrx(@NonNull final HuId huId, @NonNull final TableRecordReference tableRecordReference)
 	{
 		boolean result = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Trx_Line.class)
