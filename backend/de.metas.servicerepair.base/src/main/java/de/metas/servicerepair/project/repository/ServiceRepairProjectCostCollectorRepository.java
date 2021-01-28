@@ -190,12 +190,7 @@ class ServiceRepairProjectCostCollectorRepository
 			@NonNull final OrderId quotationId)
 	{
 		final List<I_C_Project_Repair_CostCollector> records = retrieveRecordsByQuotationId(projectId, quotationId);
-		for (final I_C_Project_Repair_CostCollector record : records)
-		{
-			record.setQuotation_Order_ID(-1);
-			record.setQuotation_OrderLine_ID(-1);
-			InterfaceWrapperHelper.saveRecord(record);
-		}
+		records.forEach(this::unsetQuotationLineAndSave);
 	}
 
 	private List<I_C_Project_Repair_CostCollector> retrieveRecordsByQuotationId(
@@ -205,6 +200,28 @@ class ServiceRepairProjectCostCollectorRepository
 		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
 				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)
 				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_Order_ID, quotationId)
+				.create()
+				.list();
+	}
+
+	private void unsetQuotationLineAndSave(final I_C_Project_Repair_CostCollector record)
+	{
+		record.setQuotation_Order_ID(-1);
+		record.setQuotation_OrderLine_ID(-1);
+		InterfaceWrapperHelper.saveRecord(record);
+	}
+
+	public void unsetCustomerQuotationLine(@NonNull final OrderAndLineId quotationLineId)
+	{
+		final List<I_C_Project_Repair_CostCollector> records = retrieveRecordsByQuotationLineId(quotationLineId);
+		records.forEach(this::unsetQuotationLineAndSave);
+	}
+
+	private List<I_C_Project_Repair_CostCollector> retrieveRecordsByQuotationLineId(final OrderAndLineId quotationLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_Order_ID, quotationLineId.getOrderId())
+				.addInArrayFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_Quotation_OrderLine_ID, quotationLineId.getOrderLineId())
 				.create()
 				.list();
 	}

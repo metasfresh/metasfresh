@@ -182,4 +182,9 @@ public class RepairSalesOrderService
 	{
 		projectService.unlinkQuotationFromProject(proposalInfo.getProjectId(), proposalInfo.getProposalId());
 	}
+
+	public void unlinkProposalLineFromProject(@NonNull final OrderAndLineId proposalLineId)
+	{
+		projectService.unlinkProposalLineFromProject(proposalLineId);
+	}
 }

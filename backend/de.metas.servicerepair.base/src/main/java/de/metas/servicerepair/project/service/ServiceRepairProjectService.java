@@ -502,4 +502,9 @@ public class ServiceRepairProjectService
 	{
 		projectCostCollectorRepository.unsetCustomerQuotation(projectId, quotationId);
 	}
+
+	public void unlinkProposalLineFromProject(@NonNull final OrderAndLineId proposalLineId)
+	{
+		projectCostCollectorRepository.unsetCustomerQuotationLine(proposalLineId);
+	}
 }
