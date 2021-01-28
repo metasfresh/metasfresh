@@ -123,7 +123,7 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
               </span>
             </p>
             <div className="block pt-4">
-              <p className="is-text">{translate('LoginView.passwordReset.error.fillEmail')}</p>
+              {!state.email && <p className="is-text">{translate('LoginView.passwordReset.error.fillEmail')}</p>}
             </div>
           </div>
         );
@@ -158,7 +158,7 @@ const PasswordRecovery: FunctionComponent<Props> = inject('store')(
         <>
           <View>
             <div className="container p-4 py-6 login-view">
-              <h5 className="title is-4">{store.navigation.topViewName}</h5>
+              <h5 className="title is-3 pb-2">{store.navigation.topViewName}</h5>
               <form className="reset-password-form">
                 {token ? renderResetPasswordForm() : renderForgottenPasswordForm()}
                 <div className="field">
