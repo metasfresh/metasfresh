@@ -256,10 +256,10 @@ public class ServiceRepairProjectService
 
 	public void reserveSparePartsFromHUs(
 			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final Quantity qtyToReserve,
 			@NonNull final ImmutableSet<HuId> fromHUIds)
 	{
 		final ServiceRepairProjectTask task = getTaskById(taskId);
-		final Quantity qtyToReserve = task.getQtyToReserve();
 		reserveSparePartsFromHUs(task, qtyToReserve, fromHUIds, PartOwnership.OWNED_BY_COMPANY);
 	}
 
