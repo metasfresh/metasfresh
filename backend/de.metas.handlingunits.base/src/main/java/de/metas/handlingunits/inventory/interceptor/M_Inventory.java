@@ -1,7 +1,7 @@
 package de.metas.handlingunits.inventory.interceptor;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
@@ -13,10 +13,10 @@ import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -57,6 +57,7 @@ public class M_Inventory
 {
 	private final InventoryService inventoryLineRecordService;
 	private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
+	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
 	public M_Inventory(@NonNull final InventoryService inventoryRecordHUService)
 	{
@@ -91,38 +92,22 @@ public class M_Inventory
 	public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventory)
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
-
-		final List<I_M_InventoryLine> inventoryLines = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InventoryLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.orderBy(I_M_InventoryLine.COLUMNNAME_Line)
-				.orderBy(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID)
-				.create()
-				.list();
-
-		final ImmutableSet<HuId> huIds = inventoryLines
+		final ImmutableMap<InventoryLineId, HuId> inventoryHuIds =
+				inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
 				.stream()
-				.map(line -> HuId.ofRepoId(line.getM_HU_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-
-		huIds.forEach(huId -> checkHUTransformation(huId, TableRecordReference.of(inventoryLines.stream().findFirst().get())));
-	}
-
-	private boolean checkHUTransformation(final HuId huId, final TableRecordReference tableRecordReference) throws HUException
-	{
-		if (!huTransactionBL.isLatestHUTrx(huId, tableRecordReference))
-		{
-			throw new HUException("@InventoryReverseError@");
-		}
-		return true;
+				.collect(ImmutableMap.toImmutableMap(line -> InventoryLineId.ofRepoId(line.getM_InventoryLine_ID()),
+													 line -> HuId.ofRepoId(line.getM_HU_ID())));
+		inventoryHuIds.forEach( (lineId, huId) -> {
+			if (!huTransactionBL.isLatestHUTrx(huId, TableRecordReference.of(I_M_InventoryLine.Table_Name, lineId)))
+			{
+				throw new HUException("@InventoryReverseError@");
+			}
+		});
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseDisposal(final I_M_Inventory inventory)
 	{
-		final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
-
 		if (!inventoryLineRecordService.isMaterialDisposal(inventory))
 		{
 			return; // nothing to do

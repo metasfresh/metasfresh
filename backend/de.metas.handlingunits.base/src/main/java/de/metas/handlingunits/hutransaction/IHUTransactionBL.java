@@ -32,6 +32,6 @@ public interface IHUTransactionBL extends ISingletonService
 	 *
 	 * @return {@code true} if for the given huId there is no HU-transaction after the one which references the given referencedRecord.
 	 */
-	boolean isLatestHUTrx(HuId huId, TableRecordReference referencedRecord);
+	boolean isLatestHUTrx(HuId huId, TableRecordReference tableRecordReference);
 
 }

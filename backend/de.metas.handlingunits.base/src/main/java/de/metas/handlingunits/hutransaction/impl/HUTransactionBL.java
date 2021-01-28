@@ -34,16 +34,17 @@ public class HUTransactionBL implements IHUTransactionBL
 	}
 
 	@Override
-	public boolean isLatestHUTrx(final HuId huId, final TableRecordReference referencedRecord)
+	public boolean isLatestHUTrx(HuId huId, TableRecordReference tableRecordReference)
 	{
 		boolean result = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Trx_Line.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_Trx_Line.COLUMN_M_HU_ID, huId)
-				.addNotEqualsFilter(I_M_HU_Trx_Line.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
+				.addNotEqualsFilter(I_M_HU_Trx_Line.COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID())
 				.orderByDescending(I_M_HU_Trx_Line.COLUMN_Created)
 				.orderBy(I_M_HU_Trx_Line.COLUMN_M_HU_Trx_Line_ID)
 				.create().anyMatch();
 		return !result;
+
 	}
 }
