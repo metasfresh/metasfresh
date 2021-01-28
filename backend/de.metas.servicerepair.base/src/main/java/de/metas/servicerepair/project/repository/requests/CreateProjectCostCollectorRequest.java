@@ -33,6 +33,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.api.PPOrderAndCostCollectorId;
 
 import javax.annotation.Nullable;
@@ -45,6 +46,7 @@ public class CreateProjectCostCollectorRequest
 	@NonNull ServiceRepairProjectCostCollectorType type;
 
 	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId asiId;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
@@ -57,6 +59,7 @@ public class CreateProjectCostCollectorRequest
 			@NonNull final ServiceRepairProjectTaskId taskId,
 			@NonNull final ServiceRepairProjectCostCollectorType type,
 			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId asiId,
 			@Nullable final Quantity qtyReserved,
 			@Nullable final Quantity qtyConsumed,
 			@Nullable final HuId reservedVhuId,
@@ -71,6 +74,7 @@ public class CreateProjectCostCollectorRequest
 		this.taskId = taskId;
 		this.type = type;
 		this.productId = productId;
+		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 		this.qtyReserved = qtyReserved != null ? qtyReserved : qtyFirstNotNull.toZero();
 		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : qtyFirstNotNull.toZero();
 		this.reservedVhuId = reservedVhuId;

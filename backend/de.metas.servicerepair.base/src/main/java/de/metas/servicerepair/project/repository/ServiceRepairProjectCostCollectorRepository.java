@@ -43,6 +43,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderAndCostCollectorId;
@@ -67,6 +68,7 @@ class ServiceRepairProjectCostCollectorRepository
 		record.setC_Project_Repair_Task_ID(request.getTaskId().getRepoId());
 		record.setType(request.getType().getCode());
 		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setM_AttributeSetInstance_ID(request.getAsiId().getRepoId());
 		record.setC_UOM_ID(request.getUomId().getRepoId());
 		record.setQtyReserved(request.getQtyReserved().toBigDecimal());
 		record.setQtyConsumed(request.getQtyConsumed().toBigDecimal());
@@ -124,9 +126,10 @@ class ServiceRepairProjectCostCollectorRepository
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
 		return ServiceRepairProjectCostCollector.builder()
 				.id(extractId(record))
-				.taskId(ServiceRepairProjectTaskId.ofRepoIdOrNull(record.getC_Project_ID(), record.getC_Project_Repair_Task_ID()))
+				.taskId(ServiceRepairProjectTaskId.ofRepoId(record.getC_Project_ID(), record.getC_Project_Repair_Task_ID()))
 				.type(ServiceRepairProjectCostCollectorType.ofCode(record.getType()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
 				.vhuId(HuId.ofRepoIdOrNull(record.getVHU_ID()))
@@ -134,7 +137,7 @@ class ServiceRepairProjectCostCollectorRepository
 				.build();
 	}
 
-	public List<ServiceRepairProjectCostCollector> getByProjectIdButNotInProposal(@NonNull final ProjectId projectId)
+	public List<ServiceRepairProjectCostCollector> getByProjectIdButNotIncludedInCustomerQuotation(@NonNull final ProjectId projectId)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_Repair_CostCollector.class)
 				.addEqualsFilter(I_C_Project_Repair_CostCollector.COLUMNNAME_C_Project_ID, projectId)

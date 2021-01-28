@@ -32,6 +32,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 
@@ -39,11 +40,12 @@ import javax.annotation.Nullable;
 public class ServiceRepairProjectCostCollector
 {
 	@NonNull ServiceRepairProjectCostCollectorId id;
-	@Nullable ServiceRepairProjectTaskId taskId;
+	@NonNull ServiceRepairProjectTaskId taskId;
 
 	@NonNull ServiceRepairProjectCostCollectorType type;
 
 	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId asiId;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
@@ -59,6 +61,7 @@ public class ServiceRepairProjectCostCollector
 			@Nullable final ServiceRepairProjectTaskId taskId,
 			@NonNull final ServiceRepairProjectCostCollectorType type,
 			@NonNull final ProductId productId,
+			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final Quantity qtyReserved,
 			@NonNull final Quantity qtyConsumed,
 			@Nullable final HuId vhuId,
@@ -71,6 +74,7 @@ public class ServiceRepairProjectCostCollector
 		this.taskId = taskId;
 		this.type = type;
 		this.productId = productId;
+		this.asiId = asiId;
 		this.qtyReserved = qtyReserved;
 		this.qtyConsumed = qtyConsumed;
 		this.vhuId = vhuId;
