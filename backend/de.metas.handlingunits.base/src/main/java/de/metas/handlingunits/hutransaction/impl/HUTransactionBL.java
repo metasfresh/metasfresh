@@ -1,5 +1,6 @@
 package de.metas.handlingunits.hutransaction.impl;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -8,7 +9,10 @@ import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 public class HUTransactionBL implements IHUTransactionBL
 {
@@ -29,4 +33,17 @@ public class HUTransactionBL implements IHUTransactionBL
 		return luTrx;
 	}
 
+	@Override
+	public boolean isLatestHUTrx(final HuId huId, final TableRecordReference referencedRecord)
+	{
+		boolean result = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Trx_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Trx_Line.COLUMN_M_HU_ID, huId)
+				.addNotEqualsFilter(I_M_HU_Trx_Line.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
+				.orderByDescending(I_M_HU_Trx_Line.COLUMN_Created)
+				.orderBy(I_M_HU_Trx_Line.COLUMN_M_HU_Trx_Line_ID)
+				.create().anyMatch();
+		return !result;
+	}
 }

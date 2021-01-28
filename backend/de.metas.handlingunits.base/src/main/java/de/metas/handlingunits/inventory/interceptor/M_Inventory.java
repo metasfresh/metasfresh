@@ -1,21 +1,11 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_M_Inventory;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.tabcallout.M_InventoryLineTabCallout;
 import de.metas.handlingunits.model.I_M_Inventory;
@@ -26,6 +16,19 @@ import de.metas.inventory.InventoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.mmovement.api.IMovementDAO;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_M_Inventory;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /*
  * #%L
@@ -53,6 +56,7 @@ import lombok.NonNull;
 public class M_Inventory
 {
 	private final InventoryService inventoryLineRecordService;
+	private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
 
 	public M_Inventory(@NonNull final InventoryService inventoryRecordHUService)
 	{
@@ -81,6 +85,37 @@ public class M_Inventory
 		}
 
 		inventoryLineRecordService.syncToHUs(inventoryRecord);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
+	public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventory)
+	{
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+
+		final List<I_M_InventoryLine> inventoryLines = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InventoryLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
+				.orderBy(I_M_InventoryLine.COLUMNNAME_Line)
+				.orderBy(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID)
+				.create()
+				.list();
+
+		final ImmutableSet<HuId> huIds = inventoryLines
+				.stream()
+				.map(line -> HuId.ofRepoId(line.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		huIds.forEach(huId -> checkHUTransformation(huId, TableRecordReference.of(inventoryLines.stream().findFirst().get())));
+	}
+
+	private boolean checkHUTransformation(final HuId huId, final TableRecordReference tableRecordReference) throws HUException
+	{
+		if (!huTransactionBL.isLatestHUTrx(huId, tableRecordReference))
+		{
+			throw new HUException("@InventoryReverseError@");
+		}
+		return true;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
