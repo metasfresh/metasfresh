@@ -4,6 +4,7 @@
 
 # Technologies used
 
+* pwa
 * react (>= 17.0.1)
 * react-swipeable (>=6.0.1)
 * typescript (>= 4.1.2)
