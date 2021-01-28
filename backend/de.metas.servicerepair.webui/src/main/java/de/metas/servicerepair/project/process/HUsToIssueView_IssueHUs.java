@@ -24,20 +24,44 @@ package de.metas.servicerepair.project.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewContext;
 import de.metas.servicerepair.project.hu_to_issue.HUsToIssueViewFactory;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.uom.UomId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.SpringContextHolder;
 
-public class HUsToIssueView_IssueHUs extends HUEditorProcessTemplate
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.HashMap;
+
+public class HUsToIssueView_IssueHUs
+		extends HUEditorProcessTemplate
+		implements IProcessDefaultParametersProvider
 {
 	private final ServiceRepairProjectService projectService = SpringContextHolder.instance.getBean(ServiceRepairProjectService.class);
+
+	private static final String PARAM_Qty = "Qty";
+	@Param(parameterName = PARAM_Qty, mandatory = true)
+	private BigDecimal qty;
+
+	private static final String PARAM_C_UOM_ID = "C_UOM_ID";
+	@Param(parameterName = PARAM_C_UOM_ID, mandatory = true)
+	private UomId uomId;
+
+	private final HashMap<ServiceRepairProjectTaskId, ServiceRepairProjectTask> tasksCache = new HashMap<>();
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -51,16 +75,61 @@ public class HUsToIssueView_IssueHUs extends HUEditorProcessTemplate
 		return super.checkPreconditionsApplicable();
 	}
 
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_Qty.equals(parameter.getColumnName()))
+		{
+			return getTask().getQtyToReserve().toZeroIfNegative().toBigDecimal();
+		}
+		if (PARAM_C_UOM_ID.equals(parameter.getColumnName()))
+		{
+			return getTask().getQtyToReserve().getUomId();
+		}
+		else
+		{
+			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+		}
+	}
+
 	@Override
 	protected String doIt()
 	{
-		final HUsToIssueViewContext husToIssueViewContext = getHusToIssueViewContext();
-		final ServiceRepairProjectTaskId taskId = husToIssueViewContext.getTaskId();
-		final ImmutableSet<HuId> huIds = streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL).collect(ImmutableSet.toImmutableSet());
+		final Quantity qtyToReserve = getQtyToReserveParam();
+		final ImmutableSet<HuId> huIds = getSelectedTopLevelHUIds();
+		final ServiceRepairProjectTaskId taskId = getTaskId();
 
-		projectService.reserveSparePartsFromHUs(taskId, huIds);
+		projectService.reserveSparePartsFromHUs(taskId, qtyToReserve, huIds);
+		tasksCache.clear();
 
 		return MSG_OK;
+	}
+
+	private Quantity getQtyToReserveParam()
+	{
+		final Quantity qtyToReserve = Quantitys.create(qty, uomId);
+		if (qtyToReserve.signum() <= 0)
+		{
+			throw new FillMandatoryException(PARAM_Qty);
+		}
+		return qtyToReserve;
+	}
+
+	private ServiceRepairProjectTask getTask()
+	{
+		return tasksCache.computeIfAbsent(getTaskId(), projectService::getTaskById);
+	}
+
+	private ServiceRepairProjectTaskId getTaskId()
+	{
+		final HUsToIssueViewContext husToIssueViewContext = getHusToIssueViewContext();
+		return husToIssueViewContext.getTaskId();
+	}
+
+	private ImmutableSet<HuId> getSelectedTopLevelHUIds()
+	{
+		return streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL).collect(ImmutableSet.toImmutableSet());
 	}
 
 	private HUsToIssueViewContext getHusToIssueViewContext()

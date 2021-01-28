@@ -23,8 +23,6 @@
 package de.metas.servicerepair.project.service.commands;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -43,8 +41,6 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
-import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
-import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.ProjectQuotationPricingInfo;
 import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.QuotationAggregator;
@@ -59,7 +55,6 @@ import org.compiere.util.TimeUtil;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
 
 public class CreateQuotationFromProjectCommand
 {
@@ -85,35 +80,21 @@ public class CreateQuotationFromProjectCommand
 
 	public OrderId execute()
 	{
-		final ServiceRepairProjectInfo fromProject = projectService.getById(projectId);
-
-		final QuotationAggregator quotationAggregator = newQuotationAggregator(fromProject);
-
-		final ImmutableListMultimap<ServiceRepairProjectTaskId, ServiceRepairProjectCostCollector> costCollectorsByTaskId = Multimaps.index(
-				projectService.getCostCollectorsByProjectButNotInProposal(projectId),
-				ServiceRepairProjectCostCollector::getTaskId);
-		if (costCollectorsByTaskId.isEmpty())
+		final ImmutableList<ServiceRepairProjectCostCollector> costCollectors = projectService.getByProjectIdButNotIncludedInCustomerQuotation(projectId)
+				.stream()
+				.filter(ServiceRepairProjectCostCollector::isNotIncludedInCustomerQuotation) // redundant but feels safe
+				.collect(ImmutableList.toImmutableList());
+		if (costCollectors.isEmpty())
 		{
 			throw new AdempiereException("Everything is already quoted");
 		}
 
-		final ImmutableList<ServiceRepairProjectTask> tasks = projectService.getTaskByIds(costCollectorsByTaskId.keySet())
-				.stream()
-				.sorted(Comparator.comparing(ServiceRepairProjectTask::getId))
-				.collect(ImmutableList.toImmutableList());
+		final ServiceRepairProjectInfo fromProject = projectService.getById(projectId);
+		final QuotationAggregator quotationAggregator = newQuotationAggregator(fromProject);
 
-		for (final ServiceRepairProjectTask task : tasks)
-		{
-			for (final ServiceRepairProjectCostCollector costCollector : costCollectorsByTaskId.get(task.getId()))
-			{
-				if (costCollector.isNotIncludedInCustomerQuotation())
-				{
-					quotationAggregator.add(task, costCollector);
-				}
-			}
-		}
-
-		final I_C_Order order = quotationAggregator.createDraft();
+		final I_C_Order order = quotationAggregator
+				.addAll(costCollectors)
+				.createDraft();
 
 		projectService.setCustomerQuotationToCostCollectors(quotationAggregator.getQuotationLineIdsIndexedByCostCollectorId());
 

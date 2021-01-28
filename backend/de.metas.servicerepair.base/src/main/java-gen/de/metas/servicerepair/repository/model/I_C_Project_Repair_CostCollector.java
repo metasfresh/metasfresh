@@ -240,6 +240,33 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_C_Project_Repair_CostCollector, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *

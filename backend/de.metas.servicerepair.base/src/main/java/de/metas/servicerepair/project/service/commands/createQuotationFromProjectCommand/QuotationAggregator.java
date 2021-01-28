@@ -22,10 +22,9 @@
 
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
@@ -36,26 +35,25 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
-import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_Order;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class QuotationAggregator
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 	private final ServiceRepairProjectInfo project;
 	private final ProductId serviceProductId;
 	private final UomId serviceProductUomId;
@@ -64,7 +62,8 @@ public class QuotationAggregator
 
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
-	private final LinkedHashMap<QuotationLineKey, QuotationLineAggregator> quotationLineAggregators = new LinkedHashMap<>();
+	private final ArrayList<ServiceRepairProjectCostCollector> costCollectorsToAggregate = new ArrayList<>();
+	private ImmutableMap<ServiceRepairProjectCostCollectorId, OrderAndLineId> generatedQuotationLineIdsIndexedByCostCollectorId;
 
 	@Builder
 	private QuotationAggregator(
@@ -98,9 +97,43 @@ public class QuotationAggregator
 
 	public I_C_Order createDraft()
 	{
-		if (quotationLineAggregators.isEmpty())
+		if (costCollectorsToAggregate.isEmpty())
 		{
-			throw new AdempiereException("Nothing to quote");
+			throw new AdempiereException("No cost collectors to aggregate");
+		}
+
+		// Make sure they are ordered by Task ID, so the quotation lines will be in same order as the repair tasks
+		costCollectorsToAggregate.sort(Comparator.comparing(ServiceRepairProjectCostCollector::getTaskId));
+
+		//
+		// Create the empty quotation line aggregators (i.e. buckets)
+		final LinkedHashMap<QuotationLineKey, QuotationLineAggregator> quotationLineAggregators = new LinkedHashMap<>();
+		for (final ServiceRepairProjectCostCollector costCollector : costCollectorsToAggregate)
+		{
+			final QuotationLineKey key = extractQuotationLineKey(costCollector);
+			quotationLineAggregators.computeIfAbsent(key, this::newQuotationLineAggregator);
+		}
+
+		//
+		// Iterate (again!) all cost collectors and add each of them to each bucket
+		for (final ServiceRepairProjectCostCollector costCollector : costCollectorsToAggregate)
+		{
+			final QuotationLineKey costCollectorKey = extractQuotationLineKey(costCollector);
+
+			for (final Map.Entry<QuotationLineKey, QuotationLineAggregator> keyAndLineAggregator : quotationLineAggregators.entrySet())
+			{
+				final QuotationLineKey lineAggregatorKey = keyAndLineAggregator.getKey();
+				final QuotationLineAggregator lineAggregator = keyAndLineAggregator.getValue();
+
+				if (QuotationLineKey.equals(costCollectorKey, lineAggregatorKey))
+				{
+					lineAggregator.collectMatchingItem(costCollector);
+				}
+				else
+				{
+					lineAggregator.collectNotMatchingItem(costCollector);
+				}
+			}
 		}
 
 		final OrderFactory orderFactory = OrderFactory.newSalesOrder()
@@ -128,29 +161,29 @@ public class QuotationAggregator
 			quotationLineAggregator.setOrderLineBuilderUsed(orderLineBuilder);
 		}
 
-		return orderFactory.createDraft();
-	}
+		final I_C_Order quotation = orderFactory.createDraft();
 
-	public final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> getQuotationLineIdsIndexedByCostCollectorId()
-	{
-		return quotationLineAggregators.values()
+		generatedQuotationLineIdsIndexedByCostCollectorId = quotationLineAggregators.values()
 				.stream()
 				.flatMap(QuotationLineAggregator::streamQuotationLineIdsIndexedByCostCollectorId)
 				.collect(GuavaCollectors.toImmutableMap());
+
+		return quotation;
 	}
 
-	public void add(
-			@NonNull final ServiceRepairProjectTask task,
-			@NonNull final ServiceRepairProjectCostCollector costCollector)
+	public final ImmutableMap<ServiceRepairProjectCostCollectorId, OrderAndLineId> getQuotationLineIdsIndexedByCostCollectorId()
 	{
-		quotationLineAggregators
-				.computeIfAbsent(extractQuotationLineKey(task, costCollector), this::newQuotationLineAggregator)
-				.add(costCollector);
+		Objects.requireNonNull(generatedQuotationLineIdsIndexedByCostCollectorId, "generatedQuotationLineIdsIndexedByCostCollectorId");
+		return generatedQuotationLineIdsIndexedByCostCollectorId;
 	}
 
-	private QuotationLineKey extractQuotationLineKey(
-			@NonNull final ServiceRepairProjectTask task,
-			@NonNull final ServiceRepairProjectCostCollector costCollector)
+	public QuotationAggregator addAll(@NonNull final List<ServiceRepairProjectCostCollector> costCollectors)
+	{
+		this.costCollectorsToAggregate.addAll(costCollectors);
+		return this;
+	}
+
+	private QuotationLineKey extractQuotationLineKey(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
 		final ServiceRepairProjectCostCollectorType type = costCollector.getType();
 		if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
@@ -163,14 +196,12 @@ public class QuotationAggregator
 		}
 		else if (type == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 		{
-			final HuId repairedVhuId = Objects.requireNonNull(task.getRepairVhuId());
-			final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(task.getProductId(), repairedVhuId);
-
 			return QuotationLineKey.builder()
 					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 					.productId(costCollector.getProductId())
-					.asiId(asiId)
+					.asiId(costCollector.getAsiId())
 					.uomId(costCollector.getUomId())
+					.singleCostCollectorId(costCollector.getId())
 					.build();
 		}
 		else if (type == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer)

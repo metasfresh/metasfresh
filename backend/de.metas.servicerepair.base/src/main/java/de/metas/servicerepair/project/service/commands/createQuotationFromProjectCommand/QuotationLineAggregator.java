@@ -51,13 +51,7 @@ class QuotationLineAggregator
 {
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
-	private final @NonNull ServiceRepairProjectCostCollectorType type;
-
-	@Getter
-	@NonNull private final ProductId productId;
-
-	@Getter
-	@NonNull private final AttributeSetInstanceId asiId;
+	@NonNull private final QuotationLineKey key;
 
 	@Getter
 	@NonNull private Quantity qty;
@@ -80,16 +74,25 @@ class QuotationLineAggregator
 			@NonNull final QuotationLineKey key)
 	{
 		this.priceCalculator = priceCalculator;
-		this.type = key.getType();
-		this.productId = key.getProductId();
-		this.asiId = key.getAsiId();
+		this.key = key;
 
 		this.qty = Quantitys.createZero(key.getUomId());
 		this.manualPrice = null;
 	}
 
-	public void add(@NonNull final ServiceRepairProjectCostCollector costCollector)
+	public ProductId getProductId()
 	{
+		return key.getProductId();
+	}
+
+	public AttributeSetInstanceId getAsiId()
+	{
+		return key.getAsiId();
+	}
+
+	public void collectMatchingItem(@NonNull final ServiceRepairProjectCostCollector costCollector)
+	{
+		final ServiceRepairProjectCostCollectorType type = key.getType();
 		if (type == ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
 		{
 			qty = qty.add(costCollector.getQtyReservedOrConsumed());
@@ -107,15 +110,14 @@ class QuotationLineAggregator
 		}
 		else if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
 		{
-			qty = qty.toOne();
+			// NOTE: the quantity shall be the amount of repaired products to return
+			// qty = qty.toOne();
 
 			final OrderLineDetailCreateRequest detail = computeOrderLineDetailCreateRequest(costCollector);
-
-			manualPrice = manualPrice != null
-					? manualPrice.add(detail.getAmount())
-					: detail.getAmount();
-
 			details.add(detail);
+
+			// NOTE: use the price from price list
+			// manualPrice = manualPrice != null ? manualPrice.add(detail.getAmount()) : detail.getAmount();
 		}
 		else
 		{
@@ -123,6 +125,20 @@ class QuotationLineAggregator
 		}
 
 		costCollectorIds.add(costCollector.getId());
+	}
+
+	public void collectNotMatchingItem(@NonNull final ServiceRepairProjectCostCollector costCollector)
+	{
+		final ServiceRepairProjectCostCollectorType type = key.getType();
+		if(type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
+		{
+			if(costCollector.getType() == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
+			{
+				// NOTE: usually we increment with ONE.
+				// We are adding as BigDecimal to avoid cases when the product to return and the service product have different UOMs.
+				qty = qty.add(costCollector.getQtyReservedOrConsumed().toBigDecimal());
+			}
+		}
 	}
 
 	private OrderLineDetailCreateRequest computeOrderLineDetailCreateRequest(final ServiceRepairProjectCostCollector costCollector)

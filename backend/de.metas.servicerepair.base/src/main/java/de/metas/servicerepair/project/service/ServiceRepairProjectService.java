@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -37,6 +38,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.service.CreateProjectRequest;
@@ -68,10 +70,12 @@ import de.metas.servicerepair.repair_order.RepairManufacturingOrderInfo;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.util.TimeUtil;
@@ -85,6 +89,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -93,6 +98,7 @@ public class ServiceRepairProjectService
 {
 	public static final AdWindowId AD_WINDOW_ID = AdWindowId.ofRepoId(541015); // FIXME hardcoded
 
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final HUReservationService huReservationService;
 	private final RepairCustomerReturnsService repairCustomerReturnsService;
 	private final RepairManufacturingOrderService repairManufacturingOrderService;
@@ -238,9 +244,9 @@ public class ServiceRepairProjectService
 				.execute();
 	}
 
-	public List<ServiceRepairProjectCostCollector> getCostCollectorsByProjectButNotInProposal(@NonNull final ProjectId projectId)
+	public List<ServiceRepairProjectCostCollector> getByProjectIdButNotIncludedInCustomerQuotation(@NonNull final ProjectId projectId)
 	{
-		return projectCostCollectorRepository.getByProjectIdButNotInProposal(projectId);
+		return projectCostCollectorRepository.getByProjectIdButNotIncludedInCustomerQuotation(projectId);
 	}
 
 	public void setCustomerQuotationToCostCollectors(@NonNull final Map<ServiceRepairProjectCostCollectorId, OrderAndLineId> map)
@@ -250,10 +256,10 @@ public class ServiceRepairProjectService
 
 	public void reserveSparePartsFromHUs(
 			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final Quantity qtyToReserve,
 			@NonNull final ImmutableSet<HuId> fromHUIds)
 	{
 		final ServiceRepairProjectTask task = getTaskById(taskId);
-		final Quantity qtyToReserve = task.getQtyToReserve();
 		reserveSparePartsFromHUs(task, qtyToReserve, fromHUIds, PartOwnership.OWNED_BY_COMPANY);
 	}
 
@@ -418,13 +424,18 @@ public class ServiceRepairProjectService
 
 		if (!projectCostCollectorRepository.matchesByTaskAndProduct(taskId, repairOrder.getRepairedProductId()))
 		{
+			final ProductId repairedProductId = repairOrder.getRepairedProductId();
 			final ServiceRepairProjectTask task = projectTaskRepository.getById(taskId);
+			final HuId repairedVhuId = Objects.requireNonNull(task.getRepairVhuId());
+			final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(repairedProductId, repairedVhuId);
+
 			createCostCollector(CreateProjectCostCollectorRequest.builder()
 					.taskId(task.getId())
 					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
-					.productId(repairOrder.getRepairedProductId())
+					.productId(repairedProductId)
+					.asiId(asiId)
 					.qtyReserved(repairOrder.getRepairedQty())
-					.reservedVhuId(task.getRepairVhuId())
+					.reservedVhuId(repairedVhuId)
 					.build());
 		}
 
@@ -490,5 +501,10 @@ public class ServiceRepairProjectService
 	public void unlinkQuotationFromProject(@NonNull final ProjectId projectId, @NonNull final OrderId quotationId)
 	{
 		projectCostCollectorRepository.unsetCustomerQuotation(projectId, quotationId);
+	}
+
+	public void unlinkProposalLineFromProject(@NonNull final OrderAndLineId proposalLineId)
+	{
+		projectCostCollectorRepository.unsetCustomerQuotationLine(proposalLineId);
 	}
 }

@@ -23,12 +23,16 @@
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
 import de.metas.product.ProductId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -38,4 +42,7 @@ class QuotationLineKey
 	@NonNull ProductId productId;
 	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 	@NonNull UomId uomId;
+	@Nullable ServiceRepairProjectCostCollectorId singleCostCollectorId;
+
+	public static boolean equals(@Nullable final QuotationLineKey o1, @Nullable final QuotationLineKey o2) { return Objects.equals(o1, o2); }
 }
