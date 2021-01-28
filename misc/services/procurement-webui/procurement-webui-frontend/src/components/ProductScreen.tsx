@@ -92,7 +92,9 @@ const ProductScreen: React.FunctionComponent = observer(() => {
                   currentQty > 0 && saveQty(currentQty - 1);
                 }}
               >
-                <i className="fas fa-2x fa-arrow-down"></i>
+                <span>
+                  <i className="fas fa-2x fa-arrow-down"></i>
+                </span>
               </div>
             </div>
           </div>
