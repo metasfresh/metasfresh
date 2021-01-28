@@ -10,11 +10,13 @@ import java.time.ZonedDateTime;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ADMessageAndParams;
+import de.metas.order.impl.OrderLineDetailRepository;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -94,6 +96,7 @@ public class PurchaseOrderFromItemFactoryTest
 			}
 		};
 		Services.registerService(IOrderLineBL.class, orderLineBL);
+		SpringContextHolder.registerJUnitBean(new OrderLineDetailRepository());
 	}
 
 	@SuppressWarnings("SameParameterValue")
