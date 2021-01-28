@@ -23,13 +23,16 @@
 package de.metas.procurement.webui.rest.dailyReport;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.With;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -48,6 +51,11 @@ public class JsonDailyReport
 	@NonNull
 	@Singular
 	List<JsonDailyReportItem> products;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable
+	@With
+	Long countUnconfirmed;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonDailyReportBuilder {}

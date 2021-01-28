@@ -1,12 +1,16 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import View from './View';
+import WeeklyNav from './WeeklyNav';
+import WeeklyProductList from './WeeklyProductList';
 
 const Weekly: FunctionComponent = (): ReactElement => {
   return (
     <View>
       <div>
-        <h1 className="title">Weekly view</h1>
-        <p className="subtitle">Some content</p>
+        <WeeklyNav />
+        <div className="mt-1 p-4">
+          <WeeklyProductList headerText={``} />
+        </div>
       </div>
     </View>
   );
