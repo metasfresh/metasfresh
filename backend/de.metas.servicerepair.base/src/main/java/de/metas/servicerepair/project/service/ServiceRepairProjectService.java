@@ -22,6 +22,7 @@
 
 package de.metas.servicerepair.project.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -43,9 +44,11 @@ import de.metas.project.service.ProjectService;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestId;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
+import de.metas.servicerepair.project.model.PartOwnership;
 import de.metas.servicerepair.project.model.ServiceRepairProjectConsumptionSummary;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -59,6 +62,7 @@ import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjec
 import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjectCommand;
 import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
+import de.metas.servicerepair.project.service.requests.CreateQuotationFromProjectRequest;
 import de.metas.servicerepair.repair_order.RepairManufacturingCostCollector;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderInfo;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderService;
@@ -71,16 +75,18 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.UnaryOperator;
 
 @Service
 public class ServiceRepairProjectService
@@ -148,6 +154,11 @@ public class ServiceRepairProjectService
 				.build());
 	}
 
+	private BPartnerId getProjectBPartnerId(@NonNull final ProjectId projectId)
+	{
+		return getById(projectId).getBpartnerId();
+	}
+
 	public ProjectId createProjectFromRequest(final RequestId requestId)
 	{
 		return CreateServiceRepairProjectCommand.builder()
@@ -170,35 +181,41 @@ public class ServiceRepairProjectService
 
 	public void createProjectTask(@NonNull final CreateSparePartsProjectTaskRequest request)
 	{
-		projectTaskRepository.createNew(request);
+		final ServiceRepairProjectTask task = projectTaskRepository.createNew(request);
+
+		for (final CreateSparePartsProjectTaskRequest.AlreadyReturnedQty alreadyReturnedQty : request.getAlreadyReturnedQtys())
+		{
+			reserveSparePartsFromHUs(task,
+					alreadyReturnedQty.getQty(),
+					ImmutableSet.of(alreadyReturnedQty.getSparePartsVhuId()),
+					PartOwnership.OWNED_BY_CUSTOMER);
+		}
 	}
 
 	public void createProjectTask(@NonNull final CreateRepairProjectTaskRequest request)
 	{
-		projectTaskRepository.createNew(request);
+		final ServiceRepairProjectTaskId taskId = projectTaskRepository.createNew(request);
+
+		final ProjectId projectId = taskId.getProjectId();
+		huReservationService.makeReservation(ReserveHUsRequest.builder()
+				.documentRef(HUReservationDocRef.ofProjectId(projectId))
+				.productId(request.getProductId())
+				.qtyToReserve(request.getQtyRequired())
+				.customerId(getProjectBPartnerId(projectId))
+				.huId(request.getRepairVhuId())
+				.build())
+				.orElseThrow(() -> new AdempiereException("Cannot make reservation"));
 	}
 
 	private void addQtyToProjectTask(@NonNull final AddQtyToProjectTaskRequest request)
 	{
-		changeTask(
+		projectTaskRepository.changeById(
 				request.getTaskId(),
 				task -> task.reduce(request));
 
 		projectConsumptionSummaryRepository.change(
 				ServiceRepairProjectConsumptionSummary.extractGroupingKey(request),
 				summary -> summary.reduce(request));
-	}
-
-	public void changeTask(
-			@NonNull final ServiceRepairProjectTaskId taskId,
-			@NonNull final UnaryOperator<ServiceRepairProjectTask> mapper)
-	{
-		projectTaskRepository.changeById(taskId, mapper);
-	}
-
-	public void saveTask(@NonNull final ServiceRepairProjectTask task)
-	{
-		projectTaskRepository.save(task);
 	}
 
 	public ServiceRepairProjectTask getTaskById(@NonNull final ServiceRepairProjectTaskId taskId)
@@ -211,11 +228,12 @@ public class ServiceRepairProjectService
 		return projectTaskRepository.getByIds(taskIds);
 	}
 
-	public OrderId createQuotationFromProject(final ProjectId projectId)
+	public OrderId createQuotationFromProject(@NonNull final CreateQuotationFromProjectRequest request)
 	{
 		return CreateQuotationFromProjectCommand.builder()
 				.projectService(this)
-				.projectId(projectId)
+				.projectId(request.getProjectId())
+				.serviceProductId(request.getServiceProductId())
 				.build()
 				.execute();
 	}
@@ -234,21 +252,26 @@ public class ServiceRepairProjectService
 			@NonNull final ServiceRepairProjectTaskId taskId,
 			@NonNull final ImmutableSet<HuId> fromHUIds)
 	{
-		final I_C_Project project = projectService.getById(taskId.getProjectId());
 		final ServiceRepairProjectTask task = getTaskById(taskId);
+		final Quantity qtyToReserve = task.getQtyToReserve();
+		reserveSparePartsFromHUs(task, qtyToReserve, fromHUIds, PartOwnership.OWNED_BY_COMPANY);
+	}
 
+	private void reserveSparePartsFromHUs(
+			@NonNull final ServiceRepairProjectTask task,
+			@NonNull final Quantity qtyToReserve,
+			@NonNull final ImmutableSet<HuId> fromHUIds,
+			@NonNull final PartOwnership partOwnership)
+	{
+		final ProjectId projectId = task.getId().getProjectId();
 		final HUReservation huReservation = huReservationService.makeReservation(ReserveHUsRequest.builder()
-				.documentRef(HUReservationDocRef.ofProjectId(task.getId().getProjectId()))
+				.documentRef(HUReservationDocRef.ofProjectId(projectId))
 				.productId(task.getProductId())
-				.qtyToReserve(task.getQtyToReserve())
-				.customerId(BPartnerId.ofRepoId(project.getC_BPartner_ID()))
+				.qtyToReserve(qtyToReserve)
+				.customerId(getProjectBPartnerId(projectId))
 				.huIds(fromHUIds)
 				.build())
-				.orElse(null);
-		if (huReservation == null)
-		{
-			throw new AdempiereException("Cannot make reservation");
-		}
+				.orElseThrow(() -> new AdempiereException("Cannot make reservation"));
 
 		for (final HuId vhuId : huReservation.getVhuIds())
 		{
@@ -256,6 +279,7 @@ public class ServiceRepairProjectService
 
 			createCostCollector(CreateProjectCostCollectorRequest.builder()
 					.taskId(task.getId())
+					.type(ServiceRepairProjectCostCollectorType.ofSparePartOwnership(partOwnership))
 					.productId(task.getProductId())
 					.qtyReserved(qtyReserved)
 					.qtyConsumed(qtyReserved.toZero())
@@ -275,7 +299,7 @@ public class ServiceRepairProjectService
 		return projectTaskRepository.retainIdsOfType(taskIds, ServiceRepairProjectTaskType.SPARE_PARTS);
 	}
 
-	public void releaseReservedSpareParts(final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
+	public void releaseCompanyOwnedReservedSpareParts(final ImmutableSet<ServiceRepairProjectTaskId> taskIds)
 	{
 		final ImmutableSet<ServiceRepairProjectTaskId> sparePartsTaskIds = retainIdsOfTypeSpareParts(taskIds);
 		if (sparePartsTaskIds.isEmpty())
@@ -283,19 +307,13 @@ public class ServiceRepairProjectService
 			throw new AdempiereException("No Spare Parts tasks");
 		}
 
-		final List<ServiceRepairProjectCostCollector> costCollectors = projectCostCollectorRepository.getAndDeleteByTaskIds(taskIds);
+		final ImmutableList<ServiceRepairProjectCostCollector> costCollectorsToDelete = projectCostCollectorRepository.getByTaskIds(sparePartsTaskIds)
+				.stream()
+				.filter(ServiceRepairProjectCostCollector::isNotIncludedInCustomerQuotation)
+				.filter(costCollector -> costCollector.getType() == ServiceRepairProjectCostCollectorType.SparePartsToBeInvoiced)
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableSet<HuId> reservedSparePartsVHUIds = costCollectors.stream()
-				.map(ServiceRepairProjectCostCollector::getReservedSparePartsVHUId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-
-		huReservationService.deleteReservations(reservedSparePartsVHUIds);
-
-		for (final ServiceRepairProjectCostCollector costCollector : costCollectors)
-		{
-			addQtyToProjectTask(extractAddQtyToProjectTaskRequest(costCollector).negate());
-		}
+		deleteCostCollectors(costCollectorsToDelete, true);
 	}
 
 	private static AddQtyToProjectTaskRequest extractAddQtyToProjectTaskRequest(final ServiceRepairProjectCostCollector costCollector)
@@ -352,7 +370,7 @@ public class ServiceRepairProjectService
 		for (final ServiceRepairProjectTask task : tasks)
 		{
 			final PPOrderId repairOrderId = repairManufacturingOrderService.createRepairOrder(project, task);
-			saveTask(task.withRepairOrderId(repairOrderId));
+			projectTaskRepository.save(task.withRepairOrderId(repairOrderId));
 		}
 	}
 
@@ -377,31 +395,100 @@ public class ServiceRepairProjectService
 		projectConsumptionSummaryRepository.saveProject(projectId, aggregates.values());
 	}
 
-	public void importCostsFromRepairOrderIfApplies(@NonNull final RepairManufacturingOrderInfo repairOrder)
+	public void importCostsFromRepairOrderAndMarkTaskCompleted(@NonNull final RepairManufacturingOrderInfo repairOrder)
 	{
-		final ServiceRepairProjectTaskId taskId = projectTaskRepository.getTaskIdByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
-				.orElse(null);
-		if (taskId == null)
+		final ServiceRepairProjectTaskId taskId = projectTaskRepository
+				.getTaskByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
+				.orElseThrow(() -> new AdempiereException("No task found for " + repairOrder));
+
+		final Set<PPOrderAndCostCollectorId> alreadyImportedRepairCostCollectorIds = projectCostCollectorRepository.retainExistingPPCostCollectorIds(
+				repairOrder.getProjectId(),
+				repairOrder.getCostCollectorIds());
+
+		for (final RepairManufacturingCostCollector mfgCostCollector : repairOrder.getCostCollectors())
+		{
+			// skip already imported cost collectors
+			if (alreadyImportedRepairCostCollectorIds.contains(mfgCostCollector.getId()))
+			{
+				continue;
+			}
+
+			createCostCollector(toCreateProjectCostCollectorRequest(taskId, mfgCostCollector));
+		}
+
+		if (!projectCostCollectorRepository.matchesByTaskAndProduct(taskId, repairOrder.getRepairedProductId()))
+		{
+			final ServiceRepairProjectTask task = projectTaskRepository.getById(taskId);
+			createCostCollector(CreateProjectCostCollectorRequest.builder()
+					.taskId(task.getId())
+					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
+					.productId(repairOrder.getRepairedProductId())
+					.qtyReserved(repairOrder.getRepairedQty())
+					.reservedVhuId(task.getRepairVhuId())
+					.build());
+		}
+
+		projectTaskRepository.changeById(taskId, task -> task.withRepairOrderDone(true));
+	}
+
+	private static CreateProjectCostCollectorRequest toCreateProjectCostCollectorRequest(
+			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final RepairManufacturingCostCollector consumedComponentOrResource)
+	{
+		return CreateProjectCostCollectorRequest.builder()
+				.taskId(taskId)
+				.type(ServiceRepairProjectCostCollectorType.RepairingConsumption)
+				.productId(consumedComponentOrResource.getProductId())
+				.qtyConsumed(consumedComponentOrResource.getQtyConsumed())
+				.repairOrderCostCollectorId(consumedComponentOrResource.getId())
+				.build();
+	}
+
+	public void unimportCostsFromRepairOrder(@NonNull final RepairManufacturingOrderInfo repairOrder)
+	{
+		final ServiceRepairProjectTaskId taskId = projectTaskRepository
+				.getTaskByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
+				.orElseThrow(() -> new AdempiereException("No task found for " + repairOrder));
+
+		final ImmutableList<ServiceRepairProjectCostCollector> costCollectorsToDelete = projectCostCollectorRepository
+				.getByTaskId(taskId)
+				.stream()
+				.filter(ServiceRepairProjectCostCollector::isNotIncludedInCustomerQuotation)
+				.collect(ImmutableList.toImmutableList());
+
+		deleteCostCollectors(costCollectorsToDelete, false);
+	}
+
+	private void deleteCostCollectors(
+			@NonNull final Collection<ServiceRepairProjectCostCollector> costCollectors,
+			final boolean deleteHUReservations)
+	{
+		if (costCollectors.isEmpty())
 		{
 			return;
 		}
 
-		for (final RepairManufacturingCostCollector mfgCostCollector : repairManufacturingOrderService.getCostCollectors(repairOrder.getId()))
+		final HashSet<HuId> reservedVHUIds = new HashSet<>();
+		final HashSet<ServiceRepairProjectCostCollectorId> costCollectorIdsToDelete = new HashSet<>();
+		final ArrayList<AddQtyToProjectTaskRequest> addQtyToProjectTaskRequests = new ArrayList<>();
+		for (final ServiceRepairProjectCostCollector costCollector : costCollectors)
 		{
-			createCostCollector(toCreateProjectCostCollectorRequest(taskId, mfgCostCollector));
+			if (deleteHUReservations && costCollector.getVhuId() != null)
+			{
+				reservedVHUIds.add(costCollector.getVhuId());
+			}
+
+			addQtyToProjectTaskRequests.add(extractAddQtyToProjectTaskRequest(costCollector).negate());
+			costCollectorIdsToDelete.add(costCollector.getId());
 		}
 
-		changeTask(taskId, task -> task.withRepairOrderDone(true));
+		huReservationService.deleteReservations(reservedVHUIds);
+		projectCostCollectorRepository.deleteByIds(costCollectorIdsToDelete);
+		addQtyToProjectTaskRequests.forEach(this::addQtyToProjectTask);
 	}
 
-	private static CreateProjectCostCollectorRequest toCreateProjectCostCollectorRequest(final ServiceRepairProjectTaskId taskId, final RepairManufacturingCostCollector mfgCostCollector)
+	public void unlinkQuotationFromProject(@NonNull final ProjectId projectId, @NonNull final OrderId quotationId)
 	{
-		return CreateProjectCostCollectorRequest.builder()
-				.taskId(taskId)
-				.productId(mfgCostCollector.getProductId())
-				.qtyConsumed(mfgCostCollector.getQtyConsumed())
-				.repairOrderCostCollectorId(mfgCostCollector.getId())
-				.build();
+		projectCostCollectorRepository.unsetCustomerQuotation(projectId, quotationId);
 	}
-
 }

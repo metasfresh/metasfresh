@@ -167,7 +167,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(de.metas.event.interceptor.Main.INSTANCE);
 
-		engine.addModelValidator(de.metas.order.model.interceptor.OrderModuleInterceptor.INSTANCE);
+		engine.addModelValidator(new de.metas.order.model.interceptor.OrderModuleInterceptor());
 
 		engine.addModelValidator(de.metas.invoice.interceptor.InvoiceModuleInterceptor.INSTANCE);
 

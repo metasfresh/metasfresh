@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO implements I_C_Project_Repair_CostCollector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1449852723L;
+	private static final long serialVersionUID = 570765792L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_CostCollector (final Properties ctx, final int C_Project_Repair_CostCollector_ID, @Nullable final String trxName)
@@ -254,6 +254,31 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	public int getQuotation_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Quotation_OrderLine_ID);
+	}
+
+	/** 
+	 * Type AD_Reference_ID=541251
+	 * Reference name: C_Project_Repair_CostCollector_Type
+	 */
+	public static final int TYPE_AD_Reference_ID=541251;
+	/** SparePartsToBeInvoiced = SP+ */
+	public static final String TYPE_SparePartsToBeInvoiced = "SP+";
+	/** SparePartsOwnedByCustomer = SPC */
+	public static final String TYPE_SparePartsOwnedByCustomer = "SPC";
+	/** RepairProductToReturn = RPC */
+	public static final String TYPE_RepairProductToReturn = "RPC";
+	/** RepairingConsumption = RP+ */
+	public static final String TYPE_RepairingConsumption = "RP+";
+	@Override
+	public void setType (final java.lang.String Type)
+	{
+		set_Value (COLUMNNAME_Type, Type);
+	}
+
+	@Override
+	public java.lang.String getType() 
+	{
+		return get_ValueAsString(COLUMNNAME_Type);
 	}
 
 	@Override

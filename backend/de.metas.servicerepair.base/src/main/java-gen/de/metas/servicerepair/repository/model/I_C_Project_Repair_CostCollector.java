@@ -356,6 +356,29 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_Quotation_OrderLine_ID = "Quotation_OrderLine_ID";
 
 	/**
+	 * Set Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setType (java.lang.String Type);
+
+	/**
+	 * Get Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getType();
+
+	ModelColumn<I_C_Project_Repair_CostCollector, Object> COLUMN_Type = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "Type", null);
+	String COLUMNNAME_Type = "Type";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
