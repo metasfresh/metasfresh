@@ -29,9 +29,9 @@ const Prognose: React.FunctionComponent<Props> = ({
 
   return (
     <div>
-      <div className="container prognose-box pl-3 pr-3">
+      <div className="container prognose-box pb-1 pl-3 pr-3">
         <div className="columns is-mobile">
-          <div className="column is-12 has-text-centered pb-0">{prognoseHeader}</div>
+          <div className="column is-12 has-text-centered pb-1">{prognoseHeader}</div>
         </div>
         <div className="columns is-mobile has-text-centered pb-3">
           <div

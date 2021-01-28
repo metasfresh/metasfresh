@@ -60,17 +60,12 @@ body {
 
 .header {
   .header-title {
-
-    flex: 0 1 auto;
+    flex: 2;
+    text-align: center;
   }
 
   .header-aligner {
     visibility: hidden;
-    flex: 0 1 auto;
-  }
-
-  .logout-link {
-    flex: 0 1 auto;
   }
 }
 
@@ -78,8 +73,6 @@ body {
   overflow-y: auto;
   position: absolute;
   background-color: white;
-/*  position: fixed;
-  top: 0;*/
   -webkit-overflow-scrolling: touch;
   transition: transform .2s ease-in-out;
 }

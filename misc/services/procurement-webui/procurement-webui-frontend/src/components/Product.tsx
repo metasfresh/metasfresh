@@ -58,7 +58,9 @@ const Product: React.FunctionComponent<Props> = ({
               {!confirmedByUser && <div className="column mt-4 is-hidden-desktop is-hidden-tablet is-4">&nbsp;</div>}
               {confirmedByUser && (
                 <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet is-4">
-                  <i className="fas fa-check"></i>
+                  <span>
+                    <i className="fas fa-check"></i>
+                  </span>
                 </div>
               )}
             </div>

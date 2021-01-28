@@ -55,8 +55,8 @@ const Login: FunctionComponent<Props> = inject('store')(
 
       return (
         <View>
-          <div className="container p-4 py-6 login-view">
-            <div className="login-logo">
+          <div className="container p-4 pb-6 login-view">
+            <div className="login-logo pb-6">
               <img src={logo} className="logo" />
             </div>
             <form>
