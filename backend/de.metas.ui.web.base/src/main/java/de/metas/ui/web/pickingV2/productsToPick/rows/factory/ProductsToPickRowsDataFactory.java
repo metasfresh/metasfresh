@@ -191,11 +191,8 @@ public final class ProductsToPickRowsDataFactory
 
 		if (!packageable.isAllocated())
 		{
-			final QtyCalculationsBOM pickingOrderBOM = getPickingOrderBOM(packageable).orElse(null);
-			if (pickingOrderBOM != null)
-			{
-				rows.add(createRowsFromPickingOrder(pickingOrderBOM, packageable));
-			}
+			getPickingOrderBOM(packageable)
+					.ifPresent(pickingOrderBOM -> rows.add(createRowsFromPickingOrder(pickingOrderBOM, packageable)));
 
 		}
 
@@ -570,8 +567,7 @@ public final class ProductsToPickRowsDataFactory
 	{
 		final AllocablePackageable bomLinePackageable = toBOMLineAllocablePackageable(bomLine, finishedGoodPackageable);
 
-		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
-		rows.addAll(createRowsFromHUs(bomLinePackageable));
+		final ArrayList<ProductsToPickRow> rows = new ArrayList<>(createRowsFromHUs(bomLinePackageable));
 
 		if (!bomLinePackageable.isAllocated())
 		{
