@@ -42,6 +42,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -49,6 +50,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
@@ -239,6 +241,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	CopyHUsResponse copyAsPlannedHUs(@NonNull Collection<HuId> huIdsToCopy);
 
 	I_M_HU copyAsPlannedHU(@NonNull HuId huId);
+
+	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull HuId huId);
+
+	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull I_M_HU hu);
 
 	@Builder
 	@Value

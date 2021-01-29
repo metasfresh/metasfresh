@@ -2,6 +2,7 @@ package org.eevolution.api;
 
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -40,6 +41,8 @@ public interface IPPOrderBL extends ISingletonService
 	boolean isSomethingProcessed(I_PP_Order ppOrder);
 
 	void addQty(OrderQtyChangeRequest request);
+
+	PPOrderQuantities getQuantities(I_PP_Order order);
 
 	/**
 	 * Gets the "direct" order line.

@@ -22,10 +22,15 @@
 
 package de.metas.servicerepair.repair_order;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.eevolution.api.PPOrderId;
 
 @Value
@@ -34,4 +39,19 @@ public class RepairManufacturingOrderInfo
 {
 	@NonNull PPOrderId id;
 	@NonNull ProjectId projectId;
+
+	@NonNull ProductId repairedProductId;
+	/**
+	 * shall be ONE
+	 */
+	@NonNull Quantity repairedQty;
+
+	@NonNull ImmutableList<RepairManufacturingCostCollector> costCollectors;
+
+	public ImmutableSet<PPOrderAndCostCollectorId> getCostCollectorIds()
+	{
+		return getCostCollectors().stream()
+				.map(RepairManufacturingCostCollector::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

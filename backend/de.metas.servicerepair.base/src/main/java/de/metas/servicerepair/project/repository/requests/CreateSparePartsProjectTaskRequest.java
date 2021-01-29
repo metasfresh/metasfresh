@@ -22,12 +22,15 @@
 
 package de.metas.servicerepair.project.repository.requests;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
@@ -39,4 +42,14 @@ public class CreateSparePartsProjectTaskRequest
 
 	@NonNull ProductId productId;
 	@NonNull Quantity qtyRequired;
+
+	@NonNull @Singular ImmutableList<AlreadyReturnedQty> alreadyReturnedQtys;
+
+	@Value
+	@Builder
+	public static class AlreadyReturnedQty
+	{
+		@NonNull Quantity qty;
+		@NonNull HuId sparePartsVhuId;
+	}
 }

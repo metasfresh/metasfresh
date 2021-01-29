@@ -89,6 +89,15 @@ public class Quantitys
 		return Quantity.zero(uomRecord);
 	}
 
+	public Quantity one(@NonNull final UomId uomId)
+	{
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomDao.getById(uomId);
+
+		return Quantity.of(1, uomRecord);
+	}
+
+
 	public Quantity createZero(@NonNull final ProductId productId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);

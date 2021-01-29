@@ -55,7 +55,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         frontendDockerImage = results.dockerImage
     }
 
-    // create and push your docker-compose.yml file
+    // create and push our docker-compose.yml file
     sh 'cp docker-compose/docker-compose-template.yml docker-compose/docker-compose.yml'
     sh "sed -i 's|\${dockerImage.procurement_rabbitmq}|${rabbitmqDockerImage}|g' docker-compose/docker-compose.yml"
     sh "sed -i 's|\${dockerImage.procurement_nginx}|${nginxDockerImage}|g' docker-compose/docker-compose.yml"

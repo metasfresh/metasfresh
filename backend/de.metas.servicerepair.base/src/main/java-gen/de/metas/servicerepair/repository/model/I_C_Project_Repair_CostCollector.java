@@ -240,6 +240,33 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_C_Project_Repair_CostCollector, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -354,6 +381,29 @@ public interface I_C_Project_Repair_CostCollector
 
 	ModelColumn<I_C_Project_Repair_CostCollector, org.compiere.model.I_C_OrderLine> COLUMN_Quotation_OrderLine_ID = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "Quotation_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_Quotation_OrderLine_ID = "Quotation_OrderLine_ID";
+
+	/**
+	 * Set Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setType (java.lang.String Type);
+
+	/**
+	 * Get Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getType();
+
+	ModelColumn<I_C_Project_Repair_CostCollector, Object> COLUMN_Type = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "Type", null);
+	String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Updated.

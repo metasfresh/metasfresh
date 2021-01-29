@@ -35,6 +35,8 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.order.OrderId;
+import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentDAO;
@@ -80,13 +82,15 @@ public class C_Order
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final OrderLineDetailRepository orderLineDetailRepository;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 
-	public C_Order()
+	public C_Order(final OrderLineDetailRepository orderLineDetailRepository)
 	{
+		this.orderLineDetailRepository = orderLineDetailRepository;
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
 	}
@@ -209,6 +213,7 @@ public class C_Order
 		unlinkSalesOrders(order);
 		unlinkThisProposalFromGeneratedSalesOrders(order);
 		unlinkThisSalesOrderFromProposal(order);
+		orderLineDetailRepository.deleteByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 
 	/**

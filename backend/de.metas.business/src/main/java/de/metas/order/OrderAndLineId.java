@@ -128,7 +128,7 @@ public class OrderAndLineId
 		return orderLineId.getRepoId();
 	}
 
-	public static boolean equals(final OrderAndLineId o1, final OrderAndLineId o2)
+	public static boolean equals(@Nullable final OrderAndLineId o1, @Nullable final OrderAndLineId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

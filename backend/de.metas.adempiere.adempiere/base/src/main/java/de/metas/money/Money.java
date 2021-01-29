@@ -1,7 +1,25 @@
 package de.metas.money;
 
-import static java.math.BigDecimal.ZERO;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.lang.Percent;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,28 +33,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.lang.Percent;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -62,7 +59,7 @@ import lombok.Value;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class Money
+public class Money
 {
 	public static Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
 	{
@@ -79,6 +76,7 @@ public final class Money
 		return new Money(value, currencyId);
 	}
 
+	@Nullable
 	public static Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
 	{
 		if (value == null || currencyId == null)
@@ -88,6 +86,7 @@ public final class Money
 		return new Money(value, currencyId);
 	}
 
+	@Nullable
 	public static Money toZeroOrNull(@Nullable final Money money)
 	{
 		if (money == null)
@@ -153,7 +152,7 @@ public final class Money
 		return new Money(value.negate(), currencyId);
 	}
 
-	public Money negateIf(boolean condition)
+	public Money negateIf(final boolean condition)
 	{
 		return condition ? negate() : this;
 	}
@@ -268,7 +267,7 @@ public final class Money
 		return new Money(value.multiply(multiplicand), currencyId);
 	}
 
-	public Money multiply(@NonNull Percent percent, @NonNull final CurrencyPrecision precision)
+	public Money multiply(@NonNull final Percent percent, @NonNull final CurrencyPrecision precision)
 	{
 		final BigDecimal newValue = percent.computePercentageOf(value, precision.toInt(), precision.getRoundingMode());
 
@@ -325,9 +324,7 @@ public final class Money
 	public static <T> Collector<Money, ?, T> sumByCurrencyAnd(final Function<Map<CurrencyId, Money>, T> finisher)
 	{
 		final Supplier<Map<CurrencyId, Money>> supplier = HashMap::new;
-		final BiConsumer<Map<CurrencyId, Money>, Money> accumulator = (map, money) -> {
-			map.compute(money.getCurrencyId(), (currency, moneyOld) -> moneyOld != null ? moneyOld.add(money) : money);
-		};
+		final BiConsumer<Map<CurrencyId, Money>, Money> accumulator = (map, money) -> map.compute(money.getCurrencyId(), (currency, moneyOld) -> moneyOld != null ? moneyOld.add(money) : money);
 		final BinaryOperator<Map<CurrencyId, Money>> combiner = (l, r) -> {
 			r.values().forEach(money -> accumulator.accept(l, money));
 			return l;
@@ -341,4 +338,13 @@ public final class Money
 		return Amount.of(toBigDecimal(), currencyCodeMapper.apply(getCurrencyId()));
 	}
 
+	public Money round(@NonNull final CurrencyPrecision precision)
+	{
+		return withValue(precision.round(this.value));
+	}
+
+	private Money withValue(@NonNull final BigDecimal newValue)
+	{
+		return value.compareTo(newValue) != 0 ? of(newValue, currencyId) : this;
+	}
 }

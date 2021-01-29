@@ -1,6 +1,5 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMultimap;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -35,6 +34,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class HUPPOrderBL implements IHUPPOrderBL
@@ -148,7 +148,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 
 		final I_PP_Order ppOrder = getById(ppOrderId);
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
-		if (Objects.equal(planningStatus, targetPlanningStatus))
+		if (Objects.equals(planningStatus, targetPlanningStatus))
 		{
 			throw new IllegalStateException("Already " + targetPlanningStatus);
 		}
