@@ -33,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -185,6 +186,9 @@ public interface IFlatrateDAO extends ISingletonService
 
 		@Nullable
 		ChargeId chargeId;
+
+		@Nullable
+		OrgId orgId;
 	}
 
 	List<I_C_Flatrate_Term> retrieveTerms(Collection<FlatrateTermId> flatrateTermIds);

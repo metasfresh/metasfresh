@@ -1756,7 +1756,7 @@ public class FlatrateBL implements IFlatrateBL
 				continue;
 			}
 
-			if (periodsOverlap(newTerm, term) && productsOverlap(newTerm, term))
+			if (term.getAD_Org_ID() == newTerm.getAD_Org_ID() && periodsOverlap(newTerm, term) && productsOverlap(newTerm, term))
 			{
 				return true;
 			}

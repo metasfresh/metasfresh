@@ -27,21 +27,18 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product_Category;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -110,6 +107,7 @@ public class CommissionConfigFactory
 		final TermsQuery termsQuery = TermsQuery.builder()
 				.billPartnerIds(allBPartnerIds)
 				.dateOrdered(contractRequest.getCommissionDate())
+				.orgId(contractRequest.getOrgId())
 				.build();
 		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
 				.retrieveTerms(termsQuery)
@@ -324,6 +322,9 @@ public class CommissionConfigFactory
 
 		@NonNull
 		Hierarchy commissionHierarchy;
+
+		@NonNull
+		OrgId orgId;
 	}
 
 	@Builder
