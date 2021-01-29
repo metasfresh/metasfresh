@@ -56,7 +56,9 @@ import de.metas.notification.impl.NotificationRepository;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public abstract class AbstractHUTest
 {
 	protected I_C_UOM uomEach;
@@ -149,20 +151,6 @@ public abstract class AbstractHUTest
 	/** HU Test helper */
 	public HUTestHelper helper;
 
-	/**
-	 * Watches current test and dumps the database to console in case of failure
-	 */
-	@Rule
-	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher()
-	{
-		@Override
-		protected void onTestFailed(final String testName, final Throwable exception)
-		{
-			super.onTestFailed(testName, exception);
-			afterTestFailed();
-		};
-	};
-
 	@BeforeEach
 	public final void init()
 	{
@@ -245,16 +233,6 @@ public abstract class AbstractHUTest
 		saveRecord(locator);
 
 		return LocatorId.ofRecord(locator);
-	}
-
-	/**
-	 * Method called after a test failed.
-	 *
-	 * To be overridden by implementors.
-	 */
-	protected void afterTestFailed()
-	{
-		// nothing at this level
 	}
 
 	protected ErrorMessage newErrorMessage()

@@ -1,35 +1,31 @@
 package de.metas.document.references;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.document.references.generic.DefaultGenericZoomIntoTableInfoRepository;
+import de.metas.document.references.generic.GenericZoomIntoTableInfo;
+import de.metas.document.references.generic.GenericZoomIntoTableInfoRepository;
+import de.metas.document.references.generic.GenericZoomIntoTableWindow;
+import de.metas.document.references.generic.TestingGenericZoomIntoTableInfoRepository;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
-import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 
 /*
@@ -107,6 +103,7 @@ public class RecordZoomWindowFinder
 	}
 
 	private static final Logger logger = LogManager.getLogger(RecordZoomWindowFinder.class);
+	private final GenericZoomIntoTableInfoRepository tableInfoRepository = newGenericZoomIntoTableInfoRepository();
 
 	//
 	// Parameters
@@ -120,10 +117,10 @@ public class RecordZoomWindowFinder
 
 	//
 	// Effective values
-	@Nullable private TableInfo _tableInfo;
+	@Nullable private GenericZoomIntoTableInfo _tableInfo;
 	@Nullable private SOTrx _recordSOTrx_Effective = null;
 
-	private static final CCache<String, TableInfo> tableInfoByTableName = CCache.<String, TableInfo>builder()
+	private static final CCache<String, GenericZoomIntoTableInfo> tableInfoByTableName = CCache.<String, GenericZoomIntoTableInfo>builder()
 			.tableName(I_AD_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Window.Table_Name)
@@ -185,6 +182,13 @@ public class RecordZoomWindowFinder
 		this.alreadyKnownWindowId = alreadyKnownWindowId;
 	}
 
+	private static GenericZoomIntoTableInfoRepository newGenericZoomIntoTableInfoRepository()
+	{
+		return !Adempiere.isUnitTestMode()
+				? new DefaultGenericZoomIntoTableInfoRepository()
+				: new TestingGenericZoomIntoTableInfoRepository();
+	}
+
 	public RecordZoomWindowFinder checkRecordPresentInWindow()
 	{
 		this.checkRecordPresentInWindow = true;
@@ -203,12 +207,12 @@ public class RecordZoomWindowFinder
 
 		//
 		// First try: check by IsSOTrx
-		final TableInfo tableInfo = getTableInfo();
+		final GenericZoomIntoTableInfo tableInfo = getTableInfo();
 		if (tableInfo.isHasIsSOTrxColumn()
 				&& (tableInfo.getDefaultSOWindow() != null && tableInfo.getDefaultPOWindow() != null))
 		{
 			final SOTrx soTrx = getRecordSOTrxEffective();
-			final TableWindow window = soTrx.isSales() ? tableInfo.getDefaultSOWindow() : tableInfo.getDefaultPOWindow();
+			final GenericZoomIntoTableWindow window = soTrx.isSales() ? tableInfo.getDefaultSOWindow() : tableInfo.getDefaultPOWindow();
 			if (isRecordPresentInWindow(window))
 			{
 				return Optional.of(window.getAdWindowId());
@@ -217,7 +221,7 @@ public class RecordZoomWindowFinder
 
 		//
 		// Check default window
-		final TableWindow defaultWindow = tableInfo.getDefaultWindow();
+		final GenericZoomIntoTableWindow defaultWindow = tableInfo.getDefaultWindow();
 		if (defaultWindow != null && isRecordPresentInWindow(defaultWindow))
 		{
 			return Optional.of(defaultWindow.getAdWindowId());
@@ -225,7 +229,7 @@ public class RecordZoomWindowFinder
 
 		//
 		// Check the other windows and pick first
-		for (final TableWindow window : tableInfo.getOtherWindows())
+		for (final GenericZoomIntoTableWindow window : tableInfo.getOtherWindows())
 		{
 			if (window != null && isRecordPresentInWindow(window))
 			{
@@ -238,7 +242,7 @@ public class RecordZoomWindowFinder
 		return Optional.empty();
 	}
 
-	private boolean isRecordPresentInWindow(@NonNull final TableWindow window)
+	private boolean isRecordPresentInWindow(@NonNull final GenericZoomIntoTableWindow window)
 	{
 		if (!checkRecordPresentInWindow)
 		{
@@ -291,7 +295,7 @@ public class RecordZoomWindowFinder
 			return _query_Provided;
 		}
 
-		final TableInfo tableInfo = getTableInfo();
+		final GenericZoomIntoTableInfo tableInfo = getTableInfo();
 		final String tableName = tableInfo.getTableName();
 		final String keyColumnName = tableInfo.getKeyColumnName();
 		final int recordId = getRecord_ID();
@@ -337,11 +341,11 @@ public class RecordZoomWindowFinder
 		}
 	}
 
-	private TableInfo getTableInfo()
+	private GenericZoomIntoTableInfo getTableInfo()
 	{
 		if (_tableInfo == null)
 		{
-			_tableInfo = tableInfoByTableName.getOrLoad(getTableName(), this::retrieveTableInfo);
+			_tableInfo = tableInfoByTableName.getOrLoad(getTableName(), tableInfoRepository::retrieveTableInfo);
 		}
 		return _tableInfo;
 	}
@@ -365,142 +369,5 @@ public class RecordZoomWindowFinder
 		}
 
 		return DB.retrieveRecordSOTrx(tableName, sqlWhereClause).orElse(SOTrx.SALES);
-	}
-
-	//
-	//
-	// DAO methods
-	//
-	//
-
-	private TableInfo retrieveTableInfo(@NonNull final String tableName)
-	{
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-
-		final @NonNull List<TableWindow> windows = DB.retrieveRows(
-				"SELECT * FROM ad_table_windows_v where TableName=?",
-				ImmutableList.of(tableName),
-				this::retrieveTableWindow);
-
-		return TableInfo.builder()
-				.tableName(tableName)
-				.keyColumnName(poInfo.getKeyColumnName())
-				.hasIsSOTrxColumn(poInfo.hasColumnName("IsSOTrx"))
-				.windows(windows)
-				.build();
-	}
-
-	private TableWindow retrieveTableWindow(final ResultSet rs) throws SQLException
-	{
-		return TableWindow.builder()
-				.priority(rs.getInt("priority"))
-				.adWindowId(AdWindowId.ofRepoId(rs.getInt("AD_Window_ID")))
-				.isDefaultSOWindow(StringUtils.toBoolean(rs.getString("IsDefaultSOWindow")))
-				.isDefaultPOWindow(StringUtils.toBoolean(rs.getString("IsDefaultPOWindow")))
-				.tabSqlWhereClause(StringUtils.trimBlankToNull(rs.getString("tab_whereClause")))
-				.build();
-	}
-
-	@Value
-	private static class TableInfo
-	{
-		String tableName;
-		String keyColumnName;
-		boolean hasIsSOTrxColumn;
-
-		TableWindow defaultWindow;
-		TableWindow defaultSOWindow;
-		TableWindow defaultPOWindow;
-		ImmutableList<TableWindow> otherWindows;
-
-		@Builder
-		private TableInfo(
-				@NonNull final String tableName,
-				@NonNull final String keyColumnName,
-				final boolean hasIsSOTrxColumn,
-				@NonNull final List<TableWindow> windows)
-		{
-			this.tableName = tableName;
-			this.keyColumnName = keyColumnName;
-			this.hasIsSOTrxColumn = hasIsSOTrxColumn;
-
-			TableWindow defaultSOWindow = null;
-			TableWindow defaultPOWindow = null;
-			final ArrayList<TableWindow> otherWindows = new ArrayList<>(windows.size());
-
-			for (final TableWindow window : windows)
-			{
-				boolean isDefaultWindow = false;
-				if (window.isDefaultSOWindow())
-				{
-					defaultSOWindow = window;
-					isDefaultWindow = true;
-				}
-				if (window.isDefaultPOWindow())
-				{
-					defaultPOWindow = window;
-					isDefaultWindow = true;
-				}
-
-				if (!isDefaultWindow)
-				{
-					otherWindows.add(window);
-				}
-			}
-
-			// IMPORTANT: have them sorted by Priority
-			otherWindows.sort(Comparator.comparing(TableWindow::getPriority));
-
-			//
-			// Determine default window:
-			if (defaultSOWindow != null && defaultPOWindow != null)
-			{
-				// Case: we have a window for Sales documents and another window for Purchase documents
-				// => default window is the
-				this.defaultWindow = defaultSOWindow;
-			}
-			else if (defaultSOWindow != null)
-			{
-				final TableWindow firstOtherWindow = !otherWindows.isEmpty() ? otherWindows.get(0) : null;
-				if (firstOtherWindow != null && firstOtherWindow.hasHigherPriorityThen(defaultSOWindow))
-				{
-					this.defaultWindow = firstOtherWindow;
-					otherWindows.remove(firstOtherWindow);
-				}
-				else
-				{
-					this.defaultWindow = defaultSOWindow;
-				}
-			}
-			else if(!otherWindows.isEmpty())
-			{
-				this.defaultWindow = otherWindows.remove(0);
-			}
-			else
-			{
-				this.defaultWindow = null;
-			}
-
-			this.defaultSOWindow = defaultSOWindow;
-			this.defaultPOWindow = defaultPOWindow;
-
-			this.otherWindows = ImmutableList.copyOf(otherWindows);
-		}
-	}
-
-	@Value
-	@Builder
-	private static class TableWindow
-	{
-		int priority;
-		@NonNull AdWindowId adWindowId;
-		boolean isDefaultSOWindow;
-		boolean isDefaultPOWindow;
-		@Nullable String tabSqlWhereClause;
-
-		public boolean hasHigherPriorityThen(@NonNull final TableWindow other)
-		{
-			return priority < other.priority;
-		}
 	}
 }
