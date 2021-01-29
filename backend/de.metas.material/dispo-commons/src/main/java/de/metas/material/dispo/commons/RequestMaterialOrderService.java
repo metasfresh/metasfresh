@@ -300,6 +300,7 @@ public class RequestMaterialOrderService
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
+
 				.campaignId(dimension.getCampaignId())
 				.activityId(dimension.getActivityId() == null ? -1 : dimension.getActivityId().getRepoId())
 				.projectId(dimension.getProjectId() == null ? -1 : dimension.getProjectId().getRepoId())
