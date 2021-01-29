@@ -73,9 +73,13 @@ public class C_PurchaseCandiate_Create_PurchaseOrders
 				.map(I_C_PurchaseCandidate::getC_PurchaseCandidate_ID)
 				.map(PurchaseCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
+		createPurchaseOrders(purchaseCandidateIds);
 
 		return MSG_OK;
+	}
+
+	protected void createPurchaseOrders(final ImmutableSet<PurchaseCandidateId> purchaseCandidateIds)
+	{
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
 	}
 }

@@ -96,6 +96,9 @@ public class RequestMaterialOrderService
 				case PURCHASE:
 					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
 					break;
+				case FORECAST:
+					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
+					break;
 				default:
 					break;
 			}
@@ -269,8 +272,8 @@ public class RequestMaterialOrderService
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
-				.salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
-				.salesOrderRepoId(singleCandidate.getAdditionalDemandDetail().getOrderId())
+				// .salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
+				// .salesOrderRepoId(singleCandidate.getAdditionalDemandDetail().getOrderId())
 				.build();
 
 		return purchaseCandidateRequestedEvent;
