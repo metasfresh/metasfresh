@@ -1,16 +1,3 @@
-/******************************************************************************
- * Product: ADempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 2009 www.metas.de *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- *****************************************************************************/
 package de.metas.document.references;
 
 import java.util.ArrayList;
@@ -36,7 +23,7 @@ import lombok.NonNull;
  */
 public class ZoomInfoFactory
 {
-	public static final ZoomInfoFactory get()
+	public static ZoomInfoFactory get()
 	{
 		return instance;
 	}
@@ -60,12 +47,12 @@ public class ZoomInfoFactory
 			@NonNull final ZoomInfoPermissions permissions)
 	{
 		final AdWindowId onlyTargetWindowId = null;
-		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
+		final ZoomTargetWindowEvaluationContext context = new ZoomTargetWindowEvaluationContext();
 
 		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, permissions)
 				.stream()
 				.sequential()
-				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
+				.map(candidate -> candidate.evaluate(context).orElse(null))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -101,6 +88,7 @@ public class ZoomInfoFactory
 					final AdWindowId targetWindowId = zoomInfoCandidate.getTargetWindow().getAdWindowId();
 					if (onlyTargetWindowId != null && !AdWindowId.equals(onlyTargetWindowId, targetWindowId))
 					{
+						//noinspection ThrowableNotThrown
 						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
 								+ "\n zoomInfo: " + zoomInfoCandidate
 								+ "\n zoomProvider: " + zoomProvider
@@ -138,10 +126,6 @@ public class ZoomInfoFactory
 	 * Retrieves that {@link ZoomInfo} which is referencing our given <code>source</code> and has given target window.
 	 *
 	 * NOTE: Records count is not checked
-	 *
-	 * @param zoomSource
-	 * @param targetWindowId target AD_Window_ID (must be provided)
-	 * @return ZoomInfo; never returns <code>null</code>
 	 */
 	public ZoomInfo retrieveZoomInfo(
 			@NonNull final IZoomSource zoomSource,
@@ -152,12 +136,12 @@ public class ZoomInfoFactory
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 
-		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
+		final ZoomTargetWindowEvaluationContext context = new ZoomTargetWindowEvaluationContext();
 
 		return getZoomInfoCandidates(zoomSource, targetWindowId, permissions)
 				.stream()
 				.filter(candidate -> zoomInfoId == null || ZoomInfoId.equals(zoomInfoId, candidate.getId()))
-				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
+				.map(candidate -> candidate.evaluate(context).orElse(null))
 				.filter(Objects::nonNull)
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + zoomSource + ", targetWindowId=" + targetWindowId));

@@ -532,17 +532,19 @@ public class DocumentCollection
 			return zoomIntoInfo.getWindowId();
 		}
 
-		final RecordZoomWindowFinder zoomWindowFinder;
+		final AdWindowId zoomInto_adWindowId;
 		if (zoomIntoInfo.isRecordIdPresent())
 		{
-			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId());
+			zoomInto_adWindowId = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId())
+					.checkRecordPresentInWindow()
+					.findAdWindowId()
+					.orElse(null);
 		}
 		else
 		{
-			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName());
+			zoomInto_adWindowId = RecordZoomWindowFinder.findAdWindowId(zoomIntoInfo.getTableName()).orElse(null);
 		}
 
-		final AdWindowId zoomInto_adWindowId = zoomWindowFinder.findAdWindowId().orElse(null);
 		if (zoomInto_adWindowId == null)
 		{
 			throw new EntityNotFoundException("No windowId found")

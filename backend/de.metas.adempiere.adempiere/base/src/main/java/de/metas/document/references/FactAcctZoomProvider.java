@@ -1,10 +1,10 @@
 package de.metas.document.references;
 
-import java.util.List;
-import java.util.function.IntSupplier;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
+import de.metas.util.lang.Priority;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -12,12 +12,8 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Services;
-import de.metas.util.lang.Priority;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -90,7 +86,7 @@ class FactAcctZoomProvider implements IZoomProvider
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final ITranslatableString destinationDisplay = adWindowDAO.retrieveWindowName(factAcctWindowId);
 
-		final IntSupplier recordsCountSupplier = createRecordsCountSupplier(source);
+		final ZoomInfoRecordsCountSupplier recordsCountSupplier = createRecordsCountSupplier(source);
 
 		return ImmutableList.of(
 				ZoomInfoCandidate.builder()
@@ -104,7 +100,7 @@ class FactAcctZoomProvider implements IZoomProvider
 						.build());
 	}
 
-	private static IntSupplier createRecordsCountSupplier(final IZoomSource source)
+	private static ZoomInfoRecordsCountSupplier createRecordsCountSupplier(final IZoomSource source)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final int adTableId = source.getAD_Table_ID();

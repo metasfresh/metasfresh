@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
-import java.util.function.IntSupplier;
 
 /*
  * #%L
@@ -60,7 +59,7 @@ import java.util.function.IntSupplier;
 
 public class RelationTypeZoomProvider implements IZoomProvider
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -373,7 +372,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return whereParsed;
 	}
 
-	private static IntSupplier createRecordsCountSupplier(final MQuery query)
+	private static ZoomInfoRecordsCountSupplier createRecordsCountSupplier(final MQuery query)
 	{
 		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
 		final String sqlCount = "SELECT COUNT(1) " + sqlCommon;
@@ -411,16 +410,16 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Value
-	private static final class ZoomProviderDestination
+	private static class ZoomProviderDestination
 	{
-		private final int adReferenceId;
-		private final ITableRefInfo tableRefInfo;
-		private final ITranslatableString roleDisplayName;
+		int adReferenceId;
+		ITableRefInfo tableRefInfo;
+		ITranslatableString roleDisplayName;
 
 		/**
 		 * {@code true} means that this instance is based on an {@code AD_RelationType} whose target is a {@code AD_Table_ID/Record_ID} reference.
 		 */
-		private final boolean tableRecordIdTarget;
+		boolean tableRecordIdTarget;
 
 		@lombok.Builder
 		private ZoomProviderDestination(

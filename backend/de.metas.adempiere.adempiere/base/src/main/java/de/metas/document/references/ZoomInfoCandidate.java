@@ -1,18 +1,7 @@
 package de.metas.document.references;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.function.IntSupplier;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.MQuery;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -21,6 +10,13 @@ import de.metas.util.lang.Priority;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.MQuery;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -56,7 +52,7 @@ public final class ZoomInfoCandidate
 	@Getter
 	private final ZoomTargetWindow targetWindow;
 	private final Priority priority;
-	private final IntSupplier recordsCountSupplier;
+	private final ZoomInfoRecordsCountSupplier recordsCountSupplier;
 
 	@Builder
 	private ZoomInfoCandidate(
@@ -66,7 +62,7 @@ public final class ZoomInfoCandidate
 			@NonNull final Priority priority,
 			@NonNull final MQuery query,
 			@NonNull final ITranslatableString destinationDisplay,
-			@NonNull final IntSupplier recordsCountSupplier)
+			@NonNull final ZoomInfoRecordsCountSupplier recordsCountSupplier)
 	{
 		this.id = id;
 		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
@@ -91,27 +87,17 @@ public final class ZoomInfoCandidate
 				.toString();
 	}
 
-	public void updateRecordsCount()
-	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int recordsCount = recordsCountSupplier.getAsInt();
-		final Duration recordsCountDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
-		query.setRecordCount(recordsCount, recordsCountDuration);
-		logger.debug("Updated records count for {} in {}", this, stopwatch);
-	}
-
 	public Optional<ZoomInfo> evaluate()
 	{
-		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = null;
-		return evaluate(alreadySeenWindowIds);
+		return evaluate(null);
 	}
 
-	public Optional<ZoomInfo> evaluate(@Nullable final ZoomTargetWindowEvaluationContext alreadySeenWindowIds)
+	public Optional<ZoomInfo> evaluate(@Nullable final ZoomTargetWindowEvaluationContext context)
 	{
 		//
 		// Only consider a window already seen if it actually has record count > 0 (task #1062)
-		final Priority alreadySeenZoomInfoPriority = alreadySeenWindowIds != null
-				? alreadySeenWindowIds.getPriorityOrNull(targetWindow)
+		final Priority alreadySeenZoomInfoPriority = context != null
+				? context.getPriorityOrNull(targetWindow)
 				: null;
 		if (alreadySeenZoomInfoPriority != null
 				&& alreadySeenZoomInfoPriority.isHigherThan(priority))
@@ -123,7 +109,7 @@ public final class ZoomInfoCandidate
 		//
 		// Compute records count
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int recordsCount = recordsCountSupplier.getAsInt();
+		final int recordsCount = recordsCountSupplier.getRecordsCount();
 		stopwatch.stop();
 		logger.debug("Computed records count for {} in {}", this, stopwatch);
 
@@ -136,9 +122,9 @@ public final class ZoomInfoCandidate
 		//
 		// We got a valid zoom info
 		// => accept it
-		if (alreadySeenWindowIds != null)
+		if (context != null)
 		{
-			alreadySeenWindowIds.putWindow(targetWindow, priority);
+			context.putWindow(targetWindow, priority);
 		}
 
 		final ITranslatableString caption = TranslatableStrings.builder()

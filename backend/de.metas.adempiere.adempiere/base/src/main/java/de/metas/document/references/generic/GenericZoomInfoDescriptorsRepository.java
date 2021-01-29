@@ -1,10 +1,8 @@
-package de.metas.document.references;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +20,14 @@ package de.metas.document.references;
  * #L%
  */
 
-import org.adempiere.ad.element.api.AdWindowId;
+package de.metas.document.references.generic;
 
-import javax.annotation.Nullable;
+import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
+
 import java.util.List;
 
-/**
- *
- * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
- */
-public interface IZoomProvider
+public interface GenericZoomInfoDescriptorsRepository
 {
-	/**
-	 *
-	 * @param source the source we need zoom targets for
-	 * @param targetAD_Window_ID optional target window ID; if specified, only those {@link ZoomInfo}s will be returned which have this targetAD_Window_ID.
-	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
-	 */
-	List<ZoomInfoCandidate> retrieveZoomInfos(IZoomSource source, @Nullable final AdWindowId targetAD_Window_ID);
+	List<GenericZoomInfoDescriptor> getZoomInfoDescriptors(@NonNull String sourceKeyColumnName);
 }

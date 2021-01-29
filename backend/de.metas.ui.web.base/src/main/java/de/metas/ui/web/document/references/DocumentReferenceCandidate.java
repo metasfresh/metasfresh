@@ -48,10 +48,10 @@ public class DocumentReferenceCandidate
 			return ImmutableList.of();
 		}
 
-		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
+		final ZoomTargetWindowEvaluationContext context = new ZoomTargetWindowEvaluationContext();
 
 		return candidates.stream()
-				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
+				.map(candidate -> candidate.evaluate(context).orElse(null))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -73,9 +73,9 @@ public class DocumentReferenceCandidate
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
 	}
 
-	private Optional<DocumentReference> evaluate(@NonNull final ZoomTargetWindowEvaluationContext alreadySeenWindowIds)
+	private Optional<DocumentReference> evaluate(@NonNull final ZoomTargetWindowEvaluationContext context)
 	{
-		return zoomInfoCandidate.evaluate(alreadySeenWindowIds)
+		return zoomInfoCandidate.evaluate(context)
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
 	}
 

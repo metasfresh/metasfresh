@@ -598,23 +598,6 @@ public final class AEnv
 		zoom(RecordZoomWindowFinder.newInstance(tableName, Record_ID));
 	}
 
-	public static void zoom(
-			final String TableName,
-			final int Record_ID,
-			final int AD_Window_ID,
-			final int PO_Window_ID)
-	{
-		// Nothing to Zoom to
-		if (TableName == null || AD_Window_ID <= 0)
-		{
-			return;
-		}
-
-		zoom(RecordZoomWindowFinder.newInstance(TableName, Record_ID)
-				.soWindowId(AdWindowId.ofRepoIdOrNull(AD_Window_ID))
-				.poWindowId(AdWindowId.ofRepoIdOrNull(PO_Window_ID)));
-	}
-
 	private static void zoom(final RecordZoomWindowFinder zoomInfo)
 	{
 		final AdWindowId windowIdToUse = zoomInfo.findAdWindowId().orElse(null);
