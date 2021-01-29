@@ -66,7 +66,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Order line builder. Used exclusively by {@link OrderFactory}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class OrderLineBuilder
 {
@@ -74,7 +73,6 @@ public class OrderLineBuilder
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
-	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private final OrderFactory parent;
@@ -129,13 +127,6 @@ public class OrderLineBuilder
 			orderLine.setDiscount(manualDiscount);
 		}
 
-		if (dimension != null)
-		{
-			dimensionService.updateRecord(orderLine, dimension);
-		}
-
-		Services.get(IOrderLineBL.class).updatePrices(orderLine);
-		save(orderLine);
 		orderLineBL.updatePrices(orderLine);
 		saveRecord(orderLine);
 
@@ -143,7 +134,19 @@ public class OrderLineBuilder
 		{
 			// would be great to also have the pricing engine run in here..if there is a way for this without the need to save twice
 			logger.debug("Set C_OrderLine.QtyOrdered={} as converted from qty={} and productId={}", qtyOrdered.toBigDecimal(), qty, productId);
+
+			// Create Details if any
+			if (!detailCreateRequests.isEmpty())
+			{
+				final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
+				final OrgId orgId = OrgId.ofRepoId(orderLine.getAD_Org_ID());
+				detailCreateRequests.forEach(detailCreateRequest -> orderLineDetailRepository.createNew(
+						orderAndLineId,
+						orgId,
+						detailCreateRequest));
+			}
 		}
+
 		this.createdOrderLine = orderLine;
 	}
 
@@ -221,12 +224,6 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public boolean isProductAndUomMatching(final ProductId productId, final UomId uomId)
-	{
-		return Objects.equals(getProductId(), productId)
-				&& Objects.equals(getUomId(), uomId);
-	}
-
 	public OrderLineBuilder setDimension(final Dimension dimension)
 	{
 		assertNotBuilt();
@@ -236,11 +233,17 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	@Nullable
-	private UomId getUomId()
+	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
+	{
+		return Objects.equals(getProductId(), productId)
+				&& Objects.equals(getUomId(), uomId);
+	}
+
 	public OrderLineBuilder details(@NonNull final Collection<OrderLineDetailCreateRequest> details)
 	{
-		return qty != null ? qty.getUomId() : null;
+		assertNotBuilt();
+		detailCreateRequests.addAll(details);
+		return this;
 	}
 
 	public OrderLineBuilder detail(@NonNull final OrderLineDetailCreateRequest detail)
@@ -249,4 +252,5 @@ public class OrderLineBuilder
 		detailCreateRequests.add(detail);
 		return this;
 	}
+
 }
