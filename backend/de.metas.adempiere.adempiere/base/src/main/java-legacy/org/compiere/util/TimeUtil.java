@@ -1730,6 +1730,12 @@ public class TimeUtil
 	}
 
 	@Nullable
+	public static ZonedDateTime asZonedDateTime(@Nullable final Instant instant)
+	{
+		return instant != null ? instant.atZone(SystemTime.zoneId()) : null;
+	}
+
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj)
 	{
 		if (obj == null)

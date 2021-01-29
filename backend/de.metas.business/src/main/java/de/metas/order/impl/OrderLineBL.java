@@ -110,14 +110,14 @@ public class OrderLineBL implements IOrderLineBL
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	final ITaxBL taxBL = Services.get(ITaxBL.class);
-	final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-	final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private IOrderBL orderBL() { return Services.get(IOrderBL.class); }
 

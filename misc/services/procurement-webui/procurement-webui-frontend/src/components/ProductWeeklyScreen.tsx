@@ -69,7 +69,11 @@ const ProductWeeklyScreen: React.FunctionComponent = observer(() => {
                           <div className="column mt-2 is-size-2-mobile no-p has-text-right">{dItem.qty}</div>
                           <div className="column mt-4 green-check is-hidden-desktop is-hidden-tablet is-4">
                             {/* Trend listing in here */}
-                            {dItem.confirmedByUser && <i className="fas fa-check"></i>}
+                            {dItem.confirmedByUser && (
+                              <span>
+                                <i className="fas fa-check"></i>
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>

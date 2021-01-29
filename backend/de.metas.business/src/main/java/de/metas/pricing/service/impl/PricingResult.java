@@ -22,19 +22,12 @@ package de.metas.pricing.service.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -49,7 +42,6 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -58,21 +50,26 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
- *
  * NOTEs to developers:
  * <ul>
  * <li>if you want to add a new field here which will be copied from {@link IPricingContext}, please check {@link de.metas.pricing.service.impl.PricingBL#createInitialResult(IPricingContext)}.
  * </ul>
  *
  * @author tsa
- *
  */
 @ToString
 @Data
 final class PricingResult implements IPricingResult
 {
-	private boolean calculated = false;
+	private boolean calculated;
 
 	private PricingSystemId pricingSystemId;
 	private PriceListId priceListId;
@@ -94,11 +91,10 @@ final class PricingResult implements IPricingResult
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
 
-	@NonNull
-	private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
+	@NonNull private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
 
 	private boolean usesDiscountSchema = false;
-	private boolean disallowDiscount = false;
+	private boolean disallowDiscount;
 
 	private final LocalDate priceDate;
 
@@ -150,6 +146,12 @@ final class PricingResult implements IPricingResult
 		this.disallowDiscount = disallowDiscount;
 	}
 
+	@Override
+	public Money getPriceStdAsMoney()
+	{
+		return Money.of(getPriceStd(), getCurrencyId());
+	}
+
 	/**
 	 * @return discount, never {@code null}
 	 */
@@ -167,7 +169,7 @@ final class PricingResult implements IPricingResult
 	}
 
 	@Override
-	public void addPricingRuleApplied(@NonNull IPricingRule rule)
+	public void addPricingRuleApplied(@NonNull final IPricingRule rule)
 	{
 		rulesApplied.add(rule);
 	}
@@ -191,8 +193,8 @@ final class PricingResult implements IPricingResult
 
 	/**
 	 * Supposed to be called by the pricing engine.
-	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/4376
+	 * <p>
+	 * Task https://github.com/metasfresh/metasfresh/issues/4376
 	 */
 	public void updatePriceScales()
 	{
@@ -201,6 +203,7 @@ final class PricingResult implements IPricingResult
 		priceList = scaleToPrecision(priceList);
 	}
 
+	@Nullable
 	private BigDecimal scaleToPrecision(@Nullable final BigDecimal priceToRound)
 	{
 		if (priceToRound == null || precision == null)

@@ -94,7 +94,11 @@ const RfQDetails: React.FunctionComponent = observer(() => {
                 </div>
                 <div className="column is-4">{qItem.qtyPromisedRendered}</div>
                 <div className="column is-2 green-color">
-                  {qItem.confirmedByUser && <i className="fas fa-check"></i>}
+                  {qItem.confirmedByUser && (
+                    <span>
+                      <i className="fas fa-check"></i>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

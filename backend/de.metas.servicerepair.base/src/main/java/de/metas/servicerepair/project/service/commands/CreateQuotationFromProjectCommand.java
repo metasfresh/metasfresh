@@ -22,119 +22,95 @@
 
 package de.metas.servicerepair.project.service.commands;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderFactory;
+import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineBuilder;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
-import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
+import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.ProjectQuotationPricingInfo;
+import de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand.QuotationAggregator;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Optional;
 
 public class CreateQuotationFromProjectCommand
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ServiceRepairProjectService projectService;
 
 	private final ProjectId projectId;
+	private final ProductId serviceProductId;
 
 	@Builder
 	private CreateQuotationFromProjectCommand(
 			@NonNull final ServiceRepairProjectService projectService,
-			@NonNull final ProjectId projectId)
+			@NonNull final ProjectId projectId,
+			@NonNull final ProductId serviceProductId)
 	{
 		this.projectService = projectService;
 		this.projectId = projectId;
+		this.serviceProductId = serviceProductId;
 	}
 
 	public OrderId execute()
 	{
-		final ServiceRepairProjectInfo fromProject = projectService.getById(projectId);
-
-		final OrderFactory orderFactory = newOrderFactory(fromProject);
-
-		final ArrayList<ProjectCostCollectorAndOrderLine> costCollectorAndOrderLines = new ArrayList<>();
-
-		for (final ServiceRepairProjectCostCollector costCollector : projectService.getCostCollectorsByProjectButNotInProposal(projectId))
+		final ImmutableList<ServiceRepairProjectCostCollector> costCollectors = projectService.getByProjectIdButNotIncludedInCustomerQuotation(projectId)
+				.stream()
+				.filter(ServiceRepairProjectCostCollector::isNotIncludedInCustomerQuotation) // redundant but feels safe
+				.collect(ImmutableList.toImmutableList());
+		if (costCollectors.isEmpty())
 		{
-			if (costCollector.getCustomerQuotationLineId() != null)
-			{
-				continue;
-			}
-
-			final ProductId productId = costCollector.getProductId();
-			final Quantity qty = costCollector.getQtyReservedOrConsumed();
-			final OrderLineBuilder orderLineBuilder = orderFactory.orderLineByProductAndUomOrCreate(productId, qty.getUomId());
-			orderLineBuilder.addQty(qty);
-
-			costCollectorAndOrderLines.add(ProjectCostCollectorAndOrderLine.of(costCollector.getId(), orderLineBuilder));
+			throw new AdempiereException("Everything is already quoted");
 		}
 
-		final I_C_Order order = orderFactory.createDraft();
+		final ServiceRepairProjectInfo fromProject = projectService.getById(projectId);
+		final QuotationAggregator quotationAggregator = newQuotationAggregator(fromProject);
 
-		setCustomerQuotationToCostCollectors(costCollectorAndOrderLines);
+		final I_C_Order order = quotationAggregator
+				.addAll(costCollectors)
+				.createDraft();
+
+		projectService.setCustomerQuotationToCostCollectors(quotationAggregator.getQuotationLineIdsIndexedByCostCollectorId());
 
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
 
-	private void setCustomerQuotationToCostCollectors(final ArrayList<ProjectCostCollectorAndOrderLine> costCollectorAndOrderLines)
+	private QuotationAggregator newQuotationAggregator(@NonNull final ServiceRepairProjectInfo project)
 	{
-		projectService.setCustomerQuotationToCostCollectors(
-				costCollectorAndOrderLines
-						.stream()
-						.collect(ImmutableMap.toImmutableMap(
-								ProjectCostCollectorAndOrderLine::getCostCollectorId,
-								ProjectCostCollectorAndOrderLine::getCustomerQuotationLineId)));
-	}
-
-	private OrderFactory newOrderFactory(@NonNull final ServiceRepairProjectInfo project)
-	{
-		final OrderFactory orderFactory = OrderFactory.newSalesOrder()
-				.docType(getQuotationDocTypeId(project))
-				.orgId(project.getClientAndOrgId().getOrgId())
-				.dateOrdered(extractDateOrdered(project))
-				.datePromised(extractDatePromised(project))
-				.shipBPartner(
-						project.getBpartnerId(),
-						project.getBpartnerLocationId(),
-						project.getBpartnerContactId())
-				.salesRepId(project.getSalesRepId())
-				.warehouseId(project.getWarehouseId())
-				.paymentTermId(project.getPaymentTermId())
-				.campaignId(project.getCampaignId())
-				.projectId(project.getProjectId());
-
-		getPricingSystemId(project).ifPresent(orderFactory::pricingSystemId);
-
-		return orderFactory;
+		return QuotationAggregator.builder()
+				.orgDAO(orgDAO)
+				.project(project)
+				.pricingInfo(getPricingInfo(project))
+				.serviceProductId(serviceProductId)
+				.serviceProductUomId(productBL.getStockUOMId(serviceProductId))
+				.quotationDocTypeId(getQuotationDocTypeId(project))
+				.build();
 	}
 
 	private DocTypeId getQuotationDocTypeId(@NonNull final ServiceRepairProjectInfo project)
@@ -147,46 +123,39 @@ public class CreateQuotationFromProjectCommand
 				.build());
 	}
 
-	private ZonedDateTime extractDatePromised(@NonNull final ServiceRepairProjectInfo project)
-	{
-		final ZonedDateTime dateFinish = project.getDateFinish();
-		if (dateFinish != null)
-		{
-			return dateFinish;
-		}
-
-		final ZoneId timeZone = orgDAO.getTimeZone(project.getClientAndOrgId().getOrgId());
-		return SystemTime.asZonedDateTimeAtEndOfDay(timeZone);
-	}
-
-	private static LocalDate extractDateOrdered(@NonNull final ServiceRepairProjectInfo project)
-	{
-		final LocalDate dateContract = project.getDateContract();
-		return dateContract != null ? dateContract : SystemTime.asLocalDate();
-	}
-
-	private Optional<PricingSystemId> getPricingSystemId(@NonNull final ServiceRepairProjectInfo project)
+	private ProjectQuotationPricingInfo getPricingInfo(@NonNull final ServiceRepairProjectInfo project)
 	{
 		final PriceListVersionId priceListVersionId = project.getPriceListVersionId();
 		if (priceListVersionId == null)
 		{
-			return Optional.empty();
+			throw new AdempiereException("@NotFound@ @M_PriceList_Version_ID@")
+					.setParameter("project", project);
 		}
-
 		final I_M_PriceList priceList = priceListDAO.getPriceListByPriceListVersionId(priceListVersionId);
-		return Optional.of(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
+
+		final OrgId orgId = project.getClientAndOrgId().getOrgId();
+		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
+
+		return ProjectQuotationPricingInfo.builder()
+				.orgId(orgId)
+				.orgTimeZone(orgTimeZone)
+				.shipBPartnerId(project.getBpartnerId())
+				.datePromised(extractDatePromised(project, orgTimeZone))
+				.pricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()))
+				.priceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()))
+				.priceListVersionId(priceListVersionId)
+				.currencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()))
+				.countryId(CountryId.ofRepoId(priceList.getC_Country_ID()))
+				.build();
 	}
 
-	@Value(staticConstructor = "of")
-	private static class ProjectCostCollectorAndOrderLine
+	private static ZonedDateTime extractDatePromised(
+			@NonNull final ServiceRepairProjectInfo project,
+			@NonNull final ZoneId timeZone)
 	{
-		@NonNull ServiceRepairProjectCostCollectorId costCollectorId;
-		@NonNull OrderLineBuilder orderLineBuilder;
-
-		public OrderAndLineId getCustomerQuotationLineId()
-		{
-			return orderLineBuilder.getCreatedOrderAndLineId();
-		}
+		final ZonedDateTime dateFinish = project.getDateFinish();
+		return dateFinish != null
+				? TimeUtil.convertToTimeZone(dateFinish, timeZone)
+				: SystemTime.asZonedDateTimeAtEndOfDay(timeZone);
 	}
-
 }

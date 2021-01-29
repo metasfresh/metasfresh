@@ -16,6 +16,9 @@ import org.slf4j.MDC.MDCCloseable;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.money.Money;
+import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -23,8 +26,19 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -52,11 +66,14 @@ import javax.annotation.Nullable;
  * Order line builder. Used exclusively by {@link OrderFactory}.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class OrderLineBuilder
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
-
+	private static final Logger logger = LogManager.getLogger(OrderLineBuilder.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
@@ -64,11 +81,13 @@ public class OrderLineBuilder
 	private boolean built = false;
 
 	private ProductId productId;
-	private int asiId = AttributeConstants.M_AttributeSetInstance_ID_None;
+	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 	private Quantity qty;
 
-	private BigDecimal manualPrice;
+	@Nullable private BigDecimal manualPrice;
 	private BigDecimal manualDiscount;
+
+	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
 	private I_C_OrderLine createdOrderLine;
 
@@ -87,10 +106,10 @@ public class OrderLineBuilder
 		Check.assumeNotNull(qty, "qty is not null");
 
 		// assume returned order is already saved
-		final I_C_OrderLine orderLine = Services.get(IOrderLineBL.class).createOrderLine(parent.getC_Order());
+		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(getParent().getC_Order());
 
 		orderLine.setM_Product_ID(productId.getRepoId());
-		orderLine.setM_AttributeSetInstance_ID(asiId);
+		orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
 
 		orderLine.setQtyEntered(qty.toBigDecimal());
 		orderLine.setC_UOM_ID(qty.getUomId().getRepoId());
@@ -117,6 +136,9 @@ public class OrderLineBuilder
 
 		Services.get(IOrderLineBL.class).updatePrices(orderLine);
 		save(orderLine);
+		orderLineBL.updatePrices(orderLine);
+		saveRecord(orderLine);
+
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(orderLine))
 		{
 			// would be great to also have the pricing engine run in here..if there is a way for this without the need to save twice
@@ -133,15 +155,11 @@ public class OrderLineBuilder
 		}
 	}
 
-	public OrderFactory endOrderLine()
-	{
-		return parent;
-	}
+	public OrderFactory getParent() { return parent; }
 
-	public OrderAndLineId getCreatedOrderAndLineId()
-	{
-		return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());
-	}
+	public OrderFactory endOrderLine() { return getParent(); }
+
+	public OrderAndLineId getCreatedOrderAndLineId() { return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID()); }
 
 	public OrderLineBuilder productId(final ProductId productId)
 	{
@@ -150,12 +168,12 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public ProductId getProductId()
+	private ProductId getProductId()
 	{
 		return productId;
 	}
 
-	public OrderLineBuilder asiId(final int asiId)
+	public OrderLineBuilder asiId(@NonNull final AttributeSetInstanceId asiId)
 	{
 		assertNotBuilt();
 		this.asiId = asiId;
@@ -178,11 +196,22 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public OrderLineBuilder manualPrice(final BigDecimal manualPrice)
+	@Nullable
+	private UomId getUomId()
+	{
+		return qty != null ? qty.getUomId() : null;
+	}
+
+	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)
 	{
 		assertNotBuilt();
 		this.manualPrice = manualPrice;
 		return this;
+	}
+
+	public OrderLineBuilder manualPrice(@Nullable final Money manualPrice)
+	{
+		return manualPrice(manualPrice != null ? manualPrice.toBigDecimal() : null);
 	}
 
 	public OrderLineBuilder manualDiscount(final BigDecimal manualDiscount)
@@ -209,8 +238,15 @@ public class OrderLineBuilder
 
 	@Nullable
 	private UomId getUomId()
+	public OrderLineBuilder details(@NonNull final Collection<OrderLineDetailCreateRequest> details)
 	{
 		return qty != null ? qty.getUomId() : null;
 	}
 
+	public OrderLineBuilder detail(@NonNull final OrderLineDetailCreateRequest detail)
+	{
+		assertNotBuilt();
+		detailCreateRequests.add(detail);
+		return this;
+	}
 }

@@ -43,7 +43,9 @@ const RfQ: React.FunctionComponent<Props> = ({
             <div className="columns is-mobile">
               <div className="column mt-2 is-size-2-mobile no-p">{quantityPromised}</div>
               <div className="column green-check is-hidden-mobile">
-                <i className="fas fa-check"></i>
+                <span>
+                  <i className="fas fa-check"></i>
+                </span>
               </div>
             </div>
           </div>

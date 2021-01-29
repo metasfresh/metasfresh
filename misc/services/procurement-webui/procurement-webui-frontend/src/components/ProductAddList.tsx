@@ -31,18 +31,19 @@ const ProductAddList: React.FunctionComponent = observer(() => {
   return (
     <div className="mt-1">
       {/* Listing the items from the products first */}
-      {products.length &&
-        products.map((product) => {
-          return (
-            <ProductAddItem
-              key={product.getProductId}
-              id={product.getProductId}
-              name={product.getName}
-              packType={product.getPackingInfo}
-              handleClick={handleClick}
-            />
-          );
-        })}
+      {products.length
+        ? products.map((product) => {
+            return (
+              <ProductAddItem
+                key={product.getProductId}
+                id={product.getProductId}
+                name={product.getName}
+                packType={product.getPackingInfo}
+                handleClick={handleClick}
+              />
+            );
+          })
+        : null}
 
       <div className="mt-4">
         {showMoreBtnVisible && (
@@ -51,19 +52,19 @@ const ProductAddList: React.FunctionComponent = observer(() => {
           </div>
         )}
       </div>
-      {moreProducts.length &&
-        !showMoreBtnVisible &&
-        moreProducts.map((productItem) => {
-          return (
-            <ProductAddItem
-              key={productItem.getProductId}
-              id={productItem.getProductId}
-              name={productItem.getName}
-              packType={productItem.getPackingInfo}
-              handleClick={handleClick}
-            />
-          );
-        })}
+      {moreProducts.length && !showMoreBtnVisible
+        ? moreProducts.map((productItem) => {
+            return (
+              <ProductAddItem
+                key={productItem.getProductId}
+                id={productItem.getProductId}
+                name={productItem.getName}
+                packType={productItem.getPackingInfo}
+                handleClick={handleClick}
+              />
+            );
+          })
+        : null}
     </div>
   );
 });

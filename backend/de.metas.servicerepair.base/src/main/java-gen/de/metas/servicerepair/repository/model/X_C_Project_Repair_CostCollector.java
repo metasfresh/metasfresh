@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO implements I_C_Project_Repair_CostCollector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1449852723L;
+	private static final long serialVersionUID = 1430538137L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_CostCollector (final Properties ctx, final int C_Project_Repair_CostCollector_ID, @Nullable final String trxName)
@@ -162,6 +162,33 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public int getM_AttributeSetInstance_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -254,6 +281,31 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	public int getQuotation_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Quotation_OrderLine_ID);
+	}
+
+	/** 
+	 * Type AD_Reference_ID=541251
+	 * Reference name: C_Project_Repair_CostCollector_Type
+	 */
+	public static final int TYPE_AD_Reference_ID=541251;
+	/** SparePartsToBeInvoiced = SP+ */
+	public static final String TYPE_SparePartsToBeInvoiced = "SP+";
+	/** SparePartsOwnedByCustomer = SPC */
+	public static final String TYPE_SparePartsOwnedByCustomer = "SPC";
+	/** RepairProductToReturn = RPC */
+	public static final String TYPE_RepairProductToReturn = "RPC";
+	/** RepairingConsumption = RP+ */
+	public static final String TYPE_RepairingConsumption = "RP+";
+	@Override
+	public void setType (final java.lang.String Type)
+	{
+		set_Value (COLUMNNAME_Type, Type);
+	}
+
+	@Override
+	public java.lang.String getType() 
+	{
+		return get_ValueAsString(COLUMNNAME_Type);
 	}
 
 	@Override

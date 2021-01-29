@@ -42,6 +42,7 @@ import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.api.QtyCalculationsBOMLine;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -69,6 +70,21 @@ public class SparePartsReturnCalculation
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public ImmutableSet<ProductId> getReturnedSparePartIds()
+	{
+		return spareParts.stream()
+				.map(SparePart::getSparePartId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public ImmutableSet<ProductId> getAllSparePartIds()
+	{
+		return ImmutableSet.<ProductId>builder()
+				.addAll(getAllowedSparePartIds())
+				.addAll(getReturnedSparePartIds())
+				.build();
+	}
+
 	public Optional<Quantity> computeQtyOfSparePartsRequiredNet(
 			@NonNull final ProductId sparePartId,
 			@NonNull final QuantityUOMConverter uomConverter)
@@ -79,16 +95,13 @@ public class SparePartsReturnCalculation
 			return Optional.empty();
 		}
 
-		final Quantity qtyOfSparePartsAlreadyReturned = computeQtyOfSparePartsAlreadyReturned(
-				sparePartId,
-				qtyOfSparePartsRequiredGross.getUOM(),
-				uomConverter);
+		final Quantity qtyOfSparePartsAlreadyReturned = computeQtyOfSparePartsAlreadyReturned(sparePartId, qtyOfSparePartsRequiredGross.getUOM(), uomConverter);
 
 		final Quantity qtyOfSparePartsRequiredNet = qtyOfSparePartsRequiredGross.subtract(qtyOfSparePartsAlreadyReturned);
 		return Optional.of(qtyOfSparePartsRequiredNet);
 	}
 
-	private Optional<Quantity> computeQtyOfSparePartsRequiredGross(
+	public Optional<Quantity> computeQtyOfSparePartsRequiredGross(
 			@NonNull final ProductId componentId,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
@@ -98,25 +111,27 @@ public class SparePartsReturnCalculation
 				.reduce(Quantity::addNullables);
 	}
 
-	private Quantity computeQtyOfSparePartsAlreadyReturned(
+	public Quantity computeQtyOfSparePartsAlreadyReturned(
 			@NonNull final ProductId sparePartId,
 			@NonNull final I_C_UOM uom,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		Quantity qtyTotal = Quantity.zero(uom);
 		final UomId uomId = UomId.ofRepoId(uom.getC_UOM_ID());
-		for (final SparePart sparePart : spareParts)
+		for (final SparePart sparePart : getSpareParts(sparePartId))
 		{
-			if (!ProductId.equals(sparePart.getSparePartId(), sparePartId))
-			{
-				continue;
-			}
-
 			final Quantity qty = uomConverter.convertQuantityTo(sparePart.getQty(), sparePartId, uomId);
 			qtyTotal = qtyTotal.add(qty);
 		}
 
 		return qtyTotal;
+	}
+
+	public List<SparePart> getSpareParts(@NonNull final ProductId sparePartId)
+	{
+		return spareParts.stream()
+				.filter(sparePart -> ProductId.equals(sparePart.getSparePartId(), sparePartId))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	//
@@ -168,6 +183,12 @@ public class SparePartsReturnCalculation
 		@NonNull ProductId sparePartId;
 		@NonNull Quantity qty;
 		@NonNull InOutAndLineId customerReturnLineId;
+		@NonNull HuId sparePartsVhuId;
+
+		public Quantity getQty(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
+		{
+			return uomConverter.convertQuantityTo(getQty(), getSparePartId(), targetUomId);
+		}
 	}
 
 }

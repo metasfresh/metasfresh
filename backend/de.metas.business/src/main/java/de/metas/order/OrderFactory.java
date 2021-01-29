@@ -26,6 +26,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -81,6 +82,9 @@ public class OrderFactory
 				.soTrx(SOTrx.SALES);
 	}
 
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	private final I_C_Order order;
 	private boolean built = false;
 
@@ -88,7 +92,9 @@ public class OrderFactory
 
 	private OrderFactory()
 	{
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		trxManager.assertThreadInheritedTrxExists();
 		order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
 		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(IDocument.ACTION_Complete);
@@ -100,7 +106,7 @@ public class OrderFactory
 		{
 			createDraft();
 
-			Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			return order;
 		}
@@ -130,7 +136,6 @@ public class OrderFactory
 			assertNotBuilt();
 			built = true;
 
-			final IOrderBL orderBL = Services.get(IOrderBL.class);
 			if (order.getC_DocTypeTarget_ID() <= 0)
 			{
 				orderBL.setDocTypeTargetId(order);
@@ -140,7 +145,8 @@ public class OrderFactory
 			{
 				orderBL.setBillLocation(order);
 			}
-			save(order);
+
+			saveRecord(order);
 
 			return order;
 		}
@@ -182,29 +188,9 @@ public class OrderFactory
 		}
 	}
 
-	public OrderLineBuilder orderLineByProductAndUomOrCreate(@NonNull final ProductId productId, @NonNull final UomId uomId)
-	{
-		return orderLineByProductAndUom(productId, uomId)
-				.orElseGet(() -> newOrderLine().productId(productId));
-	}
-
 	private OrderFactory soTrx(@NonNull final SOTrx soTrx)
 	{
 		order.setIsSOTrx(soTrx.toBoolean());
-		return this;
-	}
-
-	public OrderFactory deliveryRule(final String deliveryRule)
-	{
-		assertNotBuilt();
-		order.setDeliveryRule(deliveryRule);
-		return this;
-	}
-
-	public OrderFactory deliveryViaRule(final String deliveryViaRule)
-	{
-		assertNotBuilt();
-		order.setDeliveryViaRule(deliveryViaRule);
 		return this;
 	}
 
@@ -249,7 +235,6 @@ public class OrderFactory
 		{
 			assertNotBuilt();
 
-			final IOrderBL orderBL = Services.get(IOrderBL.class);
 			orderBL.setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
 
 			return this;
@@ -270,6 +255,12 @@ public class OrderFactory
 		return this;
 	}
 
+	public OrgId getOrgId()
+	{
+		return OrgId.ofRepoId(order.getAD_Org_ID());
+	}
+
+
 	public OrderFactory dateOrdered(final LocalDate dateOrdered)
 	{
 		assertNotBuilt();
@@ -282,6 +273,11 @@ public class OrderFactory
 		assertNotBuilt();
 		order.setDatePromised(TimeUtil.asTimestamp(datePromised));
 		return this;
+	}
+
+	public ZonedDateTime getDatePromised()
+	{
+		return TimeUtil.asZonedDateTime(order.getDatePromised());
 	}
 
 	public OrderFactory shipBPartner(
@@ -312,23 +308,9 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory billBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
+	public BPartnerId getShipBPartnerId()
 	{
-		assertNotBuilt();
-		order.setBill_BPartner_ID(bpartnerId);
-		order.setBill_Location_ID(bpartnerLocationId);
-		order.setBill_User_ID(contactId);
-		return this;
-	}
-
-	public OrderFactory handOverBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
-	{
-		assertNotBuilt();
-		order.setHandOver_Partner_ID(bpartnerId);
-		order.setHandOver_Location_ID(bpartnerLocationId);
-		order.setHandOver_User_ID(contactId);
-		order.setIsUseHandOver_Location(bpartnerLocationId > 0);
-		return this;
+		return BPartnerId.ofRepoId(order.getC_BPartner_ID());
 	}
 
 	public OrderFactory pricingSystemId(@NonNull final PricingSystemId pricingSystemId)

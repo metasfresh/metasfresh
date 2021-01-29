@@ -13,7 +13,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -96,17 +95,17 @@ import java.util.Set;
 		this.userNotifications = userNotifications;
 	}
 
-	public void addCandidate(final PurchaseOrderItem purchaseOrderItem)
+	public void addCandidate(final PurchaseOrderItem pruchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
-						purchaseOrderItem.getProductId(),
-						UomId.ofRepoId(purchaseOrderItem.getUomId()))
+						pruchaseOrderItem.getProductId(),
+						UomId.ofRepoId(pruchaseOrderItem.getUomId()))
 				.orElseGet(() -> orderFactory
 						.newOrderLine()
-						.productId(purchaseOrderItem.getProductId()));
+						.productId(pruchaseOrderItem.getProductId()));
 
-		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
+		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty());
 
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 

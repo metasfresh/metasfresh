@@ -424,6 +424,8 @@ public class HUTestHelper
 			AdempiereTestHelper.get().init();
 		}
 
+		beforeRegisteringServices();
+
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
@@ -478,6 +480,10 @@ public class HUTestHelper
 		afterInitialized();
 
 		return this;
+	}
+
+	public void beforeRegisteringServices()
+	{
 	}
 
 	protected void afterInitialized()

@@ -7,7 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
@@ -16,11 +15,11 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
+import de.metas.order.impl.OrderLineDetailRepository;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -44,7 +43,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import org.mockito.Mockito;
 
 /*
  * #%L
@@ -108,6 +106,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 
+		SpringContextHolder.registerJUnitBean(new OrderLineDetailRepository());
 	}
 
 	private I_C_UOM createUOM(final String name)

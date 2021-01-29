@@ -14,6 +14,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.i18n.ADMessageAndParams;
+import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
