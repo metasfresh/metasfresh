@@ -25,17 +25,15 @@ package de.metas.ui.web.pickingV2.packageable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.OrderId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
-import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -70,11 +68,8 @@ public final class PackageableRow implements IViewRow
 	@Getter
 	private final String orderDocumentNo;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_POReference,
-			layouts = {
-					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false),
-					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 15, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false),
-			})
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_POReference, seqNo = 15,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 	private final String poReference;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, seqNo = 20)
@@ -82,10 +77,7 @@ public final class PackageableRow implements IViewRow
 	private final LookupValue customer;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_Type_ID,
-			layouts = {
-					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = true),
-					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = true),
-			})
+			seqNo = 30, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = true)
 	private final ITranslatableString warehouseTypeName;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Integer, captionKey = "Lines", seqNo = 40)
@@ -146,16 +138,19 @@ public final class PackageableRow implements IViewRow
 		this.shipmentScheduleIds = extractShipmentScheduleIds(packageables);
 	}
 
+	@Nullable
 	private static LocalDate calculateEarliestDeliveryDate(final Collection<Packageable> packageables)
 	{
 		return packageables.stream()
 				.map(Packageable::getDeliveryDate)
 				.filter(Objects::nonNull)
 				.map(TimeUtil::asLocalDate)
+				.filter(Objects::nonNull)
 				.min(LocalDate::compareTo)
 				.orElse(null);
 	}
 
+	@Nullable
 	private static ZonedDateTime calculateEarliestPreparationTime(final Collection<Packageable> packageables)
 	{
 		return packageables.stream()
@@ -184,6 +179,7 @@ public final class PackageableRow implements IViewRow
 		return false;
 	}
 
+	@Nullable
 	@Override
 	public DocumentPath getDocumentPath()
 	{

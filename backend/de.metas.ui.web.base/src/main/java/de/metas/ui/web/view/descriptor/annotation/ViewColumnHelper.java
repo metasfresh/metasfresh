@@ -11,6 +11,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
@@ -92,8 +93,9 @@ public final class ViewColumnHelper
 			.weakKeys()
 			.build(new CacheLoader<Class<?>, ClassViewDescriptor>()
 			{
+				@SuppressWarnings("NullableProblems")
 				@Override
-				public ClassViewDescriptor load(final Class<?> dataType) throws Exception
+				public ClassViewDescriptor load(final Class<?> dataType)
 				{
 					return createClassViewDescriptor(dataType);
 				}
@@ -123,9 +125,9 @@ public final class ViewColumnHelper
 	{
 		return getDescriptor(dataType)
 				.streamColumns()
-				.filter(column -> column.isDisplayed(viewType))
+				.filter(column -> column.getDisplayMode(viewType).isDisplayed())
 				.sorted(Comparator.comparing(column -> column.getSeqNo(viewType)))
-				.map(column -> createLayoutElement(column))
+				.map(ViewColumnHelper::createLayoutElement)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -133,21 +135,20 @@ public final class ViewColumnHelper
 	@Builder
 	public static class ClassViewColumnOverrides
 	{
-		public static final ClassViewColumnOverrides ofFieldName(final String fieldName)
+		public static ClassViewColumnOverrides ofFieldName(final String fieldName)
 		{
 			return builder(fieldName).build();
 		}
 
-		public static final ClassViewColumnOverridesBuilder builder(final String fieldName)
+		public static ClassViewColumnOverridesBuilder builder(final String fieldName)
 		{
 			return new ClassViewColumnOverridesBuilder().fieldName(fieldName);
 		}
 
-		@NonNull
-		private final String fieldName;
-		private final WidgetSize widgetSize;
-		@Singular
-		private final ImmutableSet<MediaType> restrictToMediaTypes;
+		@NonNull String fieldName;
+		WidgetSize widgetSize;
+		@Singular ImmutableSet<MediaType> restrictToMediaTypes;
+		boolean hideIfConfiguredSysConfig;
 	}
 
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
@@ -161,14 +162,25 @@ public final class ViewColumnHelper
 		return Stream.of(columns)
 				.map(columnOverride -> {
 					final ClassViewColumnDescriptor columnDescriptor = descriptor.getColumnByName(columnOverride.getFieldName());
-					return createClassViewColumnDescriptorEffective(columnDescriptor, columnOverride);
+					return createClassViewColumnDescriptorEffective(columnDescriptor, columnOverride, viewDataType);
 				})
+				.filter(Objects::nonNull)
 				.map(ViewColumnHelper::createLayoutElement)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ClassViewColumnDescriptor createClassViewColumnDescriptorEffective(@NonNull final ClassViewColumnDescriptor column, @NonNull final ClassViewColumnOverrides overrides)
+	@Nullable
+	private static ClassViewColumnDescriptor createClassViewColumnDescriptorEffective(
+			@NonNull final ClassViewColumnDescriptor column,
+			@NonNull final ClassViewColumnOverrides overrides,
+			@NonNull final JSONViewDataType viewDataType)
 	{
+		if(overrides.isHideIfConfiguredSysConfig()
+				&& column.getDisplayMode(viewDataType) == DisplayMode.HIDDEN_BY_SYSCONFIG)
+		{
+			return null;
+		}
+
 		final ClassViewColumnDescriptor.ClassViewColumnDescriptorBuilder columnBuilder = column.toBuilder();
 
 		if (overrides.getWidgetSize() != null)
@@ -185,11 +197,10 @@ public final class ViewColumnHelper
 
 	private static ClassViewDescriptor createClassViewDescriptor(@NonNull final Class<?> dataType)
 	{
-		@SuppressWarnings("unchecked")
-		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
+		@SuppressWarnings("unchecked") final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
 
 		final ImmutableList<ClassViewColumnDescriptor> columns = fields.stream()
-				.map(field -> createClassViewColumnDescriptor(field))
+				.map(ViewColumnHelper::createClassViewColumnDescriptor)
 				.collect(ImmutableList.toImmutableList());
 		if (columns.isEmpty())
 		{
@@ -204,7 +215,6 @@ public final class ViewColumnHelper
 
 	private static ClassViewColumnDescriptor createClassViewColumnDescriptor(@NonNull final Field field)
 	{
-
 		final String fieldName = extractFieldName(field);
 
 		final ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
@@ -215,7 +225,7 @@ public final class ViewColumnHelper
 				.fieldName(fieldName)
 				.caption(extractCaption(field))
 				.widgetType(viewColumnAnn.widgetType())
-				.listReferenceId(viewColumnAnn.listReferenceId())
+				.listReferenceId(ReferenceId.ofRepoIdOrNull(viewColumnAnn.listReferenceId()))
 				.editorRenderMode(viewColumnAnn.editor())
 				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
@@ -255,8 +265,9 @@ public final class ViewColumnHelper
 	private static String extractFieldName(@NonNull final Field field)
 	{
 		final ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
-		final String fieldName = !Check.isEmpty(viewColumnAnn.fieldName(), true) ? viewColumnAnn.fieldName().trim() : field.getName();
-		return fieldName;
+		return !Check.isBlank(viewColumnAnn.fieldName())
+				? viewColumnAnn.fieldName().trim()
+				: field.getName();
 	}
 
 	private static ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> createViewColumnLayoutDescriptors(
@@ -271,57 +282,79 @@ public final class ViewColumnHelper
 					.map(layoutAnn -> ClassViewColumnLayoutDescriptor
 							.builder()
 							.viewType(layoutAnn.when())
-							.displayed(extractDisplayedValue(layoutAnn, fieldName))
+							.displayMode(extractDisplayMode(fieldName, layoutAnn))
 							.seqNo(layoutAnn.seqNo() >= 0 ? layoutAnn.seqNo() : defaultSeqNo)
-							.build())
-					.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
-		}
-		else if (defaultSeqNo >= 0)
-		{
-			return Stream.of(JSONViewDataType.values())
-					.map(viewType -> ClassViewColumnLayoutDescriptor.builder()
-							.viewType(viewType)
-							.displayed(viewColumnAnn.displayed())
-							.seqNo(defaultSeqNo)
 							.build())
 					.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
 		}
 		else
 		{
-			return ImmutableMap.of();
+			final DisplayMode displayMode = extractDisplayMode(fieldName, viewColumnAnn);
+			return Stream.of(JSONViewDataType.values())
+					.map(viewType -> ClassViewColumnLayoutDescriptor.builder()
+							.viewType(viewType)
+							.displayMode(displayMode)
+							.seqNo(defaultSeqNo)
+							.build())
+					.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
 		}
 	}
 
-	private static boolean extractDisplayedValue(
-			@NonNull final ViewColumnLayout viewColumnLayout,
-			@NonNull final String fieldName)
+	private static DisplayMode extractDisplayMode(
+			@NonNull final String fieldName,
+			@NonNull final ViewColumn viewColumn)
 	{
-		if (viewColumnLayout.displayed() == Displayed.FALSE)
+		return extractDisplayMode(fieldName,
+				viewColumn.displayed(),
+				viewColumn.displayedSysConfigPrefix(),
+				viewColumn.defaultDisplaySysConfig());
+	}
+
+	private static DisplayMode extractDisplayMode(
+			@NonNull final String fieldName,
+			@NonNull final ViewColumnLayout viewColumnLayout)
+	{
+		return extractDisplayMode(fieldName,
+				viewColumnLayout.displayed(),
+				viewColumnLayout.displayedSysConfigPrefix(),
+				viewColumnLayout.defaultDisplaySysConfig());
+	}
+
+	private static DisplayMode extractDisplayMode(
+			@NonNull final String fieldName,
+			@NonNull final Displayed displayedAnn,
+			@Nullable final String displayedSysConfigPrefix,
+			final boolean defaultDisplaySysConfig)
+	{
+		if (displayedAnn == Displayed.FALSE)
 		{
-			return false;
+			return DisplayMode.HIDDEN;
 		}
-		else if (viewColumnLayout.displayed() == Displayed.SYSCONFIG)
+		else if (displayedAnn == Displayed.SYSCONFIG)
 		{
-			final String displayedSysConfigPrefix = viewColumnLayout.displayedSysConfigPrefix();
-			if (Check.isEmpty(displayedSysConfigPrefix, true))
+			if (displayedSysConfigPrefix == null || Check.isBlank(displayedSysConfigPrefix))
 			{
-				return viewColumnLayout.defaultDisplaySysConfig();
+				return defaultDisplaySysConfig ? DisplayMode.DISPLAYED_BY_SYSCONFIG : DisplayMode.HIDDEN_BY_SYSCONFIG;
 			}
 			final String sysConfigKey = StringUtils.appendIfNotEndingWith(displayedSysConfigPrefix, ".") + fieldName + ".IsDisplayed";
 
-			return Services.get(ISysConfigBL.class)
-					.getBooleanValue(
-							sysConfigKey,
-							viewColumnLayout.defaultDisplaySysConfig(),
-							Env.getAD_Client_ID(),
-							Env.getAD_Org_ID(Env.getCtx()));
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			final boolean isDisplayed = sysConfigBL.getBooleanValue(
+					sysConfigKey,
+					defaultDisplaySysConfig,
+					Env.getAD_Client_ID(),
+					Env.getAD_Org_ID(Env.getCtx()));
+
+			return isDisplayed ? DisplayMode.DISPLAYED_BY_SYSCONFIG : DisplayMode.HIDDEN_BY_SYSCONFIG;
 		}
-		else if (viewColumnLayout.displayed() == Displayed.TRUE)
+		else if (displayedAnn == Displayed.TRUE)
 		{
-			return true;
+			return DisplayMode.DISPLAYED;
 		}
-		Check.fail("ViewColumnLayout.displayed value={}; viewColumnLayout={}", viewColumnLayout.displayed(), viewColumnLayout);
-		return false;
+		else
+		{
+			throw new AdempiereException("Unknown Displayed type: " + displayedAnn);
+		}
 	}
 
 	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final ClassViewColumnDescriptor column)
@@ -366,6 +399,7 @@ public final class ViewColumnHelper
 		return ViewRowFieldNameAndJsonValues.ofMap(map);
 	}
 
+	@Nullable
 	private static <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJsonObject(
 			@NonNull final T row,
 			@NonNull final ClassViewColumnDescriptor column)
@@ -418,7 +452,7 @@ public final class ViewColumnHelper
 
 		if (column.getWidgetType().isLookup())
 		{
-			if (column.getListReferenceId() > 0)
+			if (column.getListReferenceId() != null)
 			{
 				result = resolveListValueByCode(column.getListReferenceId(), result);
 			}
@@ -432,7 +466,8 @@ public final class ViewColumnHelper
 		return result;
 	}
 
-	private static LookupValue resolveListValueByCode(final int listReferenceId, final Object code)
+	@Nullable
+	private static LookupValue resolveListValueByCode(@NonNull final ReferenceId listReferenceId, @Nullable final Object code)
 	{
 		if (code == null)
 		{
@@ -451,7 +486,7 @@ public final class ViewColumnHelper
 			}
 		}
 
-		final LookupValue lookupValue = LookupDataSourceFactory.instance.listByAD_Reference_Value_ID(listReferenceId).findById(code);
+		final LookupValue lookupValue = LookupDataSourceFactory.instance.listByAD_Reference_Value_ID(listReferenceId.getRepoId()).findById(code);
 		if (lookupValue == null)
 		{
 			return StringLookupValue.unknown(code.toString());
@@ -482,7 +517,9 @@ public final class ViewColumnHelper
 		{
 			columnsByName = Maps.uniqueIndex(columns, ClassViewColumnDescriptor::getFieldName);
 			widgetTypesByFieldName = columns.stream()
-					.collect(ImmutableMap.toImmutableMap(ClassViewColumnDescriptor::getFieldName, ClassViewColumnDescriptor::getWidgetType));
+					.collect(ImmutableMap.toImmutableMap(
+							ClassViewColumnDescriptor::getFieldName,
+							ClassViewColumnDescriptor::getWidgetType));
 		}
 
 		public ImmutableSet<String> getFieldNames()
@@ -508,35 +545,27 @@ public final class ViewColumnHelper
 
 	@Value
 	@Builder(toBuilder = true)
-	private static final class ClassViewColumnDescriptor
+	private static class ClassViewColumnDescriptor
 	{
+		@NonNull String fieldName;
 		@NonNull
-		private final String fieldName;
-		@NonNull
-		@Getter(AccessLevel.NONE)
-		private final FieldReference fieldReference;
+		@Getter(AccessLevel.NONE) FieldReference fieldReference;
 
-		@NonNull
-		private final ITranslatableString caption;
-		@NonNull
-		private final DocumentFieldWidgetType widgetType;
+		@NonNull ITranslatableString caption;
+		@NonNull DocumentFieldWidgetType widgetType;
 
-		private final int listReferenceId;
+		@Nullable ReferenceId listReferenceId;
 
-		@Nullable
-		private final WidgetSize widgetSize;
-		@NonNull
-		private final ViewEditorRenderMode editorRenderMode;
-		private final boolean allowSorting;
-		@NonNull
-		private final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
-		@NonNull
-		private final ImmutableSet<MediaType> restrictToMediaTypes;
+		@Nullable WidgetSize widgetSize;
+		@NonNull ViewEditorRenderMode editorRenderMode;
+		boolean allowSorting;
+		@NonNull ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
+		@NonNull ImmutableSet<MediaType> restrictToMediaTypes;
 
-		public boolean isDisplayed(final JSONViewDataType viewType)
+		public DisplayMode getDisplayMode(final JSONViewDataType viewType)
 		{
 			final ClassViewColumnLayoutDescriptor layout = layoutsByViewType.get(viewType);
-			return layout != null && layout.isDisplayed();
+			return layout != null ? layout.getDisplayMode() : DisplayMode.HIDDEN;
 		}
 
 		public int getSeqNo(final JSONViewDataType viewType)
@@ -557,13 +586,31 @@ public final class ViewColumnHelper
 		}
 	}
 
+	@Getter
+	private enum DisplayMode
+	{
+		DISPLAYED(true, false),
+		HIDDEN(false, false),
+		DISPLAYED_BY_SYSCONFIG(true, true),
+		HIDDEN_BY_SYSCONFIG(true, false),
+		;
+
+		private final boolean displayed;
+		private final boolean configuredBySysConfig;
+
+		DisplayMode(final boolean displayed, final boolean configuredBySysConfig)
+		{
+			this.displayed = displayed;
+			this.configuredBySysConfig = configuredBySysConfig;
+		}
+	}
+
 	@Value
 	@Builder
-	private static final class ClassViewColumnLayoutDescriptor
+	private static class ClassViewColumnLayoutDescriptor
 	{
-		@NonNull
-		private JSONViewDataType viewType;
-		private final boolean displayed;
-		private final int seqNo;
+		@NonNull JSONViewDataType viewType;
+		DisplayMode displayMode;
+		int seqNo;
 	}
 }
