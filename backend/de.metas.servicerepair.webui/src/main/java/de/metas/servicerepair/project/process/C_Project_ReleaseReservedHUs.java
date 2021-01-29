@@ -56,7 +56,7 @@ public class C_Project_ReleaseReservedHUs
 	protected String doIt()
 	{
 		final ImmutableSet<ServiceRepairProjectTaskId> taskIds = getSelectedTaskIds();
-		projectService.releaseReservedSpareParts(taskIds);
+		projectService.releaseCompanyOwnedReservedSpareParts(taskIds);
 		return MSG_OK;
 	}
 }

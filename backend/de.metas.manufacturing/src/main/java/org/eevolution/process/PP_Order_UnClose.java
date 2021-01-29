@@ -138,10 +138,10 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 
 		//
 		// Reverse ALL cost collectors
-		reverseAllCostCollectors(ppOrderId);
+		reverseCostCollectorsGeneratedOnClose(ppOrderId);
 	}
 
-	private void reverseAllCostCollectors(final PPOrderId ppOrderId)
+	private void reverseCostCollectorsGeneratedOnClose(final PPOrderId ppOrderId)
 	{
 		final ArrayList<I_PP_Cost_Collector> costCollectors = new ArrayList<>(ppCostCollectorDAO.getByOrderId(ppOrderId));
 
@@ -157,21 +157,17 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 				continue;
 			}
 
-			// Reversing activity controls is not supported atm, so we are skipping them.
 			final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
-			if (costCollectorType.isActivityControl())
+			if (costCollectorType == CostCollectorType.UsageVariance)
 			{
-				continue;
-			}
+				if (docStatus.isClosed())
+				{
+					cc.setDocStatus(DocStatus.Completed.getCode());
+					ppCostCollectorDAO.save(cc);
+				}
 
-			final DocStatus costCollectorDocStatus = DocStatus.ofNullableCodeOrUnknown(cc.getDocStatus());
-			if (costCollectorDocStatus.isClosed())
-			{
-				cc.setDocStatus(DocStatus.Completed.getCode());
-				ppCostCollectorDAO.save(cc);
+				docActionBL.processEx(cc, IDocument.ACTION_Reverse_Correct, DocStatus.Reversed.getCode());
 			}
-
-			docActionBL.processEx(cc, IDocument.ACTION_Reverse_Correct, DocStatus.Reversed.getCode());
 		}
 	}
 }

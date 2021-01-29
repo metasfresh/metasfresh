@@ -194,7 +194,7 @@ public class PPOrderBL implements IPPOrderBL
 		}
 		else
 		{
-			final Quantity qtyRequiredToProduce = orderBOMService.getQuantities(order).getQtyRequiredToProduce();
+			final Quantity qtyRequiredToProduce = getQuantities(order).getQtyRequiredToProduce();
 			numberOfBatches = qtyRequiredToProduce.divide(qtyBatchSize, 0, RoundingMode.UP).toBigDecimal().intValueExact();
 		}
 		order.setQtyBatchs(BigDecimal.valueOf(numberOfBatches));
@@ -222,7 +222,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order order = ppOrdersRepo.getById(request.getPpOrderId());
 
-		PPOrderQuantities qtys = orderBOMService.getQuantities(order);
+		PPOrderQuantities qtys = getQuantities(order);
 
 		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
 		final UomId uomId = qtys.getUomId();
@@ -246,6 +246,12 @@ public class PPOrderBL implements IPPOrderBL
 		}
 
 		ppOrdersRepo.save(order);
+	}
+
+	@Override
+	public PPOrderQuantities getQuantities(@NonNull final I_PP_Order order)
+	{
+		return orderBOMService.getQuantities(order);
 	}
 
 	@Override
@@ -339,7 +345,7 @@ public class PPOrderBL implements IPPOrderBL
 				.routingId(PPRoutingId.ofRepoId(ppOrderRecord.getAD_Workflow_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
 				.dateStartSchedule(TimeUtil.asLocalDateTime(ppOrderRecord.getDateStartSchedule()))
-				.qtyOrdered(orderBOMService.getQuantities(ppOrderRecord).getQtyRequiredToProduce())
+				.qtyOrdered(getQuantities(ppOrderRecord).getQtyRequiredToProduce())
 				.build()
 				.execute();
 

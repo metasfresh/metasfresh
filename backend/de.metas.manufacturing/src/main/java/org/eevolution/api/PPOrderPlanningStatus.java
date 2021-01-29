@@ -56,4 +56,6 @@ public enum PPOrderPlanningStatus implements ReferenceListAwareEnum
 	}
 
 	public static PPOrderPlanningStatus ofCode(@NonNull final String code) { return index.ofCode(code); }
+
+	public boolean isComplete() { return COMPLETE.equals(this); }
 }
