@@ -24,13 +24,20 @@ package de.metas.document.references.generic;
 
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 
 public class TestingGenericZoomIntoTableInfoRepository implements GenericZoomIntoTableInfoRepository
 {
 	@Override
 	public GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
 	{
+		if (!Adempiere.isUnitTestMode())
+		{
+			throw new AdempiereException("Repository " + this + " shall be used only for JUnit testing!!!");
+		}
+
 		return GenericZoomIntoTableInfo.builder()
 				.tableName(tableName)
 				.keyColumnName(InterfaceWrapperHelper.getKeyColumnName(tableName))
