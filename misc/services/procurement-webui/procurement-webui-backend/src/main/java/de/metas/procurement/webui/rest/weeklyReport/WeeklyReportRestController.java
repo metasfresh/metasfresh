@@ -29,6 +29,7 @@ import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.service.UserConfirmationService;
 import de.metas.procurement.webui.util.YearWeekUtil;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,13 +48,16 @@ public class WeeklyReportRestController
 
 	private final ILoginService loginService;
 	private final IProductSuppliesService productSuppliesService;
+	private final UserConfirmationService userConfirmationService;
 
 	public WeeklyReportRestController(
 			@NonNull final ILoginService loginService,
-			@NonNull final IProductSuppliesService productSuppliesService)
+			@NonNull final IProductSuppliesService productSuppliesService,
+			@NonNull final UserConfirmationService userConfirmationService)
 	{
 		this.loginService = loginService;
 		this.productSuppliesService = productSuppliesService;
+		this.userConfirmationService = userConfirmationService;
 	}
 
 	@GetMapping("/{weekYear}")
@@ -76,9 +80,12 @@ public class WeeklyReportRestController
 			@NonNull final YearWeek yearWeek,
 			final long singleProductId)
 	{
+		final User user = loginService.getLoggedInUser();
+
 		return JsonWeeklyReportProducer.builder()
 				.productSuppliesService(productSuppliesService)
-				.user(loginService.getLoggedInUser())
+				.userConfirmationService(userConfirmationService)
+				.user(user)
 				.locale(loginService.getLocale())
 				.week(yearWeek)
 				.singleProductId(singleProductId)

@@ -1,20 +1,16 @@
-// import React from 'react';
 import React, { FunctionComponent } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
 
 interface Props {
-  children?: any;
-  location?: any;
+  children?: React.ReactNode;
 }
 
 const View: FunctionComponent<Props> = ({ children }) => {
-  return <section className="container page">{children}</section>;
+  return <section className="container page mt-6">{children}</section>;
 };
 
 View.propTypes = {
   children: PropTypes.node.isRequired,
-  location: PropTypes.any,
 };
 
-export default withRouter(View);
+export default View;

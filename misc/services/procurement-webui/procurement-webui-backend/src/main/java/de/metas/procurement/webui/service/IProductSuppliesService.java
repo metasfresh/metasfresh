@@ -39,11 +39,13 @@ import java.util.List;
  * #L%
  */
 
-public interface IProductSuppliesService
+public interface IProductSuppliesService extends UserConfirmationHandler
 {
-	void confirmUserEnteredQtys(@NonNull BPartner bpartner);
+	@Override
+	void confirmUserEntries(User user);
 
-	long countUnconfirmedUserEnteredQtys(@NonNull BPartner bpartner);
+	@Override
+	long getCountUnconfirmed(User user);
 
 	@Value
 	@Builder

@@ -1,0 +1,46 @@
+.prognose-box {
+  position: fixed;
+  bottom: 4.5rem;
+  width: 100%;
+  border-top: 1px solid $grey-light;
+  color: $product-input;
+  background: $white-background;
+
+  svg {
+    font-size: 38px;
+  }
+}  
+
+/** This must be outside the prognose-box - used also in weekly report to display the trend */
+.up-active {
+  color: $white-background;
+  background: $base-elements;
+}
+.up {
+  color: $base-elements;
+  background: $white-background;
+}
+.down-active {
+  color: $white-background;
+  background: $arrow-down;
+}
+.down {
+  color: $arrow-down;
+  background: $white-background
+}
+.right-active {
+  color: $white-background;
+  background: $arrow-right;
+}
+.right {
+  color: $arrow-right;
+  background: $white-background
+}
+.disabled-active {
+  color: $white-background;
+  background: $disabled;
+}
+.disabled {
+  color: $disabled;
+  background: $white-background
+}  
