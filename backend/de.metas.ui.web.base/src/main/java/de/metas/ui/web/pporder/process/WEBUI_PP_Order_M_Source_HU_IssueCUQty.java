@@ -1,8 +1,6 @@
 package de.metas.ui.web.pporder.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
@@ -10,12 +8,9 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import org.eevolution.api.PPOrderId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -28,6 +23,7 @@ import de.metas.ui.web.pporder.util.WEBUI_PP_Order_ProcessHelper;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
@@ -36,7 +32,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /*
  * #%L
