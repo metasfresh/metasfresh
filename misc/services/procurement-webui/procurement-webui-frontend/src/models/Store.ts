@@ -14,6 +14,7 @@ import { RFQList } from './RFQList';
 export default function actionCatch(store: IAnyStateTreeNode) {
   return (
     call: IMiddlewareEvent,
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     next: (actionCall: IMiddlewareEvent, callback?: (value: any) => any) => void
   ): void => {
     try {
