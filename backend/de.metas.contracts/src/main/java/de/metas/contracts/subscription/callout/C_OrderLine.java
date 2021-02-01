@@ -81,7 +81,7 @@ public class C_OrderLine
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)
 					.resultUOM(ResultUOM.PRICE_UOM)
-					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false)
 					.updateLineNetAmt(true)
 					.build());
 
@@ -172,7 +172,7 @@ public class C_OrderLine
 				.priceListIdOverride(subscriptionPLId)
 				.qtyOverride(priceQty)
 				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false)
 				.updateLineNetAmt(true)
 				.build());
 	}
