@@ -104,3 +104,89 @@ group by commoditynumber,
          AD_Org_ID,
          OrgName
 order by deliveryCountry, commoditynumber;
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.IntraTradeShipments(numeric);
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.IntraTradeShipments(numeric, numeric);
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.IntraTradeShipments(IN p_C_Period_ID numeric, IN p_AD_Org_ID numeric)
+
+    RETURNS TABLE
+            (
+				"Org"                 varchar,
+                "Pos"                 varchar,
+                "Produkt"             text,
+                "Warennumer"          varchar,
+                "Land geliefert von"  char(2),
+                "Land geliefert nach" char(2),
+                "Ursprungsland"       char(2),
+                "Menge"               numeric,
+                "Einheit"             varchar,
+                "RG. Betrag"          numeric,
+                "Währung"             varchar,
+                "Monat"               varchar
+            )
+AS
+$$
+select OrgName,
+       pos::varchar,
+       productName ||  E'\n' || productDescription as product,
+       commoditynumber,
+       deliveredFromCountry,
+       deliveryCountry,
+       OriginCountry,
+       movementqty,
+       UOMSymbol,
+       grandtotal,
+       cursymbol,
+       Period
+from (
+         select row_number()
+                over (order by deliveryCountry, commoditynumber, deliveredFromCountry, OriginCountry, UOMSymbol, cursymbol, C_Period_ID) as Pos,
+                *
+         from de_metas_endcustomer_fresh_reports.M_InOut_V i
+         where C_Period_ID = p_C_Period_ID and AD_Org_ID = p_AD_Org_ID
+     ) as v
+order by pos;
+$$
+    LANGUAGE sql
+    STABLE;
+
+
+
+
+DROP VIEW de_metas_endcustomer_fresh_reports.C_Invoice_V;
+
+CREATE OR REPLACE VIEW de_metas_endcustomer_fresh_reports.C_Invoice_V AS
+select bp.value,
+	   bp.Name as BPName,
+       bp.C_Bpartner_ID,	   
+       i.bpartneraddress,
+       bp.vataxid,
+       i.dateinvoiced,
+       i.documentno,
+       c.cursymbol,
+       i.grandtotal,
+       co.name,
+       co.countrycode,
+       currencyconvert(i.grandtotal :: numeric, i.C_Currency_ID :: numeric,
+                       (Select C_Currency_ID from c_Currency where iso_code = 'EUR') :: numeric,
+                       i.DateInvoiced :: timestamp with time zone, 0 :: numeric, i.AD_Client_ID :: numeric,
+                       i.AD_Org_ID :: numeric) as euro_amt,
+	   de_metas_endcustomer_fresh_reports.hasFreeEUTaxes(i.C_Invoice_ID) as IsEuTax,
+	   i.AD_Org_ID,
+       o.Name          as OrgName
+from C_invoice i
+join AD_Org o on i.ad_org_id = o.ad_org_id
+         join C_Bpartner bp on i.c_bpartner_id = bp.c_bpartner_id
+         join c_bpartner_location bpl on bpl.c_bpartner_location_id = i.c_bpartner_location_id
+         join c_location l on l.c_location_id = bpl.c_location_id
+         join C_country co on co.c_country_id = l.c_country_id
+         join c_currency c on i.c_currency_id = c.C_Currency_id
+where i.issotrx = 'Y'
+  and i.isactive = 'Y'
+  and i.DocStatus in ('CO', 'CL')
+  and de_metas_endcustomer_fresh_reports.isEUShippingFromInvoice(i.C_invoice_id)='Y';
+
+
