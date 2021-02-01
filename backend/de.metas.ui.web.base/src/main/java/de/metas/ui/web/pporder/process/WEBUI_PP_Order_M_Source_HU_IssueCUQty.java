@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -180,24 +181,19 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 	private Quantity computeQtyToIssue(final PPOrderLineRow row)
 	{
-		final I_PP_Order_BOMLine bomLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(row.getOrderBOMLineId());
 		final List<I_M_Source_HU> activeSourceHus = WEBUI_PP_Order_ProcessHelper.retrieveActiveSourceHus(row);
 
-		final I_M_HU hu = activeSourceHus
-				.stream()
-				.sorted(Comparator.comparing(I_M_Source_HU::getM_HU_ID))
-				.map(I_M_Source_HU::getM_HU)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("@NoSelection@"));
-		final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(getCtx(), ClientAndOrgId.ofClientAndOrg(hu.getAD_Client_ID(), hu.getAD_Org_ID()));
+		if (activeSourceHus.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
 
-		final List<IHUProductStorage> productStorages = huContext.getHUStorageFactory().getStorage(hu).getProductStorages();
+		final Quantity qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
 
 		final BOMComponentIssueMethod issueMethod = row.getIssueMethod();
 
 		if (BOMComponentIssueMethod.IssueOnlyForReceived.equals(issueMethod))
 		{
-			final Quantity qtyLeftToIssue = row.getQtyPlan().subtract(row.getQty());
 
 			if (qtyLeftToIssue.signum() <= 0)
 			{
@@ -206,6 +202,8 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 			if (row.isProcessed())
 			{
+				final I_PP_Order_BOMLine bomLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(row.getOrderBOMLineId());
+
 				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.computeQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
 				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived);
 			}
@@ -213,11 +211,10 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			{
 				return qtyLeftToIssue;
 			}
-
 		}
 		else
 		{
-			return productStorages.get(0).getQty();
+			return qtyLeftToIssue;
 		}
 	}
 
