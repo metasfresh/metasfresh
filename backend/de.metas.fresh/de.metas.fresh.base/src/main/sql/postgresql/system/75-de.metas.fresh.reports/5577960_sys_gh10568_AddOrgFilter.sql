@@ -40,3 +40,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 UPDATE AD_Process_Para SET SeqNo=5,Updated=TO_TIMESTAMP('2021-02-01 15:02:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541921
 ;
 
+
+
+update AD_process set sqlstatement='select * from de_metas_endcustomer_fresh_reports.IntraTradeShipments(@C_Period_ID@, @AD_Org_ID@)' where ad_process_ID=584748;
+
