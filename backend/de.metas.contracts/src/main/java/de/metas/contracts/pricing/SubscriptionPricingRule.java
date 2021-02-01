@@ -124,10 +124,7 @@ public class SubscriptionPricingRule implements IPricingRule
 	}
 
 	/**
-	 * copy the results of our internal call into 'result'
-	 *
-	 * @param subscriptionPricingResult
-	 * @param result
+	 * Copy the results of our internal call into 'result'
 	 */
 	private static void copySubscriptionResultIntoResult(
 			@NonNull final IPricingResult subscriptionPricingResult,
