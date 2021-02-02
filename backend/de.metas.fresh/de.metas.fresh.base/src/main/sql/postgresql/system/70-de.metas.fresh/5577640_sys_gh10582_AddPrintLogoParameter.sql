@@ -78,3 +78,49 @@ INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,
 INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=541926 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
 ;
 
+
+
+
+
+
+-- 2021-02-02T14:02:47.163Z
+-- URL zum Konzept
+UPDATE AD_Process_Para_Trl SET IsTranslated='Y', Name='Logo drucken',Updated=TO_TIMESTAMP('2021-02-02 15:02:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_Para_ID=541909
+;
+
+-- 2021-02-02T14:02:53.828Z
+-- URL zum Konzept
+UPDATE AD_Process_Para_Trl SET Name='Logo drucken',Updated=TO_TIMESTAMP('2021-02-02 15:02:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_Para_ID=541909
+;
+
+-- 2021-02-02T14:02:58.567Z
+-- URL zum Konzept
+UPDATE AD_Process_Para_Trl SET IsTranslated='Y', Name='Logo drucken',Updated=TO_TIMESTAMP('2021-02-02 15:02:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_Para_ID=541909
+;
+
+-- 2021-02-02T14:03:14.920Z
+-- URL zum Konzept
+UPDATE AD_Process_Para_Trl SET IsTranslated='Y', Name='Print Logo',Updated=TO_TIMESTAMP('2021-02-02 15:03:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_Para_ID=541909
+;
+
+-- 2021-02-02T14:03:40.922Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-02-02 15:03:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541910
+;
+
+-- 2021-02-02T14:10:33.029Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET FieldLength=1,Updated=TO_TIMESTAMP('2021-02-02 15:10:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541910
+;
+
+
+-- 2021-02-02T14:37:01.923Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,578551,0,541030,541927,20,'PRINTER_OPTS_IsPrintLogo',TO_TIMESTAMP('2021-02-02 15:37:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','de.metas.invoice',0,'Y','N','Y','N','Y','N','Logo drucken',10,TO_TIMESTAMP('2021-02-02 15:37:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-02-02T14:37:01.928Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=541927 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
