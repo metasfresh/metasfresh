@@ -5,6 +5,8 @@ import java.util.function.UnaryOperator;
 
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -44,10 +46,8 @@ public interface IMutable<T> extends IReference<T>
 
 	/**
 	 * Sets reference value
-	 * 
-	 * @param value
 	 */
-	void setValue(T value);
+	void setValue(@Nullable T value);
 
 	/**
 	 * @param remappingFunction function which takes the current value as input and which shall return the new value
