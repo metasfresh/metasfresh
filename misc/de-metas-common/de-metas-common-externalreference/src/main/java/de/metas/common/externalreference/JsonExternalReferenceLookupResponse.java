@@ -23,10 +23,17 @@
 package de.metas.common.externalreference;
 
 import de.metas.common.rest_api.JsonMetasfreshId;
-import lombok.NonNull;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
-public class JSONExternalReference
+import java.util.List;
+import java.util.Map;
+
+@Value
+@Builder
+public class JsonExternalReferenceLookupResponse
 {
-	@NonNull
-	JsonMetasfreshId id;
+	@Singular
+	Map<JsonExternalReferenceLookupItem, JsonMetasfreshId> items;
 }
