@@ -108,6 +108,7 @@ order by deliveryCountry, commoditynumber;
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.IntraTradeShipments(numeric);
 
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.IntraTradeShipments(numeric, numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.IntraTradeShipments(IN p_C_Period_ID numeric, IN p_AD_Org_ID numeric)
@@ -130,7 +131,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.IntraTradeShipment
 AS
 $$
 select OrgName,
-       pos::varchar,
+       (line::varchar) as pos,
        productName ||  E'\n' || productDescription as product,
        commoditynumber,
        deliveredFromCountry,
@@ -143,16 +144,15 @@ select OrgName,
        Period
 from (
          select row_number()
-                over (order by deliveryCountry, commoditynumber, deliveredFromCountry, OriginCountry, UOMSymbol, cursymbol, C_Period_ID) as Pos,
+                over (order by deliveryCountry, commoditynumber, deliveredFromCountry, OriginCountry, UOMSymbol, cursymbol, C_Period_ID) as line,
                 *
          from de_metas_endcustomer_fresh_reports.M_InOut_V i
          where C_Period_ID = p_C_Period_ID and AD_Org_ID = p_AD_Org_ID
      ) as v
-order by pos;
+order by line;
 $$
     LANGUAGE sql
     STABLE;
-
 
 
 
