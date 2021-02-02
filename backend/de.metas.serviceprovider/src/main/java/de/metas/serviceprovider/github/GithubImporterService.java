@@ -27,6 +27,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.externalreference.ExternalId;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.GetReferencedIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -37,15 +42,10 @@ import de.metas.issue.tracking.github.api.v3.service.GithubClient;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalId;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectReference;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
 import de.metas.serviceprovider.external.project.GetExternalProjectRequest;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
-import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
 import de.metas.serviceprovider.github.label.LabelService;
 import de.metas.serviceprovider.github.label.ProcessedLabel;
 import de.metas.serviceprovider.github.link.GithubIssueLink;
@@ -95,7 +95,13 @@ public class GithubImporterService implements IssueImporter
 	private final ExternalProjectRepository externalProjectRepository;
 	private final LabelService labelService;
 
-	public GithubImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final GithubClient githubClient, final ExternalReferenceRepository externalReferenceRepository, final IssueRepository issueRepository, final ExternalProjectRepository externalProjectRepository, final LabelService labelService)
+	public GithubImporterService(
+			final ImportQueue<ImportIssueInfo> importIssuesQueue,
+			final GithubClient githubClient,
+			final ExternalReferenceRepository externalReferenceRepository,
+			final IssueRepository issueRepository,
+			final ExternalProjectRepository externalProjectRepository,
+			final LabelService labelService)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.githubClient = githubClient;
@@ -292,7 +298,7 @@ public class GithubImporterService implements IssueImporter
 				GetReferencedIdRequest.builder()
 						.externalSystem(ExternalSystem.GITHUB)
 						.externalReference(externalUserId)
-						.externalReferenceType(ExternalReferenceType.USER_ID)
+						.externalReferenceType(ExternalUserReferenceType.USER_ID)
 						.build());
 
 		return UserId.ofRepoIdOrNullIfSystem(userId);

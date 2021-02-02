@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.externalreference
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.serviceprovider.user;
+package de.metas.externalreference.user;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalUserReferenceType;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -45,7 +45,7 @@ public class AD_User
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteLinkedExternalReferences(@NonNull final I_AD_User record)
 	{
-		externalReferenceRepository.deleteByRecordIdAndType(record.getAD_User_ID(), ExternalReferenceType.USER_ID);
+		externalReferenceRepository.deleteByRecordIdAndType(record.getAD_User_ID(), ExternalUserReferenceType.USER_ID);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_AD_User.COLUMNNAME_IsActive)
@@ -53,7 +53,7 @@ public class AD_User
 	{
 		if (record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalReferenceType.USER_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalUserReferenceType.USER_ID, record.isActive());
 		}
 	}
 
@@ -62,7 +62,7 @@ public class AD_User
 	{
 		if (!record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalReferenceType.USER_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalUserReferenceType.USER_ID, record.isActive());
 		}
 	}
 }

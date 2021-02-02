@@ -36,6 +36,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import ch.qos.logback.classic.Level;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import org.adempiere.ad.table.api.AdTableId;

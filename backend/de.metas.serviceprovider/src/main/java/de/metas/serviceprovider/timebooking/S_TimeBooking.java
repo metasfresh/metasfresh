@@ -22,10 +22,10 @@
 
 package de.metas.serviceprovider.timebooking;
 
+import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueService;
 import de.metas.serviceprovider.issue.interceptor.AddIssueProgressRequest;
@@ -74,7 +74,7 @@ public class S_TimeBooking
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_S_TimeBooking record)
 	{
-		externalReferenceRepository.deleteByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID);
+		externalReferenceRepository.deleteByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalServiceReferenceType.TIME_BOOKING_ID);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
@@ -126,7 +126,7 @@ public class S_TimeBooking
 	{
 		if (record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalServiceReferenceType.TIME_BOOKING_ID, record.isActive());
 		}
 	}
 
@@ -135,7 +135,7 @@ public class S_TimeBooking
 	{
 		if (!record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalReferenceType.TIME_BOOKING_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_TimeBooking_ID(), ExternalServiceReferenceType.TIME_BOOKING_ID, record.isActive());
 		}
 	}
 

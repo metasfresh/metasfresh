@@ -26,16 +26,17 @@ import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.GetReferencedIdRequest;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
 import de.metas.logging.LogManager;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalId;
+import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
-import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
@@ -130,7 +131,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 							GetReferencedIdRequest.builder()
 									.externalSystem(ExternalSystem.EVERHOUR)
 									.externalReference(String.valueOf(timeRecord.getUserId()))
-									.externalReferenceType(ExternalReferenceType.USER_ID)
+									.externalReferenceType(ExternalUserReferenceType.USER_ID)
 									.build()));
 
 			final IssueId issueId = IssueId.ofRepoId(
@@ -138,7 +139,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 							GetReferencedIdRequest.builder()
 									.externalSystem(ExternalSystem.GITHUB)
 									.externalReference(extractGithubIssueId(timeRecord.getTask().getId()))
-									.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+									.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 									.build()));
 
 			final TimeBookingId timeBookingId = TimeBookingId.ofRepoIdOrNull(
@@ -146,7 +147,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 							GetReferencedIdRequest.builder()
 									.externalSystem(ExternalSystem.EVERHOUR)
 									.externalReference(String.valueOf(timeRecord.getId()))
-									.externalReferenceType(ExternalReferenceType.TIME_BOOKING_ID)
+									.externalReferenceType(ExternalServiceReferenceType.TIME_BOOKING_ID)
 									.build()));
 
 			final Instant date = LocalDate.parse(timeRecord.getDate()).atStartOfDay(ZoneOffset.UTC).toInstant();

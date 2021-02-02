@@ -25,18 +25,18 @@ package de.metas.serviceprovider.issue.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.externalreference.ExternalId;
+import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.GetReferencedIdRequest;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.external.reference.ExternalReference;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
-import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -162,7 +162,7 @@ public class IssueImporterService
 				final ExternalReference issueExternalRef = ExternalReference
 						.builder()
 						.externalSystem(importIssueInfo.getExternalIssueId().getExternalSystem())
-						.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+						.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 						.externalReference(importIssueInfo.getExternalIssueId().getId())
 						.orgId(issueEntity.getOrgId())
 						.recordId(issueEntity.getIssueId().getRepoId())
@@ -198,7 +198,7 @@ public class IssueImporterService
 			final ExternalReference externalReference = ExternalReference
 					.builder()
 					.externalSystem(importMilestoneInfo.getExternalId().getExternalSystem())
-					.externalReferenceType(ExternalReferenceType.MILESTONE_ID)
+					.externalReferenceType(ExternalServiceReferenceType.MILESTONE_ID)
 					.externalReference(importMilestoneInfo.getExternalId().getId())
 					.recordId(milestone.getMilestoneId().getRepoId())
 					.orgId(milestone.getOrgId())
@@ -315,7 +315,7 @@ public class IssueImporterService
 				GetReferencedIdRequest.builder()
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
-						.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+						.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 						.build());
 
 		return IssueId.ofRepoIdOrNull(issueId);
@@ -328,7 +328,7 @@ public class IssueImporterService
 				GetReferencedIdRequest.builder()
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
-						.externalReferenceType(ExternalReferenceType.MILESTONE_ID)
+						.externalReferenceType(ExternalServiceReferenceType.MILESTONE_ID)
 						.build());
 
 		return MilestoneId.ofRepoIdOrNull(milestoneId);

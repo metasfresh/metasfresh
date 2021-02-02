@@ -24,6 +24,7 @@ package de.metas.serviceprovider.timebooking.importer.failed;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.externalreference.IExternalSystem;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
 import lombok.NonNull;
@@ -59,7 +60,7 @@ public class FailedTimeBookingRepository
 		final I_S_FailedTimeBooking record = InterfaceWrapperHelper.loadOrNew(failedTimeBookingId, I_S_FailedTimeBooking.class);
 
 		record.setExternalId(failedTimeBooking.getExternalId());
-		record.setExternalSystem(failedTimeBooking.getExternalSystem().getValue());
+		record.setExternalSystem(failedTimeBooking.getExternalSystem().getCode());
 
 		record.setJSONValue(failedTimeBooking.getJsonValue());
 		record.setImportErrorMsg(failedTimeBooking.getErrorMsg());
@@ -76,11 +77,11 @@ public class FailedTimeBookingRepository
 		InterfaceWrapperHelper.delete(record);
 	}
 
-	public Optional<FailedTimeBooking> getOptionalByExternalIdAndSystem(@NonNull final ExternalSystem externalSystem,
+	public Optional<FailedTimeBooking> getOptionalByExternalIdAndSystem(@NonNull final IExternalSystem externalSystem,
 																	    @NonNull final String externalId)
 	{
 		return queryBL.createQueryBuilder(I_S_FailedTimeBooking.class)
-				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem, externalSystem.getValue() )
+				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem, externalSystem.getCode() )
 				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalId, externalId)
 				.create()
 				.firstOnlyOptional(I_S_FailedTimeBooking.class)
@@ -91,7 +92,7 @@ public class FailedTimeBookingRepository
 	{
 		return queryBL.createQueryBuilder(I_S_FailedTimeBooking.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem,externalSystem.getValue() )
+				.addEqualsFilter(I_S_FailedTimeBooking.COLUMNNAME_ExternalSystem,externalSystem.getCode() )
 				.create()
 				.list()
 				.stream()

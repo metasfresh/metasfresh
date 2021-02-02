@@ -22,8 +22,8 @@
 
 package de.metas.serviceprovider.milestone;
 
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.model.I_S_Milestone;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -44,7 +44,7 @@ public class S_Milestone
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void afterDelete(@NonNull final I_S_Milestone record){
-		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Milestone_ID(), ExternalReferenceType.MILESTONE_ID);
+		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Milestone_ID(), ExternalServiceReferenceType.MILESTONE_ID);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_Milestone.COLUMNNAME_IsActive)
@@ -52,7 +52,7 @@ public class S_Milestone
 	{
 		if (record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalReferenceType.MILESTONE_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalServiceReferenceType.MILESTONE_ID, record.isActive());
 		}
 	}
 
@@ -61,7 +61,7 @@ public class S_Milestone
 	{
 		if (!record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalReferenceType.MILESTONE_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalServiceReferenceType.MILESTONE_ID, record.isActive());
 		}
 	}
 }

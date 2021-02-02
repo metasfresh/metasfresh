@@ -25,6 +25,7 @@ package de.metas.serviceprovider.github;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -35,7 +36,7 @@ import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+
 import de.metas.serviceprovider.github.label.LabelService;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -265,7 +266,7 @@ public class GithubImporterServiceTest
 	{
 		final I_S_ExternalProjectReference projectRecord = InterfaceWrapperHelper.newInstance(I_S_ExternalProjectReference.class);
 		projectRecord.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
-		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getValue());
+		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getCode());
 		projectRecord.setAD_Org_ID(MOCK_ORG_ID.getRepoId());
 		projectRecord.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		projectRecord.setExternalReference(MOCK_EXTERNAL_REFERENCE);

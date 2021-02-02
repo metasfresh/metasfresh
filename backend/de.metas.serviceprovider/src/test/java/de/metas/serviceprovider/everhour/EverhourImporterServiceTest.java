@@ -25,16 +25,17 @@ package de.metas.serviceprovider.everhour;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.Task;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalId;
+import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.serviceprovider.external.reference.ExternalReference;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingsRequest;
 import de.metas.serviceprovider.timebooking.importer.failed.FailedTimeBooking;
@@ -199,7 +200,7 @@ public class EverhourImporterServiceTest
 				.recordId(MOCK_RECORD_ID)
 				.externalReference(String.valueOf(MOCK_USER_ID.getRepoId()))
 				.externalSystem(ExternalSystem.EVERHOUR)
-				.externalReferenceType(ExternalReferenceType.USER_ID)
+				.externalReferenceType(ExternalUserReferenceType.USER_ID)
 				.build();
 
 		externalReferenceRepository.save(userRef);
@@ -211,7 +212,7 @@ public class EverhourImporterServiceTest
 				.recordId(MOCK_RECORD_ID)
 				.externalReference(String.valueOf(MOCK_ISSUE_ID.getRepoId()))
 				.externalSystem(ExternalSystem.GITHUB)
-				.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+				.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 				.build();
 
 		externalReferenceRepository.save(issueRef);

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.externalreference
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,10 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.reference;
+package de.metas.externalreference;
 
+import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.serviceprovider.model.I_S_ExternalReference;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -54,8 +53,8 @@ public class ExternalReferenceRepository
 		{
 			throw new AdempiereException("Missing ExternalReference!")
 					.appendParametersToMessage()
-					.setParameter("ExternalSystem",getReferencedIdRequest.getExternalSystem().getValue())
-					.setParameter("ExternalReferenceType",getReferencedIdRequest.getExternalReferenceType())
+					.setParameter("ExternalSystem", getReferencedIdRequest.getExternalSystem().getCode())
+					.setParameter("ExternalReferenceType", getReferencedIdRequest.getExternalReferenceType())
 					.setParameter("ExternalReference", getReferencedIdRequest.getExternalReference());
 		}
 
@@ -76,7 +75,7 @@ public class ExternalReferenceRepository
 
 		record.setAD_Org_ID(externalReference.getOrgId().getRepoId());
 		record.setExternalReference(externalReference.getExternalReference());
-		record.setExternalSystem(externalReference.getExternalSystem().getValue());
+		record.setExternalSystem(externalReference.getExternalSystem().getCode());
 		record.setType(externalReference.getExternalReferenceType().getCode());
 		record.setRecord_ID(externalReference.getRecordId());
 
@@ -85,12 +84,12 @@ public class ExternalReferenceRepository
 		return ExternalReferenceId.ofRepoId(record.getS_ExternalReference_ID());
 	}
 
-	public void deleteByRecordIdAndType(final int recordId, @NonNull final ExternalReferenceType type)
+	public void deleteByRecordIdAndType(final int recordId, @NonNull final IExternalReferenceType type)
 	{
 		listIncludingInactiveBy(recordId, type).forEach(InterfaceWrapperHelper::delete);
 	}
 
-	public void updateIsActiveByRecordIdAndType(final int recordId, @NonNull final ExternalReferenceType type, final boolean isActive)
+	public void updateIsActiveByRecordIdAndType(final int recordId, @NonNull final IExternalReferenceType type, final boolean isActive)
 	{
 		listIncludingInactiveBy(recordId, type)
 				.stream()
@@ -103,7 +102,7 @@ public class ExternalReferenceRepository
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem,
-						getReferencedIdRequest.getExternalSystem().getValue())
+						getReferencedIdRequest.getExternalSystem().getCode())
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type,
 						getReferencedIdRequest.getExternalReferenceType().getCode())
@@ -115,7 +114,7 @@ public class ExternalReferenceRepository
 				.map(this::buildExternalReference);
 	}
 
-	private List<I_S_ExternalReference> listIncludingInactiveBy(final int recordId, @NonNull final ExternalReferenceType type)
+	private List<I_S_ExternalReference> listIncludingInactiveBy(final int recordId, @NonNull final IExternalReferenceType type)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
@@ -127,12 +126,12 @@ public class ExternalReferenceRepository
 	@NonNull
 	private ExternalReference buildExternalReference(@NonNull final I_S_ExternalReference record)
 	{
-		final ExternalReferenceType type = ExternalReferenceType.ofCode(record.getType());
+		final IExternalReferenceType type = ExternalReferenceTypes.ofCode(record.getType());
 
-		final Optional<ExternalSystem> externalSystem = ExternalSystem.of(record.getExternalSystem());
+		final Optional<IExternalSystem> externalSystem = ExternalSystems.ofCode(record.getExternalSystem());
 		if (!externalSystem.isPresent())
 		{
-			throw new AdempiereException("Unknown ExternalSystem: 'system'.")
+			throw new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
 					.appendParametersToMessage()
 					.setParameter("system", record.getExternalSystem());
 		}

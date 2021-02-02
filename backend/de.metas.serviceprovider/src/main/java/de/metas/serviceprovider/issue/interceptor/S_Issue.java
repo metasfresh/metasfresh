@@ -22,9 +22,9 @@
 
 package de.metas.serviceprovider.issue.interceptor;
 
+import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.logging.LogManager;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -79,7 +79,7 @@ public class S_Issue
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_S_Issue record)
 	{
-		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Issue_ID(), ExternalReferenceType.ISSUE_ID);
+		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Issue_ID(), ExternalServiceReferenceType.ISSUE_ID);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)
@@ -110,7 +110,7 @@ public class S_Issue
 	{
 		if (record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalReferenceType.ISSUE_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalServiceReferenceType.ISSUE_ID, record.isActive());
 		}
 	}
 
@@ -119,7 +119,7 @@ public class S_Issue
 	{
 		if (!record.isActive())
 		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalReferenceType.ISSUE_ID, record.isActive());
+			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalServiceReferenceType.ISSUE_ID, record.isActive());
 		}
 	}
 

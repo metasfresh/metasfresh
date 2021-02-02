@@ -20,18 +20,9 @@
  * #L%
  */
 
-package de.metas.serviceprovider;
+package de.metas.externalreference;
 
 import de.metas.organization.OrgId;
-import de.metas.project.ProjectId;
-import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
-import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
-import de.metas.serviceprovider.issue.IssueId;
-import de.metas.serviceprovider.milestone.MilestoneId;
-import de.metas.uom.UomId;
-import de.metas.user.UserId;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -41,10 +32,11 @@ public interface TestConstants
 {
 	String MOCK_EXTERNAL_PROJECT_OWNER = "externalProjectOwner";
 	String MOCK_EXTERNAL_REFERENCE = "externalReference";
-	ExternalServiceReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = ExternalServiceReferenceType.ISSUE_ID;
-	ExternalSystem MOCK_EXTERNAL_SYSTEM = ExternalSystem.GITHUB;
-	ExternalSystem MOCK_EXTERNAL_SYSTEM_1 = ExternalSystem.EVERHOUR;
-	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
+	IExternalReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = new PlainExternalReferenceType("code", "tableName");
+
+	IExternalSystem MOCK_EXTERNAL_SYSTEM = new PlainExternalSystem("Github");
+	IExternalSystem MOCK_EXTERNAL_SYSTEM_1 = new PlainExternalSystem("Everhour");
+	// ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
 	String MOCK_EXTERNAL_ID = "externalId";
 	String MOCK_EXTERNAL_URL = "externalURL";
 	Integer MOCK_EXTERNAL_ISSUE_NO = 1;
@@ -77,14 +69,14 @@ public interface TestConstants
 	String MOCK_EFFORT_2_30 = "2:30";
 
 	int MOCK_RECORD_ID = 1;
-	ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE = ExternalProjectReferenceId.ofRepoId(2);
-	ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE = ExternalProjectReferenceId.ofRepoId(1);
-	MilestoneId MOCK_MILESTONE_ID = MilestoneId.ofRepoId(1);
+	// ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE = ExternalProjectReferenceId.ofRepoId(2);
+	// ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE = ExternalProjectReferenceId.ofRepoId(1);
+	// MilestoneId MOCK_MILESTONE_ID = MilestoneId.ofRepoId(1);
 	OrgId MOCK_ORG_ID = OrgId.ANY;
-	ProjectId MOCK_PROJECT_ID = ProjectId.ofRepoId(1);
-	UserId MOCK_USER_ID = UserId.ofRepoId(1);
-	UomId MOCK_UOM_ID = UomId.ofRepoId(1);
-	IssueId MOCK_ISSUE_ID = IssueId.ofRepoId(1);
-	String MOCK_GH_TASK_ID = "gh:" + MOCK_ISSUE_ID.getRepoId();
-	String MOCK_EV_TASK_ID = "ev:" + MOCK_ISSUE_ID.getRepoId();
+	// ProjectId MOCK_PROJECT_ID = ProjectId.ofRepoId(1);
+	// UserId MOCK_USER_ID = UserId.ofRepoId(1);
+	// UomId MOCK_UOM_ID = UomId.ofRepoId(1);
+	// IssueId MOCK_ISSUE_ID = IssueId.ofRepoId(1);
+	// String MOCK_GH_TASK_ID = "gh:" + MOCK_ISSUE_ID.getRepoId();
+	// String MOCK_EV_TASK_ID = "ev:" + MOCK_ISSUE_ID.getRepoId();
 }

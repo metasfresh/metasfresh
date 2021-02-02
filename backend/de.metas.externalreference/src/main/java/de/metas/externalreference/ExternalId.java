@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.externalreference
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,38 +20,25 @@
  * #L%
  */
 
-package de.metas.serviceprovider.timebooking.importer;
+package de.metas.externalreference;
 
-import de.metas.externalreference.ExternalId;
-import de.metas.serviceprovider.external.ExternalSystem;
-import de.metas.serviceprovider.issue.IssueId;
-import de.metas.serviceprovider.timebooking.TimeBookingId;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-
 @Value
 @Builder
-public class ImportTimeBookingInfo
+public class ExternalId<T extends IExternalSystem>
 {
-	@Nullable
-	TimeBookingId timeBookingId;
+	@NonNull
+	T externalSystem;
 
 	@NonNull
-	ExternalId<ExternalSystem> externalTimeBookingId;
+	String id;
 
 	@NonNull
-	UserId performingUserId;
-
-	@NonNull
-	IssueId issueId;
-
-	long bookedSeconds;
-
-	@NonNull
-	Instant bookedDate;
+	public static ExternalId of(@NonNull final IExternalSystem externalSystem, @NonNull final String id)
+	{
+		return new ExternalId(externalSystem, id);
+	}
 }

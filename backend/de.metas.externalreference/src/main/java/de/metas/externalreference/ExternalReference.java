@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.externalreference
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,33 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external;
+package de.metas.externalreference;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class ExternalId
+public class ExternalReference
 {
-	@NonNull
-	ExternalSystem externalSystem;
+	@Nullable
+	ExternalReferenceId externalReferenceId;
 
 	@NonNull
-	String id;
+	OrgId orgId;
 
 	@NonNull
-	public static ExternalId of(@NonNull final ExternalSystem externalSystem, @NonNull final String id)
-	{
-		return new ExternalId(externalSystem, id);
-	}
+	IExternalSystem externalSystem;
+
+	@NonNull
+	IExternalReferenceType externalReferenceType;
+
+	@NonNull
+	String externalReference;
+
+	int recordId;
 }

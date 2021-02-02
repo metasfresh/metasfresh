@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.externalreference
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,34 +20,25 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.reference;
+package de.metas.externalreference;
 
-import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalSystem;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
-@Value
-@Builder
-public class ExternalReference
+public class ExternalSystems
 {
-	@Nullable
-	ExternalReferenceId externalReferenceId;
+	private static final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
 
-	@NonNull
-	OrgId orgId;
+	public static void registerExternalSystem(@NonNull final IExternalSystem system)
+	{
+		systemsByCode.put(system.getCode(), system);
+	}
 
-	@NonNull
-	ExternalSystem externalSystem;
-
-	@NonNull
-	ExternalReferenceType externalReferenceType;
-
-	@NonNull
-	String externalReference;
-
-	int recordId;
+	public static Optional<IExternalSystem> ofCode(final String code)
+	{
+		return Optional.ofNullable(systemsByCode.get(code));
+	}
 }

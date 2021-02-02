@@ -20,21 +20,13 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.reference;
+package de.metas.externalreference.user;
 
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.logging.LogManager;
-import de.metas.serviceprovider.issue.IssueEntity;
-import de.metas.serviceprovider.issue.IssueId;
-import de.metas.serviceprovider.issue.IssueRepository;
-import de.metas.serviceprovider.milestone.MilestoneId;
-import de.metas.serviceprovider.milestone.MilestoneRepository;
-import de.metas.serviceprovider.timebooking.TimeBooking;
-import de.metas.serviceprovider.timebooking.TimeBookingId;
-import de.metas.serviceprovider.timebooking.TimeBookingRepository;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -51,8 +43,6 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 @Interceptor(I_S_ExternalReference.class)
 @Callout(I_S_ExternalReference.class)
 @Component
@@ -60,16 +50,12 @@ public class S_ExternalReference
 {
 	private final static transient Logger logger = LogManager.getLogger(S_ExternalReference.class);
 
-	private final IssueRepository issueRepository;
-	private final TimeBookingRepository timeBookingRepository;
-	private final MilestoneRepository milestoneRepository;
+	private final IUserDAO userDAO;
 	private final IADTableDAO adTableDAO;
 
-	public S_ExternalReference(final IssueRepository issueRepository, final TimeBookingRepository timeBookingRepository, final MilestoneRepository milestoneRepository, final IADTableDAO adTableDAO)
+	public S_ExternalReference(final IUserDAO userDAO, final IADTableDAO adTableDAO)
 	{
-		this.issueRepository = issueRepository;
-		this.timeBookingRepository = timeBookingRepository;
-		this.milestoneRepository = milestoneRepository;
+		this.userDAO = userDAO;
 		this.adTableDAO = adTableDAO;
 	}
 
@@ -86,16 +72,10 @@ public class S_ExternalReference
 
 		if (externalReferenceType instanceof ExternalUserReferenceType)
 		{
-			switch (ExternalServiceReferenceType.cast(externalReferenceType))
+			switch (ExternalUserReferenceType.cast(externalReferenceType))
 			{
-				case TIME_BOOKING_ID:
-					validateTimeBooking(TimeBookingId.ofRepoId(record.getRecord_ID()));
-					break;
-				case ISSUE_ID:
-					validateIssueId(IssueId.ofRepoId(record.getRecord_ID()));
-					break;
-				case MILESTONE_ID:
-					validateMilestone(MilestoneId.ofRepoId(record.getRecord_ID()));
+				case USER_ID:
+					validateUserId(UserId.ofRepoId(record.getRecord_ID()));
 					break;
 				default:
 					throw new AdempiereException("There is no validation in place for ExternalReferenceType: " + externalReferenceType.getCode());
@@ -107,38 +87,32 @@ public class S_ExternalReference
 		}
 	}
 
-	private void validateIssueId(@NonNull final IssueId issueId)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_S_ExternalReference.COLUMNNAME_Record_ID })
+	@CalloutMethod(columnNames = { I_S_ExternalReference.COLUMNNAME_Record_ID })
+	public void updateReferenced_Record_ID(final I_S_ExternalReference record)
 	{
-		final Optional<IssueEntity> issueEntity = issueRepository.getByIdOptional(issueId);
-
-		if (!issueEntity.isPresent())
-		{
-			throw new AdempiereException("No issue found for ID: 'value' .")
-					.appendParametersToMessage()
-					.setParameter("value", issueId.getRepoId());
-		}
+		record.setReferenced_Record_ID(record.getRecord_ID());
 	}
 
-	private void validateTimeBooking(@NonNull final TimeBookingId timeBookingId)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_S_ExternalReference.COLUMNNAME_Type })
+	@CalloutMethod(columnNames = { I_S_ExternalReference.COLUMNNAME_Type })
+	public void updateReferenced_Table_ID(final I_S_ExternalReference record)
 	{
-		final Optional<TimeBooking> timeBooking = timeBookingRepository.getByIdOptional(timeBookingId);
-
-		if (!timeBooking.isPresent())
-		{
-			throw new AdempiereException("No TimeBooking found for ID: 'value' .")
-					.appendParametersToMessage()
-					.setParameter("value", timeBookingId.getRepoId());
-		}
+		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType());
+		record.setReferenced_AD_Table_ID(adTableDAO.retrieveTableId(externalReferenceType.getTableName()));
 	}
 
-	private void validateMilestone(@NonNull final MilestoneId milestoneId)
+	private void validateUserId(@NonNull final UserId userId)
 	{
-
-		if (!milestoneRepository.exists(milestoneId))
+		try
 		{
-			throw new AdempiereException("No Milestone found for ID: 'value' .")
+			userDAO.getById(userId);
+		}
+		catch (final AdempiereException ex)
+		{
+			throw new AdempiereException("No user found for the given recordId! ", ex)
 					.appendParametersToMessage()
-					.setParameter("value", milestoneId.getRepoId());
+					.setParameter("recordId", userId.getRepoId());
 		}
 	}
 }

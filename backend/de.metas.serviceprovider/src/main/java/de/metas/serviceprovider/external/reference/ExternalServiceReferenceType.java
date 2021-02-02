@@ -22,10 +22,12 @@
 
 package de.metas.serviceprovider.external.reference;
 
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.IExternalReferenceType;
+import de.metas.externalreference.model.X_S_ExternalReference;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.model.I_S_Milestone;
 import de.metas.serviceprovider.model.I_S_TimeBooking;
-import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -34,25 +36,37 @@ import org.compiere.model.I_AD_User;
 
 import java.util.stream.Stream;
 
-import static de.metas.serviceprovider.model.X_S_ExternalReference.TYPE_IssueID;
-import static de.metas.serviceprovider.model.X_S_ExternalReference.TYPE_MilestoneId;
-import static de.metas.serviceprovider.model.X_S_ExternalReference.TYPE_TimeBookingID;
-import static de.metas.serviceprovider.model.X_S_ExternalReference.TYPE_UserID;
+import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_IssueID;
+import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_MilestoneId;
+import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_TimeBookingID;
 
 @AllArgsConstructor
 @Getter
-public enum ExternalReferenceType implements ReferenceListAwareEnum
+public enum ExternalServiceReferenceType implements IExternalReferenceType
 {
+	//USER_ID(X_S_ExternalReference.TYPE_UserID, I_AD_User.Table_Name),
 	ISSUE_ID(TYPE_IssueID, I_S_Issue.Table_Name),
-	USER_ID(TYPE_UserID, I_AD_User.Table_Name),
 	TIME_BOOKING_ID(TYPE_TimeBookingID, I_S_TimeBooking.Table_Name),
 	MILESTONE_ID(TYPE_MilestoneId, I_S_Milestone.Table_Name);
+
+	static
+	{
+	//	ExternalReferenceTypes.registerType(USER_ID);
+		ExternalReferenceTypes.registerType(ISSUE_ID);
+		ExternalReferenceTypes.registerType(TIME_BOOKING_ID);
+		ExternalReferenceTypes.registerType(MILESTONE_ID);
+	}
 
 	private final String code;
 	private final String tableName;
 
+	public static ExternalServiceReferenceType cast(final IExternalReferenceType externalReferenceType)
+	{
+		return (ExternalServiceReferenceType)externalReferenceType;
+	}
+
 	@NonNull
-	public static ExternalReferenceType ofCode(@NonNull final String code)
+	public static ExternalServiceReferenceType ofCode(@NonNull final String code)
 	{
 		return Stream.of(values())
 				.filter( type -> type.getCode().equals(code))

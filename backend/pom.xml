@@ -110,7 +110,9 @@
         <module>de.metas.banking</module>
         <module>de.metas.contracts</module>
 
-        <!-- cucumber has it's own build script -->
+        <module>de.metas.externalreference</module>
+
+        <!-- cucumber has its own build script -->
         <!-- <module>de.metas.cucumber</module> -->
 
         <module>de.metas.invoice_gateway.api</module>
@@ -187,8 +189,6 @@
 
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
-
-
     </modules>
 
     <dependencyManagement>

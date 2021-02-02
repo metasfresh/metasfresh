@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.serviceprovider.base
+ * de.metas.externalreference
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,20 @@
  * #L%
  */
 
-package de.metas.serviceprovider.external.reference;
+package de.metas.externalreference;
 
-import de.metas.serviceprovider.model.I_S_ExternalReference;
+import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
-import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
-import static de.metas.serviceprovider.TestConstants.MOCK_RECORD_ID;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class ExternalReferenceRepositoryTest
 {
@@ -87,7 +82,7 @@ public class ExternalReferenceRepositoryTest
 		final Integer recordID = externalReferenceRepository.getReferencedRecordIdOrNullBy(getReferencedIdRequest);
 
 		//then
-		assertNotNull(recordID);
+		Assert.assertNotNull(recordID);
 		assertEquals(recordID.intValue(), mockExternalReference.getRecordId());
 	}
 
@@ -100,7 +95,7 @@ public class ExternalReferenceRepositoryTest
 		final ExternalReferenceId externalReferenceId = externalReferenceRepository.save(mockExternalReference);
 
 		exceptionRule.expect(RuntimeException.class);
-		exceptionRule.expectMessage("de.metas.serviceprovider.model.I_S_ExternalReference, id=" + externalReferenceId.getRepoId());
+		exceptionRule.expectMessage("de.metas.externalreference.model.I_S_ExternalReference, id=" + externalReferenceId.getRepoId());
 		//when
 		externalReferenceRepository.deleteByRecordIdAndType(mockExternalReference.getRecordId(), mockExternalReference.getExternalReferenceType());
 
@@ -111,11 +106,11 @@ public class ExternalReferenceRepositoryTest
 	private ExternalReference getMockExternalReference()
 	{
 		return ExternalReference.builder()
-				.orgId(MOCK_ORG_ID)
-				.externalReference(MOCK_EXTERNAL_REFERENCE)
-				.externalReferenceType(MOCK_EXTERNAL_REFERENCE_TYPE)
-				.externalSystem(MOCK_EXTERNAL_SYSTEM)
-				.recordId(MOCK_RECORD_ID)
+				.orgId(TestConstants.MOCK_ORG_ID)
+				.externalReference(TestConstants.MOCK_EXTERNAL_REFERENCE)
+				.externalReferenceType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE)
+				.externalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM)
+				.recordId(TestConstants.MOCK_RECORD_ID)
 				.build();
 	}
 
@@ -124,6 +119,6 @@ public class ExternalReferenceRepositoryTest
 		assertEquals(externalReference.getRecordId(), record.getRecord_ID());
 		assertEquals(externalReference.getExternalReference(), record.getExternalReference());
 		assertEquals(externalReference.getExternalReferenceType().getCode(), record.getType());
-		assertEquals(externalReference.getExternalSystem().getValue(), record.getExternalSystem());
+		assertEquals(externalReference.getExternalSystem().getCode(), record.getExternalSystem());
 	}
 }
