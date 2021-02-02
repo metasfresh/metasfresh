@@ -557,7 +557,7 @@ public final class SqlViewSelectionQueryBuilder
 
 				if (sqlSelectValue.isVirtualColumn())
 				{
-					useColumnNameAlias = false;
+					useColumnNameAlias = true;
 				}
 
 				if (sqlSelectDisplayValue != null && addedFieldNames.add(sqlSelectDisplayValue.getColumnNameAlias()) && !sqlSelectValue.isVirtualColumn())
