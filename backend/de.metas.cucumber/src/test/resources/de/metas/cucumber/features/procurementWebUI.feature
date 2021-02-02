@@ -1,7 +1,8 @@
 Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
 
   Scenario: metasfresh provides bpartner data to the procurement-WebUI
-    Given metasfresh contains M_Products:
+    Given metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
+    And metasfresh contains M_Products:
       | Identifier | Name             |
       | p_1        | contractProduct1 |
     And metasfresh contains PMM_Products:
