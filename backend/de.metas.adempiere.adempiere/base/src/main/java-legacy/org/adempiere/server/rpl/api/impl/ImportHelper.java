@@ -45,6 +45,7 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -174,7 +175,7 @@ public class ImportHelper implements IImportHelper
 	private final Logger log = LogManager.getLogger(ImportHelper.class);
 
 	/** Static Logger */
-	private static Logger s_log = LogManager.getLogger(ImportHelper.class);
+	private static final Logger s_log = LogManager.getLogger(ImportHelper.class);
 
 	/** Set change PO */
 	boolean isChanged = false;
@@ -216,6 +217,7 @@ public class ImportHelper implements IImportHelper
 		return retValue.getValue();
 	}
 
+	@Nullable
 	private Document importXMLDocument0(
 			final StringBuilder result,
 			final Document documentToBeImported,
@@ -223,7 +225,7 @@ public class ImportHelper implements IImportHelper
 	{
 		final Element rootElement = documentToBeImported.getDocumentElement();
 		ctx = createContext(rootElement);
-		try (final IAutoCloseable contextRestorer = Env.switchContext(ctx))
+		try (final IAutoCloseable ignored = Env.switchContext(ctx))
 		{
 			// Find which Export format to Load...
 			final String version = rootElement.getAttribute(RPL_Constants.XML_ATTR_Version);
@@ -238,12 +240,11 @@ public class ImportHelper implements IImportHelper
 			final String ReplicationType = rootElement.getAttribute(RPL_Constants.XML_ATTR_REPLICATION_TYPE);
 			final int ReplicationEvent = getAttributeAsInt(rootElement, RPL_Constants.XML_ATTR_REPLICATION_EVENT);
 
-			String EXP_Format_Value = null;
-			EXP_Format_Value = rootElement.getNodeName();
+			final String EXP_Format_Value = rootElement.getNodeName();
 			log.debug("EXP_Format_Value = {}", EXP_Format_Value);
 
 			final ClientId adClientId = Env.getClientId(ctx);
-			MEXPFormat expFormatPO = null;
+			final MEXPFormat expFormatPO;
 			try
 			{
 				// Note: calling the method with trxName==NONE because we want to get the cached version
@@ -423,6 +424,7 @@ public class ImportHelper implements IImportHelper
 	/**
 	 * check if 'expFormatPO' has a handler. if so, call it with 'po' and the format
 	 */
+	@Nullable
 	private Document handleRequestResonse(
 			final Element rootElement,
 			final I_EXP_Format format,
@@ -473,32 +475,21 @@ public class ImportHelper implements IImportHelper
 		return requestHandlerBL.processRequestHandlerResult(requestHandlerResult);
 	}
 
-	/**
-	 * @param ctx
-	 * @param result
-	 * @param rootElement
-	 * @param expFormat
-	 * @param ReplicationType
-	 * @param masterPO
-	 * @param ReplicationTrxName
-	 * @param trxName
-	 * @return
-	 */
 	private PO importElement(
 			final StringBuilder result,
 			final Element rootElement,
 			final MEXPFormat expFormat,
 			final String ReplicationType,
 			final String parentXPath,
-			final PO masterPO,
-			final I_EXP_Format masterExpFormat,
-			final I_EXP_FormatLine masterExpFormatLine,
+			@Nullable final PO masterPO,
+			@Nullable final I_EXP_Format masterExpFormat,
+			@Nullable final I_EXP_FormatLine masterExpFormatLine,
 			final String ReplicationTrxName,
 			final String trxName)
 	{
 		boolean isLookupTableReplicationTrxSupported;
-		PO po = null;
-		I_EXP_ReplicationTrxLine replicationTrxLine = null;
+		PO po;
+		I_EXP_ReplicationTrxLine replicationTrxLine;
 		try
 		{
 			//
@@ -509,8 +500,6 @@ public class ImportHelper implements IImportHelper
 					ReplicationType,
 					parentXPath,
 					masterPO,
-					masterExpFormat,
-					masterExpFormatLine,
 					ReplicationTrxName,
 					trxName);
 
@@ -582,7 +571,6 @@ public class ImportHelper implements IImportHelper
 		{
 			try
 			{
-				log.debug("=================== Beginning of Format Line ===============================");
 				log.debug("formatLine: [" + formatLine.toString() + "]");
 
 				//
@@ -644,18 +632,6 @@ public class ImportHelper implements IImportHelper
 		return po;
 	}
 
-	/**
-	 * Get the value from format
-	 *
-	 * @param line
-	 * @param po
-	 * @param rootElement
-	 * @param result
-	 * @param ReplicationType
-	 * @param trxName
-	 * @param ReplicationTrxName
-	 * @return Object with the Value
-	 */
 	private Object getValueFromFormat(
 			final I_EXP_FormatLine line,
 			final PO po,
@@ -703,7 +679,7 @@ public class ImportHelper implements IImportHelper
 
 			// int refRecord_ID = 0;
 
-			log.debug("Seach for XML Element = " + valueXPath);
+			log.debug("Search for XML Element = " + valueXPath);
 			final Element referencedNode;
 			try
 			{
@@ -823,13 +799,6 @@ public class ImportHelper implements IImportHelper
 		return value;
 	}
 
-	/**
-	 *
-	 * @param value
-	 * @param line
-	 * @param po
-	 * @param result
-	 */
 	private void setReplicaValues(Object value, final I_EXP_FormatLine line, final PO po, final StringBuilder result)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -1009,7 +978,7 @@ public class ImportHelper implements IImportHelper
 		return ok;
 	}
 
-	private static int getADClientIdByValue(final Properties ctx, final String value, final String trxName)
+	private static int getADClientIdByValue(final Properties ctx, final String value, @Nullable final String trxName)
 	{
 		s_log.debug("AD_Client_Value = {}", value);
 
@@ -1019,43 +988,24 @@ public class ImportHelper implements IImportHelper
 				.setParameters(value)
 				.firstIdOnly();
 
-		s_log.debug("AD_Client_ID = {}" + adClientId);
+		s_log.debug("AD_Client_ID = {}", adClientId);
 		return adClientId;
 	}
 
 	/**
 	 * This Method gets the PO record associated with the created ReplicationTrxLine from the exportFormat
-	 *
-	 * @param result
-	 * @param expFormat
-	 * @param rootElement
-	 * @param rootNodeName
-	 * @param ReplicationType
-	 * @param parentXPath
-	 * @param masterPO
-	 * @param ReplicationTrxName
-	 * @param trxName
-	 * @return
-	 * @throws ReplicationException
 	 */
 	private POReplicationTrxLineDraft getObjectFromFormat(
 			final StringBuilder result,
-			final MEXPFormat expFormat,
-			final Element rootElement,
-			final String rootNodeName,
+			@NonNull final MEXPFormat expFormat,
+			@NonNull final Element rootElement,
+			@NonNull final String rootNodeName,
 			final String ReplicationType,
 			final String parentXPath,
-			final PO masterPO,
-			final I_EXP_Format masterExpFormat,
-			final I_EXP_FormatLine masterExpFormatLine,
+			@Nullable final PO masterPO,
 			final String ReplicationTrxName,
 			final String trxName) throws ReplicationException
 	{
-		if (expFormat == null || rootElement == null || rootNodeName == null)
-		{
-			throw new IllegalArgumentException("expFormat, rootNode and RootnodeName can't be null!");
-		}
-
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		log.debug("expFormat = " + expFormat);
@@ -1078,8 +1028,7 @@ public class ImportHelper implements IImportHelper
 		if (doLookup)
 		{
 			uniqueFormatLines.addAll(expFormat.getUniqueColumns());
-			if (uniqueFormatLines.isEmpty()
-					&& masterPO == null) // note that with a masterPO, a lookup can be done, even without unique lines
+			if (uniqueFormatLines.isEmpty() && masterPO == null) // note that with a masterPO, a lookup can be done, even without unique lines
 			{
 				throw new ReplicationException(MSG_EXPFormatLineNoUniqueColumns);
 			}
@@ -1090,7 +1039,7 @@ public class ImportHelper implements IImportHelper
 		final List<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
 		int col = 0;
-		String formatLines = "";
+		final StringBuilder formatLines = new StringBuilder();
 
 		for (final I_EXP_FormatLine uniqueFormatLine : uniqueFormatLines)
 		{
@@ -1108,7 +1057,7 @@ public class ImportHelper implements IImportHelper
 				columnSQL = columnName;
 			}
 
-			formatLines = formatLines + "|" + columnName;
+			formatLines.append("|").append(columnName);
 
 			if (X_EXP_FormatLine.TYPE_XMLElement.equals(uniqueFormatLine.getType()))
 			{
@@ -1129,7 +1078,7 @@ public class ImportHelper implements IImportHelper
 					// 03259: the (lookup) value doesn't exist in the incoming XML. This is equivalent to a null value
 					nodeExists = false;
 				}
-				log.debug("values[" + col + "]=" + String.valueOf(cols[col]));
+				log.debug("values[{}]={}", col, cols[col]);
 
 			}
 			else if (X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(uniqueFormatLine.getType()))
@@ -1186,7 +1135,7 @@ public class ImportHelper implements IImportHelper
 			// metas start: rc: task 03749
 			// Initialized variable
 			// metas end : rc
-			Object paramSQL = null;
+			Object paramSQL;
 			if (cols[col] == null || !nodeExists)
 			{
 				paramSQL = cols[col]; // 04124: don't try to parse an empty or null column value
@@ -1197,8 +1146,7 @@ public class ImportHelper implements IImportHelper
 
 				if (DisplayType.isDate(adReferenceId))
 				{
-					final Timestamp value = handleDateTime(cols[col], column, uniqueFormatLine);
-					paramSQL = value;
+					paramSQL  = handleDateTime(cols[col], column, uniqueFormatLine);
 				}
 				else if (adReferenceId == DisplayType.String)
 				{
@@ -1232,7 +1180,7 @@ public class ImportHelper implements IImportHelper
 				else if (DisplayType.isLOB(adReferenceId))
 				{
 					final Object value = cols[col];
-					String decoded;
+					final String decoded;
 					// metas: rc: start
 					try
 					{
@@ -1271,21 +1219,18 @@ public class ImportHelper implements IImportHelper
 			col++;
 		}
 
-		final String linkMasterColumnName;
 		final String linkColumnName;
 		final int linkId;
 
 		if (masterPO != null)
 		{
-			linkMasterColumnName = masterPO.get_KeyColumns()[0];
-			linkColumnName = linkMasterColumnName; // TODO: check which is the link column
+			linkColumnName = masterPO.get_KeyColumns()[0]; // TODO: check which is the link column
 			linkId = masterPO.get_ID();
 			whereClause.append(" AND ").append(linkColumnName).append("= ? ");
 			params.add(linkId);
 		}
 		else
 		{
-			linkMasterColumnName = null;
 			linkColumnName = null;
 			linkId = -1;
 		}
@@ -1408,8 +1353,6 @@ public class ImportHelper implements IImportHelper
 	}
 
 	/**
-	 * @param doLookup
-	 * @param lookupTableName
 	 * @return true if the table is not excluded in general from replication trx manangement, AND if this is an INSERT and not a LOOKUP.
 	 *         <p>
 	 *         Note: we disallow this on lookups, because we don't need that case yet and aren't yet 100% usre about the implications of allowing for also for lookups.
@@ -1425,8 +1368,6 @@ public class ImportHelper implements IImportHelper
 	 * <i>nested</i> lookup-EXP-Formats that are based on a view and therefore can't be linked to the replication-trx. Example: we look up the C_BPartner_Location for a C_OLCand using a view-based
 	 * lookup format. And inside that view-based lookup format, we use another view-based lookup format to look up the BPL's C_BPArtner.
 	 *
-	 * @param doLookup
-	 * @param lookupTableName
 	 * @return <code>true</code>
 	 */
 	private boolean isLookupTableReplicationTrxSupported(final boolean doLookup, final I_EXP_Format exportFormat)
@@ -1444,9 +1385,6 @@ public class ImportHelper implements IImportHelper
 	}
 
 	/**
-	 * @param availableValues
-	 * @return single default value
-	 *
 	 * @throws ReplicationException if none or more default values were found
 	 */
 	private PO getSingleDefaultPO(final List<PO> availableValues, final I_EXP_FormatLine line) throws ReplicationException
@@ -1499,12 +1437,8 @@ public class ImportHelper implements IImportHelper
 	 * <li>none of the given parameters is <code>null</code></li>
 	 * <li>the given column is a "Date" column, i.e. <code>DisplayType.isDate()</code> will return <code>true</code></li>
 	 * </ul>
-	 *
-	 * @param value
-	 * @param column
-	 * @param formatLine
-	 * @return
 	 */
+	@Nullable
 	private Timestamp handleDateTime(final Object value,
 			final I_AD_Column column,
 			final I_EXP_FormatLine formatLine)
@@ -1570,8 +1504,6 @@ public class ImportHelper implements IImportHelper
 	private static final Pattern REGEXP_YesNo = Pattern.compile("[YN]");
 
 	/**
-	 *
-	 * @param value
 	 * @return "Y" or "N"
 	 */
 	protected String handleYesNo(final Object value)
@@ -1625,7 +1557,7 @@ public class ImportHelper implements IImportHelper
 		return xPath + "/" + appendix;
 	}
 
-	private final Properties createContext(final Element rootElement)
+	private Properties createContext(final Element rootElement)
 	{
 		Check.assumeNotNull(_initialCtx, "initialCtx not null");
 		final Properties ctx = Env.copyCtx(_initialCtx);

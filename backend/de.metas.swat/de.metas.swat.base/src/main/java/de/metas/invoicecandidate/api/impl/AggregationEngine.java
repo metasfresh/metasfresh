@@ -1,6 +1,56 @@
 package de.metas.invoicecandidate.api.impl;
 
-import ch.qos.logback.classic.Level;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.time.LocalDate;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 import com.google.common.base.MoreObjects;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
@@ -96,6 +146,7 @@ public final class AggregationEngine
 	private final transient IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
@@ -373,6 +424,11 @@ public final class AggregationEngine
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
+		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
+		if (orderId != null)
+		{
+			invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
+		}
 
 			// why not using DateToInvoice[_Override] if available?
 			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced

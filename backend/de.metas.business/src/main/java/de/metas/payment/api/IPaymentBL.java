@@ -26,9 +26,11 @@
 package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
@@ -40,6 +42,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IPaymentBL extends ISingletonService
@@ -141,4 +144,6 @@ public interface IPaymentBL extends ISingletonService
 
 	@NonNull
 	TenderType getTenderType(@NonNull BankAccountId bankAccountId);
+
+	Optional<PaymentId> getByExtIdOrgId(ExternalId externalId, OrgId orgId);
 }

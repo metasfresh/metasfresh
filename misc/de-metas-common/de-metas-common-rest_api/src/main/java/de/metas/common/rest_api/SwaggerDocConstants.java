@@ -1,10 +1,8 @@
-package de.metas.rest_api.bpartner;
-
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +20,8 @@ package de.metas.rest_api.bpartner;
  * #L%
  */
 
+package de.metas.common.rest_api;
+
 public class SwaggerDocConstants
 {
 	public static final String BPARTNER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
@@ -29,6 +29,16 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<C_Bartner.ExternalId>`\n"
 			+ "* or something like `val-<C_Bartner.Value>`\n"
 			+ "* or something like `gln-<C_Bartner_Location.GLN>`\n";
+
+	public static final String INVOICE_IDENTIFIER_DOC = "Identifier of the Invoice in question. Can be\n"
+			+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
+			+ "* or something like `doc-<C_Invoice.documentNo>`"
+			+ "* or something like `ext-<C_Invoice.ExternalId>`";
+
+	public static final String ORDER_IDENTIFIER_DOC = "Identifier of the Order in question. Can be\n"
+			+ "* a plain `<C_Order.C_Order_ID>`\n"
+			+ "* or something like `doc-<C_Order.documentNo>`"
+			+ "* or something like `ext-<C_Order.ExternalId>`";
 
 	public static final String CONTACT_IDENTIFIER_DOC = "Identifier of the contact in question. Can be\n"
 			+ "* a plain `<AD_User_ID>`\n"

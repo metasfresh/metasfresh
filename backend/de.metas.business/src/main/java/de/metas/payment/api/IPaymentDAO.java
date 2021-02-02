@@ -53,8 +53,10 @@ public interface IPaymentDAO extends ISingletonService
 
 	Optional<I_C_Payment> getByExternalOrderId(@NonNull ExternalId externalId, @NonNull OrgId orgId);
 
+	Optional<I_C_Payment> getByExternalId(@NonNull ExternalId externalId, @NonNull OrgId orgId);
+
 	@Nullable
-	ExternalId getExternalId(@NonNull PaymentId paymentId);
+	ExternalId getExternalOrderId(@NonNull PaymentId paymentId);
 
 	List<I_C_Payment> getByIds(Set<PaymentId> paymentIds);
 
