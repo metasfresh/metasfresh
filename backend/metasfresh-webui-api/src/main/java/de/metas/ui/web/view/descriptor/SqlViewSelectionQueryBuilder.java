@@ -555,9 +555,9 @@ public final class SqlViewSelectionQueryBuilder
 				final SqlSelectDisplayValue sqlSelectDisplayValue = getSqlSelectDisplayValue(fieldName);
 				final SqlSelectValue sqlSelectValue = getSqlSelectValue(fieldName);
 
-				if (sqlSelectValue.isVirtualColumn())
+				if (sqlSelectValue.isVirtualColumn() && sqlSelectDisplayValue != null)
 				{
-					useColumnNameAlias = true;
+					useColumnNameAlias = false;
 				}
 
 				if (sqlSelectDisplayValue != null && addedFieldNames.add(sqlSelectDisplayValue.getColumnNameAlias()) && !sqlSelectValue.isVirtualColumn())
