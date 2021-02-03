@@ -30,6 +30,11 @@ body {
 
 #root {
   background-color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .fullsize {
@@ -46,22 +51,19 @@ body {
 .header {
   border-bottom: 1px solid $base-border;
   box-shadow: 0 0.05em 0.4em -0.125em rgba(10, 10, 10, 0.1);
-}
-
-.product {
-  margin-top: 0.4rem;
-  .no-p {
-    padding: 0px;
-  }
-  .green-check {
-    color: $base-elements;
-  }
+  position: absolute;
+  top: 0;
 }
 
 .header {
   .header-title {
     flex: 2;
     text-align: center;
+
+    .title {
+      white-space: nowrap;
+      padding-right: 5px;
+    }
   }
 
   .header-aligner {
@@ -95,6 +97,7 @@ body {
 
 .page {
   width: 100%;
+  margin-top: 5.25rem;
 }
 
 .login-view {
@@ -190,6 +193,17 @@ footer {
 input[type=number]::-webkit-inner-spin-button {
   cursor: pointer;
 }
+
+.product {
+  margin-top: 0.4rem;
+  .no-p {
+    padding: 0px;
+  }
+  .green-check {
+    color: $base-elements;
+  }
+}
+
 .product-input {
   font-size: 80px;
   width: 100%;
