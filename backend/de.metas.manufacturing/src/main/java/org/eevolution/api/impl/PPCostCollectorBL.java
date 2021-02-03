@@ -22,12 +22,14 @@ package org.eevolution.api.impl;
  * #L%
  */
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -41,7 +43,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -55,6 +56,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
@@ -237,9 +239,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				.locatorId(candidate.getLocatorId())
 				.attributeSetInstanceId(candidate.getAttributeSetInstanceId())
 				.movementDate(candidate.getMovementDate())
-				.qtyIssue(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyToReceive()))
-				.qtyScrap(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyScrap()))
-				.qtyReject(ppOrderBOMBL.adjustCoProductQty(candidate.getQtyReject()))
+				.qtyIssue(OrderBOMLineQuantities.adjustCoProductQty(candidate.getQtyToReceive()))
+				.qtyScrap(OrderBOMLineQuantities.adjustCoProductQty(candidate.getQtyScrap()))
+				.qtyReject(OrderBOMLineQuantities.adjustCoProductQty(candidate.getQtyReject()))
 				.build());
 	}
 
@@ -309,7 +311,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_BOMLine.class)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_BOMLine_ID, ppOrderBOMLineId)
-				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, BOMComponentIssueMethod.FloorStock.getCode())
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();

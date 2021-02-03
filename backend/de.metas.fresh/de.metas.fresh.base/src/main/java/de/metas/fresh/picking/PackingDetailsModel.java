@@ -3,6 +3,7 @@ package de.metas.fresh.picking;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
@@ -18,7 +19,6 @@ import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItems;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**

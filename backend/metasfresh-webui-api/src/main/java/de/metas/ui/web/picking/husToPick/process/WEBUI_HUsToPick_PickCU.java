@@ -5,6 +5,7 @@ import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -42,7 +43,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

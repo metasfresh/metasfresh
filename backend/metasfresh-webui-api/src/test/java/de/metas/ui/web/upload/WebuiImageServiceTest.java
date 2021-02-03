@@ -1,14 +1,12 @@
 package de.metas.ui.web.upload;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.common.util.time.SystemTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -43,7 +41,7 @@ public class WebuiImageServiceTest
 	@AfterEach
 	public void afterEach()
 	{
-		SystemTime.resetTimeSource();
+		de.metas.common.util.time.SystemTime.resetTimeSource();
 	}
 
 	@Nested
@@ -52,7 +50,7 @@ public class WebuiImageServiceTest
 		@Test
 		public void nullName()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2020, 10, 20, 21, 22, 23));
+			de.metas.common.util.time.SystemTime.setFixedTimeSource("2020-10-20T21:22:23+01:00");
 			assertThat(WebuiImageService.normalizeUploadFilename(null, "image/png"))
 					.isEqualTo("2020-10-20_212223.png");
 		}
@@ -60,7 +58,7 @@ public class WebuiImageServiceTest
 		@Test
 		public void blobName()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2020, 10, 20, 21, 22, 23));
+			de.metas.common.util.time.SystemTime.setFixedTimeSource("2020-10-20T21:22:23+01:00");
 			assertThat(WebuiImageService.normalizeUploadFilename("blob", "image/png"))
 					.isEqualTo("2020-10-20_212223.png");
 		}
@@ -68,7 +66,7 @@ public class WebuiImageServiceTest
 		@Test
 		public void regularName()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2020, 10, 20, 21, 22, 23));
+			de.metas.common.util.time.SystemTime.setFixedTimeSource("2020-10-20T21:22:23+01:00");
 			assertThat(WebuiImageService.normalizeUploadFilename("some_name", "image/png"))
 					.isEqualTo("some_name.png");
 		}
@@ -76,7 +74,7 @@ public class WebuiImageServiceTest
 		@Test
 		public void regularNameWithExtension()
 		{
-			SystemTime.setTimeSource(new FixedTimeSource(2020, 10, 20, 21, 22, 23));
+			de.metas.common.util.time.SystemTime.setFixedTimeSource("2020-10-20T21:22:23+01:00");
 			assertThat(WebuiImageService.normalizeUploadFilename("some_name.ext", "image/png"))
 					.isEqualTo("some_name.png");
 		}

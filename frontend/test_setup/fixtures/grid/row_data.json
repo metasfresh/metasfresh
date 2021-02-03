@@ -749,5 +749,279 @@
     "firstRow": 0,
     "pageLength": 20,
     "type": "540350"
+  },
+  "data3_parent": {
+    "windowId": "540350",
+    "viewId": "540350-BQ",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 1,
+    "result": [
+      {
+        "id": "1000000",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000002",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1000007",
+              "caption": "0006"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "0"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "1"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156448",
+              "caption": "1000022_CustomerTest_25T12_46_00_552"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005632",
+              "caption": "BOM1-MainProduct_25T12_46_00_552_1000035",
+              "description": "Test Product"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-11-25T23:59:59.000+01:00"
+          }
+        },
+        "type": "LU",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-BQ-1000000"
+        }
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540350"
+  },
+  "data3_child": {
+    "windowId": "pickingSlot",
+    "viewId": "pickingSlot-BQ-1000000",
+    "parentWindowId": "540350",
+    "parentViewId": "540350-BQ",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 5,
+    "result": [
+      {
+        "id": "1000104",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000104",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "includedDocuments": [
+          {
+            "id": "1000104-1000011",
+            "fieldsByName": {
+              "ID": {
+                "field": "ID",
+                "value": "1000104-1000011",
+                "widgetType": "Integer"
+              },
+              "huCode": {
+                "field": "huCode",
+                "value": "1000011"
+              },
+              "huQtyCU": {
+                "field": "huQtyCU",
+                "value": "10"
+              },
+              "huPackingInfo": {
+                "field": "huPackingInfo",
+                "value": ""
+              },
+              "huProduct": {
+                "field": "huProduct",
+                "value": {
+                  "key": "2005577",
+                  "caption": "P002737_Convenience Salat 250g"
+                }
+              }
+            },
+            "type": "CU",
+            "processed": true,
+            "hasComments": false,
+            "supportAttributes": false
+          }
+        ],
+        "colspan": true,
+        "caption": "101.0 G0002_Test Lieferant 1 Testadresse 1"
+      },
+      {
+        "id": "1000103",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000103",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "102.0  "
+      },
+      {
+        "id": "1000105",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000105",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "103.0  "
+      },
+      {
+        "id": "1000106",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000106",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "104.0  "
+      },
+      {
+        "id": "1000107",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000107",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "105.0  "
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "pickingSlot"
   }
 }

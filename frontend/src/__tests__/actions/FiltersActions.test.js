@@ -6,7 +6,7 @@ import {
   createFilter,
   deleteFilter,
   updateNotValidFields,
-  updateActiveFilter,
+  updateActiveFilters,
   updateInlineFilter,
   updateFilterWidgetShown,
   clearStaticFilters,
@@ -69,7 +69,7 @@ describe('FiltersActions general', () => {
     );
   });
 
-  it(`dispatches 'UPDATE_ACTIVE_FILTER' action when creating the filters`, () => {
+  it(`dispatches 'UPDATE_ACTIVE_FILTERS' action when creating the filters`, () => {
     const expectedActionsOnCreation = [
       {
         type: ACTION_TYPES.CREATE_FILTER,
@@ -104,10 +104,10 @@ describe('FiltersActions general', () => {
       },
     ];
     store.dispatch(
-      updateActiveFilter({ filterId: '540092_540092-FF', data: activeFilter })
+      updateActiveFilters({ filterId: '540092_540092-FF', data: activeFilter })
     );
     expect(store.getActions()[1].type).toEqual(
-      ACTION_TYPES.UPDATE_ACTIVE_FILTER
+      ACTION_TYPES.UPDATE_ACTIVE_FILTERS
     );
     expect(store.getActions()[1].payload).toEqual({
       id: '540092_540092-FF',

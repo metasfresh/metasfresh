@@ -16,6 +16,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /*
@@ -65,8 +66,8 @@ final class BPartnerCompositeCacheByLookupKey
 	public Collection<BPartnerComposite> getAllOrLoad(
 			@NonNull final Collection<OrgAndBPartnerCompositeLookupKey> keys,
 			@NonNull final Function<
-					Collection<OrgAndBPartnerCompositeLookupKey>,
-					Map<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+								Set<OrgAndBPartnerCompositeLookupKey>,
+								Map<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
 	{
 		return cache.getAllOrLoad(keys, valuesLoader);
 	}

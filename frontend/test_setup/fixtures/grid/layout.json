@@ -541,148 +541,269 @@
     "supportOpenRecord": true,
     "supportGeoLocations": true
   },
-  "layout2_parent":
-    {
-      "type": "540350",
-      "windowId": "540350",
-      "caption": "Picking",
-      "description": "",
-      "emptyResultText": "There are no detail rows",
-      "emptyResultHint": "You can create them in this window.",
-      "elements": [
-        {
-          "caption": "Order",
-          "description": "",
-          "widgetType": "Lookup",
-          "size": "S",
-          "gridAlign": "left",
-          "viewEditorRenderMode": "never",
-          "sortable": true,
-          "fields": [
-            {
-              "field": "order",
-              "caption": "",
-              "emptyText": "none",
-              "clearValueText": "none"
-            }
-          ]
-        },
-        {
-          "caption": "Product",
-          "description": "",
-          "widgetType": "Lookup",
-          "size": null,
-          "gridAlign": "left",
-          "viewEditorRenderMode": "never",
-          "sortable": true,
-          "fields": [
-            {
-              "field": "product",
-              "caption": "",
-              "emptyText": "none",
-              "clearValueText": "none"
-            }
-          ]
-        },
-        {
-          "caption": "Picked",
-          "description": "",
-          "widgetType": "YesNo",
-          "size": null,
-          "gridAlign": "center",
-          "viewEditorRenderMode": "never",
-          "sortable": true,
-          "fields": [
-            {
-              "field": "picked",
-              "caption": "",
-              "emptyText": "none",
-              "clearValueText": "none"
-            }
-          ]
-        },
-        {
-          "caption": "Qty Ordered",
-          "description": "",
-          "widgetType": "Quantity",
-          "size": null,
-          "gridAlign": "right",
-          "viewEditorRenderMode": "never",
-          "sortable": true,
-          "fields": [
-            {
-              "field": "qtyOrdered",
-              "caption": "",
-              "emptyText": "none",
-              "clearValueText": "none"
-            }
-          ]
-        },
-        {
-          "caption": "Quantity (stock unit)",
-          "description": "",
-          "widgetType": "Quantity",
-          "size": null,
-          "gridAlign": "right",
-          "viewEditorRenderMode": "never",
-          "sortable": true,
-          "fields": [
-            {
-              "field": "qtyPicked",
-              "caption": "",
-              "emptyText": "none",
-              "clearValueText": "none"
-            }
-          ]
-        },
-        {
-          "caption": "Business Partner",
-          "description": "",
-          "widgetType": "Lookup",
-          "size": null,
-          "gridAlign": "left",
-          "viewEditorRenderMode": "never",
-          "sortable": true,
-          "fields": [
-            {
-              "field": "bpartner",
-              "caption": "",
-              "emptyText": "none",
-              "clearValueText": "none"
-            }
-          ]
-        },
-        {
-          "caption": "Date ready",
-          "description": "",
-          "widgetType": "ZonedDateTime",
-          "size": null,
-          "gridAlign": "right",
-          "viewEditorRenderMode": "never",
-          "sortable": true,
-          "fields": [
-            {
-              "field": "preparationDate",
-              "caption": "",
-              "emptyText": "none",
-              "clearValueText": "none"
-            }
-          ]
-        }
-      ],
-      "supportAttributes": false,
-      "supportTree": false,
-      "allowedCloseActions": [
-        "DONE"
-      ],
-      "includedView": {
-        "openOnSelect": true,
-        "blurWhenOpen": true
+  "layout2_parent": {
+    "type": "540350",
+    "windowId": "540350",
+    "caption": "Picking",
+    "description": "",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Order",
+        "description": "",
+        "widgetType": "Lookup",
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "order",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
       },
-      "supportIncludedView": true,
-      "supportIncludedViewOnSelect": true,
-      "supportNewRecord": false,
-      "supportOpenRecord": true,
-      "supportGeoLocations": false
-    }
+      {
+        "caption": "Product",
+        "description": "",
+        "widgetType": "Lookup",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "product",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Picked",
+        "description": "",
+        "widgetType": "YesNo",
+        "size": null,
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "picked",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Qty Ordered",
+        "description": "",
+        "widgetType": "Quantity",
+        "size": null,
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "qtyOrdered",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Quantity (stock unit)",
+        "description": "",
+        "widgetType": "Quantity",
+        "size": null,
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "qtyPicked",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Business Partner",
+        "description": "",
+        "widgetType": "Lookup",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "bpartner",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Date ready",
+        "description": "",
+        "widgetType": "ZonedDateTime",
+        "size": null,
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "preparationDate",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": false,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": {
+      "openOnSelect": true,
+      "blurWhenOpen": true
+    },
+    "supportIncludedView": true,
+    "supportIncludedViewOnSelect": true,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
+  },
+  "layout2_child": {
+    "type": "pickingSlot",
+    "windowId": "pickingSlot",
+    "caption": "Picking slots",
+    "description": "",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Code",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huCode",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Product",
+        "description": "",
+        "widgetType": "Lookup",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huProduct",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Packing Instruction",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "restrictToMediaTypes": [
+          "screen"
+        ],
+        "fields": [
+          {
+            "field": "huPackingInfo",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Qty CU per TU",
+        "description": "",
+        "widgetType": "Quantity",
+        "size": null,
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "huQtyCU",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "PickingSlotBarcodeFilter",
+        "caption": "Scan picking slot",
+        "inlineRenderMode": "button",
+        "barcodeScannerType": "qrCode",
+        "parametersLayoutType": "singleOverlayField",
+        "parameters": [
+          {
+            "caption": "Scan picking slot",
+            "parameterName": "Barcode",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary",
+            "barcodeScannerType": "qrCode"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 0
+        },
+        "sortNo": 0
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": true,
+    "collapsible": true,
+    "expandedDepth": 1,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
+  }
 }

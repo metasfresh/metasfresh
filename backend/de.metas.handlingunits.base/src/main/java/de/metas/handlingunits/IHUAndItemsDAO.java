@@ -51,9 +51,9 @@ public interface IHUAndItemsDAO
 
 	void setParentItem(I_M_HU hu, I_M_HU_Item parentItem);
 
-	List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item);
+	List<I_M_HU> retrieveIncludedHUs(I_M_HU_Item item);
 
-	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
+	List<I_M_HU_Item> retrieveItems(I_M_HU hu);
 
 	/**
 	 * From the {@link I_M_HU_Item}s that reference the given {@code hu}, retrieve the one that also references the given {@code piItem},<br>

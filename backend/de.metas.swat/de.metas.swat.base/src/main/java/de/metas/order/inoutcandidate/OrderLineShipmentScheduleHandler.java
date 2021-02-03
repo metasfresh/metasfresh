@@ -6,6 +6,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -32,7 +33,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -75,7 +75,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 @Component
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
-	private static IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final static IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;

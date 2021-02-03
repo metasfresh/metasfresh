@@ -1,12 +1,10 @@
 package org.adempiere.ad.ui.spi;
 
-import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-
 import de.metas.logging.LogManager;
+import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -34,8 +32,9 @@ import de.metas.logging.LogManager;
  * {@link ITabCallout} wrapper which catches all exceptions and just log them.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
+@Deprecated
+//TODO: Remove this class and it's usages
 public class ExceptionHandledTabCallout implements ITabCallout
 {
 	public static ITabCallout wrapIfNeeded(final ITabCallout tabCallout)
@@ -49,8 +48,8 @@ public class ExceptionHandledTabCallout implements ITabCallout
 		{
 			return tabCallout;
 		}
-		
-		if(tabCallout instanceof IStatefulTabCallout)
+
+		if (tabCallout instanceof IStatefulTabCallout)
 		{
 			return new StatefulExceptionHandledTabCallout((IStatefulTabCallout)tabCallout);
 		}
@@ -171,14 +170,14 @@ public class ExceptionHandledTabCallout implements ITabCallout
 			handleException("onAfterQuery", calloutRecord, e);
 		}
 	}
-	
+
 	private static final class StatefulExceptionHandledTabCallout extends ExceptionHandledTabCallout implements IStatefulTabCallout
 	{
 		private StatefulExceptionHandledTabCallout(final IStatefulTabCallout tabCallout)
 		{
 			super(tabCallout);
 		}
-		
+
 		@Override
 		public void onInit(final ICalloutRecord calloutRecord)
 		{

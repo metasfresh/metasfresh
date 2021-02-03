@@ -23,6 +23,7 @@
 package de.metas.edi.esb.ordersimport.ecosio;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.sun.istack.Nullable;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
@@ -39,10 +40,9 @@ import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-
-import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
 
 @Component
 public class EcosioOrdersRoute
@@ -94,7 +94,9 @@ public class EcosioOrdersRoute
 					olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 					olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));
 
-					final EDIImpADInputDataSourceLookupINType dataDestinationLookup = resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
+					rewriteDatePromised(olCandXML.getDatePromised());
+
+					final EDIImpADInputDataSourceLookupINType dataDestinationLookup = Util.resolveGenericLookup(EDIImpADInputDataSourceLookupINType.class,
 							Constants.LOOKUP_TEMPLATE_InternalName.createMandatoryValueLookup(dataDestinationInternalName));
 					olCandXML.setADDataDestinationID(dataDestinationLookup);
 				})
@@ -103,5 +105,25 @@ public class EcosioOrdersRoute
 				.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+	}
+
+	/**
+	 * If the clearing-center sends e.g. {@code 2020-11-27T00:00:01}, then it means "throughout the day of Nov-27th".
+	 * So we translate this to {@code 2020-11-27T23:59:00} to make metasfresh's tour-planning act accordingly..
+	 */
+	@Nullable
+	private void rewriteDatePromised(@Nullable final XMLGregorianCalendar datePromised)
+	{
+		if (datePromised == null)
+		{
+			return;
+		}
+
+		if (datePromised.getHour() == 0 && datePromised.getMinute() == 0)
+		{
+			datePromised.setHour(23);
+			datePromised.setMinute(59);
+			datePromised.setSecond(0);
+		}
 	}
 }

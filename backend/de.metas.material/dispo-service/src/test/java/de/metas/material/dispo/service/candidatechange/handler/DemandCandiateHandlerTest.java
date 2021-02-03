@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -11,6 +12,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -18,7 +20,6 @@ import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -104,7 +105,7 @@ public class DemandCandiateHandlerTest
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRepositoryReturnsQuantityForMaterial("-23", candidate.getMaterialDescriptor());
 
-		demandCandidateHandler.onCandidateNewOrChange(candidate);
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		assertDemandEventWasFiredWithQuantity("23");
 
@@ -138,7 +139,7 @@ public class DemandCandiateHandlerTest
 		setupRepositoryReturnsQuantityForMaterial("-13", candidate.getMaterialDescriptor());
 
 		// when
-		demandCandidateHandler.onCandidateNewOrChange(candidate);
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		// then
 		assertDemandEventWasFiredWithQuantity("13");
@@ -202,7 +203,7 @@ public class DemandCandiateHandlerTest
 	{
 		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_DECREASE);
 
-		demandCandidateHandler.onCandidateNewOrChange(candidate);
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
@@ -264,7 +265,7 @@ public class DemandCandiateHandlerTest
 
 		final Consumer<Candidate> doTest = candidateUnderTest -> {
 
-			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest);
+			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -309,7 +310,7 @@ public class DemandCandiateHandlerTest
 				"0");
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidateUnderTest, expectedQty) -> {
-			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest);
+			demandCandidateHandler.onCandidateNewOrChange(candidateUnderTest, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -357,7 +358,7 @@ public class DemandCandiateHandlerTest
 				"0");
 
 		assertThat(demandCandidate.getMaterialDescriptor().getDate()).isEqualTo(NOW); // guard
-		demandCandidateHandler.onCandidateNewOrChange(demandCandidate);
+		demandCandidateHandler.onCandidateNewOrChange(demandCandidate, OnNewOrChangeAdvise.DEFAULT);
 	}
 
 	private Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)

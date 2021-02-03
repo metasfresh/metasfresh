@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -30,7 +31,6 @@ import de.metas.costing.ICostingService;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Match Invoice (Receipt<>Invoice) Model.

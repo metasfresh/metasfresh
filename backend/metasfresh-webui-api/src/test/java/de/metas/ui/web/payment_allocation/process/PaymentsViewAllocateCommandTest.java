@@ -22,36 +22,7 @@
 
 package de.metas.ui.web.payment_allocation.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_InvoiceProcessingServiceCompany;
-import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate;
@@ -62,6 +33,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -87,19 +59,44 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_InvoiceProcessingServiceCompany;
+import org.compiere.model.I_InvoiceProcessingServiceCompany_BPartnerAssignment;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
 {
-
-	private static final OrgId orgId = OrgId.ofRepoId(1);
-	private static final LocalDate dateInvoiced = LocalDate.of(2020, Month.APRIL, 1);
-	private static final LocalDate paymentDateTrx = LocalDate.of(2020, Month.APRIL, 25);
+	private final OrgId orgId = OrgId.ofRepoId(1);
+	private final LocalDate dateInvoiced = LocalDate.of(2020, Month.APRIL, 1);
+	private final LocalDate paymentDateTrx = LocalDate.of(2020, Month.APRIL, 25);
 
 	private MoneyService moneyService;
 	private InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
@@ -116,7 +113,7 @@ public class PaymentsViewAllocateCommandTest
 
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(currencyRepo);
-		
+
 		moneyService = new MoneyService(currencyRepo);
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(
 				new InvoiceProcessingServiceCompanyConfigRepository(),
@@ -168,8 +165,8 @@ public class PaymentsViewAllocateCommandTest
 	private PaymentRow createPaymentRow(
 			@NonNull final PaymentDirection direction,
 			@NonNull final Amount payAmt,
-			@Nullable final BPartnerId bpartnerIdOverride,
-			@Nullable final LocalDate paymentDateTrxOverride)
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final LocalDate paymentDateTrx)
 	{
 		final I_C_Payment paymentRecord = newInstance(I_C_Payment.class);
 		saveRecord(paymentRecord);
@@ -179,8 +176,8 @@ public class PaymentsViewAllocateCommandTest
 				.paymentId(paymentId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.documentNo("paymentNo_" + paymentId.getRepoId())
-				.dateTrx(CoalesceUtil.coalesce(paymentDateTrxOverride, paymentDateTrx))
-				.bpartner(IntegerLookupValue.of(CoalesceUtil.coalesce(bpartnerIdOverride, bpartnerId).getRepoId(), "BPartner"))
+				.dateTrx(CoalesceUtil.coalesce(paymentDateTrx, this.paymentDateTrx))
+				.bpartner(IntegerLookupValue.of(CoalesceUtil.coalesce(bpartnerId, this.bpartnerId).getRepoId(), "BPartner"))
 				.payAmt(payAmt)
 				.openAmt(payAmt)
 				.paymentDirection(direction)
@@ -225,173 +222,6 @@ public class PaymentsViewAllocateCommandTest
 						? Amount.of(serviceFeeAmt, openAmt.getCurrencyCode())
 						: Amount.zero(openAmt.getCurrencyCode()))
 				.build();
-	}
-
-	@Nested
-	public class toPayableDocumentWithServiceFee
-	{
-		private DocTypeId serviceInvoiceDocTypeId;
-		private ProductId serviceFeeProductId;
-		private BPartnerId feeCompanyBPid1;
-		private BPartnerId feeCompanyBPid2;
-
-		@BeforeEach
-		public void beforeEach()
-		{
-			serviceInvoiceDocTypeId = DocTypeId.ofRepoId(222);
-			serviceFeeProductId = ProductId.ofRepoId(333);
-			feeCompanyBPid1 = BPartnerId.ofRepoId(6661);
-			feeCompanyBPid2 = BPartnerId.ofRepoId(6662);
-
-			createMultipleProcessingServiceCompanyConfigs();
-		}
-
-		private void createMultipleProcessingServiceCompanyConfigs()
-		{
-			ProcessingServiceCompanyConfig()
-					.feePercentageOfGrandTotal("3")
-					.customerId(bpartnerId)
-					.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")))
-					.serviceCompanyBPartnerId(feeCompanyBPid1)
-					.build();
-
-			ProcessingServiceCompanyConfig()
-					.feePercentageOfGrandTotal("2")
-					.customerId(bpartnerId)
-					.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")))
-					.serviceCompanyBPartnerId(feeCompanyBPid1)
-					.build();
-
-			ProcessingServiceCompanyConfig()
-					.feePercentageOfGrandTotal("1")
-					.customerId(bpartnerId)
-					.validFrom(LocalDate.parse("2020-01-11").atStartOfDay(ZoneId.of("UTC+5")))
-					.serviceCompanyBPartnerId(feeCompanyBPid1)
-					.build();
-
-			//
-
-			ProcessingServiceCompanyConfig()
-					.feePercentageOfGrandTotal("3")
-					.customerId(bpartnerId)
-					.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")))
-					.serviceCompanyBPartnerId(feeCompanyBPid2)
-					.build();
-
-			ProcessingServiceCompanyConfig()
-					.feePercentageOfGrandTotal("2")
-					.customerId(bpartnerId)
-					.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")))
-					.serviceCompanyBPartnerId(feeCompanyBPid2)
-					.build();
-
-			ProcessingServiceCompanyConfig()
-					.feePercentageOfGrandTotal("1")
-					.customerId(bpartnerId)
-					.validFrom(LocalDate.parse("2020-01-11").atStartOfDay(ZoneId.of("UTC+5")))
-					.serviceCompanyBPartnerId(feeCompanyBPid2)
-					.build();
-		}
-
-		@Builder(builderMethodName = "ProcessingServiceCompanyConfig", builderClassName = "ConfigBuilder")
-		private void createConfig(
-				@NonNull final String feePercentageOfGrandTotal,
-				@NonNull @Singular final Set<BPartnerId> customerIds,
-				@NonNull final ZonedDateTime validFrom,
-				@NonNull final BPartnerId serviceCompanyBPartnerId)
-		{
-			Check.assumeNotEmpty(customerIds, "customerIds is not empty");
-
-			final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
-			configRecord.setIsActive(true);
-			configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
-			configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
-			configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
-			configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
-			saveRecord(configRecord);
-
-			for (final BPartnerId customerId : customerIds)
-			{
-				final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
-				assignmentRecord.setIsActive(true);
-				assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
-				assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
-				assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
-				saveRecord(assignmentRecord);
-			}
-		}
-
-		@Test
-		public void paymentDateInValidFrom()
-		{
-			//
-			// Create test data
-			final LocalDate paymentDate = LocalDate.of(2020, Month.FEBRUARY, 11);
-
-			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
-			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerIdOverride(feeCompanyBPid2).paymentDateTrxOverride(paymentDate).build();
-
-			final List<PaymentDocument> paymentDocuments = Collections.singletonList(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService));
-
-			//
-			// Run method under test
-			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(invoiceRow, paymentDocuments, moneyService, invoiceProcessingServiceCompanyService);
-
-			//
-			// Check output
-			checkPayableDocument(payableDocument, invoiceRow.getInvoiceId(), paymentDate, feeCompanyBPid2);
-		}
-
-		@Test
-		public void paymentDateBeforeValidFrom()
-		{
-			//
-			// Create test data
-			final LocalDate paymentDate = LocalDate.of(1999, Month.JANUARY, 1);
-
-			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
-			final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerIdOverride(feeCompanyBPid1).paymentDateTrxOverride(paymentDate).build();
-
-			final List<PaymentDocument> paymentDocuments = Collections.singletonList(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService));
-
-			//
-			// Run method under test
-			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(invoiceRow, paymentDocuments, moneyService, invoiceProcessingServiceCompanyService);
-
-			//
-			// Check output
-			checkPayableDocument(payableDocument, invoiceRow.getInvoiceId(), paymentDate, feeCompanyBPid1);
-		}
-
-		private void checkPayableDocument(final PayableDocument payableDocument, final InvoiceId invoiceId, final LocalDate evaluationDate, final BPartnerId feeCompanyBPartnerid)
-		{
-			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.SALES);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
-			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
-			assertThat(payableDocument.getAmountsToAllocate())
-					.isEqualToComparingFieldByField(AllocationAmounts.builder()
-							.payAmt(Money.of(90, euroCurrencyId))
-							.discountAmt(Money.zero(euroCurrencyId))
-							.invoiceProcessingFee(Money.of(10, euroCurrencyId))
-							.writeOffAmt(Money.zero(euroCurrencyId))
-							.build());
-
-			assertThat(payableDocument.getInvoiceProcessingFeeCalculation())
-					.isEqualToComparingFieldByField(InvoiceProcessingFeeCalculation.builder()
-							.orgId(orgId)
-							.evaluationDate(TimeUtil.asZonedDateTime(evaluationDate))
-							//
-							.customerId(bpartnerId)
-							.invoiceId(invoiceId)
-							//
-							.serviceCompanyBPartnerId(feeCompanyBPartnerid)
-							.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
-							.serviceFeeProductId(serviceFeeProductId)
-							.feeAmountIncludingTax(Amount.of(10, CurrencyCode.EUR))
-							//
-
-							.build());
-		}
 	}
 
 	@Nested
@@ -459,6 +289,146 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.isEqualToComparingFieldByField(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+		}
+
+		@Nested
+		public class WithServiceFee
+		{
+			private DocTypeId serviceInvoiceDocTypeId;
+			private ProductId serviceFeeProductId;
+			private BPartnerId feeCompanyId1;
+
+			@BeforeEach
+			public void beforeEach()
+			{
+				serviceInvoiceDocTypeId = DocTypeId.ofRepoId(222);
+				serviceFeeProductId = ProductId.ofRepoId(333);
+				feeCompanyId1 = BPartnerId.ofRepoId(6661);
+
+				final ConfigBuilder configBuilder = processingServiceCompanyConfig()
+						.customerId(bpartnerId)
+						.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")));
+
+				configBuilder.feePercentageOfGrandTotal("1").serviceCompanyBPartnerId(feeCompanyId1).build();
+			}
+
+			@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "ConfigBuilder")
+			private void createConfig(
+					@NonNull final String feePercentageOfGrandTotal,
+					@NonNull final BPartnerId customerId,
+					@NonNull final ZonedDateTime validFrom,
+					@NonNull final BPartnerId serviceCompanyBPartnerId)
+			{
+				final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
+				configRecord.setIsActive(true);
+				configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
+				configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
+				configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
+				configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
+				saveRecord(configRecord);
+
+				final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
+				assignmentRecord.setIsActive(true);
+				assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
+				assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
+				assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
+				saveRecord(assignmentRecord);
+			}
+
+			@ParameterizedTest
+			@ValueSource(strings = { "2020-01-01", "2020-02-11", "2020-08-01" })
+			public void salesInvoiceAndInboundPayment(final String paymentDateStr)
+			{
+				//
+				// Create test data
+				final LocalDate paymentDate = LocalDate.parse(paymentDateStr);
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerInvoice).openAmt(euro(100)).serviceFeeAmt("10").build();
+				final PaymentRow paymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).bpartnerId(feeCompanyId1).paymentDateTrx(paymentDate).build();
+
+				//
+				// Run method under test
+				final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(
+						invoiceRow,
+						ImmutableList.of(PaymentsViewAllocateCommand.toPaymentDocument(paymentRow, moneyService)),
+						moneyService,
+						invoiceProcessingServiceCompanyService);
+
+				assertThat(payableDocument)
+						.usingRecursiveComparison()
+						.isEqualTo(PayableDocument.builder()
+								.invoiceId(invoiceRow.getInvoiceId())
+								.bpartnerId(bpartnerId)
+								.documentNo(invoiceRow.getDocumentNo())
+								.soTrx(SOTrx.SALES)
+								.creditMemo(false)
+								.openAmt(Money.of(100, euroCurrencyId))
+								.amountsToAllocate(AllocationAmounts.builder()
+										.payAmt(Money.of(90, euroCurrencyId))
+										.invoiceProcessingFee(Money.of(10, euroCurrencyId))
+										.build())
+								.invoiceProcessingFeeCalculation(InvoiceProcessingFeeCalculation.builder()
+										.orgId(orgId)
+										.evaluationDate(TimeUtil.asZonedDateTime(paymentDate))
+										.customerId(bpartnerId)
+										.invoiceId(invoiceRow.getInvoiceId())
+										.serviceCompanyBPartnerId(feeCompanyId1)
+										.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
+										.serviceFeeProductId(serviceFeeProductId)
+										.feeAmountIncludingTax(Amount.of(10, CurrencyCode.EUR))
+										.build())
+								.clientAndOrgId(invoiceRow.getClientAndOrgId())
+								.date(invoiceRow.getDateInvoiced())
+								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
+								.build());
+			}
+
+			@Test
+			public void salesCreditMemoInvoice()
+			{
+				//
+				// Create test data
+				final ZonedDateTime now = LocalDate.parse("2020-08-01").atStartOfDay(ZoneId.of("UTC+5"));
+				SystemTime.setFixedTimeSource(now);
+				final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.CustomerCreditMemo).openAmt(euro(-100)).serviceFeeAmt("10").build();
+
+				//
+				// Run method under test
+				final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(
+						invoiceRow,
+						ImmutableList.of(),
+						moneyService,
+						invoiceProcessingServiceCompanyService);
+
+				//
+				// Check output
+				assertThat(payableDocument)
+						.usingRecursiveComparison()
+						.isEqualTo(PayableDocument.builder()
+								.invoiceId(invoiceRow.getInvoiceId())
+								.bpartnerId(bpartnerId)
+								.documentNo(invoiceRow.getDocumentNo())
+								.soTrx(SOTrx.SALES)
+								.creditMemo(true)
+								.openAmt(Money.of(-100, euroCurrencyId))
+								.amountsToAllocate(AllocationAmounts.builder()
+										.payAmt(Money.of(-110, euroCurrencyId))
+										.invoiceProcessingFee(Money.of(+10, euroCurrencyId))
+										.build())
+								.invoiceProcessingFeeCalculation(InvoiceProcessingFeeCalculation.builder()
+										.orgId(orgId)
+										.evaluationDate(now)
+										.customerId(bpartnerId)
+										.invoiceId(invoiceRow.getInvoiceId())
+										.serviceCompanyBPartnerId(feeCompanyId1)
+										.serviceInvoiceDocTypeId(serviceInvoiceDocTypeId)
+										.serviceFeeProductId(serviceFeeProductId)
+										.feeAmountIncludingTax(Amount.of(+10, CurrencyCode.EUR))
+										.build())
+								.clientAndOrgId(invoiceRow.getClientAndOrgId())
+								.date(invoiceRow.getDateInvoiced())
+								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
+								.build());
+			}
 		}
 	}
 

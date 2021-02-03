@@ -173,7 +173,7 @@ public interface IQuery<T>
 		return idMapper.apply(firstIdOnly());
 	}
 
-	<ET extends T> ET first() throws DBException;
+	@Nullable <ET extends T> ET first() throws DBException;
 
 	/**
 	 * @return first record or null
@@ -298,7 +298,7 @@ public interface IQuery<T>
 	 */
 	IQuery<T> setOnlyActiveRecords(boolean onlyActiveRecords);
 
-	public enum Aggregate
+	enum Aggregate
 	{
 		COUNT("COUNT", false), //
 		SUM("SUM", false), //
@@ -324,12 +324,7 @@ public interface IQuery<T>
 	/**
 	 * Aggregate given expression on this criteria
 	 *
-	 * @param <T>
-	 * @param columnName
-	 * @param sqlFunction
-	 * @param returnType
 	 * @return aggregated value
-	 * @throws DBException
 	 */
 	<AT> AT aggregate(String columnName, Aggregate aggregateType, Class<AT> returnType) throws DBException;
 
@@ -586,16 +581,12 @@ public interface IQuery<T>
 	/**
 	 * Use the result of this query and insert it in given <code>toModelClass</code>'s table.
 	 *
-	 * @param toModelClass
 	 * @return executor which will assist you with the INSERT.
 	 */
 	<ToModelType> IQueryInsertExecutor<ToModelType, T> insertDirectlyInto(Class<ToModelType> toModelClass);
 
 	/**
 	 * Return a stream of all records that match the query criteria.
-	 *
-	 * @return Stream
-	 * @throws DBException
 	 */
 	default Stream<T> stream() throws DBException
 	{

@@ -9,6 +9,35 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.159
+## Features
+* metasfresh
+  * [#10023](https://github.com/metasfresh/metasfresh/issues/10023) Payment service providers also calculate fee on credit memos
+  * [#10174](https://github.com/metasfresh/metasfresh/issues/10174) Unskip modal tests
+  * [#10175](https://github.com/metasfresh/metasfresh/issues/10175) Avoid timeouts while cleaning up old `T_Query_Selection_*` records
+
+## Fixes
+* metasfresh
+  * [#10078](https://github.com/metasfresh/metasfresh/issues/10078) Wrong costs for manufacturing finished goods
+
+# metasfresh 5.158
+## Features
+* metasfresh
+  * [#9944](https://github.com/metasfresh/metasfresh/issues/9944) Include product commodity number in the receipt schedule export REST endpoint
+  * [#10094](https://github.com/metasfresh/metasfresh/issues/10094) Create shipping packages REST endpoint
+  * [#10127](https://github.com/metasfresh/metasfresh/issues/10127) Transfer complete sales order in \_bestell-XML
+  * [#10130](https://github.com/metasfresh/metasfresh/issues/10130) QR Code disabled by default
+  * [#10143](https://github.com/metasfresh/metasfresh/issues/10143) Status changes for DESADV
+  * [#10150](https://github.com/metasfresh/metasfresh/issues/10150) Avoid concurrent shipment-creation and shipment-schedule updating
+  * [#10167](https://github.com/metasfresh/metasfresh/issues/10167) Allow deselecting rows when mouse clicking
+
+## Fixes
+* metasfresh
+  * [#10157](https://github.com/metasfresh/metasfresh/issues/10157) Bug on order counter document creation: DocTypeTarget set for initial order, not for counter
+  * [#10159](https://github.com/metasfresh/metasfresh/issues/10159) Picking list issue - double entries in some cases
+  * [#10161](https://github.com/metasfresh/metasfresh/issues/10161) Bug when creating business partner *and group* on the fly
+  * [#10165](https://github.com/metasfresh/metasfresh/issues/10165) Payment allocation: outbound payment, vendor invoice, vendor CM not working
+
 # metasfresh 5.157
 ## Features
 * metasfresh

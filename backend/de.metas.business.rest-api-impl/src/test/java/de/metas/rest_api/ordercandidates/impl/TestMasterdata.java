@@ -73,6 +73,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Ignore
 final class TestMasterdata
 {
+	public static final String RESOURCE_PATH = "/de/metas/rest_api/ordercandidates/impl/";
+
 	public void createDataSource(final String internalName)
 	{
 		final I_AD_InputDataSource dataSourceRecord = newInstance(I_AD_InputDataSource.class);

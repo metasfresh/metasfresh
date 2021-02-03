@@ -1,6 +1,7 @@
 package de.metas.material.dispo.service.event;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -20,7 +21,6 @@ import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedHandl
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;

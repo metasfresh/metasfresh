@@ -151,3 +151,9 @@ export const TBL_CONTEXT_MENU_MAX_Y = 706;
  * @type {integer} Used to indicate the debounce time when performing a search
  */
 export const DEBOUNCE_TIME_SEARCH = 150;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the number of characters from where we show read more link in the notification toastr
+ */
+export const SHOW_READ_MORE_FROM = 100;

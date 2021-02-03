@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -77,7 +78,6 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -125,7 +125,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	protected Map<String, Object> getImportTableDefaultValues()
 	{
 		return ImmutableMap.<String, Object> builder()
-				.put(I_I_Inventory.COLUMNNAME_InventoryDate, SystemTime.asDayTimestamp())
+				.put(I_I_Inventory.COLUMNNAME_InventoryDate, de.metas.common.util.time.SystemTime.asDayTimestamp())
 				.build();
 	}
 

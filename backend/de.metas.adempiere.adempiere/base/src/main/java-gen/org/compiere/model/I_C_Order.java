@@ -1,14 +1,12 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-
-import java.math.BigDecimal;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_C_Order 
 {
 
@@ -204,6 +202,26 @@ public interface I_C_Order
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_User_ID();
+
+	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
 	 * Set Abw. Rechnungsadresse.
 	 *
 	 * <br>Type: Text
@@ -223,26 +241,6 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_BillToAddress = new ModelColumn<>(I_C_Order.class, "BillToAddress", null);
 	String COLUMNNAME_BillToAddress = "BillToAddress";
-
-	/**
-	 * Set Bill Contact.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBill_User_ID (int Bill_User_ID);
-
-	/**
-	 * Get Bill Contact.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getBill_User_ID();
-
-	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
 	 * Set Address.
@@ -286,6 +284,28 @@ public interface I_C_Order
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Business Partner.
@@ -373,28 +393,6 @@ public interface I_C_Order
 	int getC_BPartner_SalesRep_ID();
 
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
-
-	/**
-	 * Set Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
-
-	/**
-	 * Get Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_BankAccount_ID();
-
-	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Campaign.
@@ -561,73 +559,6 @@ public interface I_C_Order
 	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 
 	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getChargeAmt();
-
-	ModelColumn<I_C_Order, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Order.class, "ChargeAmt", null);
-	String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
-	 * Set Rabatt %.
-	 * Abschlag in Prozent
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCompleteOrderDiscount (@Nullable BigDecimal CompleteOrderDiscount);
-
-	/**
-	 * Get Rabatt %.
-	 * Abschlag in Prozent
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCompleteOrderDiscount();
-
-	ModelColumn<I_C_Order, Object> COLUMN_CompleteOrderDiscount = new ModelColumn<>(I_C_Order.class, "CompleteOrderDiscount", null);
-	String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCopyFrom (@Nullable java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCopyFrom();
-
-	ModelColumn<I_C_Order, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Order.class, "CopyFrom", null);
-	String COLUMNNAME_CopyFrom = "CopyFrom";
-
-	/**
 	 * Set Sales order.
 	 * Order
 	 *
@@ -742,6 +673,73 @@ public interface I_C_Order
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Order.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompleteOrderDiscount (@Nullable BigDecimal CompleteOrderDiscount);
+
+	/**
+	 * Get Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCompleteOrderDiscount();
+
+	ModelColumn<I_C_Order, Object> COLUMN_CompleteOrderDiscount = new ModelColumn<>(I_C_Order.class, "CompleteOrderDiscount", null);
+	String COLUMNNAME_CompleteOrderDiscount = "CompleteOrderDiscount";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_C_Order, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Order.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Create Copy.
@@ -1256,27 +1254,6 @@ public interface I_C_Order
 	String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
-	 * Set Übergabe adresse.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHandOverAddress (@Nullable java.lang.String HandOverAddress);
-
-	/**
-	 * Get Übergabe adresse.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getHandOverAddress();
-
-	ModelColumn<I_C_Order, Object> COLUMN_HandOverAddress = new ModelColumn<>(I_C_Order.class, "HandOverAddress", null);
-	String COLUMNNAME_HandOverAddress = "HandOverAddress";
-
-	/**
 	 * Set Übergabe-Memo.
 	 *
 	 * <br>Type: Text
@@ -1320,6 +1297,27 @@ public interface I_C_Order
 	int getHandOver_User_ID();
 
 	String COLUMNNAME_HandOver_User_ID = "HandOver_User_ID";
+
+	/**
+	 * Set Übergabe adresse.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOverAddress (@Nullable java.lang.String HandOverAddress);
+
+	/**
+	 * Get Übergabe adresse.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHandOverAddress();
+
+	ModelColumn<I_C_Order, Object> COLUMN_HandOverAddress = new ModelColumn<>(I_C_Order.class, "HandOverAddress", null);
+	String COLUMNNAME_HandOverAddress = "HandOverAddress";
 
 	/**
 	 * Set Incoterm.
@@ -2113,11 +2111,6 @@ public interface I_C_Order
 	 */
 	int getPostingError_Issue_ID();
 
-	@Nullable org.compiere.model.I_AD_Issue getPostingError_Issue();
-
-	void setPostingError_Issue(@Nullable org.compiere.model.I_AD_Issue PostingError_Issue);
-
-	ModelColumn<I_C_Order, org.compiere.model.I_AD_Issue> COLUMN_PostingError_Issue_ID = new ModelColumn<>(I_C_Order.class, "PostingError_Issue_ID", org.compiere.model.I_AD_Issue.class);
 	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
 
 	/**

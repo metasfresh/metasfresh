@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -57,7 +58,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -97,6 +97,8 @@ public final class ProductsProposalRowsLoader
 	private final Order order;
 	private final BPartnerId bpartnerId;
 	private final SOTrx soTrx;
+
+	private final CurrencyId currencyId;
 	private final ImmutableSet<ProductId> productIdsToExclude;
 
 	private final Map<PriceListVersionId, CurrencyCode> currencyCodesByPriceListVersionId = new HashMap<>();
@@ -110,6 +112,7 @@ public final class ProductsProposalRowsLoader
 			@Nullable final Order order,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
+			@Nullable final CurrencyId currencyId,
 			@Nullable final Set<ProductId> productIdsToExclude)
 	{
 		Check.assumeNotEmpty(priceListVersionIds, "priceListVersionIds is not empty");
@@ -123,6 +126,7 @@ public final class ProductsProposalRowsLoader
 		this.order = order;
 		this.bpartnerId = bpartnerId;
 		this.soTrx = soTrx;
+		this.currencyId = currencyId;
 		this.productIdsToExclude = productIdsToExclude != null ? ImmutableSet.copyOf(productIdsToExclude) : ImmutableSet.of();
 	}
 
@@ -169,6 +173,7 @@ public final class ProductsProposalRowsLoader
 				.order(order)
 				.bpartnerId(bpartnerId)
 				.soTrx(soTrx)
+				.currencyId(currencyId)
 				.headerProperties(headerProperties.build())
 				//
 				.rows(rows)

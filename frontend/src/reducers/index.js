@@ -9,6 +9,7 @@ import viewHandler from './viewHandler';
 import filters from './filters';
 import commentsPanel from './commentsPanel';
 import tables from './tables';
+import actionsHandler from './actionsHandler';
 
 export default {
   appHandler,
@@ -21,4 +22,5 @@ export default {
   commentsPanel,
   tables,
   routing,
+  actionsHandler,
 };

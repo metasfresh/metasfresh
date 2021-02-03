@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -50,7 +51,6 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.InvoiceWriteOffAmountType;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
-import de.metas.util.time.SystemTime;
 
 public class DifferenceRowBalancerTest
 {

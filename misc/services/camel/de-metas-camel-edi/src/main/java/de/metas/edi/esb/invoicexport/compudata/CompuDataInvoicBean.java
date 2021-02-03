@@ -22,25 +22,8 @@
 
 package de.metas.edi.esb.invoicexport.compudata;
 
-import static de.metas.edi.esb.commons.Util.formatNumber;
-import static de.metas.edi.esb.commons.Util.isEmpty;
-import static de.metas.edi.esb.commons.Util.normalize;
-import static de.metas.edi.esb.commons.Util.toDate;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
-import org.milyn.payload.JavaSource;
-
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.InvoicSettings;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.CCreditMemoReasonEnum;
@@ -52,6 +35,23 @@ import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop901991VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
+import org.milyn.payload.JavaSource;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static de.metas.edi.esb.commons.Util.formatNumber;
+import static de.metas.edi.esb.commons.Util.isEmpty;
+import static de.metas.edi.esb.commons.Util.normalize;
+import static de.metas.edi.esb.commons.Util.toDate;
 
 public class CompuDataInvoicBean
 {
@@ -145,7 +145,10 @@ public class CompuDataInvoicBean
 		return invoice;
 	}
 
-	private Cctop000V createCctop000V(final EDICctopInvoicVType xmlCctopInvoice, final DecimalFormat decimalFormat, final Exchange exchange)
+	private Cctop000V createCctop000V(
+			@NonNull final EDICctopInvoicVType xmlCctopInvoice,
+			final DecimalFormat decimalFormat,
+			@NonNull final Exchange exchange)
 	{
 		final EDICctop000VType xmlCctop000V = xmlCctopInvoice.getEDICctop000V();
 
@@ -177,12 +180,8 @@ public class CompuDataInvoicBean
 		}
 		cctop000V.setSenderGln(senderGln.toString());
 
-		final Object isTest = exchange.getProperty(CompuDataInvoicRoute.EDI_INVOIC_IS_TEST);
-		if (isTest == null)
-		{
-			throw new RuntimeCamelException("isTest property cannot be null for!");
-		}
-		cctop000V.setIsTest(isTest.toString());
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
+		cctop000V.setIsTest(settings.getTestIndicator());
 
 		return cctop000V;
 	}

@@ -8,7 +8,7 @@ import { toInteger } from 'lodash';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId, getSelection } from '../reducers/tables';
-import { getEntityRelatedId } from '../reducers/filters';
+import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -21,7 +21,6 @@ const DLpropTypes = {
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
   queryViewId: PropTypes.string,
-  updateParentSelectedIds: PropTypes.func,
   page: PropTypes.number,
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,
@@ -53,7 +52,6 @@ const DLpropTypes = {
   setListId: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
-  updateTableSelection: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
 };
@@ -124,6 +122,8 @@ const DLmapStateToProps = (state, props) => {
     });
   }
   const filterId = getEntityRelatedId({ windowId, viewId });
+  const filters = getCachedFilter(state, filterId);
+
   return {
     page,
     sort,
@@ -141,7 +141,7 @@ const DLmapStateToProps = (state, props) => {
     parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
-    filters: windowId && viewId && state.filters ? state.filters[filterId] : {},
+    filters: filters ? filters : {},
     filterId,
   };
 };

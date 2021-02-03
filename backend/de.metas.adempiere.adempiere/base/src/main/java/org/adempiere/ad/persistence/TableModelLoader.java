@@ -37,6 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
@@ -100,6 +101,11 @@ public final class TableModelLoader
 	{
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 		return getPO(ctx, tableName, Record_ID, trxName);
+	}
+
+	public PO getPO(@NonNull final TableRecordReference recordRef)
+	{
+		return getPO(Env.getCtx(), recordRef.getTableName(), recordRef.getRecord_ID(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**

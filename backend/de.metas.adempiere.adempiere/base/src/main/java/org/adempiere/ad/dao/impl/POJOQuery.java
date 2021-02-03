@@ -39,6 +39,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -66,7 +67,6 @@ import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>

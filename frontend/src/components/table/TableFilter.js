@@ -5,11 +5,8 @@ import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
 import { TableFilterContextShortcuts } from '../keyshortcuts';
-import {
-  openModal,
-  fetchTopActions,
-  deleteTopActions,
-} from '../../actions/WindowActions';
+import { openModal } from '../../actions/WindowActions';
+import { fetchTopActions, deleteTopActions } from '../../actions/Actions';
 import { addNotification } from '../../actions/AppActions';
 
 import Tooltips from '../tooltips/Tooltips';
@@ -33,20 +30,13 @@ class ActionButton extends PureComponent {
       return;
     }
 
-    openModal(
-      action.caption,
-      action.processId,
-      'process',
-      null,
-      null,
-      false,
-      null,
-      [docId],
-      null,
-      null,
-      null,
-      null
-    );
+    openModal({
+      title: action.caption,
+      windowId: action.processId,
+      modalType: 'process',
+      isAdvanced: false,
+      viewDocumentIds: [docId],
+    });
   };
 
   render() {
@@ -132,20 +122,12 @@ class TableFilter extends PureComponent {
       return;
     }
 
-    openModal(
-      action.caption,
-      action.processId,
-      'process',
-      null,
-      null,
-      false,
-      null,
-      [docId],
-      null,
-      null,
-      null,
-      null
-    );
+    openModal({
+      title: action.caption,
+      windowId: action.processId,
+      modalType: 'process',
+      viewDocumentIds: [docId],
+    });
   };
 
   /**

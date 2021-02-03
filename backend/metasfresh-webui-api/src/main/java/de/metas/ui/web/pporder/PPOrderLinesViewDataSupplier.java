@@ -42,7 +42,7 @@ public class PPOrderLinesViewDataSupplier
 	@Builder
 	private PPOrderLinesViewDataSupplier(
 			@NonNull final WindowId viewWindowId,
-			final PPOrderId ppOrderId,
+			@NonNull final PPOrderId ppOrderId,
 			@Nullable final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
 			@NonNull final HUReservationService huReservationService)

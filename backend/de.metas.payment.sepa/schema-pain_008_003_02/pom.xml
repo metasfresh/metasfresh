@@ -34,6 +34,7 @@
 							<clearOutputDir>true</clearOutputDir>
 							<sources>src/main/xsd/pain.008.003.02.xsd</sources>
 							<packageName>de.metas.payment.sepa.jaxb.sct.pain_008_003_02</packageName>
+							<outputDirectory>target/generated-sources/jaxb</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>

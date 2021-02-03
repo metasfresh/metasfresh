@@ -19,22 +19,23 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.swing.event.EventListenerList;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.process.AdProcessId;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.SelectionSize;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -81,23 +82,20 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.process.AdProcessId;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.SelectionSize;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.swing.event.EventListenerList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Tab Model.
@@ -1303,6 +1301,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			includedTab.dataRefreshAll();
 		}
 		dataRefresh();
+	}
+
+	@Override
+	public boolean isLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	/**

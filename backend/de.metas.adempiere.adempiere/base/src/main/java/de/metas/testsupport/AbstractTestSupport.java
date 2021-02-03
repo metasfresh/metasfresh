@@ -22,9 +22,12 @@ package de.metas.testsupport;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
@@ -46,12 +49,8 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.currency.ICurrencyBL;
-import de.metas.currency.impl.PlainCurrencyBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 public class AbstractTestSupport
 {
@@ -59,7 +58,7 @@ public class AbstractTestSupport
 	 * Gets/creates an {@link I_M_Product} with given value.
 	 *
 	 * @param productValue
-	 * @param productId TODO
+	 * @param productId    TODO
 	 * @return product
 	 */
 	public I_M_Product product(final String productValue, final int productId)
@@ -259,7 +258,7 @@ public class AbstractTestSupport
 	{
 		final I_C_DocType orderDocType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
 		final I_C_DocType invoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
-		orderDocType.setC_DocTypeInvoice(invoiceDocType);
+		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 
 		return orderDocType;

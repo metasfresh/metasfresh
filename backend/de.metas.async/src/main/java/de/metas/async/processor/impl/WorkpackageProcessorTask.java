@@ -28,6 +28,8 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -91,14 +93,13 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.exceptions.ServiceConnectionException;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 @ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
 class WorkpackageProcessorTask implements Runnable
 {
-	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText";
-	private static final String MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = "de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle";
+	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
+	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
 	private static final transient Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
@@ -589,7 +590,6 @@ class WorkpackageProcessorTask implements Runnable
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
 				.topic(Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC)
 				.recipientUserId(userInChargeId)
-				.subjectADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TITLE)
 				.contentADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT)
 				.contentADMessageParam(workpackageId)
 				.contentADMessageParam(errorMsg)

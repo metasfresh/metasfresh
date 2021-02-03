@@ -29,7 +29,12 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.user.UserId;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +66,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -258,8 +262,17 @@ public class SqlViewFactory implements IViewFactory
 			}
 			else
 			{
-				value = SystemTime.asZonedDateTime();
+				value = de.metas.common.util.time.SystemTime.asZonedDateTime();
 			}
+		}
+		else if(filterParamDescriptor.isAutoFilterInitialValueIsCurrentLoggedUser())
+		{
+			// FIXME: we shall get the current logged user or context as parameter
+			final UserId loggedUserId = Env.getLoggedUserId();
+
+			value = filterParamDescriptor.getLookupDataSource()
+					.get() // we assume we always have a lookup data source
+					.findById(loggedUserId);
 		}
 		else
 		{

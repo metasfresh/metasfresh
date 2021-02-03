@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
@@ -68,7 +69,6 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.time.SystemTime;
 
 /**
  * Manufacturing Order Issue ViewModel

@@ -20,6 +20,7 @@ import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.document.engine.DocStatus;
 import de.metas.error.AdIssueId;
@@ -54,7 +55,6 @@ import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -268,6 +268,7 @@ public class ManufacturingOrderAPIServiceTest
 			orderBOMLine.setM_Product_ID(bomLine_componentId.getRepoId());
 			orderBOMLine.setQtyRequiered(new BigDecimal(bomLine_qtyRequired));
 			orderBOMLine.setC_UOM_ID(uomId.getRepoId());
+			orderBOMLine.setM_Warehouse_ID(locatorId.getWarehouseId().getRepoId());
 			orderBOMLine.setM_Locator_ID(locatorId.getRepoId());
 			saveRecord(orderBOMLine);
 		}
@@ -307,7 +308,7 @@ public class ManufacturingOrderAPIServiceTest
 			final ManufacturingOrderBuilder orderBuilder = manufacturingOrder()
 					.exportStatus(APIExportStatus.Pending)
 					.productId(productId)
-					.dateOrdered(SystemTime.asInstant()) // does not matter
+					.dateOrdered(de.metas.common.util.time.SystemTime.asInstant()) // does not matter
 					;
 			orderId1 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-07T00:00:00.00Z")).qtyOrdered("10").build();
 			orderId2 = orderBuilder.canBeExportedFrom(Instant.parse("2020-09-08T00:00:00.00Z")).qtyOrdered("11").build();
@@ -732,7 +733,7 @@ public class ManufacturingOrderAPIServiceTest
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
 							.requestId("req1")
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-							.date(SystemTime.asZonedDateTime())
+							.date(de.metas.common.util.time.SystemTime.asZonedDateTime())
 							.qtyToIssueInStockUOM(new BigDecimal("2"))
 							.productNo("component1")
 							.handlingUnit(JsonRequestHULookup.builder()
@@ -853,7 +854,7 @@ public class ManufacturingOrderAPIServiceTest
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
 							.requestId("req1")
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-							.date(SystemTime.asZonedDateTime())
+							.date(de.metas.common.util.time.SystemTime.asZonedDateTime())
 							.qtyToIssueInStockUOM(new BigDecimal("2"))
 							.productNo("product")
 							.handlingUnit(JsonRequestHULookup.builder()
@@ -922,7 +923,7 @@ public class ManufacturingOrderAPIServiceTest
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
 							.requestId("req1")
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-							.date(SystemTime.asZonedDateTime())
+							.date(de.metas.common.util.time.SystemTime.asZonedDateTime())
 							.qtyToIssueInStockUOM(new BigDecimal("2"))
 							.productNo("component1")
 							.handlingUnit(JsonRequestHULookup.builder().lotNumber("lot1").bestBeforeDate(LocalDate.parse("2022-02-02")).build())
@@ -930,7 +931,7 @@ public class ManufacturingOrderAPIServiceTest
 					.issue(JsonRequestIssueToManufacturingOrder.builder()
 							.requestId("req1")
 							.orderId(JsonMetasfreshId.of(orderId.getRepoId()))
-							.date(SystemTime.asZonedDateTime())
+							.date(de.metas.common.util.time.SystemTime.asZonedDateTime())
 							.qtyToIssueInStockUOM(new BigDecimal("3"))
 							.productNo("component1")
 							.handlingUnit(JsonRequestHULookup.builder().lotNumber("missing-lot").bestBeforeDate(LocalDate.parse("2022-02-02")).build())

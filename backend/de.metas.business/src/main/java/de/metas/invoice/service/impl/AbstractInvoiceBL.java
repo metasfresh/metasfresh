@@ -9,6 +9,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
@@ -17,6 +18,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -72,7 +74,6 @@ import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -150,7 +151,6 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
@@ -169,6 +169,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
 
 	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
+	@Override
+	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
+	{
+		return Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+	}
 
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
@@ -210,7 +216,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		//
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
-				copyFrom(invoice, SystemTime.asTimestamp(),
+				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
 						targetDocTypeId.getRepoId(),
 						invoice.isSOTrx(),
 						false, // counter == false
@@ -706,8 +712,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
 		}
 
-		throw new AdempiereException("@NotFound@ @Bill_Location_ID@")
-				.setParameter("C_BPartner_ID", bpartnerId)
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final String bpartnerName = bpartnerBL.getBPartnerValueAndName(bpartnerId);
+		throw new BPartnerNoBillToAddressException(bpartnerName)
 				.setParameter("SOTrx", soTrx)
 				.appendParametersToMessage();
 	}
@@ -1499,8 +1506,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// must be one of Mengendifferenz or Preisdifferenz
-		if (X_C_DocType.DOCSUBTYPE_NB_Mengendifferenz.compareTo(docSubType) != 0
-				&& X_C_DocType.DOCSUBTYPE_NB_Preisdifferenz.compareTo(docSubType) != 0)
+		if (X_C_DocType.DOCSUBTYPE_AQ.compareTo(docSubType) != 0
+				&& X_C_DocType.DOCSUBTYPE_AP.compareTo(docSubType) != 0)
 		{
 			return false;
 		}

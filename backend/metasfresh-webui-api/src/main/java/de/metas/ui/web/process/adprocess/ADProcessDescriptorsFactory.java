@@ -209,7 +209,7 @@ import java.util.stream.Stream;
 					.disableDefaultTableCallouts();
 
 			// Get AD_Process_Para(s) and populate the entity descriptor
-			adProcessDAO.retrieveProcessParameters(adProcess)
+			adProcessDAO.retrieveProcessParameters(processId.toAdProcessId())
 					.stream()
 					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
 					.forEach(processParaDescriptor -> parametersDescriptorBuilder.addField(processParaDescriptor));

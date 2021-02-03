@@ -148,7 +148,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			return false;
 		}
 
-		if (huRow.getC_UOM_ID() != UomId.EACH.getRepoId())
+		if (!UomId.equals(huRow.getUomId(), UomId.EACH))
 		{
 			return false;
 		}

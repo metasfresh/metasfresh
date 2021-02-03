@@ -6,6 +6,7 @@ import java.time.temporal.TemporalUnit;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.slf4j.Logger;
 
 import com.google.common.base.Objects;
@@ -18,7 +19,6 @@ import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -226,7 +226,7 @@ public final class PPOrderRoutingActivity
 
 		if (getDateFinish() != null)
 		{
-			setDateFinish(SystemTime.asLocalDateTime());
+			setDateFinish(de.metas.common.util.time.SystemTime.asLocalDateTime());
 		}
 
 		if (!Objects.equal(getDurationRequired(), getDurationReal()))

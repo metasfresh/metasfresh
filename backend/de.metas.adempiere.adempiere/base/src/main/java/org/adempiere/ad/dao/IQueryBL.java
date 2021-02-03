@@ -85,7 +85,7 @@ public interface IQueryBL extends ISingletonService
 	/**
 	 * Create a query builder to query for a class like <code>IProductAware</code> (but also regular model interfaces like I_C_Order are supported), for which the framework can't deduct the table name.
 	 *
-	 * @param tableName       name of the table in question, which can't be deducted from the given <code>modelClass</code>. In case this is null, the tableName will be fetched from <code>modelClass</code>.
+	 * @param tableName name of the table in question, which can't be deducted from the given <code>modelClass</code>. In case this is null, the tableName will be fetched from <code>modelClass</code>.
 	 */
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, String tableName, Object contextProvider);
 
@@ -106,7 +106,7 @@ public interface IQueryBL extends ISingletonService
 
 	/**
 	 * @param tableName name of the table in question. <b>Can</b> be null
-	 */
+ */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(@Nullable String tableName);
 
 	<T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass);

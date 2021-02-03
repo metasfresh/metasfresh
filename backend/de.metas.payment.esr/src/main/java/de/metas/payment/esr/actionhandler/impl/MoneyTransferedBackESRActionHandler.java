@@ -26,6 +26,7 @@ package de.metas.payment.esr.actionhandler.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -44,7 +45,6 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner}. Creates a reversal payment for the given line's payment. The reversal's

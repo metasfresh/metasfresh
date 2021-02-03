@@ -3,6 +3,7 @@ package de.metas.picking.service.impl;
 import java.text.MessageFormat;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
@@ -29,7 +30,6 @@ import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemParts;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class PackingService implements IPackingService
 {

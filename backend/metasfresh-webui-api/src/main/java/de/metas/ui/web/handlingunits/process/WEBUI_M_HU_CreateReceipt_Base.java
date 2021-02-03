@@ -188,7 +188,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		// Reset the view's affected HUs
 		getView().invalidateAll();
 
-		viewsRepo.notifyRecordsChanged(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
+		viewsRepo.notifyRecordsChangedAsync(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
 
 		return MSG_OK;
 	}

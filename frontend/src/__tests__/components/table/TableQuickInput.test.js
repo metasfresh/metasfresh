@@ -36,9 +36,7 @@ describe('TableQuickInput', () => {
   });
 
   it('renders without errors', () => {
-    const wrapperTableCMenu = shallow(
-      <TableQuickInput {...initialProps} />
-    );
+    const wrapperTableCMenu = shallow(<TableQuickInput {...initialProps} />);
 
     expect(wrapperTableCMenu.find('.quick-input-container').length).toBe(1);
 
@@ -49,9 +47,9 @@ describe('TableQuickInput', () => {
   });
 
   it('renders without error 22s', () => {
-    const wrapperTableCMenu = render(
-      <TableQuickInput {...initialProps} />
+    const wrapperTableCMenu = render(<TableQuickInput {...initialProps} />);
+    expect(wrapperTableCMenu.find('.hint').text()).toBe(
+      `(Press 'Enter' to add)`
     );
-    expect(wrapperTableCMenu.find('.hint').text()).toBe(`(Press 'Enter' to add)`);
   });
 });

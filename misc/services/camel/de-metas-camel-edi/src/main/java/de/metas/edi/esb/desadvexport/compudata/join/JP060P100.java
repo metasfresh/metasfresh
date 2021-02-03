@@ -26,91 +26,13 @@ import java.io.Serializable;
 
 import de.metas.edi.esb.desadvexport.compudata.P060;
 import de.metas.edi.esb.desadvexport.compudata.P100;
+import lombok.Data;
 
+@Data
 public class JP060P100 implements Serializable
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1954996245483559377L;
 
 	private P060 p060;
 	private P100 p100;
-
-	public P060 getP060()
-	{
-		return p060;
-	}
-
-	public void setP060(final P060 p060)
-	{
-		this.p060 = p060;
-	}
-
-	public P100 getP100()
-	{
-		return p100;
-	}
-
-	public void setP100(final P100 p100)
-	{
-		this.p100 = p100;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (p060 == null ? 0 : p060.hashCode());
-		result = prime * result + (p100 == null ? 0 : p100.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		if (obj == null)
-		{
-			return false;
-		}
-		if (getClass() != obj.getClass())
-		{
-			return false;
-		}
-		final JP060P100 other = (JP060P100)obj;
-		if (p060 == null)
-		{
-			if (other.p060 != null)
-			{
-				return false;
-			}
-		}
-		else if (!p060.equals(other.p060))
-		{
-			return false;
-		}
-		if (p100 == null)
-		{
-			if (other.p100 != null)
-			{
-				return false;
-			}
-		}
-		else if (!p100.equals(other.p100))
-		{
-			return false;
-		}
-		return true;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "JP060100 [p060=" + p060 + ", p100=" + p100 + "]";
-	}
 }

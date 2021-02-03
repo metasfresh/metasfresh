@@ -2,11 +2,11 @@ package de.metas.report;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.io.Files;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
-import de.metas.print.IPrintService;
-import de.metas.print.IPrintServiceRegistry;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
@@ -18,7 +18,6 @@ import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -26,9 +25,10 @@ import lombok.Value;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.print.JRReportViewerProvider;
-import org.compiere.util.Ini;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -58,12 +58,7 @@ public abstract class ReportStarter extends JavaProcess
 	// services
 	private static final Logger logger = LogManager.getLogger(ReportStarter.class);
 
-	private static JRReportViewerProvider swingJRReportViewerProvider;
-
-	private static JRReportViewerProvider viewerProvider = null;
-
 	private final transient ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
-	private final transient IPrintServiceRegistry printServiceRegistry = Services.get(IPrintServiceRegistry.class);
 
 	protected abstract ExecuteReportStrategy getExecuteReportStrategy();
 
@@ -75,7 +70,7 @@ public abstract class ReportStarter extends JavaProcess
 	 * </ul>
 	 */
 	@Override
-	protected final String doIt() throws Exception
+	protected final String doIt()
 	{
 		final ProcessInfo pi = getProcessInfo();
 
@@ -93,30 +88,17 @@ public abstract class ReportStarter extends JavaProcess
 			if (reportPrintingInfo.isForceSync())
 			{
 				// gh #1160 if the caller want you to execute synchronously, then do just that
-				startProcess0(pi, reportPrintingInfo);
+				startProcess0(reportPrintingInfo);
 			}
 			else
 			{
 				// task 08283: direct print can be done in background; no need to let the user wait for this
 				taskExecutorService.submit(
-						() -> startProcess0(pi, reportPrintingInfo),
+						() -> startProcess0(reportPrintingInfo),
 						ReportStarter.class.getSimpleName());
 			}
 		}
 		return MSG_OK;
-	}
-
-	/**
-	 * Set jasper report viewer provider.
-	 */
-	public static void setNonSwingViewerProvider(@NonNull final JRReportViewerProvider provider)
-	{
-		viewerProvider = provider;
-	}
-
-	public static void setSwingViewerProvider(@NonNull final JRReportViewerProvider provider)
-	{
-		swingJRReportViewerProvider = provider;
 	}
 
 	private void startProcessDirectPrint(@NonNull final ReportPrintingInfo reportPrintingInfo)
@@ -125,20 +107,18 @@ public abstract class ReportStarter extends JavaProcess
 
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(pi, OutputType.PDF);
 
-		final IPrintService printService = printServiceRegistry.getPrintService();
+		final IMassPrintingService printService = SpringContextHolder.instance.getBean(IMassPrintingService.class);
 		printService.print(result, pi);
 	}
 
-	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
+	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo)
 	{
 		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
 
 		final OutputType desiredOutputType;
 		if (reportPrintingInfo.isPrintPreview())
 		{
-			// Get the jasper report viewer provider and ask it what format it wants
-			final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
-			desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+			desiredOutputType = null;
 		}
 		else
 		{
@@ -196,18 +176,9 @@ public abstract class ReportStarter extends JavaProcess
 		}
 
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
-
-		//
-		// Print preview (if swing client)
-		if (reportPrintingInfo.isPrintPreview()
-				&& Ini.isSwingClient()
-				&& swingJRReportViewerProvider != null)
-		{
-			swingJRReportViewerProvider.openViewer(result.getReportData(), outputType, processInfo);
-		}
 	}
 
-	private static final String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
+	private static String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
 	{
 		final String fileBasename = CoalesceUtil.firstValidValue(
 				basename -> !Check.isEmpty(basename, true),
@@ -221,6 +192,7 @@ public abstract class ReportStarter extends JavaProcess
 		return FileUtil.stripIllegalCharacters(filename);
 	}
 
+	@Nullable
 	private static String extractReportBasename_IfDocument(final ProcessInfo pi)
 	{
 		final TableRecordReference recordRef = pi.getRecordRefOrNull();
@@ -275,22 +247,7 @@ public abstract class ReportStarter extends JavaProcess
 		return info.build();
 	}
 
-	/**
-	 * @return {@link JRReportViewerProvider} or null
-	 */
-	private JRReportViewerProvider getJRReportViewerProviderOrNull()
-	{
-		if (Ini.isSwingClient())
-		{
-			return swingJRReportViewerProvider;
-		}
-		else
-		{
-			return viewerProvider;
-		}
-	}
-
-	private void startProcess0(final ProcessInfo pi, final ReportPrintingInfo reportPrintingInfo)
+	private void startProcess0(final ReportPrintingInfo reportPrintingInfo)
 	{
 		try
 		{
@@ -317,7 +274,7 @@ public abstract class ReportStarter extends JavaProcess
 
 	@Value
 	@Builder
-	private static final class ReportPrintingInfo
+	private static class ReportPrintingInfo
 	{
 		ProcessInfo processInfo;
 

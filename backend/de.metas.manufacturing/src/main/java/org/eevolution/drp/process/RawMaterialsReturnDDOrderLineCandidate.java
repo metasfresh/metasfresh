@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.warehouse.WarehouseId;
@@ -55,7 +56,6 @@ import de.metas.storage.IStorageRecord;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**

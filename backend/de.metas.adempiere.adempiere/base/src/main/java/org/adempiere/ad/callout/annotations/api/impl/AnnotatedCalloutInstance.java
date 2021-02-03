@@ -10,24 +10,24 @@ package org.adempiere.ad.callout.annotations.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.api.ICalloutMethodPointcut;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -56,11 +56,9 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 	/* package */AnnotatedCalloutInstance(final String id,
 			final String tableName,
 			final Collection<String> columnNames,
-			final Object annotatedObject,
+			@NonNull final Object annotatedObject,
 			final ListMultimap<CalloutMethodPointcutKey, CalloutMethodPointcut> mapPointcuts)
 	{
-		super();
-
 		Check.assumeNotEmpty(id, "id not empty");
 		this.id = id;
 
@@ -70,13 +68,12 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 		Check.assumeNotEmpty(columnNames, "columnNames not empty");
 		this.columnNames = ImmutableSet.copyOf(columnNames);
 
-		Check.assumeNotNull(annotatedObject, "annotatedObject not null");
 		this.annotatedObject = annotatedObject;
 
 		Check.assume(mapPointcuts != null && !mapPointcuts.isEmpty(), "mapPointcuts not empty");
 		this.mapPointcuts = ImmutableListMultimap.copyOf(mapPointcuts);
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -92,7 +89,7 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 
 	/**
 	 * Gets a set of column names on which this callout instance is listening
-	 * 
+	 *
 	 * @return set of column names
 	 */
 	public Set<String> getColumnNames()
@@ -123,7 +120,7 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 		}
 	}
 
-	private void executePointcut(final ICalloutMethodPointcut pointcut, final ICalloutExecutor executor, final ICalloutField field)
+	private void executePointcut(@NonNull final ICalloutMethodPointcut pointcut, @NonNull final ICalloutExecutor executor, @NonNull final ICalloutField field)
 	{
 		// Skip executing this callout if we were asked to skip when record copying mode is active
 		if (pointcut.isSkipIfCopying() && field.isRecordCopyingMode())
@@ -131,12 +128,17 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 			logger.info("Skip invoking callout because we are in copying mode: {}", pointcut.getMethod());
 			return;
 		}
+		if (pointcut.isSkipIfIndirectlyCalled() && executor.getActiveCalloutInstancesCount() > 1)
+		{
+			logger.info("Skip invoking callout because it is called via another callout: {}", pointcut.getMethod());
+			return;
+		}
 
 		try
 		{
 			final Method method = pointcut.getMethod();
 			final Object model = field.getModel(pointcut.getModelClass());
-			
+
 			// make sure the method can be executed
 			if (!method.isAccessible())
 			{

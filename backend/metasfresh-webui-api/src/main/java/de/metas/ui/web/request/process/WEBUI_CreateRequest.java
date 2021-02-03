@@ -27,7 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.sql.Timestamp;
 import java.util.Optional;
 
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;

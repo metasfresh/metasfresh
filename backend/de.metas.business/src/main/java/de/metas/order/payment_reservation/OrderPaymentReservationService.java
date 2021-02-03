@@ -1,5 +1,6 @@
 package de.metas.order.payment_reservation;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Order;
@@ -19,7 +20,6 @@ import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.payment.reservation.PaymentReservationStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

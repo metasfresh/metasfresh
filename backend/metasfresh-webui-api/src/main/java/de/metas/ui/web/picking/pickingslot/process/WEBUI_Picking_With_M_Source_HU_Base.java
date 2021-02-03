@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -25,7 +26,6 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;

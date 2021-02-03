@@ -1,28 +1,4 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.adempiere.exceptions;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import org.compiere.util.DB;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -30,29 +6,32 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.exceptions.IExceptionWrapper;
+import org.compiere.util.DB;
+
+import javax.annotation.Nullable;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This RuntimeException is used to pass SQLException up the chain of calling methods to determine what to do where needed.
  *
  * @author Vincent Harcq
- * @version $Id: DBException.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
- *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * @author Armen Rizal, GOODWILL CONSULTING FR [2789943] Better DBException handling for PostgreSQL https://sourceforge.net/tracker/?func=detail&aid=2789943&group_id=176962&atid=879335
+ * @version $Id: DBException.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
  */
+@SuppressWarnings("serial")
 public class DBException extends AdempiereException
 {
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = 4264201718343118625L;
-
-	/**
 	 * Wraps given throwable to {@link DBException} if is not already an {@link DBException}.
 	 *
-	 * @param throwable
 	 * @return {@link DBException} or null if throwable is null
 	 */
+	@Nullable
 	public static DBException wrapIfNeeded(final Throwable throwable)
 	{
 		if (throwable == null)
@@ -92,9 +71,9 @@ public class DBException extends AdempiereException
 		return new DBException(throwable);
 	}
 
-	private static List<IExceptionWrapper<DBException>> exceptionWrappers = new ArrayList<>();
+	private static final List<IExceptionWrapper<DBException>> exceptionWrappers = new ArrayList<>();
 
-	public static void registerExceptionWrapper(IExceptionWrapper<DBException> wrapper)
+	public static void registerExceptionWrapper(final IExceptionWrapper<DBException> wrapper)
 	{
 		exceptionWrappers.add(wrapper);
 	}
@@ -118,14 +97,11 @@ public class DBException extends AdempiereException
 	private static final String PG_SQLSTATE_query_canceled = "57014";
 	// private static final String PG_SQLSTATE_ = "";
 
+	@Nullable
 	private String m_sql = null;
+	@Nullable
 	private Object[] m_params = null;
 
-	/**
-	 * Create a new DBException based on a SQLException
-	 *
-	 * @param e Specicy the Exception cause
-	 */
 	public DBException(final Throwable e)
 	{
 		super(extractMessage(e), e);
@@ -135,12 +111,6 @@ public class DBException extends AdempiereException
 		}
 	}
 
-	/**
-	 * Create a new DBException based on a SQLException and SQL Query
-	 *
-	 * @param e exception
-	 * @param sql sql query
-	 */
 	public DBException(final Exception e, final CharSequence sql)
 	{
 		this(e, sql, (Object[])null);
@@ -151,14 +121,7 @@ public class DBException extends AdempiereException
 		super(msg, cause);
 	}
 
-	/**
-	 * Create a new DBException based on a SQLException and SQL Query
-	 *
-	 * @param e exception
-	 * @param sql sql query
-	 * @param sqlParams sql parameters
-	 */
-	public DBException(final Exception e, final CharSequence sql, final Object[] sqlParams)
+	public DBException(final Exception e, final CharSequence sql, @Nullable final Object... sqlParams)
 	{
 		this(e);
 		m_sql = sql != null ? sql.toString() : null;
@@ -168,13 +131,6 @@ public class DBException extends AdempiereException
 		}
 	}
 
-	/**
-	 * Create a new DBException based on a SQLException and SQL Query
-	 *
-	 * @param e exception
-	 * @param sql sql query
-	 * @param sqlParams sql parameters
-	 */
 	public DBException(final Exception e, final CharSequence sql, final List<Object> sqlParams)
 	{
 		this(e);
@@ -185,19 +141,12 @@ public class DBException extends AdempiereException
 		}
 	}
 
-	/**
-	 * Create a new DBException
-	 *
-	 * @param msg Message
-	 */
 	public DBException(final String msg)
 	{
 		super(msg);
 	}
 
-	/**
-	 * @return SQL Query or null
-	 */
+	@Nullable
 	public String getSQL()
 	{
 		return m_sql;
@@ -228,6 +177,7 @@ public class DBException extends AdempiereException
 	/**
 	 * @return Wrapped SQLException or null
 	 */
+	@Nullable
 	public SQLException getSQLException()
 	{
 		final Throwable cause = getCause();
@@ -250,6 +200,7 @@ public class DBException extends AdempiereException
 	/**
 	 * @see java.sql.SQLException#getNextException()
 	 */
+	@Nullable
 	public SQLException getNextException()
 	{
 		final SQLException e = getSQLException();
@@ -259,17 +210,14 @@ public class DBException extends AdempiereException
 	/**
 	 * @see java.sql.SQLException#getSQLState()
 	 */
+	@Nullable
 	public String getSQLState()
 	{
 		final SQLException e = getSQLException();
 		return e != null ? e.getSQLState() : null;
 	}
 
-	/**
-	 * Return SQL query parameters
-	 *
-	 * @return
-	 */
+	@Nullable
 	public Object[] getSQLParams()
 	{
 		return m_params;
@@ -295,7 +243,7 @@ public class DBException extends AdempiereException
 		return message.build();
 	}
 
-	private static final boolean isErrorCode(final Throwable e, final int errorCode)
+	private static boolean isErrorCode(final Throwable e, final int errorCode)
 	{
 		if (e == null)
 		{
@@ -323,7 +271,7 @@ public class DBException extends AdempiereException
 	/**
 	 * @return true if exception contains and SQLState which equals to given one
 	 */
-	public static final boolean isSQLState(final Throwable e, final String sqlState)
+	public static boolean isSQLState(final Throwable e, final String sqlState)
 	{
 		final String exceptionSQLState = extractSQLStateOrNull(e);
 		return Objects.equals(exceptionSQLState, sqlState);
@@ -332,10 +280,10 @@ public class DBException extends AdempiereException
 	/**
 	 * Try to get the {@link SQLException} from the given {@link Throwable}.
 	 *
-	 * @param Throwable t
 	 * @return {@link SQLException} if found or provided exception elsewhere
 	 */
-	public static final SQLException extractSQLExceptionOrNull(final Throwable t)
+	@Nullable
+	public static SQLException extractSQLExceptionOrNull(final Throwable t)
 	{
 		if (t == null)
 		{
@@ -350,20 +298,13 @@ public class DBException extends AdempiereException
 		}
 		else if (cause instanceof DBException)
 		{
-			final SQLException sqlEx = ((DBException)t).getSQLException();
-			if (sqlEx != null)
-			{
-				return sqlEx;
-			}
-			else
-			{
-				return null;
-			}
+			return ((DBException)t).getSQLException();
 		}
 		return null;
 	}
 
-	private static final String extractSQLStateOrNull(final Throwable t)
+	@Nullable
+	private static String extractSQLStateOrNull(final Throwable t)
 	{
 		final SQLException sqlException = extractSQLExceptionOrNull(t);
 		if (sqlException == null)
@@ -390,9 +331,6 @@ public class DBException extends AdempiereException
 
 	/**
 	 * Check if "integrity constraint (string.string) violated - child record found" exception (aka ORA-02292)
-	 *
-	 * @param e exception
-	 * @see http://ora-02292.ora-code.com/
 	 */
 	public static boolean isChildRecordFoundError(final Exception e)
 	{
@@ -414,8 +352,8 @@ public class DBException extends AdempiereException
 		// below i am adding a few of them, but pls note that it's not tested at all
 		return isErrorCode(e, 2291) // integrity constraint (string.string) violated - parent key not found
 				|| isErrorCode(e, 2292) // integrity constraint (string.string) violated - child record found
-		//
-		;
+				//
+				;
 	}
 
 	/**
@@ -440,8 +378,6 @@ public class DBException extends AdempiereException
 
 	/**
 	 * Check if "time out" exception (aka ORA-01013)
-	 *
-	 * @param e
 	 */
 	public static boolean isTimeout(final Exception e)
 	{
@@ -453,8 +389,7 @@ public class DBException extends AdempiereException
 	}
 
 	/**
-	 *
-	 * @task 08353
+	 * Task 08353
 	 */
 	public static boolean isDeadLockDetected(final Throwable e)
 	{
@@ -465,4 +400,4 @@ public class DBException extends AdempiereException
 		return isErrorCode(e, 40001); // not tested for oracle, just did a brief googling
 	}
 
-}	// DBException
+}    // DBException

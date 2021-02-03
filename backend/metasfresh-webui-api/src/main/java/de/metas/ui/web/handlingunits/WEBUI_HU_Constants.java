@@ -30,6 +30,9 @@ public final class WEBUI_HU_Constants
 	public static final String WEBUI_HU_Window_ID_String = "540189"; // FIXME: hardcoded
 	public static final WindowId WEBUI_HU_Window_ID = WindowId.fromJson(WEBUI_HU_Window_ID_String);
 
+	public static final String WEBUI_SERVICE_HU_Window_ID_String = "541011"; // FIXME: hardcoded
+	public static final WindowId WEBUI_SERVICE_HU_Window_ID = WindowId.fromJson(WEBUI_SERVICE_HU_Window_ID_String);
+
 	public static final WindowId WEBUI_HU_Trace_Window_ID = WindowId.fromJson("540353");
 
 	/**

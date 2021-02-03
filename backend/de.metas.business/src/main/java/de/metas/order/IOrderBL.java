@@ -30,6 +30,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.project.ProjectId;
+import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -41,6 +42,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
 import java.time.ZoneId;
+import java.util.Optional;
 import java.util.Properties;
 
 public interface IOrderBL extends ISingletonService
@@ -67,9 +69,6 @@ public interface IOrderBL extends ISingletonService
 	 * <li>the date being taken from order/order's <code>DatePromised</code>, falling back to <code>DateOrdered</code>, if <code>DatePromised</code> is <code>null</code></li>
 	 * </ul>
 	 * Note: if the given order is <code>null</code>, then the method returns <code>null</code>; also note that there is sort of a sibling method in IOrderLineBL.
-	 *
-	 * @param order
-	 * @return
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
@@ -236,6 +235,8 @@ public interface IOrderBL extends ISingletonService
 	I_C_BPartner getBPartnerOrNull(I_C_Order order);
 
 	ProjectId getProjectIdOrNull(OrderLineId orderLineId);
+
+	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_C_Order order);
 
 	/**
 	 * @return organization's timezone or system timezone; never returns null

@@ -25,7 +25,7 @@ import javax.swing.Icon;
 
 import org.adempiere.images.Images;
 import org.compiere.model.MTreeNode;
-
+import de.metas.workflow.WFNodeAction;
 
 /**
  *	Work Flow Icon
@@ -52,10 +52,10 @@ public class WFIcon implements Icon
 	 * 	Constructor
 	 *	@param action image indicator
 	 */
-	public WFIcon (String action)
+	public WFIcon (WFNodeAction action)
 	{
 		if (action != null)
-			m_type = MTreeNode.getImageIndex(action);
+			m_type = MTreeNode.getImageIndex(action.getCode());
 	}	//	WFIcon
 
 

@@ -1,20 +1,8 @@
-package de.metas.impexp.processing;
-
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-
-import de.metas.impexp.processing.SimpleImportProcessTemplate.RecordIdGroupKey;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +19,18 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.impexp.processing;
+
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+
+import de.metas.impexp.processing.SimpleImportProcessTemplate.RecordIdGroupKey;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import lombok.Value;
 
 public abstract class SimpleImportProcessTemplate<ImportRecordType>
 		extends ImportProcessTemplate<ImportRecordType, RecordIdGroupKey>
@@ -55,7 +55,7 @@ public abstract class SimpleImportProcessTemplate<ImportRecordType>
 			final IMutable<Object> stateHolder) throws Exception
 	{
 		final ImportRecordType importRecord = CollectionUtils.singleElement(importRecords);
-		ImportRecordResult result = importRecord(stateHolder, importRecord, isInsertOnly());
+		final ImportRecordResult result = importRecord(stateHolder, importRecord, isInsertOnly());
 		if (result == ImportRecordResult.Inserted)
 		{
 			return ImportGroupResult.ONE_INSERTED;

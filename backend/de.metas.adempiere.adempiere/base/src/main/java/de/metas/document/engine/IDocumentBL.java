@@ -3,8 +3,10 @@ package de.metas.document.engine;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 
@@ -169,6 +171,8 @@ public interface IDocumentBL extends ISingletonService
 	 * In case the table is of an yet unsupported table type, the document date will be left null.
 	 */
 	LocalDate getDocumentDate(final Properties ctx, final int adTableID, final int recordId);
+
+	Optional<DocTypeId> getDocTypeId(Object model);
 
 	/**
 	 * Gets document summary

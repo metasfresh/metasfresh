@@ -24,6 +24,7 @@ package de.metas.ui.web.payment_allocation.process;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
@@ -32,10 +33,11 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResul
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -44,10 +46,10 @@ import de.metas.money.MoneyService;
 import de.metas.payment.PaymentDirection;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.PaymentRow;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
@@ -157,31 +159,23 @@ public class PaymentsViewAllocateCommand
 		final Money openAmt = moneyService.toMoney(row.getOpenAmt());
 		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
 		final CurrencyId currencyId = openAmt.getCurrencyId();
-		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
-		final CurrencyCode currencyCode = moneyService.getCurrencyCodeByCurrencyId(currencyId);
-		if (hasServiceFeesToPay(row, currencyCode))
+		@Nullable final Amount serviceFeeAmt = row.getServiceFeeAmt();
+		@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+		if (serviceFeeAmt != null && !serviceFeeAmt.isZero())
 		{
-			if (paymentDocuments.size() != 1)
-			{
-				throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
-			}
+			final InvoiceProcessingContext invoiceProcessingContext = extractInvoiceProcessingContext(row, paymentDocuments, invoiceProcessingServiceCompanyService);
 
-			final PaymentDocument singlePaymentDocument = paymentDocuments.get(0);
-			final BPartnerId serviceCompanyBPartnerId = singlePaymentDocument.getBpartnerId();
-			final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(singlePaymentDocument.getDateTrx());
-
-			final Optional<InvoiceProcessingFeeCalculation> calculatedFeeOptional = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
+			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()
 							.orgId(row.getClientAndOrgId().getOrgId())
-							.paymentDate(paymentDate)
+							.paymentDate(invoiceProcessingContext.getPaymentDate())
 							.customerId(row.getBPartnerId())
 							.invoiceId(row.getInvoiceId())
-							.feeAmountIncludingTax(row.getServiceFeeAmt())
-							.serviceCompanyBPartnerId(serviceCompanyBPartnerId)
-							.build());
-
-			invoiceProcessingFeeCalculation = calculatedFeeOptional.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
+							.feeAmountIncludingTax(serviceFeeAmt)
+							.serviceCompanyBPartnerId(invoiceProcessingContext.getServiceCompanyId())
+							.build())
+					.orElseThrow(() -> new AdempiereException("Cannot find Invoice Processing Service Company for the selected Payment"));
 		}
 		else
 		{
@@ -216,9 +210,51 @@ public class PaymentsViewAllocateCommand
 				.build();
 	}
 
-	private static boolean hasServiceFeesToPay(final @NonNull InvoiceRow row, final CurrencyCode currencyCode)
+	@Value
+	@Builder
+	private static class InvoiceProcessingContext
 	{
-		return row.getServiceFeeAmt() != null && !row.getServiceFeeAmt().isZero();
+		@NonNull
+		BPartnerId serviceCompanyId;
+		@NonNull
+		ZonedDateTime paymentDate;
+	}
+
+	private static InvoiceProcessingContext extractInvoiceProcessingContext(
+			@NonNull final InvoiceRow row,
+			@NonNull final List<PaymentDocument> paymentDocuments,
+			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
+	{
+		if (paymentDocuments.isEmpty())
+		{
+			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
+			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(row.getBPartnerId(), evaluationDate)
+					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice " + row.getDocumentNo()));
+
+			return InvoiceProcessingContext.builder()
+					.serviceCompanyId(config.getServiceCompanyBPartnerId())
+					.paymentDate(evaluationDate)
+					.build();
+		}
+		else
+		{
+			final ImmutableSet<InvoiceProcessingContext> contexts = paymentDocuments.stream()
+					.map(PaymentsViewAllocateCommand::extractInvoiceProcessingContext)
+					.collect(ImmutableSet.toImmutableSet());
+			if (contexts.size() != 1)
+			{
+				throw new AdempiereException("Invoice with Service Fees: Please select exactly 1 Payment at a time for Allocation.");
+			}
+			return contexts.iterator().next();
+		}
+	}
+
+	private static InvoiceProcessingContext extractInvoiceProcessingContext(@NonNull final PaymentDocument paymentDocument)
+	{
+		return InvoiceProcessingContext.builder()
+				.serviceCompanyId(paymentDocument.getBpartnerId())
+				.paymentDate(TimeUtil.asZonedDateTime(paymentDocument.getDateTrx()))
+				.build();
 	}
 
 	private PaymentDocument toPaymentDocument(@NonNull final PaymentRow row)

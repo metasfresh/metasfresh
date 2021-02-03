@@ -17,6 +17,7 @@ import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -28,7 +29,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -153,15 +154,15 @@ public class PPOrderPojoSupplier
 
 		final ProductDescriptor productDescriptor = createPPOrderProductDescriptor(mrpContext);
 
-		final ProductId productId = ProductId.ofRepoId(mrpContext.getM_Product_ID());
+		final ProductId productId = mrpContext.getProductId();
 		final Quantity ppOrderQuantity = uomConversionBL.convertToProductUOM(qtyToSupply, productId);
 
 		return PPOrder.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(mrpContext.getAD_Client_ID(), mrpContext.getAD_Org_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.toRepoId(mrpContext.getClientId()), OrgId.toRepoIdOrAny(mrpContext.getOrgId())))
 
 				// Planning dimension
 				.plantId(ResourceId.ofRepoIdOrNull(mrpContext.getPlant_ID()))
-				.warehouseId(WarehouseId.ofRepoId(mrpContext.getM_Warehouse_ID()))
+				.warehouseId(mrpContext.getWarehouseId())
 				.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 
 				// Product, UOM, ASI
@@ -185,13 +186,13 @@ public class PPOrderPojoSupplier
 	 */
 	private ProductDescriptor createPPOrderProductDescriptor(final IMaterialPlanningContext mrpContext)
 	{
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(mrpContext.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = mrpContext.getAttributeSetInstanceId();
 		final AttributesKey attributesKey = AttributesKeys
 				.createAttributesKeyFromASIStorageAttributes(asiId)
 				.orElse(AttributesKey.NONE);
 
 		return ProductDescriptor.forProductAndAttributes(
-				mrpContext.getM_Product_ID(),
+				ProductId.toRepoId(mrpContext.getProductId()),
 				attributesKey,
 				asiId.getRepoId());
 	}

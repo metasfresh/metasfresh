@@ -1,6 +1,7 @@
 package de.metas.material.event;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.event.Event;
 import de.metas.material.event.attributes.AttributesChangedEvent;
@@ -60,7 +61,6 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.JSONObjectMapper;
-import de.metas.util.time.SystemTime;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
@@ -335,7 +335,7 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				// .productDescriptor(createProductDescriptor())
 				.newDatePromised(NOW)
-				.oldDatePromised(SystemTime.asInstant())
+				.oldDatePromised(de.metas.common.util.time.SystemTime.asInstant())
 				.oldDocStatus(DocStatus.Completed)
 				.newDocStatus(DocStatus.Closed)
 				.oldQtyRequired(TEN)

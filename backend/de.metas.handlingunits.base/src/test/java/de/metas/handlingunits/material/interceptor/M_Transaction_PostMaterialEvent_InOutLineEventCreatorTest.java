@@ -2,6 +2,7 @@ package de.metas.handlingunits.material.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEvent;
@@ -11,7 +12,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;

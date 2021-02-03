@@ -2,6 +2,7 @@ package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -28,7 +29,6 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;

@@ -1,27 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1249303218L;
+	private static final long serialVersionUID = 799358872L;
 
     /** Standard Constructor */
-    public X_C_Order (final Properties ctx, final int C_Order_ID, final String trxName)
+    public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
     {
       super (ctx, C_Order_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_Order (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_Order (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -132,18 +132,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setBillToAddress (final java.lang.String BillToAddress)
-	{
-		set_Value (COLUMNNAME_BillToAddress, BillToAddress);
-	}
-
-	@Override
-	public java.lang.String getBillToAddress() 
-	{
-		return get_ValueAsString(COLUMNNAME_BillToAddress);
-	}
-
-	@Override
 	public void setBill_User_ID (final int Bill_User_ID)
 	{
 		if (Bill_User_ID < 1) 
@@ -156,6 +144,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getBill_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
+	}
+
+	@Override
+	public void setBillToAddress (final java.lang.String BillToAddress)
+	{
+		set_Value (COLUMNNAME_BillToAddress, BillToAddress);
+	}
+
+	@Override
+	public java.lang.String getBillToAddress() 
+	{
+		return get_ValueAsString(COLUMNNAME_BillToAddress);
 	}
 
 	@Override
@@ -183,6 +183,21 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public int getC_BP_BankAccount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -239,21 +254,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_BPartner_SalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
-	}
-
-	@Override
-	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
-	}
-
-	@Override
-	public int getC_BP_BankAccount_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -386,44 +386,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setChargeAmt (final BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCompleteOrderDiscount (final BigDecimal CompleteOrderDiscount)
-	{
-		set_Value (COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
-	}
-
-	@Override
-	public BigDecimal getCompleteOrderDiscount() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CompleteOrderDiscount);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCopyFrom (final java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
-	}
-
-	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
@@ -508,6 +470,44 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
+	public void setChargeAmt (final BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCompleteOrderDiscount (final BigDecimal CompleteOrderDiscount)
+	{
+		set_Value (COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
+	}
+
+	@Override
+	public BigDecimal getCompleteOrderDiscount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CompleteOrderDiscount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCopyFrom (final java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -894,18 +894,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setHandOverAddress (final java.lang.String HandOverAddress)
-	{
-		set_Value (COLUMNNAME_HandOverAddress, HandOverAddress);
-	}
-
-	@Override
-	public java.lang.String getHandOverAddress() 
-	{
-		return get_ValueAsString(COLUMNNAME_HandOverAddress);
-	}
-
-	@Override
 	public void setHandOver_BPartner_Memo (final java.lang.String HandOver_BPartner_Memo)
 	{
 		throw new IllegalArgumentException ("HandOver_BPartner_Memo is virtual column");	}
@@ -929,6 +917,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getHandOver_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_HandOver_User_ID);
+	}
+
+	@Override
+	public void setHandOverAddress (final java.lang.String HandOverAddress)
+	{
+		set_Value (COLUMNNAME_HandOverAddress, HandOverAddress);
+	}
+
+	@Override
+	public java.lang.String getHandOverAddress() 
+	{
+		return get_ValueAsString(COLUMNNAME_HandOverAddress);
 	}
 
 	/** 
@@ -999,8 +999,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
 	/** Immediate = I */
 	public static final String INVOICERULE_Immediate = "I";
-	/** OrderCompletelyDelivered = C */
-	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
@@ -1458,18 +1456,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isPosted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Posted);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Issue getPostingError_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_PostingError_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setPostingError_Issue(final org.compiere.model.I_AD_Issue PostingError_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_PostingError_Issue_ID, org.compiere.model.I_AD_Issue.class, PostingError_Issue);
 	}
 
 	@Override

@@ -25,6 +25,7 @@ package de.metas.payment.sepa.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
@@ -41,8 +42,7 @@ public class SEPA_Export_Line
 	/**
 	 * If the given line's account is an ESR account, then this method sets the line's <code>OtherAccountIdentification</code> value to the ESR-account's retrieveESRAccountNo.
 	 * 
-	 * @param esrImport
-	 * @task 07789
+	 * task 07789
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateOtherAccountIdentification(I_SEPA_Export_Line esrImport)
@@ -80,10 +80,18 @@ public class SEPA_Export_Line
 			otherAccountIdentification = esrAccountNo;
 		}
 		else
-		{
-			// default: we prepend a check digit
-			final int checkDigit = esrBL.calculateESRCheckDigit(esrAccountNo);
-			otherAccountIdentification = esrAccountNo + checkDigit;
+		{ // default: we prepend a check digit
+			try
+			{
+				final int checkDigit = esrBL.calculateESRCheckDigit(esrAccountNo);
+				otherAccountIdentification = esrAccountNo + checkDigit;
+			}
+			catch (final RuntimeException rte)
+			{ // augment the exception and rethrow it
+				throw AdempiereException.wrapIfNeeded(rte).appendParametersToMessage()
+						.setParameter("C_BPartner_ID", bpBankAccount.getC_BPartner_ID())
+						.setParameter("C_BP_BankAccount_ID",bpBankAccount.getC_BP_BankAccount_ID());
+			}
 		}
 
 		esrImport.setOtherAccountIdentification(otherAccountIdentification);

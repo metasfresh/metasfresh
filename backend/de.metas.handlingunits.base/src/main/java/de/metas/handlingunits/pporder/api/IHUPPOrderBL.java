@@ -31,9 +31,6 @@ public interface IHUPPOrderBL extends ISingletonService
 	/**
 	 * Create a {@link IDocumentLUTUConfigurationManager} for HUs that can be received for the given {@code ppOrder}.<br>
 	 * If the given {@code ppOrder} does <b>not</b> have a {@link de.metas.handlingunits.model.I_PP_Order#COLUMNNAME_M_HU_LUTU_Configuration_ID PP_Order.M_HU_LUTU_Configuration_ID}, then return a default config.
-	 * 
-	 * @param ppOrder
-	 * @return
 	 */
 	IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager(org.eevolution.model.I_PP_Order ppOrder);
 
@@ -50,6 +47,8 @@ public interface IHUPPOrderBL extends ISingletonService
 
 	HUPPOrderIssueProducer createIssueProducer(PPOrderId ppOrderId);
 
+	void issueServiceProduct(PPOrderIssueServiceProductRequest request);
+
 	IPPOrderReceiptHUProducer receivingMainProduct(PPOrderId ppOrderId);
 
 	IPPOrderReceiptHUProducer receivingByOrCoProduct(PPOrderBOMLineId orderBOMLineId);
@@ -58,7 +57,7 @@ public interface IHUPPOrderBL extends ISingletonService
 	 * Create a query builder that retrieves all HUs that
 	 * <ul>
 	 * <li>contain the given {@code ppOrderBomLine}'s product</li>
-	 * <li>are in the bomline's warehouse</li>
+	 * <li>are in the BOM line's warehouse</li>
 	 * <li>are still active</li>
 	 * </lu>
 	 */

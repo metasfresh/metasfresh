@@ -1,28 +1,17 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.ZonedDateTime;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ADMessageAndParams;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
@@ -30,6 +19,17 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -62,16 +62,16 @@ import lombok.NonNull;
 /* package */ final class PurchaseOrderFromItemFactory
 {
 	@VisibleForTesting
-	final static String MSG_Different_DatePromised = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised";
+	final static AdMessageKey MSG_Different_DatePromised = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised");
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity";
+	final static AdMessageKey MSG_Different_Quantity = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity");
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity_AND_DatePromised = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
+	final static AdMessageKey MSG_Different_Quantity_AND_DatePromised = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised");
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final OrderFactory orderFactory;
@@ -82,7 +82,7 @@ import lombok.NonNull;
 	@Builder
 	private PurchaseOrderFromItemFactory(
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
-			@NonNull OrderUserNotifications userNotifications)
+			@NonNull final OrderUserNotifications userNotifications)
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
@@ -143,6 +143,7 @@ import lombok.NonNull;
 		pruchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
 	}
 
+	@Nullable
 	private ADMessageAndParams createMessageAndParamsOrNull(@NonNull final I_C_Order order)
 	{
 		boolean deviatingDatePromised = false;

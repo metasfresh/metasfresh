@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
@@ -65,7 +66,6 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class FreshPackingMd
