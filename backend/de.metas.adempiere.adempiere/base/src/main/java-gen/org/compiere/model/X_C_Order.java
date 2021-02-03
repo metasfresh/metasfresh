@@ -894,6 +894,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setHandOverAddress (final java.lang.String HandOverAddress)
+	{
+		set_Value (COLUMNNAME_HandOverAddress, HandOverAddress);
+	}
+
+	@Override
+	public java.lang.String getHandOverAddress()
+	{
+		return get_ValueAsString(COLUMNNAME_HandOverAddress);
+	}
+
+	@Override
 	public void setHandOver_BPartner_Memo (final java.lang.String HandOver_BPartner_Memo)
 	{
 		throw new IllegalArgumentException ("HandOver_BPartner_Memo is virtual column");	}
@@ -917,18 +929,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getHandOver_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_HandOver_User_ID);
-	}
-
-	@Override
-	public void setHandOverAddress (final java.lang.String HandOverAddress)
-	{
-		set_Value (COLUMNNAME_HandOverAddress, HandOverAddress);
-	}
-
-	@Override
-	public java.lang.String getHandOverAddress() 
-	{
-		return get_ValueAsString(COLUMNNAME_HandOverAddress);
 	}
 
 	/** 
@@ -999,6 +999,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
 	/** Immediate = I */
 	public static final String INVOICERULE_Immediate = "I";
+	/** OrderCompletelyDelivered = C */
+	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
