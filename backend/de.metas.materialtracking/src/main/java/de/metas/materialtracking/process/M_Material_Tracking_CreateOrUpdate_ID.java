@@ -296,7 +296,6 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			return ProcessPreconditionsResolution.acceptIf(!orderLine.getC_Order().isSOTrx());
 		}
 
-
 		return ProcessPreconditionsResolution.reject();
 	}
 }

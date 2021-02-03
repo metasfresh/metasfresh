@@ -97,7 +97,7 @@ public class RequestMaterialOrderService
 					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
 					break;
 				case FORECAST:
-					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
+					createAndFireForcastRequestedEvent(groupOfCandidates);
 					break;
 				default:
 					break;
@@ -272,8 +272,27 @@ public class RequestMaterialOrderService
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
-				// .salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
-				// .salesOrderRepoId(singleCandidate.getAdditionalDemandDetail().getOrderId())
+				.salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
+				.salesOrderRepoId(singleCandidate.getAdditionalDemandDetail().getOrderId())
+				.build();
+
+		return purchaseCandidateRequestedEvent;
+	}
+
+	private void createAndFireForcastRequestedEvent(@NonNull final List<Candidate> group)
+	{
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForcastRequestedEvent(group);
+		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+	}
+
+	private PurchaseCandidateRequestedEvent createForcastRequestedEvent(@NonNull final List<Candidate> group)
+	{
+		final Candidate singleCandidate = CollectionUtils.singleElement(group);
+
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
+				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
+				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.build();
 
 		return purchaseCandidateRequestedEvent;

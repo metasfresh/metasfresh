@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.collect.ImmutableList;
@@ -128,9 +127,6 @@ public final class PurchaseRow implements IViewRow
 	@Getter
 	private ZonedDateTime datePromised;
 
-	@ViewColumn(captionKey = I_C_Order.COLUMNNAME_C_DocTypeTarget_ID, widgetType = DocumentFieldWidgetType.List, seqNo = 80)
-	private PODocType docType;
-
 	//
 	private final PurchaseRowId rowId;
 
@@ -183,7 +179,6 @@ public final class PurchaseRow implements IViewRow
 		profitSalesPriceActual = null;
 		profitPurchasePriceActual = null;
 		profitPercent = null;
-		docType = PODocType.PURCHASE_ORDER;
 
 		datePromised = demand.getSalesPreparationDate();
 
