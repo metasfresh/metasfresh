@@ -75,7 +75,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 		enqueue(purchaseCandidateIds, null);
 	}
 
-	public static void enqueue(final Collection<PurchaseCandidateId> purchaseCandidateIds, DocTypeId docTypeId)
+	public static void enqueue(@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds, @Nullable final DocTypeId docTypeId)
 	{
 		final Multimap<Integer, I_C_PurchaseCandidate> vendorId2purchaseCandidate = //
 				loadByIds(PurchaseCandidateId.toIntSet(purchaseCandidateIds), I_C_PurchaseCandidate.class)
