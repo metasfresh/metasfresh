@@ -106,6 +106,7 @@ body {
   input:focus,
   input:active {
     border-color: $base-elements;
+    background-color: $yellow-background;
   }
 }
 
@@ -231,6 +232,10 @@ input[type=number]::-webkit-inner-spin-button {
   color: $base-elements;
 }
 
+.is-medium.input {
+  background: $yellow-background !important;
+}
+
 .week-days {
   margin-bottom: calc(9rem + 1px);
 }
@@ -251,4 +256,8 @@ input[type=number]::-webkit-inner-spin-button {
 
 .is-green-text {
   color: $base-elements;
+}
+
+input:-webkit-autofill {
+  background: $yellow-background;
 }
