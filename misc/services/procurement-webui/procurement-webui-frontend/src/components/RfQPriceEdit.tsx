@@ -34,7 +34,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
     store.rfqs.updateRfQ({ price: newPrice, rfqId }).then(() => selectAndFocus());
   };
 
-  const rfqPrice = rfq.price.toString();
+  const rfqPrice = rfq.price;
 
   return (
     <View>
@@ -45,10 +45,9 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <input
                 className="product-input"
                 type="number"
-                pattern="[0-9]+([\.,][0-9]+)?"
                 ref={qtyInput}
-                step="0.1"
-                value={rfqPrice.length > 1 && rfqPrice.includes(',') ? rfqPrice.replace(/^0+/, '') : rfqPrice}
+                step="0.01"
+                value={rfqPrice}
                 onChange={(e) => {
                   let updatedPrice = parseFloat(e.target.value);
                   updatedPrice = isNaN(updatedPrice) ? 0 : updatedPrice;
@@ -62,7 +61,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  saveQty(parseInt(qtyInput.current.value) + 1);
+                  saveQty(parseFloat(qtyInput.current.value) + 1);
                 }}
               >
                 <i className="fas fa-2x fa-arrow-up"></i>
@@ -70,7 +69,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  const currentQty = parseInt(qtyInput.current.value);
+                  const currentQty = parseFloat(qtyInput.current.value);
                   currentQty > 0 && saveQty(currentQty - 1);
                 }}
               >
