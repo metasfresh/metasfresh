@@ -66,7 +66,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
  */
 public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProcessorAdapter
 {
-	public static final String DOC_TYPE_ID = "createAsRequisition";
+	public static final String DOC_TYPE_ID = "C_Doctype_Target_ID";
 	private final PurchaseCandidateRepository purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = SpringContextHolder.instance.getBean(VendorGatewayInvokerFactory.class);
 
