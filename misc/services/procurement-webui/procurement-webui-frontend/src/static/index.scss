@@ -97,7 +97,7 @@ body {
 
 .page {
   width: 100%;
-  margin-top: 5.25rem;
+  margin-top: 5.2rem;
 }
 
 .login-view {
@@ -159,6 +159,12 @@ footer {
 
 .back-bottom-nav {
   border-top: 1px solid $base-border;
+
+  .nav-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 .icons-bottom-nav {
