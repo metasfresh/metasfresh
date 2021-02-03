@@ -45,6 +45,8 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
     });
   };
 
+  const qtyPromised = quantity.qtyPromised.toString();
+
   return (
     <View>
       <div>
@@ -53,13 +55,15 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
             <div className="column is-11">
               <input
                 className="product-input"
-                type="text"
+                type="number"
                 ref={qtyInput}
                 step="1"
-                value={quantity.qtyPromised}
+                value={qtyPromised.length > 1 ? qtyPromised.replace(/^0+/, '') : qtyPromised}
                 onChange={(e) => {
+                  let updatedQty = parseInt(e.target.value, 10);
+                  updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
                   store.rfqs.updateRfQ({
-                    quantities: [{ date: currentDay, qtyPromised: parseInt(e.target.value, 10) }],
+                    quantities: [{ date: currentDay, qtyPromised: updatedQty }],
                     rfqId,
                   });
                 }}

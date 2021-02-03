@@ -42,7 +42,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
           {
             date: currentDay,
             productId: product.productId,
-            qty: newQty,
+            qty: newQty ? newQty : 0,
           },
         ],
       })
@@ -52,7 +52,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
       });
   };
 
-  console.log('QTY:', product.qty);
+  const productQty = product.qty.toString();
 
   return (
     <View>
@@ -67,12 +67,14 @@ const ProductScreen: React.FunctionComponent = observer(() => {
             <div className="column is-11">
               <input
                 className="product-input"
-                type="text"
+                type="number"
                 ref={qtyInput}
                 step="1"
-                value={product.qty}
+                value={productQty.length > 1 ? productQty.replace(/^0+/, '') : productQty}
                 onChange={(e) => {
-                  store.dailyProducts.updateProductQty(product.productId, parseInt(e.target.value, 10));
+                  let updatedQty = parseInt(e.target.value, 10);
+                  updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
+                  store.dailyProducts.updateProductQty(product.productId, updatedQty);
                 }}
                 onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
               />

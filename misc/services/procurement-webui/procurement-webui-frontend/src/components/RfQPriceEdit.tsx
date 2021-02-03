@@ -34,6 +34,8 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
     store.rfqs.updateRfQ({ price: newPrice, rfqId }).then(() => selectAndFocus());
   };
 
+  const rfqPrice = rfq.price.toString();
+
   return (
     <View>
       <div>
@@ -42,12 +44,14 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
             <div className="column is-11">
               <input
                 className="product-input"
-                type="text"
+                type="number"
                 ref={qtyInput}
                 step="1"
-                value={rfq.price}
+                value={rfqPrice.length > 1 ? rfqPrice.replace(/^0+/, '') : rfqPrice}
                 onChange={(e) => {
-                  store.rfqs.updateRfQ({ price: parseInt(e.target.value), rfqId });
+                  let updatedPrice = parseInt(e.target.value, 10);
+                  updatedPrice = isNaN(updatedPrice) ? 0 : updatedPrice;
+                  store.rfqs.updateRfQ({ price: updatedPrice, rfqId });
                 }}
                 onBlur={(e) => saveQty(parseInt(e.target.value))}
               />

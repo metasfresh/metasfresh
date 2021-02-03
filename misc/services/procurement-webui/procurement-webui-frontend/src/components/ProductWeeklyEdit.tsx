@@ -55,6 +55,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   };
 
   const { lang } = store.i18n;
+  const dailyQty = dailyQtyItem.qty.toString();
 
   return (
     <View>
@@ -69,12 +70,14 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
             <div className="column is-11">
               <input
                 className="product-input"
-                type="text"
+                type="number"
                 ref={qtyInput}
                 step="1"
-                value={dailyQtyItem.qty}
+                value={dailyQty.length > 1 ? dailyQty.replace(/^0+/, '') : dailyQty}
                 onChange={(e) => {
-                  store.weeklyProducts.updateProductQty(product.productId, e.target.value, currentDay);
+                  let updatedQty = parseInt(e.target.value, 10);
+                  updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
+                  store.weeklyProducts.updateProductQty(product.productId, `${updatedQty}`, currentDay);
                 }}
                 onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
               />
