@@ -1,6 +1,7 @@
 package de.metas.adempiere.modelvalidator;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.Language;
 import de.metas.title.Title;
 import de.metas.title.TitleId;
 import de.metas.title.TitleRepository;
@@ -19,6 +20,8 @@ import de.metas.user.UserPOCopyRecordSupport;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
+import java.util.Optional;
 
 /**
  * This model validator
@@ -76,7 +79,8 @@ public class AD_User
 
 	private String extractTitle(I_AD_User user) {
 		String userTitle = "";
-		final Title title = titleRepository.getByIdAndLang(TitleId.ofRepoId(user.getC_Title_ID()), bpPartnerService.getLanguageForModel(user));
+		final Optional<Language> languageForModel = bpPartnerService.getLanguageForModel(user);
+		final Title title = titleRepository.getByIdAndLang(TitleId.ofRepoId(user.getC_Title_ID()), languageForModel.orElse(null));
 		if (title != null)
 		{
 			userTitle = title.getTitle();

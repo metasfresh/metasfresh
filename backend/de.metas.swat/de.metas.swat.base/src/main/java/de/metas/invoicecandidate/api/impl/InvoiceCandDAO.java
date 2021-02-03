@@ -20,7 +20,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.time.InstantInterval;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
