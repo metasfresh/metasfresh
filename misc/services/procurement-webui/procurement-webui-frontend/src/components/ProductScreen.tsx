@@ -52,6 +52,8 @@ const ProductScreen: React.FunctionComponent = observer(() => {
       });
   };
 
+  console.log('QTY:', product.qty);
+
   return (
     <View>
       <div>
@@ -65,14 +67,14 @@ const ProductScreen: React.FunctionComponent = observer(() => {
             <div className="column is-11">
               <input
                 className="product-input"
-                type="number"
+                type="text"
                 ref={qtyInput}
                 step="1"
                 value={product.qty}
                 onChange={(e) => {
-                  store.dailyProducts.updateProductQty(product.productId, e.target.value);
+                  store.dailyProducts.updateProductQty(product.productId, parseInt(e.target.value, 10));
                 }}
-                onBlur={(e) => saveQty(parseInt(e.target.value))}
+                onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
               />
             </div>
             {/* The arrows */}
@@ -80,7 +82,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  saveQty(parseInt(qtyInput.current.value) + 1);
+                  saveQty(parseInt(qtyInput.current.value, 10) + 1);
                 }}
               >
                 <i className="fas fa-2x fa-arrow-up"></i>
@@ -88,7 +90,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  const currentQty = parseInt(qtyInput.current.value);
+                  const currentQty = parseInt(qtyInput.current.value, 10);
                   currentQty > 0 && saveQty(currentQty - 1);
                 }}
               >

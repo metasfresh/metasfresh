@@ -69,14 +69,14 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
             <div className="column is-11">
               <input
                 className="product-input"
-                type="number"
+                type="text"
                 ref={qtyInput}
                 step="1"
                 value={dailyQtyItem.qty}
                 onChange={(e) => {
                   store.weeklyProducts.updateProductQty(product.productId, e.target.value, currentDay);
                 }}
-                onBlur={(e) => saveQty(parseInt(e.target.value))}
+                onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
               />
             </div>
             {/* The arrows */}
@@ -84,7 +84,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  saveQty(parseInt(qtyInput.current.value) + 1);
+                  saveQty(parseInt(qtyInput.current.value, 10) + 1);
                 }}
               >
                 <i className="fas fa-2x fa-arrow-up"></i>
@@ -92,7 +92,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  const currentQty = parseInt(qtyInput.current.value);
+                  const currentQty = parseInt(qtyInput.current.value, 10);
                   currentQty > 0 && saveQty(currentQty - 1);
                 }}
               >

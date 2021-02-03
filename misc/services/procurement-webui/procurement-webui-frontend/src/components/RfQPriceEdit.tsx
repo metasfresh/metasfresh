@@ -42,7 +42,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
             <div className="column is-11">
               <input
                 className="product-input"
-                type="number"
+                type="text"
                 ref={qtyInput}
                 step="1"
                 value={rfq.price}
