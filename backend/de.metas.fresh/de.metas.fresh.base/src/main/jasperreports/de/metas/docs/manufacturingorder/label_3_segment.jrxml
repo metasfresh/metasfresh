@@ -49,12 +49,6 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID}]]>
 	</field>
 	<detail>
 		<band height="257">
-			<image scaleImage="FillFrame">
-				<reportElement x="112" y="99" width="15" height="11" uuid="afe19b52-486a-46bd-bcc1-a1cb226a8584">
-					<property name="com.jaspersoft.studio.unit.width" value="mm"/>
-				</reportElement>
-				<imageExpression><![CDATA["de/metas/generics/DC.png"]]></imageExpression>
-			</image>
 			<image scaleImage="FillFrame" hAlign="Center" vAlign="Middle">
 				<reportElement key="image-1" x="2" y="17" width="249" height="55" uuid="30f5b950-2774-48d3-af82-f55aeb188a99">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
