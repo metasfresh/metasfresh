@@ -45,15 +45,16 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <input
                 className="product-input"
                 type="number"
+                pattern="[0-9]+([\.,][0-9]+)?"
                 ref={qtyInput}
-                step="1"
-                value={rfqPrice.length > 1 ? rfqPrice.replace(/^0+/, '') : rfqPrice}
+                step="0.1"
+                value={rfqPrice.length > 1 && rfqPrice.includes(',') ? rfqPrice.replace(/^0+/, '') : rfqPrice}
                 onChange={(e) => {
-                  let updatedPrice = parseInt(e.target.value, 10);
+                  let updatedPrice = parseFloat(e.target.value);
                   updatedPrice = isNaN(updatedPrice) ? 0 : updatedPrice;
                   store.rfqs.updateRfQ({ price: updatedPrice, rfqId });
                 }}
-                onBlur={(e) => saveQty(parseInt(e.target.value))}
+                onBlur={(e) => saveQty(parseFloat(e.target.value))}
               />
             </div>
             {/* The arrows */}
