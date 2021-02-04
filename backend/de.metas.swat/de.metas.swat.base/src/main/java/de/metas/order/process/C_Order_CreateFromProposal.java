@@ -52,7 +52,7 @@ public final class C_Order_CreateFromProposal extends JavaProcess implements IPr
 	@Param(parameterName = "DateOrdered")
 	private Timestamp newOrderDateOrdered;
 
-	@Param(parameterName = "DocumentNo")
+	@Param(parameterName = "POReference")
 	private String poReference;
 
 	@Param(parameterName = "CompleteIt")
