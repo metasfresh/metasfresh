@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
@@ -23,6 +23,8 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   const currentDay = targetDay ? targetDay : store.app.currentDay;
   const currentCaption = targetDayCaption ? targetDayCaption : store.app.dayCaption;
   const qtyInput = React.createRef<HTMLInputElement>();
+  const history = useHistory();
+  const { navigation } = store;
 
   const selectAndFocus = () => {
     if (qtyInput.current) {
@@ -55,6 +57,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   };
 
   const { lang } = store.i18n;
+  const dailyQty = dailyQtyItem.qty.toString();
 
   return (
     <View>
@@ -71,12 +74,21 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
                 className="product-input"
                 type="number"
                 ref={qtyInput}
-                step="1"
-                value={dailyQtyItem.qty}
-                onChange={(e) => {
-                  store.weeklyProducts.updateProductQty(product.productId, e.target.value, currentDay);
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    qtyInput.current.blur();
+                    navigation.removeViewFromHistory();
+                    history.goBack();
+                  }
                 }}
-                onBlur={(e) => saveQty(parseInt(e.target.value))}
+                step="1"
+                value={dailyQty.length > 1 ? dailyQty.replace(/^0+/, '') : dailyQty}
+                onChange={(e) => {
+                  let updatedQty = parseInt(e.target.value, 10);
+                  updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
+                  store.weeklyProducts.updateProductQty(product.productId, `${updatedQty}`, currentDay);
+                }}
+                onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
               />
             </div>
             {/* The arrows */}
@@ -84,7 +96,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  saveQty(parseInt(qtyInput.current.value) + 1);
+                  saveQty(parseInt(qtyInput.current.value, 10) + 1);
                 }}
               >
                 <i className="fas fa-2x fa-arrow-up"></i>
@@ -92,7 +104,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  const currentQty = parseInt(qtyInput.current.value);
+                  const currentQty = parseInt(qtyInput.current.value, 10);
                   currentQty > 0 && saveQty(currentQty - 1);
                 }}
               >

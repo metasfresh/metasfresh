@@ -334,14 +334,6 @@
                     </configuration>
                 </plugin>
 
-                <!-- note that currently we prefer org.jvnet.jaxb2.maven2:maven-jaxb2-plugin,
-                    but don't have time to kick out this one  -->
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>jaxb2-maven-plugin</artifactId>
-                    <version>2.5.0</version> <!-- https://github.com/metasfresh/metasfresh/issues/1598 -->
-                </plugin>
-
                 <plugin>
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>

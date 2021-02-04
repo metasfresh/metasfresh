@@ -6,7 +6,7 @@ interface Props {
 }
 
 const View: FunctionComponent<Props> = ({ children }) => {
-  return <section className="container page mt-6">{children}</section>;
+  return <section className="container page">{children}</section>;
 };
 
 View.propTypes = {
