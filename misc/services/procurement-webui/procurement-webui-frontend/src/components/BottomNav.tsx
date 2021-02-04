@@ -99,11 +99,11 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
                 history.goBack();
               }}
             >
-              <div className="column green-color mt-1 is-11 is-size-3">
-                <div className="mt-2 is-pulled-left">
+              <div className="column is-flex is-11 is-size-3 green-color mt-1">
+                <div className="mt-2">
                   <i className="fas fa-chevron-left" />
                 </div>
-                <div className="is-pulled-left pt-1 pl-2">
+                <div className="pt-1 pl-2 nav-text">
                   <span className="is-size-4">{text}</span>
                 </div>
               </div>

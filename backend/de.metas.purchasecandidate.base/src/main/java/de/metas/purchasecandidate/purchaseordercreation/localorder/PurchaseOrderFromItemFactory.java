@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
@@ -57,7 +58,6 @@ import java.util.Set;
  * Creates one purchase order from given candidates.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */ final class PurchaseOrderFromItemFactory
 {
@@ -82,7 +82,8 @@ import java.util.Set;
 	@Builder
 	private PurchaseOrderFromItemFactory(
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
-			@NonNull final OrderUserNotifications userNotifications)
+			@NonNull final OrderUserNotifications userNotifications,
+			@Nullable final DocTypeId docType)
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
@@ -91,6 +92,10 @@ import java.util.Set;
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised());
+		if (docType != null)
+		{
+			orderFactory.docType(docType);
+		}
 
 		this.userNotifications = userNotifications;
 	}

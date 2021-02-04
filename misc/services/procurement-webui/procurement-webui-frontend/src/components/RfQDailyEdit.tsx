@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
 import { formDate, prettyDate } from '../utils/date';
 import View from './View';
@@ -22,6 +22,8 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
   const currentDay = targetDate ? targetDate : store.app.currentDay;
   const qtyInput = React.createRef<HTMLInputElement>();
   const { lang } = store.i18n;
+  const history = useHistory();
+  const { navigation } = store;
 
   const selectAndFocus = () => {
     if (qtyInput.current) {
@@ -45,6 +47,8 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
     });
   };
 
+  const qtyPromised = quantity.qtyPromised.toString();
+
   return (
     <View>
       <div>
@@ -56,14 +60,23 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
                 type="number"
                 ref={qtyInput}
                 step="1"
-                value={quantity.qtyPromised}
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    qtyInput.current.blur();
+                    navigation.removeViewFromHistory();
+                    history.goBack();
+                  }
+                }}
+                value={qtyPromised.length > 1 ? qtyPromised.replace(/^0+/, '') : qtyPromised}
                 onChange={(e) => {
+                  let updatedQty = parseInt(e.target.value, 10);
+                  updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
                   store.rfqs.updateRfQ({
-                    quantities: [{ date: currentDay, qtyPromised: parseInt(e.target.value) }],
+                    quantities: [{ date: currentDay, qtyPromised: updatedQty }],
                     rfqId,
                   });
                 }}
-                onBlur={(e) => saveQty(parseInt(e.target.value))}
+                onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
               />
             </div>
             {/* The arrows */}
@@ -71,7 +84,7 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  saveQty(parseInt(qtyInput.current.value) + 1);
+                  saveQty(parseInt(qtyInput.current.value, 10) + 1);
                 }}
               >
                 <i className="fas fa-2x fa-arrow-up"></i>
@@ -79,7 +92,7 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  const currentQty = parseInt(qtyInput.current.value);
+                  const currentQty = parseInt(qtyInput.current.value, 10);
                   currentQty > 0 && saveQty(currentQty - 1);
                 }}
               >

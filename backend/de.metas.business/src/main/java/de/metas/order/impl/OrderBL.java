@@ -963,6 +963,20 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isRequisition(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		if (!soTrx.isPurchase())
+		{
+			// only purchase orders can be requisitions
+			return false;
+		}
+
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isRequisition(docTypeId);
+	}
+
+	@Override
 	public boolean isPrepay(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = getById(orderId);

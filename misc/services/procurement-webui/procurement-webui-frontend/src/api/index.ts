@@ -63,6 +63,16 @@ export function postRfQ(data: {
   quantities?: { date: string; qtyPromised: number }[];
   rfqId: string;
 }): Promise<AxiosResponse> {
+  // patch - case when NaN
+  if (isNaN(data.price) && !data.quantities) data.price = 0;
+  // patch - case when qtyPromised is null
+  data.quantities &&
+    data.quantities.length &&
+    data.quantities.map((item) => {
+      if (isNaN(item.qtyPromised)) item.qtyPromised = 0;
+      return item;
+    });
+
   return axios.post(`/rest/rfq`, data);
 }
 

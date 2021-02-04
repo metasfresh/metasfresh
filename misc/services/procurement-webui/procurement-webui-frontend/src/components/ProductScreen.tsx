@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { formDate, prettyDate } from '../utils/date';
 import DailyNav from './DailyNav';
 import View from './View';
@@ -42,7 +42,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
           {
             date: currentDay,
             productId: product.productId,
-            qty: newQty,
+            qty: newQty ? newQty : 0,
           },
         ],
       })
@@ -51,6 +51,9 @@ const ProductScreen: React.FunctionComponent = observer(() => {
         store.app.getUserSession();
       });
   };
+  const history = useHistory();
+  const { navigation } = store;
+  const productQty = product.qty.toString();
 
   return (
     <View>
@@ -66,13 +69,22 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               <input
                 className="product-input"
                 type="number"
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    qtyInput.current.blur();
+                    navigation.removeViewFromHistory();
+                    history.goBack();
+                  }
+                }}
                 ref={qtyInput}
                 step="1"
-                value={product.qty}
+                value={productQty.length > 1 ? productQty.replace(/^0+/, '') : productQty}
                 onChange={(e) => {
-                  store.dailyProducts.updateProductQty(product.productId, e.target.value);
+                  let updatedQty = parseInt(e.target.value, 10);
+                  updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
+                  store.dailyProducts.updateProductQty(product.productId, updatedQty);
                 }}
-                onBlur={(e) => saveQty(parseInt(e.target.value))}
+                onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
               />
             </div>
             {/* The arrows */}
@@ -80,7 +92,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  saveQty(parseInt(qtyInput.current.value) + 1);
+                  saveQty(parseInt(qtyInput.current.value, 10) + 1);
                 }}
               >
                 <i className="fas fa-2x fa-arrow-up"></i>
@@ -88,7 +100,7 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  const currentQty = parseInt(qtyInput.current.value);
+                  const currentQty = parseInt(qtyInput.current.value, 10);
                   currentQty > 0 && saveQty(currentQty - 1);
                 }}
               >

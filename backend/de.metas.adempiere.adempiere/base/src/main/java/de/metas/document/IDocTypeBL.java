@@ -49,4 +49,6 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isPrepay(I_C_DocType dt);
 
 	boolean hasRequestType(DocTypeId docTypeId);
+
+	boolean isRequisition(DocTypeId docTypeId);
 }
