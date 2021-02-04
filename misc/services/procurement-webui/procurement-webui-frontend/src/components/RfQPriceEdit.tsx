@@ -46,8 +46,7 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
                 className="product-input"
                 type="number"
                 ref={qtyInput}
-                step="0.01"
-                value={rfqPrice}
+                defaultValue={rfqPrice}
                 onChange={(e) => {
                   let updatedPrice = parseFloat(e.target.value);
                   updatedPrice = isNaN(updatedPrice) ? 0 : updatedPrice;
@@ -61,7 +60,14 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  saveQty(parseFloat(qtyInput.current.value) + 1);
+                  const targetEl =
+                    qtyInput.current.value !== qtyInput.current.defaultValue
+                      ? qtyInput.current.value
+                      : qtyInput.current.defaultValue;
+                  const newValue = parseFloat(targetEl) + 1;
+                  qtyInput.current.defaultValue = newValue.toFixed(2).toString();
+                  qtyInput.current.value = qtyInput.current.defaultValue;
+                  saveQty(parseFloat(qtyInput.current.defaultValue));
                 }}
               >
                 <i className="fas fa-2x fa-arrow-up"></i>
@@ -69,8 +75,17 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
               <div
                 className="column is-6"
                 onClick={() => {
-                  const currentQty = parseFloat(qtyInput.current.value);
-                  currentQty > 0 && saveQty(currentQty - 1);
+                  const targetEl =
+                    qtyInput.current.value !== qtyInput.current.defaultValue
+                      ? qtyInput.current.value
+                      : qtyInput.current.defaultValue;
+                  const newValue = parseFloat(targetEl) - 1;
+                  if (newValue > 0) {
+                    qtyInput.current.defaultValue = newValue.toFixed(2).toString();
+                    qtyInput.current.value = qtyInput.current.defaultValue;
+                    const currentQty = parseFloat(qtyInput.current.defaultValue);
+                    saveQty(currentQty);
+                  }
                 }}
               >
                 <i className="fas fa-2x fa-arrow-down"></i>
