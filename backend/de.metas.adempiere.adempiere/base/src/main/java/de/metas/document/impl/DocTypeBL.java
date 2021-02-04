@@ -103,4 +103,12 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		return docTypesRepo.getById(docTypeId).getR_RequestType_ID() > 0;
 	}
+
+	@Override
+	public boolean isRequisition(final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return X_C_DocType.DOCSUBTYPE_Requisition.equals(dt.getDocSubType())
+				&& X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType());
+	}
 }
