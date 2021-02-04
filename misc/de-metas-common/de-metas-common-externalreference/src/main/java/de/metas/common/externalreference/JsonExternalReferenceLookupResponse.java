@@ -35,5 +35,5 @@ import java.util.Map;
 public class JsonExternalReferenceLookupResponse
 {
 	@Singular
-	Map<JsonExternalReferenceLookupItem, JsonMetasfreshId> items;
+	Map<JsonExternalReferenceLookupItem, JsonExternalReferenceLookupResponseItem> items;
 }

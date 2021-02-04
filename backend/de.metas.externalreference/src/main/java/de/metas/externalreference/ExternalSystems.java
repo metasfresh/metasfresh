@@ -30,6 +30,13 @@ import java.util.Optional;
 
 public class ExternalSystems
 {
+	public static final IExternalSystem NULL = () -> "NULL";
+
+	static
+	{
+		ExternalSystems.registerExternalSystem(NULL);
+	}
+
 	private static final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
 
 	public static void registerExternalSystem(@NonNull final IExternalSystem system)

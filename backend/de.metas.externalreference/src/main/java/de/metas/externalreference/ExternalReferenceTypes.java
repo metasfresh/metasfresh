@@ -31,6 +31,26 @@ import java.util.Optional;
 
 public class ExternalReferenceTypes
 {
+	public static final IExternalReferenceType NULL = new IExternalReferenceType()
+	{
+		@Override
+		public String getTableName()
+		{
+			return "NULL";
+		}
+
+		@Override
+		public String getCode()
+		{
+			return "NULL";
+		}
+	};
+
+	static
+	{
+		ExternalReferenceTypes.registerType(NULL);
+	}
+
 	private static final Map<String, IExternalReferenceType> typesByCode = new HashMap<>();
 
 	public static void registerType(@NonNull final IExternalReferenceType type)

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.GetReferencedIdRequest;
+import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
@@ -80,7 +80,9 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private final ObjectMapper objectMapper;
 	private final ITrxManager iTrxManager;
 
-	public EverhourImporterService(final EverhourClient everhourClient, final ExternalReferenceRepository externalReferenceRepository, final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue, final FailedTimeBookingRepository failedTimeBookingRepository, final ObjectMapper objectMapper, final ITrxManager iTrxManager)
+	public EverhourImporterService(final EverhourClient everhourClient, final ExternalReferenceRepository externalReferenceRepository, final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue, final FailedTimeBookingRepository failedTimeBookingRepository,
+			final ObjectMapper objectMapper,
+			final ITrxManager iTrxManager)
 	{
 		this.everhourClient = everhourClient;
 		this.externalReferenceRepository = externalReferenceRepository;
@@ -128,7 +130,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 		{
 			final UserId userId = UserId.ofRepoId(
 					externalReferenceRepository.getReferencedRecordIdBy(
-							GetReferencedIdRequest.builder()
+							ExternalReferenceQuery.builder()
 									.externalSystem(ExternalSystem.EVERHOUR)
 									.externalReference(String.valueOf(timeRecord.getUserId()))
 									.externalReferenceType(ExternalUserReferenceType.USER_ID)
@@ -136,7 +138,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 			final IssueId issueId = IssueId.ofRepoId(
 					externalReferenceRepository.getReferencedRecordIdBy(
-							GetReferencedIdRequest.builder()
+							ExternalReferenceQuery.builder()
 									.externalSystem(ExternalSystem.GITHUB)
 									.externalReference(extractGithubIssueId(timeRecord.getTask().getId()))
 									.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
@@ -144,7 +146,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 			final TimeBookingId timeBookingId = TimeBookingId.ofRepoIdOrNull(
 					externalReferenceRepository.getReferencedRecordIdOrNullBy(
-							GetReferencedIdRequest.builder()
+							ExternalReferenceQuery.builder()
 									.externalSystem(ExternalSystem.EVERHOUR)
 									.externalReference(String.valueOf(timeRecord.getId()))
 									.externalReferenceType(ExternalServiceReferenceType.TIME_BOOKING_ID)

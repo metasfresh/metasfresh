@@ -22,17 +22,23 @@
 
 package de.metas.externalreference;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class ExternalReferenceRepository
@@ -44,7 +50,7 @@ public class ExternalReferenceRepository
 		this.queryBL = queryBL;
 	}
 
-	public int getReferencedRecordIdBy(@NonNull final GetReferencedIdRequest getReferencedIdRequest)
+	public int getReferencedRecordIdBy(@NonNull final ExternalReferenceQuery getReferencedIdRequest)
 	{
 		final Optional<ExternalReference> externalReferenceEntity =
 				getOptionalExternalReferenceBy(getReferencedIdRequest);
@@ -62,7 +68,7 @@ public class ExternalReferenceRepository
 	}
 
 	@Nullable
-	public Integer getReferencedRecordIdOrNullBy(final @NonNull GetReferencedIdRequest getReferencedIdRequest)
+	public Integer getReferencedRecordIdOrNullBy(final @NonNull ExternalReferenceQuery getReferencedIdRequest)
 	{
 		return getOptionalExternalReferenceBy(getReferencedIdRequest)
 				.map(ExternalReference::getRecordId)
@@ -97,21 +103,69 @@ public class ExternalReferenceRepository
 				.forEach(InterfaceWrapperHelper::saveRecord);
 	}
 
-	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final GetReferencedIdRequest getReferencedIdRequest)
+	/**
+	 * @return a map with one entry for each given {@link ExternalReferenceQuery}.
+	 */
+	public ImmutableMap<ExternalReferenceQuery, ExternalReference> getExternalReferences(@NonNull final List<ExternalReferenceQuery> queries)
+	{
+		final IQueryBuilder<I_S_ExternalReference> queryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class).setJoinOr()
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
+
+		for (final ExternalReferenceQuery query : queries)
+		{
+			queryBuilder.filter(createFilterFor(query));
+		}
+
+		final Map<ExternalReferenceQuery, ExternalReference> query2reference =
+				queryBuilder.create().stream()
+						.collect(Collectors.toMap(
+								this::buildExternalReferenceQuery, // key
+								this::buildExternalReference // value
+						));
+
+		final ImmutableMap.Builder<ExternalReferenceQuery, ExternalReference> result = ImmutableMap.builder();
+		for (final ExternalReferenceQuery query : queries)
+		{
+			final ExternalReference externalReference = query2reference.get(query);
+			result.put(query, CoalesceUtil.coalesce(externalReference, ExternalReference.NULL));
+		}
+
+		return result.build();
+	}
+
+	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)
+	{
+		return ExternalReferenceQuery.builder()
+				.externalReferenceType(ExternalReferenceTypes.ofCode(record.getType()).orElseThrow(() -> new AdempiereException("TODO")))
+				.externalSystem(ExternalSystems.ofCode(record.getExternalSystem()).orElseThrow(() -> new AdempiereException("TODO")))
+				.externalReference(record.getExternalReference())
+				.build();
+	}
+
+	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final ExternalReferenceQuery query)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem,
-						getReferencedIdRequest.getExternalSystem().getCode())
+						query.getExternalSystem().getCode())
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type,
-						getReferencedIdRequest.getExternalReferenceType().getCode())
+						query.getExternalReferenceType().getCode())
 
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference,
-						getReferencedIdRequest.getExternalReference())
+						query.getExternalReference())
 				.create()
 				.firstOnlyOptional(I_S_ExternalReference.class)
 				.map(this::buildExternalReference);
+	}
+
+	private ICompositeQueryFilter<I_S_ExternalReference> createFilterFor(@NonNull final ExternalReferenceQuery query)
+	{
+		return queryBL.createCompositeQueryFilter(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, query.getExternalSystem().getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, query.getExternalReferenceType().getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, query.getExternalReference());
 	}
 
 	private List<I_S_ExternalReference> listIncludingInactiveBy(final int recordId, @NonNull final IExternalReferenceType type)

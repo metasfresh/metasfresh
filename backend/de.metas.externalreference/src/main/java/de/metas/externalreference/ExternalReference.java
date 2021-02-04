@@ -33,6 +33,16 @@ import javax.annotation.Nullable;
 @Builder
 public class ExternalReference
 {
+	/**
+	 * Used in maps to indicate that no reference was found for a given query.
+	 */
+	public static final ExternalReference NULL = ExternalReference.builder()
+			.externalSystem(ExternalSystems.NULL)
+			.externalReferenceType(ExternalReferenceTypes.NULL)
+			.externalReference("NULL")
+			.recordId(-1)
+			.build();
+
 	@Nullable
 	ExternalReferenceId externalReferenceId;
 

@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.GetReferencedIdRequest;
+import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
@@ -312,7 +312,7 @@ public class IssueImporterService
 		}
 
 		final Integer issueId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
-				GetReferencedIdRequest.builder()
+				ExternalReferenceQuery.builder()
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
 						.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
@@ -325,7 +325,7 @@ public class IssueImporterService
 	private MilestoneId getMilestoneIdByExternalId(@NonNull final ExternalId externalId)
 	{
 		final Integer milestoneId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
-				GetReferencedIdRequest.builder()
+				ExternalReferenceQuery.builder()
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
 						.externalReferenceType(ExternalServiceReferenceType.MILESTONE_ID)

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-common-externalreference
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,22 +20,16 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.common.externalreference;
 
-import lombok.Builder;
-import lombok.NonNull;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-@Builder
-public class GetReferencedIdRequest
+public class JsonExternalReferenceLookupResponseItem
 {
-	@NonNull
-	IExternalSystem externalSystem;
-
-	@NonNull
-	String externalReference;
-
-	@NonNull
-	IExternalReferenceType externalReferenceType;
+	@Nullable
+	JsonMetasfreshId metasfreshId;
 }

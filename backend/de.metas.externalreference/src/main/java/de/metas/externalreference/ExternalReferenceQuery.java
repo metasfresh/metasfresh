@@ -22,8 +22,20 @@
 
 package de.metas.externalreference;
 
-@FunctionalInterface
-public interface IExternalSystem
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class ExternalReferenceQuery
 {
-	String getCode();
+	@NonNull
+	IExternalSystem externalSystem;
+
+	@NonNull
+	String externalReference;
+
+	@NonNull
+	IExternalReferenceType externalReferenceType;
 }

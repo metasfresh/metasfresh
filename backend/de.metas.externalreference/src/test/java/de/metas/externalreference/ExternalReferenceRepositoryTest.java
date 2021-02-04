@@ -72,7 +72,7 @@ public class ExternalReferenceRepositoryTest
 
 		externalReferenceRepository.save(mockExternalReference);
 
-		final GetReferencedIdRequest getReferencedIdRequest = GetReferencedIdRequest
+		final ExternalReferenceQuery getReferencedIdRequest = ExternalReferenceQuery
 				.builder()
 				.externalReference(mockExternalReference.getExternalReference())
 				.externalReferenceType(mockExternalReference.getExternalReferenceType())

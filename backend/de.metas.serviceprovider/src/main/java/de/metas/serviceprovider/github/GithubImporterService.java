@@ -31,7 +31,7 @@ import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.GetReferencedIdRequest;
+import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -295,7 +295,7 @@ public class GithubImporterService implements IssueImporter
 	private UserId getUserIdByExternalId(@NonNull final String externalUserId)
 	{
 		final Integer userId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
-				GetReferencedIdRequest.builder()
+				ExternalReferenceQuery.builder()
 						.externalSystem(ExternalSystem.GITHUB)
 						.externalReference(externalUserId)
 						.externalReferenceType(ExternalUserReferenceType.USER_ID)
