@@ -24,7 +24,9 @@ export const WeeklyProductList = types
         if (item.productId === productId) {
           item.dailyQuantities.map((dItem) => {
             if (dItem.date === targetDay) {
-              dItem.qty = parseInt(qty);
+              const newQty = qty ? parseInt(qty) : 0;
+              dItem.qty = newQty;
+
               return dItem;
             }
             return dItem;

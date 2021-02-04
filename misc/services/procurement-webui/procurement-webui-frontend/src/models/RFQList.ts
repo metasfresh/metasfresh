@@ -19,6 +19,7 @@ export const RFQList = types
         console.error('Failed to fetch', error);
       }
     });
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const setInitialData = function setInitialData(dataToSet: any) {
       const elements = dataToSet.map((el) => {
         return RFQ.create({
