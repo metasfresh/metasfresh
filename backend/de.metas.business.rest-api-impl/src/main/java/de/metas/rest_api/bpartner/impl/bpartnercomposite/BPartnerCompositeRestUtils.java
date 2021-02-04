@@ -99,24 +99,7 @@ public class BPartnerCompositeRestUtils
 		}
 	}
 
-	public static OrgId retrieveOrgIdOrDefault(@Nullable final String orgCode)
-	{
-		final OrgId orgId;
-		if (isNotBlank(orgCode))
-		{
-			orgId = Services.get(IOrgDAO.class)
-					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
-					.orElseThrow(() -> MissingResourceException.builder()
-							.resourceName("organisation")
-							.resourceIdentifier(orgCode).build());
-		}
-		else
-		{
-			orgId = Env.getOrgId();
-		}
-		return orgId;
-	}
-
+	@Nullable
 	public static InvoiceRule getInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
 	{
 		if (jsonInvoiceRule == null)

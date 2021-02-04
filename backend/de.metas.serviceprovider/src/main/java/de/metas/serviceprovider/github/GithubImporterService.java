@@ -245,7 +245,10 @@ public class GithubImporterService implements IssueImporter
 
 		if (issue.getAssignee() != null)
 		{
-			importInfoBuilder.assigneeId(getUserIdByExternalId(issue.getAssignee().getId()));
+			importInfoBuilder.assigneeId(getUserIdByExternalId(
+					importIssuesRequest.getOrgId(),
+					issue.getAssignee().getId())
+			);
 		}
 
 		processLabels(issue.getLabelList(), importInfoBuilder, importIssuesRequest.getOrgId());
@@ -292,10 +295,13 @@ public class GithubImporterService implements IssueImporter
 	}
 
 	@Nullable
-	private UserId getUserIdByExternalId(@NonNull final String externalUserId)
+	private UserId getUserIdByExternalId(
+			@NonNull final OrgId orgId,
+			@NonNull final String externalUserId)
 	{
 		final Integer userId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
 				ExternalReferenceQuery.builder()
+						.orgId(orgId)
 						.externalSystem(ExternalSystem.GITHUB)
 						.externalReference(externalUserId)
 						.externalReferenceType(ExternalUserReferenceType.USER_ID)

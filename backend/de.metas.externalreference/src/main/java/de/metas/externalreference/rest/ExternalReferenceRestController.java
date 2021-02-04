@@ -22,130 +22,62 @@
 
 package de.metas.externalreference.rest;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse.JsonExternalReferenceLookupResponseBuilder;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponseItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.externalreference.ExternalReference;
-import de.metas.externalreference.ExternalReferenceId;
-import de.metas.externalreference.ExternalReferenceQuery.ExternalReferenceQueryBuilder;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
-import de.metas.externalreference.ExternalReferenceQuery;
-import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.IExternalSystem;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
-import de.metas.util.web.exception.InvalidIdentifierException;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/externalRef")
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ExternalReferenceRestController
 {
-	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public ExternalReferenceRestController(@NonNull final ExternalReferenceRepository externalReferenceRepository)
+private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+
+	public ExternalReferenceRestController(@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
 	{
-		this.externalReferenceRepository = externalReferenceRepository;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 	}
 
 	// we actually ask for info and don't change anything in metasfresh...that's why i'm having a GET...despite a GET shouldn't have a request body
-	@GetMapping
-	public JsonExternalReferenceLookupResponse lookup(@NonNull final JsonExternalReferenceLookupRequest request)
+	@GetMapping("{orgCode}")
+	public JsonExternalReferenceLookupResponse lookup(
+			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are looking for") //
+			@PathVariable("orgCode") //
+			@NonNull final String orgCode,
+
+			@RequestBody @NonNull final JsonExternalReferenceLookupRequest request)
 	{
-		final IExternalSystem externalSystem = ExternalSystems.ofCode(request.getSystemName())
-				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
-
-		final ImmutableList.Builder<ExternalReferenceQuery> queries = ImmutableList.builder();
-
-		final ExternalReferenceQueryBuilder queryBuilder = ExternalReferenceQuery.builder().externalSystem(externalSystem);
-		for (final JsonExternalReferenceLookupItem item : request.getItems())
-		{
-			final IExternalReferenceType type = ExternalReferenceTypes.ofCode(item.getType())
-					.orElseThrow(() -> new InvalidIdentifierException("type", item));
-
-			final ExternalReferenceQuery query = queryBuilder
-					.externalReferenceType(type)
-					.externalReference(item.getId())
-					.build();
-			queries.add(query);
-		}
-
-		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(queries.build());
-
-		final JsonExternalReferenceLookupResponseBuilder result = JsonExternalReferenceLookupResponse.builder();
-		final ImmutableSet<Entry<ExternalReferenceQuery, ExternalReference>> entries = externalReferences.entrySet();
-		for (final Entry<ExternalReferenceQuery, ExternalReference> entry : entries)
-		{
-			final ExternalReferenceQuery query = entry.getKey();
-
-			final JsonExternalReferenceLookupItem item = JsonExternalReferenceLookupItem.builder()
-					.id(query.getExternalReference())
-					.type(query.getExternalReferenceType().getCode())
-					.build();
-
-			final ExternalReference externalReference = entry.getValue();
-			final JsonExternalReferenceLookupResponseItem responseItem;
-			if (ExternalReference.NULL.equals(externalReference))
-			{
-				responseItem = new JsonExternalReferenceLookupResponseItem(null);
-			}
-			else
-			{
-				responseItem = new JsonExternalReferenceLookupResponseItem(JsonMetasfreshId.of(externalReference.getRecordId()));
-			}
-			result.item(item, responseItem);
-		}
-		return result.build();
+		return externalReferenceRestControllerService.performLookup(orgCode, request);
 	}
 
+
 	// note that we are not going to update references because they are not supposed to change
-	@PostMapping
-	public ResponseEntity insert(JsonExternalReferenceCreateRequest request)
+	@PostMapping("{orgCode}")
+	public ResponseEntity insert(
+
+			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are inserting") //
+			@PathVariable("orgCode") //
+			@NonNull final String orgCode,
+
+			@RequestBody @NonNull final JsonExternalReferenceCreateRequest request)
 	{
-		final IExternalSystem externalSystem = ExternalSystems.ofCode(request.getSystemName())
-				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
-
-		final Map<JsonExternalReferenceLookupItem, JsonMetasfreshId> references = request.getReferences();
-
-		final Set<Entry<JsonExternalReferenceLookupItem, JsonMetasfreshId>> entries = references.entrySet();
-		for (final Entry<JsonExternalReferenceLookupItem, JsonMetasfreshId> entry : entries)
-		{
-			final JsonExternalReferenceLookupItem lookupItem = entry.getKey();
-			final JsonMetasfreshId metasfreshId = entry.getValue();
-
-			final IExternalReferenceType type = ExternalReferenceTypes.ofCode(lookupItem.getType())
-					.orElseThrow(() -> new InvalidIdentifierException("type", lookupItem));
-
-			final ExternalReference externalReference = ExternalReference.builder()
-					// TODO Org
-					.externalSystem(externalSystem)
-					.externalReference(lookupItem.getId())
-					.externalReferenceType(type)
-					.build();
-			externalReferenceRepository.save(externalReference);
-		}
-
+		externalReferenceRestControllerService.performInsert(orgCode, request);
 
 		return ResponseEntity.ok().build();
 	}
+
+
 }

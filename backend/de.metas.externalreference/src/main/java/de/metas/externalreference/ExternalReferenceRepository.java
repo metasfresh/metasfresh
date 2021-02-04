@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
+import de.metas.security.permissions.Access;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -146,6 +147,10 @@ public class ExternalReferenceRepository
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()
+
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID,
+						query.getOrgId())
+
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem,
 						query.getExternalSystem().getCode())
 
@@ -155,6 +160,7 @@ public class ExternalReferenceRepository
 				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference,
 						query.getExternalReference())
 				.create()
+				.setRequiredAccess(Access.READ)
 				.firstOnlyOptional(I_S_ExternalReference.class)
 				.map(this::buildExternalReference);
 	}

@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,6 +31,9 @@ import lombok.Value;
 @Builder
 public class ExternalReferenceQuery
 {
+	@NonNull
+	OrgId orgId;
+
 	@NonNull
 	IExternalSystem externalSystem;
 

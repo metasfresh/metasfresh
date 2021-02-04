@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.RestUtils;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
@@ -74,7 +75,7 @@ public class BPartnerEndpointService
 			@Nullable final String orgCode,
 			@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		return optBpartnerComposite;
@@ -88,7 +89,7 @@ public class BPartnerEndpointService
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString locationIdentifier)
 	{
-		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBpartnerComposite.isPresent())
@@ -130,7 +131,7 @@ public class BPartnerEndpointService
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString contactIdentifier)
 	{
-		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())

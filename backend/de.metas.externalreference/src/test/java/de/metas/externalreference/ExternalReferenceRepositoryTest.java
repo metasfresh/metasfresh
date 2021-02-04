@@ -72,14 +72,15 @@ public class ExternalReferenceRepositoryTest
 
 		externalReferenceRepository.save(mockExternalReference);
 
-		final ExternalReferenceQuery getReferencedIdRequest = ExternalReferenceQuery
+		final ExternalReferenceQuery externalReferenceQuery = ExternalReferenceQuery
 				.builder()
+				.orgId(TestConstants.MOCK_ORG_ID)
 				.externalReference(mockExternalReference.getExternalReference())
 				.externalReferenceType(mockExternalReference.getExternalReferenceType())
 				.externalSystem(mockExternalReference.getExternalSystem())
 				.build();
 		//when
-		final Integer recordID = externalReferenceRepository.getReferencedRecordIdOrNullBy(getReferencedIdRequest);
+		final Integer recordID = externalReferenceRepository.getReferencedRecordIdOrNullBy(externalReferenceQuery);
 
 		//then
 		Assert.assertNotNull(recordID);

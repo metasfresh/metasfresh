@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.RestUtils;
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
@@ -74,8 +75,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils.retrieveOrgIdOrDefault;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 

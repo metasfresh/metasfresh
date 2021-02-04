@@ -25,6 +25,7 @@ package de.metas.serviceprovider.timebooking.importer.failed;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.IExternalSystem;
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
 import lombok.NonNull;
@@ -106,6 +107,7 @@ public class FailedTimeBookingRepository
 				.orElseThrow(() -> new AdempiereException("Unknown externalSystem: " + record.getExternalSystem()));
 
 		return FailedTimeBooking.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.failedTimeBookingId(FailedTimeBookingId.ofRepoId(record.getS_FailedTimeBooking_ID()))
 				.externalId(record.getExternalId())
 				.externalSystem(externalSystem)

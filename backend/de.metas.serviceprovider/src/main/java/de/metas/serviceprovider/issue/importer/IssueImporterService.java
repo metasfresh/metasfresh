@@ -31,6 +31,7 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.reflist.ReferenceId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.label.IssueLabel;
@@ -131,7 +132,7 @@ public class IssueImporterService
 	{
 		try
 		{
-			final IssueId existingIssueId = getIssueIdByExternalId(importIssueInfo.getExternalIssueId());
+			final IssueId existingIssueId = getIssueIdByExternalId(importIssueInfo.getExternalIssueId(), importIssueInfo.getOrgId());
 			final Optional<IssueEntity> existingEffortIssue = existingIssueId != null
 					? Optional.of(issueRepository.getById(existingIssueId))
 					: Optional.empty();
@@ -149,7 +150,6 @@ public class IssueImporterService
 			{
 				importMilestone(importIssueInfo.getMilestone());
 			}
-
 
 			final IssueEntity issueEntity = existingEffortIssue
 					.map(issue -> mergeIssueInfoWithEntity(importIssueInfo, issue))
@@ -211,7 +211,7 @@ public class IssueImporterService
 	private Milestone buildMilestone(@NonNull final ImportMilestoneInfo milestone)
 	{
 		return Milestone.builder()
-				.milestoneId(getMilestoneIdByExternalId(milestone.getExternalId()))
+				.milestoneId(getMilestoneIdByExternalId(milestone.getExternalId(), milestone.getOrgId()))
 				.name(milestone.getName())
 				.description(milestone.getDescription())
 				.externalURL(milestone.getExternalURL())
@@ -231,7 +231,7 @@ public class IssueImporterService
 
 		final IssueId parentIssueId = importIssueInfo.getParentIssueId() != null
 				? importIssueInfo.getParentIssueId()
-				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId());
+				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId(), importIssueInfo.getOrgId());
 
 		return IssueEntity.builder()
 				.orgId(importIssueInfo.getOrgId())
@@ -267,7 +267,7 @@ public class IssueImporterService
 	{
 		final IssueId parentIssueId = importIssueInfo.getParentIssueId() != null
 				? importIssueInfo.getParentIssueId()
-				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId());
+				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId(), importIssueInfo.getOrgId());
 
 		final MilestoneId milestoneId = importIssueInfo.getMilestone() != null
 				? importIssueInfo.getMilestone().getMilestoneId()
@@ -304,7 +304,8 @@ public class IssueImporterService
 	}
 
 	@Nullable
-	private IssueId getIssueIdByExternalId(@Nullable final ExternalId externalId)
+	private IssueId getIssueIdByExternalId(@Nullable final ExternalId externalId,
+			@NonNull final OrgId orgId)
 	{
 		if (externalId == null)
 		{
@@ -313,6 +314,7 @@ public class IssueImporterService
 
 		final Integer issueId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
 				ExternalReferenceQuery.builder()
+						.orgId(orgId)
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
 						.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
@@ -322,10 +324,12 @@ public class IssueImporterService
 	}
 
 	@Nullable
-	private MilestoneId getMilestoneIdByExternalId(@NonNull final ExternalId externalId)
+	private MilestoneId getMilestoneIdByExternalId(@NonNull final ExternalId externalId,
+			@NonNull final OrgId orgId)
 	{
 		final Integer milestoneId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
 				ExternalReferenceQuery.builder()
+						.orgId(orgId)
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
 						.externalReferenceType(ExternalServiceReferenceType.MILESTONE_ID)
