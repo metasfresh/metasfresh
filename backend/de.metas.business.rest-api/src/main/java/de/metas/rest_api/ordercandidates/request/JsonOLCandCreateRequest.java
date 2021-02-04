@@ -10,7 +10,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.util.Check;
 import de.pentabyte.springfox.ApiEnum;

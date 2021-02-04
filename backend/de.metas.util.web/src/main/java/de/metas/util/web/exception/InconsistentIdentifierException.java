@@ -1,23 +1,8 @@
-package de.metas.rest_api.exception;
-
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isEmpty;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.i18n.TranslatableStrings;
-import lombok.Builder;
-import lombok.NonNull;
-
 /*
  * #%L
- * de.metas.ordercandidate.rest-api-impl
+ * de.metas.util.web
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,8 +20,19 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.util.web.exception;
+
+import static de.metas.util.Check.assumeNotEmpty;
+import org.adempiere.exceptions.AdempiereException;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import lombok.Builder;
+import lombok.NonNull;
+
 /** Thrown if a request could not be processed, because one of the required resources (e.g. product, or business partner) does not exist in metasfresh. */
-public class MissingResourceException extends AdempiereException
+public class InconsistentIdentifierException extends AdempiereException
 {
 	private static final long serialVersionUID = -3485523266695546853L;
 
@@ -49,45 +45,31 @@ public class MissingResourceException extends AdempiereException
 	 * @param cause
 	 */
 	@Builder
-	private MissingResourceException(
+	private InconsistentIdentifierException(
 			@NonNull final String resourceName,
-			@Nullable final String resourceIdentifier,
-			@Nullable final Object parentResource,
-			@Nullable final ITranslatableString detail,
-			@Nullable final AdempiereException cause)
+			@NonNull final String resourceIdentifier,
+			@NonNull final String inconsitentPropertyName,
+			@NonNull final String inconsitentPropertyValue)
 	{
-		super(buildMessage(resourceName, resourceIdentifier, detail), cause);
-
+		super(buildMessage(
+				resourceName,
+				resourceIdentifier,
+				inconsitentPropertyName,
+				inconsitentPropertyValue));
 		appendParametersToMessage();
-		if (parentResource != null)
-		{
-			setParameter("parentResource", parentResource);
-		}
 	}
 
 	private static ITranslatableString buildMessage(
 			@NonNull final String resourceName,
-			@Nullable final String resourceIdentifier,
-			@Nullable final ITranslatableString detail)
+			@NonNull final String resourceIdentifier,
+			@NonNull final String inconsitentPropertyName,
+			@NonNull final String inconsitentPropertyValue)
 	{
 		final TranslatableStringBuilder result = TranslatableStrings.builder();
 		result.append(TranslatableStrings.constant("The resource with resourceName="
 				+ assumeNotEmpty(resourceName, "Parameter 'resourceName' may not be empty")));
-		if (!isEmpty(resourceIdentifier, true))
-		{
-			result.append(" - which is identified by resourceIdentifier=" + resourceIdentifier + " - ");
-		}
-		else
-		{
-			result.append(" - which has no resourceIdentifier - ");
-		}
-		result.append(" could not be found.");
 
-		if (detail != null)
-		{
-			result.append(" ");
-			result.append(detail);
-		}
+		result.append(" has a property " + inconsitentPropertyName + "=" + inconsitentPropertyValue + " that is inconsistent with its own identifier=" + resourceIdentifier);
 
 		return result.build();
 	}

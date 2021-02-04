@@ -1,15 +1,8 @@
-package de.metas.rest_api.exception;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.i18n.ITranslatableString;
-import lombok.NonNull;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,17 +20,10 @@ import lombok.NonNull;
  * #L%
  */
 
-public class InvalidEntityException extends AdempiereException
+package de.metas.security.permissions2;
+
+@FunctionalInterface
+public interface PermissionServiceFactory
 {
-	private static final long serialVersionUID = 6604967036646252654L;
-
-	public InvalidEntityException(@NonNull final ITranslatableString message)
-	{
-		super(message);
-	}
-
-	public InvalidEntityException(@NonNull final ITranslatableString message, @NonNull final AdempiereException cause)
-	{
-		super(message, cause);
-	}
+	PermissionService createPermissionService();
 }

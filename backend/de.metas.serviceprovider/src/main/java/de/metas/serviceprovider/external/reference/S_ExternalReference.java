@@ -63,14 +63,12 @@ public class S_ExternalReference
 	private final IssueRepository issueRepository;
 	private final TimeBookingRepository timeBookingRepository;
 	private final MilestoneRepository milestoneRepository;
-	private final IADTableDAO adTableDAO;
 
-	public S_ExternalReference(final IssueRepository issueRepository, final TimeBookingRepository timeBookingRepository, final MilestoneRepository milestoneRepository, final IADTableDAO adTableDAO)
+	public S_ExternalReference(final IssueRepository issueRepository, final TimeBookingRepository timeBookingRepository, final MilestoneRepository milestoneRepository)
 	{
 		this.issueRepository = issueRepository;
 		this.timeBookingRepository = timeBookingRepository;
 		this.milestoneRepository = milestoneRepository;
-		this.adTableDAO = adTableDAO;
 	}
 
 	@Init
@@ -82,7 +80,12 @@ public class S_ExternalReference
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void beforeSave(final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType());
+		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType())
+				.orElseThrow(() ->
+						new AdempiereException("Unknown Type=" + record.getType())
+								.appendParametersToMessage()
+								.setParameter("type", record.getType())
+								.setParameter("S_ExternalReference", record));
 
 		if (externalReferenceType instanceof ExternalUserReferenceType)
 		{

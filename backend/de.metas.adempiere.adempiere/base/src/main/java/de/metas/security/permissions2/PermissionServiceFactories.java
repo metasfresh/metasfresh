@@ -1,18 +1,8 @@
-package de.metas.security;
-
-import java.util.Properties;
-
-import org.compiere.util.Env;
-
-import de.metas.security.UserRolePermissionsKey;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +19,15 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.security.permissions2;
+
+import de.metas.security.UserRolePermissionsKey;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.compiere.util.Env;
+
+import java.util.Properties;
 
 @UtilityClass
 public class PermissionServiceFactories

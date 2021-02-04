@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +22,14 @@
 
 package de.metas.rest_api.common;
 
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isEmpty;
-
-import java.util.Objects;
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
 import de.metas.common.util.EmptyUtil;
-import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class JsonExternalId
@@ -48,6 +42,7 @@ public class JsonExternalId
 		return new JsonExternalId(value);
 	}
 
+	@Nullable
 	public static JsonExternalId ofOrNull(@Nullable final String value)
 	{
 		if (EmptyUtil.isBlank(value))
@@ -57,24 +52,13 @@ public class JsonExternalId
 		return new JsonExternalId(value);
 	}
 
-	public static boolean isEqualTo(
-			@Nullable final JsonExternalId jsonExternalId,
-			@Nullable final ExternalId externalId)
-	{
-		if (jsonExternalId == null && externalId == null)
-		{
-			return true;
-		}
-		if (jsonExternalId == null ^ externalId == null)
-		{
-			return false; // one is null, the other one isn't
-		}
-		return Objects.equals(jsonExternalId.getValue(), externalId.getValue());
-	}
-
 	private JsonExternalId(@NonNull final String value)
 	{
-		this.value = Check.assumeNotEmpty(value, "Param value={} may not be empty", value);
+		if (value.trim().isEmpty())
+		{
+			throw new RuntimeException("Param value=" + value + " may not be empty");
+		}
+		this.value = value;
 	}
 
 	@JsonValue

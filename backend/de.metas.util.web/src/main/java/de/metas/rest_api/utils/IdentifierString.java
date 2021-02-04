@@ -1,31 +1,8 @@
-package de.metas.rest_api.utils;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.bpartner.GLN;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.exception.InvalidIdentifierException;
-import de.metas.util.Check;
-import de.metas.util.lang.ExternalId;
-import de.metas.util.lang.RepoIdAware;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.function.IntFunction;
-
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isEmpty;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.util.web
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,6 +19,28 @@ import static de.metas.util.Check.isEmpty;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.utils;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.bpartner.GLN;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.util.web.exception.InvalidIdentifierException;
+import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.lang.RepoIdAware;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.function.IntFunction;
+
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
 
 /**
  * Identifies a metasfresh resource (e.g. business partner).

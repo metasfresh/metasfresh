@@ -68,7 +68,7 @@ public class S_ExternalReference
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void beforeSave(final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType());
+		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType()).orElse(null);
 
 		if (externalReferenceType instanceof ExternalUserReferenceType)
 		{
@@ -98,7 +98,10 @@ public class S_ExternalReference
 	@CalloutMethod(columnNames = { I_S_ExternalReference.COLUMNNAME_Type })
 	public void updateReferenced_Table_ID(final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType());
+		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType())
+				.orElseThrow(() -> new AdempiereException("Unsupported S_ExternalReference.Type=" + record.getType())
+						.appendParametersToMessage()
+						.setParameter("S_ExternalReference", record));
 		record.setReferenced_AD_Table_ID(adTableDAO.retrieveTableId(externalReferenceType.getTableName()));
 	}
 

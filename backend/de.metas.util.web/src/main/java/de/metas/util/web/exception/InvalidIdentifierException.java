@@ -1,15 +1,8 @@
-package de.metas.rest_api.exception;
-
-import de.metas.rest_api.utils.IdentifierString;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.util.web
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,23 +20,49 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+package de.metas.util.web.exception;
+
+import de.metas.rest_api.utils.IdentifierString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+
 @SuppressWarnings("serial")
 public class InvalidIdentifierException extends AdempiereException
 {
 	public InvalidIdentifierException(final IdentifierString invalidIdentifier)
 	{
-		super(invalidIdentifier != null ? invalidIdentifier.toJson() : null);
+		this(invalidIdentifier != null ? invalidIdentifier.toJson() : null,
+				null,
+				null);
 	}
 
 	public InvalidIdentifierException(@Nullable final String invalidIdentifierString)
 	{
-		this(invalidIdentifierString, (Throwable)null);
+		this(invalidIdentifierString,
+				null,
+				null)
+		;
 	}
 
 	public InvalidIdentifierException(
 			@Nullable final String invalidIdentifierString,
+			@Nullable final Object objectWithInvalidIdentifier)
+	{
+		this(invalidIdentifierString, objectWithInvalidIdentifier, null);
+	}
+
+	public InvalidIdentifierException(
+			@Nullable final String invalidIdentifierString,
+			@Nullable final Object objectWithInvalidIdentifier,
 			@Nullable final Throwable cause)
 	{
-		super("Unable to interpret identifierString=" + invalidIdentifierString);
+		super("Unable to interpret identifierString=" + invalidIdentifierString, cause);
+
+		if (objectWithInvalidIdentifier != null)
+		{
+			appendParametersToMessage();
+			setParameter("objectWithInvalidIdentifier", objectWithInvalidIdentifier);
+		}
 	}
 }

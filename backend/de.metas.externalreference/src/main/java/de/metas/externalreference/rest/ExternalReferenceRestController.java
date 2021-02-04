@@ -23,17 +23,29 @@
 package de.metas.externalreference.rest;
 
 import de.metas.Profiles;
+import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.GetReferencedIdRequest;
+import de.metas.externalreference.IExternalReferenceType;
+import de.metas.externalreference.IExternalSystem;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
+import de.metas.util.web.exception.InvalidIdentifierException;
+import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.MissingResourceException;
+import java.util.Optional;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/externalRef")
 @RestController
@@ -43,8 +55,18 @@ public class ExternalReferenceRestController
 
 	// we actually ask for info and don't change anything in metasfresh...that's why i'm having a GET...despite a GET shouldn't have a request body
 	@GetMapping
-	public JsonExternalReferenceLookupResponse lookup(JsonExternalReferenceLookupRequest request)
+	public JsonExternalReferenceLookupResponse lookup(@NonNull final JsonExternalReferenceLookupRequest request)
 	{
+		final IExternalSystem externalSystem = ExternalSystems.ofCode(request.getSystemName())
+				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
+
+		final GetReferencedIdRequest.GetReferencedIdRequestBuilder queryBuilder = GetReferencedIdRequest.builder().externalSystem(externalSystem);
+		for (final JsonExternalReferenceLookupItem item : request.getItems())
+		{
+			final IExternalReferenceType type = ExternalReferenceTypes.ofCode(item.getType()).orElseThrow(() -> new InvalidIdentifierException("type", item));
+			queryBuilder.externalReferenceType(type).externalReference(item.getId());
+		}
+
 		// suggestion: iterate the given request's items and create a union IQuery..but not in here.
 		// instead, create a multiquery of GetReferencedIdRequests for the ExternalReferenceRepository and do the nitty-gritty query-builder stuff in there
 		return JsonExternalReferenceLookupResponse.builder().build();

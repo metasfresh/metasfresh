@@ -17,7 +17,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseContactList;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.JsonPagingDescriptor;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;

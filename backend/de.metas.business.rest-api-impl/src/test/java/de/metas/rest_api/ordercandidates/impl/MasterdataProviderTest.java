@@ -24,7 +24,7 @@ import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.security.PermissionService;
+import de.metas.security.permissions2.PermissionService;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;

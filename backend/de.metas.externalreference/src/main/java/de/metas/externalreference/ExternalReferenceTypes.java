@@ -27,6 +27,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ExternalReferenceTypes
 {
@@ -38,13 +39,9 @@ public class ExternalReferenceTypes
 	}
 
 	@NonNull
-	public static IExternalReferenceType ofCode(@NonNull final String code)
+	public static Optional<IExternalReferenceType> ofCode(@NonNull final String code)
 	{
 		final IExternalReferenceType externalReferenceType = typesByCode.get(code);
-		if (externalReferenceType == null)
-		{
-			throw new AdempiereException("Missing externalReferenceType for code=" + code);
-		}
-		return externalReferenceType;
+		return Optional.ofNullable(externalReferenceType);
 	}
 }

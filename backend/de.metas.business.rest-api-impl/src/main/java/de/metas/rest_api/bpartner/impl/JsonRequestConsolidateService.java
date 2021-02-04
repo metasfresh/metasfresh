@@ -10,7 +10,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
-import de.metas.rest_api.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import lombok.NonNull;

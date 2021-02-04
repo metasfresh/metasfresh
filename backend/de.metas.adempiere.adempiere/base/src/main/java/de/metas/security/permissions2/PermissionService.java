@@ -1,26 +1,8 @@
-package de.metas.security;
-
-import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getId;
-import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-
 /*
  * #%L
- * de.metas.ordercandidate.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,6 +19,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.security.permissions2;
+
+import de.metas.organization.OrgId;
+import de.metas.process.AdProcessId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getId;
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.getOrgId;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 
 public class PermissionService
 {
