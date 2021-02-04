@@ -139,11 +139,9 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 		for (final PPOrderLineRow row : selectedRows)
 		{
-			if (row.isReceipt())
-			{
-
-				final PPOrderLineType type = row.getType();
-				if (type.isMainProduct())
+			final PPOrderLineType type = row.getType();
+				
+				if (type.isMainProduct() && row.isReceipt())
 				{
 					final ImmutableList<PPOrderLineRow> includedRows = row.getIncludedRows();
 					includedRows.stream()
@@ -156,7 +154,6 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 				{
 					huIds.add(row.getHuId());
 				}
-			}
 		}
 
 		return huIds;
