@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
@@ -17,6 +17,8 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   const { quotations } = rfQs;
   const rfq = quotations.find((rfqItem) => rfqItem.rfqId === rfqId);
   const qtyInput = React.createRef<HTMLInputElement>();
+  const history = useHistory();
+  const { navigation } = store;
 
   const selectAndFocus = () => {
     if (qtyInput.current) {
@@ -47,6 +49,13 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
                 type="number"
                 ref={qtyInput}
                 defaultValue={rfqPrice}
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    qtyInput.current.blur();
+                    navigation.removeViewFromHistory();
+                    history.goBack();
+                  }
+                }}
                 onChange={(e) => {
                   let updatedPrice = parseFloat(e.target.value);
                   updatedPrice = isNaN(updatedPrice) ? 0 : updatedPrice;
