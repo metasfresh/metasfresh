@@ -459,7 +459,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		for (final I_C_Invoice_Line_Alloc ila : ilas)
 		{
 			// we don't need to check the invoice's DocStatus. If the ila is there, we count it.
-// @formatter:off
+			// @formatter:off
 //			final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.create(ila.getC_InvoiceLine(), I_C_InvoiceLine.class);
 //			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 //
@@ -501,7 +501,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			{
 				netAmtInvoiced = netAmtInvoiced.add(amountInvoiced);
 			}
-// @formatter:off
+			// @formatter:off
 //			}
 // @formatter:on
 		}
@@ -782,13 +782,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void invalidateForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
+	public void invalidateForInvoiceSchedule(@NonNull final I_C_InvoiceSchedule invoiceSchedule)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDAO.retrieveForInvoiceSchedule(invoiceSchedule);
+		final Iterator<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDAO.retrieveForInvoiceSchedule(invoiceSchedule);
 
-		for (final I_C_Invoice_Candidate ic : candsForBPartner)
+		while (candsForBPartner.hasNext())
 		{
+			final I_C_Invoice_Candidate ic = candsForBPartner.next();
 			invoiceCandDAO.invalidateCand(ic);
 		}
 	}
