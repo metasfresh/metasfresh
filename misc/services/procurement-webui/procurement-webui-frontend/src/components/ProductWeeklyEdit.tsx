@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
@@ -23,6 +23,8 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
   const currentDay = targetDay ? targetDay : store.app.currentDay;
   const currentCaption = targetDayCaption ? targetDayCaption : store.app.dayCaption;
   const qtyInput = React.createRef<HTMLInputElement>();
+  const history = useHistory();
+  const { navigation } = store;
 
   const selectAndFocus = () => {
     if (qtyInput.current) {
@@ -72,6 +74,13 @@ const ProductWeeklyEdit: React.FunctionComponent = observer(() => {
                 className="product-input"
                 type="number"
                 ref={qtyInput}
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    qtyInput.current.blur();
+                    navigation.removeViewFromHistory();
+                    history.goBack();
+                  }
+                }}
                 step="1"
                 value={dailyQty.length > 1 ? dailyQty.replace(/^0+/, '') : dailyQty}
                 onChange={(e) => {

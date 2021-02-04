@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { translate } from '../utils/translate';
 import { formDate, prettyDate } from '../utils/date';
 import View from './View';
@@ -22,6 +22,8 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
   const currentDay = targetDate ? targetDate : store.app.currentDay;
   const qtyInput = React.createRef<HTMLInputElement>();
   const { lang } = store.i18n;
+  const history = useHistory();
+  const { navigation } = store;
 
   const selectAndFocus = () => {
     if (qtyInput.current) {
@@ -58,6 +60,13 @@ const RfQDailyEdit: React.FunctionComponent = observer(() => {
                 type="number"
                 ref={qtyInput}
                 step="1"
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    qtyInput.current.blur();
+                    navigation.removeViewFromHistory();
+                    history.goBack();
+                  }
+                }}
                 value={qtyPromised.length > 1 ? qtyPromised.replace(/^0+/, '') : qtyPromised}
                 onChange={(e) => {
                   let updatedQty = parseInt(e.target.value, 10);

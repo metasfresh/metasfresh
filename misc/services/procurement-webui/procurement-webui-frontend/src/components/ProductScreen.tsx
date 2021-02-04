@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 import { formDate, prettyDate } from '../utils/date';
 import DailyNav from './DailyNav';
 import View from './View';
@@ -51,7 +51,8 @@ const ProductScreen: React.FunctionComponent = observer(() => {
         store.app.getUserSession();
       });
   };
-
+  const history = useHistory();
+  const { navigation } = store;
   const productQty = product.qty.toString();
 
   return (
@@ -68,6 +69,13 @@ const ProductScreen: React.FunctionComponent = observer(() => {
               <input
                 className="product-input"
                 type="number"
+                onKeyUp={(e) => {
+                  if (e.key === 'Enter') {
+                    qtyInput.current.blur();
+                    navigation.removeViewFromHistory();
+                    history.goBack();
+                  }
+                }}
                 ref={qtyInput}
                 step="1"
                 value={productQty.length > 1 ? productQty.replace(/^0+/, '') : productQty}
