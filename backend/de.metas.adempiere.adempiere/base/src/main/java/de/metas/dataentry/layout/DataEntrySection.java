@@ -56,7 +56,7 @@ public class DataEntrySection
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
 			final boolean initiallyClosed,
-			@NonNull final boolean availableInApi,
+			final boolean availableInApi,
 			@Singular final List<DataEntryLine> lines)
 	{
 		this.id = id;
