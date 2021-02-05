@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 
 import { translate } from '../utils/translate';
 import { formDate, prettyDate, slashSeparatedYYYYmmdd } from '../utils/date';
-import { RootInstance, store } from '../models/Store';
+import { RootInstance } from '../models/Store';
 
 interface Props {
   store?: RootInstance;
