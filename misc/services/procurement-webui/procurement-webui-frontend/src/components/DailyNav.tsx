@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 
 import { translate } from '../utils/translate';
 import { formDate, prettyDate, slashSeparatedYYYYmmdd } from '../utils/date';
-import { RootInstance } from '../models/Store';
+import { RootInstance, store } from '../models/Store';
 
 interface Props {
   store?: RootInstance;
@@ -25,6 +25,15 @@ class DailyNav extends React.Component<Props> {
       store.navigation.setViewNames(translate('DailyReportingView.caption'));
 
       store.fetchDailyReport(store.app.currentDay);
+    }
+  }
+
+  componentDidUpdate(): void {
+    const { store } = this.props;
+    const translatedCaption = translate('DailyReportingView.caption');
+    if (this['updatedCaption'] !== translatedCaption) {
+      store.navigation.setViewNames(translatedCaption);
+      this['updatedCaption'] = translatedCaption;
     }
   }
 
