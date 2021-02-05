@@ -44,18 +44,9 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_TimeBo
 @Getter
 public enum ExternalServiceReferenceType implements IExternalReferenceType
 {
-	//USER_ID(X_S_ExternalReference.TYPE_UserID, I_AD_User.Table_Name),
 	ISSUE_ID(TYPE_IssueID, I_S_Issue.Table_Name),
 	TIME_BOOKING_ID(TYPE_TimeBookingID, I_S_TimeBooking.Table_Name),
 	MILESTONE_ID(TYPE_MilestoneId, I_S_Milestone.Table_Name);
-
-	static
-	{
-	//	ExternalReferenceTypes.registerType(USER_ID);
-		ExternalReferenceTypes.registerType(ISSUE_ID);
-		ExternalReferenceTypes.registerType(TIME_BOOKING_ID);
-		ExternalReferenceTypes.registerType(MILESTONE_ID);
-	}
 
 	private final String code;
 	private final String tableName;
@@ -69,11 +60,11 @@ public enum ExternalServiceReferenceType implements IExternalReferenceType
 	public static ExternalServiceReferenceType ofCode(@NonNull final String code)
 	{
 		return Stream.of(values())
-				.filter( type -> type.getCode().equals(code))
+				.filter(type -> type.getCode().equals(code))
 				.findFirst()
 				.orElseThrow(() ->
 						new AdempiereException("Unknown ExternalReferenceType: 'type'.")
-						.appendParametersToMessage()
-						.setParameter("type", code));
+								.appendParametersToMessage()
+								.setParameter("type", code));
 	}
 }

@@ -38,6 +38,5 @@ public class PlainExternalReferenceType implements IExternalReferenceType
 	{
 		this.code = code;
 		this.tableName = tableName;
-		ExternalReferenceTypes.registerType(this);
 	}
 }

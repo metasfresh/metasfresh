@@ -33,11 +33,6 @@ public enum ExternalUserReferenceType implements IExternalReferenceType
 {
 	USER_ID(X_S_ExternalReference.TYPE_UserID, I_AD_User.Table_Name);
 
-	static
-	{
-		ExternalReferenceTypes.registerType(USER_ID);
-	}
-
 	private final String code;
 	private final String tableName;
 

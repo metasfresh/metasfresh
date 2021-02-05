@@ -39,12 +39,6 @@ public enum ExternalSystem implements IExternalSystem
 	GITHUB(X_S_ExternalProjectReference.EXTERNALSYSTEM_Github),
 	EVERHOUR(X_S_ExternalProjectReference.EXTERNALSYSTEM_Everhour);
 
-	static
-	{
-		ExternalSystems.registerExternalSystem(GITHUB);
-		ExternalSystems.registerExternalSystem(EVERHOUR);
-	}
-
 	private final String code;
 
 	public static ExternalSystem cast(final IExternalSystem externalSystem)

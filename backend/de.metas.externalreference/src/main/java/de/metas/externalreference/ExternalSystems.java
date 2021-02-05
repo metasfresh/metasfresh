@@ -23,28 +23,30 @@
 package de.metas.externalreference;
 
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Service
 public class ExternalSystems
 {
 	public static final IExternalSystem NULL = () -> "NULL";
 
-	static
+	public ExternalSystems()
 	{
-		ExternalSystems.registerExternalSystem(NULL);
+		registerExternalSystem(NULL);
 	}
 
-	private static final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
+	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
 
-	public static void registerExternalSystem(@NonNull final IExternalSystem system)
+	public void registerExternalSystem(@NonNull final IExternalSystem system)
 	{
 		systemsByCode.put(system.getCode(), system);
 	}
 
-	public static Optional<IExternalSystem> ofCode(final String code)
+	public Optional<IExternalSystem> ofCode(final String code)
 	{
 		return Optional.ofNullable(systemsByCode.get(code));
 	}

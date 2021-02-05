@@ -24,6 +24,7 @@ package de.metas.externalreference.user;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalUserReferenceType;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -37,9 +38,13 @@ public class AD_User
 {
 	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public AD_User(final ExternalReferenceRepository externalReferenceRepository)
+	public AD_User(
+			@NonNull final ExternalReferenceRepository externalReferenceRepository,
+			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
+
+		externalReferenceTypes.registerType(ExternalUserReferenceType.USER_ID);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

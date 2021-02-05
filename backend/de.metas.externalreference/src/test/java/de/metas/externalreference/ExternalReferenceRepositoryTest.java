@@ -47,6 +47,9 @@ public class ExternalReferenceRepositoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		externalReferenceTypes.registerType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE);
 	}
 
 	@Test

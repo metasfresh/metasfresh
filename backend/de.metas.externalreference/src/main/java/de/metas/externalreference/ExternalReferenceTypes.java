@@ -24,11 +24,13 @@ package de.metas.externalreference;
 
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Service
 public class ExternalReferenceTypes
 {
 	public static final IExternalReferenceType NULL = new IExternalReferenceType()
@@ -46,20 +48,20 @@ public class ExternalReferenceTypes
 		}
 	};
 
-	static
+	private final Map<String, IExternalReferenceType> typesByCode = new HashMap<>();
+
+	public ExternalReferenceTypes()
 	{
-		ExternalReferenceTypes.registerType(NULL);
+		registerType(NULL);
 	}
 
-	private static final Map<String, IExternalReferenceType> typesByCode = new HashMap<>();
-
-	public static void registerType(@NonNull final IExternalReferenceType type)
+	public void registerType(@NonNull final IExternalReferenceType type)
 	{
 		typesByCode.put(type.getCode(), type);
 	}
 
 	@NonNull
-	public static Optional<IExternalReferenceType> ofCode(@NonNull final String code)
+	public Optional<IExternalReferenceType> ofCode(@NonNull final String code)
 	{
 		final IExternalReferenceType externalReferenceType = typesByCode.get(code);
 		return Optional.ofNullable(externalReferenceType);
