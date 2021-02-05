@@ -112,6 +112,8 @@ import java.util.Set;
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
+		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
+
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
 

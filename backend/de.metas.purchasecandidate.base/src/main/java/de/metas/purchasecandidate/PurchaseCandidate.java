@@ -10,6 +10,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.Dimension;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -127,7 +128,9 @@ public class PurchaseCandidate
 			//
 			@Singular final List<PurchaseItem> purchaseItems,
 			//
-			final boolean aggregatePOs)
+			final boolean aggregatePOs,
+			//
+			@Nullable final Dimension dimension)
 	{
 		this.id = id;
 
@@ -141,6 +144,7 @@ public class PurchaseCandidate
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(vendorProductNo)
 				.aggregatePOs(aggregatePOs)
+				.dimension(dimension)
 				.build();
 
 		state = PurchaseCandidateState.builder()
@@ -230,6 +234,11 @@ public class PurchaseCandidate
 	public OrderAndLineId getSalesOrderAndLineIdOrNull()
 	{
 		return getImmutableFields().getSalesOrderAndLineIdOrNull();
+	}
+
+	public Dimension getDimension ()
+	{
+		return getImmutableFields().getDimension();
 	}
 
 	public BPartnerId getVendorId()

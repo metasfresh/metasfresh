@@ -1,6 +1,9 @@
 package de.metas.material.dispo.service.event;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -37,6 +40,7 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -47,6 +51,7 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -98,6 +103,11 @@ public class MaterialEventHandlerRegistryTests
 	{
 		AdempiereTestHelper.get().init();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		eventLogUserService = Mockito.spy(EventLogUserService.class);
 		availableToPromiseRepository = Mockito.mock(AvailableToPromiseRepository.class);
@@ -129,7 +139,7 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, dimensionService));
 
 		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,

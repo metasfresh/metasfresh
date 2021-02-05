@@ -10,12 +10,16 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.greeting.GreetingRepository;
+import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
 import de.metas.order.impl.OrderLineDetailRepository;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -94,6 +98,14 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		orderLineBL = new MockedOrderLineBL();
 		Services.registerService(IOrderLineBL.class, orderLineBL);
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
+
 		SpringContextHolder.registerJUnitBean(new OrderLineDetailRepository());
 	}
 

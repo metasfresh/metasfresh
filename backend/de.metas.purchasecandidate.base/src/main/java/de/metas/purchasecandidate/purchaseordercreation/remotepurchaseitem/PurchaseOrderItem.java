@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.Dimension;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -88,6 +89,9 @@ public class PurchaseOrderItem implements PurchaseItem
 	@Getter
 	private OrderAndLineId purchaseOrderAndLineId;
 
+	@Getter
+	private Dimension dimension;
+
 	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
 			final PurchaseItemId purchaseItemId,
@@ -96,7 +100,8 @@ public class PurchaseOrderItem implements PurchaseItem
 			@NonNull final ZonedDateTime datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
-			final OrderAndLineId purchaseOrderAndLineId)
+			final OrderAndLineId purchaseOrderAndLineId,
+			@Nullable Dimension dimension)
 	{
 		this.purchaseItemId = purchaseItemId;
 
@@ -113,6 +118,8 @@ public class PurchaseOrderItem implements PurchaseItem
 				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
 				remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
+
+		this.dimension = dimension;
 	}
 
 	private PurchaseOrderItem(final PurchaseOrderItem from, final PurchaseCandidate newPurchaseCandidate)
@@ -128,6 +135,8 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.purchaseOrderAndLineId = from.purchaseOrderAndLineId;
 
 		this.transactionReference = from.transactionReference;
+
+		this.dimension = from.dimension;
 	}
 
 	public PurchaseOrderItem copy(final PurchaseCandidate newPurchaseCandidate)

@@ -2,8 +2,14 @@ package de.metas.material.dispo.commons;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +22,9 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -48,6 +57,10 @@ public class RepositoryTestHelperTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);

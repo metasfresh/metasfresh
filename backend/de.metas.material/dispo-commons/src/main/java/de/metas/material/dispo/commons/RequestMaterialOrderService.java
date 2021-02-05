@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -59,13 +61,16 @@ public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final PostMaterialEventService materialEventService;
+	private final DimensionService dimensionService;
 
 	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final PostMaterialEventService materialEventService)
+			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final DimensionService dimensionService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
+		this.dimensionService = dimensionService;
 	}
 
 	/**
@@ -279,19 +284,36 @@ public class RequestMaterialOrderService
 		return purchaseCandidateRequestedEvent;
 	}
 
-	private void createAndFireForcastRequestedEvent(@NonNull final List<Candidate> group)
+	private void createAndFireForecastRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForcastRequestedEvent(group);
+		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group);
 		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
-	private PurchaseCandidateRequestedEvent createForcastRequestedEvent(@NonNull final List<Candidate> group)
+	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final Candidate singleCandidate = CollectionUtils.singleElement(group);
 
+		final Dimension dimension = singleCandidate.getDimension();
+
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
+				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
+
+				.campaignId(dimension.getCampaignId())
+				.activityId(dimension.getActivityId() == null ? -1 : dimension.getActivityId().getRepoId())
+				.projectId(dimension.getProjectId() == null ? -1 : dimension.getProjectId().getRepoId())
+				.userElementId1(dimension.getUserElement1Id())
+				.userElementId2(dimension.getUserElement2Id())
+				.userElementString1(dimension.getUserElementString1())
+				.userElementString2(dimension.getUserElementString2())
+				.userElementString3(dimension.getUserElementString3())
+				.userElementString4(dimension.getUserElementString4())
+				.userElementString5(dimension.getUserElementString5())
+				.userElementString6(dimension.getUserElementString6())
+				.userElementString7(dimension.getUserElementString7())
+
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.build();
 

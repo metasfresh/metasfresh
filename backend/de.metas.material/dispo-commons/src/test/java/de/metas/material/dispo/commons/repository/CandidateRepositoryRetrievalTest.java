@@ -5,10 +5,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +53,10 @@ public class CandidateRepositoryRetrievalTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
 
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 	}
 

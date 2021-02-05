@@ -22,18 +22,6 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_UOM;
-import org.junit.Assert;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
@@ -53,6 +41,16 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_C_UOM;
+import org.junit.Assert;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Contains BL for easily sampling / creating or splitting Handling Units
