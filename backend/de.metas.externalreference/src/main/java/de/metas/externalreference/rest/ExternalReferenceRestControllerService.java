@@ -42,10 +42,12 @@ import de.metas.externalreference.IExternalSystem;
 import de.metas.organization.OrgId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Set;
 
+@Component
 public class ExternalReferenceRestControllerService
 {
 	private final ExternalReferenceRepository externalReferenceRepository;
