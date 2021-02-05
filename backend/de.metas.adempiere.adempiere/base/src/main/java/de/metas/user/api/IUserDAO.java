@@ -28,6 +28,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -40,7 +41,6 @@ public interface IUserDAO extends ISingletonService
 	/**
 	 * Retrieves a user whose <code>Login</code> or <code>EMail</code> column equals the given <code>userId</code>.
 	 *
-	 * @param userId
 	 * @return user; never return null
 	 */
 	I_AD_User retrieveLoginUserByUserId(String userId);
@@ -91,5 +91,6 @@ public interface IUserDAO extends ISingletonService
 
 	Set<UserId> getUserIdsByBPartnerId(BPartnerId bpartnerId);
 
+	@Nullable
 	UserId retrieveUserIdByLogin(String login);
 }

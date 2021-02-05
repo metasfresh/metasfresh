@@ -23,6 +23,7 @@
 package de.metas.common.externalreference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.NonNull;
@@ -50,6 +51,7 @@ public class JsonExternalReferenceItem
 	JsonExternalReferenceLookupItem lookupItem;
 
 	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
 	@JsonCreator

@@ -34,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,8 +52,8 @@ private final ExternalReferenceRestControllerService externalReferenceRestContro
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 	}
 
-	// we actually ask for info and don't change anything in metasfresh...that's why i'm having a GET...despite a GET shouldn't have a request body
-	@GetMapping("{orgCode}")
+	// we actually ask for info and don't change anything in metasfresh...that's why would have a GET...despite a GET shouldn't have a request body
+	@PutMapping("{orgCode}")
 	public JsonExternalReferenceLookupResponse lookup(
 			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are looking for") //
 			@PathVariable("orgCode") //
@@ -66,7 +67,7 @@ private final ExternalReferenceRestControllerService externalReferenceRestContro
 
 	// note that we are not going to update references because they are not supposed to change
 	@PostMapping("{orgCode}")
-	public ResponseEntity insert(
+	public ResponseEntity<?> insert(
 
 			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are inserting") //
 			@PathVariable("orgCode") //
