@@ -7,7 +7,7 @@ import { Provider } from 'mobx-react';
 test('renders learn react link', () => {
   render(
     <Provider store={store}>
-      <App store={store} />
+      <App />
     </Provider>
   );
   const linkElement = screen.getByText(/LoginView.fields.loginButton/i);
