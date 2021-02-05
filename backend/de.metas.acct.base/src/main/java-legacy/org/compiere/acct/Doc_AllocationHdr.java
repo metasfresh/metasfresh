@@ -512,8 +512,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId())
-				.alsoAddZeroLine();
+				.bpartnerId(line.getPaymentBPartnerId());
 
 		if (line.isSOTrxInvoice())
 		{
