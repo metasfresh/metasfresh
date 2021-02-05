@@ -58,7 +58,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 	/**
 	 * The FILE folder where the EDI file will be stored
 	 */
-	public static final String EP_EDI_FILE_DESADV = "{{edi.file.desadv.compudata}}";
+	public static final String EP_EDI_FILE_DESADV = "edi.file.desadv.compudata";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
@@ -102,7 +102,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to(CompuDataDesadvRoute.EP_EDI_FILE_DESADV)
+				.to("{{" + CompuDataDesadvRoute.EP_EDI_FILE_DESADV + "}}")
 
 				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<EDIDesadvFeedbackType>(EDIDesadvFeedbackType.class, CompuDataDesadvRoute.EDIDesadvFeedback_QNAME, CompuDataDesadvRoute.METHOD_setEDIDesadvID))
