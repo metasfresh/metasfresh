@@ -27,6 +27,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
@@ -71,8 +73,7 @@ import static org.junit.Assert.assertEquals;
 
 public class EverhourImporterServiceTest
 {
-	private final ExternalReferenceRepository externalReferenceRepository =
-			new ExternalReferenceRepository(Services.get(IQueryBL.class));
+	private ExternalReferenceRepository externalReferenceRepository;
 
 	private final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue =
 			new ImportQueue<>(TIME_BOOKING_QUEUE_CAPACITY, IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX);
@@ -88,19 +89,20 @@ public class EverhourImporterServiceTest
 			new EverhourImporterService(mockEverhourClient, externalReferenceRepository,
 					timeBookingImportQueue, failedTimeBookingRepository, objectMapper, iTrxManager);
 
-
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalReferenceTypes(), new ExternalSystems());
 	}
 
 	/**
-	 *  Covers:
-	 *   1. importing previously failed time booking
-	 *   2. ignoring non github related time bookings
-	 *   3. storing failed time booking
-	 *   4. storing valid time bookings from different time windows.
+	 * Covers:
+	 * 1. importing previously failed time booking
+	 * 2. ignoring non github related time bookings
+	 * 3. storing failed time booking
+	 * 4. storing valid time bookings from different time windows.
 	 */
 	@Test
 	public void importTimeBookings() throws JsonProcessingException
@@ -218,7 +220,7 @@ public class EverhourImporterServiceTest
 		externalReferenceRepository.save(issueRef);
 
 		//3 add failed time booking
-		final FailedTimeBooking failedTimeBooking =  FailedTimeBooking
+		final FailedTimeBooking failedTimeBooking = FailedTimeBooking
 				.builder()
 				.errorMsg(MOCK_ERROR_MESSAGE)
 				.externalId(previouslyFailedTimeRecord.getId())

@@ -52,11 +52,16 @@ public class S_ExternalReference
 
 	private final IUserDAO userDAO;
 	private final IADTableDAO adTableDAO;
+	private final ExternalReferenceTypes externalReferenceTypes;
 
-	public S_ExternalReference(final IUserDAO userDAO, final IADTableDAO adTableDAO)
+	public S_ExternalReference(
+			@NonNull final IUserDAO userDAO,
+			@NonNull final IADTableDAO adTableDAO,
+			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		this.userDAO = userDAO;
 		this.adTableDAO = adTableDAO;
+		this.externalReferenceTypes = externalReferenceTypes;
 	}
 
 	@Init
@@ -68,7 +73,7 @@ public class S_ExternalReference
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void beforeSave(final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType()).orElse(null);
+		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(record.getType()).orElse(null);
 
 		if (externalReferenceType instanceof ExternalUserReferenceType)
 		{
@@ -98,7 +103,7 @@ public class S_ExternalReference
 	@CalloutMethod(columnNames = { I_S_ExternalReference.COLUMNNAME_Type })
 	public void updateReferenced_Table_ID(final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType())
+		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(record.getType())
 				.orElseThrow(() -> new AdempiereException("Unsupported S_ExternalReference.Type=" + record.getType())
 						.appendParametersToMessage()
 						.setParameter("S_ExternalReference", record));

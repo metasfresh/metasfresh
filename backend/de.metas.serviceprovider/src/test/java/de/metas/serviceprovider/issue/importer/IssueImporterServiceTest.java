@@ -25,6 +25,8 @@ package de.metas.serviceprovider.issue.importer;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.externalreference.ExternalId;
@@ -45,6 +47,7 @@ import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -78,11 +81,19 @@ class IssueImporterServiceTest
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+
+		final ExternalSystems externalSystems = new ExternalSystems();
+		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
+
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+
+		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalReferenceTypes, externalSystems);
+
 		issueImporterService = new IssueImporterService(
 				new ImportQueue<>(100, "logPrefix"),
 				new MilestoneRepository(),
 				issueRepository,
-				new ExternalReferenceRepository(queryBL),
+				externalReferenceRepository,
 				trxManager,
 				adReferenceDAO,
 				new IssueLabelRepository(queryBL)

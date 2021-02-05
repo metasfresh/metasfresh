@@ -37,6 +37,7 @@ public class ExternalReference
 	 * Used in maps to indicate that no reference was found for a given query.
 	 */
 	public static final ExternalReference NULL = ExternalReference.builder()
+			.orgId(OrgId.ANY)
 			.externalSystem(ExternalSystems.NULL)
 			.externalReferenceType(ExternalReferenceTypes.NULL)
 			.externalReference("NULL")

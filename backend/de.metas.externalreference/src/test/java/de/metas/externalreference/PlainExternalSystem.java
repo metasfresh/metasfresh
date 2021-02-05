@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /**
@@ -32,9 +33,8 @@ public class PlainExternalSystem implements IExternalSystem
 {
 	String code;
 
-	public PlainExternalSystem(final String code)
+	public PlainExternalSystem(@NonNull final String code)
 	{
 		this.code = code;
-		ExternalSystems.registerExternalSystem(this);
 	}
 }

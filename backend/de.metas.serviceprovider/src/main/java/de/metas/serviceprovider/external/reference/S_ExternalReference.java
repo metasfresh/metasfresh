@@ -35,17 +35,13 @@ import de.metas.serviceprovider.milestone.MilestoneRepository;
 import de.metas.serviceprovider.timebooking.TimeBooking;
 import de.metas.serviceprovider.timebooking.TimeBookingId;
 import de.metas.serviceprovider.timebooking.TimeBookingRepository;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -63,12 +59,18 @@ public class S_ExternalReference
 	private final IssueRepository issueRepository;
 	private final TimeBookingRepository timeBookingRepository;
 	private final MilestoneRepository milestoneRepository;
+private final ExternalReferenceTypes externalReferenceTypes;
 
-	public S_ExternalReference(final IssueRepository issueRepository, final TimeBookingRepository timeBookingRepository, final MilestoneRepository milestoneRepository)
+	public S_ExternalReference(
+			@NonNull final IssueRepository issueRepository,
+			@NonNull final TimeBookingRepository timeBookingRepository,
+			@NonNull final MilestoneRepository milestoneRepository,
+			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		this.issueRepository = issueRepository;
 		this.timeBookingRepository = timeBookingRepository;
 		this.milestoneRepository = milestoneRepository;
+		this.externalReferenceTypes = externalReferenceTypes;
 	}
 
 	@Init
@@ -80,7 +82,7 @@ public class S_ExternalReference
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void beforeSave(final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType externalReferenceType = ExternalReferenceTypes.ofCode(record.getType())
+		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(record.getType())
 				.orElseThrow(() ->
 						new AdempiereException("Unknown Type=" + record.getType())
 								.appendParametersToMessage()

@@ -37,8 +37,7 @@ import static org.junit.Assert.assertEquals;
 
 public class ExternalReferenceRepositoryTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
+	private ExternalReferenceRepository externalReferenceRepository;
 
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
@@ -50,6 +49,12 @@ public class ExternalReferenceRepositoryTest
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE);
+
+		final ExternalSystems externalSystems = new ExternalSystems();
+		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM);
+		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM_1);
+
+		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalReferenceTypes, externalSystems);
 	}
 
 	@Test

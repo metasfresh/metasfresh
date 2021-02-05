@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -45,6 +47,7 @@ import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -66,7 +69,9 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_OWNER
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_1;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_URL;
@@ -94,7 +99,7 @@ public class GithubImporterServiceTest
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 
-	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
+	private ExternalReferenceRepository externalReferenceRepository;
 
 	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
@@ -108,6 +113,15 @@ public class GithubImporterServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		externalReferenceTypes.registerType(MOCK_EXTERNAL_REFERENCE_TYPE);
+
+		final ExternalSystems externalSystems = new ExternalSystems();
+		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM);
+		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
+
+		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalReferenceTypes, externalSystems);
 	}
 
 	@Test

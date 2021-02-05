@@ -46,9 +46,16 @@ public class ExternalReferenceRepository
 {
 	private final IQueryBL queryBL;
 
-	public ExternalReferenceRepository(final IQueryBL queryBL)
+	private final ExternalReferenceTypes externalReferenceTypes;
+	private final ExternalSystems externalSystems;
+
+	public ExternalReferenceRepository(@NonNull final IQueryBL queryBL,
+			@NonNull final ExternalReferenceTypes externalReferenceTypes,
+			@NonNull final ExternalSystems externalSystems)
 	{
 		this.queryBL = queryBL;
+		this.externalReferenceTypes = externalReferenceTypes;
+		this.externalSystems = externalSystems;
 	}
 
 	public int getReferencedRecordIdBy(@NonNull final ExternalReferenceQuery getReferencedIdRequest)
@@ -137,8 +144,8 @@ public class ExternalReferenceRepository
 	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)
 	{
 		return ExternalReferenceQuery.builder()
-				.externalReferenceType(ExternalReferenceTypes.ofCode(record.getType()).orElseThrow(() -> new AdempiereException("TODO")))
-				.externalSystem(ExternalSystems.ofCode(record.getExternalSystem()).orElseThrow(() -> new AdempiereException("TODO")))
+				.externalReferenceType(externalReferenceTypes.ofCode(record.getType()).orElseThrow(() -> new AdempiereException("TODO")))
+				.externalSystem(externalSystems.ofCode(record.getExternalSystem()).orElseThrow(() -> new AdempiereException("TODO")))
 				.externalReference(record.getExternalReference())
 				.build();
 	}
@@ -186,13 +193,13 @@ public class ExternalReferenceRepository
 	@NonNull
 	private ExternalReference buildExternalReference(@NonNull final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType type = ExternalReferenceTypes.ofCode(record.getType())
+		final IExternalReferenceType type = externalReferenceTypes.ofCode(record.getType())
 				.orElseThrow(() -> new AdempiereException("Unknown Type=" + record.getType())
 						.appendParametersToMessage()
 						.setParameter("type", record.getType())
 						.setParameter("S_ExternalReference", record));
 
-		final IExternalSystem externalSystem = ExternalSystems.ofCode(record.getExternalSystem()).orElseThrow(() ->
+		final IExternalSystem externalSystem = externalSystems.ofCode(record.getExternalSystem()).orElseThrow(() ->
 				new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
 						.appendParametersToMessage()
 						.setParameter("system", record.getExternalSystem())
