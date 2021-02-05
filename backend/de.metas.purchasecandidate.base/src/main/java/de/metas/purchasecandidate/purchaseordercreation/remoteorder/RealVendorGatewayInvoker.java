@@ -142,6 +142,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 						.purchasedQty(Quantity.of(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity(), uom))
 						.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())
 						.transactionReference(transactionReference)
+						.dimension(correspondingRequestCandidate.getDimension())
 						.buildAndAddToParent();
 				result.add(purchaseOrderItem);
 

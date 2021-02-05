@@ -273,12 +273,27 @@ public class RequestMaterialOrderService
 	{
 		final Candidate singleCandidate = CollectionUtils.singleElement(group);
 
+		final Dimension dimension = singleCandidate.getDimension();
+
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
 				.salesOrderRepoId(singleCandidate.getAdditionalDemandDetail().getOrderId())
+
+				.projectId(dimension.getProjectId().getRepoId())
+				.campaignId(dimension.getCampaignId())
+				.activityId(dimension.getActivityId().getRepoId())
+				.userElementId1(dimension.getUserElement1Id())
+				.userElementId2(dimension.getUserElement2Id())
+				.userElementString1(dimension.getUserElementString1())
+				.userElementString2(dimension.getUserElementString2())
+				.userElementString3(dimension.getUserElementString3())
+				.userElementString4(dimension.getUserElementString4())
+				.userElementString5(dimension.getUserElementString5())
+				.userElementString6(dimension.getUserElementString6())
+				.userElementString7(dimension.getUserElementString7())
 				.build();
 
 		return purchaseCandidateRequestedEvent;

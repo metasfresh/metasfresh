@@ -127,6 +127,8 @@ public class OrderLineBuilder
 			orderLine.setDiscount(manualDiscount);
 		}
 
+		dimensionService.updateRecord(orderLine,dimension);
+
 		orderLineBL.updatePrices(orderLine);
 		saveRecord(orderLine);
 

@@ -394,6 +394,12 @@ public class PurchaseCandidate
 			return this;
 		}
 
+		public OrderItemBuilder dimension(final Dimension dimension)
+		{
+			innerBuilder.dimension(dimension);
+			return this;
+		}
+
 		public PurchaseOrderItem buildAndAddToParent()
 		{
 			final PurchaseOrderItem newItem = innerBuilder.build();
