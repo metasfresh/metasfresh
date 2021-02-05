@@ -839,8 +839,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 		factLine.invertDrAndCrAmountsIfTrue(line.isCreditMemoInvoice() && line.isSOTrxInvoice());
 
-		final Money allocationAcctOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtSource(), line.getCurrencyId());
-		createRealizedGainLossFactLine(line, fact, factLine, allocationAcctOnPaymentDate);
+		final Money allocationSourceOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtSource(), line.getCurrencyId());
+		createRealizedGainLossFactLine(line, fact, factLine, allocationSourceOnPaymentDate);
 	}
 
 	/**
