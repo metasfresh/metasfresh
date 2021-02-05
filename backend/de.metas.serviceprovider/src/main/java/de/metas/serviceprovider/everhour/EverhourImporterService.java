@@ -82,9 +82,13 @@ public class EverhourImporterService implements TimeBookingsImporter
 	private final ObjectMapper objectMapper;
 	private final ITrxManager trxManager;
 
-	public EverhourImporterService(final EverhourClient everhourClient, final ExternalReferenceRepository externalReferenceRepository, final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue, final FailedTimeBookingRepository failedTimeBookingRepository,
-			final ObjectMapper objectMapper,
-			final ITrxManager trxManager)
+	public EverhourImporterService(
+			@NonNull final EverhourClient everhourClient,
+			@NonNull final ExternalReferenceRepository externalReferenceRepository,
+			@NonNull final ImportQueue<ImportTimeBookingInfo> timeBookingImportQueue,
+			@NonNull final FailedTimeBookingRepository failedTimeBookingRepository,
+			@NonNull final ObjectMapper objectMapper,
+			@NonNull final ITrxManager trxManager)
 	{
 		this.everhourClient = everhourClient;
 		this.externalReferenceRepository = externalReferenceRepository;
@@ -127,7 +131,8 @@ public class EverhourImporterService implements TimeBookingsImporter
 		}
 	}
 
-	private void importTimeBooking(@NonNull final TimeRecord timeRecord,
+	private void importTimeBooking(
+			@NonNull final TimeRecord timeRecord,
 			@NonNull final OrgId orgId)
 	{
 		try
@@ -179,7 +184,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					.addLog(" {} Exception while trying to build ImportTimeBookingInfo! Error msg: {} ",
 							IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX, e.getMessage());
 
-			trxManager.runInNewTrx(() -> storeFailed(timeRecord, e.getMessage()));
+			trxManager.runInNewTrx(() -> storeFailed(timeRecord, e.getMessage(), orgId));
 		}
 	}
 
@@ -212,7 +217,8 @@ public class EverhourImporterService implements TimeBookingsImporter
 				.build();
 	}
 
-	private void storeFailed(@NonNull final TimeRecord timeRecord, @NonNull final String errorMsg)
+	private void storeFailed(
+			@NonNull final TimeRecord timeRecord, @NonNull final String errorMsg, @NonNull OrgId orgId)
 	{
 		final StringBuilder errorMessage = new StringBuilder(errorMsg);
 
@@ -231,6 +237,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 
 		final FailedTimeBooking failedTimeBooking = FailedTimeBooking.builder()
 				.jsonValue(jsonValue)
+				.orgId(orgId)
 				.externalId(timeRecord.getId())
 				.externalSystem(ExternalSystem.EVERHOUR)
 				.errorMsg(errorMessage.toString())

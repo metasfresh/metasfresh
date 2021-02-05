@@ -198,6 +198,7 @@ public class MasterdataProviderTest
 	@Test
 	void getCreateBPartnerInfo()
 	{
+		// given
 		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
@@ -205,6 +206,7 @@ public class MasterdataProviderTest
 		saveRecord(bpGroupRecord);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(orgId.getRepoId());
 		bpartnerRecord.setValue("jsonBPartner.code");
 		bpartnerRecord.setName("jsonBPartner.name");
 		bpartnerRecord.setC_BP_Group_ID(bpGroupRecord.getC_BP_Group_ID());
@@ -241,11 +243,17 @@ public class MasterdataProviderTest
 				.contact(jsonContact)
 				.build();
 
+		// when
 		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, orgId);
+
+		// then
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 
+		// when II
 		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, orgId);
+
+		// then II
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 	}

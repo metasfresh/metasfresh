@@ -22,23 +22,17 @@
 
 package de.metas.externalreference;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.externalreference.model.X_S_ExternalReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 
-import java.util.Arrays;
-import java.util.stream.Stream;
-
 @AllArgsConstructor
 @Getter
-public enum ExternalUserReferenceType implements IExternalReferenceType
+public enum NullExternalReferenceType implements IExternalReferenceType
 {
-	USER_ID(X_S_ExternalReference.TYPE_UserID, I_AD_User.Table_Name);
+	NULL("NULL", "NULL");
 
 	/**
 	 * Used by the external system (e.g. {code customer})
@@ -50,20 +44,12 @@ public enum ExternalUserReferenceType implements IExternalReferenceType
 	 */
 	private final String tableName;
 
-	public static ExternalUserReferenceType cast(final IExternalReferenceType externalReferenceType)
+	public static NullExternalReferenceType ofCode(final String code)
 	{
-		return (ExternalUserReferenceType)externalReferenceType;
-	}
-
-	private static final ImmutableMap<String, ExternalUserReferenceType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ExternalUserReferenceType::getCode);
-
-	public static ExternalUserReferenceType ofCode(@NonNull final String code)
-	{
-		final ExternalUserReferenceType type = typesByCode.get(code);
-		if (type == null)
+		if ("NULL" .equals(code))
 		{
-			throw new AdempiereException("No " + ExternalUserReferenceType.class + " found for code: " + code);
+			return NULL;
 		}
-		return type;
+		throw new AdempiereException("Unsupported code " + code + " for NullExternalReferenceType. Hint: only 'NULL' is allowed");
 	}
 }

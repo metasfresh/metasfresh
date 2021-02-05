@@ -100,12 +100,6 @@ public class ApplicationConfiguration
 	}
 
 	@Bean
-	public IADTableDAO adTableDAO()
-	{
-		return Services.get(IADTableDAO.class);
-	}
-
-	@Bean
 	public IMsgBL msgBL()
 	{
 		return Services.get(IMsgBL.class);

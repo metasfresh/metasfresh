@@ -22,42 +22,24 @@
 
 package de.metas.externalreference;
 
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ExternalReference
+@AllArgsConstructor
+@Getter
+public enum NullExternalSystem implements IExternalSystem
 {
-	/**
-	 * Used in maps to indicate that no reference was found for a given query.
-	 */
-	public static final ExternalReference NULL = ExternalReference.builder()
-			.orgId(OrgId.ANY)
-			.externalSystem(NullExternalSystem.NULL)
-			.externalReferenceType(NullExternalReferenceType.NULL)
-			.externalReference("NULL")
-			.recordId(-1)
-			.build();
+	NULL("NULL");
 
-	@Nullable
-	ExternalReferenceId externalReferenceId;
+	public String code;
 
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	IExternalSystem externalSystem;
-
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-
-	@NonNull
-	String externalReference;
-
-	int recordId;
+	public static NullExternalSystem ofCode(final String code)
+	{
+		if ("NULL" .equals(code))
+		{
+			return NULL;
+		}
+		throw new AdempiereException("Unsupported code " + code + " for NullExternalSystem. Hint: only 'NULL' is allowed");
+	}
 }

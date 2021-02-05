@@ -22,9 +22,10 @@
 
 package de.metas.serviceprovider.external.reference;
 
-import de.metas.externalreference.ExternalReferenceTypes;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.model.X_S_ExternalReference;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.model.I_S_Milestone;
 import de.metas.serviceprovider.model.I_S_TimeBooking;
@@ -32,8 +33,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_User;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_IssueID;
@@ -56,15 +57,16 @@ public enum ExternalServiceReferenceType implements IExternalReferenceType
 		return (ExternalServiceReferenceType)externalReferenceType;
 	}
 
-	@NonNull
+	private static final ImmutableMap<String, ExternalServiceReferenceType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ExternalServiceReferenceType::getCode);
+
 	public static ExternalServiceReferenceType ofCode(@NonNull final String code)
 	{
-		return Stream.of(values())
-				.filter(type -> type.getCode().equals(code))
-				.findFirst()
-				.orElseThrow(() ->
-						new AdempiereException("Unknown ExternalReferenceType: 'type'.")
-								.appendParametersToMessage()
-								.setParameter("type", code));
+		final ExternalServiceReferenceType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + ExternalServiceReferenceType.class + " found for code: " + code);
+		}
+		return type;
 	}
+
 }

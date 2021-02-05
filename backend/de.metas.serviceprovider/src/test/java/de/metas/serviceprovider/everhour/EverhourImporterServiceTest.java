@@ -82,19 +82,30 @@ public class EverhourImporterServiceTest
 			new FailedTimeBookingRepository(Services.get(IQueryBL.class));
 
 	private final ObjectMapper objectMapper = new ObjectMapper();
-	private final ITrxManager iTrxManager = Services.get(ITrxManager.class);
-	private final EverhourClient mockEverhourClient = Mockito.mock(EverhourClient.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private EverhourClient mockEverhourClient;
 
-	private final EverhourImporterService everhourImporterService =
-			new EverhourImporterService(mockEverhourClient, externalReferenceRepository,
-					timeBookingImportQueue, failedTimeBookingRepository, objectMapper, iTrxManager);
+	private EverhourImporterService everhourImporterService;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes());
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		externalReferenceTypes.registerType(ExternalUserReferenceType.USER_ID);
+		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
+
+		final ExternalSystems externalSystems = new ExternalSystems();
+		externalSystems.registerExternalSystem(ExternalSystem.EVERHOUR);
+		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
+
+		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+
+		mockEverhourClient = Mockito.mock(EverhourClient.class);
+
+		everhourImporterService = new EverhourImporterService(mockEverhourClient, externalReferenceRepository,
+				timeBookingImportQueue, failedTimeBookingRepository, objectMapper, trxManager);
 	}
 
 	/**
@@ -166,6 +177,7 @@ public class EverhourImporterServiceTest
 	{
 		return ImportTimeBookingsRequest
 				.builder()
+				.orgId(MOCK_ORG_ID)
 				.authToken(MOCK_AUTH_TOKEN)
 				.startDate(MOCK_DATE_2020_03_01)
 				.endDate(MOCK_DATE_2020_03_12)
@@ -222,6 +234,7 @@ public class EverhourImporterServiceTest
 		//3 add failed time booking
 		final FailedTimeBooking failedTimeBooking = FailedTimeBooking
 				.builder()
+				.orgId(MOCK_ORG_ID)
 				.errorMsg(MOCK_ERROR_MESSAGE)
 				.externalId(previouslyFailedTimeRecord.getId())
 				.externalSystem(ExternalSystem.EVERHOUR)

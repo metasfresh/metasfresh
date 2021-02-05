@@ -1,87 +1,49 @@
-/*
- * #%L
- * de.metas.externalreference
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.externalreference.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_ExternalReference
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 388616412L;
+	private static final long serialVersionUID = 331442409L;
 
     /** Standard Constructor */
-    public X_S_ExternalReference (Properties ctx, int S_ExternalReference_ID, String trxName)
+    public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
     {
       super (ctx, S_ExternalReference_ID, trxName);
-      /** if (S_ExternalReference_ID == 0)
-        {
-			setExternalReference (null);
-			setExternalSystem (null);
-			setRecord_ID (0);
-			setReferenced_AD_Table_ID (0);
-			setReferenced_Record_ID (0);
-			setType (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_S_ExternalReference (Properties ctx, ResultSet rs, String trxName)
+    public X_S_ExternalReference (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set External reference.
-		@param ExternalReference External reference	  */
+	/** Load Meta Data */
 	@Override
-	public void setExternalReference (java.lang.String ExternalReference)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setExternalReference (final java.lang.String ExternalReference)
 	{
 		set_Value (COLUMNNAME_ExternalReference, ExternalReference);
 	}
 
-	/** Get External reference.
-		@return External reference	  */
 	@Override
-	public java.lang.String getExternalReference () 
+	public java.lang.String getExternalReference() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalReference);
+		return get_ValueAsString(COLUMNNAME_ExternalReference);
 	}
 
 	/** 
@@ -93,115 +55,76 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_Github = "Github";
 	/** Everhour = Everhour */
 	public static final String EXTERNALSYSTEM_Everhour = "Everhour";
-	/** Set External system.
-		@param ExternalSystem 
-		Name of an external system (e.g. Github )
-	  */
 	@Override
-	public void setExternalSystem (java.lang.String ExternalSystem)
+	public void setExternalSystem (final java.lang.String ExternalSystem)
 	{
-
 		set_Value (COLUMNNAME_ExternalSystem, ExternalSystem);
 	}
 
-	/** Get External system.
-		@return Name of an external system (e.g. Github )
-	  */
 	@Override
-	public java.lang.String getExternalSystem () 
+	public java.lang.String getExternalSystem() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalSystem);
+		return get_ValueAsString(COLUMNNAME_ExternalSystem);
 	}
 
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
 	@Override
-	public void setRecord_ID (int Record_ID)
+	public void setRecord_ID (final int Record_ID)
 	{
 		if (Record_ID < 0) 
 			set_Value (COLUMNNAME_Record_ID, null);
 		else 
-			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+			set_Value (COLUMNNAME_Record_ID, Record_ID);
 	}
 
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
 	@Override
-	public int getRecord_ID () 
+	public int getRecord_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
 
-	/** Set Referenced table ID.
-		@param Referenced_AD_Table_ID Referenced table ID	  */
 	@Override
-	public void setReferenced_AD_Table_ID (int Referenced_AD_Table_ID)
+	public void setReferenced_AD_Table_ID (final int Referenced_AD_Table_ID)
 	{
 		if (Referenced_AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_Referenced_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_Referenced_AD_Table_ID, Integer.valueOf(Referenced_AD_Table_ID));
+			set_Value (COLUMNNAME_Referenced_AD_Table_ID, Referenced_AD_Table_ID);
 	}
 
-	/** Get Referenced table ID.
-		@return Referenced table ID	  */
 	@Override
-	public int getReferenced_AD_Table_ID () 
+	public int getReferenced_AD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Referenced_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Referenced_AD_Table_ID);
 	}
 
-	/** Set Referenced record ID.
-		@param Referenced_Record_ID Referenced record ID	  */
 	@Override
-	public void setReferenced_Record_ID (int Referenced_Record_ID)
+	public void setReferenced_Record_ID (final int Referenced_Record_ID)
 	{
 		if (Referenced_Record_ID < 1) 
 			set_Value (COLUMNNAME_Referenced_Record_ID, null);
 		else 
-			set_Value (COLUMNNAME_Referenced_Record_ID, Integer.valueOf(Referenced_Record_ID));
+			set_Value (COLUMNNAME_Referenced_Record_ID, Referenced_Record_ID);
 	}
 
-	/** Get Referenced record ID.
-		@return Referenced record ID	  */
 	@Override
-	public int getReferenced_Record_ID () 
+	public int getReferenced_Record_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Referenced_Record_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Referenced_Record_ID);
 	}
 
-	/** Set External reference.
-		@param S_ExternalReference_ID External reference	  */
 	@Override
-	public void setS_ExternalReference_ID (int S_ExternalReference_ID)
+	public void setS_ExternalReference_ID (final int S_ExternalReference_ID)
 	{
 		if (S_ExternalReference_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_S_ExternalReference_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_S_ExternalReference_ID, Integer.valueOf(S_ExternalReference_ID));
+			set_ValueNoCheck (COLUMNNAME_S_ExternalReference_ID, S_ExternalReference_ID);
 	}
 
-	/** Get External reference.
-		@return External reference	  */
 	@Override
-	public int getS_ExternalReference_ID () 
+	public int getS_ExternalReference_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_ExternalReference_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_S_ExternalReference_ID);
 	}
 
 	/** 
@@ -217,20 +140,15 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_TimeBookingID = "TimeBookingID";
 	/** MilestoneId = MilestonId */
 	public static final String TYPE_MilestoneId = "MilestonId";
-	/** Set Art.
-		@param Type Art	  */
 	@Override
-	public void setType (java.lang.String Type)
+	public void setType (final java.lang.String Type)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_Type, Type);
 	}
 
-	/** Get Art.
-		@return Art	  */
 	@Override
-	public java.lang.String getType () 
+	public java.lang.String getType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Type);
+		return get_ValueAsString(COLUMNNAME_Type);
 	}
 }

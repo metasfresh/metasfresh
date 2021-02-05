@@ -39,7 +39,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -51,16 +51,14 @@ public class S_ExternalReference
 	private final static transient Logger logger = LogManager.getLogger(S_ExternalReference.class);
 
 	private final IUserDAO userDAO;
-	private final IADTableDAO adTableDAO;
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ExternalReferenceTypes externalReferenceTypes;
 
 	public S_ExternalReference(
 			@NonNull final IUserDAO userDAO,
-			@NonNull final IADTableDAO adTableDAO,
 			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		this.userDAO = userDAO;
-		this.adTableDAO = adTableDAO;
 		this.externalReferenceTypes = externalReferenceTypes;
 	}
 

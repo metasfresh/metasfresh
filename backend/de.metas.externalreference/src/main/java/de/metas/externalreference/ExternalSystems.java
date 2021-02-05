@@ -32,11 +32,9 @@ import java.util.Optional;
 @Service
 public class ExternalSystems
 {
-	public static final IExternalSystem NULL = () -> "NULL";
-
 	public ExternalSystems()
 	{
-		registerExternalSystem(NULL);
+		registerExternalSystem(NullExternalSystem.NULL);
 	}
 
 	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();

@@ -35,6 +35,7 @@ import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
 
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -85,6 +86,7 @@ class IssueImporterServiceTest
 		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 
 		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
 

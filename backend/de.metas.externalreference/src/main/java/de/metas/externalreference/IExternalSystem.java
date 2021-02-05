@@ -22,8 +22,8 @@
 
 package de.metas.externalreference;
 
-@FunctionalInterface
-public interface IExternalSystem
+import de.metas.util.lang.ReferenceListAwareEnum;
+
+public interface IExternalSystem extends ReferenceListAwareEnum
 {
-	String getCode();
 }

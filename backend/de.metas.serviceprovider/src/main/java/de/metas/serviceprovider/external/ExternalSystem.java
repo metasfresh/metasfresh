@@ -22,13 +22,18 @@
 
 package de.metas.serviceprovider.external;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.IExternalSystem;
+import de.metas.order.InvoiceRule;
 import de.metas.serviceprovider.model.X_S_ExternalProjectReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -53,5 +58,17 @@ public enum ExternalSystem implements IExternalSystem
 				.filter(type -> type.getCode().equals(code))
 				.findFirst();
 	}
+
+	public static ExternalSystem ofCode(@NonNull final String code)
+	{
+		final ExternalSystem type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + ExternalSystem.class + " found for code: " + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, ExternalSystem> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ExternalSystem::getCode);
 }
 
