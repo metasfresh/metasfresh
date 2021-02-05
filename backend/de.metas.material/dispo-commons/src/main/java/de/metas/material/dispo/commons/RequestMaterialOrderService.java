@@ -102,7 +102,7 @@ public class RequestMaterialOrderService
 					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
 					break;
 				case FORECAST:
-					createAndFireForcastRequestedEvent(groupOfCandidates);
+					createAndFireForecastRequestedEvent(groupOfCandidates);
 					break;
 				default:
 					break;
