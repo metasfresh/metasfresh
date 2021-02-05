@@ -47,7 +47,6 @@ import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
 import de.metas.serviceprovider.issue.importer.info.ImportMilestoneInfo;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -71,7 +70,6 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_1;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
 import static de.metas.serviceprovider.TestConstants.MOCK_ISSUE_URL;
@@ -121,7 +119,7 @@ public class GithubImporterServiceTest
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM);
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
 
-		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalReferenceTypes, externalSystems);
+		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
 	}
 
 	@Test

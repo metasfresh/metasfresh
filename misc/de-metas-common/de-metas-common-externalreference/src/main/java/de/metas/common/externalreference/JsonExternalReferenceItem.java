@@ -22,14 +22,42 @@
 
 package de.metas.common.externalreference;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-public class JsonExternalReferenceLookupResponseItem
+public class JsonExternalReferenceItem
 {
+	public static JsonExternalReferenceItem of(
+			@NonNull final JsonExternalReferenceLookupItem lookupItem,
+			@NonNull final JsonMetasfreshId metasfreshId)
+	{
+		return new JsonExternalReferenceItem(lookupItem, metasfreshId);
+	}
+
+	public static JsonExternalReferenceItem of(
+			@NonNull final JsonExternalReferenceLookupItem lookupItem)
+	{
+		return new JsonExternalReferenceItem(lookupItem, null);
+	}
+
+	@NonNull
+	JsonExternalReferenceLookupItem lookupItem;
+
 	@Nullable
 	JsonMetasfreshId metasfreshId;
+
+	@JsonCreator
+	private JsonExternalReferenceItem(
+			@JsonProperty("lookupItem") @NonNull final JsonExternalReferenceLookupItem lookupItem,
+			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId)
+	{
+		this.lookupItem = lookupItem;
+		this.metasfreshId = metasfreshId;
+	}
 }

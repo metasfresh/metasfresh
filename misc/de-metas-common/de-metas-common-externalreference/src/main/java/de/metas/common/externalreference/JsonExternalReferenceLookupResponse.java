@@ -22,18 +22,25 @@
 
 package de.metas.common.externalreference;
 
-import de.metas.common.rest_api.JsonMetasfreshId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
-import java.util.Map;
 
 @Value
-@Builder
 public class JsonExternalReferenceLookupResponse
 {
-	@Singular
-	Map<JsonExternalReferenceLookupItem, JsonExternalReferenceLookupResponseItem> items;
+	List<JsonExternalReferenceItem> items;
+
+	@JsonCreator
+	@Builder
+	public JsonExternalReferenceLookupResponse(
+			@JsonProperty("items") @NonNull @Singular final List<JsonExternalReferenceItem> items)
+	{
+		this.items = items;
+	}
 }

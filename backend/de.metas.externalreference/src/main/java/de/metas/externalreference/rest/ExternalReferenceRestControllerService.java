@@ -27,10 +27,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponseItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -44,8 +44,8 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Component
 public class ExternalReferenceRestControllerService
@@ -113,22 +113,22 @@ public class ExternalReferenceRestControllerService
 		{
 			final ExternalReferenceQuery query = entry.getKey();
 
-			final JsonExternalReferenceLookupItem item = JsonExternalReferenceLookupItem.builder()
+			final JsonExternalReferenceLookupItem lookupItem = JsonExternalReferenceLookupItem.builder()
 					.id(query.getExternalReference())
 					.type(query.getExternalReferenceType().getCode())
 					.build();
 
 			final ExternalReference externalReference = entry.getValue();
-			final JsonExternalReferenceLookupResponseItem responseItem;
+			final JsonExternalReferenceItem responseItem;
 			if (ExternalReference.NULL.equals(externalReference))
 			{
-				responseItem = new JsonExternalReferenceLookupResponseItem(null);
+				responseItem = JsonExternalReferenceItem.of(lookupItem);
 			}
 			else
 			{
-				responseItem = new JsonExternalReferenceLookupResponseItem(JsonMetasfreshId.of(externalReference.getRecordId()));
+				responseItem = JsonExternalReferenceItem.of(lookupItem, JsonMetasfreshId.of(externalReference.getRecordId()));
 			}
-			result.item(item, responseItem);
+			result.item(responseItem);
 		}
 		return result.build();
 	}
@@ -140,13 +140,12 @@ public class ExternalReferenceRestControllerService
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
-		final Map<JsonExternalReferenceLookupItem, JsonMetasfreshId> references = request.getReferences();
+		final List<JsonExternalReferenceItem> references = request.getItems();
 
-		final Set<Map.Entry<JsonExternalReferenceLookupItem, JsonMetasfreshId>> entries = references.entrySet();
-		for (final Map.Entry<JsonExternalReferenceLookupItem, JsonMetasfreshId> entry : entries)
+		for (final JsonExternalReferenceItem reference : references)
 		{
-			final JsonExternalReferenceLookupItem lookupItem = entry.getKey();
-			final JsonMetasfreshId metasfreshId = entry.getValue();
+			final JsonExternalReferenceLookupItem lookupItem = reference.getLookupItem();
+			final JsonMetasfreshId metasfreshId = reference.getMetasfreshId();
 
 			final IExternalReferenceType type = externalReferenceTypes.ofCode(lookupItem.getType())
 					.orElseThrow(() -> new InvalidIdentifierException("type", lookupItem));
@@ -156,6 +155,7 @@ public class ExternalReferenceRestControllerService
 					.externalSystem(externalSystem)
 					.externalReference(lookupItem.getId())
 					.externalReferenceType(type)
+					.recordId(metasfreshId.getValue())
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}

@@ -47,7 +47,6 @@ import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -87,7 +86,7 @@ class IssueImporterServiceTest
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
-		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalReferenceTypes, externalSystems);
+		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
 
 		issueImporterService = new IssueImporterService(
 				new ImportQueue<>(100, "logPrefix"),

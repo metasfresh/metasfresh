@@ -54,7 +54,7 @@ public class ExternalReferenceRepositoryTest
 		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM);
 		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM_1);
 
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalReferenceTypes, externalSystems);
+		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
 	}
 
 	@Test

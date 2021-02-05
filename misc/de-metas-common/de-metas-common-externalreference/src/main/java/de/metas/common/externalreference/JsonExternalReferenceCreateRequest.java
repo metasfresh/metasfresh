@@ -22,23 +22,31 @@
 
 package de.metas.common.externalreference;
 
-import de.metas.common.rest_api.JsonMetasfreshId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.Map;
+import java.util.List;
 
 @Value
-@Builder
 public class JsonExternalReferenceCreateRequest
 {
 	@ApiModelProperty(required = true, value = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
-	@NonNull
 	String systemName;
 
-	@Singular
-	Map<JsonExternalReferenceLookupItem, JsonMetasfreshId> references;
+	List<JsonExternalReferenceItem> items;
+
+	@JsonCreator
+	@Builder
+	public JsonExternalReferenceCreateRequest(
+			@JsonProperty("systemName") @NonNull final String systemName,
+			@JsonProperty("items") @NonNull @Singular final List<JsonExternalReferenceItem> items)
+	{
+		this.systemName = systemName;
+		this.items = items;
+	}
 }

@@ -50,8 +50,8 @@ public class ExternalReferenceRepository
 	private final ExternalSystems externalSystems;
 
 	public ExternalReferenceRepository(@NonNull final IQueryBL queryBL,
-			@NonNull final ExternalReferenceTypes externalReferenceTypes,
-			@NonNull final ExternalSystems externalSystems)
+			@NonNull final ExternalSystems externalSystems,
+			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
 		this.queryBL = queryBL;
 		this.externalReferenceTypes = externalReferenceTypes;
@@ -143,9 +143,13 @@ public class ExternalReferenceRepository
 
 	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)
 	{
+		final IExternalReferenceType type = extractType(record);
+		final IExternalSystem externalSystem = extractSystem(record);
+
 		return ExternalReferenceQuery.builder()
-				.externalReferenceType(externalReferenceTypes.ofCode(record.getType()).orElseThrow(() -> new AdempiereException("TODO")))
-				.externalSystem(externalSystems.ofCode(record.getExternalSystem()).orElseThrow(() -> new AdempiereException("TODO")))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.externalReferenceType(type)
+				.externalSystem(externalSystem)
 				.externalReference(record.getExternalReference())
 				.build();
 	}
@@ -193,17 +197,8 @@ public class ExternalReferenceRepository
 	@NonNull
 	private ExternalReference buildExternalReference(@NonNull final I_S_ExternalReference record)
 	{
-		final IExternalReferenceType type = externalReferenceTypes.ofCode(record.getType())
-				.orElseThrow(() -> new AdempiereException("Unknown Type=" + record.getType())
-						.appendParametersToMessage()
-						.setParameter("type", record.getType())
-						.setParameter("S_ExternalReference", record));
-
-		final IExternalSystem externalSystem = externalSystems.ofCode(record.getExternalSystem()).orElseThrow(() ->
-				new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
-						.appendParametersToMessage()
-						.setParameter("system", record.getExternalSystem())
-						.setParameter("S_ExternalReference", record));
+		final IExternalReferenceType type = extractType(record);
+		final IExternalSystem externalSystem = extractSystem(record);
 
 		return ExternalReference.builder()
 				.externalReferenceId(ExternalReferenceId.ofRepoId(record.getS_ExternalReference_ID()))
@@ -213,5 +208,23 @@ public class ExternalReferenceRepository
 				.externalSystem(externalSystem)
 				.recordId(record.getRecord_ID())
 				.build();
+	}
+
+	private IExternalSystem extractSystem(@NonNull final I_S_ExternalReference record)
+	{
+		return externalSystems.ofCode(record.getExternalSystem()).orElseThrow(() ->
+				new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
+						.appendParametersToMessage()
+						.setParameter("system", record.getExternalSystem())
+						.setParameter("S_ExternalReference", record));
+	}
+
+	private IExternalReferenceType extractType(@NonNull final I_S_ExternalReference record)
+	{
+		return externalReferenceTypes.ofCode(record.getType())
+				.orElseThrow(() -> new AdempiereException("Unknown Type=" + record.getType())
+						.appendParametersToMessage()
+						.setParameter("type", record.getType())
+						.setParameter("S_ExternalReference", record));
 	}
 }

@@ -94,7 +94,7 @@ public class EverhourImporterServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalReferenceTypes(), new ExternalSystems());
+		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes());
 	}
 
 	/**
