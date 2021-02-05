@@ -512,7 +512,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId());
+				.bpartnerId(line.getPaymentBPartnerId())
+				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
 		{
@@ -607,7 +608,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				final BigDecimal taxAmt = taxes[i].getTaxAmt();
 				final BigDecimal taxBaseAmt = taxes[i].getTaxBaseAmt();
 				final BigDecimal baseAndTaxAmt = taxBaseAmt.add(taxAmt);
-				Money taxDiscountAmt = Money.of(baseAndTaxAmt.multiply(discountFactor).setScale(2, RoundingMode.HALF_DOWN), currencyId);
+				Money taxDiscountAmt = Money.of(baseAndTaxAmt.multiply(discountFactor).setScale(2, RoundingMode.HALF_UP), currencyId);
 				if (taxAmt.signum() == 0)
 				{
 					taxDiscountAmt = Money.zero(currencyId);
