@@ -49,6 +49,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -72,12 +73,16 @@ final class PricingResult implements IPricingResult
 	private boolean calculated;
 
 	private PricingSystemId pricingSystemId;
+	@Nullable
 	private PriceListId priceListId;
+	@Nullable
 	private PriceListVersionId priceListVersionId;
+	@Nullable
 	private CurrencyId currencyId;
 	private UomId priceUomId;
 	private CurrencyPrecision precision;
 
+	@Nullable
 	private ProductId productId;
 	private ProductCategoryId productCategoryId;
 
@@ -87,6 +92,7 @@ final class PricingResult implements IPricingResult
 	private PricingConditionsResult pricingConditions;
 
 	private BigDecimal priceList = BigDecimal.ZERO;
+	@Nullable
 	private BigDecimal priceStd = BigDecimal.ZERO;
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
@@ -156,15 +162,21 @@ final class PricingResult implements IPricingResult
 	 * @return discount, never {@code null}
 	 */
 	@Override
+	@NonNull
 	public Percent getDiscount()
 	{
 		return CoalesceUtil.coalesce(discount, Percent.ZERO);
 	}
 
 	@Override
-	public void setDiscount(final Percent discount)
+	public void setDiscount(@NonNull final Percent discount)
 	{
-		Check.assume(!isDisallowDiscount(), "Method caller is respecting the 'disallowDiscount' property");
+		if (isDisallowDiscount())
+		{
+			throw new AdempiereException("Attempt to set the discount although isDisallowDiscount()==true")
+					.appendParametersToMessage()
+					.setParameter("this", this);
+		}
 		this.discount = discount;
 	}
 
@@ -194,7 +206,7 @@ final class PricingResult implements IPricingResult
 	/**
 	 * Supposed to be called by the pricing engine.
 	 * <p>
-	 * Task https://github.com/metasfresh/metasfresh/issues/4376
+	 * task https://github.com/metasfresh/metasfresh/issues/4376
 	 */
 	public void updatePriceScales()
 	{

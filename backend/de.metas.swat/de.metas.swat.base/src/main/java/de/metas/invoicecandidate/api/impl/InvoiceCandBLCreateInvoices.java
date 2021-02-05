@@ -80,6 +80,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -349,6 +350,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
+				Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(cand -> cand.getExternalHeaderId()).filter(cand -> cand != null).collect(Collectors.toSet());
+				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: " + externalIds.toArray());
+				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID

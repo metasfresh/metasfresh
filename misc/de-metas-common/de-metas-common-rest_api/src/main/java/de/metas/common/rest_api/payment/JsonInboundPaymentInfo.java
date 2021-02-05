@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,15 @@
  * #L%
  */
 
-package de.metas.rest_api.payment;
+package de.metas.common.rest_api.payment;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.rest_api.bpartner.SwaggerDocConstants;
+import de.metas.common.rest_api.SwaggerDocConstants;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,6 +37,9 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 @Value
 @Builder
@@ -44,6 +48,12 @@ import java.time.LocalDate;
 @JsonDeserialize(builder = JsonInboundPaymentInfo.JsonInboundPaymentInfoBuilder.class)
 public class JsonInboundPaymentInfo
 {
+	@ApiModelProperty(required = true, //
+			dataType = "java.lang.String", //
+			value = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
+	@Nullable
+	String externalPaymentId;
+
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String", //
 			value = SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC)
@@ -55,23 +65,17 @@ public class JsonInboundPaymentInfo
 	@NonNull
 	String targetIBAN;
 
-	@ApiModelProperty(required = true, //
-			dataType = "java.lang.String", //
-			value = "This translates to `C_Order.ExternalId`.")
-	@NonNull
-	String externalOrderId;
-
-	@ApiModelProperty(required = true)
-	@NonNull
-	BigDecimal amount;
+	@ApiModelProperty(dataType = "java.lang.String", //
+			value = SwaggerDocConstants.ORDER_IDENTIFIER_DOC)
+	@Nullable
+	String orderIdentifier;
 
 	@ApiModelProperty(required = true, //
 			dataType = "java.lang.String")
 	@NonNull
 	String currencyCode;
 
-	@ApiModelProperty(position = 10, //
-			value = "Optional, to specify the `AD_Org_ID`.\n"
+	@ApiModelProperty(value = "Optional, to specify the `AD_Org_ID`.\n"
 					+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
 					+ "or the invoking user needs to belong to an organisation, which is then used.")
 	@Nullable
@@ -82,11 +86,37 @@ public class JsonInboundPaymentInfo
 	@Nullable
 	LocalDate transactionDate;
 
+	@ApiModelProperty(value = "List of payment allocations")
+	@Nullable
+	@JsonProperty("lines")
+	List<JsonPaymentAllocationLine> lines;
+
 	@JsonIgnoreProperties(ignoreUnknown = true) // the annotation to ignore properties should be set on the deserializer method (on the builder), and not on the base class
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonInboundPaymentInfoBuilder
 	{
 	}
 
-}
+	public BigDecimal getAmount()
+	{
+		return getAmount(JsonPaymentAllocationLine::getAmount);
+	}
 
+	public BigDecimal getDiscountAmt()
+	{
+		return getAmount(JsonPaymentAllocationLine::getDiscountAmt);
+	}
+
+	public BigDecimal getWriteOffAmt()
+	{
+		return getAmount(JsonPaymentAllocationLine::getWriteOffAmt);
+	}
+
+	private BigDecimal getAmount(final Function<JsonPaymentAllocationLine, BigDecimal> lineToPayAmt)
+	{
+
+		final List<JsonPaymentAllocationLine> lines = getLines();
+		return lines == null ? BigDecimal.ZERO : lines.stream().map(lineToPayAmt).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+}

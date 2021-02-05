@@ -34,15 +34,12 @@ import de.metas.util.lang.Percent;
 
 /**
  * This pricing discount rule applies if
- * <ul>
- * <li>the {@link IPricingContext} instances that has a <code>referencedObject</code> which has a
- * {@link I_C_Flatrate_Conditions} and
- * <li>that <code>I_C_Flatrate_Conditions</code> has IsFreeOfCharge=<code>true</code>
- * </ul>
- * 
+ * the {@link IPricingContext} instances that has a <code>referencedObject</code> which has a
+ * {@link I_C_Flatrate_Conditions} with {@link I_C_Flatrate_Conditions#isFreeOfCharge()}<code>==true</code>
+ *
+ *
  * In this case, the rule's {@link #calculate(IPricingContext, IPricingResult)} sets the discount to 100%.
- * 
- * 
+ *
  */
 public class ContractDiscount implements IPricingRule
 {

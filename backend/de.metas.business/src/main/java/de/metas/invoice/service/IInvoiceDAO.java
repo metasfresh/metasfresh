@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -46,6 +47,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -148,7 +150,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
 	 *
 	 * @param ctx
-	 * @param startDate
+	 * @param startTime
 	 * @return
 	 */
 	List<I_C_Invoice> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
@@ -182,4 +184,6 @@ public interface IInvoiceDAO extends ISingletonService
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
 	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
+
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 }

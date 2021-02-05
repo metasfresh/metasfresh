@@ -1,5 +1,29 @@
 package de.metas.rest_api.bpartner.impl;
 
+import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.SINCE_DOC;
+
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.compiere.util.Env;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import de.metas.Profiles;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -44,11 +68,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.SINCE_DOC;
 
 /*
  * #%L

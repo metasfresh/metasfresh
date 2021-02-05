@@ -10,6 +10,8 @@ import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -20,12 +22,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,9 +40,9 @@ public final class CurrencyPrecision
 	@JsonCreator
 	public static CurrencyPrecision ofInt(final int precision)
 	{
-		if (precision >= 0 && precision < cachedValues.length)
+		if (precision >= 0 && precision < CACHED_VALUES.length)
 		{
-			return cachedValues[precision];
+			return CACHED_VALUES[precision];
 		}
 		else
 		{
@@ -51,7 +53,7 @@ public final class CurrencyPrecision
 	public static final CurrencyPrecision ZERO = new CurrencyPrecision(0);
 	public static final CurrencyPrecision TWO = new CurrencyPrecision(2);
 
-	private static final CurrencyPrecision[] cachedValues = new CurrencyPrecision[] {
+	private static final CurrencyPrecision[] CACHED_VALUES = new CurrencyPrecision[] {
 			ZERO,
 			new CurrencyPrecision(1),
 			TWO,
@@ -66,6 +68,11 @@ public final class CurrencyPrecision
 			new CurrencyPrecision(11),
 			new CurrencyPrecision(12),
 	};
+
+	public static int toInt(@Nullable final CurrencyPrecision precision, final int defaultValue)
+	{
+		return precision != null ? precision.toInt() : defaultValue;
+	}
 
 	private final int precision;
 

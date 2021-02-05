@@ -53,6 +53,8 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Class responsible for loading {@link PO}.
  *
@@ -84,7 +86,7 @@ public final class TableModelLoader
 		return newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, @Nullable final String trxName)
 	{
 		boolean checkCache = true;
 
@@ -109,10 +111,7 @@ public final class TableModelLoader
 	}
 
 	/**
-	 *
-	 * @param recordId
 	 * @param checkCache true if object shall be checked in cache first
-	 * @param trxName
 	 * @return loaded PO
 	 */
 	public PO getPO(final Properties ctx, final String tableName, final int recordId, final boolean checkCache, final String trxName)
