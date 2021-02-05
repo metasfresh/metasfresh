@@ -54,6 +54,7 @@
     "start": "yarn run proxy-up && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:watch": "react-scripts test --watchAll=true",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
