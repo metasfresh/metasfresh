@@ -8,84 +8,52 @@ Feature: external references for metasfresh resources
 
   Scenario: external resource is not referenced to a metasfresh resource
     When the metasfresh REST-API endpoint path '/api/externalRef/001' receives a 'PUT' request with the payload
-  """
-{
+"""{
   "systemName": "Github",
-  "items": [{
-        "id": "noIssueWithThisId",
-        "type": "IssueID"
-  }]
-}
-"""
+  "items": [
+    { "id": "noIssueWithThisId", "type": "IssueID" }
+  ]
+}"""
     Then the metasfresh REST-API responds with
-    """
-{
-  "items": [{
-    "lookupItem":{"id":"noIssueWithThisId","type":"IssueID"}
-  }]
-}
-    """
+"""{
+  "items": [
+    { "lookupItem": { "id": "noIssueWithThisId", "type": "IssueID" } }
+  ]
+}"""
 
 
   Scenario: some external resources are referenced to a metasfresh resource
     Given the metasfresh REST-API endpoint path '/api/externalRef/001' receives a 'POST' request with the payload
-    """
-{
+"""{
   "systemName": "Github",
   "items": [
     {
-      "lookupItem": {
-        "id": "existingId",
-        "type": "IssueID"
-      },
+      "lookupItem": { "id": "existingId", "type": "IssueID" },
       "metasfreshId": 43
     }
   ]
-}
-    """
+}"""
     When the metasfresh REST-API endpoint path '/api/externalRef/001' receives a 'PUT' request with the payload
-  """
-{
+"""{
     "systemName": "Github",
     "items": [
-        {
-            "id": "noIssueWithThisId",
-            "type": "IssueID"
-        },
-        {
-            "id": "existingId",
-            "type": "IssueID"
-        },
-        {
-            "id": "againNoIssueWithThisId",
-            "type": "IssueID"
-        }
+        { "id": "noIssueWithThisId", "type": "IssueID" },
+        { "id": "existingId", "type": "IssueID" },
+        { "id": "againNoIssueWithThisId", "type": "IssueID" }
     ]
-}
-"""
+}"""
     Then the metasfresh REST-API responds with
-    """
-{
+"""{
     "items": [
         {
-            "lookupItem": {
-                "id": "noIssueWithThisId",
-                "type": "IssueID"
-            }
+            "lookupItem": { "id": "noIssueWithThisId", "type": "IssueID" }
         },
         {
-            "lookupItem": {
-                "id": "existingId",
-                "type": "IssueID"
-            },
+            "lookupItem": { "id": "existingId", "type": "IssueID" },
             "metasfreshId": 43
         },
         {
-            "lookupItem": {
-                "id": "againNoIssueWithThisId",
-                "type": "IssueID"
-            }
+            "lookupItem": { "id": "againNoIssueWithThisId", "type": "IssueID" }
         }
     ]
-}
-    """
+}"""
