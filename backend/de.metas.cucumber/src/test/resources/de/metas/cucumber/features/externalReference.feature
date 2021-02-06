@@ -11,18 +11,17 @@ Feature: external references for metasfresh resources
   """
 {
   "systemName": "Github",
-  "items": [{
-        "id": "noIssueWithThisId",
-        "type": "IssueID"
-  }]
+  "items": [
+    { "id": "noIssueWithThisId", "type": "IssueID" }
+  ]
 }
 """
     Then the metasfresh REST-API responds with
     """
 {
-  "items": [{
-    "lookupItem":{"id":"noIssueWithThisId","type":"IssueID"}
-  }]
+  "items": [
+    { "lookupItem":{"id":"noIssueWithThisId","type":"IssueID"} }
+  ]
 }
     """
 
@@ -33,13 +32,7 @@ Feature: external references for metasfresh resources
 {
   "systemName": "Github",
   "items": [
-    {
-      "lookupItem": {
-        "id": "existingId",
-        "type": "IssueID"
-      },
-      "metasfreshId": 43
-    }
+    { "lookupItem": { "id": "existingId", "type": "IssueID" }, "metasfreshId": 43 }
   ]
 }
     """
@@ -48,18 +41,9 @@ Feature: external references for metasfresh resources
 {
     "systemName": "Github",
     "items": [
-        {
-            "id": "noIssueWithThisId",
-            "type": "IssueID"
-        },
-        {
-            "id": "existingId",
-            "type": "IssueID"
-        },
-        {
-            "id": "againNoIssueWithThisId",
-            "type": "IssueID"
-        }
+        { "id": "noIssueWithThisId", "type": "IssueID" },
+        { "id": "existingId", "type": "IssueID" },
+        { "id": "againNoIssueWithThisId", "type": "IssueID" }
     ]
 }
 """
@@ -67,25 +51,9 @@ Feature: external references for metasfresh resources
     """
 {
     "items": [
-        {
-            "lookupItem": {
-                "id": "noIssueWithThisId",
-                "type": "IssueID"
-            }
-        },
-        {
-            "lookupItem": {
-                "id": "existingId",
-                "type": "IssueID"
-            },
-            "metasfreshId": 43
-        },
-        {
-            "lookupItem": {
-                "id": "againNoIssueWithThisId",
-                "type": "IssueID"
-            }
-        }
+        { "lookupItem": { "id": "noIssueWithThisId", "type": "IssueID" } },
+        { "lookupItem": { "id": "existingId", "type": "IssueID" }, "metasfreshId": 43 },
+        { "lookupItem": { "id": "againNoIssueWithThisId", "type": "IssueID" } }
     ]
 }
     """
