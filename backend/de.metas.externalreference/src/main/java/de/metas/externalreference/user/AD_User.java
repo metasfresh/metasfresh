@@ -26,6 +26,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -53,21 +54,9 @@ public class AD_User
 		externalReferenceRepository.deleteByRecordIdAndType(record.getAD_User_ID(), ExternalUserReferenceType.USER_ID);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_AD_User.COLUMNNAME_IsActive)
-	public void reactivateLinkedExternalReferences(@NonNull final I_AD_User record)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_AD_User.COLUMNNAME_AD_Org_ID)
+	public void updateLinkedExternalReferencesOrgId(@NonNull final I_AD_User record)
 	{
-		if (record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalUserReferenceType.USER_ID, record.isActive());
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_AD_User.COLUMNNAME_IsActive)
-	public void inactivateLinkedExternalReferences(@NonNull final I_AD_User record)
-	{
-		if (!record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getAD_User_ID(), ExternalUserReferenceType.USER_ID, record.isActive());
-		}
+		externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getAD_User_ID(), ExternalUserReferenceType.USER_ID, OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 }

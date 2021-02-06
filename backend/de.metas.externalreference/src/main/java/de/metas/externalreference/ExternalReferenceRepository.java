@@ -58,27 +58,28 @@ public class ExternalReferenceRepository
 		this.externalSystems = externalSystems;
 	}
 
-	public int getReferencedRecordIdBy(@NonNull final ExternalReferenceQuery getReferencedIdRequest)
+	public int getReferencedRecordIdBy(@NonNull final ExternalReferenceQuery query)
 	{
 		final Optional<ExternalReference> externalReferenceEntity =
-				getOptionalExternalReferenceBy(getReferencedIdRequest);
+				getOptionalExternalReferenceBy(query);
 
 		if (!externalReferenceEntity.isPresent())
 		{
-			throw new AdempiereException("Missing ExternalReference!")
+			throw new AdempiereException("ExternalReference not found in metasfresh")
 					.appendParametersToMessage()
-					.setParameter("ExternalSystem", getReferencedIdRequest.getExternalSystem().getCode())
-					.setParameter("ExternalReferenceType", getReferencedIdRequest.getExternalReferenceType())
-					.setParameter("ExternalReference", getReferencedIdRequest.getExternalReference());
+					.setParameter("AD_Org_ID,", query.getOrgId().getRepoId())
+					.setParameter("ExternalSystem", query.getExternalSystem().getCode())
+					.setParameter("ExternalReferenceType", query.getExternalReferenceType())
+					.setParameter("ExternalReference", query.getExternalReference());
 		}
 
 		return externalReferenceEntity.get().getRecordId();
 	}
 
 	@Nullable
-	public Integer getReferencedRecordIdOrNullBy(final @NonNull ExternalReferenceQuery getReferencedIdRequest)
+	public Integer getReferencedRecordIdOrNullBy(final @NonNull ExternalReferenceQuery query)
 	{
-		return getOptionalExternalReferenceBy(getReferencedIdRequest)
+		return getOptionalExternalReferenceBy(query)
 				.map(ExternalReference::getRecordId)
 				.orElse(null);
 	}
@@ -103,11 +104,14 @@ public class ExternalReferenceRepository
 		listIncludingInactiveBy(recordId, type).forEach(InterfaceWrapperHelper::delete);
 	}
 
-	public void updateIsActiveByRecordIdAndType(final int recordId, @NonNull final IExternalReferenceType type, final boolean isActive)
+	public void updateOrgIdByRecordIdAndType(
+			final int recordId,
+			@NonNull final IExternalReferenceType type,
+			@NonNull final OrgId orgId)
 	{
 		listIncludingInactiveBy(recordId, type)
 				.stream()
-				.peek(record -> record.setIsActive(isActive))
+				.peek(record -> record.setAD_Org_ID(orgId.getRepoId()))
 				.forEach(InterfaceWrapperHelper::saveRecord);
 	}
 

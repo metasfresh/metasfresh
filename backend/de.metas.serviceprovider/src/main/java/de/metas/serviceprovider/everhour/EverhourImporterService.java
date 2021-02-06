@@ -181,7 +181,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 		catch (final Exception e)
 		{
 			Loggables.withLogger(log, Level.ERROR)
-					.addLog(" {} Exception while trying to build ImportTimeBookingInfo! Error msg: {} ",
+					.addLog(" {} Exception trying to build ImportTimeBookingInfo! Message: {} ",
 							IMPORT_TIME_BOOKINGS_LOG_MESSAGE_PREFIX, e.getMessage());
 
 			trxManager.runInNewTrx(() -> storeFailed(timeRecord, e.getMessage(), orgId));

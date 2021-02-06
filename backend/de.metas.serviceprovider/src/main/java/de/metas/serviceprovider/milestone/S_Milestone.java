@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.milestone;
 
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.model.I_S_Milestone;
 import lombok.NonNull;
@@ -47,21 +48,10 @@ public class S_Milestone
 		externalReferenceRepository.deleteByRecordIdAndType(record.getS_Milestone_ID(), ExternalServiceReferenceType.MILESTONE_ID);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_Milestone.COLUMNNAME_IsActive)
-	public void reactivateLinkedExternalReferences(@NonNull final I_S_Milestone record)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_Milestone.COLUMNNAME_AD_Org_ID)
+	public void updateLinkedExternalReferencesOrgId(@NonNull final I_S_Milestone record)
 	{
-		if (record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalServiceReferenceType.MILESTONE_ID, record.isActive());
-		}
+			externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getS_Milestone_ID(), ExternalServiceReferenceType.MILESTONE_ID, OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_Milestone.COLUMNNAME_IsActive)
-	public void inactivateLinkedExternalReferences(@NonNull final I_S_Milestone record)
-	{
-		if (!record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Milestone_ID(), ExternalServiceReferenceType.MILESTONE_ID, record.isActive());
-		}
-	}
 }
