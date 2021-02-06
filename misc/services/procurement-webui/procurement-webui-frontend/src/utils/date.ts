@@ -30,6 +30,11 @@ interface PrettyDate {
   lang: string;
   date: Date;
 }
+/**
+ * @method prettyDate
+ * @summary formats the date according to the locale given as param (lang)
+ * @param object { lang: string, date: Date; }
+ */
 export function prettyDate({ lang, date }: PrettyDate): string {
   const day = (date.getDate() < 10 ? '0' : '') + date.getDate();
   const month = (date.getMonth() + 1 < 10 ? '0' : '') + (date.getMonth() + 1);

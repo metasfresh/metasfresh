@@ -28,6 +28,15 @@ class DailyNav extends React.Component<Props> {
     }
   }
 
+  componentDidUpdate(): void {
+    const { store } = this.props;
+    const translatedCaption = translate('DailyReportingView.caption');
+    if (this['updatedCaption'] !== translatedCaption) {
+      store.navigation.setViewNames(translatedCaption);
+      this['updatedCaption'] = translatedCaption;
+    }
+  }
+
   updateCurrentDay = (to: string): void => {
     const { store } = this.props;
     const date = formDate({ currentDay: new Date(store.app.currentDay), to });
