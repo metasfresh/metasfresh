@@ -176,11 +176,11 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		int cpsCounter = 2; // see wiki
 
 		final List<JP060P100> joinP060P100Lines = new ArrayList<JP060P100>();
-		for (final EDIExpDesadvLineType xmlDesadvLine : xmlDesadv.getEDIExpDesadvLine())
+		for (final EDIExpDesadvLineType xmlLine : xmlDesadv.getEDIExpDesadvLine())
 		{
-			for (final EDIExpDesadvLinePackType pack : xmlDesadvLine.getEDIExpDesadvLinePack())
+			for (final EDIExpDesadvLinePackType xmlLinePack : xmlLine.getEDIExpDesadvLinePack())
 			{
-				final LineAndPack lineAndPack = new LineAndPack(xmlDesadvLine, pack);
+				final LineAndPack lineAndPack = new LineAndPack(xmlLine, xmlLinePack);
 				joinP060P100Lines.add(createJoinP060P100Lines(xmlDesadv, lineAndPack, decimalFormat, cpsCounter));
 				cpsCounter++;
 			}

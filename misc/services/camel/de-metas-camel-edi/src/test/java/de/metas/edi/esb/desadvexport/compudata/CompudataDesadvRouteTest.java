@@ -22,9 +22,9 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.edi.esb.commons.ClearingCenter;
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
@@ -41,9 +41,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.Instant;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -89,6 +88,8 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 	void nonEmpty_desadv() throws Exception
 	{
 		// given
+		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
+
 		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV.xml");
 		assertThat(inputStr).isNotNull();
 
