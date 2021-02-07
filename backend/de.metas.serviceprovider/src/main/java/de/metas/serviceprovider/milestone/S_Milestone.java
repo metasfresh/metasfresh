@@ -38,7 +38,7 @@ public class S_Milestone
 {
 	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public S_Milestone(final ExternalReferenceRepository externalReferenceRepository)
+	public S_Milestone(@NonNull final ExternalReferenceRepository externalReferenceRepository)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
 	}

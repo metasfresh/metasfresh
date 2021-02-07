@@ -105,22 +105,10 @@ public class S_Issue
 		issueService.handleParentChanged(handleParentChangedRequest);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_IsActive)
-	public void reactivateLinkedExternalReferences(@NonNull final I_S_Issue record)
-	{
-		if (record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalServiceReferenceType.ISSUE_ID, record.isActive());
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_IsActive)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_S_Issue.COLUMNNAME_AD_Org_ID)
 	public void inactivateLinkedExternalReferences(@NonNull final I_S_Issue record)
 	{
-		if (!record.isActive())
-		{
-			externalReferenceRepository.updateIsActiveByRecordIdAndType(record.getS_Issue_ID(), ExternalServiceReferenceType.ISSUE_ID, record.isActive());
-		}
+		externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getS_Issue_ID(), ExternalServiceReferenceType.ISSUE_ID, OrgId.ofRepoId(record.getAD_Org_ID()));
 	}
 
 	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW}, ifColumnsChanged = I_S_Issue.COLUMNNAME_S_Parent_Issue_ID)

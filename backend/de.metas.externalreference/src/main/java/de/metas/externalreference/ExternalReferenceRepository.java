@@ -104,6 +104,10 @@ public class ExternalReferenceRepository
 		listIncludingInactiveBy(recordId, type).forEach(InterfaceWrapperHelper::delete);
 	}
 
+	/**
+	 * If and when the externally referenced record switches orgs, we also need to change the reference-record to follow.
+	 * That's because the org is relevant when we look up external references.
+	 */
 	public void updateOrgIdByRecordIdAndType(
 			final int recordId,
 			@NonNull final IExternalReferenceType type,
