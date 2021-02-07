@@ -24,6 +24,7 @@ package de.metas.serviceprovider.issue.interceptor;
 
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
