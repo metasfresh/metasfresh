@@ -290,7 +290,7 @@ public final class FactLine extends X_Fact_Acct
 				}
 				if (userElementString != null)
 				{
-					setUserElementString1(userElementString);
+					set_Value (userElementStringColumnname, userElementString);
 				}
 			}
 		}
