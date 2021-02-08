@@ -27,27 +27,50 @@ import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @Builder
-public class Dimension
+public class Dimension implements Comparable<Dimension>
 {
 	@With
-	@Nullable ProjectId projectId;
+	@Nullable
+	ProjectId projectId;
 	int campaignId;
 	@With
-	@Nullable ActivityId activityId;
+	@Nullable
+	ActivityId activityId;
 
 	int userElement1Id;
 	int userElement2Id;
 
-	@Nullable String userElementString1;
-	@Nullable String userElementString2;
-	@Nullable String userElementString3;
-	@Nullable String userElementString4;
-	@Nullable String userElementString5;
-	@Nullable String userElementString6;
-	@Nullable String userElementString7;
+	@Nullable
+	String userElementString1;
+	@Nullable
+	String userElementString2;
+	@Nullable
+	String userElementString3;
+	@Nullable
+	String userElementString4;
+	@Nullable
+	String userElementString5;
+	@Nullable
+	String userElementString6;
+	@Nullable
+	String userElementString7;
+
+	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2)
+	{
+
+		return Objects.equals(d1, d2);
+	}
+
+	@Override
+	public int compareTo(final Dimension o)
+	{
+		return this.equals(o) ? 0 : -1;
+	}
 }
