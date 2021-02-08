@@ -26,6 +26,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,6 +39,12 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
+/**
+ * Caches a particular {@link PO} (e.g. an {@code I_C_BPartner} instance) with respect to its parent PO (e.g. {@code I_C_Order}), parent column name (e.g. {@code C_Bill_Partner_ID}) and table name (e.g. {@code C_BPartner}).
+ */
+
 public abstract class AbstractPOCacheLocal
 {
 	protected static final Logger logger = LogManager.getLogger(AbstractPOCacheLocal.class);
@@ -48,9 +55,10 @@ public abstract class AbstractPOCacheLocal
 
 	private final String loadWhereClause;
 
+	@Nullable
 	protected Reference<PO> poRef = null;
 
-	protected AbstractPOCacheLocal(final String parentColumnName, final String tableName)
+	protected AbstractPOCacheLocal(@NonNull final String parentColumnName, @NonNull final String tableName)
 	{
 		Check.assumeNotEmpty(parentColumnName, "parentColumnName is null");
 		Check.assumeNotEmpty(tableName, "tableName");
@@ -68,12 +76,14 @@ public abstract class AbstractPOCacheLocal
 		loadWhereClause = idColumnName + "=?";
 	}
 
+	@Nullable
 	public final <T> T get(final Class<T> clazz)
 	{
 		final boolean requery = false;
 		return get(clazz, requery);
 	}
 
+	@Nullable
 	public final Object get()
 	{
 		final boolean requery = false;
@@ -84,17 +94,19 @@ public abstract class AbstractPOCacheLocal
 
 	protected abstract String getParentTrxName();
 
-	private final Reference<PO> createPOReference(final PO po)
+	@Nullable
+	private Reference<PO> createPOReference(@Nullable final PO po)
 	{
 		if (po == null)
 		{
 			return null;
 		}
 
-		return new SoftReference<PO>(po);
+		return new SoftReference<>(po);
 	}
 
-	private final <T> T get(final Class<T> clazz, final boolean requery)
+	@Nullable
+	private <T> T get(final Class<T> clazz, final boolean requery)
 	{
 		PO po = poRef == null ? null : poRef.get();
 		final int id = getId();
@@ -164,7 +176,7 @@ public abstract class AbstractPOCacheLocal
 		}
 	}
 
-	private final boolean isValidPO(final PO po)
+	private boolean isValidPO(final PO po)
 	{
 		final String parentTrxName = getParentTrxName();
 		if (!isSameTrxName(parentTrxName, po.get_TrxName()))
@@ -198,6 +210,7 @@ public abstract class AbstractPOCacheLocal
 		return Services.get(ITrxManager.class).isSameTrxName(trxName1, trxName2);
 	}
 
+	@Nullable
 	private PO load(final Properties ctx, final int id, final String trxName)
 	{
 		if (id < 0)
@@ -211,15 +224,13 @@ public abstract class AbstractPOCacheLocal
 		if (id == 0)
 		{
 			// FIXME: this is a special case because the system will consider we want a new record. Fix this workaround
-			final PO po = new Query(ctx, tableName, loadWhereClause, trxName)
+			return new Query(ctx, tableName, loadWhereClause, trxName)
 					.setParameters(id)
 					.firstOnly();
-			return po;
 		}
 		else
 		{
-			final PO po = TableModelLoader.instance.getPO(ctx, tableName, id, trxName);
-			return po;
+			return TableModelLoader.instance.getPO(ctx, tableName, id, trxName);
 		}
 	}
 
