@@ -24,7 +24,7 @@ package de.metas.order.process;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.CreateSalesOrderFromProposalCommand;
@@ -112,7 +112,7 @@ public final class C_Order_CreateFromProposal extends JavaProcess implements IPr
 
 	private void openOrder(@NonNull final I_C_Order order)
 	{
-		final AdWindowId orderWindowId = RecordZoomWindowFinder
+		final AdWindowId orderWindowId = RecordWindowFinder
 				.findAdWindowId(TableRecordReference.of(order))
 				.orElse(null);
 

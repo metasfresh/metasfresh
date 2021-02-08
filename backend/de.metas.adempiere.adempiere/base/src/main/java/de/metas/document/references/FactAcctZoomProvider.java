@@ -1,6 +1,7 @@
 package de.metas.document.references;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import de.metas.util.lang.Priority;
@@ -55,7 +56,7 @@ class FactAcctZoomProvider implements IZoomProvider
 	{
 		//
 		// Get the Fact_Acct AD_Window_ID
-		final AdWindowId factAcctWindowId = RecordZoomWindowFinder.findAdWindowId(I_Fact_Acct.Table_Name).orElse(null);
+		final AdWindowId factAcctWindowId = RecordWindowFinder.findAdWindowId(I_Fact_Acct.Table_Name).orElse(null);
 		if (factAcctWindowId == null)
 		{
 			return ImmutableList.of();

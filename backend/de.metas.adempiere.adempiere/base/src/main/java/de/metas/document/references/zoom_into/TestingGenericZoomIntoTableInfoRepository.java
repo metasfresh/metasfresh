@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.document.references.generic;
+package de.metas.document.references.zoom_into;
 
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;

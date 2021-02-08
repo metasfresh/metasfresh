@@ -4,7 +4,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.references.IZoomProvider;
 import de.metas.document.references.IZoomSource;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.document.references.ZoomInfoCandidate;
 import de.metas.document.references.ZoomInfoId;
 import de.metas.document.references.ZoomInfoRecordsCountSupplier;
@@ -61,7 +61,7 @@ public class AdIssueZoomProvider implements IZoomProvider
 	{
 		//
 		// Get the Issues AD_Window_ID
-		final AdWindowId issuesWindowId = RecordZoomWindowFinder.findAdWindowId(I_AD_Issue.Table_Name).orElse(null);
+		final AdWindowId issuesWindowId = RecordWindowFinder.findAdWindowId(I_AD_Issue.Table_Name).orElse(null);
 		if (issuesWindowId == null)
 		{
 			return ImmutableList.of();

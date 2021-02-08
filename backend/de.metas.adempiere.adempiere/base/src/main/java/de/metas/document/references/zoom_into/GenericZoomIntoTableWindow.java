@@ -20,9 +20,8 @@
  * #L%
  */
 
-package de.metas.document.references.generic;
+package de.metas.document.references.zoom_into;
 
-import de.metas.document.references.RecordZoomWindowFinder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

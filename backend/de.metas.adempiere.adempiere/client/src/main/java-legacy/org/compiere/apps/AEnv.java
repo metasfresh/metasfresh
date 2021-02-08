@@ -53,7 +53,6 @@ import org.adempiere.images.Images;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.apps.form.FormFrame;
-import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
 import org.compiere.grid.ed.Calendar;
 import org.compiere.model.GridWindowVO;
@@ -73,7 +72,7 @@ import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.cache.CCache;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
@@ -595,10 +594,10 @@ public final class AEnv
 		}
 
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(AD_Table_ID);
-		zoom(RecordZoomWindowFinder.newInstance(tableName, Record_ID));
+		zoom(RecordWindowFinder.newInstance(tableName, Record_ID));
 	}
 
-	private static void zoom(final RecordZoomWindowFinder zoomInfo)
+	private static void zoom(final RecordWindowFinder zoomInfo)
 	{
 		final AdWindowId windowIdToUse = zoomInfo.findAdWindowId().orElse(null);
 		if (windowIdToUse == null)
@@ -633,7 +632,7 @@ public final class AEnv
 			return;
 		}
 
-		zoom(RecordZoomWindowFinder.newInstance(query));
+		zoom(RecordWindowFinder.newInstance(query));
 	}
 
 	/**
@@ -655,7 +654,7 @@ public final class AEnv
 			return;
 		}
 
-		zoom(RecordZoomWindowFinder.newInstance(query, AdWindowId.ofRepoIdOrNull(adWindowId)));
+		zoom(RecordWindowFinder.newInstance(query, AdWindowId.ofRepoIdOrNull(adWindowId)));
 	}
 
 	/**

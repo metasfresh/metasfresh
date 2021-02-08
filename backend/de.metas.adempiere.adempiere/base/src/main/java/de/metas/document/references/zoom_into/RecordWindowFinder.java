@@ -1,11 +1,28 @@
-package de.metas.document.references;
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.document.references.zoom_into;
 
 import de.metas.cache.CCache;
-import de.metas.document.references.generic.DefaultGenericZoomIntoTableInfoRepository;
-import de.metas.document.references.generic.GenericZoomIntoTableInfo;
-import de.metas.document.references.generic.GenericZoomIntoTableInfoRepository;
-import de.metas.document.references.generic.GenericZoomIntoTableWindow;
-import de.metas.document.references.generic.TestingGenericZoomIntoTableInfoRepository;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -28,28 +45,6 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Optional;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * Helper class used to find the actual AD_Window_ID to be used for a given record.
  * <p>
@@ -63,21 +58,21 @@ import java.util.Optional;
  * @author metas-dev <dev@metasfresh.com>
  */
 @ToString
-public class RecordZoomWindowFinder
+public class RecordWindowFinder
 {
-	public static RecordZoomWindowFinder newInstance(final String tableName, final int recordId)
+	public static RecordWindowFinder newInstance(final String tableName, final int recordId)
 	{
-		return new RecordZoomWindowFinder(tableName, recordId);
+		return new RecordWindowFinder(tableName, recordId);
 	}
 
-	public static RecordZoomWindowFinder newInstance(@NonNull final TableRecordReference record)
+	public static RecordWindowFinder newInstance(@NonNull final TableRecordReference record)
 	{
-		return new RecordZoomWindowFinder(record.getTableName(), record.getRecord_ID());
+		return new RecordWindowFinder(record.getTableName(), record.getRecord_ID());
 	}
 
-	public static RecordZoomWindowFinder newInstance(final String tableName)
+	public static RecordWindowFinder newInstance(final String tableName)
 	{
-		return new RecordZoomWindowFinder(tableName);
+		return new RecordWindowFinder(tableName);
 	}
 
 	public static Optional<AdWindowId> findAdWindowId(final TableRecordReference record)
@@ -91,18 +86,18 @@ public class RecordZoomWindowFinder
 	}
 
 	@Deprecated
-	public static RecordZoomWindowFinder newInstance(@NonNull final MQuery query)
+	public static RecordWindowFinder newInstance(@NonNull final MQuery query)
 	{
-		return new RecordZoomWindowFinder(query);
+		return new RecordWindowFinder(query);
 	}
 
 	@Deprecated
-	public static RecordZoomWindowFinder newInstance(@NonNull final MQuery query, final AdWindowId alreadyKnownWindowId)
+	public static RecordWindowFinder newInstance(@NonNull final MQuery query, final AdWindowId alreadyKnownWindowId)
 	{
-		return new RecordZoomWindowFinder(query, alreadyKnownWindowId);
+		return new RecordWindowFinder(query, alreadyKnownWindowId);
 	}
 
-	private static final Logger logger = LogManager.getLogger(RecordZoomWindowFinder.class);
+	private static final Logger logger = LogManager.getLogger(RecordWindowFinder.class);
 	private final GenericZoomIntoTableInfoRepository tableInfoRepository = newGenericZoomIntoTableInfoRepository();
 
 	//
@@ -130,7 +125,7 @@ public class RecordZoomWindowFinder
 
 	private final HashMap<String, Boolean> checkRecordIsMatchingWhereClauseCache = new HashMap<>();
 
-	private RecordZoomWindowFinder(final String tableName, final int recordId)
+	private RecordWindowFinder(final String tableName, final int recordId)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
@@ -144,7 +139,7 @@ public class RecordZoomWindowFinder
 		alreadyKnownWindowId = null;
 	}
 
-	private RecordZoomWindowFinder(final String tableName)
+	private RecordWindowFinder(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 		_tableName = tableName;
@@ -154,7 +149,7 @@ public class RecordZoomWindowFinder
 	}
 
 	@Deprecated
-	private RecordZoomWindowFinder(@NonNull final MQuery query)
+	private RecordWindowFinder(@NonNull final MQuery query)
 	{
 		final String tableName = query.getTableName();
 		Check.assumeNotEmpty(tableName, "tableName is not empty for {}", query);
@@ -166,7 +161,7 @@ public class RecordZoomWindowFinder
 	}
 
 	@Deprecated
-	private RecordZoomWindowFinder(
+	private RecordWindowFinder(
 			@NonNull final MQuery query,
 			@Nullable final AdWindowId alreadyKnownWindowId)
 	{
@@ -189,7 +184,7 @@ public class RecordZoomWindowFinder
 				: new TestingGenericZoomIntoTableInfoRepository();
 	}
 
-	public RecordZoomWindowFinder checkRecordPresentInWindow()
+	public RecordWindowFinder checkRecordPresentInWindow()
 	{
 		this.checkRecordPresentInWindow = true;
 		return this;

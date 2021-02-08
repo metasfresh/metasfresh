@@ -28,7 +28,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -535,14 +535,14 @@ public class DocumentCollection
 		final AdWindowId zoomInto_adWindowId;
 		if (zoomIntoInfo.isRecordIdPresent())
 		{
-			zoomInto_adWindowId = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId())
+			zoomInto_adWindowId = RecordWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId())
 					.checkRecordPresentInWindow()
 					.findAdWindowId()
 					.orElse(null);
 		}
 		else
 		{
-			zoomInto_adWindowId = RecordZoomWindowFinder.findAdWindowId(zoomIntoInfo.getTableName()).orElse(null);
+			zoomInto_adWindowId = RecordWindowFinder.findAdWindowId(zoomIntoInfo.getTableName()).orElse(null);
 		}
 
 		if (zoomInto_adWindowId == null)
