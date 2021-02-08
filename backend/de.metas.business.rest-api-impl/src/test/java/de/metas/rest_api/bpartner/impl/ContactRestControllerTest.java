@@ -58,7 +58,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.utils.BPartnerQueryService;
