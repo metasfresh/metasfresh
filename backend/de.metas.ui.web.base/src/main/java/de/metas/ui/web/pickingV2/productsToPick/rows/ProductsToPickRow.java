@@ -32,8 +32,6 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
@@ -43,18 +41,20 @@ import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -66,7 +66,7 @@ import java.util.Objects;
 @ToString(exclude = "values")
 public class ProductsToPickRow implements IViewRow
 {
-	public static final String SYSCONFIG_PREFIX = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow.field";
+	private static final String SYSCONFIG_PREFIX = "de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow.field";
 
 	public static ProductsToPickRow cast(final IViewRow row)
 	{
@@ -85,37 +85,62 @@ public class ProductsToPickRow implements IViewRow
 	private final ITranslatableString productName;
 
 	public static final String FIELD_ProductPackageSize = "productPackageSize";
-	@ViewColumn(fieldName = FIELD_ProductPackageSize, widgetType = DocumentFieldWidgetType.Text, captionKey = "PackageSize", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_ProductPackageSize, widgetType = DocumentFieldWidgetType.Text, captionKey = "PackageSize",
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
+			widgetSize = WidgetSize.Small)
 	private final String productPackageSize;
 
 	public static final String FIELD_ProductPackageSizeUOM = "productPackageSizeUOM";
-	@ViewColumn(fieldName = FIELD_ProductPackageSizeUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "Package_UOM_ID", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_ProductPackageSizeUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "Package_UOM_ID",
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
+			widgetSize = WidgetSize.Small)
 	private final String productPackageSizeUOM;
 
 	public static final String FIELD_ProductStockUOM = "productStockUOM";
-	@ViewColumn(fieldName = FIELD_ProductStockUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_UOM_ID", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_ProductStockUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "C_UOM_ID",
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
+			widgetSize = WidgetSize.Small)
 	private final String productStockUOM;
 
 	public static final String FIELD_Locator = "locator";
-	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
+	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID",
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
+			widgetSize = WidgetSize.Small)
 	private final LookupValue locator;
 
+	public static final String FIELD_HUValue = "huValue";
+	@ViewColumn(fieldName = FIELD_HUValue, widgetType = DocumentFieldWidgetType.Text,
+			captionKey = "HUValue",
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX,
+			widgetSize = WidgetSize.Small)
+	private final String huValue;
+
+	public static final String FIELD_SerialNo = "serialNo";
+	@ViewColumn(fieldName = FIELD_SerialNo, widgetType = DocumentFieldWidgetType.Text,
+			captionKey = ProductsToPickRowsDataFactory.ATTR_SerialNo_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX,
+			widgetSize = WidgetSize.Small)
+	private final String serialNo;
+
 	public static final String FIELD_LotNumber = "lotNumber";
-	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text,
+			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
 			widgetSize = WidgetSize.Small)
 	private final String lotNumber;
 
 	public static final String FIELD_ExpiringDate = "expiringDate";
-	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.LocalDate, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.LocalDate,
+			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
 			widgetSize = WidgetSize.Small)
 	@Getter
 	private final LocalDate expiringDate;
 
 	public static final String FIELD_RepackNumber = "repackNumber";
-	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
+	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text,
+			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber_String, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX,
 			widgetSize = WidgetSize.Small)
 	private final String repackNumber;
 
@@ -124,7 +149,10 @@ public class ProductsToPickRow implements IViewRow
 	private final Quantity qty;
 
 	public static final String FIELD_QtyOverride = "qtyOverride";
-	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty_Override", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty_Override",
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX, defaultDisplaySysConfig = true,
+			widgetSize = WidgetSize.Small,
+			editor = ViewEditorRenderMode.ALWAYS)
 	private final Quantity qtyOverride;
 
 	public static final String FIELD_QtyReview = "qtyReview";
@@ -170,6 +198,8 @@ public class ProductsToPickRow implements IViewRow
 			//
 			final LookupValue locator,
 			//
+			final String huValue,
+			final String serialNo,
 			final String lotNumber,
 			final LocalDate expiringDate,
 			final String repackNumber,
@@ -182,8 +212,8 @@ public class ProductsToPickRow implements IViewRow
 			final PickingCandidateApprovalStatus approvalStatus,
 			final boolean processed,
 			//
-			final PickingCandidateId pickingCandidateId,
-			final ShipperId shipperId,
+			@Nullable final PickingCandidateId pickingCandidateId,
+			@Nullable final ShipperId shipperId,
 			//
 			@Nullable final List<ProductsToPickRow> includedRows)
 	{
@@ -200,6 +230,8 @@ public class ProductsToPickRow implements IViewRow
 		this.huReservedForThisRow = huReservedForThisRow;
 
 		this.locator = locator;
+		this.huValue = huValue;
+		this.serialNo = serialNo;
 		this.lotNumber = lotNumber;
 		this.expiringDate = expiringDate;
 		this.repackNumber = repackNumber;
@@ -263,6 +295,7 @@ public class ProductsToPickRow implements IViewRow
 				|| !rowType.isPickable();
 	}
 
+	@Nullable
 	@Override
 	public DocumentPath getDocumentPath()
 	{
@@ -329,14 +362,14 @@ public class ProductsToPickRow implements IViewRow
 		final PPOrderBOMLineId issueToOrderBOMLineId = rowId.getIssueToOrderBOMLineId();
 		if (issueToOrderBOMLineId == null)
 		{
-			throw new AdempiereException("Product " + productName.getDefaultValue() + " is not issueable");
+			throw new AdempiereException("Product " + productName.getDefaultValue() + " is not issuable");
 		}
 		return issueToOrderBOMLineId;
 	}
 
 	public Quantity getQtyEffective()
 	{
-		return CoalesceUtil.coalesce(qtyOverride, qty);
+		return qtyOverride != null ? qtyOverride : qty;
 	}
 
 	public ProductsToPickRow withUpdatesFromPickingCandidateIfNotNull(@Nullable final PickingCandidate pickingCandidate)
@@ -409,17 +442,11 @@ public class ProductsToPickRow implements IViewRow
 		return isFieldEditable(FIELD_QtyOverride);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private boolean isFieldEditable(final String fieldName)
 	{
 		final ViewEditorRenderMode renderMode = getViewEditorRenderModeByFieldName().get(fieldName);
 		return renderMode != null && renderMode.isEditable();
-	}
-
-	public ProductsToPickRow withRowType(@Nullable final ProductsToPickRowType rowType)
-	{
-		return Objects.equals(this.rowType, rowType)
-				? this
-				: toBuilder().rowType(rowType).build();
 	}
 
 	public boolean isApproved()

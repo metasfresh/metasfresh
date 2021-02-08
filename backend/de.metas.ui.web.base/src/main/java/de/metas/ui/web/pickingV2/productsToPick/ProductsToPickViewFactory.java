@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.pickingV2.productsToPick;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -52,20 +53,15 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColu
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @ViewFactory(windowId = PickingConstantsV2.WINDOWID_ProductsToPickView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class ProductsToPickViewFactory implements IViewFactory
 {
-	private static final String MSG_PickCaption = "de.metas.ui.web.pickingV2.productsToPick.Pick.caption";
-	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private static final AdMessageKey MSG_PickCaption = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.Pick.caption");
+	private static final AdMessageKey MSG_ReviewCaption = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.Review.caption");
 
 	private final ProductsToPickRowsService rowsService;
 	private IViewsRepository viewsRepository;
@@ -84,7 +80,6 @@ public class ProductsToPickViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		//
 		// Reviewer layout profile
@@ -92,7 +87,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		{
 			return newViewLayout()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
-					.setCaption(msgBL.translatable(MSG_ReviewCaption))
+					.setCaption(msgBL.getTranslatableMsgText(MSG_ReviewCaption))
 					.addElementsFromViewRowClassAndFieldNames(
 							ProductsToPickRow.class,
 							viewDataType,
@@ -105,7 +100,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		{
 			return newViewLayout()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
-					.setCaption(msgBL.translatable(MSG_PickCaption))
+					.setCaption(msgBL.getTranslatableMsgText(MSG_PickCaption))
 					.addElementsFromViewRowClassAndFieldNames(
 							ProductsToPickRow.class,
 							viewDataType,
@@ -114,69 +109,51 @@ public class ProductsToPickViewFactory implements IViewFactory
 		}
 	}
 
-	@SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
 	@NonNull
-	private ClassViewColumnOverrides[] createColumnListForReviewerLayout()
+	private static ClassViewColumnOverrides[] createColumnListForReviewerLayout()
 	{
-		final List<ClassViewColumnOverrides> columns = new ArrayList<>();
-		columns.addAll(Arrays.asList(
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate)
-		));
-
-		addRepackNumberIfEnabled(columns);
-
-		columns.addAll(Arrays.asList(
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyReview),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ApprovalStatus)
-		));
-
-		return columns.toArray(new ClassViewColumnOverrides[0]);
+		return new ClassViewColumnOverrides[] {
+				column(ProductsToPickRow.FIELD_Locator),
+				column(ProductsToPickRow.FIELD_ProductValue),
+				column(ProductsToPickRow.FIELD_ProductPackageSize),
+				column(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
+				column(ProductsToPickRow.FIELD_HUValue),
+				column(ProductsToPickRow.FIELD_SerialNo),
+				column(ProductsToPickRow.FIELD_LotNumber),
+				column(ProductsToPickRow.FIELD_ExpiringDate),
+				column(ProductsToPickRow.FIELD_RepackNumber),
+				column(ProductsToPickRow.FIELD_ProductName),
+				column(ProductsToPickRow.FIELD_QtyReview),
+				column(ProductsToPickRow.FIELD_ApprovalStatus)
+		};
 	}
 
-	@SuppressWarnings("CollectionAddAllCanBeReplacedWithConstructor")
 	@NonNull
-	private ClassViewColumnOverrides[] createColumnListForPickerLayout()
+	private static ClassViewColumnOverrides[] createColumnListForPickerLayout()
 	{
-		final List<ClassViewColumnOverrides> columns = new ArrayList<>();
-		columns.addAll(Arrays.asList(
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Locator),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductValue),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_Qty),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductStockUOM),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_QtyOverride),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSize),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_LotNumber),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ExpiringDate)
-		));
-
-		addRepackNumberIfEnabled(columns);
-
-		columns.addAll(Arrays.asList(
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_ProductName),
-				ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_PickStatus)
-		));
-
-		return columns.toArray(new ClassViewColumnOverrides[0]);
+		return new ClassViewColumnOverrides[] {
+				column(ProductsToPickRow.FIELD_Locator),
+				column(ProductsToPickRow.FIELD_ProductValue),
+				column(ProductsToPickRow.FIELD_Qty),
+				column(ProductsToPickRow.FIELD_ProductStockUOM),
+				column(ProductsToPickRow.FIELD_QtyOverride),
+				column(ProductsToPickRow.FIELD_ProductPackageSize),
+				column(ProductsToPickRow.FIELD_ProductPackageSizeUOM),
+				column(ProductsToPickRow.FIELD_HUValue),
+				column(ProductsToPickRow.FIELD_SerialNo),
+				column(ProductsToPickRow.FIELD_LotNumber),
+				column(ProductsToPickRow.FIELD_ExpiringDate),
+				column(ProductsToPickRow.FIELD_RepackNumber),
+				column(ProductsToPickRow.FIELD_ProductName),
+				column(ProductsToPickRow.FIELD_PickStatus)
+		};
 	}
 
-	private void addRepackNumberIfEnabled(final List<ClassViewColumnOverrides> columns)
+	private static ClassViewColumnOverrides column(@NonNull final String fieldName)
 	{
-		final String sysConfigKey = StringUtils.appendIfNotEndingWith(ProductsToPickRow.SYSCONFIG_PREFIX, ".") + ProductsToPickRow.FIELD_RepackNumber + ".IsDisplayed";
-
-		final boolean defaultValue = false;
-		final boolean isRepackNumberDisplayed = Services.get(ISysConfigBL.class).getBooleanValue(sysConfigKey, defaultValue, Env.getAD_Client_ID(), Env.getAD_Org_ID(Env.getCtx()));
-
-		if (isRepackNumberDisplayed)
-		{
-			columns.add(ClassViewColumnOverrides.ofFieldName(ProductsToPickRow.FIELD_RepackNumber));
-		}
+		return ClassViewColumnOverrides.builder(fieldName)
+				.hideIfConfiguredSysConfig(true)
+				.build();
 	}
 
 	private static ViewLayout.Builder newViewLayout()
