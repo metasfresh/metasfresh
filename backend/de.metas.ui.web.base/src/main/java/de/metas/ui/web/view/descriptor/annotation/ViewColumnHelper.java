@@ -592,7 +592,7 @@ public final class ViewColumnHelper
 		DISPLAYED(true, false),
 		HIDDEN(false, false),
 		DISPLAYED_BY_SYSCONFIG(true, true),
-		HIDDEN_BY_SYSCONFIG(true, false),
+		HIDDEN_BY_SYSCONFIG(false, true),
 		;
 
 		private final boolean displayed;
