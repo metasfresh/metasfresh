@@ -33,12 +33,12 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.IZoomSource;
-import de.metas.document.references.POZoomSource;
-import de.metas.document.references.ZoomInfo;
-import de.metas.document.references.ZoomInfoFactory;
-import de.metas.document.references.ZoomInfoPermissions;
-import de.metas.document.references.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.ZoomInfo;
+import de.metas.document.references.related_documents.ZoomInfoFactory;
+import de.metas.document.references.related_documents.ZoomInfoPermissions;
+import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;

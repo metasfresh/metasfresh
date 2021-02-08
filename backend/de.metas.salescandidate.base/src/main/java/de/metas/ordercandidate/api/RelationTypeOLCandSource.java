@@ -11,7 +11,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
-import de.metas.document.references.RelationTypeZoomProvidersFactory;
+import de.metas.document.references.related_documents.RelationTypeZoomProvidersFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;

@@ -5,10 +5,10 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
 import org.compiere.util.Env;
 
-import de.metas.document.references.POZoomSource;
-import de.metas.document.references.ZoomInfoFactory;
-import de.metas.document.references.ZoomInfoPermissions;
-import de.metas.document.references.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.ZoomInfoFactory;
+import de.metas.document.references.related_documents.ZoomInfoPermissions;
+import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.ILoggable;

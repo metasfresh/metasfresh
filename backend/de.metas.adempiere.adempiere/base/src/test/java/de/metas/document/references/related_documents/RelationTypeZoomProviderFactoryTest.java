@@ -1,36 +1,8 @@
-package de.metas.document.references;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Map;
-import java.util.Map.Entry;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.impl.LookupDAO;
-import org.adempiere.ad.service.impl.LookupDAO.TableRefInfo;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Ref_Table;
-import org.compiere.model.I_AD_Reference;
-import org.compiere.model.I_AD_RelationType;
-import org.compiere.model.I_AD_Table;
-import org.compiere.model.X_AD_Reference;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -48,9 +20,38 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.document.references.related_documents;
+
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.impl.LookupDAO;
+import org.adempiere.ad.service.impl.LookupDAO.TableRefInfo;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Reference;
+import org.compiere.model.I_AD_RelationType;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.X_AD_Reference;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 public class RelationTypeZoomProviderFactoryTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -164,21 +165,20 @@ public class RelationTypeZoomProviderFactoryTest
 		assertThat(zoomProvider.isTableRecordIdTarget()).isFalse();
 	}
 
-	private void setupLookupDAOMock(Map<Integer, TableRefInfo> idToRefInfo)
+	private void setupLookupDAOMock(final Map<Integer, TableRefInfo> idToRefInfo)
 	{
 		final ILookupDAO lookupDao = Mockito.mock(ILookupDAO.class);
 		Services.registerService(ILookupDAO.class, lookupDao);
 
-		for (Entry<Integer, org.adempiere.ad.service.impl.LookupDAO.TableRefInfo> entry : idToRefInfo.entrySet())
+		for (final Entry<Integer, org.adempiere.ad.service.impl.LookupDAO.TableRefInfo> entry : idToRefInfo.entrySet())
 		{
 			Mockito.doReturn(entry.getValue()).when(lookupDao).retrieveTableRefInfo(entry.getKey());
 		}
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void findZoomProvider_DefaultRelType_NoSource()
 	{
-
 		final String refTargetName = "RefTargetName1";
 		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
 		final I_AD_Reference referenceTarget = createReferenceSourceOrTarget(refTargetName, validationType);
@@ -194,21 +194,21 @@ public class RelationTypeZoomProviderFactoryTest
 		final boolean isTableRecordIdTarget = false;
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
-		RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
-
+		assertThatThrownBy(() -> RelationTypeZoomProvidersFactory.findZoomProvider(relationType))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage("Assumption failure: sourceReferenceId > 0");
 	}
 
-	private I_AD_Column createColumn(I_AD_Table table, String columnname)
+	private void createColumn(final I_AD_Table table, final String columnname)
 	{
 		final I_AD_Column column = newInstance(I_AD_Column.class);
 		column.setAD_Table_ID(table.getAD_Table_ID());
 		column.setColumnName(columnname);
 		save(column);
-
-		return column;
 	}
 
-	private I_AD_Table createTable(String tableName)
+	@SuppressWarnings("SameParameterValue")
+	private I_AD_Table createTable(final String tableName)
 	{
 		final I_AD_Table table = newInstance(I_AD_Table.class);
 		table.setName(tableName);
@@ -217,27 +217,30 @@ public class RelationTypeZoomProviderFactoryTest
 		return table;
 	}
 
-	private I_AD_Ref_Table createRefTable(final I_AD_Reference reference, @NonNull final I_AD_Table table)
+	private void createRefTable(final I_AD_Reference reference, @NonNull final I_AD_Table table)
 	{
 		final I_AD_Ref_Table refTable = newInstance(I_AD_Ref_Table.class);
 		refTable.setAD_Reference(reference);
 		refTable.setAD_Table_ID(table.getAD_Table_ID());
 
 		save(refTable);
-		return refTable;
 	}
 
-	private I_AD_RelationType createRelationType(final boolean IsTableRecordIdTarget, final I_AD_Reference referenceSource, final I_AD_Reference referenceTarget)
+	private I_AD_RelationType createRelationType(
+			final boolean IsTableRecordIdTarget,
+			@Nullable final I_AD_Reference referenceSource,
+			@Nullable final I_AD_Reference referenceTarget)
 	{
 		final I_AD_RelationType relationType = newInstance(I_AD_RelationType.class);
 		relationType.setIsTableRecordIdTarget(IsTableRecordIdTarget);
-		relationType.setAD_Reference_Source(referenceSource);
-		relationType.setAD_Reference_Target(referenceTarget);
+		relationType.setAD_Reference_Source_ID(referenceSource != null ? referenceSource.getAD_Reference_ID() : -1);
+		relationType.setAD_Reference_Target_ID(referenceTarget != null ? referenceTarget.getAD_Reference_ID() : -1);
 
 		save(relationType);
 		return relationType;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_AD_Reference createReferenceSourceOrTarget(final String name, final String validationType)
 	{
 		final I_AD_Reference reference = newInstance(I_AD_Reference.class);

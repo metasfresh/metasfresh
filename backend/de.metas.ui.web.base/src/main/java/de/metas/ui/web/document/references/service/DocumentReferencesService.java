@@ -17,10 +17,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.IZoomSource;
-import de.metas.document.references.ZoomInfo;
-import de.metas.document.references.ZoomInfoFactory;
-import de.metas.document.references.ZoomInfoPermissions;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.ZoomInfo;
+import de.metas.document.references.related_documents.ZoomInfoFactory;
+import de.metas.document.references.related_documents.ZoomInfoPermissions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;

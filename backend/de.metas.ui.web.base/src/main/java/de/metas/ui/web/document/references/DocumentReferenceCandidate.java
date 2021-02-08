@@ -6,10 +6,10 @@ import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.ZoomInfo;
-import de.metas.document.references.ZoomInfoCandidate;
-import de.metas.document.references.ZoomTargetWindow;
-import de.metas.document.references.ZoomTargetWindowEvaluationContext;
+import de.metas.document.references.related_documents.ZoomInfo;
+import de.metas.document.references.related_documents.ZoomInfoCandidate;
+import de.metas.document.references.related_documents.ZoomTargetWindow;
+import de.metas.document.references.related_documents.ZoomTargetWindowEvaluationContext;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.datatypes.WindowId;

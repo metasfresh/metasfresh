@@ -1,26 +1,8 @@
-package de.metas.document.references;
-
-import com.google.common.collect.ImmutableList;
-import de.metas.document.references.zoom_into.RecordWindowFinder;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Services;
-import de.metas.util.lang.Priority;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.IADWindowDAO;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.MQuery;
-import org.compiere.model.MQuery.Operator;
-
-import javax.annotation.Nullable;
-import java.util.List;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,6 +19,24 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.document.references.related_documents;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
+import de.metas.util.lang.Priority;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 class FactAcctZoomProvider implements IZoomProvider
 {

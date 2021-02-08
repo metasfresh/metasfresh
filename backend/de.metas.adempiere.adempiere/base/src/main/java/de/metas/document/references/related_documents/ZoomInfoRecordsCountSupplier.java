@@ -20,14 +20,10 @@
  * #L%
  */
 
-package de.metas.document.references.generic;
+package de.metas.document.references.related_documents;
 
-import com.google.common.collect.ImmutableList;
-import lombok.NonNull;
-
-import java.util.List;
-
-public interface GenericZoomInfoDescriptorsRepository
+@FunctionalInterface
+public interface ZoomInfoRecordsCountSupplier
 {
-	List<GenericZoomInfoDescriptor> getZoomInfoDescriptors(@NonNull String sourceKeyColumnName);
+	int getRecordsCount();
 }

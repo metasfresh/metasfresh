@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.document.references.generic;
+package de.metas.document.references.related_documents.generic;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ImmutableTranslatableString;

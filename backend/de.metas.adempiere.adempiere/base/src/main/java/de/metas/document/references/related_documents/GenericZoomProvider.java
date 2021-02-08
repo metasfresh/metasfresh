@@ -1,11 +1,33 @@
-package de.metas.document.references;
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.document.references.related_documents;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.document.references.generic.DefaultGenericZoomInfoDescriptorsRepository;
-import de.metas.document.references.generic.GenericZoomInfoDescriptor;
-import de.metas.document.references.generic.GenericZoomInfoDescriptorsRepository;
-import de.metas.document.references.generic.LegacyGenericZoomInfoDescriptorsRepository;
+import de.metas.document.references.related_documents.generic.DefaultGenericZoomInfoDescriptorsRepository;
+import de.metas.document.references.related_documents.generic.GenericZoomInfoDescriptor;
+import de.metas.document.references.related_documents.generic.GenericZoomInfoDescriptorsRepository;
+import de.metas.document.references.related_documents.generic.LegacyGenericZoomInfoDescriptorsRepository;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -46,7 +68,7 @@ import java.util.List;
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.build();
 
-	private static final String SYSCONFIG_UseLegacyRepository = "de.metas.document.references.GenericZoomProvider.UseLegacyRepository";
+	private static final String SYSCONFIG_UseLegacyRepository = "de.metas.document.references.related_documents.GenericZoomProvider.UseLegacyRepository";
 	private final CCache<Integer, GenericZoomInfoDescriptorsRepository> genericZoomInfoDescriptorsRepositoryHolder = CCache.newCache("genericZoomInfoDescriptorsRepositoryHolder", 1, 0);
 
 	private final Priority zoomInfoPriority = Priority.LOWEST;
