@@ -45,7 +45,7 @@ import de.metas.organization.OrgQuery;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;

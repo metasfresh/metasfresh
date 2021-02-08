@@ -20,7 +20,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
-import de.metas.security.PermissionService;
+import de.metas.security.permissions2.PermissionService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;

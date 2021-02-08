@@ -1,15 +1,7 @@
 package de.metas.ui.web.order.products_proposal.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.currency.Amount;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.ITranslatableString;
@@ -23,6 +15,7 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -33,6 +26,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ import lombok.ToString;
 @ToString(exclude = { "values" })
 public class ProductsProposalRow implements IViewRow
 {
-	public static final ProductsProposalRow cast(final IViewRow row)
+	public static ProductsProposalRow cast(final IViewRow row)
 	{
 		return (ProductsProposalRow)row;
 	}
@@ -102,16 +101,16 @@ public class ProductsProposalRow implements IViewRow
 	private final boolean isCampaignPrice;
 
 	public static final String FIELD_BPartner = "bpartner";
-	@ViewColumn(displayed = false, fieldName = FIELD_BPartner, captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup)
+	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_BPartner, captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup)
 	private final LookupValue bpartner;
 
 	public static final String FIELD_LastSalesInvoiceDate = "lastSalesInvoiceDate";
-	@ViewColumn(displayed = false, fieldName = FIELD_LastSalesInvoiceDate, captionKey = "LastSalesInvoiceDate", widgetType = DocumentFieldWidgetType.LocalDate)
+	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_LastSalesInvoiceDate, captionKey = "LastSalesInvoiceDate", widgetType = DocumentFieldWidgetType.LocalDate)
 	@Getter
 	private final LocalDate lastSalesInvoiceDate;
 
 	public static final String FIELD_Description = "description";
-	@ViewColumn(displayed = false, fieldName = FIELD_Description, captionKey = "Description", widgetType = DocumentFieldWidgetType.Text, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_Description, captionKey = "Description", widgetType = DocumentFieldWidgetType.Text, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
 	private final String description;
 
@@ -119,7 +118,7 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final int seqNo;
 	@Getter
-	private HUPIItemProductId packingMaterialId;
+	private final HUPIItemProductId packingMaterialId;
 	@Getter
 	private final ProductPriceId productPriceId;
 	@Getter
@@ -128,7 +127,7 @@ public class ProductsProposalRow implements IViewRow
 	private final ProductProposalPrice price;
 
 	@Getter
-	private OrderLineId existingOrderLineId;
+	private final OrderLineId existingOrderLineId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsProposalRow> values;
 	private static final ImmutableMap<String, ViewEditorRenderMode> EDITOR_RENDER_MODES = ImmutableMap.<String, ViewEditorRenderMode> builder()
@@ -210,10 +209,11 @@ public class ProductsProposalRow implements IViewRow
 		return isFieldEditable(FIELD_Price);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private boolean isFieldEditable(final String fieldName)
 	{
 		final ViewEditorRenderMode renderMode = getViewEditorRenderModeByFieldName().get(fieldName);
-		return renderMode != null ? renderMode.isEditable() : false;
+		return renderMode != null && renderMode.isEditable();
 	}
 
 	@Override
@@ -228,6 +228,7 @@ public class ProductsProposalRow implements IViewRow
 		return false;
 	}
 
+	@Nullable
 	@Override
 	public DocumentPath getDocumentPath()
 	{
@@ -270,13 +271,8 @@ public class ProductsProposalRow implements IViewRow
 
 	public boolean isMatching(@NonNull final ProductsProposalViewFilter filter)
 	{
-		if (!Check.isEmpty(filter.getProductName())
-				&& !getProductName().toLowerCase().contains(filter.getProductName().toLowerCase()))
-		{
-			return false;
-		}
-
-		return true;
+		return Check.isEmpty(filter.getProductName())
+				|| getProductName().toLowerCase().contains(filter.getProductName().toLowerCase());
 	}
 
 	public ProductsProposalRow withExistingOrderLine(@Nullable final Order order)

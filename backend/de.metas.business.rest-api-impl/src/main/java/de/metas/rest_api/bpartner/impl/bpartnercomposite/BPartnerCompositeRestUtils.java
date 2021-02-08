@@ -7,8 +7,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
 import de.metas.rest_api.common.JsonInvoiceRule;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.exception.MissingResourceException;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.util.web.exception.MissingResourceException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.Services;
@@ -99,24 +99,7 @@ public class BPartnerCompositeRestUtils
 		}
 	}
 
-	public static OrgId retrieveOrgIdOrDefault(@Nullable final String orgCode)
-	{
-		final OrgId orgId;
-		if (isNotBlank(orgCode))
-		{
-			orgId = Services.get(IOrgDAO.class)
-					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
-					.orElseThrow(() -> MissingResourceException.builder()
-							.resourceName("organisation")
-							.resourceIdentifier(orgCode).build());
-		}
-		else
-		{
-			orgId = Env.getOrgId();
-		}
-		return orgId;
-	}
-
+	@Nullable
 	public static InvoiceRule getInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
 	{
 		if (jsonInvoiceRule == null)

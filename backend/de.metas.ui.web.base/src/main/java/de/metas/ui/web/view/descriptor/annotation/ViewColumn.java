@@ -1,16 +1,16 @@
 package de.metas.ui.web.view.descriptor.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Field;
-
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 
 /*
  * #%L
@@ -48,7 +48,9 @@ public @interface ViewColumn
 
 	DocumentFieldWidgetType widgetType();
 
-	/** List AD_Reference_ID; to be used when {@link #widgetType()} is lookup */
+	/**
+	 * List AD_Reference_ID; to be used when {@link #widgetType()} is lookup
+	 */
 	int listReferenceId() default -1;
 
 	/**
@@ -56,20 +58,35 @@ public @interface ViewColumn
 	 */
 	String captionKey() default "";
 
-	/** From where to fetch the caption's translation */
+	/**
+	 * From where to fetch the caption's translation
+	 */
 	TranslationSource captionTranslationSource() default TranslationSource.DEFAULT;
 
-	/** true if user is allowed to sort by this column */
+	/**
+	 * true if user is allowed to sort by this column
+	 */
 	boolean sorting() default true;
 
-	/** Display sequence number. Overridden by {@link ViewColumnLayout#seqNo()}. */
+	/**
+	 * Display sequence number.
+	 * Overridden by {@link ViewColumnLayout#seqNo()}.
+	 */
 	int seqNo() default Integer.MIN_VALUE;
 
-	boolean displayed() default true;
+	ViewColumnLayout.Displayed displayed() default ViewColumnLayout.Displayed.TRUE;
+
+	/**
+	 * See {@link ViewColumnLayout.Displayed#SYSCONFIG}.
+	 * If it evaluates to {@code null} or empty string, then go with {@link #defaultDisplaySysConfig()}.
+	 */
+	String displayedSysConfigPrefix() default "";
+
+	boolean defaultDisplaySysConfig() default false;
 
 	/**
 	 * Column layout profiles.
-	 *
+	 * <p>
 	 * If empty, and no defaults like {@link #seqNo()} were defined
 	 * then the column won't be displayed in any of {@link JSONViewDataType} profiles.
 	 */
@@ -81,21 +98,29 @@ public @interface ViewColumn
 
 	WidgetSize widgetSize() default WidgetSize.Default;
 
-	public static enum TranslationSource
+	enum TranslationSource
 	{
-		/** Default (check AD_Message, AD_Element) */
+		/**
+		 * Default (check AD_Message, AD_Element)
+		 */
 		DEFAULT,
-		/** M_Attribute.Name */
+		/**
+		 * M_Attribute.Name
+		 */
 		ATTRIBUTE_NAME,
+
+		// TODO: SYSCONFIG
 	}
 
 	@Target({ ElementType.FIELD })
 	@Retention(RetentionPolicy.RUNTIME)
-	public static @interface ViewColumnLayout
+	@interface ViewColumnLayout
 	{
-		public enum Displayed
+		enum Displayed
 		{
-			/** The column shall be displayed by default. */
+			/**
+			 * The column shall be displayed by default.
+			 */
 			TRUE,
 
 			/**
@@ -117,12 +142,16 @@ public @interface ViewColumn
 
 		Displayed displayed() default Displayed.TRUE;
 
-		/** See {@link Displayed#SYSCONFIG}. If it evaluates to {@code null} or empty string, then go with {@link #defaultDisplaySysConfig()}. */
+		/**
+		 * See {@link Displayed#SYSCONFIG}. If it evaluates to {@code null} or empty string, then go with {@link #defaultDisplaySysConfig()}.
+		 */
 		String displayedSysConfigPrefix() default "";
 
 		boolean defaultDisplaySysConfig() default false;
 
-		/** Display sequence number */
+		/**
+		 * Display sequence number
+		 */
 		int seqNo();
 
 	}

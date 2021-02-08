@@ -24,7 +24,7 @@ import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
-import de.metas.security.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
