@@ -444,6 +444,27 @@ public interface I_C_RemittanceAdvice
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Payment discount amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentDiscountAmountSum (@Nullable BigDecimal PaymentDiscountAmountSum);
+
+	/**
+	 * Get Payment discount amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPaymentDiscountAmountSum();
+
+	ModelColumn<I_C_RemittanceAdvice, Object> COLUMN_PaymentDiscountAmountSum = new ModelColumn<>(I_C_RemittanceAdvice.class, "PaymentDiscountAmountSum", null);
+	String COLUMNNAME_PaymentDiscountAmountSum = "PaymentDiscountAmountSum";
+
+	/**
 	 * Set Remittance amount.
 	 *
 	 * <br>Type: Amount

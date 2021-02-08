@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements I_C_RemittanceAdvice_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -66482407L;
+	private static final long serialVersionUID = -217874888L;
 
     /** Standard Constructor */
     public X_C_RemittanceAdvice_Line (final Properties ctx, final int C_RemittanceAdvice_Line_ID, final String trxName)
@@ -208,6 +208,19 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	public java.sql.Timestamp getInvoiceDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_InvoiceDate);
+	}
+
+	@Override
+	public void setInvoiceGrossAmount (final BigDecimal InvoiceGrossAmount)
+	{
+		set_Value (COLUMNNAME_InvoiceGrossAmount, InvoiceGrossAmount);
+	}
+
+	@Override
+	public BigDecimal getInvoiceGrossAmount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InvoiceGrossAmount);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

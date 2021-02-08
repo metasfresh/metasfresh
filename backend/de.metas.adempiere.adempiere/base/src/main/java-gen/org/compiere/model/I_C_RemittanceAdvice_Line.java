@@ -316,6 +316,27 @@ public interface I_C_RemittanceAdvice_Line
 	String COLUMNNAME_InvoiceDate = "InvoiceDate";
 
 	/**
+	 * Set Invoice gross amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceGrossAmount (@Nullable BigDecimal InvoiceGrossAmount);
+
+	/**
+	 * Get Invoice gross amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInvoiceGrossAmount();
+
+	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_InvoiceGrossAmount = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "InvoiceGrossAmount", null);
+	String COLUMNNAME_InvoiceGrossAmount = "InvoiceGrossAmount";
+
+	/**
 	 * Set Invoice identifier.
 	 *
 	 * <br>Type: String

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_RemittanceAdvice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1569775529L;
+	private static final long serialVersionUID = 191657098L;
 
     /** Standard Constructor */
     public X_C_RemittanceAdvice (final Properties ctx, final int C_RemittanceAdvice_ID, final String trxName)
@@ -306,6 +306,19 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	public boolean isSOTrx() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
+	public void setPaymentDiscountAmountSum (final BigDecimal PaymentDiscountAmountSum)
+	{
+		set_Value (COLUMNNAME_PaymentDiscountAmountSum, PaymentDiscountAmountSum);
+	}
+
+	@Override
+	public BigDecimal getPaymentDiscountAmountSum() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PaymentDiscountAmountSum);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
