@@ -10,7 +10,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
-import de.metas.rest_api.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;

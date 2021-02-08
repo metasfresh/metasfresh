@@ -27,7 +27,7 @@ import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.uom.UomId;
@@ -41,7 +41,7 @@ public interface TestConstants
 {
 	String MOCK_EXTERNAL_PROJECT_OWNER = "externalProjectOwner";
 	String MOCK_EXTERNAL_REFERENCE = "externalReference";
-	ExternalReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = ExternalReferenceType.ISSUE_ID;
+	ExternalServiceReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = ExternalServiceReferenceType.ISSUE_ID;
 	ExternalSystem MOCK_EXTERNAL_SYSTEM = ExternalSystem.GITHUB;
 	ExternalSystem MOCK_EXTERNAL_SYSTEM_1 = ExternalSystem.EVERHOUR;
 	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
