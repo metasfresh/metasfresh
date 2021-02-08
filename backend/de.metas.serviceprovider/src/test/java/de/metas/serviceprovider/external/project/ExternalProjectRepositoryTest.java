@@ -63,7 +63,7 @@ public class ExternalProjectRepositoryTest
 		record.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		record.setExternalProjectOwner(MOCK_EXTERNAL_PROJECT_OWNER);
 		record.setExternalReference(MOCK_EXTERNAL_REFERENCE);
-		record.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getValue());
+		record.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getCode());
 		record.setIsActive(isActive);
 		record.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
 		record.setS_ExternalProjectReference_ID(id.getRepoId());

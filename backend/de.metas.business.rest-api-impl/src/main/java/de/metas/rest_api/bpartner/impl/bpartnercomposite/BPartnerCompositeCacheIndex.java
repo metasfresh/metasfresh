@@ -12,7 +12,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.JsonConverters;
