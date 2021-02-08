@@ -125,7 +125,7 @@ public final class HUEditorRow implements IViewRow
 			captionKey = FIELDNAME_Locator, //
 			widgetType = DocumentFieldWidgetType.Text, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX, defaultDisplaySysConfig = false)
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
 	private final JSONLookupValue locator;
 
@@ -219,7 +219,7 @@ public final class HUEditorRow implements IViewRow
 	private final LocalDate bestBeforeDate;
 
 	public static final String FIELDNAME_WeightGross = "WeightGross";
-	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = false)
+	@ViewColumn(fieldName = FIELDNAME_WeightGross, widgetType = DocumentFieldWidgetType.Quantity, seqNo = 90, displayed = Displayed.FALSE)
 	private final BigDecimal weightGross;
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
