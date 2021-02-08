@@ -19,11 +19,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.ForecastLineDimensionFactory;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_ForecastLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,6 +90,8 @@ public class CandidateRepositoryWriteServiceTests
 
 	private RepositoryTestHelper repositoryTestHelper;
 
+	private I_M_ForecastLine forecastLine;
+
 	@BeforeEach
 	public void init()
 	{
@@ -88,7 +99,26 @@ public class CandidateRepositoryWriteServiceTests
 
 		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionFactories.add(new ForecastLineDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
+
+		forecastLine = createForecastLine(61);
+	}
+
+	private I_M_ForecastLine createForecastLine(final int forecastLineId)
+	{
+		final I_M_ForecastLine forecastLine = newInstance(I_M_ForecastLine.class);
+		forecastLine.setM_ForecastLine_ID(61);
+		save(forecastLine);
+
+		return forecastLine;
+
 	}
 
 	@Test
