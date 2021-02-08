@@ -508,10 +508,6 @@ class Modal extends Component {
     }
   };
 
-  keyUpHandler = (e) => {
-    console.log(e.key);
-  };
-
   /**
    * @method renderPanel
    * @summary ToDo: Describe the method
