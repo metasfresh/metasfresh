@@ -508,6 +508,10 @@ class Modal extends Component {
     }
   };
 
+  keyUpHandler = (e) => {
+    console.log(e.key);
+  };
+
   /**
    * @method renderPanel
    * @summary ToDo: Describe the method
@@ -527,8 +531,9 @@ class Modal extends Component {
 
     const isNotSaved =
       staticModalType === 'printing' ? true : isDocumentNotSaved;
-    const applyHandler =
+    let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
+    if (staticModalType === 'printing') applyHandler = this.handlePrinting;
     const cancelHandler = isNewDoc ? this.removeModal : this.handleClose;
 
     return (
