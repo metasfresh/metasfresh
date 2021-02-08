@@ -12,8 +12,10 @@ import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.greeting.GreetingRepository;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
 import de.metas.order.impl.OrderLineDetailRepository;
@@ -73,6 +75,8 @@ public class PurchaseOrderFromItemsAggregatorTest
 	private I_C_UOM EACH;
 	private Quantity TEN;
 
+	private Dimension dimension;
+
 	private static class MockedOrderLineBL extends OrderLineBL
 	{
 		private int updatePricesCallCount;
@@ -103,12 +107,21 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
+		dimensionFactories.add(new OrderLineDimensionFactory());
 
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
+		dimension = createDimension();
 
 		SpringContextHolder.registerJUnitBean(new OrderLineDetailRepository());
+	}
+
+	private Dimension createDimension()
+	{
+		return Dimension.builder()
+				.userElementString1("test1")
+				.build();
 	}
 
 	private I_C_UOM createUOM(final String name)
@@ -162,6 +175,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrder.getC_Order_ID(), 50))
 				.warehouseId(WarehouseId.ofRepoId(60))
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
+				.dimension(dimension)
 				.build();
 
 		final PurchaseOrderFromItemsAggregator aggregator = PurchaseOrderFromItemsAggregator.newInstance();
@@ -172,6 +186,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 					.datePromised(de.metas.common.util.time.SystemTime.asZonedDateTime())
 					.purchasedQty(TEN)
 					.remotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID)
+					.dimension(dimension)
 					.build());
 
 			aggregator.closeAllGroups();
