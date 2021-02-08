@@ -156,14 +156,6 @@ public class ADWindowDAO implements IADWindowDAO
 				.list(I_AD_Tab.class);
 	}
 
-	@Override
-	public void deleteTabsByWindowId(@NonNull final AdWindowId adWindowId)
-	{
-		retrieveTabsQuery(adWindowId)
-				.create()
-				.delete();
-	}
-
 	private IQueryBuilder<I_AD_Tab> retrieveTabsQuery(final AdWindowId adWindowId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

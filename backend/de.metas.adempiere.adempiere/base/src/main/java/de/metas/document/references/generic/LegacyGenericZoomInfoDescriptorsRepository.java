@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@Deprecated
 public class LegacyGenericZoomInfoDescriptorsRepository implements GenericZoomInfoDescriptorsRepository
 {
 	private static final Logger logger = LogManager.getLogger(LegacyGenericZoomInfoDescriptorsRepository.class);
