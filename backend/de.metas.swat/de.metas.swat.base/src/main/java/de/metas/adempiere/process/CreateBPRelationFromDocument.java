@@ -226,7 +226,7 @@ public class CreateBPRelationFromDocument extends JavaProcess
 
 		if (rel.getC_BPartnerRelation_Location_ID() > 0)
 		{
-			final String locTo = bPartnersRepo.getBPartnerLocationById(BPartnerLocationId.ofRepoId(rel.getC_BPartner_ID(), rel.getC_BPartnerRelation_Location_ID())).getName();
+			final String locTo = bPartnersRepo.getBPartnerLocationById(BPartnerLocationId.ofRepoId(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID())).getName();
 			name.append("(").append(locTo).append(")");
 		}
 		rel.setName(name.toString());
