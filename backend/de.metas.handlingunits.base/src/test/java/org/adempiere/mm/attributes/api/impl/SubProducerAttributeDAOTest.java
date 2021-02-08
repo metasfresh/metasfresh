@@ -44,8 +44,7 @@ public class SubProducerAttributeDAOTest
 {
 	private I_C_BPartner bp;
 	private I_C_BPartner bp2;
-	private I_C_BP_Relation bpRelation;
-	private ISubProducerAttributeDAO dao = Services.get(ISubProducerAttributeDAO.class);
+	private final ISubProducerAttributeDAO dao = Services.get(ISubProducerAttributeDAO.class);
 
 	@Before
 	public void init()
@@ -73,7 +72,7 @@ public class SubProducerAttributeDAOTest
 		bp.setName("Test Partner");
 		save(bp);
 
-		bpRelation = newInstance(I_C_BP_Relation.class);
+		I_C_BP_Relation bpRelation = newInstance(I_C_BP_Relation.class);
 		bpRelation.setC_BPartner_ID(bp.getC_BPartner_ID());
 		bpRelation.setName("Test Rel1");
 		bpRelation.setRole(X_C_BP_Relation.ROLE_MainProducer);
