@@ -31,6 +31,7 @@ import de.metas.process.JavaProcess;
  *  @author Jorg Janke
  *  @version $Id: WindowCopy.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  */
+@Deprecated
 public class WindowCopy extends JavaProcess
 {
 	/**	Window To					*/
