@@ -124,6 +124,7 @@ public class BPartnerDAO implements IBPartnerDAO
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPartnerDAO bPartnersRepo = Services.get(IBPartnerDAO.class);
 
 	private final GLNLoadingCache glnsLoadingCache = new GLNLoadingCache();
 	private final CCache<BPartnerId, BPartnerPrintFormatMap> printFormatsCache = CCache.<BPartnerId, BPartnerPrintFormatMap>builder()
@@ -932,7 +933,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstOnly(I_C_BP_Relation.class); // just added an UC
 		if (billtoRelation != null)
 		{
-			return InterfaceWrapperHelper.create(billtoRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
+			return InterfaceWrapperHelper.create(bPartnersRepo.getBPartnerLocationById(BPartnerLocationId.ofRepoId(billtoRelation.getC_BPartner_ID(), billtoRelation.getC_BPartnerRelation_Location_ID())), I_C_BPartner_Location.class);
 		}
 		return null;
 	}

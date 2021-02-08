@@ -2,6 +2,7 @@ package de.metas.ordercandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
@@ -283,7 +284,8 @@ public class C_OLCand
 		}
 		else
 		{
-			org.compiere.model.I_C_BPartner_Location handOverLocation = handoverRelation.getC_BPartnerRelation_Location();
+			org.compiere.model.I_C_BPartner_Location handOverLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoId(handoverRelation.getC_BP_Relation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID()));
+
 			if (handOverLocation == null)
 			{
 				// this should also not happen because C_BPartnerRelation_Location is mandatory
