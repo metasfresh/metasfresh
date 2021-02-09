@@ -163,8 +163,6 @@ public interface IBPartnerDAO extends ISingletonService
 	boolean existsDefaultAddressInTable(I_C_BPartner_Location address, String trxName, String columnName);
 
 	/**
-	 * @param user
-	 * @param trxName
 	 * @return true if a contact with the flag defaultContact on true already exists in the table, false otherwise.
 	 */
 	boolean existsDefaultContactInTable(de.metas.adempiere.model.I_AD_User user, String trxName);
@@ -172,8 +170,6 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Search after the BPartner when the value is given
 	 *
-	 * @param ctx
-	 * @param value
 	 * @return C_BPartner_Location object or null
 	 */
 	@Nullable
@@ -184,7 +180,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 * <p>
 	 * Use case: why have BPartner-Values such as "G01234", but on ESR-payment documents, there is only "01234", because there it may only contain digits.
 	 *
-	 * @param ctx
 	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
 	 * @return a single bPartner or <code>null</code>
@@ -199,10 +194,6 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Checks if there more BP Locations for given BP, excluding the given one.
 	 *
-	 * @param ctx
-	 * @param bpartnerId
-	 * @param excludeBPLocationId
-	 * @param trxName
 	 * @return true if there more BP locations for given BP, excluding the given one
 	 */
 	boolean hasMoreLocations(Properties ctx, int bpartnerId, int excludeBPLocationId, String trxName);
@@ -210,9 +201,6 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Search the {@link I_C_BP_Relation}s for matching partner and location (note that the link without location is acceptable too)
 	 *
-	 * @param contextProvider
-	 * @param partner
-	 * @param location
 	 * @return {@link I_C_BP_Relation} first encountered which is used for billing
 	 */
 	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(Object contextProvider, I_C_BPartner partner, I_C_BPartner_Location location);
@@ -231,7 +219,6 @@ public interface IBPartnerDAO extends ISingletonService
 	 * <p>
 	 * NOTE: the default ship to location will be the first.
 	 *
-	 * @param bpartner
 	 * @return all bpartner's ship to locations
 	 */
 	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
@@ -252,11 +239,8 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Retrieve default/first bill to location.
 	 *
-	 * @param ctx
-	 * @param bPartnerId
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
 	 *            that relation's bPartner location.
-	 * @param trxName
 	 * @return bill to location or null
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
@@ -269,12 +253,6 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Get the fit contact for the given partner and isSOTrx. In case of SOTrx, the salesContacts will have priority. Same for POTrx and PurcanseCOntacts In case of 2 entries with equal values in the
 	 * fields above, the Default contact will have priority
-	 *
-	 * @param ctx
-	 * @param bpartnerId
-	 * @param isSOTrx
-	 * @param trxName
-	 * @return
 	 */
 	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
 
@@ -366,6 +344,4 @@ public interface IBPartnerDAO extends ISingletonService
 	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
 
 	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
-
-	I_C_BPartner_Location getBPartnerLocation(int c_bPartner_id, int c_bPartner_location_id);
 }

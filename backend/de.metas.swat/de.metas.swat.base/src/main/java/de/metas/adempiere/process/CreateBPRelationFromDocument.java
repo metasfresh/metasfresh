@@ -26,6 +26,7 @@ package de.metas.adempiere.process;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
@@ -43,9 +44,7 @@ import org.compiere.model.Query;
  * Create BP relation from document.
  *
  * @author tsa
- * @see http
- *      ://dewiki908/mediawiki/index.php/US1010:_unterschiedliche_Liefer-_und_Rechnungsempf%C3%A4nger_im_Auftragskopf_
- *      %282010122110000025%29
+ * see http://dewiki908/mediawiki/index.php/US1010:_unterschiedliche_Liefer-_und_Rechnungsempf%C3%A4nger_im_Auftragskopf_%282010122110000025%29
  *
  */
 public class CreateBPRelationFromDocument extends JavaProcess
@@ -215,7 +214,8 @@ public class CreateBPRelationFromDocument extends JavaProcess
 
 		if (rel.getC_BPartner_Location_ID() > 0)
 		{
-			final I_C_BPartner_Location bPartnerLocation = bPartnersRepo.getBPartnerLocation(rel.getC_BPartner_ID(), rel.getC_BPartner_Location_ID());
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(rel.getC_BPartner_ID(), rel.getC_BPartner_Location_ID());
+			final I_C_BPartner_Location bPartnerLocation = bPartnersRepo.getBPartnerLocationById(bPartnerLocationId);
 			final String locFrom = bPartnerLocation.getName();
 			name.append("(").append(locFrom).append(")");
 		}
@@ -227,7 +227,8 @@ public class CreateBPRelationFromDocument extends JavaProcess
 
 		if (rel.getC_BPartnerRelation_Location_ID() > 0)
 		{
-			final String locTo = bPartnersRepo.getBPartnerLocation(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID()).getName();
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID());
+			final String locTo = bPartnersRepo.getBPartnerLocationById(bPartnerLocationId).getName();
 			name.append("(").append(locTo).append(")");
 		}
 		rel.setName(name.toString());
