@@ -352,13 +352,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				if (line.isPaymentReceipt())
 				{
 					// Originally on Credit. The amount must be moved to Debit
-					fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), allocatedAmt, null);
+					fl_Payment = fact.createLine()
+							.setDocLine(line)
+							.setAccount(paymentAcct)
+							.setAmtSource(getCurrencyId(), allocatedAmt, null)
+							.alsoAddZeroLine()
+							.buildAndAdd();
+
 				}
 				// Outgoing payment
 				else
 				{
 					// Originally on Debit. The amount must be moved to Credit, with different sign
-					fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), null, allocatedAmt.negate());
+					fl_Payment = fact.createLine()
+							.setDocLine(line)
+							.setAccount(paymentAcct)
+							.setAmtSource(getCurrencyId(), null, allocatedAmt.negate())
+							.alsoAddZeroLine()
+							.buildAndAdd();
+
 				}
 
 				// Make sure the fact line was created
@@ -512,7 +524,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId());
+				.bpartnerId(line.getPaymentBPartnerId())
+				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
 		{
@@ -754,7 +767,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setAccount(getAccount(AccountType.WriteOff, as))
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId());
+				.bpartnerId(line.getPaymentBPartnerId())
+				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
 		{
@@ -823,7 +837,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
 				.orgId(line.getInvoiceOrgId())
-				.bpartnerId(line.getInvoiceBPartnerId());
+				.bpartnerId(line.getInvoiceBPartnerId())
+				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
 		{
@@ -904,7 +919,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setDocLine(counterLine)
 				.setCurrencyId(getCurrencyId())
 				.orgId(counterLine.getInvoiceOrgId())
-				.bpartnerId(counterLine.getInvoiceBPartnerId());
+				.bpartnerId(counterLine.getInvoiceBPartnerId())
+				.alsoAddZeroLine();
 		if (counterLine.isSOTrxInvoice())
 		{
 			factLineBuilder.setAccount(getAccount(AccountType.C_Receivable, as));
