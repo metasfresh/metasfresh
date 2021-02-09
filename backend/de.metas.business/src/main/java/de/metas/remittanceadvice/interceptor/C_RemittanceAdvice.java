@@ -27,14 +27,18 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_RemittanceAdvice;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_RemittanceAdvice.class)
@@ -42,6 +46,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_RemittanceAdvice
 {
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	@Init
 	public void registerCallout()
 	{
@@ -57,7 +63,6 @@ public class C_RemittanceAdvice
 			return;
 		}
 
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
@@ -70,5 +75,21 @@ public class C_RemittanceAdvice
 		{
 			remittanceAdviceRecord.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
+			ifColumnsChanged = I_C_RemittanceAdvice.COLUMNNAME_C_Payment_Doctype_Target_ID)
+	public void setIsSOTrxFromPaymentDocType(@NonNull final I_C_RemittanceAdvice record)
+	{
+		final I_C_DocType targetPaymentDocType = docTypeDAO.getById(record.getC_Payment_Doctype_Target_ID());
+
+		if (targetPaymentDocType == null)
+		{
+			throw new AdempiereException("No doc type found for C_Payment_Doctype_Target_ID!")
+					.appendParametersToMessage()
+					.setParameter("C_Payment_Doctype_Target_ID", record.getC_Payment_Doctype_Target_ID());
+		}
+
+		record.setIsSOTrx(targetPaymentDocType.isSOTrx()); //todo cp-ps: move to repo once it is ready
 	}
 }
