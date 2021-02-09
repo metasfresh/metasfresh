@@ -18,12 +18,7 @@ import java.util.Properties;
  */
 public class MWindow extends X_AD_Window
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 6783399136841920556L;
-	/**	Static Logger	*/
-	private static final Logger	s_log	= LogManager.getLogger(MWindow.class);
+	private static final Logger	s_log = LogManager.getLogger(MWindow.class);
 
 	public MWindow (final Properties ctx, final int AD_Window_ID, final String trxName)
 	{
