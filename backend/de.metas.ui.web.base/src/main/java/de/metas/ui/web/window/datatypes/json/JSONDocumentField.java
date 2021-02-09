@@ -1,14 +1,5 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -16,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.window.WindowConstants;
@@ -27,6 +17,13 @@ import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
+import lombok.Getter;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
+import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -60,25 +57,24 @@ import io.swagger.annotations.ApiModel;
 		"lookupValuesStale", "lookupValuesStale-reason",
 		"valid", "validReason"
 })
-@SuppressWarnings("serial")
-public final class JSONDocumentField implements Serializable
+@Getter
+public final class JSONDocumentField
 {
 	public static JSONDocumentField ofDocumentField(final IDocumentFieldView field, final JSONOptions jsonOpts)
 	{
 		final String name = field.getFieldName();
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getWidgetType());
 		final Object valueJSON = field.getValueAsJsonObject(jsonOpts);
-		final String reason = null; // N/A
 
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
-				.setValue(valueJSON, reason)
+				.setValue(valueJSON, null)
 				.setReadonly(field.getReadonly())
 				.setMandatory(field.getMandatory())
 				.setDisplayed(field.getDisplayed())
 				.setValidStatus(field.getValidStatus());
 		if (field.isLookupValuesStale())
 		{
-			jsonField.setLookupValuesStale(true, reason);
+			jsonField.setLookupValuesStale(true, null);
 		}
 
 		if (WindowConstants.isProtocolDebugging())
@@ -94,10 +90,9 @@ public final class JSONDocumentField implements Serializable
 		final String name = parameter.getParameterName();
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(parameter.getWidgetType());
 		final Object valueJSON = parameter.getValueAsJsonObject(jsonOpts);
-		final String reason = null; // N/A
 
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
-				.setValue(valueJSON, reason)
+				.setValue(valueJSON, null)
 				.setReadonly(parameter.getReadonly())
 				.setMandatory(parameter.getMandatory())
 				.setDisplayed(parameter.getDisplayed())
@@ -113,17 +108,14 @@ public final class JSONDocumentField implements Serializable
 
 	public static JSONDocumentField idField(final Object jsonValue)
 	{
-		final String reason = null; // N/A
 		return new JSONDocumentField(FIELD_VALUE_ID, JSONLayoutWidgetType.Integer)
-				.setValue(jsonValue, reason);
+				.setValue(jsonValue, null);
 	}
 
 	public static JSONDocumentField ofNameAndValue(final String fieldName, final Object jsonValue)
 	{
-		final String reason = null; // N/A
-		final JSONLayoutWidgetType widgetType = null; // N/A
-		return new JSONDocumentField(fieldName, widgetType)
-				.setValue(jsonValue, reason);
+		return new JSONDocumentField(fieldName, null)
+				.setValue(jsonValue, null);
 	}
 
 	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event, final JSONOptions jsonOpts)
@@ -174,7 +166,6 @@ public final class JSONDocumentField implements Serializable
 	}
 
 	@JsonProperty("field")
-	@JsonInclude(JsonInclude.Include.ALWAYS)
 	private final String field;
 	public static final String FIELD_VALUE_ID = "ID";
 
@@ -184,11 +175,11 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("value")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Object value;
+	@Nullable private Object value;
 
 	@JsonProperty("value-reason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String valueReason;
+	@Nullable private String valueReason;
 
 	@JsonProperty("readonly")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -196,7 +187,7 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("readonly-reason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String readonlyReason;
+	@Nullable private String readonlyReason;
 
 	@JsonProperty("mandatory")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -204,7 +195,7 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("mandatory-reason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String mandatoryReason;
+	@Nullable private String mandatoryReason;
 
 	@JsonProperty("displayed")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -212,7 +203,7 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("displayed-reason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String displayedReason;
+	@Nullable private String displayedReason;
 
 	@JsonProperty("lookupValuesStale")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -220,7 +211,7 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("lookupValuesStale-reason")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String lookupValuesStaleReason;
+	@Nullable private String lookupValuesStaleReason;
 
 	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -228,23 +219,25 @@ public final class JSONDocumentField implements Serializable
 
 	@JsonProperty("viewEditorRenderMode")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String viewEditorRenderMode;
+	@Nullable private String viewEditorRenderMode;
 
 	@JsonProperty("warning")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JSONDocumentFieldWarning fieldWarning;
+	@Nullable private JSONDocumentFieldWarning fieldWarning;
 
 	@JsonProperty("devices")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private List<JSONDeviceDescriptor> devices;
+	@Nullable private List<JSONDeviceDescriptor> devices;
 
-	/** Other properties */
+	/**
+	 * Other properties
+	 */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
 	@JsonCreator
-	/* package */ JSONDocumentField(
+		/* package */ JSONDocumentField(
 			@JsonProperty("field") final String field,
-			@JsonProperty("widgetType") final JSONLayoutWidgetType widgetType)
+			@JsonProperty("widgetType") @Nullable final JSONLayoutWidgetType widgetType)
 	{
 		this.field = field;
 		this.widgetType = widgetType;
@@ -271,7 +264,7 @@ public final class JSONDocumentField implements Serializable
 				.toString();
 	}
 
-	/* package */ JSONDocumentField setValue(final Object jsonValue, final String reason)
+	/* package */ JSONDocumentField setValue(final Object jsonValue, @Nullable final String reason)
 	{
 		value = JSONNullValue.wrapIfNull(jsonValue);
 		valueReason = reason;
@@ -290,6 +283,7 @@ public final class JSONDocumentField implements Serializable
 	public JSONDocumentField setWidgetType(@Nullable final JSONLayoutWidgetType widgetType)
 	{
 		this.widgetType = widgetType;
+		this.precision = widgetType != null ? widgetType.getStandardNumberPrecision() : null;
 		return this;
 	}
 
@@ -298,12 +292,11 @@ public final class JSONDocumentField implements Serializable
 		return readonly != null && readonly;
 	}
 
-	public JSONDocumentField setReadonly(final boolean readonly, final String reason)
+	public void setReadonly(final boolean readonly, @Nullable final String reason)
 	{
 		this.readonly = readonly;
 		readonlyReason = reason;
 		setViewEditorRenderMode(readonly ? ViewEditorRenderMode.NEVER : ViewEditorRenderMode.ALWAYS);
-		return this;
 	}
 
 	public JSONDocumentField setReadonly(final LogicExpressionResult readonly)
@@ -314,16 +307,14 @@ public final class JSONDocumentField implements Serializable
 
 	public JSONDocumentField setReadonly(final boolean readonly)
 	{
-		final String reason = null; // N/A
-		setReadonly(readonly, reason);
+		setReadonly(readonly, null);
 		return this;
 	}
 
-	private JSONDocumentField setMandatory(final boolean mandatory, final String reason)
+	private void setMandatory(final boolean mandatory, @Nullable final String reason)
 	{
 		this.mandatory = mandatory;
 		mandatoryReason = reason;
-		return this;
 	}
 
 	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory)
@@ -334,12 +325,11 @@ public final class JSONDocumentField implements Serializable
 
 	public JSONDocumentField setMandatory(final boolean mandatory)
 	{
-		final String reason = null; // N/A
-		setMandatory(mandatory, reason);
+		setMandatory(mandatory, null);
 		return this;
 	}
 
-	public JSONDocumentField setDisplayed(final boolean displayed, final String reason)
+	public JSONDocumentField setDisplayed(final boolean displayed, @Nullable final String reason)
 	{
 		this.displayed = displayed;
 		displayedReason = reason;
@@ -354,16 +344,14 @@ public final class JSONDocumentField implements Serializable
 
 	public JSONDocumentField setDisplayed(final boolean displayed)
 	{
-		final String reason = null; // N/A
-		setDisplayed(displayed, reason);
+		setDisplayed(displayed, null);
 		return this;
 	}
 
-	/* package */ JSONDocumentField setLookupValuesStale(final boolean lookupValuesStale, final String reason)
+	/* package */ void setLookupValuesStale(final boolean lookupValuesStale, @Nullable final String reason)
 	{
 		this.lookupValuesStale = lookupValuesStale;
 		lookupValuesStaleReason = reason;
-		return this;
 	}
 
 	/* package */ JSONDocumentField setValidStatus(final DocumentValidStatus validStatus)
@@ -377,54 +365,10 @@ public final class JSONDocumentField implements Serializable
 		return field;
 	}
 
+	@Nullable
 	public Object getValue()
 	{
 		return value;
-	}
-
-	public String getValueReason()
-	{
-		return valueReason;
-	}
-
-	public Boolean getReadonly()
-	{
-		return readonly;
-	}
-
-	public String getReadonlyReason()
-	{
-		return readonlyReason;
-	}
-
-	public Boolean getMandatory()
-	{
-		return mandatory;
-	}
-
-	public String getMandatoryReason()
-	{
-		return mandatoryReason;
-	}
-
-	public Boolean getDisplayed()
-	{
-		return displayed;
-	}
-
-	public String getDisplayedReason()
-	{
-		return displayedReason;
-	}
-
-	public Boolean getLookupValuesStale()
-	{
-		return lookupValuesStale;
-	}
-
-	public String getLookupValuesStaleReason()
-	{
-		return lookupValuesStaleReason;
 	}
 
 	@JsonAnyGetter
@@ -464,10 +408,9 @@ public final class JSONDocumentField implements Serializable
 		return this;
 	}
 
-	public JSONDocumentField setFieldWarning(final JSONDocumentFieldWarning fieldWarning)
+	public void setFieldWarning(@Nullable final JSONDocumentFieldWarning fieldWarning)
 	{
 		this.fieldWarning = fieldWarning;
-		return this;
 	}
 
 	public JSONDocumentField setDevices(@Nullable final List<JSONDeviceDescriptor> devices)

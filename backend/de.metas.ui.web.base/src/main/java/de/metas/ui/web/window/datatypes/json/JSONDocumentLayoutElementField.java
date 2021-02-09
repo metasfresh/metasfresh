@@ -82,7 +82,7 @@ public final class JSONDocumentLayoutElementField
 		 */
 		ActionButtonStatus,
 
-		/** See {@value #ActionButtonStatus}. */
+		/** See ActionButtonStatus. */
 		ActionButton,
 
 		/**
@@ -91,6 +91,7 @@ public final class JSONDocumentLayoutElementField
 		 */
 		Tooltip;
 
+		@Nullable
 		public static JSONFieldType fromNullable(final FieldType fieldType)
 		{
 			if (fieldType == null)
@@ -127,6 +128,7 @@ public final class JSONDocumentLayoutElementField
 		/** This one is used for fields that are tooltips. Also see {@link FieldType#Tooltip}. */
 		text;
 
+		@Nullable
 		public static JSONLookupSource fromNullable(@Nullable final LookupSource lookupSource)
 		{
 			if (lookupSource == null)
@@ -303,7 +305,10 @@ public final class JSONDocumentLayoutElementField
 				.toString();
 	}
 
-	private static DocumentEntityDescriptor findNewRecordEntityDescriptor(final String lookupTableName, final JSONDocumentLayoutOptions jsonOpts)
+	@Nullable
+	private static DocumentEntityDescriptor findNewRecordEntityDescriptor(
+			@Nullable final String lookupTableName,
+			final JSONDocumentLayoutOptions jsonOpts)
 	{
 		if (lookupTableName == null)
 		{
