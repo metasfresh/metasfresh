@@ -185,16 +185,6 @@ INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTran
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=572630 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 2021-02-03T12:34:19.493Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(578724) 
-;
-
--- 2021-02-03T12:35:03.425Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_BP_Relation','ALTER TABLE public.C_BP_Relation ADD COLUMN Role VARCHAR(100)')
-;
-
 -- Migrate data to role column from IsMainProducer
 update C_BP_Relation set role = 'MP' where IsMainProducer = 'Y';
 
@@ -217,11 +207,6 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=554367
 -- 2021-02-04T15:17:30.537Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Field WHERE AD_Field_ID=554367
-;
-
--- 2021-02-04T15:17:30.577Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_BP_Relation','ALTER TABLE C_BP_Relation DROP COLUMN IF EXISTS IsMainProducer')
 ;
 
 -- 2021-02-04T15:17:30.618Z
@@ -254,16 +239,6 @@ INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Tab_ID=543375 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
 ;
 
--- 2021-02-04T15:30:51.237Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_tab_translation_from_ad_element(2372) 
-;
-
--- 2021-02-04T15:30:51.242Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Tab(543375)
-;
-
 -- 2021-02-04T15:31:24.946Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,11104,629868,0,543375,TO_TIMESTAMP('2021-02-04 17:31:24','YYYY-MM-DD HH24:MI:SS'),100,255,'U','Y','N','N','N','N','N','N','N','Beschreibung',TO_TIMESTAMP('2021-02-04 17:31:24','YYYY-MM-DD HH24:MI:SS'),100)
@@ -274,19 +249,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629868 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:24.951Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275) 
-;
-
 -- 2021-02-04T15:31:25.021Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629868
-;
-
--- 2021-02-04T15:31:25.021Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629868)
 ;
 
 -- 2021-02-04T15:31:25.157Z
@@ -299,19 +264,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629869 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:25.163Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469) 
-;
-
 -- 2021-02-04T15:31:25.221Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629869
-;
-
--- 2021-02-04T15:31:25.221Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629869)
 ;
 
 -- 2021-02-04T15:31:25.332Z
@@ -324,19 +279,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629870 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:25.337Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102) 
-;
-
 -- 2021-02-04T15:31:25.579Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629870
-;
-
--- 2021-02-04T15:31:25.580Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629870)
 ;
 
 -- 2021-02-04T15:31:25.709Z
@@ -349,19 +294,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629871 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:25.712Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2372) 
-;
-
 -- 2021-02-04T15:31:25.719Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629871
-;
-
--- 2021-02-04T15:31:25.720Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629871)
 ;
 
 -- 2021-02-04T15:31:25.813Z
@@ -374,19 +309,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629872 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:25.815Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2374) 
-;
-
 -- 2021-02-04T15:31:25.818Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629872
-;
-
--- 2021-02-04T15:31:25.818Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629872)
 ;
 
 -- 2021-02-04T15:31:25.914Z
@@ -399,19 +324,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629873 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:25.917Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(929) 
-;
-
 -- 2021-02-04T15:31:25.920Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629873
-;
-
--- 2021-02-04T15:31:25.921Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629873)
 ;
 
 -- 2021-02-04T15:31:26.011Z
@@ -424,19 +339,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629874 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:26.020Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(925) 
-;
-
 -- 2021-02-04T15:31:26.028Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629874
-;
-
--- 2021-02-04T15:31:26.029Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629874)
 ;
 
 -- 2021-02-04T15:31:26.128Z
@@ -449,19 +354,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629875 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:26.132Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(187) 
-;
-
 -- 2021-02-04T15:31:26.144Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629875
-;
-
--- 2021-02-04T15:31:26.145Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629875)
 ;
 
 -- 2021-02-04T15:31:26.246Z
@@ -474,19 +369,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629876 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:26.250Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348) 
-;
-
 -- 2021-02-04T15:31:26.616Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629876
-;
-
--- 2021-02-04T15:31:26.616Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629876)
 ;
 
 -- 2021-02-04T15:31:26.711Z
@@ -499,19 +384,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629877 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:26.715Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113) 
-;
-
 -- 2021-02-04T15:31:27.092Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629877
-;
-
--- 2021-02-04T15:31:27.092Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629877)
 ;
 
 -- 2021-02-04T15:31:27.507Z
@@ -524,19 +399,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629878 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:27.510Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(189) 
-;
-
 -- 2021-02-04T15:31:27.518Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629878
-;
-
--- 2021-02-04T15:31:27.519Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629878)
 ;
 
 -- 2021-02-04T15:31:27.598Z
@@ -549,19 +414,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629879 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:27.619Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(916) 
-;
-
 -- 2021-02-04T15:31:27.622Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629879
-;
-
--- 2021-02-04T15:31:27.622Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629879)
 ;
 
 -- 2021-02-04T15:31:27.729Z
@@ -574,19 +429,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629880 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:27.735Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2373) 
-;
-
 -- 2021-02-04T15:31:27.739Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629880
-;
-
--- 2021-02-04T15:31:27.740Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629880)
 ;
 
 -- 2021-02-04T15:31:27.839Z
@@ -599,19 +444,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629881 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:27.846Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(927) 
-;
-
 -- 2021-02-04T15:31:27.850Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629881
-;
-
--- 2021-02-04T15:31:27.851Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629881)
 ;
 
 -- 2021-02-04T15:31:27.939Z
@@ -624,19 +459,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629882 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:27.946Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542278) 
-;
-
 -- 2021-02-04T15:31:27.950Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629882
-;
-
--- 2021-02-04T15:31:27.951Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629882)
 ;
 
 -- 2021-02-04T15:31:28.066Z
@@ -649,19 +474,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629883 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:28.075Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542533) 
-;
-
 -- 2021-02-04T15:31:28.079Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629883
-;
-
--- 2021-02-04T15:31:28.081Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629883)
 ;
 
 -- 2021-02-04T15:31:28.185Z
@@ -674,35 +489,15 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=629884 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-04T15:31:28.196Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578724) 
-;
-
 -- 2021-02-04T15:31:28.198Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=629884
-;
-
--- 2021-02-04T15:31:28.200Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(629884)
 ;
 
 -- Configure sub tab for I_C_BP_Relation  in bpartner window
 -- 2021-02-05T09:20:29.871Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Tab SET AD_Element_ID=572801, CommitWarning=NULL, Description='Business Partner Relation', Help='"Beziehungen Geschäftspartner" erlaubt die Verwaltung von Beziehungen der Geschäftspartner untereinander: wer empfängt die Rechnungen für Lieferungen oder wer zahlt die Rechnungen. If the Location of the Business partner is not defined, the rule applies to all location of that Business Partner', Name='Relation',Updated=TO_TIMESTAMP('2021-02-05 11:20:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=543375
-;
-
--- 2021-02-05T09:20:29.872Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_tab_translation_from_ad_element(572801) 
-;
-
--- 2021-02-05T09:20:29.885Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Tab(543375)
 ;
 
 -- 2021-02-05T09:26:12.386Z
@@ -825,19 +620,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630163 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:14:26.069Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578724) 
-;
-
 -- 2021-02-05T10:14:26.082Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630163
-;
-
--- 2021-02-05T10:14:26.083Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630163)
 ;
 
 -- 2021-02-05T10:16:51.018Z
@@ -1485,16 +1270,6 @@ INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Tab_ID=543387 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
 ;
 
--- 2021-02-05T10:51:09.145Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_tab_translation_from_ad_element(2372) 
-;
-
--- 2021-02-05T10:51:09.160Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Tab(543387)
-;
-
 -- 2021-02-05T10:51:50.608Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,11107,630166,0,543387,0,TO_TIMESTAMP('2021-02-05 12:51:50','YYYY-MM-DD HH24:MI:SS'),100,'Business Partner Relation',14,'D','"Beziehungen Geschäftspartner" erlaubt die Verwaltung von Beziehungen der Geschäftspartner untereinander: wer empfängt die Rechnungen für Lieferungen oder wer zahlt die Rechnungen.',0,'Y','N','N','N','N','N','N','N','Beziehungen Geschäftspartner',0,0,1,1,TO_TIMESTAMP('2021-02-05 12:51:50','YYYY-MM-DD HH24:MI:SS'),100)
@@ -1505,19 +1280,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630166 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:50.614Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2372) 
-;
-
 -- 2021-02-05T10:51:50.621Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630166
-;
-
--- 2021-02-05T10:51:50.626Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630166)
 ;
 
 -- 2021-02-05T10:51:50.726Z
@@ -1530,19 +1295,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630167 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:50.729Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102) 
-;
-
 -- 2021-02-05T10:51:51.131Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630167
-;
-
--- 2021-02-05T10:51:51.131Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630167)
 ;
 
 -- 2021-02-05T10:51:51.246Z
@@ -1555,19 +1310,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630168 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:51.250Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113) 
-;
-
 -- 2021-02-05T10:51:51.683Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630168
-;
-
--- 2021-02-05T10:51:51.684Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630168)
 ;
 
 -- 2021-02-05T10:51:52.037Z
@@ -1580,19 +1325,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630169 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:52.050Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469) 
-;
-
 -- 2021-02-05T10:51:52.121Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630169
-;
-
--- 2021-02-05T10:51:52.122Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630169)
 ;
 
 -- 2021-02-05T10:51:52.324Z
@@ -1605,19 +1340,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630170 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:52.329Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275) 
-;
-
 -- 2021-02-05T10:51:52.394Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630170
-;
-
--- 2021-02-05T10:51:52.395Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630170)
 ;
 
 -- 2021-02-05T10:51:52.619Z
@@ -1630,20 +1355,12 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630171 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:52.624Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348) 
-;
 
 -- 2021-02-05T10:51:53.788Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630171
 ;
 
--- 2021-02-05T10:51:53.788Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630171)
-;
 
 -- 2021-02-05T10:51:53.983Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1655,20 +1372,12 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630172 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:53.986Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1003052) 
-;
 
 -- 2021-02-05T10:51:53.989Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630172
 ;
 
--- 2021-02-05T10:51:53.989Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630172)
-;
 
 -- 2021-02-05T10:51:54.077Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1680,19 +1389,10 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630173 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.078Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002541) 
-;
 
 -- 2021-02-05T10:51:54.080Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630173
-;
-
--- 2021-02-05T10:51:54.080Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630173)
 ;
 
 -- 2021-02-05T10:51:54.169Z
@@ -1707,18 +1407,9 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2021-02-05T10:51:54.171Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2373) 
-;
-
--- 2021-02-05T10:51:54.171Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630174
 ;
 
--- 2021-02-05T10:51:54.172Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630174)
-;
 
 -- 2021-02-05T10:51:54.260Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1730,20 +1421,13 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630175 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.263Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2374) 
-;
 
 -- 2021-02-05T10:51:54.264Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630175
 ;
 
--- 2021-02-05T10:51:54.265Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630175)
-;
+
 
 -- 2021-02-05T10:51:54.354Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1755,20 +1439,13 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630176 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.358Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(929) 
-;
 
 -- 2021-02-05T10:51:54.360Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630176
 ;
 
--- 2021-02-05T10:51:54.361Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630176)
-;
+
 
 -- 2021-02-05T10:51:54.456Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1780,20 +1457,13 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630177 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.459Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(916) 
-;
+
 
 -- 2021-02-05T10:51:54.462Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630177
 ;
 
--- 2021-02-05T10:51:54.463Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630177)
-;
 
 -- 2021-02-05T10:51:54.556Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1805,20 +1475,12 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630178 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.559Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(925) 
-;
 
 -- 2021-02-05T10:51:54.562Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630178
 ;
 
--- 2021-02-05T10:51:54.563Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630178)
-;
 
 -- 2021-02-05T10:51:54.659Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1830,20 +1492,13 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630179 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.668Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(927) 
-;
 
 -- 2021-02-05T10:51:54.674Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630179
 ;
 
--- 2021-02-05T10:51:54.676Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630179)
-;
+
 
 -- 2021-02-05T10:51:54.782Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1855,20 +1510,12 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630180 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.791Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542278) 
-;
 
 -- 2021-02-05T10:51:54.797Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630180
 ;
 
--- 2021-02-05T10:51:54.799Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630180)
-;
 
 -- 2021-02-05T10:51:54.903Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1880,20 +1527,12 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630181 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:54.907Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542533) 
-;
 
 -- 2021-02-05T10:51:54.908Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630181
 ;
 
--- 2021-02-05T10:51:54.909Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630181)
-;
 
 -- 2021-02-05T10:51:55.009Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1905,24 +1544,10 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=630182 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
--- 2021-02-05T10:51:55.013Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578724) 
-;
 
 -- 2021-02-05T10:51:55.015Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=630182
-;
-
--- 2021-02-05T10:51:55.016Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing_Field(630182)
-;
-
--- 2021-02-05T10:53:39.232Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ select AD_Element_Link_Create_Missing()
 ;
 
 -- 2021-02-05T10:54:52.077Z
