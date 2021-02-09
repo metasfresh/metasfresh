@@ -512,7 +512,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(line.getPaymentCurrencyConversionCtx())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId());
+				.bpartnerId(line.getPaymentBPartnerId())
+				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
 		{
@@ -754,7 +755,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setAccount(getAccount(AccountType.WriteOff, as))
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
-				.bpartnerId(line.getPaymentBPartnerId());
+				.bpartnerId(line.getPaymentBPartnerId())
+				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
 		{
@@ -823,7 +825,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setCurrencyId(getCurrencyId())
 				.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
 				.orgId(line.getInvoiceOrgId())
-				.bpartnerId(line.getInvoiceBPartnerId());
+				.bpartnerId(line.getInvoiceBPartnerId())
+				.alsoAddZeroLine();
 
 		if (line.isSOTrxInvoice())
 		{
@@ -904,7 +907,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.setDocLine(counterLine)
 				.setCurrencyId(getCurrencyId())
 				.orgId(counterLine.getInvoiceOrgId())
-				.bpartnerId(counterLine.getInvoiceBPartnerId());
+				.bpartnerId(counterLine.getInvoiceBPartnerId())
+				.alsoAddZeroLine();
 		if (counterLine.isSOTrxInvoice())
 		{
 			factLineBuilder.setAccount(getAccount(AccountType.C_Receivable, as));
