@@ -106,7 +106,7 @@ public class C_OrderLine
 			return; // leave this job to the adempiere standard callouts
 		}
 
-		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false;
+		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = true;
 		updatePrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
 	}
 
