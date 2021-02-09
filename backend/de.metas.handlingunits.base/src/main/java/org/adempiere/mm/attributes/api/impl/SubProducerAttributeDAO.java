@@ -44,7 +44,7 @@ public class SubProducerAttributeDAO implements ISubProducerAttributeDAO
 	{
 		final IQuery<I_C_BP_Relation> bpRelationQuery = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_Relation.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addEqualsFilter(org.compiere.model.I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, bpartnerId)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_Role, X_C_BP_Relation.ROLE_MainProducer)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)

@@ -44,6 +44,7 @@ public class SubProducerAttributeDAOTest
 {
 	private I_C_BPartner bp;
 	private I_C_BPartner bp2;
+	private I_C_BPartner bp3;
 	private ISubProducerAttributeDAO dao;
 
 	@BeforeEach
@@ -60,10 +61,10 @@ public class SubProducerAttributeDAOTest
 
 	@Test
 	public void testRetrieveSubProducerBPartners() {
-		List<I_C_BPartner> bpPartnerList = dao.retrieveSubProducerBPartners(Env.getCtx(), bp.getC_BPartner_ID());
-		assertThat(bpPartnerList.size()).isEqualTo(1);
+		List<I_C_BPartner> bpPartnerList = dao.retrieveSubProducerBPartners(Env.getCtx(), bp2.getC_BPartner_ID());
+		assertThat(bpPartnerList.size()).isEqualTo(2);
 
-		bpPartnerList = dao.retrieveSubProducerBPartners(Env.getCtx(), bp2.getC_BPartner_ID());
+		bpPartnerList = dao.retrieveSubProducerBPartners(Env.getCtx(), bp3.getC_BPartner_ID());
 		assertThat(bpPartnerList.size()).isEqualTo(0);
 	}
 
@@ -73,8 +74,27 @@ public class SubProducerAttributeDAOTest
 		bp.setName("Test Partner");
 		save(bp);
 
+		bp2 = newInstance(I_C_BPartner.class);
+		bp2.setIsActive(true);
+		bp2.setName("Main Producer Partner");
+		save(bp2);
+
 		I_C_BP_Relation bpRelation = newInstance(I_C_BP_Relation.class);
 		bpRelation.setC_BPartner_ID(bp.getC_BPartner_ID());
+		bpRelation.setC_BPartnerRelation_ID(bp2.getC_BPartner_ID());
+		bpRelation.setName("Test Rel1");
+		bpRelation.setRole(X_C_BP_Relation.ROLE_MainProducer);
+		bpRelation.setIsActive(true);
+		save(bpRelation);
+
+		bp3 = newInstance(I_C_BPartner.class);
+		bp3.setIsActive(true);
+		bp3.setName("Other Test Partner");
+		save(bp3);
+
+		bpRelation = newInstance(I_C_BP_Relation.class);
+		bpRelation.setC_BPartner_ID(bp3.getC_BPartner_ID());
+		bpRelation.setC_BPartnerRelation_ID(bp2.getC_BPartner_ID());
 		bpRelation.setName("Test Rel1");
 		bpRelation.setRole(X_C_BP_Relation.ROLE_MainProducer);
 		bpRelation.setIsActive(true);
@@ -82,40 +102,8 @@ public class SubProducerAttributeDAOTest
 
 		bpRelation = newInstance(I_C_BP_Relation.class);
 		bpRelation.setC_BPartner_ID(bp.getC_BPartner_ID());
+		bpRelation.setC_BPartnerRelation_ID(bp3.getC_BPartner_ID());
 		bpRelation.setName("Test Rel2");
-		bpRelation.setRole(null);
-		bpRelation.setIsActive(true);
-		save(bpRelation);
-
-		bpRelation = newInstance(I_C_BP_Relation.class);
-		bpRelation.setC_BPartner_ID(bp.getC_BPartner_ID());
-		bpRelation.setName("Test Rel3");
-		bpRelation.setRole(X_C_BP_Relation.ROLE_MainProducer);
-		bpRelation.setIsActive(false);
-		save(bpRelation);
-
-		bpRelation = newInstance(I_C_BP_Relation.class);
-		bpRelation.setC_BPartner_ID(bp.getC_BPartner_ID());
-		bpRelation.setName("Test Rel4");
-		bpRelation.setRole(X_C_BP_Relation.ROLE_Caregiver);
-		bpRelation.setIsActive(true);
-		save(bpRelation);
-
-		bpRelation = newInstance(I_C_BP_Relation.class);
-		bpRelation.setC_BPartner_ID(bp.getC_BPartner_ID());
-		bpRelation.setName("Test Rel5");
-		bpRelation.setRole(X_C_BP_Relation.ROLE_MainProducer);
-		bpRelation.setIsActive(true);
-		save(bpRelation);
-
-		bp2 = newInstance(I_C_BPartner.class);
-		bp2.setIsActive(true);
-		bp2.setName("Test Partner");
-		save(bp2);
-
-		bpRelation = newInstance(I_C_BP_Relation.class);
-		bpRelation.setC_BPartner_ID(bp2.getC_BPartner_ID());
-		bpRelation.setName("Test Rel21");
 		bpRelation.setRole(null);
 		bpRelation.setIsActive(true);
 		save(bpRelation);
