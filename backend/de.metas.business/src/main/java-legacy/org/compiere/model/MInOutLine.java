@@ -130,6 +130,8 @@ public class MInOutLine extends X_M_InOutLine
 	 */
 	public void setOrderLine(I_C_OrderLine oLine, int M_Locator_ID, BigDecimal Qty)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 		setC_OrderLine_ID(oLine.getC_OrderLine_ID());
 		setLine(oLine.getLine());
 		setC_UOM_ID(oLine.getC_UOM_ID());
@@ -177,14 +179,15 @@ public class MInOutLine extends X_M_InOutLine
 		setDescription(oLine.getDescription());
 		setIsDescription(oLine.isDescription());
 		//
-		setC_Project_ID(oLine.getC_Project_ID());
+
 		setC_ProjectPhase_ID(oLine.getC_ProjectPhase_ID());
 		setC_ProjectTask_ID(oLine.getC_ProjectTask_ID());
-		setC_Activity_ID(oLine.getC_Activity_ID());
-		setC_Campaign_ID(oLine.getC_Campaign_ID());
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
 		setUser1_ID(oLine.getUser1_ID());
 		setUser2_ID(oLine.getUser2_ID());
+
+		final Dimension orderLineDimensions = dimensionService.getFromRecord(oLine);
+		dimensionService.updateRecord(this, orderLineDimensions);
 	}	// setOrderLine
 
 	/**

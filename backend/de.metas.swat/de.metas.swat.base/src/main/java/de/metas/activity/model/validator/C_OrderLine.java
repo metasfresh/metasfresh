@@ -39,16 +39,19 @@ import de.metas.util.Services;
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
-
-		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+		if (orderLine.getC_Activity_ID() > 0)
+		{
+			return; // was already set, so don't try to auto-fill it
+		}
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
 		if (productId == null)
 		{
-			orderLine.setC_Activity_ID(-1);
 			return;
 		}
 
@@ -59,16 +62,19 @@ public class C_OrderLine
 		// Activity
 		final ActivityId productActivityId = Services.get(IProductAcctDAO.class).getProductActivityId(productId);
 
+		if (productActivityId == null)
+		{
+			return;
+		}
+
 		final Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
 		if (orderLineDimension == null)
+
 		{
 			//nothing to do
 			return;
 		}
 
-		if (orderLineDimension.getActivityId() == null)
-		{
-			dimensionService.updateRecord(orderLine, orderLineDimension.withActivityId(productActivityId));
-		}
+		dimensionService.updateRecord(orderLine, orderLineDimension.withActivityId(productActivityId));
 	}
 }
