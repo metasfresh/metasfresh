@@ -285,7 +285,7 @@ public class C_OLCand
 		}
 		else
 		{
-			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(handoverRelation.getC_BP_Relation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID());
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(handoverRelation.getC_BPartnerRelation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID());
 			final org.compiere.model.I_C_BPartner_Location handOverLocation = bPartnerDAO.getBPartnerLocationById(bPartnerLocationId);
 
 			if (handOverLocation == null)
