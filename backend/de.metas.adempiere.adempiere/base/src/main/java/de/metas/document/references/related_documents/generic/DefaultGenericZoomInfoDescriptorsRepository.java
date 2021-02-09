@@ -83,7 +83,7 @@ public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomI
 				.targetColumnName(rs.getString("target_columnname"))
 				.virtualTargetColumnSql(rs.getString("target_columnsql"))
 				.dynamicTargetColumnName(false)
-				.targetAD_Window_ID(targetWindowId)
+				.targetWindowId(targetWindowId)
 				.targetWindowInternalName(rs.getString("target_window_internalname"))
 				//.isSOTrx(...)
 				.targetHasIsSOTrxColumn(targetHasIsSOTrxColumn)

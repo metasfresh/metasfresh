@@ -19,11 +19,11 @@ package org.compiere.apps;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
+import javax.swing.*;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -114,7 +114,7 @@ public class AZoomAcross
 		}
 
 		final List<ZoomInfo> zoomInfos = new ArrayList<>();
-		final ZoomInfoFactory zoomProvider = ZoomInfoFactory.get();
+		final ZoomInfoFactory zoomProvider = SpringContextHolder.instance.getBean(ZoomInfoFactory.class);
 		zoomProvider.disableFactAcctZoomProvider(); // in Swing this is not needed because we have the Posted button
 		final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
 		for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, permissions))
@@ -125,11 +125,6 @@ public class AZoomAcross
 		return ImmutableList.copyOf(zoomInfos);
 	}
 
-	/**
-	 * Launch Zoom
-	 *
-	 * @param pp KeyPair
-	 */
 	private void launch(final ZoomInfo zoomInfo)
 	{
 		final AdWindowId adWindowId = zoomInfo.getAdWindowId();

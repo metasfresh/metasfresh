@@ -22,42 +22,39 @@
 
 package de.metas.document.references.related_documents;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import de.metas.error.AdIssueZoomProvider;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.error.AdIssueZoomProvider;
-import de.metas.logging.LogManager;
-import lombok.NonNull;
-
 /**
- *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
+@Service
 public class ZoomInfoFactory
 {
-	public static ZoomInfoFactory get()
-	{
-		return instance;
-	}
-
-	private static final transient ZoomInfoFactory instance = new ZoomInfoFactory();
-
 	private static final Logger logger = LogManager.getLogger(ZoomInfoFactory.class);
 
+	private final GenericZoomProvider genericZoomProvider;
+	private final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory;
 	private boolean factAcctZoomProviderEnabled = true;
 
-	private ZoomInfoFactory()
+	public ZoomInfoFactory(
+			@NonNull final GenericZoomProvider genericZoomProvider,
+			@NonNull final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory)
 	{
+		this.genericZoomProvider = genericZoomProvider;
+		this.relationTypeZoomProvidersFactory = relationTypeZoomProvidersFactory;
 	}
 
 	/**
@@ -116,7 +113,7 @@ public class ZoomInfoFactory
 								+ "\n zoomProvider: " + zoomProvider
 								+ "\n targetAD_Window_ID: " + onlyTargetWindowId
 								+ "\n source: " + zoomSource)
-										.throwIfDeveloperModeOrLogWarningElse(logger);
+								.throwIfDeveloperModeOrLogWarningElse(logger);
 						continue;
 					}
 
@@ -146,7 +143,7 @@ public class ZoomInfoFactory
 
 	/**
 	 * Retrieves that {@link ZoomInfo} which is referencing our given <code>source</code> and has given target window.
-	 *
+	 * <p>
 	 * NOTE: Records count is not checked
 	 */
 	public ZoomInfo retrieveZoomInfo(
@@ -174,8 +171,8 @@ public class ZoomInfoFactory
 		// NOTE: Zoom providers order IS NOT important because each provider creates ZoomInfo with a priority.
 
 		final ArrayList<IZoomProvider> zoomProviders = new ArrayList<>();
-		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersByZoomOriginTableName(tableName));
-		zoomProviders.add(GenericZoomProvider.instance);
+		zoomProviders.addAll(relationTypeZoomProvidersFactory.getZoomProvidersByZoomOriginTableName(tableName));
+		zoomProviders.add(genericZoomProvider);
 		if (factAcctZoomProviderEnabled)
 		{
 			zoomProviders.add(FactAcctZoomProvider.instance);

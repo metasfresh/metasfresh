@@ -22,33 +22,20 @@
 
 package de.metas.document.references.zoom_into;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.ImmutableTranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.ad.element.api.AdWindowId;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder(toBuilder = true)
-public class GenericZoomIntoTableWindow
+public class CustomizedWindowInfo
 {
-	int priority;
-	@NonNull AdWindowId adWindowId;
-	boolean isDefaultSOWindow;
-	boolean isDefaultPOWindow;
-	@Nullable String tabSqlWhereClause;
+	@NonNull ImmutableTranslatableString customizationWindowCaption;
 
-	public boolean hasHigherPriorityThen(@NonNull final GenericZoomIntoTableWindow other)
-	{
-		return priority < other.priority;
-	}
-
-	public GenericZoomIntoTableWindow withAdWindowId(@NonNull final AdWindowId adWindowId)
-	{
-		return !AdWindowId.equals(this.adWindowId, adWindowId)
-				? toBuilder().adWindowId(adWindowId).build()
-				: this;
-	}
+	@NonNull AdWindowId customizationWindowId;
+	@NonNull @Builder.Default ImmutableList<AdWindowId> previousCustomizationWindowIds = ImmutableList.of();
+	@NonNull AdWindowId baseWindowId;
 }

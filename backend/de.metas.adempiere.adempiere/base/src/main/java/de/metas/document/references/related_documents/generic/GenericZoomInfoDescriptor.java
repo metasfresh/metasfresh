@@ -22,6 +22,8 @@
 
 package de.metas.document.references.related_documents.generic;
 
+import de.metas.document.references.zoom_into.CustomizedWindowInfo;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -35,29 +37,29 @@ import javax.annotation.Nullable;
 @Value
 public class GenericZoomInfoDescriptor
 {
-	ImmutableTranslatableString name;
-	AdWindowId targetAD_Window_ID;
+	@NonNull ImmutableTranslatableString name;
+	@NonNull AdWindowId targetWindowId;
 
-	String targetWindowInternalName;
+	@NonNull String targetWindowInternalName;
 
-	String targetTableName;
-	String targetColumnName;
+	@NonNull String targetTableName;
+	@NonNull String targetColumnName;
 	boolean dynamicTargetColumnName;
-	String virtualTargetColumnSql;
+	@Nullable String virtualTargetColumnSql;
 
-	Boolean isSOTrx;
+	@Nullable Boolean isSOTrx;
 	boolean targetHasIsSOTrxColumn;
 
-	String tabSqlWhereClause;
+	@Nullable String tabSqlWhereClause;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private GenericZoomInfoDescriptor(
 			@NonNull final ImmutableTranslatableString name,
 			@NonNull final String targetTableName,
 			@Nullable final String targetColumnName,
 			@Nullable final String virtualTargetColumnSql,
 			final boolean dynamicTargetColumnName,
-			@NonNull final AdWindowId targetAD_Window_ID,
+			@NonNull final AdWindowId targetWindowId,
 			@NonNull final String targetWindowInternalName,
 			@Nullable final Boolean isSOTrx,
 			final boolean targetHasIsSOTrxColumn,
@@ -76,7 +78,7 @@ public class GenericZoomInfoDescriptor
 		this.virtualTargetColumnSql = StringUtils.trimBlankToNull(virtualTargetColumnSql);
 		this.dynamicTargetColumnName = dynamicTargetColumnName;
 
-		this.targetAD_Window_ID = targetAD_Window_ID;
+		this.targetWindowId = targetWindowId;
 
 		this.targetWindowInternalName = targetWindowInternalName;
 
@@ -89,5 +91,19 @@ public class GenericZoomInfoDescriptor
 	public boolean isVirtualTargetColumnName()
 	{
 		return getVirtualTargetColumnSql() != null;
+	}
+
+	public GenericZoomInfoDescriptor withCustomizedWindows(@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
+	{
+		final CustomizedWindowInfo customizedWindow = customizedWindowInfoMap.getCustomizedWindowInfo(this.targetWindowId).orElse(null);
+		if (customizedWindow == null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.targetWindowId(customizedWindow.getCustomizationWindowId())
+				.name(customizedWindow.getCustomizationWindowCaption())
+				.build();
 	}
 }

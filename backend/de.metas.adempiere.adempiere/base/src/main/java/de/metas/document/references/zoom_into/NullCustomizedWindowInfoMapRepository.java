@@ -22,33 +22,23 @@
 
 package de.metas.document.references.zoom_into;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.With;
 import org.adempiere.ad.element.api.AdWindowId;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder(toBuilder = true)
-public class GenericZoomIntoTableWindow
+public class NullCustomizedWindowInfoMapRepository implements CustomizedWindowInfoMapRepository
 {
-	int priority;
-	@NonNull AdWindowId adWindowId;
-	boolean isDefaultSOWindow;
-	boolean isDefaultPOWindow;
-	@Nullable String tabSqlWhereClause;
+	public static NullCustomizedWindowInfoMapRepository instance = new NullCustomizedWindowInfoMapRepository();
 
-	public boolean hasHigherPriorityThen(@NonNull final GenericZoomIntoTableWindow other)
+	private NullCustomizedWindowInfoMapRepository() {}
+
+	@Override
+	public CustomizedWindowInfoMap get()
 	{
-		return priority < other.priority;
+		return CustomizedWindowInfoMap.empty();
 	}
 
-	public GenericZoomIntoTableWindow withAdWindowId(@NonNull final AdWindowId adWindowId)
+	@Override
+	public void assertNoCycles(final AdWindowId adWindowId)
 	{
-		return !AdWindowId.equals(this.adWindowId, adWindowId)
-				? toBuilder().adWindowId(adWindowId).build()
-				: this;
+		throw new UnsupportedOperationException();
 	}
 }

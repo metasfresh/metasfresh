@@ -28,6 +28,8 @@ import de.metas.document.references.related_documents.generic.DefaultGenericZoom
 import de.metas.document.references.related_documents.generic.GenericZoomInfoDescriptor;
 import de.metas.document.references.related_documents.generic.GenericZoomInfoDescriptorsRepository;
 import de.metas.document.references.related_documents.generic.LegacyGenericZoomInfoDescriptorsRepository;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -44,6 +46,7 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -53,11 +56,12 @@ import java.util.List;
  *
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
+@Component
 /* package */ class GenericZoomProvider implements IZoomProvider
 {
-	public static final GenericZoomProvider instance = new GenericZoomProvider();
-
 	private static final Logger logger = LogManager.getLogger(GenericZoomProvider.class);
+
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	private final CCache<String, ImmutableList<GenericZoomInfoDescriptor>> descriptorsBySourceKeyColumnName = CCache.<String, ImmutableList<GenericZoomInfoDescriptor>>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -73,8 +77,10 @@ import java.util.List;
 
 	private final Priority zoomInfoPriority = Priority.LOWEST;
 
-	private GenericZoomProvider()
+	GenericZoomProvider(
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
 	@Override
@@ -91,7 +97,7 @@ import java.util.List;
 		final ImmutableList.Builder<ZoomInfoCandidate> result = ImmutableList.builder();
 		for (final GenericZoomInfoDescriptor zoomInfoDescriptor : zoomInfoDescriptors)
 		{
-			final AdWindowId windowId = zoomInfoDescriptor.getTargetAD_Window_ID();
+			final AdWindowId windowId = zoomInfoDescriptor.getTargetWindowId();
 			if (targetWindowId != null && !AdWindowId.equals(targetWindowId, windowId))
 			{
 				continue;
@@ -127,7 +133,12 @@ import java.util.List;
 	private ImmutableList<GenericZoomInfoDescriptor> retrieveZoomInfoDescriptors(@NonNull final String sourceKeyColumnName)
 	{
 		final GenericZoomInfoDescriptorsRepository repository = genericZoomInfoDescriptorsRepositoryHolder.getOrLoad(0, this::createGenericZoomInfoDescriptorsRepository);
-		return ImmutableList.copyOf(repository.getZoomInfoDescriptors(sourceKeyColumnName));
+		final CustomizedWindowInfoMap customizedWindowInfoMap = customizedWindowInfoMapRepository.get();
+		return repository.getZoomInfoDescriptors(sourceKeyColumnName)
+				.stream()
+				.map(descriptor -> descriptor.withCustomizedWindows(customizedWindowInfoMap))
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private GenericZoomInfoDescriptorsRepository createGenericZoomInfoDescriptorsRepository()
@@ -218,7 +229,7 @@ import java.util.List;
 			// For RMA, Material Receipt window should be loaded for
 			// IsSOTrx=true and Shipment for IsSOTrx=false
 			// TODO: fetch the additional SQL from window's first tab where clause
-			final AdWindowId AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
+			final AdWindowId AD_Window_ID = zoomInfoDescriptor.getTargetWindowId();
 			if (I_M_RMA.Table_Name.equals(sourceTableName) && (AD_Window_ID.getRepoId() == 169 || AD_Window_ID.getRepoId() == 184))
 			{
 				isSO = !isSO;

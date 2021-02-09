@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -34,14 +35,14 @@ import java.util.List;
 @Value
 public class GenericZoomIntoTableInfo
 {
-	String tableName;
-	String keyColumnName;
+	@NonNull String tableName;
+	@NonNull String keyColumnName;
 	boolean hasIsSOTrxColumn;
 
-	GenericZoomIntoTableWindow defaultWindow;
-	GenericZoomIntoTableWindow defaultSOWindow;
-	GenericZoomIntoTableWindow defaultPOWindow;
-	ImmutableList<GenericZoomIntoTableWindow> otherWindows;
+	@Nullable GenericZoomIntoTableWindow defaultWindow;
+	@Nullable GenericZoomIntoTableWindow defaultSOWindow;
+	@Nullable GenericZoomIntoTableWindow defaultPOWindow;
+	@NonNull ImmutableList<GenericZoomIntoTableWindow> otherWindows;
 
 	@Builder
 	private GenericZoomIntoTableInfo(
@@ -102,7 +103,7 @@ public class GenericZoomIntoTableInfo
 				this.defaultWindow = defaultSOWindow;
 			}
 		}
-		else if(!otherWindows.isEmpty())
+		else if (!otherWindows.isEmpty())
 		{
 			this.defaultWindow = otherWindows.remove(0);
 		}
@@ -115,5 +116,46 @@ public class GenericZoomIntoTableInfo
 		this.defaultPOWindow = defaultPOWindow;
 
 		this.otherWindows = ImmutableList.copyOf(otherWindows);
+	}
+
+	private GenericZoomIntoTableInfo(
+			@NonNull final GenericZoomIntoTableInfo from,
+			@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
+	{
+		this.tableName = from.tableName;
+		this.keyColumnName = from.keyColumnName;
+		this.hasIsSOTrxColumn = from.hasIsSOTrxColumn;
+
+		this.defaultWindow = withCustomizedWindow(from.defaultWindow, customizedWindowInfoMap);
+		this.defaultSOWindow = withCustomizedWindow(from.defaultSOWindow, customizedWindowInfoMap);
+		this.defaultPOWindow = withCustomizedWindow(from.defaultPOWindow, customizedWindowInfoMap);
+		this.otherWindows = from.otherWindows
+				.stream()
+				.map(window -> withCustomizedWindow(window, customizedWindowInfoMap))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private static GenericZoomIntoTableWindow withCustomizedWindow(
+			@Nullable final GenericZoomIntoTableWindow window,
+			@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
+	{
+		if (window == null)
+		{
+			return null;
+		}
+
+		final CustomizedWindowInfo customizedWindow = customizedWindowInfoMap.getCustomizedWindowInfo(window.getAdWindowId()).orElse(null);
+		if (customizedWindow == null)
+		{
+			return window;
+		}
+
+		return window.withAdWindowId(customizedWindow.getCustomizationWindowId());
+	}
+
+	public GenericZoomIntoTableInfo withCustomizedWindowIds(@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
+	{
+		return new GenericZoomIntoTableInfo(this, customizedWindowInfoMap);
 	}
 }

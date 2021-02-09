@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.window.api.impl.ADWindowDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -69,7 +70,7 @@ public interface IADWindowDAO extends ISingletonService
 	@Nullable
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
-	void copyWindow(AdWindowId targetWindowId, AdWindowId sourceWindowId);
+	void copyWindow(@NonNull WindowCopyRequest request);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 

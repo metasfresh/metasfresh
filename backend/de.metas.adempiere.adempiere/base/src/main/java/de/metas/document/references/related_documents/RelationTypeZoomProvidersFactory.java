@@ -22,20 +22,15 @@
 
 package de.metas.document.references.related_documents;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID;
-import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
-import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
@@ -49,21 +44,29 @@ import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_AD_RelationType;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
-import de.metas.cache.CCache;
-import de.metas.i18n.ITranslatableString;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID;
+import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
+import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 
+@Component
 public final class RelationTypeZoomProvidersFactory
 {
-	public static final RelationTypeZoomProvidersFactory instance = new RelationTypeZoomProvidersFactory();
-
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvidersFactory.class);
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	private final CCache<String, ImmutableList<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
 
@@ -76,6 +79,12 @@ public final class RelationTypeZoomProvidersFactory
 			+ createSharedWhereClause()
 			+ createTableRecordIDReferenceRelationTypeSpecificWhereClause()
 			+ createOrderBy();
+
+	public RelationTypeZoomProvidersFactory(
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
+	{
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
+	}
 
 	private static String createSelectFrom()
 	{
@@ -161,7 +170,7 @@ public final class RelationTypeZoomProvidersFactory
 		return ImmutableList.copyOf(relationTypeZoomProviders);
 	}
 
-	private static List<RelationTypeZoomProvider> runRelationTypeSQLQuery(final String sqlQuery, final Object[] sqlParams)
+	private List<RelationTypeZoomProvider> runRelationTypeSQLQuery(final String sqlQuery, @Nullable final Object[] sqlParams)
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -183,7 +192,7 @@ public final class RelationTypeZoomProvidersFactory
 		}
 	}
 
-	private static List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
+	private List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
 	{
 		final ArrayList<RelationTypeZoomProvider> result = new ArrayList<>();
 		final Set<Integer> alreadySeen = new HashSet<>();
@@ -201,7 +210,6 @@ public final class RelationTypeZoomProvidersFactory
 			try
 			{
 				final RelationTypeZoomProvider zoomProviderForRelType = findZoomProvider(relationType);
-
 				if (zoomProviderForRelType == null)
 				{
 					continue;
@@ -209,7 +217,7 @@ public final class RelationTypeZoomProvidersFactory
 
 				result.add(zoomProviderForRelType);
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				logger.warn("Failed creating zoom provider for {}. Skipped.", relationType, ex);
 			}
@@ -219,10 +227,9 @@ public final class RelationTypeZoomProvidersFactory
 	}
 
 	@VisibleForTesting
-	protected static RelationTypeZoomProvider findZoomProvider(final I_AD_RelationType relationType)
+	@Nullable
+	protected RelationTypeZoomProvider findZoomProvider(@NonNull final I_AD_RelationType relationType)
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-
 		final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
 		final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
 
@@ -230,6 +237,7 @@ public final class RelationTypeZoomProvidersFactory
 		final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
 		return RelationTypeZoomProvider.builder()
+				.setCustomizedWindowInfoMap(customizedWindowInfoMapRepository.get())
 				.setDirected(relationType.isDirected())
 				.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 				.setInternalName(relationType.getInternalName())

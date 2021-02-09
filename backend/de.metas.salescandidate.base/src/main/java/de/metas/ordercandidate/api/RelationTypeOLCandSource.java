@@ -1,14 +1,6 @@
 package de.metas.ordercandidate.api;
 
-import java.util.stream.Stream;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.references.related_documents.RelationTypeZoomProvidersFactory;
@@ -27,6 +19,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -91,7 +90,8 @@ final class RelationTypeOLCandSource implements OLCandSource
 		// FIXME: get rid of it
 		final PO processorPO = InterfaceWrapperHelper.getPO(InterfaceWrapperHelper.loadOutOfTrx(olCandProcessorId, I_C_OLCandProcessor.class));
 
-		return RelationTypeZoomProvidersFactory.instance
+		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = SpringContextHolder.instance.getBean(RelationTypeZoomProvidersFactory.class);
+		return relationTypeZoomProvidersFactory
 				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(Env.getCtx(), processorPO, I_C_OLCand.class, ITrx.TRXNAME_ThreadInherited)
 				.stream()

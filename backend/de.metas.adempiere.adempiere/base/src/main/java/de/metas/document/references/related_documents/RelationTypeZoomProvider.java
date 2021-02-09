@@ -25,6 +25,8 @@ package de.metas.document.references.related_documents;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.references.zoom_into.CustomizedWindowInfo;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -37,7 +39,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -249,7 +251,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		final String queryWhereClause = createZoomOriginQueryWhereClause(zoomOrigin);
 
-		final ITableRefInfo refTable = getTarget().getTableRefInfo();
+		final TableRefInfo refTable = getTarget().getTableRefInfo();
 
 		final String tableName = refTable.getTableName();
 		final String columnName = refTable.getKeyColumn();
@@ -269,7 +271,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		final StringBuilder queryWhereClause = new StringBuilder();
 
-		final ITableRefInfo refTable = getTarget().getTableRefInfo();
+		final TableRefInfo refTable = getTarget().getTableRefInfo();
 
 		final String targetTableName = zoomOrigin.getTableName();
 		final String originTableName = refTable.getTableName();
@@ -325,7 +327,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 
 			final String refTableWhereClause = whereClause;
-
 			if (!Check.isEmpty(refTableWhereClause))
 			{
 				queryWhereClause.append(parseWhereClause(zoomOrigin, refTableWhereClause, true));
@@ -413,7 +414,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private static class ZoomProviderDestination
 	{
 		int adReferenceId;
-		ITableRefInfo tableRefInfo;
+		TableRefInfo tableRefInfo;
 		ITranslatableString roleDisplayName;
 
 		/**
@@ -424,7 +425,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		@lombok.Builder
 		private ZoomProviderDestination(
 				final int adReferenceId,
-				@NonNull final ITableRefInfo tableRefInfo,
+				@NonNull final TableRefInfo tableRefInfo,
 				@Nullable final ITranslatableString roleDisplayName,
 				@NonNull final Boolean tableRecordIdTarget)
 		{
@@ -504,7 +505,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	 * @return the <code>AD_Window_ID</code>
 	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
 	 */
-	private AdWindowId getRefTableAD_Window_ID(final ITableRefInfo tableRefInfo, final boolean isSOTrx)
+	private AdWindowId getRefTableAD_Window_ID(final TableRefInfo tableRefInfo, final boolean isSOTrx)
 	{
 		AdWindowId windowId = tableRefInfo.getZoomAD_Window_ID_Override();
 		if (windowId != null)
@@ -533,6 +534,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		private final transient ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
 
+		private CustomizedWindowInfoMap customizedWindowInfoMap = CustomizedWindowInfoMap.empty();
+
 		private Boolean directed;
 		private String internalName;
 		private int adRelationTypeId;
@@ -540,16 +543,17 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		private int sourceReferenceId = -1;
 		private ITranslatableString sourceRoleDisplayName;
-		private ITableRefInfo sourceTableRefInfo = null; // lazy
+		@Nullable private TableRefInfo sourceTableRefInfo = null; // lazy
 
 		private int targetReferenceId = -1;
 		private ITranslatableString targetRoleDisplayName;
-		private ITableRefInfo targetTableRefInfo = null; // lazy
+		@Nullable private TableRefInfo targetTableRefInfo = null; // lazy
 
 		private Builder()
 		{
 		}
 
+		@Nullable
 		public RelationTypeZoomProvider buildOrNull()
 		{
 			if (!isTableRecordIdTarget() && getSourceTableRefInfoOrNull() == null)
@@ -566,6 +570,14 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			}
 
 			return new RelationTypeZoomProvider(this);
+		}
+
+		public Builder setCustomizedWindowInfoMap(final CustomizedWindowInfoMap customizedWindowInfoMap)
+		{
+			this.customizedWindowInfoMap = customizedWindowInfoMap;
+			this.sourceTableRefInfo = null;
+			this.targetTableRefInfo = null;
+			return this;
 		}
 
 		public Builder setAD_RelationType_ID(final int adRelationTypeId)
@@ -624,24 +636,39 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return sourceReferenceId;
 		}
 
-		private ITableRefInfo getSourceTableRefInfoOrNull()
+		private TableRefInfo getSourceTableRefInfoOrNull()
 		{
 			if (sourceTableRefInfo == null)
 			{
-				sourceTableRefInfo = lookupDAO.retrieveTableRefInfo(getSource_Reference_ID());
+				sourceTableRefInfo = retrieveTableRefInfo(getSource_Reference_ID());
 			}
 			return sourceTableRefInfo;
+		}
+
+		@Nullable
+		private TableRefInfo retrieveTableRefInfo(final int adReferenceId)
+		{
+			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableRefInfo(adReferenceId);
+			if(tableRefInfo == null)
+			{
+				return null;
+			}
+
+			return tableRefInfo.mapWindowIds(this::getCustomizationWindowId);
+		}
+
+		@Nullable
+		private AdWindowId getCustomizationWindowId(@Nullable final AdWindowId adWindowId)
+		{
+			return adWindowId != null
+					? customizedWindowInfoMap.getCustomizedWindowInfo(adWindowId).map(CustomizedWindowInfo::getCustomizationWindowId).orElse(adWindowId)
+					: null;
 		}
 
 		public Builder setSourceRoleDisplayName(final ITranslatableString sourceRoleDisplayName)
 		{
 			this.sourceRoleDisplayName = sourceRoleDisplayName;
 			return this;
-		}
-
-		private ITranslatableString getSourceRoleDisplayName()
-		{
-			return sourceRoleDisplayName;
 		}
 
 		public Builder setTarget_Reference_AD(final int targetReferenceId)
@@ -657,11 +684,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return targetReferenceId;
 		}
 
-		private ITableRefInfo getTargetTableRefInfoOrNull()
+		private TableRefInfo getTargetTableRefInfoOrNull()
 		{
 			if (targetTableRefInfo == null)
 			{
-				targetTableRefInfo = lookupDAO.retrieveTableRefInfo(getTarget_Reference_ID());
+				targetTableRefInfo = retrieveTableRefInfo(getTarget_Reference_ID());
 			}
 			return targetTableRefInfo;
 		}

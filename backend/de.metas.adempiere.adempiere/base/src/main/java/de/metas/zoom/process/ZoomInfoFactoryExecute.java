@@ -3,6 +3,7 @@ package de.metas.zoom.process;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import de.metas.document.references.related_documents.POZoomSource;
@@ -46,6 +47,8 @@ import de.metas.util.Services;
  */
 public class ZoomInfoFactoryExecute extends JavaProcess
 {
+	private final ZoomInfoFactory zoomInfoFactory = SpringContextHolder.instance.getBean(ZoomInfoFactory.class);
+
 	@Param(mandatory = true, parameterName = "AD_Window_ID")
 	private AdWindowId windowId;
 
@@ -63,7 +66,7 @@ public class ZoomInfoFactoryExecute extends JavaProcess
 
 		final POZoomSource zoomSource = POZoomSource.of(po, windowId);
 		final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
-		ZoomInfoFactory.get().retrieveZoomInfos(zoomSource, permissions);
+		zoomInfoFactory.retrieveZoomInfos(zoomSource, permissions);
 
 		return MSG_OK;
 	}

@@ -20,35 +20,18 @@
  * #L%
  */
 
-package de.metas.document.references.zoom_into;
+package org.adempiere.ad.window.api;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.ad.element.api.AdWindowId;
 
-import javax.annotation.Nullable;
-
 @Value
-@Builder(toBuilder = true)
-public class GenericZoomIntoTableWindow
+@Builder
+public class WindowCopyRequest
 {
-	int priority;
-	@NonNull AdWindowId adWindowId;
-	boolean isDefaultSOWindow;
-	boolean isDefaultPOWindow;
-	@Nullable String tabSqlWhereClause;
-
-	public boolean hasHigherPriorityThen(@NonNull final GenericZoomIntoTableWindow other)
-	{
-		return priority < other.priority;
-	}
-
-	public GenericZoomIntoTableWindow withAdWindowId(@NonNull final AdWindowId adWindowId)
-	{
-		return !AdWindowId.equals(this.adWindowId, adWindowId)
-				? toBuilder().adWindowId(adWindowId).build()
-				: this;
-	}
+	@NonNull AdWindowId sourceWindowId;
+	@NonNull AdWindowId targetWindowId;
+	boolean isCustomizationWindow;
 }

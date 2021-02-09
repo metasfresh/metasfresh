@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1111098030L;
+	private static final long serialVersionUID = 1919078552L;
 
     /** Standard Constructor */
     public X_AD_Window (final Properties ctx, final int AD_Window_ID, @Nullable final String trxName)
@@ -241,6 +241,33 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Window getOverrides_Window()
+	{
+		return get_ValueAsPO(COLUMNNAME_Overrides_Window_ID, org.compiere.model.I_AD_Window.class);
+	}
+
+	@Override
+	public void setOverrides_Window(final org.compiere.model.I_AD_Window Overrides_Window)
+	{
+		set_ValueFromPO(COLUMNNAME_Overrides_Window_ID, org.compiere.model.I_AD_Window.class, Overrides_Window);
+	}
+
+	@Override
+	public void setOverrides_Window_ID (final int Overrides_Window_ID)
+	{
+		if (Overrides_Window_ID < 1) 
+			set_Value (COLUMNNAME_Overrides_Window_ID, null);
+		else 
+			set_Value (COLUMNNAME_Overrides_Window_ID, Overrides_Window_ID);
+	}
+
+	@Override
+	public int getOverrides_Window_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Overrides_Window_ID);
 	}
 
 	@Override

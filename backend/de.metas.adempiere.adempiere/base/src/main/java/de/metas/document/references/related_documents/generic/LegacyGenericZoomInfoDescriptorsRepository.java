@@ -253,7 +253,7 @@ public class LegacyGenericZoomInfoDescriptorsRepository implements GenericZoomIn
 			{
 				return ImmutableList.of(
 						infoBuilder.name(this.soNameTrl.build())
-								.targetAD_Window_ID(targetSO_Window_ID)
+								.targetWindowId(targetSO_Window_ID)
 								.targetWindowInternalName(computeTargetWindowInternalName(targetSO_Window_ID))
 								.isSOTrx(null) // applies for SO and PO
 								.build());
@@ -262,12 +262,12 @@ public class LegacyGenericZoomInfoDescriptorsRepository implements GenericZoomIn
 			{
 				return ImmutableList.of(
 						infoBuilder.name(this.soNameTrl.build())
-								.targetAD_Window_ID(targetSO_Window_ID)
+								.targetWindowId(targetSO_Window_ID)
 								.targetWindowInternalName(computeTargetWindowInternalName(targetSO_Window_ID))
 								.isSOTrx(Boolean.TRUE)
 								.build(),
 						infoBuilder.name(this.poNameTrl.build())
-								.targetAD_Window_ID(targetPO_Window_ID)
+								.targetWindowId(targetPO_Window_ID)
 								.targetWindowInternalName(computeTargetWindowInternalName(targetPO_Window_ID))
 								.isSOTrx(Boolean.FALSE)
 								.build());

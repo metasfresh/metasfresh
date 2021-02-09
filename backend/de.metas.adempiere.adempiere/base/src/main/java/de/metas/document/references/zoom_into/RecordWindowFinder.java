@@ -32,6 +32,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
@@ -98,7 +99,14 @@ public class RecordWindowFinder
 	}
 
 	private static final Logger logger = LogManager.getLogger(RecordWindowFinder.class);
-	private final GenericZoomIntoTableInfoRepository tableInfoRepository = newGenericZoomIntoTableInfoRepository();
+
+	private final GenericZoomIntoTableInfoRepository tableInfoRepository = !Adempiere.isUnitTestMode()
+			? new DefaultGenericZoomIntoTableInfoRepository()
+			: new TestingGenericZoomIntoTableInfoRepository();
+
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository = !Adempiere.isUnitTestMode()
+			? SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class)
+			: NullCustomizedWindowInfoMapRepository.instance;
 
 	//
 	// Parameters
@@ -175,13 +183,6 @@ public class RecordWindowFinder
 		// suggested window is for both trx
 		// to be extended if we need 2 windows later
 		this.alreadyKnownWindowId = alreadyKnownWindowId;
-	}
-
-	private static GenericZoomIntoTableInfoRepository newGenericZoomIntoTableInfoRepository()
-	{
-		return !Adempiere.isUnitTestMode()
-				? new DefaultGenericZoomIntoTableInfoRepository()
-				: new TestingGenericZoomIntoTableInfoRepository();
 	}
 
 	public RecordWindowFinder checkRecordPresentInWindow()
@@ -340,9 +341,15 @@ public class RecordWindowFinder
 	{
 		if (_tableInfo == null)
 		{
-			_tableInfo = tableInfoByTableName.getOrLoad(getTableName(), tableInfoRepository::retrieveTableInfo);
+			_tableInfo = tableInfoByTableName.getOrLoad(getTableName(), this::retrieveTableInfo);
 		}
 		return _tableInfo;
+	}
+
+	private GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
+	{
+		return tableInfoRepository.retrieveTableInfo(tableName)
+				.withCustomizedWindowIds(customizedWindowInfoMapRepository.get());
 	}
 
 	private SOTrx getRecordSOTrxEffective()

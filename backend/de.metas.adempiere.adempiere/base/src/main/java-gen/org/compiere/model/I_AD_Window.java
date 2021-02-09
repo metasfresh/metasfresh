@@ -406,6 +406,31 @@ public interface I_AD_Window
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Overrides Base Window.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOverrides_Window_ID (int Overrides_Window_ID);
+
+	/**
+	 * Get Overrides Base Window.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOverrides_Window_ID();
+
+	@Nullable org.compiere.model.I_AD_Window getOverrides_Window();
+
+	void setOverrides_Window(@Nullable org.compiere.model.I_AD_Window Overrides_Window);
+
+	ModelColumn<I_AD_Window, org.compiere.model.I_AD_Window> COLUMN_Overrides_Window_ID = new ModelColumn<>(I_AD_Window.class, "Overrides_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_Overrides_Window_ID = "Overrides_Window_ID";
+
+	/**
 	 * Set Process Now.
 	 *
 	 * <br>Type: Button

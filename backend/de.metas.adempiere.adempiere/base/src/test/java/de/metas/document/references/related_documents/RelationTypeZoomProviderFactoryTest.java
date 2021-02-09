@@ -23,11 +23,11 @@
 package de.metas.document.references.related_documents;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.impl.LookupDAO;
-import org.adempiere.ad.service.impl.LookupDAO.TableRefInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Column;
@@ -77,26 +77,27 @@ public class RelationTypeZoomProviderFactoryTest
 		final boolean isTableRecordIdTarget = true;
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
-		final TableRefInfo targetTableRefInfo = LookupDAO.TableRefInfo.builder()
-				.setIdentifier(refTargetName)
-				.setTableName(tableName)
-				.setKeyColumn(keyColumnName)
-				.setDisplayColumn(keyColumnName)
-				.setValueDisplayed(true)
-				.setDisplayColumnSQL("")
-				.setTranslated(true)
-				.setWhereClause("")
-				.setOrderByClause("")
-				.setZoomSO_Window_ID(null)
-				.setZoomPO_Window_ID(null)
-				.setZoomAD_Window_ID_Override(null)
-				.setAutoComplete(false)
+		final TableRefInfo targetTableRefInfo = TableRefInfo.builder()
+				.identifier(refTargetName)
+				.tableName(tableName)
+				.keyColumn(keyColumnName)
+				.displayColumn(keyColumnName)
+				.valueDisplayed(true)
+				.displayColumnSQL("")
+				.translated(true)
+				.whereClause("")
+				.orderByClause("")
+				.zoomSO_Window_ID(null)
+				.zoomPO_Window_ID(null)
+				.zoomAD_Window_ID_Override(null)
+				.autoComplete(false)
 				.build();
 
 		setupLookupDAOMock(ImmutableMap.of(
 				referenceTarget.getAD_Reference_ID(), targetTableRefInfo));
 
-		final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
+		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = new RelationTypeZoomProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
+		final RelationTypeZoomProvider zoomProvider = relationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
 		assertThat(zoomProvider.isTableRecordIdTarget()).isTrue();
 	}
@@ -124,43 +125,44 @@ public class RelationTypeZoomProviderFactoryTest
 		final boolean isTableRecordIdTarget = false;
 
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceSource, referenceTarget);
-		final TableRefInfo targetTableRefInfo = LookupDAO.TableRefInfo.builder()
-				.setIdentifier(refTargetName)
-				.setTableName(tableName)
-				.setKeyColumn(keyColumnName)
-				.setDisplayColumn(keyColumnName)
-				.setValueDisplayed(true)
-				.setDisplayColumnSQL("")
-				.setTranslated(true)
-				.setWhereClause("")
-				.setOrderByClause("")
-				.setZoomSO_Window_ID(null)
-				.setZoomPO_Window_ID(null)
-				.setZoomAD_Window_ID_Override(null)
-				.setAutoComplete(false)
+		final TableRefInfo targetTableRefInfo = TableRefInfo.builder()
+				.identifier(refTargetName)
+				.tableName(tableName)
+				.keyColumn(keyColumnName)
+				.displayColumn(keyColumnName)
+				.valueDisplayed(true)
+				.displayColumnSQL("")
+				.translated(true)
+				.whereClause("")
+				.orderByClause("")
+				.zoomSO_Window_ID(null)
+				.zoomPO_Window_ID(null)
+				.zoomAD_Window_ID_Override(null)
+				.autoComplete(false)
 				.build();
 
-		final TableRefInfo sourceTableRefInfo = LookupDAO.TableRefInfo.builder()
-				.setIdentifier(refTargetName)
-				.setTableName(tableName)
-				.setKeyColumn(keyColumnName)
-				.setDisplayColumn(keyColumnName)
-				.setValueDisplayed(true)
-				.setDisplayColumnSQL("")
-				.setTranslated(true)
-				.setWhereClause("")
-				.setOrderByClause("")
-				.setZoomSO_Window_ID(null)
-				.setZoomPO_Window_ID(null)
-				.setZoomAD_Window_ID_Override(null)
-				.setAutoComplete(false)
+		final TableRefInfo sourceTableRefInfo = TableRefInfo.builder()
+				.identifier(refTargetName)
+				.tableName(tableName)
+				.keyColumn(keyColumnName)
+				.displayColumn(keyColumnName)
+				.valueDisplayed(true)
+				.displayColumnSQL("")
+				.translated(true)
+				.whereClause("")
+				.orderByClause("")
+				.zoomSO_Window_ID(null)
+				.zoomPO_Window_ID(null)
+				.zoomAD_Window_ID_Override(null)
+				.autoComplete(false)
 				.build();
 
 		setupLookupDAOMock(ImmutableMap.of(
 				referenceTarget.getAD_Reference_ID(), targetTableRefInfo,
 				referenceSource.getAD_Reference_ID(), sourceTableRefInfo));
 
-		final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
+		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = new RelationTypeZoomProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
+		final RelationTypeZoomProvider zoomProvider = relationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
 		assertThat(zoomProvider.isTableRecordIdTarget()).isFalse();
 	}
@@ -170,7 +172,7 @@ public class RelationTypeZoomProviderFactoryTest
 		final ILookupDAO lookupDao = Mockito.mock(ILookupDAO.class);
 		Services.registerService(ILookupDAO.class, lookupDao);
 
-		for (final Entry<Integer, org.adempiere.ad.service.impl.LookupDAO.TableRefInfo> entry : idToRefInfo.entrySet())
+		for (final Entry<Integer, TableRefInfo> entry : idToRefInfo.entrySet())
 		{
 			Mockito.doReturn(entry.getValue()).when(lookupDao).retrieveTableRefInfo(entry.getKey());
 		}
@@ -194,7 +196,8 @@ public class RelationTypeZoomProviderFactoryTest
 		final boolean isTableRecordIdTarget = false;
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
-		assertThatThrownBy(() -> RelationTypeZoomProvidersFactory.findZoomProvider(relationType))
+		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = new RelationTypeZoomProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
+		assertThatThrownBy(() -> relationTypeZoomProvidersFactory.findZoomProvider(relationType))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessage("Assumption failure: sourceReferenceId > 0");
 	}
