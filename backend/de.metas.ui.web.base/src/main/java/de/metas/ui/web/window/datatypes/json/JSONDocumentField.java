@@ -171,7 +171,11 @@ public final class JSONDocumentField
 
 	@JsonProperty("widgetType")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private JSONLayoutWidgetType widgetType;
+	@Nullable private JSONLayoutWidgetType widgetType;
+
+	@JsonProperty("precision")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable private Integer precision;
 
 	@JsonProperty("value")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -241,6 +245,7 @@ public final class JSONDocumentField
 	{
 		this.field = field;
 		this.widgetType = widgetType;
+		this.precision = widgetType != null ? widgetType.getStandardNumberPrecision() : null;
 	}
 
 	@Override
