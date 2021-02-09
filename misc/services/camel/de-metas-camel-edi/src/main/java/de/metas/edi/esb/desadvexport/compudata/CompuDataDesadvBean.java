@@ -229,6 +229,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 			final String compudataPackagingCode = switch (packagingCode)
 					{
 						case ISO1 -> "201";
+						case EURO -> "201";
 						case ISO2 -> "200";
 						case ONEW -> "08";
 						default -> null;
