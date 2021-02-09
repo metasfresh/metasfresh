@@ -22,11 +22,14 @@
 
 package de.metas.util.web.exception;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.common.rest_api.JsonError;
+import de.metas.dao.selection.pagination.PageNotFoundException;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.security.permissions2.PermissionNotGrantedException;
+import lombok.NonNull;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -34,14 +37,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import de.metas.bpartner.service.BPartnerIdNotFoundException;
-import de.metas.dao.selection.pagination.PageNotFoundException;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.common.rest_api.JsonError;
-import de.metas.rest_api.utils.JsonErrors;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler
@@ -105,6 +105,11 @@ public class RestResponseEntityExceptionHandler
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<JsonError> handleException(@NonNull final Exception e)
 	{
+		final ResponseStatus responseStatus = e.getClass().getAnnotation(ResponseStatus.class);
+		if (responseStatus != null)
+		{
+			return logAndCreateError(e, responseStatus.reason(), responseStatus.code());
+		}
 		return logAndCreateError(e, HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
