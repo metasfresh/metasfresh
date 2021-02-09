@@ -73,10 +73,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_RemittanceAdvice','ALTER TABLE public.C_RemittanceAdvice ADD COLUMN DocStatus VARCHAR(2) DEFAULT ''DR'' NOT NULL')
 ;
 
--- 2021-02-03T00:37:28.266Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
+-- -- 2021-02-03T00:37:28.266Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
+-- ;
 
 -- 2021-02-03T00:37:28.268Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
