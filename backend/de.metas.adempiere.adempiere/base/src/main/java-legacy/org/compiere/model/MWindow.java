@@ -11,61 +11,45 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
- *	Window Model
+ * Window Model
  *
- *  @author Jorg Janke
- *  @version $Id: MWindow.java,v 1.2 2006/07/30 00:58:05 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: MWindow.java,v 1.2 2006/07/30 00:58:05 jjanke Exp $
  */
 public class MWindow extends X_AD_Window
 {
-	private static final Logger	s_log = LogManager.getLogger(MWindow.class);
+	private static final Logger s_log = LogManager.getLogger(MWindow.class);
 
-	public MWindow (final Properties ctx, final int AD_Window_ID, final String trxName)
+	public MWindow(final Properties ctx, final int AD_Window_ID, final String trxName)
 	{
-		super (ctx, AD_Window_ID, trxName);
+		super(ctx, AD_Window_ID, trxName);
 		if (is_new())
 		{
-			setWindowType (WINDOWTYPE_Maintain);	// M
-			setEntityType (ENTITYTYPE_UserMaintained);	// U
-			setIsBetaFunctionality (false);
-			setIsDefault (false);
-			setIsSOTrx (true);	// Y
-		}	}	//	M_Window
+			setWindowType(WINDOWTYPE_Maintain);    // M
+			setEntityType(ENTITYTYPE_UserMaintained);    // U
+			setIsBetaFunctionality(false);
+			setIsDefault(false);
+			setIsSOTrx(true);    // Y
+		}
+	}
 
-	/**
-	 * 	Koad Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
-	public MWindow (final Properties ctx, final ResultSet rs, final String trxName)
+	public MWindow(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	M_Window
+	}
 
-	/**
-	 * 	Set Window Size
-	 *	@param size size
-	 */
-	public void setWindowSize (final Dimension size)
+	public void setWindowSize(final Dimension size)
 	{
 		if (size != null)
 		{
 			setWinWidth(size.width);
 			setWinHeight(size.height);
 		}
-	}	//	setWindowSize
+	}
 
-	/**	The Lines						*/
-	private MTab[]		m_tabs	= null;
+	private MTab[] m_tabs = null;
 
-	/**
-	 * 	Get Fields
-	 *	@param reload reload data
-	 *	@return array of lines
-	 *	@param trxName transaction
-	 */
-	public MTab[] getTabs (final boolean reload, final String trxName)
+	public MTab[] getTabs(final boolean reload, final String trxName)
 	{
 		if (m_tabs != null && !reload)
 		{
@@ -77,12 +61,12 @@ public class MWindow extends X_AD_Window
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, trxName);
-			pstmt.setInt (1, getAD_Window_ID());
-			rs = pstmt.executeQuery ();
-			while (rs.next ())
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, getAD_Window_ID());
+			rs = pstmt.executeQuery();
+			while (rs.next())
 			{
-				list.add (new MTab (getCtx(), rs, trxName));
+				list.add(new MTab(getCtx(), rs, trxName));
 			}
 		}
 		catch (final Exception e)
@@ -94,28 +78,21 @@ public class MWindow extends X_AD_Window
 			DB.close(rs, pstmt);
 		}
 		//
-		m_tabs = new MTab[list.size ()];
-		list.toArray (m_tabs);
+		m_tabs = new MTab[list.size()];
+		list.toArray(m_tabs);
 		return m_tabs;
-	}	//	getFields
+	}    //	getFields
 
-
-	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return success
-	 */
 	@Override
-	protected boolean afterSave (final boolean newRecord, final boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
-		if (newRecord)	//	Add to all automatic roles
+		if (newRecord)    //	Add to all automatic roles
 		{
 			// Add to all automatic roles ... handled elsewhere
 		}
 		// Menu/Workflow update
 		else if (is_ValueChanged("IsActive") || is_ValueChanged("Name")
-			|| is_ValueChanged("Description") || is_ValueChanged("Help"))
+				|| is_ValueChanged("Description") || is_ValueChanged("Help"))
 		{
 			final MMenu[] menues = MMenu.get(getCtx(), "AD_Window_ID=" + getAD_Window_ID(), get_TrxName());
 			for (final MMenu menue : menues)
@@ -149,18 +126,9 @@ public class MWindow extends X_AD_Window
 			}
 		}
 		return success;
-	}	//	afterSave
+	}
 
-
-	/**
-	 * Get workflow nodes with where clause.
-	 * Is here as MWFNode is in base
-	 * @param ctx context
-	 * @param whereClause where clause w/o the actual WHERE
-	 * @param trxName transaction
-	 * @return nodes
-	 */
-	public static X_AD_WF_Node[] getWFNodes (final Properties ctx, final String whereClause, final String trxName)
+	public static X_AD_WF_Node[] getWFNodes(final Properties ctx, final String whereClause, final String trxName)
 	{
 		String sql = "SELECT * FROM AD_WF_Node";
 		if (whereClause != null && whereClause.length() > 0)
@@ -172,22 +140,23 @@ public class MWindow extends X_AD_Window
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement (sql, trxName);
-			rs = pstmt.executeQuery ();
-			while (rs.next ())
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
+			while (rs.next())
 			{
-				list.add (new X_AD_WF_Node (ctx, rs, trxName));
+				list.add(new X_AD_WF_Node(ctx, rs, trxName));
 			}
 		}
 		catch (final Exception e)
 		{
 			s_log.error(sql, e);
 		}
-		finally {
+		finally
+		{
 			DB.close(rs, pstmt);
 		}
 		final X_AD_WF_Node[] retValue = new X_AD_WF_Node[list.size()];
-		list.toArray (retValue);
+		list.toArray(retValue);
 		return retValue;
-	}	//	getWFNode
-}	//	M_Window
+	}
+}

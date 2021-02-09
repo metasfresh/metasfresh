@@ -24,47 +24,19 @@ public class MField extends X_AD_Field
 			setIsHeading(false);
 			setIsReadOnly(false);
 			setIsSameLine(false);
-			// setObscureType(OBSCURETYPE_ObscureDigitsButLast4);
 		}
-	}	// MField
+	}
 
-	/**
-	 * Load Constructor
-	 * 
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MField(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MField
+	}
 
-	/**
-	 * Parent Constructor
-	 * 
-	 * @param parent parent
-	 */
 	public MField(final I_AD_Tab parent)
 	{
 		this(InterfaceWrapperHelper.getCtx(parent), 0, InterfaceWrapperHelper.getTrxName(parent));
 		setClientOrgFromModel(parent);
 		setAD_Tab(parent);
-	}	// MField
-
-	/**
-	 * Copy Constructor
-	 * 
-	 * @param parent parent
-	 * @param from copy from
-	 */
-	public MField(final MTab parent, final MField from)
-	{
-		this(parent.getCtx(), 0, parent.get_TrxName());
-		copyValues(from, this);
-		setClientOrg(parent);
-		setAD_Tab_ID(parent.getAD_Tab_ID());
-		setEntityType(parent.getEntityType());
 	}
 
 	public void setColumn(final I_AD_Column column)
