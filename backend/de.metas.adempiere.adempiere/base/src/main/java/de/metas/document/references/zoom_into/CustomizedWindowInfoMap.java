@@ -23,7 +23,6 @@
 package de.metas.document.references.zoom_into;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.util.Check;
@@ -64,9 +63,11 @@ public class CustomizedWindowInfoMap
 
 	private static ImmutableMap<AdWindowId, CustomizedWindowInfo> computeEffectiveCustomizedWindowInfos(@NonNull final List<CustomizedWindowInfo> list)
 	{
-		final ArrayList<ArrayList<AdWindowId>> groups = new ArrayList<>();
 		final ImmutableMap<AdWindowId, CustomizedWindowInfo> customizedWindowsByCustomizedWindowId = Maps.uniqueIndex(list, CustomizedWindowInfo::getCustomizationWindowId);
 
+		//
+		// Create the groups
+		final ArrayList<ArrayList<AdWindowId>> groups = new ArrayList<>();
 		for (final CustomizedWindowInfo link : list)
 		{
 			boolean linkMerged = false;
@@ -87,6 +88,45 @@ public class CustomizedWindowInfoMap
 			}
 		}
 
+		//
+		// Merge groups
+		boolean someMergesWerePerformed;
+		do
+		{
+			someMergesWerePerformed = false;
+
+			for (int i = 0; i < groups.size(); i++)
+			{
+				final ArrayList<AdWindowId> groupToMerge = groups.get(i);
+				if (groupToMerge.isEmpty())
+				{
+					continue;
+				}
+
+				for (int j = i + 1; j < groups.size(); j++)
+				{
+					final ArrayList<AdWindowId> targetGroup = groups.get(j);
+					if (targetGroup.isEmpty())
+					{
+						continue;
+					}
+
+					if (mergeGroups(targetGroup, groupToMerge))
+					{
+						someMergesWerePerformed = true;
+						break;
+					}
+				}
+			}
+		}
+		while (someMergesWerePerformed);
+
+		//
+		// Remove empty groups
+		groups.removeIf(ArrayList::isEmpty);
+
+		//
+		// Create result
 		final ImmutableMap.Builder<AdWindowId, CustomizedWindowInfo> result = ImmutableMap.builder();
 		for (final ArrayList<AdWindowId> group : groups)
 		{
@@ -121,12 +161,12 @@ public class CustomizedWindowInfoMap
 			group.add(link.getCustomizationWindowId());
 			return true;
 		}
-		else if (AdWindowId.equals(link.getCustomizationWindowId(), group.get(0)))
+		else if (AdWindowId.equals(link.getCustomizationWindowId(), first(group)))
 		{
 			group.add(0, link.getBaseWindowId());
 			return true;
 		}
-		else if (AdWindowId.equals(link.getBaseWindowId(), group.get(group.size() - 1)))
+		else if (AdWindowId.equals(link.getBaseWindowId(), last(group)))
 		{
 			group.add(link.getCustomizationWindowId());
 			return true;
@@ -136,6 +176,30 @@ public class CustomizedWindowInfoMap
 			return false;
 		}
 	}
+
+	private static boolean mergeGroups(@NonNull final ArrayList<AdWindowId> targetGroup, @NonNull final ArrayList<AdWindowId> group)
+	{
+		if (AdWindowId.equals(last(targetGroup), first(group)))
+		{
+			targetGroup.addAll(group.subList(1, group.size()));
+			group.clear();
+			return true;
+		}
+		else if (AdWindowId.equals(last(group), first(targetGroup)))
+		{
+			targetGroup.addAll(0, group.subList(0, group.size() - 1));
+			group.clear();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	private static AdWindowId first(@NonNull final ArrayList<AdWindowId> group) { return group.get(0); }
+
+	private static AdWindowId last(@NonNull final ArrayList<AdWindowId> group) { return group.get(group.size() - 1); }
 
 	public Optional<CustomizedWindowInfo> getCustomizedWindowInfo(@NonNull final AdWindowId baseWindowId)
 	{
