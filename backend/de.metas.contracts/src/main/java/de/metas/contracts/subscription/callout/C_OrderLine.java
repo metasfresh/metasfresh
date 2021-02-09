@@ -79,6 +79,7 @@ public class C_OrderLine
 		{
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(ol).toBigDecimal();
 			ol.setQtyOrdered(qtyOrdered);
+			ol.setQtyEnteredInPriceUOM(qtyOrdered);
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)
@@ -105,7 +106,7 @@ public class C_OrderLine
 			return; // leave this job to the adempiere standard callouts
 		}
 
-		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = true;
+		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false;
 		updatePrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
 	}
 
