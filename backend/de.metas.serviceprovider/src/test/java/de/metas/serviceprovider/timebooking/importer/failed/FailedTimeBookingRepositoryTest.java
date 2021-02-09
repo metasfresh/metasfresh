@@ -39,6 +39,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_1;
 import static de.metas.serviceprovider.TestConstants.MOCK_JSON_VALUE;
+import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -117,6 +118,7 @@ public class FailedTimeBookingRepositoryTest
 	{
 		return FailedTimeBooking
 				.builder()
+				.orgId(MOCK_ORG_ID)
 				.errorMsg(MOCK_ERROR_MESSAGE)
 				.externalId(MOCK_EXTERNAL_ID)
 				.externalSystem(externalSystem)

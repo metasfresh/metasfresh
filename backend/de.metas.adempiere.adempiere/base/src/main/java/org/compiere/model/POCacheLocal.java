@@ -22,42 +22,41 @@ package org.compiere.model;
  * #L%
  */
 
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-
 /**
- * @author tsa
+ * Extends {@link AbstractPOCacheLocal} by also holding a reference to the cached PO's "parent" (e.g. a C_BPartner's C_Order).
+ * Allows to set e.g. a new C_BPartner_ID to that order.
  */
 public final class POCacheLocal extends AbstractPOCacheLocal
 {
 	private final Reference<PO> parentPORef;
 
-	public static POCacheLocal newInstance(PO parent, String parentColumnName, String tableName)
+	public static POCacheLocal newInstance(@NonNull final PO parent, @NonNull final String parentColumnName, @NonNull final String tableName)
 	{
 		return new POCacheLocal(parent, parentColumnName, tableName);
 	}
 
 	private POCacheLocal(
 			@NonNull final PO parent,
-			final String parentColumnName,
-			final String tableName)
+			@NonNull final String parentColumnName,
+			@NonNull final String tableName)
 	{
 		super(parentColumnName, tableName);
 
 		Check.assumeNotEmpty(parentColumnName, "parentColumnName is null");
 		Check.assumeNotEmpty(tableName, "tableName");
 
-		this.parentPORef = new WeakReference<PO>(parent);
+		this.parentPORef = new WeakReference<>(parent);
 	}
 
-	private final PO getParentPO()
+	private PO getParentPO()
 	{
 		final PO parentPO = parentPORef.get();
 		if (parentPO == null)
@@ -89,12 +88,11 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 	{
 		final PO parentPO = getParentPO();
 		final String parentColumnName = getParentColumnName();
-		final int id = parentPO.get_ValueAsInt(parentColumnName);
-		return id;
+		return parentPO.get_ValueAsInt(parentColumnName);
 	}
 
 	@Override
-	protected boolean setId(int id)
+	protected boolean setId(final int id)
 	{
 		final PO parentPO = getParentPO();
 		final Integer value = id < 0 ? null : id;
@@ -107,7 +105,7 @@ public final class POCacheLocal extends AbstractPOCacheLocal
 		return ok;
 	}
 
-	public POCacheLocal copy(PO parentPO)
+	public POCacheLocal copy(@NonNull final PO parentPO)
 	{
 		final POCacheLocal poCacheLocalNew = newInstance(parentPO, getParentColumnName(), getTableName());
 		poCacheLocalNew.poRef = this.poRef;

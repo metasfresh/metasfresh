@@ -54,13 +54,13 @@ import lombok.Value;
 public final class JsonResponseComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
-	@ApiModelProperty(required = false)
+	@ApiModelProperty
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
 	JsonResponseBPartner bpartner;
 
-	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if nultiple locations with GLN are provided, then only the first one is used")
+	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if nultiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseLocation> locations;
 

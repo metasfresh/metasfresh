@@ -88,7 +88,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Helper to be used in order to setup ANY test which depends on ADempiere.
  *
  * @author tsa
- *
  */
 public class AdempiereTestHelper
 {
@@ -96,7 +95,9 @@ public class AdempiereTestHelper
 
 	public static final String AD_LANGUAGE = "de_DE";
 
-	/** This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars */
+	/**
+	 * This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars
+	 */
 	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
 	{
 		@Override
@@ -293,14 +294,28 @@ public class AdempiereTestHelper
 		InterfaceWrapperHelper.save(clientInfo);
 	}
 
+	public static OrgId createOrgWithTimeZone(@NonNull final String nameAndValue)
+	{
+		return createOrgWithTimeZone(nameAndValue, ZoneId.of("Europe/Berlin"));
+	}
+
 	public static OrgId createOrgWithTimeZone()
 	{
-		return createOrgWithTimeZone(ZoneId.of("Europe/Berlin"));
+		return createOrgWithTimeZone("org", ZoneId.of("Europe/Berlin"));
 	}
 
 	public static OrgId createOrgWithTimeZone(@NonNull final ZoneId timeZone)
 	{
+		return createOrgWithTimeZone("org", timeZone);
+	}
+
+	public static OrgId createOrgWithTimeZone(
+			@NonNull final String nameAndValue,
+			@NonNull final ZoneId timeZone)
+	{
 		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
+		orgRecord.setValue(nameAndValue);
+		orgRecord.setName(nameAndValue);
 		saveRecord(orgRecord);
 
 		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
@@ -314,7 +329,7 @@ public class AdempiereTestHelper
 
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 *
+	 * <p>
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
 	 */
 	public static Function<Object, String> createSnapshotJsonFunction()
