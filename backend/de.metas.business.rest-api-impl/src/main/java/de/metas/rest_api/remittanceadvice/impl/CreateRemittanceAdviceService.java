@@ -1,0 +1,306 @@
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.rest_api.remittanceadvice.impl;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
+import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;
+import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdvice;
+import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.rest_api.remittanceadvice.RemittanceAdviceType;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgQuery;
+import de.metas.remittanceadvice.CreateRemittanceAdviceLineRequest;
+import de.metas.remittanceadvice.CreateRemittanceAdviceRequest;
+import de.metas.remittanceadvice.RemittanceAdvice;
+import de.metas.remittanceadvice.RemittanceAdviceId;
+import de.metas.remittanceadvice.RemittanceAdviceRepository;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class CreateRemittanceAdviceService
+{
+	private static final transient Logger logger = LogManager.getLogger(CreateRemittanceAdviceService.class);
+	private final CurrencyRepository currencyRepository;
+	private final RemittanceAdviceRepository remittanceAdviceRepository;
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+	public CreateRemittanceAdviceService(
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final RemittanceAdviceRepository remittanceAdviceRepository)
+	{
+		this.currencyRepository = currencyRepository;
+		this.remittanceAdviceRepository = remittanceAdviceRepository;
+	}
+
+	@Nullable
+	public JsonCreateRemittanceAdviceResponse createRemittanceAdviceList(@NonNull final JsonCreateRemittanceAdviceRequest request)
+	{
+		final ImmutableList.Builder<RemittanceAdviceId> remittanceAdviceIdList = ImmutableList.builder();
+
+		try
+		{
+			final List<JsonRemittanceAdvice> jsonRemittanceAdviceList = request.getRemittanceAdviceList();
+			for (final JsonRemittanceAdvice jsonRemittanceAdvice : jsonRemittanceAdviceList)
+			{
+				final CreateRemittanceAdviceRequest remittanceAdviceReq = buildRemittanceAdviceRequest(jsonRemittanceAdvice);
+
+				final RemittanceAdvice remittanceAdvice = remittanceAdviceRepository.createRemittanceAdvice(remittanceAdviceReq);
+				final RemittanceAdviceId remittanceAdviceId = remittanceAdvice.getRemittanceAdviceId();
+				remittanceAdviceIdList.add(remittanceAdviceId);
+
+				final List<JsonRemittanceAdviceLine> jsonRemittanceAdviceLines = jsonRemittanceAdvice.getLines();
+				for (final JsonRemittanceAdviceLine jsonRemittanceAdviceLine : jsonRemittanceAdviceLines)
+				{
+					final CreateRemittanceAdviceLineRequest createRemittanceAdviceLineReq = buildRemittanceAdviceLineRequest(
+							jsonRemittanceAdviceLine, remittanceAdviceId);
+
+					remittanceAdviceRepository.createRemittanceAdviceLine(createRemittanceAdviceLineReq);
+				}
+			}
+		}
+		catch (final RuntimeException e)
+		{
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", e.getLocalizedMessage(), issueId);
+		}
+
+		final ImmutableList.Builder<JsonCreateRemittanceAdviceResponseItem> ids = ImmutableList.builder();
+		for (final RemittanceAdviceId remittanceAdviceId : remittanceAdviceIdList.build())
+		{
+			final JsonMetasfreshId jsonMetasfreshId = JsonMetasfreshId.of(remittanceAdviceId.getRepoId());
+			final JsonCreateRemittanceAdviceResponseItem item = JsonCreateRemittanceAdviceResponseItem.builder()
+					.remittanceAdviceId(jsonMetasfreshId).build();
+			ids.add(item);
+		}
+
+		return JsonCreateRemittanceAdviceResponse.builder()
+				.ids(ids.build())
+				.build();
+	}
+
+	private CreateRemittanceAdviceRequest buildRemittanceAdviceRequest(@NonNull final JsonRemittanceAdvice jsonRemittanceAdvice)
+	{
+		final ClientId clientId = Env.getClientId();
+
+		final BPartnerId sourceBPartnerId = getBPartnerId(IdentifierString.of(jsonRemittanceAdvice.getSenderId()));
+		final BPartnerId destinationBPartnerId = getBPartnerId(IdentifierString.of(jsonRemittanceAdvice.getRecipientId()));
+
+		final OrgId orgId;
+
+		if (jsonRemittanceAdvice.getOrgCode() == null)
+		{
+			orgId = jsonRemittanceAdvice.getRemittanceAdviceType().isInbound()
+					? retrieveOrgIdByBPartnerId(sourceBPartnerId)
+					: retrieveOrgIdByBPartnerId(destinationBPartnerId);
+		}
+		else
+		{
+			orgId = retrieveOrgId(jsonRemittanceAdvice.getOrgCode());
+		}
+
+		final BPartnerBankAccountId sourceBPartnerBankAccountId = getBPartnerBankAccountId(sourceBPartnerId);
+		final BPartnerBankAccountId destinationBPartnerBankAccountId = getBPartnerBankAccountId(destinationBPartnerId);
+
+		final CurrencyId remittedAmountCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getRemittanceAmountCurrencyISO());
+
+		CurrencyId serviceFeeCurrencyId = null;
+		final BigDecimal serviceFeeAmt = jsonRemittanceAdvice.getServiceFeeAmount();
+		if (serviceFeeAmt.stripTrailingZeros().scale() > 0)
+		{
+			serviceFeeCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getRemittanceAmountCurrencyISO());
+		}
+
+		final DocTypeId docTypeId = getDocTypeIdByType(jsonRemittanceAdvice.getRemittanceAdviceType(), clientId, orgId);
+
+		final Instant sendDate = jsonRemittanceAdvice.getSendDate() != null ? Instant.parse(jsonRemittanceAdvice.getSendDate()) : null;
+		final Instant documentDate = jsonRemittanceAdvice.getDocumentDate() != null ?
+				Instant.parse(jsonRemittanceAdvice.getDocumentDate()) :
+				Instant.now();
+
+		return CreateRemittanceAdviceRequest.builder()
+				.orgId(orgId)
+				.clientId(clientId)
+				.sourceBPartnerId(sourceBPartnerId)
+				.sourceBPartnerBankAccountId(sourceBPartnerBankAccountId)
+				.destinationBPartnerId(destinationBPartnerId)
+				.destinationBPartnerBankAccountId(destinationBPartnerBankAccountId)
+				.documentNumber(jsonRemittanceAdvice.getDocumentNumber())
+				.sendDate(sendDate)
+				.documentDate(documentDate)
+				.docTypeId(docTypeId)
+				.remittedAmountSum(jsonRemittanceAdvice.getRemittedAmountSum())
+				.remittedAmountCurrencyId(remittedAmountCurrencyId)
+				.serviceFeeAmount(jsonRemittanceAdvice.getServiceFeeAmount())
+				.serviceFeeCurrencyId(serviceFeeCurrencyId)
+				.paymentDiscountAmountSum(jsonRemittanceAdvice.getPaymentDiscountAmountSum())
+				.additionalNotes(jsonRemittanceAdvice.getAdditionalNotes())
+				.build();
+	}
+
+	private CreateRemittanceAdviceLineRequest buildRemittanceAdviceLineRequest(
+			@NonNull final JsonRemittanceAdviceLine jsonRemittanceAdviceLine,
+			@NonNull final RemittanceAdviceId remittanceAdviceId)
+	{
+		final BPartnerId bPartnerId = getBPartnerId(IdentifierString.of(jsonRemittanceAdviceLine.getBpartnerIdentifier()));
+
+		return CreateRemittanceAdviceLineRequest.builder()
+				.remittanceAdviceId(remittanceAdviceId)
+				.invoiceIdentifier(jsonRemittanceAdviceLine.getInvoiceIdentifier())
+				.remittedAmount(jsonRemittanceAdviceLine.getRemittedAmount())
+				.dateInvoiced(Instant.parse(jsonRemittanceAdviceLine.getDateInvoiced()))
+				.bpartnerIdentifier(bPartnerId)
+				.externalInvoiceDocBaseType(jsonRemittanceAdviceLine.getInvoiceBaseDocType())
+				.invoiceGrossAmount(jsonRemittanceAdviceLine.getInvoiceGrossAmount())
+				.paymentDiscountAmount(jsonRemittanceAdviceLine.getPaymentDiscountAmount())
+				.serviceFeeAmount(jsonRemittanceAdviceLine.getServiceFeeAmount())
+				.serviceFeeVatRate(jsonRemittanceAdviceLine.getServiceFeeVatRate())
+				.build();
+	}
+
+	private OrgId retrieveOrgId(@NonNull final String orgCode)
+	{
+		final Optional<OrgId> orgId;
+		final OrgQuery query = OrgQuery.builder()
+				.orgValue(orgCode)
+				.build();
+		orgId = orgDAO.retrieveOrgIdBy(query);
+
+		return orgId.orElse(Env.getOrgId());
+	}
+
+	private OrgId retrieveOrgIdByBPartnerId(@NonNull final BPartnerId bPartnerId)
+	{
+		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
+		return OrgId.ofRepoId(bPartner.getAD_Org_ID());
+	}
+
+	@NonNull
+	private BPartnerId getBPartnerId(final IdentifierString identifierString)
+	{
+		final BPartnerQuery query = buildBPartnerQuery(identifierString);
+		final Optional<BPartnerId> optionalBPartnerId = bPartnerDAO.retrieveBPartnerIdBy(query);
+		return optionalBPartnerId.orElseThrow(() -> new AdempiereException("No BPartner found for IdentifierString")
+				.appendParametersToMessage().setParameter("IdentifierString", identifierString));
+	}
+
+	@NonNull
+	private CurrencyId getCurrencyIdByCurrencyISO(@NonNull final String currencyISO)
+	{
+		final CurrencyCode convertedToCurrencyCode = CurrencyCode.ofThreeLetterCode(currencyISO);
+		return currencyRepository.getCurrencyIdByCurrencyCode(convertedToCurrencyCode);
+	}
+
+	@NonNull
+	private BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final BPartnerId bPartnerId)
+	{
+		final I_C_BP_BankAccount sourceBPartnerBankAccount = bankAccountDAO.retrieveDefaultBankAccountInTrx(bPartnerId)
+				.orElseThrow(() -> new AdempiereException("No BPartnerBankAccount found for BPartnerId")
+						.appendParametersToMessage()
+						.setParameter("BPartnerId", bPartnerId));
+		return BPartnerBankAccountId.ofRepoId(BPartnerId.toRepoId(bPartnerId), sourceBPartnerBankAccount.getC_BP_BankAccount_ID());
+	}
+
+	@NonNull
+	private DocTypeId getDocTypeIdByType(
+			@NonNull final RemittanceAdviceType type,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(type.getDocBaseType())
+				.adClientId(clientId.getRepoId())
+				.adOrgId(orgId.getRepoId())
+				.build();
+		return docTypeDAO.getDocTypeId(docTypeQuery);
+	}
+
+	private BPartnerQuery buildBPartnerQuery(@NonNull final IdentifierString bpartnerIdentifier)
+	{
+		final IdentifierString.Type type = bpartnerIdentifier.getType();
+		final BPartnerQuery query;
+
+		switch (type)
+		{
+			case METASFRESH_ID:
+				query = BPartnerQuery.builder()
+						.bPartnerId(bpartnerIdentifier.asMetasfreshId(BPartnerId::ofRepoId))
+						.build();
+				break;
+			case EXTERNAL_ID:
+				query = BPartnerQuery.builder()
+						.externalId(bpartnerIdentifier.asExternalId())
+						.build();
+				break;
+			case GLN:
+				query = BPartnerQuery.builder()
+						.gln(bpartnerIdentifier.asGLN())
+						.build();
+				break;
+			case VALUE:
+				query = BPartnerQuery.builder()
+						.bpartnerValue(bpartnerIdentifier.asValue())
+						.build();
+				break;
+			default:
+				throw new AdempiereException("Invalid bpartnerIdentifier: " + bpartnerIdentifier);
+		}
+		return query;
+	}
+}
