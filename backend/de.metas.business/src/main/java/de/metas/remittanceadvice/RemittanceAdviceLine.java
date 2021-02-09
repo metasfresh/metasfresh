@@ -23,15 +23,17 @@
 package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Value
 @Builder
+@Value
 public class RemittanceAdviceLine
 {
 	@NonNull
@@ -40,21 +42,30 @@ public class RemittanceAdviceLine
 	@NonNull
 	RemittanceAdviceId remittanceAdviceId;
 
+	@NonNull
+	Amount remittedAmount;
+
+	@Nullable
+	Amount invoiceGrossAmount;
+
+	@Nullable
+	Amount paymentDiscountAmount;
+
+	@Nullable
+	Amount serviceFeeAmount;
+
+	@Nullable
 	String invoiceIdentifier;
 
-	BigDecimal remittedAmount;
-
-	Instant dateInvoiced;
-
+	@Nullable
 	BPartnerId bpartnerIdentifier;
 
+	@Nullable
 	String externalInvoiceDocBaseType;
 
-	BigDecimal invoiceGrossAmount;
+	@Nullable
+	Instant dateInvoiced;
 
-	BigDecimal paymentDiscountAmount;
-
-	BigDecimal serviceFeeAmount;
-
+	@Nullable
 	BigDecimal serviceFeeVatRate;
 }

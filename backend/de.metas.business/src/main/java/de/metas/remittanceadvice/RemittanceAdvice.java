@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -43,36 +44,52 @@ public class RemittanceAdvice
 	@NonNull
 	RemittanceAdviceId remittanceAdviceId;
 
+	@NonNull
 	OrgId orgId;
 
+	@NonNull
 	ClientId clientId;
 
+	@NonNull
 	BPartnerId sourceBPartnerId;
 
+	@NonNull
 	BPartnerBankAccountId sourceBPartnerBankAccountId;
 
+	@NonNull
 	BPartnerId destinationBPartnerId;
 
+	@NonNull
 	BPartnerBankAccountId destinationBPartnerBankAccountId;
 
+	@NonNull
 	String documentNumber;
 
-	Instant sendDate;
-
+	@NonNull
 	Instant documentDate;
 
+	@NonNull
 	DocTypeId docTypeId;
 
+	@NonNull
 	BigDecimal remittedAmountSum;
 
+	@NonNull
 	CurrencyId remittedAmountCurrencyId;
 
+	@Nullable
+	Instant sendDate;
+
+	@Nullable
 	BigDecimal serviceFeeAmount;
 
+	@Nullable
 	CurrencyId serviceFeeCurrencyId;
 
+	@Nullable
 	BigDecimal paymentDiscountAmountSum;
 
+	@Nullable
 	String additionalNotes;
 
 	List<RemittanceAdviceLine> lines;

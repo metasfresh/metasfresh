@@ -59,6 +59,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -167,7 +168,8 @@ public class CreateRemittanceAdviceService
 			serviceFeeCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getRemittanceAmountCurrencyISO());
 		}
 
-		final DocTypeId docTypeId = getDocTypeIdByType(jsonRemittanceAdvice.getRemittanceAdviceType(), clientId, orgId);
+		final DocTypeId targetPaymentDocTypeId = getDocTypeIdByType(jsonRemittanceAdvice.getRemittanceAdviceType().getDocBaseType(), clientId, orgId);
+		final DocTypeId remittanceDocTypeId = getDocTypeIdByType(X_C_DocType.DOCBASETYPE_RemittanceAdvice, clientId, orgId);
 
 		final Instant sendDate = jsonRemittanceAdvice.getSendDate() != null ? Instant.parse(jsonRemittanceAdvice.getSendDate()) : null;
 		final Instant documentDate = jsonRemittanceAdvice.getDocumentDate() != null ?
@@ -177,14 +179,15 @@ public class CreateRemittanceAdviceService
 		return CreateRemittanceAdviceRequest.builder()
 				.orgId(orgId)
 				.clientId(clientId)
+				.docTypeId(remittanceDocTypeId)
 				.sourceBPartnerId(sourceBPartnerId)
 				.sourceBPartnerBankAccountId(sourceBPartnerBankAccountId)
 				.destinationBPartnerId(destinationBPartnerId)
 				.destinationBPartnerBankAccountId(destinationBPartnerBankAccountId)
-				.documentNumber(jsonRemittanceAdvice.getDocumentNumber())
+				.externalDocumentNumber(jsonRemittanceAdvice.getDocumentNumber())
 				.sendDate(sendDate)
 				.documentDate(documentDate)
-				.docTypeId(docTypeId)
+				.targetPaymentDocTypeId(targetPaymentDocTypeId)
 				.remittedAmountSum(jsonRemittanceAdvice.getRemittedAmountSum())
 				.remittedAmountCurrencyId(remittedAmountCurrencyId)
 				.serviceFeeAmount(jsonRemittanceAdvice.getServiceFeeAmount())
@@ -259,12 +262,12 @@ public class CreateRemittanceAdviceService
 
 	@NonNull
 	private DocTypeId getDocTypeIdByType(
-			@NonNull final RemittanceAdviceType type,
+			@NonNull final String type,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(type.getDocBaseType())
+				.docBaseType(type)
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build();

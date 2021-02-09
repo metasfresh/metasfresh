@@ -28,9 +28,11 @@ import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -38,35 +40,54 @@ import java.time.Instant;
 @Builder
 public class CreateRemittanceAdviceRequest
 {
+	@NonNull
 	OrgId orgId;
 
+	@NonNull
 	ClientId clientId;
 
+	@NonNull
 	BPartnerId sourceBPartnerId;
 
+	@NonNull
 	BPartnerBankAccountId sourceBPartnerBankAccountId;
 
+	@NonNull
 	BPartnerId destinationBPartnerId;
 
+	@NonNull
 	BPartnerBankAccountId destinationBPartnerBankAccountId;
 
-	String documentNumber;
+	@NonNull
+	String externalDocumentNumber;
 
-	Instant sendDate;
-
+	@NonNull
 	Instant documentDate;
 
+	@NonNull
 	DocTypeId docTypeId;
 
+	@NonNull
 	BigDecimal remittedAmountSum;
 
+	@NonNull
 	CurrencyId remittedAmountCurrencyId;
 
+	@NonNull
+	DocTypeId targetPaymentDocTypeId;
+
+	@Nullable
+	Instant sendDate;
+
+	@Nullable
 	BigDecimal serviceFeeAmount;
 
+	@Nullable
 	CurrencyId serviceFeeCurrencyId;
 
+	@Nullable
 	BigDecimal paymentDiscountAmountSum;
 
+	@Nullable
 	String additionalNotes;
 }

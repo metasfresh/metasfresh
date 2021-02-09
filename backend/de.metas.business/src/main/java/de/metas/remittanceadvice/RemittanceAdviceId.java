@@ -37,14 +37,10 @@ public class RemittanceAdviceId implements RepoIdAware
 		return new RemittanceAdviceId(repoId);
 	}
 
+	@Nullable
 	public static RemittanceAdviceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new RemittanceAdviceId(repoId) : null;
-	}
-
-	public static int toRepoId(@Nullable final RemittanceAdviceId remittanceAdviceId)
-	{
-		return remittanceAdviceId != null ? remittanceAdviceId.getRepoId() : -1;
 	}
 
 	int repoId;
