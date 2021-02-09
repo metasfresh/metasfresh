@@ -44,6 +44,10 @@ public class Dimension implements Comparable<Dimension>
 	@Nullable
 	ActivityId activityId;
 
+	// todo propagation for these 2
+	int user1_ID;
+	int user2_ID;
+
 	int userElement1Id;
 	int userElement2Id;
 
