@@ -932,7 +932,8 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstOnly(I_C_BP_Relation.class); // just added an UC
 		if (billtoRelation != null)
 		{
-			return InterfaceWrapperHelper.create(getBPartnerLocationById(BPartnerLocationId.ofRepoId(billtoRelation.getC_BPartner_ID(), billtoRelation.getC_BPartnerRelation_Location_ID())), I_C_BPartner_Location.class);
+			I_C_BPartner_Location partnerRelationLocation = getBPartnerLocation(billtoRelation.getC_BPartner_ID(), billtoRelation.getC_BPartnerRelation_Location_ID());
+			return InterfaceWrapperHelper.create(partnerRelationLocation, I_C_BPartner_Location.class);
 		}
 		return null;
 	}
@@ -1681,6 +1682,13 @@ public class BPartnerDAO implements IBPartnerDAO
 				.adTableId(AdTableId.ofRepoIdOrNull(record.getAD_Table_ID()))
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
+	}
+
+	@Override
+	public I_C_BPartner_Location getBPartnerLocation(final int c_bPartner_id, final int c_bPartner_location_id)
+	{
+		BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(c_bPartner_id, c_bPartner_location_id);
+		return getBPartnerLocationById(partnerLocationId);
 	}
 
 }

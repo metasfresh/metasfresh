@@ -26,7 +26,6 @@ package de.metas.adempiere.process;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
@@ -70,6 +69,8 @@ public class CreateBPRelationFromDocument extends JavaProcess
 	private boolean p_IsShipTo = false;
 
 	private final IBPartnerDAO bPartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+
 	@Override
 	protected void prepare()
 	{
@@ -209,12 +210,12 @@ public class CreateBPRelationFromDocument extends JavaProcess
 	{
 		final StringBuffer name = new StringBuffer();
 
-		final String nameFrom = Services.get(IBPartnerBL.class).getBPartnerName(BPartnerId.ofRepoId(rel.getC_BPartner_ID()));
+		final String nameFrom = bPartnerBL.getBPartnerName(BPartnerId.ofRepoId(rel.getC_BPartner_ID()));
 		name.append(nameFrom);
 
 		if (rel.getC_BPartner_Location_ID() > 0)
 		{
-			final I_C_BPartner_Location bPartnerLocation = bPartnersRepo.getBPartnerLocationById(BPartnerLocationId.ofRepoId(rel.getC_BPartner_ID(), rel.getC_BPartner_Location_ID()));
+			final I_C_BPartner_Location bPartnerLocation = bPartnersRepo.getBPartnerLocation(rel.getC_BPartner_ID(), rel.getC_BPartner_Location_ID());
 			final String locFrom = bPartnerLocation.getName();
 			name.append("(").append(locFrom).append(")");
 		}
@@ -226,7 +227,7 @@ public class CreateBPRelationFromDocument extends JavaProcess
 
 		if (rel.getC_BPartnerRelation_Location_ID() > 0)
 		{
-			final String locTo = bPartnersRepo.getBPartnerLocationById(BPartnerLocationId.ofRepoId(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID())).getName();
+			final String locTo = bPartnersRepo.getBPartnerLocation(rel.getC_BPartnerRelation_ID(), rel.getC_BPartnerRelation_Location_ID()).getName();
 			name.append("(").append(locTo).append(")");
 		}
 		rel.setName(name.toString());

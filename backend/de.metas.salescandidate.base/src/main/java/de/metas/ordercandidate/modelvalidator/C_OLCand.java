@@ -50,6 +50,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class C_OLCand
 {
 	private final OLCandValidatorService olCandValidatorService;
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_OLCand(@NonNull final OLCandValidatorService olCandValidatorService)
 	{
@@ -284,7 +285,10 @@ public class C_OLCand
 		}
 		else
 		{
-			org.compiere.model.I_C_BPartner_Location handOverLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoId(handoverRelation.getC_BP_Relation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID()));
+			org.compiere.model.I_C_BPartner_Location handOverLocation =
+					bPartnerDAO
+							.getBPartnerLocation(handoverRelation.getC_BP_Relation_ID(),
+												 handoverRelation.getC_BPartnerRelation_Location_ID());
 
 			if (handOverLocation == null)
 			{

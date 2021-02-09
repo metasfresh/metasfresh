@@ -30,8 +30,8 @@ import de.metas.interfaces.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_BP_Relation;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Properties;
@@ -44,12 +44,13 @@ public class SubProducerAttributeDAOTest
 {
 	private I_C_BPartner bp;
 	private I_C_BPartner bp2;
-	private final ISubProducerAttributeDAO dao = Services.get(ISubProducerAttributeDAO.class);
+	private ISubProducerAttributeDAO dao;
 
-	@Before
-	public void init()
+	@BeforeEach
+	public void before()
 	{
 		AdempiereTestHelper.get().init();
+		dao = Services.get(ISubProducerAttributeDAO.class);
 		final Properties ctx = Env.getCtx();
 		Env.setClientId(ctx, ClientId.METASFRESH);
 		Env.setOrgId(ctx, AdempiereTestHelper.createOrgWithTimeZone());
