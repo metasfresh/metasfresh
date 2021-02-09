@@ -43,6 +43,7 @@
 
     <modules>
         <module>de-metas-camel-edi</module>
+        <module>de-metas-camel-externalsystems</module>
     </modules>
 
     <dependencies>

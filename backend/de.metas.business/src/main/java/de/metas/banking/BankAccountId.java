@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -70,5 +71,10 @@ public class BankAccountId implements RepoIdAware
 	public static boolean equals(@Nullable final BankAccountId id1, @Nullable final BankAccountId id2)
 	{
 		return Objects.equals(id1, id2);
+	}
+
+	public static int toRepoId(@Nullable final BankAccountId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 }

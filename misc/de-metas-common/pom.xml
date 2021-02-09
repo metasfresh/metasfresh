@@ -43,6 +43,8 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>de-metas-common-bpartner</module>
+        <module>de-metas-common-changelog</module>
         <module>de-metas-common-rest_api</module>
         <module>de-metas-common-filemaker</module>
         <module>de-metas-common-shipping</module>

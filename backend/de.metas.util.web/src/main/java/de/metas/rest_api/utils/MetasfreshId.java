@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -62,6 +63,11 @@ public class MetasfreshId
 		return new MetasfreshId(id);
 	}
 
+	public static MetasfreshId of(@NonNull final JsonMetasfreshId id)
+	{
+		return new MetasfreshId(id.getValue());
+	}
+	
 	public static MetasfreshId of(@NonNull final RepoIdAware id)
 	{
 		return new MetasfreshId(id.getRepoId());

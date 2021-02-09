@@ -8,7 +8,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.JsonExternalId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;

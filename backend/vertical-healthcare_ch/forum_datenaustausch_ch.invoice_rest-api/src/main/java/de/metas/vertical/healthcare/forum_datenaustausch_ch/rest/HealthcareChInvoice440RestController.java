@@ -1,8 +1,8 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
-import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfExists;
+import de.metas.common.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOLCandsService;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOLCandsService.CreateOLCandsRequest;
