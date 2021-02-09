@@ -352,13 +352,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				if (line.isPaymentReceipt())
 				{
 					// Originally on Credit. The amount must be moved to Debit
-					fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), allocatedAmt, null);
+					fl_Payment = fact.createLine()
+							.setDocLine(line)
+							.setAccount(paymentAcct)
+							.setAmtSource(getCurrencyId(), allocatedAmt, null)
+							.alsoAddZeroLine()
+							.buildAndAdd();
+
 				}
 				// Outgoing payment
 				else
 				{
 					// Originally on Debit. The amount must be moved to Credit, with different sign
-					fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), null, allocatedAmt.negate());
+					fl_Payment = fact.createLine()
+							.setDocLine(line)
+							.setAccount(paymentAcct)
+							.setAmtSource(getCurrencyId(), null, allocatedAmt.negate())
+							.alsoAddZeroLine()
+							.buildAndAdd();
+
 				}
 
 				// Make sure the fact line was created
