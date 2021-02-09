@@ -94,7 +94,7 @@ ${h000.testFlag?right_pad(1)?substring(0, 1)}<#lt><#t>
 		${join.p060.partner?right_pad(35)?substring(0, 35)}<#lt><#t>
 		${join.p060.messageNo?right_pad(14)?substring(0, 14)}<#lt><#t>
 		${join.p060.CPScounter?left_pad(6)?substring(0, 6)}<#lt><#t><#-- it needs to be CPScounter, not cPScounter! feel free to debug in BeanModel.get() -->
-		${"1"?left_pad(6)?substring(0, 6)}<#lt><#t>
+		${join.p060.levelID?left_pad(6)?substring(0, 6)}<#lt><#t>
 		${""?left_pad(8)?substring(0, 8)}<#lt><#t><#-- join.p060.palettQTY -->
 		${join.p060.innerOuterCode?right_pad(3)?substring(0, 3)}<#lt><#t>
 		${join.p060.palettTyp?right_pad(3)?substring(0, 3)}<#lt><#t>
@@ -137,7 +137,7 @@ ${h000.testFlag?right_pad(1)?substring(0, 1)}<#lt><#t>
 		${""?right_pad(14)?substring(0, 14)}<#lt><#t><#-- join.p100.sellBeforeDate?string("yyyyMMddHHmmss") -->
 		${""?right_pad(14)?substring(0, 14)}<#lt><#t><#-- join.p100.productionDate?string("yyyyMMddHHmmss") -->
 		${join.p100.discrepancyText?right_pad(35)?substring(0, 35)}<#lt><#t>
-		${join.p100.grainItemNummer?right_pad(35)?substring(0, 35)}<#lt><#t><#--the following empty linme is important. Without it, the next P060 won't start in a new line -->
+		${join.p100.grainItemNummer?right_pad(35)?substring(0, 14)}<#lt><#t><#--the following empty line is important. Without it, the next P060 won't start in a new line -->
 
 	</#list>
 </#list>

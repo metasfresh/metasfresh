@@ -216,6 +216,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	{
 		final P060 p060 = new P060();
 
+		p060.setLevelID("1");
 		p060.setCPScounter(formatNumber(BigInteger.valueOf(cpsCounter), decimalFormat));
 		p060.setInnerOuterCode(voidString);
 		p060.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));

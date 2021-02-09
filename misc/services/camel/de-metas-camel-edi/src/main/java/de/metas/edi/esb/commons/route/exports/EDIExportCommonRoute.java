@@ -85,7 +85,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.STEPcom.toString()))
 								.to(StepComXMLInvoicRoute.EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.CompuData.toString()))
-								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
+								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOIC_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.ecosio.toString()))
 								.to(EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 						.endChoice()
