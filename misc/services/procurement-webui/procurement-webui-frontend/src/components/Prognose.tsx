@@ -1,6 +1,8 @@
 import React, { ReactElement } from 'react';
-import { translate } from '../utils/translate';
 import classnames from 'classnames';
+
+import { translate } from '../utils/translate';
+
 interface Props {
   productId: string;
   nextWeek: string;
@@ -9,6 +11,7 @@ interface Props {
   currentWeek: string;
   prognoseChange?: (productId: { productId: string; trend: string; week: string }) => void;
 }
+
 const Prognose: React.FunctionComponent<Props> = ({
   productId,
   prognoseChange,
