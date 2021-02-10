@@ -192,7 +192,7 @@ public class RemittanceAdviceRepository
 
 				.dateInvoiced(TimeUtil.asInstant(record.getInvoiceDate()))
 
-				.bpartnerIdentifier(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.bpartnerIdentifier(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 
 				.externalInvoiceDocBaseType(record.getExternalInvoiceDocBaseType())
 				.build();
