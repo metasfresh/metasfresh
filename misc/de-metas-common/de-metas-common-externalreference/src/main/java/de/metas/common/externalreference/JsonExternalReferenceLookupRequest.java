@@ -24,7 +24,9 @@ package de.metas.common.externalreference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.externalsystem.JsonExternalSystemName;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -38,14 +40,14 @@ import java.util.List;
 @Value
 public class JsonExternalReferenceLookupRequest
 {
-	String systemName;
+	JsonExternalSystemName systemName;
 
 	List<JsonExternalReferenceLookupItem> items;
 
 	@Builder
 	@JsonCreator
 	private JsonExternalReferenceLookupRequest(
-			@JsonProperty("systemName") final String systemName,
+			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
 			@JsonProperty("items") @Singular final List<JsonExternalReferenceLookupItem> items)
 	{
 		this.systemName = systemName;

@@ -11,6 +11,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
@@ -791,7 +792,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		final JsonOLCand olCand = olCands.get(0);
 
-		final MetasfreshId bpartnerMetasfreshId = MetasfreshId.of(olCand.getBpartner().getBpartner().getMetasfreshId());
+		final JsonMetasfreshId bpartnerMetasfreshId = JsonMetasfreshId.of(olCand.getBpartner().getBpartner().getMetasfreshId().getValue());
 		assertThat(olCand.getBillBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
 		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId); // same bpartner, but different location
 		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
