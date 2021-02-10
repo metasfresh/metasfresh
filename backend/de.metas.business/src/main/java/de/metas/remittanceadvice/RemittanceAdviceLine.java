@@ -24,48 +24,131 @@ package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.TaxId;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Builder
-@Value
+@Data
 public class RemittanceAdviceLine
 {
 	@NonNull
-	RemittanceAdviceLineId remittanceAdviceLineId;
+	private final RemittanceAdviceLineId remittanceAdviceLineId;
 
 	@NonNull
-	RemittanceAdviceId remittanceAdviceId;
+	private final RemittanceAdviceId remittanceAdviceId;
 
 	@NonNull
-	Amount remittedAmount;
+	private final Amount remittedAmount;
 
 	@Nullable
-	Amount invoiceGrossAmount;
+	private final Amount invoiceGrossAmount;
 
 	@Nullable
-	Amount paymentDiscountAmount;
+	private BigDecimal invoiceAmt;
 
 	@Nullable
-	Amount serviceFeeAmount;
+	private BigDecimal invoiceAmtInREMADVCurrency;
 
 	@Nullable
-	String invoiceIdentifier;
+	private BigDecimal overUnderAmt;
 
 	@Nullable
-	BPartnerId bpartnerIdentifier;
+	private CurrencyId invoiceCurrencyId;
 
 	@Nullable
-	String externalInvoiceDocBaseType;
+	private Amount paymentDiscountAmount;
 
 	@Nullable
-	Instant dateInvoiced;
+	private Amount serviceFeeAmount;
 
 	@Nullable
-	BigDecimal serviceFeeVatRate;
+	private final String invoiceIdentifier;
+
+	@Nullable
+	private final BPartnerId bpartnerIdentifier;
+
+	@Nullable
+	private BPartnerId billBPartnerId;
+
+	@Nullable
+	private String externalInvoiceDocBaseType;
+
+	@Nullable
+	private Instant dateInvoiced;
+
+	@Nullable
+	private InvoiceId serviceFeeInvoiceId;
+
+	@Nullable
+	private BigDecimal serviceFeeVatRate;
+
+	@Nullable
+	private BPartnerId serviceFeeBPartnerId;
+
+	@Nullable
+	private ProductId serviceFeeProductId;
+
+	@Nullable
+	private TaxId taxId;
+
+	@Nullable
+	private InvoiceId invoiceId;
+
+	private boolean isBPartnerValid;
+
+	private boolean isInvoiceResolved;
+
+	private boolean isAmountValid;
+
+	private boolean isInvoiceDocTypeValid;
+
+	private boolean isInvoiceDateValid;
+
+	private boolean isServiceFeeResolved;
+
+	public void processIsBPartnerValid(final RemittanceAdviceLineInvoiceDetails remittanceAdviceLineInvoiceDetails, final BPartnerId remittanceAdviceBPartnerId){
+
+		isBPartnerValid = remittanceAdviceBPartnerId.equals(remittanceAdviceLineInvoiceDetails.getBillBPartnerId());
+	}
+
+	public void syncWithInvoice(final RemittanceAdviceLineInvoiceDetails remittanceAdviceLineInvoiceDetails){
+
+		billBPartnerId = remittanceAdviceLineInvoiceDetails.getBillBPartnerId();
+		invoiceAmt = remittanceAdviceLineInvoiceDetails.getInvoiceAmt();
+		invoiceCurrencyId = remittanceAdviceLineInvoiceDetails.getInvoiceCurrencyId();
+		invoiceAmtInREMADVCurrency = remittanceAdviceLineInvoiceDetails.getInvoiceAmtInREMADVCurrency();
+		overUnderAmt = remittanceAdviceLineInvoiceDetails.getOverUnderAmt();
+		isInvoiceResolved = true;
+		isAmountValid = remittanceAdviceLineInvoiceDetails.getOverUnderAmt() != null &&
+				remittanceAdviceLineInvoiceDetails.getOverUnderAmt().compareTo(new BigDecimal(0)) == 0;
+
+		isInvoiceDocTypeValid = externalInvoiceDocBaseType != null && externalInvoiceDocBaseType.equals(remittanceAdviceLineInvoiceDetails.getInvoiceDocType());
+
+		if(dateInvoiced == null){
+			dateInvoiced = TimeUtil.asInstant(remittanceAdviceLineInvoiceDetails.getInvoiceDate());
+			isInvoiceDateValid = true;
+		} else {
+			isInvoiceDateValid = remittanceAdviceLineInvoiceDetails.getInvoiceDate() != null &&
+					dateInvoiced.compareTo(TimeUtil.asInstant(remittanceAdviceLineInvoiceDetails.getInvoiceDate())) == 0;
+		}
+	}
+
+	public void setServiceFeeDetails(final RemittanceAdviceLineServiceFee remittanceAdviceLineServiceFee){
+
+		serviceFeeInvoiceId = remittanceAdviceLineServiceFee.getServiceFeeInvoiceId();
+		serviceFeeProductId = remittanceAdviceLineServiceFee.getServiceProductId();
+		serviceFeeBPartnerId = remittanceAdviceLineServiceFee.getServiceBPartnerId();
+		taxId = remittanceAdviceLineServiceFee.getServiceFeeTaxId();
+		isServiceFeeResolved = true;
+	}
 }

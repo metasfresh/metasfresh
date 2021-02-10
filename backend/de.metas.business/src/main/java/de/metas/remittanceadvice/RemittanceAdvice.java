@@ -27,9 +27,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -37,60 +38,74 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-@Value
+@Data
 @Builder
 public class RemittanceAdvice
 {
 	@NonNull
-	RemittanceAdviceId remittanceAdviceId;
+	private final RemittanceAdviceId remittanceAdviceId;
 
 	@NonNull
-	OrgId orgId;
+	private final OrgId orgId;
 
 	@NonNull
-	ClientId clientId;
+	private final ClientId clientId;
 
 	@NonNull
-	BPartnerId sourceBPartnerId;
+	private final BPartnerId sourceBPartnerId;
 
 	@NonNull
-	BPartnerBankAccountId sourceBPartnerBankAccountId;
+	private final BPartnerBankAccountId sourceBPartnerBankAccountId;
 
 	@NonNull
-	BPartnerId destinationBPartnerId;
+	private final BPartnerId destinationBPartnerId;
 
 	@NonNull
-	BPartnerBankAccountId destinationBPartnerBankAccountId;
+	private final BPartnerBankAccountId destinationBPartnerBankAccountId;
 
 	@NonNull
-	String documentNumber;
+	private final String documentNumber;
 
 	@NonNull
-	Instant documentDate;
+	private final Instant documentDate;
 
 	@NonNull
-	DocTypeId docTypeId;
+	private final String docStatus;
 
 	@NonNull
-	BigDecimal remittedAmountSum;
+	private final DocTypeId docTypeId;
 
 	@NonNull
-	CurrencyId remittedAmountCurrencyId;
+	private final BigDecimal remittedAmountSum;
+
+	@NonNull
+	private final CurrencyId remittedAmountCurrencyId;
 
 	@Nullable
-	Instant sendDate;
+	private final Instant sendDate;
 
 	@Nullable
-	BigDecimal serviceFeeAmount;
+	private final BigDecimal serviceFeeAmount;
 
 	@Nullable
-	CurrencyId serviceFeeCurrencyId;
+	private final CurrencyId serviceFeeCurrencyId;
 
 	@Nullable
-	BigDecimal paymentDiscountAmountSum;
+	private final BigDecimal paymentDiscountAmountSum;
 
 	@Nullable
-	String additionalNotes;
+	private final String additionalNotes;
 
-	List<RemittanceAdviceLine> lines;
+	@Nullable
+	private PaymentId paymentId;
+
+	private boolean isSOTrx;
+
+	private List<RemittanceAdviceLine> lines;
+
+	public BPartnerId getRemittanceAdviceBPartnerId()
+	{
+		return isSOTrx ?
+				sourceBPartnerId : destinationBPartnerId;
+	}
 }

@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -124,29 +125,29 @@ public class PaymentAllocationBuilder
 
 		//
 		// Create & process allocation documents
-		final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
+		final ImmutableMap<PaymentAllocationId,AllocationLineCandidate> paymentAllocations;
 		if (!candidates.isEmpty() && !dryRun)
 		{
-			paymentAllocationIds = processCandidates(candidates);
+			paymentAllocations = processCandidates(candidates);
 		}
 		else
 		{
-			paymentAllocationIds = ImmutableSet.of();
+			paymentAllocations= ImmutableMap.of();
 		}
 
 		return PaymentAllocationResult.builder()
 				.candidates(candidates)
 				.fullyAllocatedCheck(fullyAllocatedCheck)
-				.paymentAllocationIds(paymentAllocationIds)
+				.paymentAllocationIds(paymentAllocations)
 				.build();
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidates(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidates(final Collection<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> processCandidatesInTrx(candidates));
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
 	{
 		try
 		{
