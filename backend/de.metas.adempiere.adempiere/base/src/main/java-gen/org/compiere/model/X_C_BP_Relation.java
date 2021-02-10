@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_Relation extends org.compiere.model.PO implements I_C_BP_Relation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1992110682L;
+	private static final long serialVersionUID = -634134424L;
 
     /** Standard Constructor */
     public X_C_BP_Relation (final Properties ctx, final int C_BP_Relation_ID, @Nullable final String trxName)
@@ -32,21 +32,6 @@ public class X_C_BP_Relation extends org.compiere.model.PO implements I_C_BP_Rel
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setC_BP_Relation_ID (final int C_BP_Relation_ID)
-	{
-		if (C_BP_Relation_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BP_Relation_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BP_Relation_ID, C_BP_Relation_ID);
-	}
-
-	@Override
-	public int getC_BP_Relation_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Relation_ID);
 	}
 
 	@Override
@@ -110,6 +95,21 @@ public class X_C_BP_Relation extends org.compiere.model.PO implements I_C_BP_Rel
 	}
 
 	@Override
+	public void setC_BP_Relation_ID (final int C_BP_Relation_ID)
+	{
+		if (C_BP_Relation_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_Relation_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_Relation_ID, C_BP_Relation_ID);
+	}
+
+	@Override
+	public int getC_BP_Relation_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Relation_ID);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -122,6 +122,18 @@ public class X_C_BP_Relation extends org.compiere.model.PO implements I_C_BP_Rel
 	}
 
 	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
 	public void setIsBillTo (final boolean IsBillTo)
 	{
 		set_Value (COLUMNNAME_IsBillTo, IsBillTo);
@@ -131,6 +143,18 @@ public class X_C_BP_Relation extends org.compiere.model.PO implements I_C_BP_Rel
 	public boolean isBillTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillTo);
+	}
+
+	@Override
+	public void setIsFetchedFrom (final boolean IsFetchedFrom)
+	{
+		set_Value (COLUMNNAME_IsFetchedFrom, IsFetchedFrom);
+	}
+
+	@Override
+	public boolean isFetchedFrom() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFetchedFrom);
 	}
 
 	@Override

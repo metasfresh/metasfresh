@@ -1,0 +1,23 @@
+de.metas.rest_api.bpartner.request.JsonRequestBPRelationUpsertTest.serializeDeserialize=[
+  {
+    "orgCode": "org123",
+    "locationIdentifier": "loc123",
+    "relatesTo": [
+      {
+        "targetBpartnerIdentifier": "targetBP123",
+        "targetLocationIdentifier": "targetLoc123",
+        "name": "relName",
+        "description": "relDesc",
+        "externalId": "ext123",
+        "role": "Caregiver",
+        "billTo": true,
+        "fetchedFrom": true,
+        "payFrom": true,
+        "handOverLocation": true,
+        "remitTo": true,
+        "shipTo": true,
+        "active": true
+      }
+    ]
+  }
+]
