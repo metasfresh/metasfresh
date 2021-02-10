@@ -38,9 +38,10 @@ import de.metas.rest_api.common.JsonBPRelationRole;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.MissingPropertyException;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -124,7 +125,14 @@ public class BPRelationsService
 			@NonNull final List<JsonRequestBPRelationTarget> relatesTo)
 	{
 		final Optional<BPartnerComposite> bPartnerComposite = jsonServiceFactory.createRetriever().getBPartnerComposite(orgId, bpartnerIdentifier);
-		final BPartnerComposite bpartner = Check.assumePresent(bPartnerComposite, "No bpartner found for identifier: " + bpartnerIdentifier);
+		if (!bPartnerComposite.isPresent())
+		{
+			throw MissingResourceException.builder()
+					.resourceName("bpartner")
+					.resourceIdentifier(bpartnerIdentifier.getRawIdentifierString())
+					.build();
+		}
+		final BPartnerComposite bpartner = bPartnerComposite.get();
 
 		final Optional<BPartnerLocation> location = getBpartnerLocation(bpartnerIdentifier, locationIdentifier, bpartner);
 		final Stream<BPRelation> relations = relatesTo.stream().map(relatedBp -> fromJson(bpartner, location, relatedBp));
@@ -165,15 +173,24 @@ public class BPRelationsService
 	{
 		final BPartnerId bpartnerId = sourceBPartner.getBpartner().getId();
 		final IdentifierString targetBpIdentifier = IdentifierString.of(relatedBp.getTargetBpartnerIdentifier());
-		final BPartnerComposite targetBpartnerComposite =
-				Check.assumePresent(jsonServiceFactory.createRetriever().getBPartnerComposite(sourceBPartner.getOrgId(), targetBpIdentifier)
-						, "No bpartner found for identifier: " + targetBpIdentifier);
+		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonServiceFactory.createRetriever().getBPartnerComposite(sourceBPartner.getOrgId(), targetBpIdentifier);
+		if (!optionalBPartnerComposite.isPresent())
+		{
+			throw MissingResourceException.builder()
+					.resourceName("targetBpartnerIdentifier")
+					.resourceIdentifier(targetBpIdentifier.getRawIdentifierString())
+					.build();
+		}
+		final BPartnerComposite targetBpartnerComposite = optionalBPartnerComposite.get();
 
 		final BPartnerId targetBPartnerId = targetBpartnerComposite.getBpartner().getId();
 		final IdentifierString targetLocationIdentifier = IdentifierString.ofOrNull(relatedBp.getTargetLocationIdentifier());
 		final Optional<BPartnerLocation> targetLocationOpt = getBpartnerLocation(targetBpIdentifier, targetLocationIdentifier, targetBpartnerComposite);
-		final BPartnerLocation targetLocation = Check.assumeNotNull(targetLocationOpt.orElseGet(getTargetPartnerLocationForRelation(targetBpartnerComposite, relatedBp.getShipTo(), relatedBp.getBillTo())), "Cannot identify location for target BPartner: {}, LocationIdentifier: {}", targetBpIdentifier, targetLocationIdentifier);
-
+		final BPartnerLocation targetLocation = targetLocationOpt.orElseGet(inferLocationForBpartner(targetBpartnerComposite, relatedBp.getShipTo(), relatedBp.getBillTo()));
+		if (targetLocation == null)
+		{
+			throw new MissingPropertyException("JsonRequestBPRelationTarget.targetLocationIdentifier", relatedBp);
+		}
 		final BPRelation.BPRelationBuilder builder = BPRelation.builder()
 				.bpartnerId(bpartnerId)
 				.targetBPartnerId(targetBPartnerId)
@@ -199,7 +216,7 @@ public class BPRelationsService
 		return builder.build();
 	}
 
-	private Supplier<? extends BPartnerLocation> getTargetPartnerLocationForRelation(@NonNull final BPartnerComposite bpartnerComposite, @Nullable final Boolean isShipTo, @Nullable final Boolean isBillTo)
+	private Supplier<? extends BPartnerLocation> inferLocationForBpartner(@NonNull final BPartnerComposite bpartnerComposite, @Nullable final Boolean isShipTo, @Nullable final Boolean isBillTo)
 	{
 		Optional<BPartnerLocation> location = Optional.empty();
 		if (Boolean.TRUE.equals(isBillTo))
@@ -223,7 +240,7 @@ public class BPRelationsService
 			location = bpartnerComposite.extractLocation(Objects::nonNull);
 		}
 		final Optional<BPartnerLocation> result = location;
-		return () -> Check.assumePresent(result, "Cannot infer location for source BPartner");
+		return () -> result.orElse(null);
 	}
 
 }

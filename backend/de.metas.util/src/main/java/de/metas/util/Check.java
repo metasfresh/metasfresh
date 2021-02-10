@@ -252,7 +252,12 @@ public final class Check
 
 	public static <T> T assumePresent(@NonNull final Optional<T> optional, final String assumptionMessage, final Object... params)
 	{
-		assume(optional.isPresent(), defaultExClazz, assumptionMessage, params);
+		return assumePresent(optional, defaultExClazz, assumptionMessage, params);
+	}
+
+	public static <T> T assumePresent(@NonNull final Optional<T> optional, @NonNull final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	{
+		assume(optional.isPresent(), exceptionClass, assumptionMessage, params);
 		return optional.get();
 	}
 
