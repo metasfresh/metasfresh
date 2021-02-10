@@ -1,5 +1,6 @@
 import React, { ReactElement } from 'react';
 import { useHistory } from 'react-router-dom';
+
 import { translate } from '../utils/translate';
 
 interface Props {

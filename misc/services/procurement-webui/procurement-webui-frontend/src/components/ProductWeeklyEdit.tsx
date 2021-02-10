@@ -2,10 +2,12 @@ import React, { useContext, useEffect } from 'react';
 import { observer } from 'mobx-react';
 import { getSnapshot } from 'mobx-state-tree';
 import { useParams, useHistory } from 'react-router-dom';
+
 import DailyNav from './DailyNav';
 import View from './View';
 import { RootStoreContext } from '../models/Store';
 import { formDate, prettyDate } from '../utils/date';
+
 interface RouteParams {
   productId?: string;
   targetDay?: string;

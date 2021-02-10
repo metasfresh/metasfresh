@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 
 import { translate } from '../utils/translate';
-import logo from '../static/images/logo.png';
+// import logo from '../static/images/logo.png';
 import poweredByLogo from '../static/images/poweredby.png';
 
 import View from './View';
@@ -57,7 +57,7 @@ const Login: FunctionComponent<Props> = inject('store')(
         <View>
           <div className="container p-4 pb-6 login-view">
             <div className="login-logo pb-6">
-              <img src={logo} className="logo" />
+              <img src="../../static/media/logo.png" className="logo" />
             </div>
             <form>
               <div className="field">
