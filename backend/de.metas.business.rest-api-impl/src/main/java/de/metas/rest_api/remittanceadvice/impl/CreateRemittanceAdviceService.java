@@ -34,12 +34,13 @@ import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRespo
 import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;
 import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdvice;
 import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
-import de.metas.common.rest_api.remittanceadvice.RemittanceAdviceType;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
@@ -163,13 +164,14 @@ public class CreateRemittanceAdviceService
 
 		CurrencyId serviceFeeCurrencyId = null;
 		final BigDecimal serviceFeeAmt = jsonRemittanceAdvice.getServiceFeeAmount();
-		if (serviceFeeAmt.stripTrailingZeros().scale() > 0)
+		if (serviceFeeAmt.compareTo(BigDecimal.ZERO) > 0)
 		{
 			serviceFeeCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getRemittanceAmountCurrencyISO());
 		}
 
 		final DocTypeId targetPaymentDocTypeId = getDocTypeIdByType(jsonRemittanceAdvice.getRemittanceAdviceType().getDocBaseType(), clientId, orgId);
 		final DocTypeId remittanceDocTypeId = getDocTypeIdByType(X_C_DocType.DOCBASETYPE_RemittanceAdvice, clientId, orgId);
+		final String remittanceDocNumber = buildDocumentNo(remittanceDocTypeId);
 
 		final Instant sendDate = jsonRemittanceAdvice.getSendDate() != null ? Instant.parse(jsonRemittanceAdvice.getSendDate()) : null;
 		final Instant documentDate = jsonRemittanceAdvice.getDocumentDate() != null ?
@@ -180,6 +182,7 @@ public class CreateRemittanceAdviceService
 				.orgId(orgId)
 				.clientId(clientId)
 				.docTypeId(remittanceDocTypeId)
+				.documentNumber(remittanceDocNumber)
 				.sourceBPartnerId(sourceBPartnerId)
 				.sourceBPartnerBankAccountId(sourceBPartnerBankAccountId)
 				.destinationBPartnerId(destinationBPartnerId)
@@ -305,5 +308,22 @@ public class CreateRemittanceAdviceService
 				throw new AdempiereException("Invalid bpartnerIdentifier: " + bpartnerIdentifier);
 		}
 		return query;
+	}
+
+	public String buildDocumentNo(@NonNull final DocTypeId docTypeId)
+	{
+		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+
+		final String documentNo = documentNoFactory.forDocType(docTypeId.getRepoId(), /* useDefiniteSequence */false)
+				.setClientId(Env.getClientId())
+				.setFailOnError(true)
+				.build();
+
+		if (documentNo == null || documentNo == IDocumentNoBuilder.NO_DOCUMENTNO)
+		{
+			throw new AdempiereException("Cannot fetch documentNo for " + docTypeId);
+		}
+
+		return documentNo;
 	}
 }

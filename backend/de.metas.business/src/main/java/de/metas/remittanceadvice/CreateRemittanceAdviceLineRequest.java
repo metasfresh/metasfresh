@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -37,21 +38,30 @@ public class CreateRemittanceAdviceLineRequest
 	@NonNull
 	RemittanceAdviceId remittanceAdviceId;
 
-	String invoiceIdentifier;
-
+	@NonNull
 	BigDecimal remittedAmount;
 
-	Instant dateInvoiced;
-
-	BPartnerId bpartnerIdentifier;
-
-	String externalInvoiceDocBaseType;
-
+	@Nullable
 	BigDecimal invoiceGrossAmount;
 
+	@Nullable
 	BigDecimal paymentDiscountAmount;
 
+	@Nullable
 	BigDecimal serviceFeeAmount;
 
+	@Nullable
+	String invoiceIdentifier;
+
+	@Nullable
+	BPartnerId bpartnerIdentifier;
+
+	@Nullable
+	String externalInvoiceDocBaseType;
+
+	@Nullable
+	Instant dateInvoiced;
+
+	@Nullable
 	BigDecimal serviceFeeVatRate;
 }

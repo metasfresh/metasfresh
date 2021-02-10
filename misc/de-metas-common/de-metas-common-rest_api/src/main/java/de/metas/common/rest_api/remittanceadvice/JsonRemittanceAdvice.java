@@ -32,6 +32,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -45,6 +46,7 @@ public class JsonRemittanceAdvice
 {
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates to AD_Org_ID")
+	@Nullable
 	String orgCode;
 
 	@ApiModelProperty(required = true,
@@ -61,15 +63,18 @@ public class JsonRemittanceAdvice
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates to ExternalDocumentNo")
+	@NonNull
 	String documentNumber;
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates to SendAt, using DateTimeFormatter ISO_INSTANT e.g.2017-11-22T00:00:00Z")
+	@Nullable
 	String sendDate;
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates to DateDoc, using DateTimeFormatter ISO_INSTANT. "
 					+ "If not provided current date is taken ")
+	@Nullable
 	String documentDate;
 
 	@ApiModelProperty(required = true,
@@ -96,18 +101,22 @@ public class JsonRemittanceAdvice
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates as ServiceFeeAmount_Currency_ID")
+	@Nullable
 	String serviceFeeCurrencyISO;
 
 	@ApiModelProperty(dataType = "java.math.BigDecimal",
 			value = "This translates as PaymentDiscountAmountSum")
+	@Nullable
 	BigDecimal paymentDiscountAmountSum;
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates as AdditionalNotes")
+	@Nullable
 	String additionalNotes;
 
 	@ApiModelProperty(dataType = "List<JsonRemittanceAdviceLine>",
 			value = "This translates as each entry in RemittanceAdviceLine table for a remittanceAdvice document")
+	@NonNull
 	List<JsonRemittanceAdviceLine> lines;
 
 	@JsonIgnoreProperties(ignoreUnknown = true) // the annotation to ignore properties should be set on the deserializer method (on the builder), and not on the base class
