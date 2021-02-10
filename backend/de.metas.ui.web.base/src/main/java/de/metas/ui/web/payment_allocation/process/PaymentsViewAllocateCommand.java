@@ -280,7 +280,7 @@ public class PaymentsViewAllocateCommand
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())
 				.clientAndOrgId(row.getClientAndOrgId())
-				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
+				.paymentCurrencyContext(row.getPaymentCurrencyContext())
 				.build();
 	}
 

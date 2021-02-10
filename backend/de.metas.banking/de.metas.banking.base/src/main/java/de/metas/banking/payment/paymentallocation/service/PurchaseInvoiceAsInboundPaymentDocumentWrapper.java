@@ -22,8 +22,10 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
+import de.metas.banking.payment.paymentallocation.PaymentCurrencyContext;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.FixedConversionRate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -162,10 +164,6 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 		return purchaseInvoicePayableDoc.getDate();
 	}
 
-	@Nullable
 	@Override
-	public CurrencyConversionTypeId getCurrencyConversionTypeId()
-	{
-		return purchaseInvoicePayableDoc.getCurrencyConversionTypeId();
-	}
+	public PaymentCurrencyContext getPaymentCurrencyContext() { return PaymentCurrencyContext.ofCurrencyConversionTypeId(purchaseInvoicePayableDoc.getCurrencyConversionTypeId()); }
 }

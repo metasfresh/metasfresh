@@ -99,8 +99,6 @@ public class DefaultPaymentBuilder
 	/**
 	 * Creates and processes the payment.
 	 *
-	 * @param docAction
-	 * @param expectedDocStatus
 	 * @return payment
 	 */
 	private I_C_Payment createAndProcess(final String docAction, final String expectedDocStatus)
@@ -153,12 +151,12 @@ public class DefaultPaymentBuilder
 				.build());
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!_built, "payment already built");
 	}
 
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		assertNotBuilt();
 		_built = true;
@@ -171,7 +169,7 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	private final DefaultPaymentBuilder direction(@NonNull final PaymentDirection direction)
+	private DefaultPaymentBuilder direction(@NonNull final PaymentDirection direction)
 	{
 		assertNotBuilt();
 		payment.setIsReceipt(direction.isReceipt());
@@ -251,6 +249,14 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setC_Currency_ID(currencyId.getRepoId());
+		return this;
+	}
+
+	public final DefaultPaymentBuilder currencyRate(@NonNull BigDecimal currencyRate, @NonNull final CurrencyId sourceCurrencyId)
+	{
+		assertNotBuilt();
+		payment.setCurrencyRate(currencyRate);
+		payment.setSource_Currency_ID(sourceCurrencyId.getRepoId());
 		return this;
 	}
 
