@@ -1217,6 +1217,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.bpLocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartner_ID(), bpRelationRecord.getC_BPartner_Location_ID()))
 				.targetBPartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartnerRelation_ID()))
 				.targetBPLocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
+				.name(bpRelationRecord.getName())
 				.build();
 	}
 
