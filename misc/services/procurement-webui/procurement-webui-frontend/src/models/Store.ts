@@ -65,6 +65,15 @@ export const Store = types
     }),
     postDailyReport: flow(function* postDailyReportLocal(dataObj: unknown) {
       yield postDailyReport(dataObj);
+
+      const {
+        data: { products, countUnconfirmed },
+      } = yield postDailyReport(dataObj);
+
+      self.app.setUnconfirmed(countUnconfirmed);
+      self.dailyProducts.updateProductList(products);
+
+      return Promise.resolve();
     }),
     fetchDailyReport: flow(function* dailyReport(reportDate: string) {
       const {
