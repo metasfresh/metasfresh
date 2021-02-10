@@ -35,14 +35,20 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.apache.poi.ss.formula.functions.T;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ArchiveDAO implements IArchiveDAO
 {
@@ -141,4 +147,17 @@ public class ArchiveDAO implements IArchiveDAO
 	{
 		return InterfaceWrapperHelper.load(archiveId, I_AD_Archive.class);
 	}
+
+	@Override
+	public <T extends I_AD_Archive> T retrieveArchive(@NonNull final ArchiveId archiveId, @NonNull final Class<T> modelClass)
+	{
+		final T archive = loadOutOfTrx(archiveId, modelClass);
+
+		if (archive == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Archive_ID@: " + archiveId);
+		}
+		return archive;
+	}
+
 }

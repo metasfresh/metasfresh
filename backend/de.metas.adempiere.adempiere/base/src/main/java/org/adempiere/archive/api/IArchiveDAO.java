@@ -23,6 +23,7 @@ package org.adempiere.archive.api;
  */
 
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
@@ -34,14 +35,13 @@ import java.util.Properties;
  * Archive related DAO
  *
  * @author tsa
- *
  */
 public interface IArchiveDAO extends ISingletonService
 {
 	/**
 	 * Retrieves all archive records for context's AD_Client_ID by using given whereClause. Records will be ordered by Created.
 	 *
-	 * @param ctx context
+	 * @param ctx         context
 	 * @param whereClause optional where clause (starting with AND)
 	 * @return list of {@link I_AD_Archive}s
 	 */
@@ -54,15 +54,16 @@ public interface IArchiveDAO extends ISingletonService
 
 	/**
 	 * Retrieves the archive with given ID and which is linked to given recordRef.
-	 *
+	 * <p>
 	 * NOTE: might look a bit redundant that we require the ID and the recordRef but we do that to make sure that given ID is for that recordRef (validation).
+	 *
 	 * @return archive or null
 	 */
 	I_AD_Archive retrieveArchiveOrNull(Properties ctx, ITableRecordReference recordRef, int archiveId);
 
-
 	/**
 	 * Retrieves underlying model, referenced by AD_Table_ID and Record_ID
+	 *
 	 * @return underlying model or null
 	 */
 	<T> T retrieveReferencedModel(I_AD_Archive archive, Class<T> modelClass);
@@ -73,4 +74,6 @@ public interface IArchiveDAO extends ISingletonService
 	<T extends I_AD_Archive> T retrievePDFArchiveForModel(Object model, Class<T> archiveClass);
 
 	I_AD_Archive retrieveArchive(ArchiveId archiveId);
+
+	<T extends I_AD_Archive> T retrieveArchive(@NonNull ArchiveId archiveId, @NonNull Class<T> modelClass);
 }
