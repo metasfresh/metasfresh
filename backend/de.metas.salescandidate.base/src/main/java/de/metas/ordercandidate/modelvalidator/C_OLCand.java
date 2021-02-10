@@ -285,16 +285,13 @@ public class C_OLCand
 		}
 		else
 		{
-			org.compiere.model.I_C_BPartner_Location handOverLocation =
-					bPartnerDAO
-							.getBPartnerLocation(handoverRelation.getC_BPartnerRelation_ID(),
-												 handoverRelation.getC_BPartnerRelation_Location_ID());
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(handoverRelation.getC_BPartnerRelation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID());
+			final org.compiere.model.I_C_BPartner_Location handOverLocation = bPartnerDAO.getBPartnerLocationById(bPartnerLocationId);
 
 			if (handOverLocation == null)
 			{
 				// this should also not happen because C_BPartnerRelation_Location is mandatory
 				olCand.setHandOver_Location_Override_ID(0);
-
 				return;
 			}
 			olCand.setHandOver_Location_Override_ID(handOverLocation.getC_BPartner_Location_ID());
