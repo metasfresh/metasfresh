@@ -85,7 +85,7 @@ public class C_Doc_Outbound_Log_PrintSelected extends JavaProcess implements IPr
 
 		final I_AD_Archive archive = archiveDAO.retrieveArchive(ArchiveId.ofRepoId(archiveRecordId), I_AD_Archive.class);
 
-		printingQueueBL.printArchive(archive, printOutputFacade, hwTrayId );
+		printingQueueBL.printArchive(archive, printOutputFacade, hwPrinterId, hwTrayId );
 
 	}
 

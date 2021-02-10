@@ -128,25 +128,34 @@ public class PrintingDataFactory
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
-
-		final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(queueItem);
-		final List<I_AD_PrinterRouting> printerRoutings = InterfaceWrapperHelper.createList(printerRoutingDAO.fetchPrinterRoutings(query), I_AD_PrinterRouting.class);
-		for (final I_AD_PrinterRouting printerRouting : printerRoutings)
+		final String hostKey;
+		if (printingQueueProcessingInfo.isCreateWithSpecificHostKey())
 		{
-			final String hostKey;
-			if (printingQueueProcessingInfo.isCreateWithSpecificHostKey())
+			hostKey = printClientsBL.getHostKeyOrNull(Env.getCtx());
+		}
+		else
+		{
+			hostKey = null;
+		}
+		if (queueItem.getAD_PrinterHW_ID() <= 0)
+		{
+			final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(queueItem);
+			final List<I_AD_PrinterRouting> printerRoutings = InterfaceWrapperHelper.createList(printerRoutingDAO.fetchPrinterRoutings(query), I_AD_PrinterRouting.class);
+			for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 			{
-				hostKey = printClientsBL.getHostKeyOrNull(Env.getCtx());
+
+				final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey);
+				if (printingSegment != null)
+				{
+					printingData.segment(printingSegment);
+				}
 			}
-			else
-			{
-				hostKey = null;
-			}
-			final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey);
-			if (printingSegment != null)
-			{
-				printingData.segment(printingSegment);
-			}
+		}
+		else
+		{
+			final PrintingSegment printingSegment = createPrintingSegment(queueItem, printRecipient, hostKey);
+			printingData.segment(printingSegment);
+
 		}
 		return printingData.build();
 	}
@@ -197,6 +206,25 @@ public class PrintingDataFactory
 	}
 
 	private PrintingSegment createPrintingSegment(
+			@NonNull final I_C_Printing_Queue printingQueue,
+			@Nullable final UserId userToPrintId,
+			@Nullable final String hostKey)
+	{
+
+		final int trayRepoId = printingQueue.getAD_PrinterHW_MediaTray_ID();
+
+		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(printingQueue.getAD_PrinterHW_ID());
+		final HardwareTrayId trayId = HardwareTrayId.ofRepoIdOrNull(printerId, trayRepoId);
+
+		final HardwarePrinter hardwarePrinter = hardwarePrinterRepository.getById(printerId);
+
+		return PrintingSegment.builder()
+				.printer(hardwarePrinter)
+				.trayId(trayId)
+				.build();
+	}
+
+	private PrintingSegment createPrintingSegment(
 			@NonNull final I_AD_PrinterRouting printerRouting,
 			@Nullable final UserId userToPrintId,
 			@Nullable final String hostKey)
@@ -205,7 +233,7 @@ public class PrintingDataFactory
 		if (printerMatchingRecord == null)
 		{
 			logger.debug("Found no AD_Printer_Matching record for AD_PrinterRouting_ID={}, AD_User_PrinterMatchingConfig_ID={} and hostKey={}; -> creating no PrintingSegment for routing",
-					printerRouting, UserId.toRepoId(userToPrintId), hostKey);
+						 printerRouting, UserId.toRepoId(userToPrintId), hostKey);
 			return null;
 		}
 

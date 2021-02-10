@@ -83,6 +83,6 @@ public class AD_Archive
 					I_AD_Archive.COLUMNNAME_IsActive })
 	public void printArchive(final I_AD_Archive archive)
 	{
-		printingQueueBL.printArchive(archive, printOutputFacade, null);
+		printingQueueBL.printArchive(archive, printOutputFacade, null, null);
 	}
 }

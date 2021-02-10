@@ -23,6 +23,7 @@ package de.metas.printing.api;
  */
 
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.HardwareTrayId;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.model.I_C_Print_Job_Line;
@@ -33,6 +34,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Archive;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -48,6 +50,7 @@ public interface IPrintingQueueBL extends ISingletonService
 
 	void printArchive(de.metas.printing.model.I_AD_Archive archive,
 			PrintOutputFacade printOutputFacade,
+			HardwarePrinterId hwPrinterId,
 			HardwareTrayId hwTrayId);
 
 	void registerHandler(IPrintingQueueHandler handler);

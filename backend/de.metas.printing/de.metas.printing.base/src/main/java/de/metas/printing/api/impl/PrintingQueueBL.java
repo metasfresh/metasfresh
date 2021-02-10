@@ -37,6 +37,7 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
+import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.HardwareTrayId;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingDAO;
@@ -80,6 +81,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrintingQueueBL implements IPrintingQueueBL
 {
@@ -166,6 +169,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	@Override
 	public void printArchive(@NonNull final de.metas.printing.model.I_AD_Archive archive,
 			@NonNull final PrintOutputFacade printOutputFacade,
+			@Nullable HardwarePrinterId hwPrinterId,
 			@Nullable HardwareTrayId hwTrayId)
 	{
 		if (!archive.isActive())
@@ -181,8 +185,25 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			item = enqueue(archive);
 		}
 
+		if (item == null)
+		{
+			// nothing to do
+			return;
+		}
+		if (hwPrinterId != null)
+		{
+			item.setAD_PrinterHW_ID(hwPrinterId.getRepoId());
+		}
+
+		if (hwTrayId != null)
+		{
+			item.setAD_PrinterHW_MediaTray_ID(hwTrayId.getRepoId());
+		}
+
+		save(item);
+
 		final boolean createPrintJob = isProcessQueueItem(archive);
-		if (item != null && createPrintJob)
+		if (createPrintJob)
 		{
 			forwardToJob(item, printOutputFacade);
 		}
