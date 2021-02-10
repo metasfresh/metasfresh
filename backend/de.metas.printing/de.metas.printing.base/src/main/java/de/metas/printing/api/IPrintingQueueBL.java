@@ -23,6 +23,8 @@ package de.metas.printing.api;
  */
 
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.printing.HardwareTrayId;
+import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintingQueueHandler;
@@ -43,6 +45,10 @@ public interface IPrintingQueueBL extends ISingletonService
 	 * @return the generated record or <code>null</code> if no printing queue item was generated (i.e. was not needed or an {@link IPrintingQueueHandler} prevented that)
 	 */
 	I_C_Printing_Queue enqueue(I_AD_Archive printOut);
+
+	void printArchive(de.metas.printing.model.I_AD_Archive archive,
+			PrintOutputFacade printOutputFacade,
+			HardwareTrayId hwTrayId);
 
 	void registerHandler(IPrintingQueueHandler handler);
 

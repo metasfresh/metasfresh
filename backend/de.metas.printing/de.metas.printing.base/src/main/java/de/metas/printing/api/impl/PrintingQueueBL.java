@@ -30,17 +30,21 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.async.Async_Constants;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
+import de.metas.printing.HardwareTrayId;
+import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
+import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.printing.spi.IPrintingQueueHandler;
@@ -68,6 +72,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -156,6 +161,114 @@ public class PrintingQueueBL implements IPrintingQueueBL
 			InterfaceWrapperHelper.save(item); // make sure the changes made in after enqueue, are also saved
 			return item;
 		}
+	}
+
+	@Override
+	public void printArchive(@NonNull final de.metas.printing.model.I_AD_Archive archive,
+			@NonNull final PrintOutputFacade printOutputFacade,
+			@Nullable HardwareTrayId hwTrayId)
+	{
+		if (!archive.isActive())
+		{
+			return;
+		}
+
+		I_C_Printing_Queue item = null;
+
+		final boolean enqueueToPrintQueue = isIsCreatePrintingQueueItem(archive);
+		if (enqueueToPrintQueue)
+		{
+			item = enqueue(archive);
+		}
+
+		final boolean createPrintJob = isProcessQueueItem(archive);
+		if (item != null && createPrintJob)
+		{
+			forwardToJob(item, printOutputFacade);
+		}
+	}
+
+	/**
+	 * Directly create the print job. That means it will be printed now.
+	 */
+	private void forwardToJob(@NonNull final I_C_Printing_Queue printingQueue,
+			@NonNull final PrintOutputFacade printOutputFacade)
+	{
+		final UserId adUserPrintJobId = UserId.ofRepoId(CoalesceUtil.firstGreaterThanZero(printingQueue.getAD_User_ID(), printingQueue.getCreatedBy()));
+		final IPrintingQueueSource source = new SingletonPrintingQueueSource(printingQueue, adUserPrintJobId);
+
+		printOutputFacade.print(source);
+	}
+
+	private boolean isIsCreatePrintingQueueItem(@NonNull final de.metas.printing.model.I_AD_Archive archive)
+	{
+		try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(archive))
+		{
+			// If we need to create a print job, then we shall enqueue to printing queue first
+			if (isProcessQueueItem(archive))
+			{
+				logger.debug("IsCreatePrintingQueueItem - IsProcessQueueItem returned true; -> return true");
+				return true;
+			}
+
+			if (archive.isDirectEnqueue())
+			{
+				logger.debug("IsCreatePrintingQueueItem - AD_Archive.IsDirectEnqueue=true; -> return true");
+				return true;
+			}
+
+			// task 09417: also check if the archive references a docOutBoundConfig, and if yes, use its settings.
+			if (archive.getC_Doc_Outbound_Config_ID() > 0)
+			{
+				final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
+																					 I_C_Doc_Outbound_Config.class);
+				if (config.isDirectEnqueue() || config.isDirectProcessQueueItem())
+				{
+					logger.debug("IsCreatePrintingQueueItem - AD_Archive has C_Doc_Outbound_Config_ID={} "
+										 + "which has IsDirectEnqueue={} and DirectProcessQueueItem={}; -> return true",
+								 archive.getC_Doc_Outbound_Config_ID(), config.isDirectEnqueue(), config.isDirectProcessQueueItem());
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	private boolean isProcessQueueItem(@NonNull final de.metas.printing.model.I_AD_Archive archive)
+	{
+		// If we are explicitly asked to create a print job, then do it
+		if (archive.isDirectProcessQueueItem())
+		{
+			logger.debug("IsProcessQueueItem - AD_Archive.IsDirectProcessQueueItem=true; -> return true");
+			return true;
+		}
+
+		if (archive.getC_Doc_Outbound_Config_ID() > 0)
+		{
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.create(archive.getC_Doc_Outbound_Config(),
+																				 I_C_Doc_Outbound_Config.class);
+			if (config.isDirectProcessQueueItem())
+			{
+				logger.debug("IsProcessQueueItem - AD_Archive has C_Doc_Outbound_Config_ID={} which has IsDirectProcessQueueItem=true; -> return true", archive.getC_Doc_Outbound_Config_ID());
+				return true;
+			}
+		}
+
+		// Backward compatibility: If this is a generic archive we are always creating a print job directly.
+		// This is because old code rely on this logic (at that time there was no IsCreatePrintJob flag).
+		if (isGenericArchive(archive))
+		{
+			logger.debug("IsProcessQueueItem - AD_Archive is a generic archive without record reference; -> return true");
+			return true;
+		}
+
+		logger.debug("IsProcessQueueItem - none of the conditions applied -> return false");
+		return false;
+	}
+
+	private boolean isGenericArchive(final de.metas.printing.model.I_AD_Archive archive)
+	{
+		return (archive.getAD_Table_ID() <= 0 && archive.getRecord_ID() <= 0);
 	}
 
 	@Override
