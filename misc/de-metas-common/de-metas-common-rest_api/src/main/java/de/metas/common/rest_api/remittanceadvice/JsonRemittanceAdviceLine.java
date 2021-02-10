@@ -32,6 +32,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -56,30 +57,37 @@ public class JsonRemittanceAdviceLine
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates to InvoiceDate")
+	@Nullable
 	String dateInvoiced;
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates to Service_BPartner_ID")
+	@Nullable
 	String bpartnerIdentifier;
 
 	@ApiModelProperty(dataType = "java.lang.String",
 			value = "This translates to ExternalInvoiceDocBaseType")
+	@Nullable
 	String invoiceBaseDocType;
 
 	@ApiModelProperty(dataType = "java.math.BigDecimal",
 			value = "This translates as InvoiceGrossAmount")
+	@Nullable
 	BigDecimal invoiceGrossAmount;
 
 	@ApiModelProperty(dataType = "java.math.BigDecimal",
 			value = "This translates to PaymentDiscountAmt")
+	@Nullable
 	BigDecimal paymentDiscountAmount;
 
 	@ApiModelProperty(dataType = "java.math.BigDecimal",
 			value = "This translates to ServiceFeeAmount")
+	@Nullable
 	BigDecimal serviceFeeAmount;
 
 	@ApiModelProperty(dataType = "java.math.BigDecimal",
 			value = "This translates to ServiceFeeVatRate")
+	@Nullable
 	BigDecimal serviceFeeVatRate;
 
 	@JsonIgnoreProperties(ignoreUnknown = true) // the annotation to ignore properties should be set on the deserializer method (on the builder), and not on the base class

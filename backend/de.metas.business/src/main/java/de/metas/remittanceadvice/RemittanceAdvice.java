@@ -70,6 +70,9 @@ public class RemittanceAdvice
 	private final Instant documentDate;
 
 	@NonNull
+	private final String externalDocumentNumber;
+
+	@NonNull
 	private final String docStatus;
 
 	@NonNull

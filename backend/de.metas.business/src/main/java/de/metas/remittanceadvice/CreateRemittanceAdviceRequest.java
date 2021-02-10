@@ -59,6 +59,9 @@ public class CreateRemittanceAdviceRequest
 	BPartnerBankAccountId destinationBPartnerBankAccountId;
 
 	@NonNull
+	String documentNumber;
+
+	@NonNull
 	String externalDocumentNumber;
 
 	@NonNull

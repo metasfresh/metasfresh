@@ -204,6 +204,7 @@ public class RemittanceAdviceRepository
 		record.setDestintion_BPartner_ID(createRemittanceAdviceRequest.getDestinationBPartnerId().getRepoId());
 		record.setDestination_BP_BankAccount_ID(createRemittanceAdviceRequest.getDestinationBPartnerBankAccountId().getRepoId());
 
+		record.setDocumentNo(createRemittanceAdviceRequest.getDocumentNumber());
 		record.setExternalDocumentNo(createRemittanceAdviceRequest.getExternalDocumentNumber());
 		record.setDateDoc(TimeUtil.asTimestamp(createRemittanceAdviceRequest.getDocumentDate()));
 		record.setC_DocType_ID(createRemittanceAdviceRequest.getDocTypeId().getRepoId());
@@ -272,6 +273,7 @@ public class RemittanceAdviceRepository
 				.destinationBPartnerBankAccountId(destinationBPBankAccountId)
 
 				.documentNumber(record.getDocumentNo())
+				.externalDocumentNumber(record.getExternalDocumentNo())
 				.documentDate(TimeUtil.asInstant(record.getDateDoc()))
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
 				.docStatus(record.getDocStatus())
