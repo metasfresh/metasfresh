@@ -20,6 +20,8 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -62,6 +64,7 @@ public interface IViewRow
 	 *
 	 * @return row's document path
 	 */
+	@Nullable
 	DocumentPath getDocumentPath();
 
 	//
