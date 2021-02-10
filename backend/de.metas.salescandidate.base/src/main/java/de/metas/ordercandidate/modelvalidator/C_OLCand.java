@@ -287,7 +287,7 @@ public class C_OLCand
 		{
 			org.compiere.model.I_C_BPartner_Location handOverLocation =
 					bPartnerDAO
-							.getBPartnerLocation(handoverRelation.getC_BP_Relation_ID(),
+							.getBPartnerLocation(handoverRelation.getC_BPartnerRelation_ID(),
 												 handoverRelation.getC_BPartnerRelation_Location_ID());
 
 			if (handOverLocation == null)

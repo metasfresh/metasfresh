@@ -367,5 +367,5 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 
-	I_C_BPartner_Location getBPartnerLocation(int c_bPartner_id, int c_bPartner_location_id);
+	I_C_BPartner_Location getBPartnerLocation(int bpartnerRepoId, int bpartnerLocationRepoId);
 }

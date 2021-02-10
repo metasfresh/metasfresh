@@ -1685,9 +1685,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public I_C_BPartner_Location getBPartnerLocation(final int c_bPartner_id, final int c_bPartner_location_id)
+	public I_C_BPartner_Location getBPartnerLocation(final int bpartnerRepoId, final int bpartnerLocationRepoId)
 	{
-		BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(c_bPartner_id, c_bPartner_location_id);
+		BPartnerLocationId partnerLocationId = BPartnerLocationId.ofRepoId(bpartnerRepoId, bpartnerLocationRepoId);
 		return getBPartnerLocationById(partnerLocationId);
 	}
 
