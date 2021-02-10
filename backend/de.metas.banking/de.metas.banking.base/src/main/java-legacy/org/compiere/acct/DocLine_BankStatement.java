@@ -179,6 +179,7 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 				getClientId(),
 				getOrgId());
 
+		final BigDecimal fixedCurrencyRate = getFixedCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
 		{
 			conversionCtx = conversionCtx.withFixedConversionRate(

@@ -145,7 +145,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				line.getClientId(),
 				line.getOrgId());
 
-		BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
+		final BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
 		{
 			currencyConversionCtx = currencyConversionCtx.withFixedConversionRate(

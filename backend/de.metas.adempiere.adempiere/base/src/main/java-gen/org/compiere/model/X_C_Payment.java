@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Payment
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1701664440L;
+	private static final long serialVersionUID = -1042970415L;
 
     /** Standard Constructor */
-    public X_C_Payment (final Properties ctx, final int C_Payment_ID, final String trxName)
+    public X_C_Payment (final Properties ctx, final int C_Payment_ID, @Nullable final String trxName)
     {
       super (ctx, C_Payment_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_Payment (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_Payment (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -35,19 +36,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setAccountNo (final java.lang.String AccountNo)
-	{
-		set_Value (COLUMNNAME_AccountNo, AccountNo);
-	}
-
-	@Override
-	public java.lang.String getAccountNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_AccountNo);
-	}
-
-	@Override
-	public void setA_City (final java.lang.String A_City)
+	public void setA_City (final @Nullable java.lang.String A_City)
 	{
 		set_Value (COLUMNNAME_A_City, A_City);
 	}
@@ -59,7 +48,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setA_Country (final java.lang.String A_Country)
+	public void setA_Country (final @Nullable java.lang.String A_Country)
 	{
 		set_Value (COLUMNNAME_A_Country, A_Country);
 	}
@@ -68,6 +57,102 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getA_Country() 
 	{
 		return get_ValueAsString(COLUMNNAME_A_Country);
+	}
+
+	@Override
+	public void setA_EMail (final @Nullable java.lang.String A_EMail)
+	{
+		set_Value (COLUMNNAME_A_EMail, A_EMail);
+	}
+
+	@Override
+	public java.lang.String getA_EMail() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_EMail);
+	}
+
+	@Override
+	public void setA_Ident_DL (final @Nullable java.lang.String A_Ident_DL)
+	{
+		set_Value (COLUMNNAME_A_Ident_DL, A_Ident_DL);
+	}
+
+	@Override
+	public java.lang.String getA_Ident_DL() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Ident_DL);
+	}
+
+	@Override
+	public void setA_Ident_SSN (final @Nullable java.lang.String A_Ident_SSN)
+	{
+		set_Value (COLUMNNAME_A_Ident_SSN, A_Ident_SSN);
+	}
+
+	@Override
+	public java.lang.String getA_Ident_SSN() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Ident_SSN);
+	}
+
+	@Override
+	public void setA_Name (final @Nullable java.lang.String A_Name)
+	{
+		set_Value (COLUMNNAME_A_Name, A_Name);
+	}
+
+	@Override
+	public java.lang.String getA_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Name);
+	}
+
+	@Override
+	public void setA_State (final @Nullable java.lang.String A_State)
+	{
+		set_Value (COLUMNNAME_A_State, A_State);
+	}
+
+	@Override
+	public java.lang.String getA_State() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_State);
+	}
+
+	@Override
+	public void setA_Street (final @Nullable java.lang.String A_Street)
+	{
+		set_Value (COLUMNNAME_A_Street, A_Street);
+	}
+
+	@Override
+	public java.lang.String getA_Street() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Street);
+	}
+
+	@Override
+	public void setA_Zip (final @Nullable java.lang.String A_Zip)
+	{
+		set_Value (COLUMNNAME_A_Zip, A_Zip);
+	}
+
+	@Override
+	public java.lang.String getA_Zip() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Zip);
+	}
+
+	@Override
+	public void setAccountNo (final @Nullable java.lang.String AccountNo)
+	{
+		set_Value (COLUMNNAME_AccountNo, AccountNo);
+	}
+
+	@Override
+	public java.lang.String getAccountNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountNo);
 	}
 
 	@Override
@@ -83,90 +168,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getAD_OrgTrx_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
-	}
-
-	@Override
-	public void setA_EMail (final java.lang.String A_EMail)
-	{
-		set_Value (COLUMNNAME_A_EMail, A_EMail);
-	}
-
-	@Override
-	public java.lang.String getA_EMail() 
-	{
-		return get_ValueAsString(COLUMNNAME_A_EMail);
-	}
-
-	@Override
-	public void setA_Ident_DL (final java.lang.String A_Ident_DL)
-	{
-		set_Value (COLUMNNAME_A_Ident_DL, A_Ident_DL);
-	}
-
-	@Override
-	public java.lang.String getA_Ident_DL() 
-	{
-		return get_ValueAsString(COLUMNNAME_A_Ident_DL);
-	}
-
-	@Override
-	public void setA_Ident_SSN (final java.lang.String A_Ident_SSN)
-	{
-		set_Value (COLUMNNAME_A_Ident_SSN, A_Ident_SSN);
-	}
-
-	@Override
-	public java.lang.String getA_Ident_SSN() 
-	{
-		return get_ValueAsString(COLUMNNAME_A_Ident_SSN);
-	}
-
-	@Override
-	public void setA_Name (final java.lang.String A_Name)
-	{
-		set_Value (COLUMNNAME_A_Name, A_Name);
-	}
-
-	@Override
-	public java.lang.String getA_Name() 
-	{
-		return get_ValueAsString(COLUMNNAME_A_Name);
-	}
-
-	@Override
-	public void setA_State (final java.lang.String A_State)
-	{
-		set_Value (COLUMNNAME_A_State, A_State);
-	}
-
-	@Override
-	public java.lang.String getA_State() 
-	{
-		return get_ValueAsString(COLUMNNAME_A_State);
-	}
-
-	@Override
-	public void setA_Street (final java.lang.String A_Street)
-	{
-		set_Value (COLUMNNAME_A_Street, A_Street);
-	}
-
-	@Override
-	public java.lang.String getA_Street() 
-	{
-		return get_ValueAsString(COLUMNNAME_A_Street);
-	}
-
-	@Override
-	public void setA_Zip (final java.lang.String A_Zip)
-	{
-		set_Value (COLUMNNAME_A_Zip, A_Zip);
-	}
-
-	@Override
-	public java.lang.String getA_Zip() 
-	{
-		return get_ValueAsString(COLUMNNAME_A_Zip);
 	}
 
 	@Override
@@ -230,21 +231,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
-	}
-
-	@Override
-	public int getC_BPartner_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
-	}
-
-	@Override
 	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
 		if (C_BP_BankAccount_ID < 1) 
@@ -257,6 +243,21 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getC_BP_BankAccount_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
@@ -374,31 +375,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setChargeAmt (final BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCheckNo (final java.lang.String CheckNo)
-	{
-		set_Value (COLUMNNAME_CheckNo, CheckNo);
-	}
-
-	@Override
-	public java.lang.String getCheckNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_CheckNo);
-	}
-
-	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
@@ -453,6 +429,21 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
+	public void setC_Payment_ID (final int C_Payment_ID)
+	{
+		if (C_Payment_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, C_Payment_ID);
+	}
+
+	@Override
+	public int getC_Payment_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Payment_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_PaymentBatch getC_PaymentBatch()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PaymentBatch_ID, org.compiere.model.I_C_PaymentBatch.class);
@@ -480,21 +471,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setC_Payment_ID (final int C_Payment_ID)
-	{
-		if (C_Payment_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, C_Payment_ID);
-	}
-
-	@Override
-	public int getC_Payment_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Payment_ID);
-	}
-
-	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -507,6 +483,31 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCheckNo (final @Nullable java.lang.String CheckNo)
+	{
+		set_Value (COLUMNNAME_CheckNo, CheckNo);
+	}
+
+	@Override
+	public java.lang.String getCheckNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_CheckNo);
 	}
 
 	@Override
@@ -534,7 +535,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setCreditCardNumber (final java.lang.String CreditCardNumber)
+	public void setCreditCardNumber (final @Nullable java.lang.String CreditCardNumber)
 	{
 		set_Value (COLUMNNAME_CreditCardNumber, CreditCardNumber);
 	}
@@ -565,7 +566,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	/** Purchase Card = P */
 	public static final String CREDITCARDTYPE_PurchaseCard = "P";
 	@Override
-	public void setCreditCardType (final java.lang.String CreditCardType)
+	public void setCreditCardType (final @Nullable java.lang.String CreditCardType)
 	{
 		set_Value (COLUMNNAME_CreditCardType, CreditCardType);
 	}
@@ -577,7 +578,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setCreditCardVV (final java.lang.String CreditCardVV)
+	public void setCreditCardVV (final @Nullable java.lang.String CreditCardVV)
 	{
 		set_Value (COLUMNNAME_CreditCardVV, CreditCardVV);
 	}
@@ -586,6 +587,19 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public java.lang.String getCreditCardVV() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreditCardVV);
+	}
+
+	@Override
+	public void setCurrencyRate (final @Nullable BigDecimal CurrencyRate)
+	{
+		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
+	}
+
+	@Override
+	public BigDecimal getCurrencyRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -613,7 +627,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -625,7 +639,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setDiscountAmt (final BigDecimal DiscountAmt)
+	public void setDiscountAmt (final @Nullable BigDecimal DiscountAmt)
 	{
 		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
 	}
@@ -738,7 +752,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setExternalId (final java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_ValueNoCheck (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -750,7 +764,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setExternalOrderId (final java.lang.String ExternalOrderId)
+	public void setExternalOrderId (final @Nullable java.lang.String ExternalOrderId)
 	{
 		set_Value (COLUMNNAME_ExternalOrderId, ExternalOrderId);
 	}
@@ -894,7 +908,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setMicr (final java.lang.String Micr)
+	public void setMicr (final @Nullable java.lang.String Micr)
 	{
 		set_Value (COLUMNNAME_Micr, Micr);
 	}
@@ -906,7 +920,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setOrig_TrxID (final java.lang.String Orig_TrxID)
+	public void setOrig_TrxID (final @Nullable java.lang.String Orig_TrxID)
 	{
 		set_Value (COLUMNNAME_Orig_TrxID, Orig_TrxID);
 	}
@@ -918,7 +932,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setOverUnderAmt (final BigDecimal OverUnderAmt)
+	public void setOverUnderAmt (final @Nullable BigDecimal OverUnderAmt)
 	{
 		set_Value (COLUMNNAME_OverUnderAmt, OverUnderAmt);
 	}
@@ -944,7 +958,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setPONum (final java.lang.String PONum)
+	public void setPONum (final @Nullable java.lang.String PONum)
 	{
 		set_Value (COLUMNNAME_PONum, PONum);
 	}
@@ -965,18 +979,6 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public boolean isPosted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Posted);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Issue getPostingError_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_PostingError_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setPostingError_Issue(final org.compiere.model.I_AD_Issue PostingError_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_PostingError_Issue_ID, org.compiere.model.I_AD_Issue.class, PostingError_Issue);
 	}
 
 	@Override
@@ -1019,7 +1021,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setR_AuthCode (final java.lang.String R_AuthCode)
+	public void setR_AuthCode (final @Nullable java.lang.String R_AuthCode)
 	{
 		set_ValueNoCheck (COLUMNNAME_R_AuthCode, R_AuthCode);
 	}
@@ -1031,7 +1033,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setR_AuthCode_DC (final java.lang.String R_AuthCode_DC)
+	public void setR_AuthCode_DC (final @Nullable java.lang.String R_AuthCode_DC)
 	{
 		set_ValueNoCheck (COLUMNNAME_R_AuthCode_DC, R_AuthCode_DC);
 	}
@@ -1054,7 +1056,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	/** Unavailable = X */
 	public static final String R_AVSADDR_Unavailable = "X";
 	@Override
-	public void setR_AvsAddr (final java.lang.String R_AvsAddr)
+	public void setR_AvsAddr (final @Nullable java.lang.String R_AvsAddr)
 	{
 		set_ValueNoCheck (COLUMNNAME_R_AvsAddr, R_AvsAddr);
 	}
@@ -1077,7 +1079,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	/** Unavailable = X */
 	public static final String R_AVSZIP_Unavailable = "X";
 	@Override
-	public void setR_AvsZip (final java.lang.String R_AvsZip)
+	public void setR_AvsZip (final @Nullable java.lang.String R_AvsZip)
 	{
 		set_ValueNoCheck (COLUMNNAME_R_AvsZip, R_AvsZip);
 	}
@@ -1098,6 +1100,66 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	public boolean isR_CVV2Match() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_R_CVV2Match);
+	}
+
+	@Override
+	public void setR_Info (final @Nullable java.lang.String R_Info)
+	{
+		set_ValueNoCheck (COLUMNNAME_R_Info, R_Info);
+	}
+
+	@Override
+	public java.lang.String getR_Info() 
+	{
+		return get_ValueAsString(COLUMNNAME_R_Info);
+	}
+
+	@Override
+	public void setR_PnRef (final @Nullable java.lang.String R_PnRef)
+	{
+		set_Value (COLUMNNAME_R_PnRef, R_PnRef);
+	}
+
+	@Override
+	public java.lang.String getR_PnRef() 
+	{
+		return get_ValueAsString(COLUMNNAME_R_PnRef);
+	}
+
+	@Override
+	public void setR_PnRef_DC (final @Nullable java.lang.String R_PnRef_DC)
+	{
+		set_ValueNoCheck (COLUMNNAME_R_PnRef_DC, R_PnRef_DC);
+	}
+
+	@Override
+	public java.lang.String getR_PnRef_DC() 
+	{
+		return get_ValueAsString(COLUMNNAME_R_PnRef_DC);
+	}
+
+	@Override
+	public void setR_RespMsg (final @Nullable java.lang.String R_RespMsg)
+	{
+		set_ValueNoCheck (COLUMNNAME_R_RespMsg, R_RespMsg);
+	}
+
+	@Override
+	public java.lang.String getR_RespMsg() 
+	{
+		return get_ValueAsString(COLUMNNAME_R_RespMsg);
+	}
+
+	@Override
+	public void setR_Result (final @Nullable java.lang.String R_Result)
+	{
+		set_ValueNoCheck (COLUMNNAME_R_Result, R_Result);
+	}
+
+	@Override
+	public java.lang.String getR_Result() 
+	{
+		return get_ValueAsString(COLUMNNAME_R_Result);
 	}
 
 	@Override
@@ -1131,19 +1193,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setR_Info (final java.lang.String R_Info)
-	{
-		set_ValueNoCheck (COLUMNNAME_R_Info, R_Info);
-	}
-
-	@Override
-	public java.lang.String getR_Info() 
-	{
-		return get_ValueAsString(COLUMNNAME_R_Info);
-	}
-
-	@Override
-	public void setRoutingNo (final java.lang.String RoutingNo)
+	public void setRoutingNo (final @Nullable java.lang.String RoutingNo)
 	{
 		set_Value (COLUMNNAME_RoutingNo, RoutingNo);
 	}
@@ -1155,55 +1205,22 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setR_PnRef (final java.lang.String R_PnRef)
+	public void setSource_Currency_ID (final int Source_Currency_ID)
 	{
-		set_Value (COLUMNNAME_R_PnRef, R_PnRef);
+		if (Source_Currency_ID < 1) 
+			set_Value (COLUMNNAME_Source_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_Source_Currency_ID, Source_Currency_ID);
 	}
 
 	@Override
-	public java.lang.String getR_PnRef() 
+	public int getSource_Currency_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_R_PnRef);
+		return get_ValueAsInt(COLUMNNAME_Source_Currency_ID);
 	}
 
 	@Override
-	public void setR_PnRef_DC (final java.lang.String R_PnRef_DC)
-	{
-		set_ValueNoCheck (COLUMNNAME_R_PnRef_DC, R_PnRef_DC);
-	}
-
-	@Override
-	public java.lang.String getR_PnRef_DC() 
-	{
-		return get_ValueAsString(COLUMNNAME_R_PnRef_DC);
-	}
-
-	@Override
-	public void setR_RespMsg (final java.lang.String R_RespMsg)
-	{
-		set_ValueNoCheck (COLUMNNAME_R_RespMsg, R_RespMsg);
-	}
-
-	@Override
-	public java.lang.String getR_RespMsg() 
-	{
-		return get_ValueAsString(COLUMNNAME_R_RespMsg);
-	}
-
-	@Override
-	public void setR_Result (final java.lang.String R_Result)
-	{
-		set_ValueNoCheck (COLUMNNAME_R_Result, R_Result);
-	}
-
-	@Override
-	public java.lang.String getR_Result() 
-	{
-		return get_ValueAsString(COLUMNNAME_R_Result);
-	}
-
-	@Override
-	public void setSwipe (final java.lang.String Swipe)
+	public void setSwipe (final @Nullable java.lang.String Swipe)
 	{
 		set_ValueNoCheck (COLUMNNAME_Swipe, Swipe);
 	}
@@ -1215,7 +1232,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setTaxAmt (final BigDecimal TaxAmt)
+	public void setTaxAmt (final @Nullable BigDecimal TaxAmt)
 	{
 		set_Value (COLUMNNAME_TaxAmt, TaxAmt);
 	}
@@ -1342,7 +1359,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setVoiceAuthCode (final java.lang.String VoiceAuthCode)
+	public void setVoiceAuthCode (final @Nullable java.lang.String VoiceAuthCode)
 	{
 		set_Value (COLUMNNAME_VoiceAuthCode, VoiceAuthCode);
 	}
@@ -1354,7 +1371,7 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	}
 
 	@Override
-	public void setWriteOffAmt (final BigDecimal WriteOffAmt)
+	public void setWriteOffAmt (final @Nullable BigDecimal WriteOffAmt)
 	{
 		set_Value (COLUMNNAME_WriteOffAmt, WriteOffAmt);
 	}

@@ -22,7 +22,9 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
+import de.metas.banking.payment.paymentallocation.PaymentCurrencyContext;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.FixedConversionRate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -79,7 +81,7 @@ public class PaymentDocument implements IPaymentDocument
 	private final ClientAndOrgId clientAndOrgId;
 
 	@Getter
-	private final CurrencyConversionTypeId currencyConversionTypeId;
+	@NonNull private final PaymentCurrencyContext paymentCurrencyContext;
 
 	@Builder
 	private PaymentDocument(
@@ -92,8 +94,7 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final Money amountToAllocate,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate dateTrx,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
-	)
+			@Nullable final PaymentCurrencyContext paymentCurrencyContext)
 	{
 		final OrgId orgId = clientAndOrgId.getOrgId();
 		if (!orgId.isRegular())
@@ -114,7 +115,7 @@ public class PaymentDocument implements IPaymentDocument
 		this.allocatedAmt = amountToAllocate.toZero();
 		this.dateTrx = dateTrx;
 		this.clientAndOrgId = clientAndOrgId;
-		this.currencyConversionTypeId = currencyConversionTypeId;
+		this.paymentCurrencyContext = paymentCurrencyContext;
 	}
 
 	@Override

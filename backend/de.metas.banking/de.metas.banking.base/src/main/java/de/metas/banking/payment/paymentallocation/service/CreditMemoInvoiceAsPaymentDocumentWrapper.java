@@ -22,9 +22,9 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
+import de.metas.banking.payment.paymentallocation.PaymentCurrencyContext;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
@@ -34,14 +34,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
  * Wraps a credit memo {@link PayableDocument} and behaves like a {@link IPaymentDocument}.
  *
  * @author tsa
- *
  */
 @EqualsAndHashCode
 final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocument
@@ -164,10 +162,6 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		return creditMemoPayableDoc.getDate();
 	}
 
-	@Nullable
 	@Override
-	public CurrencyConversionTypeId getCurrencyConversionTypeId()
-	{
-		return creditMemoPayableDoc.getCurrencyConversionTypeId();
-	}
+	public PaymentCurrencyContext getPaymentCurrencyContext() { return PaymentCurrencyContext.ofCurrencyConversionTypeId(creditMemoPayableDoc.getCurrencyConversionTypeId()); }
 }

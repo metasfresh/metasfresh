@@ -1,15 +1,6 @@
 package de.metas.currency;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Objects;
-import java.util.Optional;
-
-import org.adempiere.service.ClientId;
-
 import com.google.common.base.MoreObjects;
-
-import de.metas.currency.FixedConversionRateMap.FixedConversionRate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -17,6 +8,12 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -39,7 +36,9 @@ public class CurrencyConversionContext
 	@Default
 	FixedConversionRateMap fixedConversionRates = FixedConversionRateMap.EMPTY;
 
-	/** @return a summary, user friendly, string representation */
+	/**
+	 * @return a summary, user friendly, string representation
+	 */
 	public String getSummary()
 	{
 		// NOTE: keep it short because we want to append it to Fact_Acct.Description
@@ -68,12 +67,15 @@ public class CurrencyConversionContext
 			@NonNull final CurrencyId toCurrencyId,
 			@NonNull final BigDecimal multiplyRate)
 	{
-		final FixedConversionRate rate = FixedConversionRate.builder()
+		return withFixedConversionRate(FixedConversionRate.builder()
 				.fromCurrencyId(fromCurrencyId)
 				.toCurrencyId(toCurrencyId)
 				.multiplyRate(multiplyRate)
-				.build();
+				.build());
+	}
 
+	public CurrencyConversionContext withFixedConversionRate(@NonNull final FixedConversionRate rate)
+	{
 		return toBuilder()
 				.fixedConversionRates(fixedConversionRates.addingConversionRate(rate))
 				.build();

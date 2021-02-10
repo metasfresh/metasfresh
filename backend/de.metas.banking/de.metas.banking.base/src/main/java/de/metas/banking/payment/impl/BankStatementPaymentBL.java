@@ -22,18 +22,6 @@
 
 package de.metas.banking.payment.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Set;
-
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -46,6 +34,7 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.FixedConversionRate;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -53,6 +42,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -63,6 +53,18 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
@@ -200,7 +202,32 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 			paymentBuilder.invoiceId(invoiceId);
 		}
 
+		final FixedConversionRate fixedConversionRate = extractFixedConversionRateOrNull(bankStatementLine);
+		if (fixedConversionRate != null)
+		{
+			paymentBuilder.currencyRate(fixedConversionRate.getMultiplyRate(), fixedConversionRate.getFromCurrencyId());
+		}
+
 		return paymentBuilder.createDraft(); // note: don't complete the payment now, else onComplete interceptors might link this payment to a different Bank Statement Line.
+	}
+
+	@Nullable
+	private FixedConversionRate extractFixedConversionRateOrNull(@NonNull final I_C_BankStatementLine bankStatementLine)
+	{
+		final BigDecimal currencyRate = bankStatementLine.getCurrencyRate();
+		if (currencyRate.signum() == 0)
+		{
+			return null;
+		}
+
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(bankStatementLine.getAD_Client_ID(), bankStatementLine.getAD_Org_ID());
+		final CurrencyId fromCurrencyId = moneyService.getBaseCurrencyId(clientAndOrgId);
+		final CurrencyId toCurrencyId = CurrencyId.ofRepoId(bankStatementLine.getC_Currency_ID());
+		return FixedConversionRate.builder()
+				.fromCurrencyId(fromCurrencyId)
+				.toCurrencyId(toCurrencyId)
+				.multiplyRate(currencyRate)
+				.build();
 	}
 
 	@Override

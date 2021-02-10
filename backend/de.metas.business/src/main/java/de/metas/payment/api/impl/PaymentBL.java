@@ -31,7 +31,9 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -103,6 +105,7 @@ public class PaymentBL implements IPaymentBL
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -800,6 +803,46 @@ public class PaymentBL implements IPaymentBL
 	{
 		final Optional<I_C_Payment> payment = paymentDAO.getByExternalId(externalId, orgId);
 		return Optional.ofNullable(payment.isPresent() ? PaymentId.ofRepoId(payment.get().getC_Payment_ID()) : null);
+	}
+
+	@Override
+	public CurrencyConversionContext extractCurrencyConversionContext(@NonNull final I_C_Payment payment)
+	{
+		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				TimeUtil.asLocalDate(payment.getDateAcct()),
+				CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
+				ClientId.ofRepoId(payment.getAD_Client_ID()),
+				OrgId.ofRepoId(payment.getAD_Org_ID()));
+
+		final FixedConversionRate fixedConversionRate = extractFixedConversionRate(payment);
+		if (fixedConversionRate != null)
+		{
+			conversionCtx = conversionCtx.withFixedConversionRate(fixedConversionRate);
+		}
+
+		return conversionCtx;
+	}
+
+	@Nullable
+	private FixedConversionRate extractFixedConversionRate(@NonNull final I_C_Payment payment)
+	{
+		final CurrencyId fromCurrencyId = CurrencyId.ofRepoIdOrNull(payment.getSource_Currency_ID());
+		final BigDecimal currencyRate = payment.getCurrencyRate();
+		if (fromCurrencyId != null
+				&& currencyRate != null
+				&& currencyRate.signum() != 0)
+		{
+			final CurrencyId toCurrencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
+			return FixedConversionRate.builder()
+					.fromCurrencyId(fromCurrencyId)
+					.toCurrencyId(toCurrencyId)
+					.multiplyRate(currencyRate)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 }

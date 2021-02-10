@@ -73,6 +73,11 @@ public class MoneyService
 		return currencyRepository.getCurrencyCodeById(currencyId);
 	}
 
+	public CurrencyId getBaseCurrencyId(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return currencyBL.getBaseCurrencyId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+	}
+
 	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyCode currencyCode)
 	{
 		return currencyRepository.getStdPrecision(currencyCode);

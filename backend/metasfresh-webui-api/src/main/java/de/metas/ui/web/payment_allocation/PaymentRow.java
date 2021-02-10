@@ -1,12 +1,12 @@
 package de.metas.ui.web.payment_allocation;
 
+import de.metas.banking.payment.paymentallocation.PaymentCurrencyContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -24,7 +24,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Set;
@@ -87,7 +86,7 @@ public class PaymentRow implements IViewRow
 	private final PaymentDirection paymentDirection;
 
 	@Getter
-	private final CurrencyConversionTypeId currencyConversionTypeId;
+	private final PaymentCurrencyContext paymentCurrencyContext;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PaymentRow> values;
 
@@ -116,8 +115,7 @@ public class PaymentRow implements IViewRow
 			@NonNull final Amount payAmt,
 			@NonNull final Amount openAmt,
 			@NonNull final PaymentDirection paymentDirection,
-			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
-	)
+			@NonNull final PaymentCurrencyContext paymentCurrencyContext)
 	{
 		this.inboundPayment = paymentDirection.isInboundPayment();
 		this.documentNo = documentNo;
@@ -132,7 +130,7 @@ public class PaymentRow implements IViewRow
 		this.clientAndOrgId = clientAndOrgId;
 		this.paymentDirection = paymentDirection;
 
-		this.currencyConversionTypeId = currencyConversionTypeId;
+		this.paymentCurrencyContext = paymentCurrencyContext;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PaymentRow.class);
 	}
