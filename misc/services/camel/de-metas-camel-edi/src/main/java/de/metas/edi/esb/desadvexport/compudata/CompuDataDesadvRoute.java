@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 
 import javax.xml.namespace.QName;
@@ -30,6 +31,7 @@ import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
@@ -70,7 +72,8 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
 		final String desadvFilenamePattern = Util.resolveProperty(getContext(), CompuDataDesadvRoute.EDI_DESADV_FILENAME_PATTERN);
-
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
+		
 		from(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
 
@@ -111,6 +114,9 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 				.marshal(jaxb)
 
 				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
+						
+				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 	}
 }

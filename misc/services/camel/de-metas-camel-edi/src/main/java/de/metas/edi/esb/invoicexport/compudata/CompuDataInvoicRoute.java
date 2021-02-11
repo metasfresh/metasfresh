@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.invoicexport.compudata;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 
 import javax.xml.namespace.QName;
@@ -30,6 +31,7 @@ import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
@@ -71,7 +73,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
 		final String invoiceFilenamePattern = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOICE_FILENAME_PATTERN);
-
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
 		final String senderGln = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN);
 
 		from(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOIC_CONSUMER)
@@ -115,6 +117,9 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 				.marshal(jaxb)
 
 		.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
-				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+		
+		.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+ 		.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+		.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 	}
 }
