@@ -23,6 +23,7 @@
 package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
@@ -33,7 +34,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value
-@Builder
 public class RemittanceAdviceLineInvoiceDetails
 {
 	@NonNull
@@ -46,17 +46,39 @@ public class RemittanceAdviceLineInvoiceDetails
 	BigDecimal invoiceAmt;
 
 	@NonNull
-	BigDecimal invoiceAmtInREMADVCurrency;
-
-	@NonNull
-	BigDecimal overUnderAmt;
-
-	@NonNull
 	CurrencyId invoiceCurrencyId;
+
+	@NonNull
+	Amount invoiceAmtInREMADVCurrency;
+
+	@NonNull
+	Amount overUnderAmtInREMADVCurrency;
 
 	@NonNull
 	String invoiceDocType;
 
 	@NonNull
 	Instant invoiceDate;
+
+	@Builder
+	public RemittanceAdviceLineInvoiceDetails(@NonNull final InvoiceId invoiceId,
+			@NonNull final BPartnerId billBPartnerId,
+			@NonNull final BigDecimal invoiceAmt,
+			@NonNull final CurrencyId invoiceCurrencyId,
+			@NonNull final Amount invoiceAmtInREMADVCurrency,
+			@NonNull final Amount overUnderAmtInREMADVCurrency,
+			@NonNull final String invoiceDocType,
+			@NonNull final Instant invoiceDate)
+	{
+		Amount.assertSameCurrency(invoiceAmtInREMADVCurrency, overUnderAmtInREMADVCurrency);
+
+		this.invoiceId = invoiceId;
+		this.billBPartnerId = billBPartnerId;
+		this.invoiceAmt = invoiceAmt;
+		this.invoiceCurrencyId = invoiceCurrencyId;
+		this.invoiceAmtInREMADVCurrency = invoiceAmtInREMADVCurrency;
+		this.overUnderAmtInREMADVCurrency = overUnderAmtInREMADVCurrency;
+		this.invoiceDocType = invoiceDocType;
+		this.invoiceDate = invoiceDate;
+	}
 }

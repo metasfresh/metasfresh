@@ -30,14 +30,18 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
+import java.util.stream.Stream;
 
-@Builder
+@EqualsAndHashCode
 @Getter
 public class RemittanceAdviceLine
 {
@@ -80,10 +84,10 @@ public class RemittanceAdviceLine
 	private BigDecimal invoiceAmt;
 
 	@Nullable
-	private BigDecimal invoiceAmtInREMADVCurrency;
+	private Amount invoiceAmtInREMADVCurrency;
 
 	@Nullable
-	private BigDecimal overUnderAmt;
+	private Amount overUnderAmtInREMADVCurrency;
 
 	@Nullable
 	private CurrencyId invoiceCurrencyId;
@@ -121,16 +125,69 @@ public class RemittanceAdviceLine
 
 	private boolean isServiceFeeResolved;
 
+	@Builder
+	public RemittanceAdviceLine(@NonNull final OrgId orgId, @NonNull final RemittanceAdviceLineId remittanceAdviceLineId, @NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final Amount remittedAmount, @Nullable final Amount invoiceGrossAmount, @Nullable final Amount paymentDiscountAmount, @Nullable final Amount serviceFeeAmount, @Nullable final String externalInvoiceDocBaseType,
+			@Nullable final String invoiceIdentifier,
+			@Nullable final BPartnerId bpartnerIdentifier, @Nullable final BigDecimal serviceFeeVatRate, final boolean isLineAcknowledged, @Nullable final BigDecimal invoiceAmt, @Nullable final Amount invoiceAmtInREMADVCurrency, @Nullable final Amount overUnderAmt, @Nullable final CurrencyId invoiceCurrencyId, @Nullable final BPartnerId billBPartnerId, @Nullable final Instant dateInvoiced,
+			@Nullable final InvoiceId serviceFeeInvoiceId,
+			@Nullable final BPartnerId serviceFeeBPartnerId, @Nullable final ProductId serviceFeeProductId, @Nullable final TaxId taxId, @Nullable final InvoiceId invoiceId, final boolean isBPartnerValid, final boolean isInvoiceResolved, final boolean isAmountValid, final boolean isInvoiceDocTypeValid, final boolean isInvoiceDateValid, final boolean isServiceFeeResolved)
+	{
+
+		Amount.assertSameCurrency(Stream.of(remittedAmount, overUnderAmt, paymentDiscountAmount)
+										  .filter(Objects::nonNull).toArray(Amount[]::new));
+
+		if (invoiceAmt != null && invoiceAmt.signum() != 0 && invoiceCurrencyId == null)
+		{
+			throw new AdempiereException("Missing invoiceCurrencyId for invoiceAmount!")
+					.appendParametersToMessage()
+					.setParameter("RemittanceAdviceLineID", remittanceAdviceLineId);
+		}
+
+		this.orgId = orgId;
+		this.remittanceAdviceLineId = remittanceAdviceLineId;
+		this.remittanceAdviceId = remittanceAdviceId;
+		this.remittedAmount = remittedAmount;
+		this.invoiceGrossAmount = invoiceGrossAmount;
+		this.paymentDiscountAmount = paymentDiscountAmount;
+		this.serviceFeeAmount = serviceFeeAmount;
+		this.externalInvoiceDocBaseType = externalInvoiceDocBaseType;
+		this.invoiceIdentifier = invoiceIdentifier;
+		this.bpartnerIdentifier = bpartnerIdentifier;
+		this.serviceFeeVatRate = serviceFeeVatRate;
+		this.isLineAcknowledged = isLineAcknowledged;
+		this.invoiceAmt = invoiceAmt;
+		this.invoiceAmtInREMADVCurrency = invoiceAmtInREMADVCurrency;
+		this.overUnderAmtInREMADVCurrency = overUnderAmt;
+		this.invoiceCurrencyId = invoiceCurrencyId;
+		this.billBPartnerId = billBPartnerId;
+		this.dateInvoiced = dateInvoiced;
+		this.serviceFeeInvoiceId = serviceFeeInvoiceId;
+		this.serviceFeeBPartnerId = serviceFeeBPartnerId;
+		this.serviceFeeProductId = serviceFeeProductId;
+		this.taxId = taxId;
+		this.invoiceId = invoiceId;
+		this.isBPartnerValid = isBPartnerValid;
+		this.isInvoiceResolved = isInvoiceResolved;
+		this.isAmountValid = isAmountValid;
+		this.isInvoiceDocTypeValid = isInvoiceDocTypeValid;
+		this.isInvoiceDateValid = isInvoiceDateValid;
+		this.isServiceFeeResolved = isServiceFeeResolved;
+	}
+
 	public void syncWithInvoice(@NonNull final RemittanceAdviceLineInvoiceDetails remittanceAdviceLineInvoiceDetails)
 	{
+		Amount.assertSameCurrency(remittedAmount,
+								  remittanceAdviceLineInvoiceDetails.getInvoiceAmtInREMADVCurrency(),
+								  remittanceAdviceLineInvoiceDetails.getOverUnderAmtInREMADVCurrency());
+
 		invoiceId = remittanceAdviceLineInvoiceDetails.getInvoiceId();
 		billBPartnerId = remittanceAdviceLineInvoiceDetails.getBillBPartnerId();
 		invoiceAmt = remittanceAdviceLineInvoiceDetails.getInvoiceAmt();
 		invoiceCurrencyId = remittanceAdviceLineInvoiceDetails.getInvoiceCurrencyId();
 		invoiceAmtInREMADVCurrency = remittanceAdviceLineInvoiceDetails.getInvoiceAmtInREMADVCurrency();
-		overUnderAmt = remittanceAdviceLineInvoiceDetails.getOverUnderAmt();
+		overUnderAmtInREMADVCurrency = remittanceAdviceLineInvoiceDetails.getOverUnderAmtInREMADVCurrency();
 		isInvoiceResolved = true;
-		isAmountValid = BigDecimal.ZERO.equals(remittanceAdviceLineInvoiceDetails.getOverUnderAmt());
+		isAmountValid = remittanceAdviceLineInvoiceDetails.getOverUnderAmtInREMADVCurrency().signum() == 0;
 
 		isInvoiceDocTypeValid = remittanceAdviceLineInvoiceDetails.getInvoiceDocType().equals(externalInvoiceDocBaseType);
 		isBPartnerValid = bpartnerIdentifier != null && bpartnerIdentifier.equals(billBPartnerId);
@@ -153,7 +210,7 @@ public class RemittanceAdviceLine
 		invoiceAmt = null;
 		invoiceCurrencyId = null;
 		invoiceAmtInREMADVCurrency = null;
-		overUnderAmt = null;
+		overUnderAmtInREMADVCurrency = null;
 		dateInvoiced = null;
 
 		isInvoiceResolved = false;

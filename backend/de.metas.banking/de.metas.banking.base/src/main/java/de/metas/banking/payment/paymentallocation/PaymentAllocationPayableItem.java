@@ -41,9 +41,7 @@ public class PaymentAllocationPayableItem
 
 {
 	Amount openAmt;
-
 	Amount payAmt;
-
 	Amount discountAmt;
 	Amount serviceFeeAmt;
 	ClientAndOrgId clientAndOrgId;
@@ -60,8 +58,8 @@ public class PaymentAllocationPayableItem
 			@NonNull final Amount payAmt,
 			@NonNull final Amount discountAmt,
 			@Nullable final Amount serviceFeeAmt,
-			final OrgId orgId,
-			final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final ClientId clientId,
 			@Nullable final Instant paymentDate,
 			final BPartnerId bPartnerId,
 			@NonNull final InvoiceId invoiceId,

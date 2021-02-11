@@ -36,6 +36,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -124,29 +125,36 @@ public class RemittanceAdviceRepository
 	{
 		final I_C_RemittanceAdvice_Line record = getLineRecordById(remittanceAdviceLine.getRemittanceAdviceLineId());
 
+		final Function<Amount,BigDecimal> asBigDecimalOrNll = (amount) -> amount != null ? amount.toBigDecimal() :  null;
+
+		record.setInvoiceAmtInREMADVCurrency(asBigDecimalOrNll.apply(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency()));
+		record.setOverUnderAmt(asBigDecimalOrNll.apply(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()));
+		record.setPaymentDiscountAmt(asBigDecimalOrNll.apply(remittanceAdviceLine.getPaymentDiscountAmount()));
+		record.setRemittanceAmt(remittanceAdviceLine.getRemittedAmount().toBigDecimal());
+
+		record.setC_Invoice_ID(NumberUtils.asInt(remittanceAdviceLine.getInvoiceId(), -1));
 		record.setInvoiceAmt(remittanceAdviceLine.getInvoiceAmt());
-		record.setInvoiceAmtInREMADVCurrency(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency());
-		record.setOverUnderAmt(remittanceAdviceLine.getOverUnderAmt());
-		record.setC_Invoice_Currency_ID(remittanceAdviceLine.getInvoiceCurrencyId() != null ? remittanceAdviceLine.getInvoiceCurrencyId().getRepoId() : record.getC_Invoice_Currency_ID());
-		record.setBill_BPartner_ID(remittanceAdviceLine.getBillBPartnerId() != null ? remittanceAdviceLine.getBillBPartnerId().getRepoId() : record.getBill_BPartner_ID());
+		record.setC_Invoice_Currency_ID(NumberUtils.asInt(remittanceAdviceLine.getInvoiceCurrencyId(), -1));
+		record.setBill_BPartner_ID(NumberUtils.asInt(remittanceAdviceLine.getBillBPartnerId(), -1));
 		record.setInvoiceDate(TimeUtil.asTimestamp(remittanceAdviceLine.getDateInvoiced()));
-		record.setService_Fee_Invoice_ID(remittanceAdviceLine.getServiceFeeInvoiceId() != null ? remittanceAdviceLine.getServiceFeeInvoiceId().getRepoId() : record.getService_Fee_Invoice_ID());
-		record.setService_Product_ID(remittanceAdviceLine.getServiceFeeProductId() != null ? remittanceAdviceLine.getServiceFeeProductId().getRepoId() : record.getService_Product_ID());
-		record.setService_BPartner_ID(remittanceAdviceLine.getServiceFeeBPartnerId() != null ? remittanceAdviceLine.getServiceFeeBPartnerId().getRepoId() : record.getService_BPartner_ID());
-		record.setService_Tax_ID(remittanceAdviceLine.getTaxId() != null ? remittanceAdviceLine.getTaxId().getRepoId() : record.getService_Tax_ID());
+
+		record.setService_Fee_Invoice_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeInvoiceId(), -1));
+		record.setService_Product_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeProductId(), -1));
+		record.setService_BPartner_ID(NumberUtils.asInt(remittanceAdviceLine.getBillBPartnerId(), -1));
+		record.setService_Tax_ID(NumberUtils.asInt(remittanceAdviceLine.getTaxId(), -1));
+
 		record.setIsInvoiceResolved(remittanceAdviceLine.isInvoiceResolved());
 		record.setIsInvoiceDocTypeValid(remittanceAdviceLine.isInvoiceDocTypeValid());
 		record.setIsAmountValid(remittanceAdviceLine.isAmountValid());
 		record.setIsInvoiceDateValid(remittanceAdviceLine.isInvoiceDateValid());
 		record.setIsBPartnerValid(remittanceAdviceLine.isBPartnerValid());
 		record.setIsServiceColumnsResolved(remittanceAdviceLine.isServiceFeeResolved());
-		record.setC_RemittanceAdvice_ID(remittanceAdviceLine.getRemittanceAdviceId().getRepoId());
+
 		record.setInvoiceIdentifier(remittanceAdviceLine.getInvoiceIdentifier());
 		record.setC_BPartner_ID(BPartnerId.toRepoId(remittanceAdviceLine.getBpartnerIdentifier()));
 		record.setExternalInvoiceDocBaseType(remittanceAdviceLine.getExternalInvoiceDocBaseType());
-		record.setPaymentDiscountAmt(remittanceAdviceLine.getPaymentDiscountAmount() != null ? remittanceAdviceLine.getPaymentDiscountAmount().getAsBigDecimal() : BigDecimal.ZERO);
-		record.setRemittanceAmt(remittanceAdviceLine.getRemittedAmount().getAsBigDecimal());
-		record.setServiceFeeAmount(remittanceAdviceLine.getServiceFeeAmount() != null ? remittanceAdviceLine.getServiceFeeAmount().getAsBigDecimal() : BigDecimal.ZERO);
+
+		record.setServiceFeeAmount(asBigDecimalOrNll.apply(remittanceAdviceLine.getServiceFeeAmount()));
 		record.setServiceFeeVatRate(remittanceAdviceLine.getServiceFeeVatRate());
 		record.setIsLineAcknowledged(remittanceAdviceLine.isLineAcknowledged());
 
@@ -315,7 +323,7 @@ public class RemittanceAdviceRepository
 
 				.remittedAmount(Amount.of(record.getRemittanceAmt(), remittanceCurrencyCode))
 
-				.invoiceAmtInREMADVCurrency(record.getInvoiceAmtInREMADVCurrency())
+				.invoiceAmtInREMADVCurrency(Amount.of(record.getInvoiceAmtInREMADVCurrency(), remittanceCurrencyCode))
 
 				.invoiceGrossAmount(toAmountOrNull.apply(record.getInvoiceAmt()))
 
@@ -349,7 +357,7 @@ public class RemittanceAdviceRepository
 				.serviceFeeProductId(ProductId.ofRepoIdOrNull(record.getService_Product_ID()))
 				.serviceFeeVatRate(record.getServiceFeeVatRate())
 
-				.overUnderAmt(record.getOverUnderAmt())
+				.overUnderAmt(Amount.of(record.getOverUnderAmt(), remittanceCurrencyCode))
 
 				.invoiceCurrencyId(CurrencyId.ofRepoIdOrNull(record.getC_Invoice_Currency_ID()))
 

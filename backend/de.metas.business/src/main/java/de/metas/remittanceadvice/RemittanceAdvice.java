@@ -31,7 +31,8 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -42,8 +43,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-@Data
 @Builder
+@Getter
+@EqualsAndHashCode
 public class RemittanceAdvice
 {
 	@NonNull
@@ -110,7 +112,7 @@ public class RemittanceAdvice
 	private boolean isSOTrx;
 
 	@NonNull
-	private List<RemittanceAdviceLine> lines;
+	private final List<RemittanceAdviceLine> lines;
 
 	@NonNull
 	public Optional<RemittanceAdviceLine> getLine(@NonNull final RemittanceAdviceLineId remittanceAdviceLineId)
@@ -172,5 +174,10 @@ public class RemittanceAdvice
 		}
 
 		return BooleanWithReason.TRUE;
+	}
+
+	public void setPaymentId(@NonNull final PaymentId paymentId)
+	{
+		this.paymentId = paymentId;
 	}
 }

@@ -40,8 +40,6 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,7 +52,6 @@ import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
-import org.jpedal.fonts.tt.Loca;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -261,10 +258,10 @@ public class RemittanceAdviceTest
 
 		//then
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isNotNull();
 
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(0));
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.zero(CurrencyCode.EUR));
 
 	}
 
@@ -284,11 +281,10 @@ public class RemittanceAdviceTest
 
 		//then
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isNotNull();
 
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(20));
-
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.of(BigDecimal.valueOf(20), CurrencyCode.EUR));
 	}
 
 	@Test
@@ -311,10 +307,10 @@ public class RemittanceAdviceTest
 
 		//then
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isNotNull();
 
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(-20));
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.of(BigDecimal.valueOf(-20), CurrencyCode.EUR));
 	}
 
 	@Test
@@ -336,10 +332,10 @@ public class RemittanceAdviceTest
 
 		//then
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isNotNull();
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));;
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.ZERO);;
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.zero(CurrencyCode.CHF));
 
 	}
 
@@ -362,10 +358,10 @@ public class RemittanceAdviceTest
 
 		//then
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isNotNull();
 
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(-100));
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.of(BigDecimal.valueOf(-100), CurrencyCode.CHF));
 
 	}
 
@@ -392,7 +388,7 @@ public class RemittanceAdviceTest
 
 		//then
 		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
-		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isNotNull();
 		assertThat(remittanceAdviceLine.isInvoiceResolved()).isTrue();
 		assertThat(remittanceAdviceLine.isAmountValid()).isTrue();
 		assertThat(remittanceAdviceLine.isInvoiceDateValid()).isTrue();
