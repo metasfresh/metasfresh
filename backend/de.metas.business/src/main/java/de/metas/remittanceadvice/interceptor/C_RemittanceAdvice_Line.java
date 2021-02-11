@@ -58,7 +58,7 @@ public class C_RemittanceAdvice_Line
 			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_C_Invoice_ID,
 					I_C_RemittanceAdvice_Line.COLUMNNAME_RemittanceAmt,
 					I_C_RemittanceAdvice_Line.COLUMNNAME_PaymentDiscountAmt,
-					I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount})
+					I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount })
 	public void resolveRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
 		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
@@ -87,7 +87,7 @@ public class C_RemittanceAdvice_Line
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE },
 			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_RemittanceAmt,
 					I_C_RemittanceAdvice_Line.COLUMNNAME_PaymentDiscountAmt,
-					I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount})
+					I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount })
 	public void computeRemittanceSums(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
 		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
@@ -103,5 +103,26 @@ public class C_RemittanceAdvice_Line
 		{
 			remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			ifColumnsChanged = I_C_RemittanceAdvice_Line.COLUMNNAME_C_BPartner_ID)
+	public void validateRemittanceAdviceLineBPartner(@NonNull final I_C_RemittanceAdvice_Line record)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
+
+		final RemittanceAdviceLineId remittanceAdviceLineId = RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID());
+
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceAdvice.getLine(remittanceAdviceLineId)
+				.orElseThrow(() -> new AdempiereException("No line found under RemittanceAdviceId: {} with lineId: {}")
+						.appendParametersToMessage()
+						.setParameter("RemittanceAdviceId", remittanceAdviceId)
+						.setParameter("RemittanceAdviceLineId", remittanceAdviceLineId));
+
+		remittanceAdviceLine.validateBPartner();
+
+		remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
+
 	}
 }

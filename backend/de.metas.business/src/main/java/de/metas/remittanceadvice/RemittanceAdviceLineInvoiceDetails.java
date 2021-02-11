@@ -30,6 +30,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -54,7 +55,7 @@ public class RemittanceAdviceLineInvoiceDetails
 	@NonNull
 	Amount overUnderAmtInREMADVCurrency;
 
-	@NonNull
+	@Nullable
 	String invoiceDocType;
 
 	@NonNull
@@ -67,7 +68,7 @@ public class RemittanceAdviceLineInvoiceDetails
 			@NonNull final CurrencyId invoiceCurrencyId,
 			@NonNull final Amount invoiceAmtInREMADVCurrency,
 			@NonNull final Amount overUnderAmtInREMADVCurrency,
-			@NonNull final String invoiceDocType,
+			@Nullable final String invoiceDocType,
 			@NonNull final Instant invoiceDate)
 	{
 		Amount.assertSameCurrency(invoiceAmtInREMADVCurrency, overUnderAmtInREMADVCurrency);

@@ -251,7 +251,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 					.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 					.orgId(remittanceAdvice.getOrgId())
 					.clientId(remittanceAdvice.getClientId())
-					.bPartnerId(remittanceAdvice.getSourceBPartnerId())//todo cif-ps: don't forget to fix it
+					.bPartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 					.documentNo(invoice.getDocumentNo())
 					.isSOTrx(remittanceAdvice.isSOTrx())
 					.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))

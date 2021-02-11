@@ -353,7 +353,7 @@ public class RemittanceAdviceRepository
 
 				.taxId(TaxId.ofRepoIdOrNull(record.getService_Tax_ID()))
 				.serviceFeeBPartnerId(BPartnerId.ofRepoIdOrNull(record.getService_BPartner_ID()))
-				.serviceFeeInvoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))
+				.serviceFeeInvoiceId(InvoiceId.ofRepoIdOrNull(record.getService_Fee_Invoice_ID()))
 				.serviceFeeProductId(ProductId.ofRepoIdOrNull(record.getService_Product_ID()))
 				.serviceFeeVatRate(record.getServiceFeeVatRate())
 

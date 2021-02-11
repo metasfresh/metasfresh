@@ -111,7 +111,7 @@ public class RemittanceAdviceService
 	}
 
 	@NonNull
-	private String getInvoiceDocumentNo(@NonNull final String invoiceIdentifier) //todo cif-ps: FIX it!
+	private String getInvoiceDocumentNo(@NonNull final String invoiceIdentifier)
 	{
 		return invoiceIdentifier.substring(4).trim();
 	}
@@ -164,7 +164,12 @@ public class RemittanceAdviceService
 
 		overUnderAmt = overUnderAmt.subtract(invoiceAmtInREMADVCurrency);
 
-		final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocType_ID());
+		String docBaseType = null;
+		if (invoice.getC_DocType_ID() > 0)
+		{
+			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocType_ID());
+			docBaseType = invoiceDocType.getDocBaseType();
+		}
 
 		return RemittanceAdviceLineInvoiceDetails.builder()
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
@@ -173,7 +178,7 @@ public class RemittanceAdviceService
 				.invoiceCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
 				.invoiceAmtInREMADVCurrency(invoiceAmtInREMADVCurrency)
 				.overUnderAmtInREMADVCurrency(overUnderAmt)
-				.invoiceDocType(invoiceDocType.getDocBaseType())
+				.invoiceDocType(docBaseType)
 				.invoiceDate(TimeUtil.asInstant(invoice.getDateInvoiced()))
 				.build();
 	}
