@@ -22,6 +22,7 @@
 
 package de.metas.remittanceadvice;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -31,6 +32,7 @@ import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -70,7 +72,7 @@ public class RemittanceAdvice
 	@NonNull
 	private final Instant documentDate;
 
-	@NonNull
+	@Nullable
 	private final String externalDocumentNumber;
 
 	@NonNull
@@ -110,10 +112,26 @@ public class RemittanceAdvice
 	@NonNull
 	private List<RemittanceAdviceLine> lines;
 
+	@NonNull
 	public Optional<RemittanceAdviceLine> getLine(@NonNull final RemittanceAdviceLineId remittanceAdviceLineId)
 	{
 		return lines.stream()
 				.filter(line -> line.getRemittanceAdviceLineId().equals(remittanceAdviceLineId))
 				.findFirst();
+	}
+
+	public void validateCompleteAction()
+	{
+		final ImmutableList<RemittanceAdviceLineId> lineIdsWithProblems = lines.stream()
+				.filter(line -> !line.isReadyForCompletion())
+				.map(RemittanceAdviceLine::getRemittanceAdviceLineId)
+				.collect(ImmutableList.toImmutableList());
+
+		if (lineIdsWithProblems.size() > 0)
+		{
+			throw new AdempiereException("There is a number of lines which cannot be completed! Lines with problems:")
+					.appendParametersToMessage()
+					.setParameter("Lines", lineIdsWithProblems);
+		}
 	}
 }

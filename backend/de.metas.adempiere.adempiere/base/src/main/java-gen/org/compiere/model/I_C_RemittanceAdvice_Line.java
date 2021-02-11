@@ -97,7 +97,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Business Partner.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_ID (int C_BPartner_ID);
@@ -106,7 +106,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Business Partner.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_ID();
@@ -702,16 +702,16 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Service fee amount.
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setServiceFeeAmount (BigDecimal ServiceFeeAmount);
+	void setServiceFeeAmount (@Nullable BigDecimal ServiceFeeAmount);
 
 	/**
 	 * Get Service fee amount.
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getServiceFeeAmount();

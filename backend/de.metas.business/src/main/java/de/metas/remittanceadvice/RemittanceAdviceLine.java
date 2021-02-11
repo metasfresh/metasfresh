@@ -74,6 +74,8 @@ public class RemittanceAdviceLine
 	@Nullable
 	private final BigDecimal serviceFeeVatRate;
 
+	private final boolean isLineAcknowledged;
+
 	@Nullable
 	private BigDecimal invoiceAmt;
 
@@ -169,5 +171,10 @@ public class RemittanceAdviceLine
 		serviceFeeBPartnerId = remittanceAdviceLineServiceFee.getServiceBPartnerId();
 		taxId = remittanceAdviceLineServiceFee.getServiceFeeTaxId();
 		isServiceFeeResolved = true;
+	}
+
+	public boolean isReadyForCompletion()
+	{
+		return isInvoiceResolved && (isLineAcknowledged || isAmountValid);
 	}
 }

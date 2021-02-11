@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 public class JsonRemittanceAdviceTest
 {
@@ -105,6 +106,7 @@ public class JsonRemittanceAdviceTest
 				.serviceFeeCurrencyISO(serviceFeeCurrencyISO)
 				.additionalNotes(additionalNotes)
 				.paymentDiscountAmountSum(paymentDiscountAmountSum)
+				.lines(new ArrayList<>())
 				.build();
 
 		return jsonRemittanceAdvice;

@@ -93,11 +93,7 @@ public class RemittanceAdviceRepository
 	@NonNull
 	public RemittanceAdvice getRemittanceAdvice(final RemittanceAdviceId remittanceAdviceId)
 	{
-		final I_C_RemittanceAdvice record = queryBL.createQueryBuilder(I_C_RemittanceAdvice.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_RemittanceAdvice.COLUMN_C_RemittanceAdvice_ID, remittanceAdviceId)
-				.create()
-				.firstOnlyNotNull(I_C_RemittanceAdvice.class);
+		final I_C_RemittanceAdvice record = getRecordById(remittanceAdviceId);
 
 		return toRemittanceAdvice(record);
 	}
@@ -151,6 +147,7 @@ public class RemittanceAdviceRepository
 		record.setRemittanceAmt(remittanceAdviceLine.getRemittedAmount().getAsBigDecimal());
 		record.setServiceFeeAmount(remittanceAdviceLine.getServiceFeeAmount() != null ? remittanceAdviceLine.getServiceFeeAmount().getAsBigDecimal() : BigDecimal.ZERO);
 		record.setServiceFeeVatRate(remittanceAdviceLine.getServiceFeeVatRate());
+		record.setIsLineAcknowledged(remittanceAdviceLine.isLineAcknowledged());
 
 		return record;
 	}
@@ -341,6 +338,7 @@ public class RemittanceAdviceRepository
 				.isInvoiceDateValid(record.isInvoiceDateValid())
 				.isInvoiceResolved(record.isInvoiceResolved())
 				.isServiceFeeResolved(record.isServiceColumnsResolved())
+				.isLineAcknowledged(record.isLineAcknowledged())
 
 				.taxId(TaxId.ofRepoIdOrNull(record.getService_Tax_ID()))
 				.serviceFeeBPartnerId(BPartnerId.ofRepoIdOrNull(record.getService_BPartner_ID()))
