@@ -42,3 +42,8 @@ UPDATE AD_Process SET Classname='de.metas.printing.process.C_Doc_Outbound_Log_Pr
 
 
 
+-- 2021-02-10T18:12:21.182Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,584801,540453,540899,TO_TIMESTAMP('2021-02-10 20:12:20','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.printing','Y',TO_TIMESTAMP('2021-02-10 20:12:20','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+;
+
