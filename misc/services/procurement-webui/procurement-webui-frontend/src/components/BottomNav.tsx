@@ -3,7 +3,6 @@ import { Link, useLocation, useHistory } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import classnames from 'classnames';
 
-import { confirmDataEntry } from '../api';
 import { translate } from '../utils/translate';
 import { RootInstance } from '../models/Store';
 
@@ -61,9 +60,8 @@ const BottomNav: FunctionComponent<Props> = inject('store')(
             className="link is-flex is-flex-direction-column is-justify-content-center is-relative"
             key="2"
             onClick={() => {
-              confirmDataEntry().then(() => {
+              store.app.confirmDataEntries().then(() => {
                 store.fetchDailyReport(store.app.currentDay);
-                store.app.getUserSession();
               });
             }}
           >
