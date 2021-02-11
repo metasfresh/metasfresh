@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.time.Instant;
+import java.util.Locale;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,7 +100,7 @@ class CompudataInvoicRouteTest extends CamelTestSupport
 
 		final Exchange exchange = new DefaultExchange(template.getCamelContext());
 
-		final var numberFormat = NumberFormat.getInstance();
+		final var numberFormat = NumberFormat.getInstance(Locale.GERMANY); // in the output file we still need .
 		numberFormat.setGroupingUsed(false);
 
 		exchange.setProperty(Constants.DECIMAL_FORMAT, numberFormat);

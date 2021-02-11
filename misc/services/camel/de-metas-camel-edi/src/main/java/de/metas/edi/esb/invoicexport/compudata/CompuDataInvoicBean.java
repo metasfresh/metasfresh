@@ -325,16 +325,16 @@ public class CompuDataInvoicBean
 		{
 			final Cctop901991V cctop901991V = new Cctop901991V();
 			cctop901991V.setcInvoiceID(formatNumber(xmlCctop901991V.getCInvoiceID(), decimalFormat));
-			cctop901991V.setRate(formatNumber(xmlCctop901991V.getRate(), decimalFormat));
-			cctop901991V.setTaxAmt(formatNumber(xmlCctop901991V.getTaxAmt(), decimalFormat));
-			cctop901991V.setTaxBaseAmt(formatNumber(xmlCctop901991V.getTaxBaseAmt(), decimalFormat));
-			cctop901991V.setTotalAmt(formatNumber(xmlCctop901991V.getTotalAmt(), decimalFormat));
+			cctop901991V.setRate(xmlCctop901991V.getRate());
+			cctop901991V.setTaxAmt(xmlCctop901991V.getTaxAmt());
+			cctop901991V.setTaxBaseAmt(xmlCctop901991V.getTaxBaseAmt());
+			cctop901991V.setTotalAmt(xmlCctop901991V.getTotalAmt());
 			cctop901991V.setESRNumber(xmlCctop901991V.getReferenceNo());
 
 			if (xmlCctop901991V.getTaxAmt() != null && xmlCctop901991V.getTaxBaseAmt() != null)
 			{
 				final BigDecimal taxSum = xmlCctop901991V.getTaxAmt().add(xmlCctop901991V.getTaxBaseAmt());
-				cctop901991V.setTaxAmtSumTaxBaseAmt(formatNumber(taxSum, decimalFormat));
+				cctop901991V.setTaxAmtSumTaxBaseAmt(taxSum);
 			}
 
 			cctop901991VList.add(cctop901991V);
@@ -359,13 +359,13 @@ public class CompuDataInvoicBean
 			cctopInvoice500V.setEancomUom(xmlCctopInvoic500V.getEanComUOM());
 			cctopInvoice500V.setIsoCode(xmlCctopInvoic500V.getISOCode());
 			cctopInvoice500V.setLine(formatNumber(xmlCctopInvoic500V.getLine(), decimalFormat));
-			cctopInvoice500V.setLineNetAmt(formatNumber(xmlCctopInvoic500V.getLineNetAmt(), decimalFormat));
+			cctopInvoice500V.setLineNetAmt(xmlCctopInvoic500V.getLineNetAmt());
 			cctopInvoice500V.setName(normalize(xmlCctopInvoic500V.getName()));
 			cctopInvoice500V.setName2(normalize(xmlCctopInvoic500V.getName2()));
-			cctopInvoice500V.setPriceActual(formatNumber(xmlCctopInvoic500V.getPriceActual(), decimalFormat));
-			cctopInvoice500V.setPriceList(formatNumber(xmlCctopInvoic500V.getPriceList(), decimalFormat));
-			cctopInvoice500V.setQtyInvoiced(formatNumber(xmlCctopInvoic500V.getQtyInvoiced(), decimalFormat));
-			cctopInvoice500V.setRate(formatNumber(xmlCctopInvoic500V.getRate(), decimalFormat));
+			cctopInvoice500V.setPriceActual(xmlCctopInvoic500V.getPriceActual());
+			cctopInvoice500V.setPriceList(xmlCctopInvoic500V.getPriceList());
+			cctopInvoice500V.setQtyInvoiced(xmlCctopInvoic500V.getQtyInvoiced());
+			cctopInvoice500V.setRate(xmlCctopInvoic500V.getRate());
 			cctopInvoice500V.setTaxfree(Util.getADBooleanString(xmlCctopInvoic500V.getTaxfree()));
 			cctopInvoice500V.setUpc(xmlCctopInvoic500V.getEANCU());
 			cctopInvoice500V.setValue(xmlCctopInvoic500V.getValue());
@@ -381,7 +381,7 @@ public class CompuDataInvoicBean
 				cctopInvoice500V.setOrderPOReference(xmlCctopInvoic500V.getOrderPOReference());
 				cctopInvoice500V.setOrderLine(xmlCctopInvoic500V.getOrderLine().toString());
 			}
-			cctopInvoice500V.setTaxAmount(formatNumber(xmlCctopInvoic500V.getTaxAmtInfo(), decimalFormat));
+			cctopInvoice500V.setTaxAmount(xmlCctopInvoic500V.getTaxAmtInfo());
 
 			cctopInvoice500V.setEancomPriceUom(xmlCctopInvoic500V.getEanComPriceUOM());
 
@@ -401,7 +401,7 @@ public class CompuDataInvoicBean
 						.divide(hundret, RoundingMode.UNNECESSARY)
 						.multiply(xmlCctopInvoic500V.getLineNetAmt()).setScale(3, RoundingMode.HALF_UP);
 			}
-			cctopInvoice500V.setLineGrossAmt(formatNumber(lineGrossAmt, decimalFormat));
+			cctopInvoice500V.setLineGrossAmt(lineGrossAmt);
 
 			cctopInvoice500V.setLeergut(xmlCctopInvoic500V.getLeergut());
 
