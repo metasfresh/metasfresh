@@ -143,6 +143,14 @@ public class RemittanceAdviceRepository
 		record.setIsInvoiceDateValid(remittanceAdviceLine.isInvoiceDateValid());
 		record.setIsBPartnerValid(remittanceAdviceLine.isBPartnerValid());
 		record.setIsServiceColumnsResolved(remittanceAdviceLine.isServiceFeeResolved());
+		record.setC_RemittanceAdvice_ID(remittanceAdviceLine.getRemittanceAdviceId().getRepoId());
+		record.setInvoiceIdentifier(remittanceAdviceLine.getInvoiceIdentifier());
+		record.setC_BPartner_ID(BPartnerId.toRepoId(remittanceAdviceLine.getBpartnerIdentifier()));
+		record.setExternalInvoiceDocBaseType(remittanceAdviceLine.getExternalInvoiceDocBaseType());
+		record.setPaymentDiscountAmt(remittanceAdviceLine.getPaymentDiscountAmount() != null ? remittanceAdviceLine.getPaymentDiscountAmount().getAsBigDecimal() : BigDecimal.ZERO);
+		record.setRemittanceAmt(remittanceAdviceLine.getRemittedAmount().getAsBigDecimal());
+		record.setServiceFeeAmount(remittanceAdviceLine.getServiceFeeAmount() != null ? remittanceAdviceLine.getServiceFeeAmount().getAsBigDecimal() : BigDecimal.ZERO);
+		record.setServiceFeeVatRate(remittanceAdviceLine.getServiceFeeVatRate());
 
 		return record;
 	}
@@ -152,7 +160,6 @@ public class RemittanceAdviceRepository
 	{
 		final I_C_RemittanceAdvice record = getRecordById(remittanceAdvice.getRemittanceAdviceId());
 
-		//todo for cif-ps: set all fields that are set when creating the record + your new ones
 		record.setDocStatus(remittanceAdvice.getDocStatus());
 		record.setRemittanceAmt(remittanceAdvice.getRemittedAmountSum());
 		record.setSendAt(TimeUtil.asTimestamp(remittanceAdvice.getSendDate()));
@@ -160,6 +167,24 @@ public class RemittanceAdviceRepository
 		record.setPaymentDiscountAmountSum(remittanceAdvice.getPaymentDiscountAmountSum());
 		record.setC_Payment_ID(remittanceAdvice.getPaymentId() != null ? remittanceAdvice.getPaymentId().getRepoId() : record.getC_Payment_ID());
 		record.setIsSOTrx(remittanceAdvice.isSOTrx());
+
+		record.setAD_Org_ID(remittanceAdvice.getOrgId().getRepoId());
+		record.setI_IsImported(remittanceAdvice.isImported());
+
+		record.setSource_BPartner_ID(remittanceAdvice.getSourceBPartnerId().getRepoId());
+		record.setSource_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(remittanceAdvice.getSourceBPartnerBankAccountId()));
+
+		record.setDestintion_BPartner_ID(remittanceAdvice.getDestinationBPartnerId().getRepoId());
+		record.setDestination_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(remittanceAdvice.getDestinationBPartnerBankAccountId()));
+
+		record.setDocumentNo(remittanceAdvice.getDocumentNumber());
+		record.setExternalDocumentNo(remittanceAdvice.getExternalDocumentNumber());
+		record.setDateDoc(TimeUtil.asTimestamp(remittanceAdvice.getDocumentDate()));
+		record.setC_DocType_ID(remittanceAdvice.getDocTypeId().getRepoId());
+
+		record.setRemittanceAmt_Currency_ID(remittanceAdvice.getRemittedAmountCurrencyId().getRepoId());
+		record.setServiceFeeAmount_Currency_ID(CurrencyId.toRepoId(remittanceAdvice.getServiceFeeCurrencyId()));
+		record.setAdditionalNotes(remittanceAdvice.getAdditionalNotes());
 
 		return record;
 
@@ -305,6 +330,10 @@ public class RemittanceAdviceRepository
 				.bpartnerIdentifier(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 
 				.externalInvoiceDocBaseType(record.getExternalInvoiceDocBaseType())
+
+				.invoiceAmt(record.getInvoiceAmt())
+
+				.billBPartnerId(BPartnerId.ofRepoIdOrNull(record.getBill_BPartner_ID()))
 
 				.isAmountValid(record.isAmountValid())
 				.isBPartnerValid(record.isBPartnerValid())
