@@ -339,7 +339,7 @@ public class RemittanceAdviceRepository
 
 				.invoiceAmtInREMADVCurrency(Amount.of(record.getInvoiceAmtInREMADVCurrency(), remittanceCurrencyCode))
 
-				.invoiceGrossAmount(toAmountOrNull.apply(record.getInvoiceAmt(),remittanceCurrencyCode))
+				.invoiceGrossAmount(toAmountOrNull.apply(record.getInvoiceGrossAmount(),remittanceCurrencyCode))
 
 				.paymentDiscountAmount(toAmountOrNull.apply(record.getPaymentDiscountAmt(),remittanceCurrencyCode))
 
