@@ -25,12 +25,14 @@ class ProductScreen extends React.Component<Props> {
   private qtyInput = React.createRef<HTMLInputElement>();
 
   componentDidMount() {
+    document.addEventListener('focusout', this.handleFocusOut);
+
     const { store, match } = this.props;
     const { productId } = match.params;
     const products = getSnapshot(store.dailyProducts.products);
     const product = products.find((prod) => prod.productId === productId);
+
     store.navigation.setViewNames(product.productName);
-    document.addEventListener('focusout', this.handleFocusOut);
   }
 
   componentWillUnmount() {
@@ -44,20 +46,15 @@ class ProductScreen extends React.Component<Props> {
     const product = products.find((prod) => prod.productId === productId);
     const currentDay = targetDay ? targetDay : store.app.currentDay;
 
-    store
-      .postDailyReport({
-        items: [
-          {
-            date: currentDay,
-            productId: product.productId,
-            qty: newQty ? newQty : 0,
-          },
-        ],
-      })
-      .then(() => {
-        store.fetchDailyReport(currentDay);
-        store.app.getUserSession();
-      });
+    store.postDailyReport({
+      items: [
+        {
+          date: currentDay,
+          productId: product.productId,
+          qty: newQty ? newQty : 0,
+        },
+      ],
+    });
   };
 
   handleFocusOut = () => {
@@ -74,7 +71,6 @@ class ProductScreen extends React.Component<Props> {
     const { productId, targetDay, targetDayCaption } = match.params;
 
     const products = getSnapshot(store.dailyProducts.products);
-    console.log(productId);
     const product = products.find((prod) => prod.productId === productId);
     const { lang } = store.i18n;
     const currentDay = targetDay ? targetDay : store.app.currentDay;

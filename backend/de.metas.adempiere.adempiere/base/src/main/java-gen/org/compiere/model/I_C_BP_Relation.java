@@ -51,29 +51,6 @@ public interface I_C_BP_Relation
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Beziehungen Geschäftspartner.
-	 * Business Partner Relation
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Relation_ID (int C_BP_Relation_ID);
-
-	/**
-	 * Get Beziehungen Geschäftspartner.
-	 * Business Partner Relation
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Relation_ID();
-
-	ModelColumn<I_C_BP_Relation, Object> COLUMN_C_BP_Relation_ID = new ModelColumn<>(I_C_BP_Relation.class, "C_BP_Relation_ID", null);
-	String COLUMNNAME_C_BP_Relation_ID = "C_BP_Relation_ID";
-
-	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -158,6 +135,29 @@ public interface I_C_BP_Relation
 	String COLUMNNAME_C_BPartnerRelation_Location_ID = "C_BPartnerRelation_Location_ID";
 
 	/**
+	 * Set Beziehungen Geschäftspartner.
+	 * Business Partner Relation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Relation_ID (int C_BP_Relation_ID);
+
+	/**
+	 * Get Beziehungen Geschäftspartner.
+	 * Business Partner Relation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Relation_ID();
+
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_C_BP_Relation_ID = new ModelColumn<>(I_C_BP_Relation.class, "C_BP_Relation_ID", null);
+	String COLUMNNAME_C_BP_Relation_ID = "C_BP_Relation_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -204,6 +204,27 @@ public interface I_C_BP_Relation
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_BP_Relation.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -248,6 +269,27 @@ public interface I_C_BP_Relation
 
 	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsBillTo = new ModelColumn<>(I_C_BP_Relation.class, "IsBillTo", null);
 	String COLUMNNAME_IsBillTo = "IsBillTo";
+
+	/**
+	 * Set Pickup Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFetchedFrom (boolean IsFetchedFrom);
+
+	/**
+	 * Get Pickup Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFetchedFrom();
+
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsFetchedFrom = new ModelColumn<>(I_C_BP_Relation.class, "IsFetchedFrom", null);
+	String COLUMNNAME_IsFetchedFrom = "IsFetchedFrom";
 
 	/**
 	 * Set Zahlungs-Adresse.

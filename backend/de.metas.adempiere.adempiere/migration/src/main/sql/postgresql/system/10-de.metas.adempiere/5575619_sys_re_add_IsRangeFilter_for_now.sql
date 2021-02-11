@@ -18,3 +18,19 @@ DO $$
         END;
     END;
 $$;
+
+DROP FUNCTION IF EXISTS after_migration_migrate_IsRangeFilter();
+CREATE FUNCTION after_migration_migrate_IsRangeFilter() RETURNS VOID
+    LANGUAGE plpgsql
+AS $$
+DECLARE
+    count_updated NUMERIC;
+BEGIN
+    UPDATE ad_column SET filteroperator=(CASE WHEN israngefilter='Y' THEN 'B' ELSE 'E' END)
+    WHERE isselectioncolumn='Y'
+      AND filteroperator IS NULL;
+
+    GET DIAGNOSTICS count_updated = ROW_COUNT;
+    RAISE NOTICE 'Migrated AD_Column.IsRangeFilter for % records', count_updated;
+END;
+$$;
