@@ -256,7 +256,7 @@
 
         <dependency>
             <groupId>de.metas.externalsystem</groupId>
-            <artifactId>de.metas.externalsystem/artifactId>
+            <artifactId>de.metas.externalsystem</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
