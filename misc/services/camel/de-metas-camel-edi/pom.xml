@@ -26,6 +26,8 @@
         <jaxb.order.packageName>de.metas.edi.esb.jaxb.stepcom.order</jaxb.order.packageName>
         <jaxb.invoice.packageName>de.metas.edi.esb.jaxb.stepcom.invoice</jaxb.invoice.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
+        <jaxb.remadv.packageName>de.metas.edi.esb.jaxb.ecosio.remadv</jaxb.remadv.packageName>
+        <metasfresh.version>10.0.0</metasfresh.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -66,10 +68,27 @@
                 <scope>test</scope>
                 <version>${assertj.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-http</artifactId>
+                <version>3.4.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-http</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.rest_api</groupId>
+            <artifactId>de-metas-common-rest_api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
         <!--
         <dependency>
             <groupId>commons-httpclient</groupId>
@@ -417,6 +436,18 @@
                             </sources>
 
                             <packageName>${jaxb.desadv.packageName}</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-schema-remadv</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/ecosio</source>
+                            </sources>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
