@@ -40,7 +40,6 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -144,7 +143,7 @@ public class CreateRemittanceAdviceService
 		{
 			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
 			logger.error("Could not save the given model; message={}; AD_Issue_ID={}", e.getLocalizedMessage(), issueId);
-			throw  e;
+			throw e;
 		}
 	}
 
@@ -177,7 +176,15 @@ public class CreateRemittanceAdviceService
 		final BigDecimal serviceFeeAmt = jsonRemittanceAdvice.getServiceFeeAmount();
 		if (serviceFeeAmt.compareTo(BigDecimal.ZERO) > 0)
 		{
-			serviceFeeCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getRemittanceAmountCurrencyISO());
+			final String serviceFeeCurrencyISO = jsonRemittanceAdvice.getServiceFeeCurrencyISO();
+			if (serviceFeeCurrencyISO == null)
+			{
+				throw new AdempiereException("Missing service fee currency ISO for service fee amount!")
+						.appendParametersToMessage()
+						.setParameter("serviceFeeAmount", jsonRemittanceAdvice.getServiceFeeAmount());
+			}
+
+			serviceFeeCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getServiceFeeCurrencyISO());
 		}
 
 		final DocTypeId targetPaymentDocTypeId = getDocTypeIdByType(jsonRemittanceAdvice.getRemittanceAdviceType().getDocBaseType(), clientId, orgId);
