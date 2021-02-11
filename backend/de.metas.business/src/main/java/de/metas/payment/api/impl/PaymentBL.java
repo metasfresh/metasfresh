@@ -48,6 +48,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
@@ -201,7 +202,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void updateAmounts(final I_C_Payment payment, final String colName, boolean creditMemoAdjusted)
+	public void updateAmounts(final I_C_Payment payment, final String colName, final boolean creditMemoAdjusted)
 	{
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
 		final int C_Order_ID = payment.getC_Order_ID();
@@ -259,7 +260,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted)
+	public void onIsOverUnderPaymentChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
 		payment.setOverUnderAmt(ZERO);
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
@@ -356,7 +357,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted)
+	public void onPayAmtChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 		if (docStatus.isDrafted())
@@ -558,8 +559,8 @@ public class PaymentBL implements IPaymentBL
 		{
 			total = total.negate();
 		}
-		boolean test = total.compareTo(alloc) == 0;
-		boolean change = test != payment.isAllocated();
+		final boolean test = total.compareTo(alloc) == 0;
+		final boolean change = test != payment.isAllocated();
 		if (change)
 		{
 			payment.setIsAllocated(test);
@@ -590,7 +591,7 @@ public class PaymentBL implements IPaymentBL
 		{
 
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName) throws Exception
 			{
 				final I_C_AllocationHdr allocHdr = allocationBL.newBuilder()
 						.orgId(payment.getAD_Org_ID())
@@ -702,7 +703,7 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void markReconciledAndSave(
 			@NonNull final I_C_Payment payment,
-			@NonNull PaymentReconcileReference reconcileRef)
+			@NonNull final PaymentReconcileReference reconcileRef)
 	{
 		if (payment.isReconciled())
 		{
@@ -808,13 +809,14 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public CurrencyConversionContext extractCurrencyConversionContext(@NonNull final I_C_Payment payment)
 	{
+		final PaymentCurrencyContext paymentCurrencyContext = extractPaymentCurrencyContext(payment);
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asLocalDate(payment.getDateAcct()),
-				CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
+				paymentCurrencyContext.getCurrencyConversionTypeId(),
 				ClientId.ofRepoId(payment.getAD_Client_ID()),
 				OrgId.ofRepoId(payment.getAD_Org_ID()));
 
-		final FixedConversionRate fixedConversionRate = extractFixedConversionRate(payment);
+		final FixedConversionRate fixedConversionRate = paymentCurrencyContext.toFixedConversionRateOrNull();
 		if (fixedConversionRate != null)
 		{
 			conversionCtx = conversionCtx.withFixedConversionRate(fixedConversionRate);
@@ -823,26 +825,23 @@ public class PaymentBL implements IPaymentBL
 		return conversionCtx;
 	}
 
-	@Nullable
-	private FixedConversionRate extractFixedConversionRate(@NonNull final I_C_Payment payment)
+	private static PaymentCurrencyContext extractPaymentCurrencyContext(@NonNull final I_C_Payment payment)
 	{
-		final CurrencyId fromCurrencyId = CurrencyId.ofRepoIdOrNull(payment.getSource_Currency_ID());
+		final PaymentCurrencyContext.PaymentCurrencyContextBuilder resultBuilder = PaymentCurrencyContext.builder()
+				.paymentCurrencyId(CurrencyId.ofRepoId(payment.getC_Currency_ID()))
+				.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()));
+
+		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(payment.getSource_Currency_ID());
 		final BigDecimal currencyRate = payment.getCurrencyRate();
-		if (fromCurrencyId != null
+		if (sourceCurrencyId != null
 				&& currencyRate != null
 				&& currencyRate.signum() != 0)
 		{
-			final CurrencyId toCurrencyId = CurrencyId.ofRepoId(payment.getC_Currency_ID());
-			return FixedConversionRate.builder()
-					.fromCurrencyId(fromCurrencyId)
-					.toCurrencyId(toCurrencyId)
-					.multiplyRate(currencyRate)
-					.build();
+			resultBuilder.sourceCurrencyId(sourceCurrencyId)
+					.currencyRate(currencyRate);
 		}
-		else
-		{
-			return null;
-		}
+
+		return resultBuilder.build();
 	}
 
 }

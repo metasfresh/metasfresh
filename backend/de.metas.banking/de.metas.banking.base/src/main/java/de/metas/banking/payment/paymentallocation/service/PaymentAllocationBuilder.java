@@ -29,6 +29,7 @@ import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
@@ -818,9 +819,10 @@ public class PaymentAllocationBuilder
 				payment.getClientAndOrgId()
 		);
 
-		if (payment.getPaymentCurrencyContext().getFixedConversionRate() != null)
+		final FixedConversionRate fixedConversionRate = payment.getPaymentCurrencyContext().toFixedConversionRateOrNull();
+		if (fixedConversionRate != null)
 		{
-			conversionContext = conversionContext.withFixedConversionRate(payment.getPaymentCurrencyContext().getFixedConversionRate());
+			conversionContext = conversionContext.withFixedConversionRate(fixedConversionRate);
 		}
 
 		return conversionContext;

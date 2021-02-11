@@ -47,6 +47,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
@@ -315,6 +316,7 @@ public class PaymentAllocationBuilderTest
 				)
 				.dateTrx(LocalDate.of(2020, Month.JANUARY, 1))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(clientId, adOrgId))
+				.paymentCurrencyContext(PaymentCurrencyContext.NONE)
 				.build();
 	}
 

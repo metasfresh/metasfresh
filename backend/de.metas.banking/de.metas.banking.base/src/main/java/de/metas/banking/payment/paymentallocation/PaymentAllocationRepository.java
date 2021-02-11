@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.FixedConversionRate;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -38,6 +37,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -127,7 +127,7 @@ public class PaymentAllocationRepository
 			sqlParams.addAll(Arrays.asList(
 					query.getBpartnerId(),
 					convertToCurrencyId,
-					multiCurrency, // multicurrency
+					multiCurrency,
 					orgId,
 					query.getEvaluationDate(),
 					null, // C_Invoice_ID
@@ -154,7 +154,7 @@ public class PaymentAllocationRepository
 			sqlParams.addAll(Arrays.asList(
 					null, // no C_BPartner_ID
 					convertToCurrencyId,
-					multiCurrency, // multicurrency
+					multiCurrency,
 					orgId,
 					query.getEvaluationDate(),
 					invoiceId, // C_Invoice_ID
@@ -175,7 +175,7 @@ public class PaymentAllocationRepository
 			sqlParams.addAll(Arrays.asList(
 					null, // no C_BPartner_ID
 					convertToCurrencyId,
-					multiCurrency, // multicurrency
+					multiCurrency,
 					orgId,
 					query.getEvaluationDate(),
 					null, // C_Invoice_ID
@@ -371,36 +371,23 @@ public class PaymentAllocationRepository
 
 	private static PaymentCurrencyContext extractPaymentCurrencyContext(@NonNull final ResultSet rs) throws SQLException
 	{
-		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_ConversionType.COLUMNNAME_C_ConversionType_ID));
-		final FixedConversionRate fixedConversionRate = extractFixedConversionRate(rs);
+		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
+				.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_ConversionType.COLUMNNAME_C_ConversionType_ID)));
 
-		return PaymentCurrencyContext.builder()
-				.currencyConversionTypeId(currencyConversionTypeId)
-				.fixedConversionRate(fixedConversionRate)
-				.build();
-	}
-
-	@Nullable
-	private static FixedConversionRate extractFixedConversionRate(@NonNull final ResultSet rs) throws SQLException
-	{
-		final CurrencyId fromCurrencyId = CurrencyId.ofRepoIdOrNull(rs.getInt("FixedConversion_FromCurrency_ID"));
+		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(rs.getInt("FixedConversion_SourceCurrency_ID"));
 		final BigDecimal currencyRate = rs.getBigDecimal("FixedConversion_Rate");
-		if (fromCurrencyId != null
+		if (sourceCurrencyId != null
 				&& currencyRate != null
 				&& currencyRate.signum() != 0)
 		{
-			final CurrencyId toCurrencyId = CurrencyId.ofRepoId(rs.getInt("C_Currency_ID"));
+			final CurrencyId paymentCurrencyId = CurrencyId.ofRepoId(rs.getInt("C_Currency_ID"));
 
-			return FixedConversionRate.builder()
-					.fromCurrencyId(fromCurrencyId)
-					.toCurrencyId(toCurrencyId)
-					.multiplyRate(currencyRate)
-					.build();
+			result.paymentCurrencyId(paymentCurrencyId)
+					.sourceCurrencyId(sourceCurrencyId)
+					.currencyRate(currencyRate);
 		}
-		else
-		{
-			return null;
-		}
+
+		return result.build();
 	}
 
 	private static PaymentId retrievePaymentId(final ResultSet rs) throws SQLException

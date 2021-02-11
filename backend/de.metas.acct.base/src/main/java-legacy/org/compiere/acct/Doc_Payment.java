@@ -18,7 +18,6 @@ import org.compiere.model.MCharge;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,7 +39,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 
 	private TenderType _tenderType;
 	private boolean m_Prepayment = false;
-	@Nullable private CurrencyConversionContext currencyConversionContext;
+	@Nullable private CurrencyConversionContext _currencyConversionContext; // lazy
 
 	public Doc_Payment(final AcctDocContext ctx)
 	{
@@ -55,10 +54,20 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		setBPBankAccountId(BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID()));
 		_tenderType = TenderType.ofCode(payment.getTenderType());
 		m_Prepayment = payment.isPrepayment();
-		currencyConversionContext = paymentBL.extractCurrencyConversionContext(payment);
 
 		// Amount
 		setAmount(Doc.AMTTYPE_Gross, payment.getPayAmt());
+	}
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionContext()
+	{
+		if(_currencyConversionContext == null)
+		{
+			final I_C_Payment payment = getModel(I_C_Payment.class);
+			_currencyConversionContext = paymentBL.extractCurrencyConversionContext(payment);
+		}
+		return _currencyConversionContext;
 	}
 
 	/**
@@ -110,7 +119,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			final FactLine fl_DR = fact.createLine()
 					.setAccount(getBankAccount(as))
 					.setAmtSource(getCurrencyId(), getAmount(), null)
-					.setCurrencyConversionCtx(currencyConversionContext)
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
 			if (fl_DR != null && AD_Org_ID.isRegular())
 			{
@@ -134,7 +143,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			final FactLine fl_CR = fact.createLine()
 					.setAccount(acct)
 					.setAmtSource(getCurrencyId(), null, getAmount())
-					.setCurrencyConversionCtx(currencyConversionContext)
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
 			if (fl_CR != null && AD_Org_ID.isRegular() && getC_Charge_ID() <= 0)
 			{
@@ -161,7 +170,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			final FactLine fl_DR = fact.createLine()
 					.setAccount(acct)
 					.setAmtSource(getCurrencyId(), getAmount(), null)
-					.setCurrencyConversionCtx(currencyConversionContext)
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
 			if (fl_DR != null && AD_Org_ID.isRegular() && getC_Charge_ID() <= 0)
 			{
@@ -172,7 +181,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			final FactLine fl_CR = fact.createLine()
 					.setAccount(getBankAccount(as))
 					.setAmtSource(getCurrencyId(), null, getAmount())
-					.setCurrencyConversionCtx(currencyConversionContext)
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
 			if (fl_CR != null && AD_Org_ID.isRegular())
 			{

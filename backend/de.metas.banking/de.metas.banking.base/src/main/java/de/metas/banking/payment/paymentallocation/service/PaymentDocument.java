@@ -22,10 +22,8 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.banking.payment.paymentallocation.PaymentCurrencyContext;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.FixedConversionRate;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
@@ -94,7 +92,7 @@ public class PaymentDocument implements IPaymentDocument
 			@NonNull final Money amountToAllocate,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate dateTrx,
-			@Nullable final PaymentCurrencyContext paymentCurrencyContext)
+			@NonNull final PaymentCurrencyContext paymentCurrencyContext)
 	{
 		final OrgId orgId = clientAndOrgId.getOrgId();
 		if (!orgId.isRegular())

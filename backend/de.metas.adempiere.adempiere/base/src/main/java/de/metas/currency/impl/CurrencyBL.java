@@ -30,6 +30,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
+import de.metas.currency.CurrencyConversionType;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -264,6 +265,12 @@ public class CurrencyBL implements ICurrencyBL
 			final LocalDate date)
 	{
 		return currencyDAO.getDefaultConversionTypeId(adClientId, adOrgId, date);
+	}
+
+	@Override
+	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
+	{
+		return currencyDAO.getConversionTypeId(type);
 	}
 
 	@Nullable

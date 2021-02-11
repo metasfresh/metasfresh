@@ -99,6 +99,7 @@ class BankStatementPaymentBLTest
 	private BankStatementPaymentBL bankStatementPaymentBL;
 	private BankRepository bankRepo;
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private final String metasfreshIban = "123456";
 	private final LocalDate statementDate = SystemTime.asLocalDate();
 	private final LocalDate valutaDate = SystemTime.asLocalDate();
@@ -112,9 +113,12 @@ class BankStatementPaymentBLTest
 		AdempiereTestHelper.get().init();
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
+		final BankStatementBL bankStatementBL = new BankStatementBL(
+				bankAccountService,
+				new MoneyService(new CurrencyRepository()))
 		{
-			public void unpost(I_C_BankStatement bankStatement)
+			@Override
+			public void unpost(final I_C_BankStatement bankStatement)
 			{
 				System.out.println("In JUnit test BankStatementBL.unpost() does nothing"
 						+ "\n\t bank statement: " + bankStatement
@@ -148,7 +152,7 @@ class BankStatementPaymentBLTest
 
 	private BPartnerId createCustomer()
 	{
-		I_C_BPartner customer = BusinessTestHelper.createBPartner("le customer");
+		final I_C_BPartner customer = BusinessTestHelper.createBPartner("le customer");
 		return BPartnerId.ofRepoId(customer.getC_BPartner_ID());
 	}
 
@@ -251,13 +255,13 @@ class BankStatementPaymentBLTest
 			bankStatementListenerService.addListener(new IBankStatementListener()
 			{
 				@Override
-				public void onPaymentsLinked(List<PaymentLinkResult> payments)
+				public void onPaymentsLinked(final List<PaymentLinkResult> payments)
 				{
 					paymentsLinked.addAll(payments);
 				}
 
 				@Override
-				public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull BankStatementLineReferenceList lineRefs)
+				public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 				{
 					throw new UnsupportedOperationException();
 				}
@@ -758,7 +762,7 @@ class BankStatementPaymentBLTest
 					.createAndProcess();
 			final PaymentId paymentId2 = PaymentId.ofRepoId(payment2.getC_Payment_ID());
 
-			BankStatementLineMultiPaymentLinkRequest request = BankStatementLineMultiPaymentLinkRequest.builder()
+			final BankStatementLineMultiPaymentLinkRequest request = BankStatementLineMultiPaymentLinkRequest.builder()
 					.bankStatementLineId(BankStatementLineId.ofRepoId(bsl.getC_BankStatementLine_ID()))
 					.paymentToLink(PaymentToLink.builder()
 							.paymentId(paymentId1)
