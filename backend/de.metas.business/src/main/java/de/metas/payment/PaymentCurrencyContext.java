@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,27 +20,48 @@
  * #L%
  */
 
-package de.metas.banking.payment.paymentallocation;
+package de.metas.payment;
 
 import de.metas.currency.FixedConversionRate;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 @Builder
 public class PaymentCurrencyContext
 {
-	@Nullable
-	CurrencyConversionTypeId currencyConversionTypeId;
+	@Nullable CurrencyConversionTypeId currencyConversionTypeId;
 
-	@Nullable
-	FixedConversionRate fixedConversionRate;
+	@Nullable CurrencyId paymentCurrencyId;
+	@Nullable CurrencyId sourceCurrencyId;
+	@Nullable BigDecimal currencyRate;
 
-	public static PaymentCurrencyContext ofCurrencyConversionTypeId(@Nullable final CurrencyConversionTypeId currencyConversionTypeId)
+	public static final PaymentCurrencyContext NONE = builder().build();
+
+	public boolean isFixedConversionRate()
 	{
-		return builder().currencyConversionTypeId(currencyConversionTypeId).build();
+		return paymentCurrencyId != null && sourceCurrencyId != null && currencyRate != null;
+	}
+
+	@Nullable
+	public FixedConversionRate toFixedConversionRateOrNull()
+	{
+		if (paymentCurrencyId != null && sourceCurrencyId != null && currencyRate != null)
+		{
+			return FixedConversionRate.builder()
+					.fromCurrencyId(paymentCurrencyId)
+					.toCurrencyId(sourceCurrencyId)
+					.multiplyRate(currencyRate)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 }

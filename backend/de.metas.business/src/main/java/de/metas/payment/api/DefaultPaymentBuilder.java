@@ -22,20 +22,9 @@
 
 package de.metas.payment.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import de.metas.util.lang.ExternalId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.FixedConversionRate;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -45,13 +34,25 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class DefaultPaymentBuilder
 {
@@ -101,6 +102,7 @@ public class DefaultPaymentBuilder
 	 *
 	 * @return payment
 	 */
+	@SuppressWarnings("SameParameterValue")
 	private I_C_Payment createAndProcess(final String docAction, final String expectedDocStatus)
 	{
 		final I_C_Payment payment = createDraft();
@@ -252,11 +254,16 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	public final DefaultPaymentBuilder currencyRate(@NonNull BigDecimal currencyRate, @NonNull final CurrencyId sourceCurrencyId)
+	public final DefaultPaymentBuilder paymentCurrencyContext(@NonNull final PaymentCurrencyContext paymentCurrencyContext)
 	{
 		assertNotBuilt();
-		payment.setCurrencyRate(currencyRate);
-		payment.setSource_Currency_ID(sourceCurrencyId.getRepoId());
+		payment.setC_ConversionType_ID(CurrencyConversionTypeId.toRepoId(paymentCurrencyContext.getCurrencyConversionTypeId()));
+		if(paymentCurrencyContext.isFixedConversionRate())
+		{
+			Check.assumeEquals(payment.getC_Currency_ID(), paymentCurrencyContext.getPaymentCurrencyId().getRepoId(), "{} shall match payment currency", paymentCurrencyContext);
+			payment.setCurrencyRate(paymentCurrencyContext.getCurrencyRate());
+			payment.setSource_Currency_ID(paymentCurrencyContext.getSourceCurrencyId().getRepoId());
+		}
 		return this;
 	}
 
@@ -275,11 +282,8 @@ public class DefaultPaymentBuilder
 	 * <li>C_Currency_ID
 	 * <li>IsReceipt: set from the invoice's <code>SOTrx</code> (negated if the invoice is a credit memo)
 	 * </ul>
-	 *
-	 * @param invoice
-	 * @return
 	 */
-	private final DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
+	private DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
 	{
 		adOrgId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
@@ -310,7 +314,7 @@ public class DefaultPaymentBuilder
 	public final DefaultPaymentBuilder externalId(@Nullable final ExternalId externalId)
 	{
 		assertNotBuilt();
-		if(externalId != null)
+		if (externalId != null)
 		{
 			payment.setExternalId(externalId.getValue());
 		}

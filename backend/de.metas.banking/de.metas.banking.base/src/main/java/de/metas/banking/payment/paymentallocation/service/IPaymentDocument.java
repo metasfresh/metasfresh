@@ -22,7 +22,7 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.banking.payment.paymentallocation.PaymentCurrencyContext;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;

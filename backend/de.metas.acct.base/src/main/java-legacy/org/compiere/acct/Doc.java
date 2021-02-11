@@ -938,11 +938,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				continue;
 			}
 
-			final CurrencyConversionContext conversionCtx = services.createCurrencyConversionContext(
-					getDateAcct(),
-					getCurrencyConversionTypeId(),
-					getClientId(),
-					getOrgId());
+			final CurrencyConversionContext conversionCtx = getCurrencyConversionContext();
 			try
 			{
 				services.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
@@ -954,6 +950,15 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 						.setPostingStatus(PostingStatus.NotConvertible);
 			}
 		}
+	}
+
+	protected CurrencyConversionContext getCurrencyConversionContext()
+	{
+		return services.createCurrencyConversionContext(
+				getDateAcct(),
+				getCurrencyConversionTypeId(),
+				getClientId(),
+				getOrgId());
 	}
 
 	/**

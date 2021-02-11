@@ -1,6 +1,5 @@
 package de.metas.ui.web.payment_allocation;
 
-import de.metas.banking.payment.paymentallocation.PaymentCurrencyContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -8,6 +7,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.ui.web.view.IViewRow;
@@ -115,7 +115,7 @@ public class PaymentRow implements IViewRow
 			@NonNull final Amount payAmt,
 			@NonNull final Amount openAmt,
 			@NonNull final PaymentDirection paymentDirection,
-			@NonNull final PaymentCurrencyContext paymentCurrencyContext)
+			final PaymentCurrencyContext paymentCurrencyContext)
 	{
 		this.inboundPayment = paymentDirection.isInboundPayment();
 		this.documentNo = documentNo;
@@ -130,7 +130,7 @@ public class PaymentRow implements IViewRow
 		this.clientAndOrgId = clientAndOrgId;
 		this.paymentDirection = paymentDirection;
 
-		this.paymentCurrencyContext = paymentCurrencyContext;
+		this.paymentCurrencyContext = paymentCurrencyContext != null ? paymentCurrencyContext : PaymentCurrencyContext.NONE;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PaymentRow.class);
 	}

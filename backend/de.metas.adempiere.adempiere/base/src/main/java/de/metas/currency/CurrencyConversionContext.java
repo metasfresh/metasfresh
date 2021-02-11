@@ -62,18 +62,6 @@ public class CurrencyConversionContext
 		}
 	}
 
-	public CurrencyConversionContext withFixedConversionRate(
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final BigDecimal multiplyRate)
-	{
-		return withFixedConversionRate(FixedConversionRate.builder()
-				.fromCurrencyId(fromCurrencyId)
-				.toCurrencyId(toCurrencyId)
-				.multiplyRate(multiplyRate)
-				.build());
-	}
-
 	public CurrencyConversionContext withFixedConversionRate(@NonNull final FixedConversionRate rate)
 	{
 		return toBuilder()
