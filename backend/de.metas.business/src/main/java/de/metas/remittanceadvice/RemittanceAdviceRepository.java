@@ -52,6 +52,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -301,20 +302,14 @@ public class RemittanceAdviceRepository
 
 				.sendDate(TimeUtil.asInstant(record.getSendAt()))
 				.additionalNotes(record.getAdditionalNotes())
-				.lines(retrieveLines(remittanceAdviceId, remittanceCurrencyId, serviceFeeCurrencyId))
+				.lines(retrieveLines(remittanceAdviceId, remittanceCurrencyId, serviceFeeCurrencyId ))
 				.build();
 	}
 
 	@NonNull
 	private RemittanceAdviceLine toRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record,
-			@NonNull final CurrencyId remittanceCurrencyId,
-			@Nullable final CurrencyId serviceFeeCurrencyId)
+			final CurrencyId remittanceCurrencyId, @Nullable final CurrencyId serviceFeeCurrencyId)
 	{
-		final CurrencyCode remittanceCurrencyCode = currencyDAO.getCurrencyCodeById(remittanceCurrencyId);
-
-		final Function<BigDecimal, Amount> toAmountOrNull =
-				(amountValue) -> amountValue != null ? Amount.of(amountValue, remittanceCurrencyCode) : null;
-
 		if (record.getServiceFeeAmount() != null
 				&& record.getServiceFeeAmount().signum() != 0
 		        && serviceFeeCurrencyId == null)
@@ -323,6 +318,11 @@ public class RemittanceAdviceRepository
 					.appendParametersToMessage()
 					.setParameter("RemittanceAdviceLineId", record.getC_RemittanceAdvice_ID());
 		}
+		final CurrencyCode remittanceCurrencyCode = currencyDAO.getCurrencyCodeById(remittanceCurrencyId);
+		final CurrencyCode serviceFeeCurrencyCode = serviceFeeCurrencyId != null ? currencyDAO.getCurrencyCodeById(serviceFeeCurrencyId) : null;
+
+		final BiFunction<BigDecimal,CurrencyCode, Amount> toAmountOrNull =
+				(amountValue, currencyCode) -> amountValue != null && currencyCode != null ? Amount.of(amountValue, currencyCode) : null;
 
 		return RemittanceAdviceLine.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
@@ -339,11 +339,11 @@ public class RemittanceAdviceRepository
 
 				.invoiceAmtInREMADVCurrency(Amount.of(record.getInvoiceAmtInREMADVCurrency(), remittanceCurrencyCode))
 
-				.invoiceGrossAmount(toAmountOrNull.apply(record.getInvoiceAmt()))
+				.invoiceGrossAmount(toAmountOrNull.apply(record.getInvoiceAmt(),remittanceCurrencyCode))
 
-				.paymentDiscountAmount(toAmountOrNull.apply(record.getPaymentDiscountAmt()))
+				.paymentDiscountAmount(toAmountOrNull.apply(record.getPaymentDiscountAmt(),remittanceCurrencyCode))
 
-				.serviceFeeAmount(toAmountOrNull.apply(record.getServiceFeeAmount()))
+				.serviceFeeAmount(toAmountOrNull.apply(record.getServiceFeeAmount(),serviceFeeCurrencyCode))
 
 				.serviceFeeVatRate(record.getServiceFeeVatRate())
 
@@ -380,8 +380,7 @@ public class RemittanceAdviceRepository
 
 	@NonNull
 	private List<RemittanceAdviceLine> retrieveLines(@NonNull final RemittanceAdviceId remittanceAdviceId,
-			@NonNull final CurrencyId remittanceAdviceCurrencyId,
-			@Nullable final CurrencyId serviceFeeCurrencyId)
+			final CurrencyId remittanceCurrencyId, @Nullable final CurrencyId serviceFeeCurrencyId)
 	{
 		return queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
 				.addOnlyActiveRecordsFilter()
@@ -389,7 +388,7 @@ public class RemittanceAdviceRepository
 				.create()
 				.list()
 				.stream()
-				.map(line -> toRemittanceAdviceLine(line, remittanceAdviceCurrencyId, serviceFeeCurrencyId))
+				.map(line -> toRemittanceAdviceLine(line, remittanceCurrencyId, serviceFeeCurrencyId))
 				.collect(Collectors.toList());
 	}
 

@@ -25,11 +25,13 @@ package de.metas.banking.remittanceadvice.process;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -45,6 +47,7 @@ import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceLine;
 import de.metas.remittanceadvice.RemittanceAdviceLineServiceFee;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
+import de.metas.remittanceadvice.RemittanceAdviceService;
 import de.metas.report.jasper.client.RemoteServletInvoker;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
@@ -79,6 +82,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	private static final Logger logger = LogManager.getLogger(RemoteServletInvoker.class);
 
 	private final RemittanceAdviceRepository remittanceAdviceRepo = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
+	private final RemittanceAdviceService remittanceAdviceService = SpringContextHolder.instance.getBean(RemittanceAdviceService.class);
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
 	private final PaymentAllocationService paymentAllocationService = SpringContextHolder.instance.getBean(PaymentAllocationService.class);
@@ -212,9 +216,13 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				? paymentBL.newInboundReceiptBuilder()
 				: paymentBL.newOutboundPaymentBuilder();
 
+		final BPartnerBankAccountId bPartnerBankAccountId = remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerBankAccountId()
+				: remittanceAdvice.getDestinationBPartnerBankAccountId();
+
 		return paymentBuilder
 				.adOrgId(remittanceAdvice.getOrgId())
 				.bpartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
+				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
 				.payAmt(remittanceAdvice.getRemittedAmountSum())
 				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
@@ -241,12 +249,14 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				? remittanceAdviceLine.getPaymentDiscountAmount()
 				: Amount.zero(moneyService.getCurrencyCodeByCurrencyId(remittanceAdvice.getRemittedAmountCurrencyId()));
 
+		final Amount serviceFeeInREMADVCurrency = remittanceAdviceService.getServiceFeeInREMADVCurrency(remittanceAdviceLine).orElse(null);
+
 		Check.assumeNotNull(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency(), "Amount cannot be null if the invoice is resolved!");
 
 		return PaymentAllocationPayableItem.builder()
 					.payAmt(remittanceAdviceLine.getRemittedAmount())
 					.openAmt(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency())
-					.serviceFeeAmt(remittanceAdviceLine.getServiceFeeAmount())
+					.serviceFeeAmt(serviceFeeInREMADVCurrency)
 					.discountAmt(paymentDiscountAmt)
 					.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 					.orgId(remittanceAdvice.getOrgId())

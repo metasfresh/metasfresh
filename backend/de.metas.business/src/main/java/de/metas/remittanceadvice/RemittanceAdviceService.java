@@ -179,7 +179,7 @@ public class RemittanceAdviceService
 	}
 
 	@NonNull
-	private Optional<Amount> getServiceFeeInREMADVCurrency(@NonNull final RemittanceAdviceLine remittanceAdviceLine)
+	public Optional<Amount> getServiceFeeInREMADVCurrency(@NonNull final RemittanceAdviceLine remittanceAdviceLine)
 	{
 		if (remittanceAdviceLine.getServiceFeeAmount() == null
 				|| remittanceAdviceLine.getServiceFeeAmount().isZero() )
