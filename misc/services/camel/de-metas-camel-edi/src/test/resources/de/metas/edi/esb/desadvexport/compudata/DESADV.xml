@@ -51,9 +51,9 @@
         <ProductDescription>Line30_M_Product_Description</ProductDescription>
         <ProductNo>Line30_ProductNo</ProductNo>
         <QtyEntered>10</QtyEntered>
-        <UPC>Line30_UPC123</UPC>
         <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-        <UPC_TU>Line30_TU_UPC</UPC_TU>
+        <EAN_CU>Line30_CU_EAN</EAN_CU>
+        <EAN_TU>Line30_TU_EAN</EAN_TU>
         <PriceActual>2.8000</PriceActual>
         <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
         <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
@@ -96,9 +96,9 @@
         <ProductDescription>Line20_M_Product_Description</ProductDescription>
         <ProductNo>Line20_ProductNo</ProductNo>
         <QtyEntered>60</QtyEntered>
-        <UPC>Line20_UPC123</UPC>
         <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-        <UPC_TU>Line20_TU_UPC</UPC_TU>
+        <EAN_CU>Line20_CU_EAN</EAN_CU>
+        <EAN_TU>Line20_TU_EAN</EAN_TU>
         <PriceActual>0.9800</PriceActual>
         <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
         <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
@@ -141,9 +141,9 @@
         <ProductDescription>Line10_M_Product_Description</ProductDescription>
         <ProductNo>Line10_ProductNo</ProductNo>
         <QtyEntered>24</QtyEntered>
-        <UPC>Line10_UPC123</UPC>
         <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
-        <UPC_TU>Line10_TU_UPC</UPC_TU>
+        <EAN_CU>Line10_CU_EAN</EAN_CU>
+        <EAN_TU>Line10_TU_EAN</EAN_TU>
         <PriceActual>1.2900</PriceActual>
         <EanCom_Invoice_UOM>PCE</EanCom_Invoice_UOM>
         <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>

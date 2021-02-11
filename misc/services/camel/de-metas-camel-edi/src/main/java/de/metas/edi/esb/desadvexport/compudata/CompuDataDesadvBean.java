@@ -315,7 +315,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setStoreNumber(voidString);
 		p100.setSupplierArtNo(voidString);
 
-		p100.setEanArtNo(xmlDesadvLine.getUPC());
+		p100.setEanArtNo(xmlDesadvLine.getEANCU());
 		p100.setBuyerArtNo(xmlDesadvLine.getProductNo());
 		p100.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
 		p100.setGrainItemNummer(pack.getGTINTUPackingMaterial());
@@ -374,7 +374,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setStoreNumber(voidString);
 		p102.setSupplierArtNo(voidString);
 
-		p102.setEanArtNo(xmlDesadvLine.getUPC());
+		p102.setEanArtNo(xmlDesadvLine.getEANCU());
 		p102.setBuyerArtNo(xmlDesadvLine.getProductNo());
 		p102.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
 
