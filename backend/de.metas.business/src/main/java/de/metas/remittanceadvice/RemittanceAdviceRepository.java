@@ -93,11 +93,7 @@ public class RemittanceAdviceRepository
 	@NonNull
 	public RemittanceAdvice getRemittanceAdvice(final RemittanceAdviceId remittanceAdviceId)
 	{
-		final I_C_RemittanceAdvice record = queryBL.createQueryBuilder(I_C_RemittanceAdvice.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_RemittanceAdvice.COLUMN_C_RemittanceAdvice_ID, remittanceAdviceId)
-				.create()
-				.firstOnlyNotNull(I_C_RemittanceAdvice.class);
+		final I_C_RemittanceAdvice record = getRecordById(remittanceAdviceId);
 
 		return toRemittanceAdvice(record);
 	}

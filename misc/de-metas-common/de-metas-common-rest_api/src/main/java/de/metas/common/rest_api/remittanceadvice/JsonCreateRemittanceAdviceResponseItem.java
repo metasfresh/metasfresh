@@ -39,7 +39,7 @@ public class JsonCreateRemittanceAdviceResponseItem
 
 	@Builder
 	@JsonCreator
-	private JsonCreateRemittanceAdviceResponseItem(@NonNull final JsonMetasfreshId remittanceAdviceId)
+	private JsonCreateRemittanceAdviceResponseItem(@JsonProperty("remittanceAdviceId") @NonNull final JsonMetasfreshId remittanceAdviceId)
 	{
 		this.remittanceAdviceId = remittanceAdviceId;
 	}

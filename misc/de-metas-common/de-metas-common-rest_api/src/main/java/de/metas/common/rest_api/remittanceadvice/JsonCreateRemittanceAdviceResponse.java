@@ -37,13 +37,13 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonCreateRemittanceAdviceResponse
 {
-	@JsonProperty("createdIds")
+	@JsonProperty("ids")
 	List<JsonCreateRemittanceAdviceResponseItem> ids;
 
 	@Builder
 	@JsonCreator
 	private JsonCreateRemittanceAdviceResponse(
-			@NonNull final List<JsonCreateRemittanceAdviceResponseItem> ids
+			@NonNull @JsonProperty("ids") final List<JsonCreateRemittanceAdviceResponseItem> ids
 	)
 	{
 		this.ids = ids;
