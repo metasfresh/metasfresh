@@ -110,6 +110,18 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.externalreference</groupId>
+			<artifactId>de.metas.externalreference</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.externalsystem</groupId>
+			<artifactId>de.metas.externalsystem</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
 			<version>${metasfresh.version}</version>
