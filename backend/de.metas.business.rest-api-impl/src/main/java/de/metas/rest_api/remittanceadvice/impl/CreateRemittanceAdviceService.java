@@ -164,7 +164,7 @@ public class CreateRemittanceAdviceService
 
 		CurrencyId serviceFeeCurrencyId = null;
 		final BigDecimal serviceFeeAmt = jsonRemittanceAdvice.getServiceFeeAmount();
-		if (serviceFeeAmt.stripTrailingZeros().scale() > 0)
+		if (serviceFeeAmt.compareTo(BigDecimal.ZERO) > 0)
 		{
 			serviceFeeCurrencyId = getCurrencyIdByCurrencyISO(jsonRemittanceAdvice.getRemittanceAmountCurrencyISO());
 		}
