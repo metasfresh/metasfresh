@@ -1,9 +1,15 @@
 package de.metas.bpartner.api;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPRelation;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.util.ISingletonService;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -32,11 +38,11 @@ public interface IBPRelationDAO extends ISingletonService
 
 	/**
 	 * Retrieves the last created handover C_BP_Relation between the given partners.
-	 * 
-	 * @param partner
-	 * @param relationPartner
-	 * @return
+	 *
 	 */
 	I_C_BP_Relation retrieveHandoverBPRelation(I_C_BPartner partner, I_C_BPartner relationPartner);
 
+	Stream<BPRelation> getRelationsForBpartner(@NonNull OrgId orgId, @NonNull BPartnerId bPartnerId);
+
+	void saveOrUpdate(final @NonNull OrgId orgId, final BPRelation rel);
 }
