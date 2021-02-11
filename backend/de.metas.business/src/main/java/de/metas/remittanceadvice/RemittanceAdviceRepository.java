@@ -128,7 +128,7 @@ public class RemittanceAdviceRepository
 	{
 		final I_C_RemittanceAdvice_Line record = getLineRecordById(remittanceAdviceLine.getRemittanceAdviceLineId());
 
-		final Function<Amount,BigDecimal> asBigDecimalOrNll = (amount) -> amount != null ? amount.toBigDecimal() :  null;
+		final Function<Amount, BigDecimal> asBigDecimalOrNll = (amount) -> amount != null ? amount.toBigDecimal() : null;
 
 		record.setInvoiceAmtInREMADVCurrency(asBigDecimalOrNll.apply(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency()));
 		record.setOverUnderAmt(asBigDecimalOrNll.apply(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()));
@@ -248,7 +248,7 @@ public class RemittanceAdviceRepository
 		record.setExternalInvoiceDocBaseType(remittanceAdviceLineRequest.getExternalInvoiceDocBaseType());
 
 		record.setInvoiceDate(TimeUtil.asTimestamp(remittanceAdviceLineRequest.getDateInvoiced()));
-		record.setInvoiceAmt(remittanceAdviceLineRequest.getInvoiceGrossAmount());
+		record.setInvoiceGrossAmount(remittanceAdviceLineRequest.getInvoiceGrossAmount());
 		record.setPaymentDiscountAmt(remittanceAdviceLineRequest.getPaymentDiscountAmount());
 
 		record.setRemittanceAmt(remittanceAdviceLineRequest.getRemittedAmount());
@@ -312,7 +312,7 @@ public class RemittanceAdviceRepository
 	{
 		if (record.getServiceFeeAmount() != null
 				&& record.getServiceFeeAmount().signum() != 0
-		        && serviceFeeCurrencyId == null)
+				&& serviceFeeCurrencyId == null)
 		{
 			throw new AdempiereException("Missing service fee currency for remittance line!")
 					.appendParametersToMessage()
