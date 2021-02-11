@@ -24,7 +24,7 @@ BEGIN
         RETURN 0;
     END IF;
 
-    v_AllocatedAmt := paymentallocated(p_c_payment_id);
+    v_AllocatedAmt := paymentAllocatedAmt(p_c_payment_id);
     v_OpenAmt := v_PayAmt - v_AllocatedAmt;
 
     --	Ignore Rounding
