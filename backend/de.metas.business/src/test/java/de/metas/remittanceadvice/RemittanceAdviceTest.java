@@ -203,7 +203,7 @@ public class RemittanceAdviceTest
 		invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		invoice.setC_Invoice_ID(invoiceId);
 		invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
-		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 		invoice.setIsSOTrx(docType.isSOTrx());
 		invoice.setDateInvoiced(TimeUtil.asTimestamp(acctDate));
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
@@ -392,7 +392,6 @@ public class RemittanceAdviceTest
 		assertThat(remittanceAdviceLine.isInvoiceResolved()).isTrue();
 		assertThat(remittanceAdviceLine.isAmountValid()).isTrue();
 		assertThat(remittanceAdviceLine.isInvoiceDateValid()).isTrue();
-		assertThat(remittanceAdviceLine.isBPartnerValid()).isTrue();
 		assertThat(remittanceAdviceLine.isServiceFeeResolved()).isFalse();
 		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isFalse();
 

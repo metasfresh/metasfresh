@@ -189,7 +189,7 @@ public class RemittanceAdviceLine
 		isInvoiceResolved = true;
 		isAmountValid = remittanceAdviceLineInvoiceDetails.getOverUnderAmtInREMADVCurrency().signum() == 0;
 
-		isInvoiceDocTypeValid = externalInvoiceDocBaseType != null && externalInvoiceDocBaseType.equals(remittanceAdviceLineInvoiceDetails.getInvoiceDocType());
+		isInvoiceDocTypeValid = remittanceAdviceLineInvoiceDetails.getInvoiceDocType().equals(externalInvoiceDocBaseType);
 
 		if (dateInvoiced == null)
 		{

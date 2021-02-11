@@ -41,6 +41,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_RemittanceAdvice;
@@ -48,6 +49,7 @@ import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Function;
@@ -266,6 +268,7 @@ public class RemittanceAdviceRepository
 
 		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
 		final CurrencyId remittanceCurrencyId = CurrencyId.ofRepoId(record.getRemittanceAmt_Currency_ID());
+		final CurrencyId serviceFeeCurrencyId = CurrencyId.ofRepoIdOrNull(record.getServiceFeeAmount_Currency_ID());
 
 		return RemittanceAdvice.builder()
 				.remittanceAdviceId(remittanceAdviceId)
@@ -298,17 +301,28 @@ public class RemittanceAdviceRepository
 
 				.sendDate(TimeUtil.asInstant(record.getSendAt()))
 				.additionalNotes(record.getAdditionalNotes())
-				.lines(retrieveLines(remittanceAdviceId, remittanceCurrencyId))
+				.lines(retrieveLines(remittanceAdviceId, remittanceCurrencyId, serviceFeeCurrencyId))
 				.build();
 	}
 
 	@NonNull
-	private RemittanceAdviceLine toRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record, @NonNull final CurrencyId remittanceCurrencyId)
+	private RemittanceAdviceLine toRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record,
+			@NonNull final CurrencyId remittanceCurrencyId,
+			@Nullable final CurrencyId serviceFeeCurrencyId)
 	{
 		final CurrencyCode remittanceCurrencyCode = currencyDAO.getCurrencyCodeById(remittanceCurrencyId);
 
 		final Function<BigDecimal, Amount> toAmountOrNull =
 				(amountValue) -> amountValue != null ? Amount.of(amountValue, remittanceCurrencyCode) : null;
+
+		if (record.getServiceFeeAmount() != null
+				&& record.getServiceFeeAmount().signum() != 0
+		        && serviceFeeCurrencyId == null)
+		{
+			throw new AdempiereException("Missing service fee currency for remittance line!")
+					.appendParametersToMessage()
+					.setParameter("RemittanceAdviceLineId", record.getC_RemittanceAdvice_ID());
+		}
 
 		return RemittanceAdviceLine.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
@@ -365,7 +379,9 @@ public class RemittanceAdviceRepository
 	}
 
 	@NonNull
-	private List<RemittanceAdviceLine> retrieveLines(@NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final CurrencyId currencyId)
+	private List<RemittanceAdviceLine> retrieveLines(@NonNull final RemittanceAdviceId remittanceAdviceId,
+			@NonNull final CurrencyId remittanceAdviceCurrencyId,
+			@Nullable final CurrencyId serviceFeeCurrencyId)
 	{
 		return queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
 				.addOnlyActiveRecordsFilter()
@@ -373,7 +389,7 @@ public class RemittanceAdviceRepository
 				.create()
 				.list()
 				.stream()
-				.map(line -> toRemittanceAdviceLine(line, currencyId))
+				.map(line -> toRemittanceAdviceLine(line, remittanceAdviceCurrencyId, serviceFeeCurrencyId))
 				.collect(Collectors.toList());
 	}
 

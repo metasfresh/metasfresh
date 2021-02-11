@@ -164,12 +164,7 @@ public class RemittanceAdviceService
 
 		overUnderAmt = overUnderAmt.subtract(invoiceAmtInREMADVCurrency);
 
-		String docBaseType = null;
-		if (invoice.getC_DocType_ID() > 0)
-		{
-			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocType_ID());
-			docBaseType = invoiceDocType.getDocBaseType();
-		}
+		final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 
 		return RemittanceAdviceLineInvoiceDetails.builder()
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
@@ -178,7 +173,7 @@ public class RemittanceAdviceService
 				.invoiceCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
 				.invoiceAmtInREMADVCurrency(invoiceAmtInREMADVCurrency)
 				.overUnderAmtInREMADVCurrency(overUnderAmt)
-				.invoiceDocType(docBaseType)
+				.invoiceDocType(invoiceDocType.getDocBaseType())
 				.invoiceDate(TimeUtil.asInstant(invoice.getDateInvoiced()))
 				.build();
 	}

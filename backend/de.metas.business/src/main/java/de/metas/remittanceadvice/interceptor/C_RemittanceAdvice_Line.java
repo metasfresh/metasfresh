@@ -106,7 +106,7 @@ public class C_RemittanceAdvice_Line
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
-			ifColumnsChanged = I_C_RemittanceAdvice_Line.COLUMNNAME_C_BPartner_ID)
+			ifColumnsChanged = {I_C_RemittanceAdvice_Line.COLUMNNAME_C_BPartner_ID, I_C_RemittanceAdvice_Line.COLUMNNAME_Bill_BPartner_ID})
 	public void validateRemittanceAdviceLineBPartner(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
 		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());

@@ -55,7 +55,7 @@ public class RemittanceAdviceLineInvoiceDetails
 	@NonNull
 	Amount overUnderAmtInREMADVCurrency;
 
-	@Nullable
+	@NonNull
 	String invoiceDocType;
 
 	@NonNull
@@ -68,7 +68,7 @@ public class RemittanceAdviceLineInvoiceDetails
 			@NonNull final CurrencyId invoiceCurrencyId,
 			@NonNull final Amount invoiceAmtInREMADVCurrency,
 			@NonNull final Amount overUnderAmtInREMADVCurrency,
-			@Nullable final String invoiceDocType,
+			@NonNull final String invoiceDocType,
 			@NonNull final Instant invoiceDate)
 	{
 		Amount.assertSameCurrency(invoiceAmtInREMADVCurrency, overUnderAmtInREMADVCurrency);
