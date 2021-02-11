@@ -35,6 +35,8 @@ import org.springframework.stereotype.Component;
 public class CallDispatcherRouteBuilder extends RouteBuilder
 {
 
+	public static final String ROUTE_ID = "MF-HTTP-To-ExternalSystem-Dispatcher";
+
 	@Override
 	public void configure()
 	{
@@ -49,17 +51,18 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 		jacksonDataFormat.setObjectMapper(objectMapper);
 		jacksonDataFormat.setUnmarshalType(JsonExternalSystemRequest.class);
 
+		// assuming that we have server.port=8095 in the application.properties, you can call this EP with http://localhost:8095/camel/do
 		rest("/").produces("text/plain") // TODO fix
-				.get("hello")
+				.put("do")
 				.to("direct:dispatch");
 
 		from("direct:dispatch")
-				.routeId("MF-HTTP-To-ExternalSystem-Dispatcher")
+				.routeId(ROUTE_ID)
 				.streamCaching()
 				.unmarshal(jacksonDataFormat)
 				.process(exchange -> {
 					final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
-					exchange.getIn().setHeader("targetRoute", request.getExternalSystemName() + "-" + request.getCommand());
+					exchange.getIn().setHeader("targetRoute", request.getExternalSystemName().getName() + "-" + request.getCommand());
 				})
 				.log("routing request to route ${header.targetRoute}")
 				.toD("direct:${header.targetRoute}", false);

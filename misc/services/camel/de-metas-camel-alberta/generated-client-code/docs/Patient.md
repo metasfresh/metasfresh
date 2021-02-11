@@ -4,7 +4,6 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **_id** | [**UUID**](UUID.md) |  |  [optional]
-**resmedTenant** | **String** | RMT oder RMD |  [optional]
 **customerId** | **String** |  |  [optional]
 **customerContactId** | **String** |  |  [optional]
 **gender** | [**BigDecimal**](BigDecimal.md) | 0 &#x3D; Unbekannt, 1 &#x3D; Weiblich, 2 &#x3D; Männlich, 3 &#x3D; Divers |  [optional]

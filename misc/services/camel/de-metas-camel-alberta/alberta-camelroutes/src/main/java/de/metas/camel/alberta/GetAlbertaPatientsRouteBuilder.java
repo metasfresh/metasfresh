@@ -36,7 +36,7 @@ public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 	{
 		from("direct:Alberta-GetPatients") // this EP's name is matching the JsonExternalSystemRequest's ExternalSystem and Command
 				.process(exchange -> {
-					
+
 					final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 					var apiKey = request.getParameters().get("APIKey");
 					var tenant = request.getParameters().get("Tenant");
@@ -45,13 +45,15 @@ public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 
 					final var apiClient = new ApiClient().setBasePath(basePath);
 
-					final var patients = new PatientApi(apiClient).getCreatedPatients(apiKey, tenant, "both", updatedAfter);
+					final var patientApi = new PatientApi(apiClient);
+					final var patients = patientApi.getCreatedPatients(apiKey, tenant, "created", updatedAfter);
+					patients.addAll(patientApi.getCreatedPatients(apiKey, tenant, "updated", updatedAfter));
 
 					exchange.getIn().setBody(patients);
 				})
-				// .split() // from here we have 1 message per patient
-				//.transform(patient-to-metasfresh-bpartner)
-				//.to("direct:metasfresh-put-bpartner") // no need to worry about metasfresh-URLs, API-Keys etc
+		// .split() // from here we have 1 message per patient
+		//.transform(patient-to-metasfresh-bpartner)
+		//.to("direct:metasfresh-put-bpartner") // no need to worry about metasfresh-URLs, API-Keys etc
 		;
 	}
 }
