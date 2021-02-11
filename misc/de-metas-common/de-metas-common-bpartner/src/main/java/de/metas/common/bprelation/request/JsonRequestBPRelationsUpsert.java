@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de.metas.business.rest-api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,44 +20,45 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.common.bprelation.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.Map;
+import javax.annotation.Nullable;
+import java.util.List;
 
-/**
- * Send from metasfresh to indicate that metasfresh wants an external system to do something
- */
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 @Value
-public class JsonExternalSystemRequest
+@ApiModel
+public class JsonRequestBPRelationsUpsert
 {
+	@ApiModelProperty(position = 10)
 	String orgCode;
 
-	JsonExternalSystemName externalSystemName;
+	@ApiModelProperty(position = 20)
+	String locationIdentifier;
 
-	String command;
+	@ApiModelProperty(position = 30)
+	List<JsonRequestBPRelationTarget> relatesTo;
 
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	Map<String, String> parameters;
-
-	@Builder
 	@JsonCreator
-	public JsonExternalSystemRequest(
-			@JsonProperty("orgCode") @NonNull final String orgCode,
-			@JsonProperty("externalSystemName") @NonNull final JsonExternalSystemName externalSystemName,
-			@JsonProperty("command") @NonNull final String command,
-			@JsonProperty("parameters") @Singular final Map<String, String> parameters)
+	@Builder(toBuilder = true)
+	public JsonRequestBPRelationsUpsert(
+			@NonNull @JsonProperty("orgCode") final String orgCode,
+			@Nullable @JsonProperty("locationIdentifier") final String locationIdentifier,
+			@JsonProperty("relatesTo") final List<JsonRequestBPRelationTarget> relatesTo)
 	{
 		this.orgCode = orgCode;
-		this.externalSystemName = externalSystemName;
-		this.command = command;
-		this.parameters = parameters;
+		this.locationIdentifier = locationIdentifier;
+		this.relatesTo = coalesce(relatesTo, ImmutableList.of());
 	}
 }

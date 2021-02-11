@@ -5,21 +5,23 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>de.metas.camel</groupId>
-        <artifactId>de-metas-camel</artifactId>
+        <groupId>de.metas.camel.externalsystems</groupId>
+        <artifactId>de-metas-camel-externalsystems</artifactId>
         <version>10.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>de.metas.camel.externalsystems</groupId>
-    <artifactId>de-metas-camel-externalsystems</artifactId>
+    <artifactId>de-metas-camel-alberta</artifactId>
+
+    <!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
+        can't set it to another version -->
     <version>10.0.0</version>
     <packaging>pom</packaging>
-    
+
     <modules>
-        <module>core</module>
-        <module>alberta</module>
-        <module>common</module>
+        <module>alberta-camelroutes</module>
+        <module>generated-client-code</module>
     </modules>
 
+   
 </project>

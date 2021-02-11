@@ -1,4 +1,4 @@
-JsonResponseBPRelationTest.serializeDeserializeTest=[
+de.metas.common.bprelation.response.JsonResponseBPRelationTest.serializeDeserializeTest=[
   {
     "responseItems": [
       {

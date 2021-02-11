@@ -58,6 +58,4 @@ public class JsonOrganization
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 		this.bpartner = bpartner;
 	}
-
-
 }

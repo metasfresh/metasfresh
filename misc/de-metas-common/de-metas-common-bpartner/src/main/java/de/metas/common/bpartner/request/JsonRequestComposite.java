@@ -42,11 +42,12 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Singular;
 import lombok.Value;
 
 @ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")
 @Value
-public final class JsonRequestComposite
+public class JsonRequestComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
 	@ApiModelProperty(position = 10)

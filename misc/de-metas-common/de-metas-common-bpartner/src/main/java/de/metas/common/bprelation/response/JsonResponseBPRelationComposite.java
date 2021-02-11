@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de.metas.business.rest-api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,44 +20,27 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.common.bprelation.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * Send from metasfresh to indicate that metasfresh wants an external system to do something
- */
 @Value
-public class JsonExternalSystemRequest
+public class JsonResponseBPRelationComposite
 {
-	String orgCode;
-
-	JsonExternalSystemName externalSystemName;
-
-	String command;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	Map<String, String> parameters;
+	List<JsonResponseBPRelationItem> responseItems;
 
 	@Builder
 	@JsonCreator
-	public JsonExternalSystemRequest(
-			@JsonProperty("orgCode") @NonNull final String orgCode,
-			@JsonProperty("externalSystemName") @NonNull final JsonExternalSystemName externalSystemName,
-			@JsonProperty("command") @NonNull final String command,
-			@JsonProperty("parameters") @Singular final Map<String, String> parameters)
+	public JsonResponseBPRelationComposite(
+			@JsonProperty("responseItems") @Singular final List<JsonResponseBPRelationItem> responseItems)
 	{
-		this.orgCode = orgCode;
-		this.externalSystemName = externalSystemName;
-		this.command = command;
-		this.parameters = parameters;
+		this.responseItems = responseItems;
 	}
+
 }

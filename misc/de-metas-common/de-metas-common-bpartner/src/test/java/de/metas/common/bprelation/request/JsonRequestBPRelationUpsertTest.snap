@@ -1,4 +1,4 @@
-JsonRequestBPRelationUpsertTest.serializeDeserialize=[
+de.metas.common.bprelation.request.JsonRequestBPRelationUpsertTest.serializeDeserialize=[
   {
     "orgCode": "org123",
     "locationIdentifier": "loc123",
