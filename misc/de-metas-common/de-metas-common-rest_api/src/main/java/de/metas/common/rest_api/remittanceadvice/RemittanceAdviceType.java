@@ -23,13 +23,12 @@
 package de.metas.common.rest_api.remittanceadvice;
 
 import lombok.Getter;
-import org.compiere.model.X_C_DocType;
 
 @Getter
 public enum RemittanceAdviceType
 {
-	INBOUND(X_C_DocType.DOCBASETYPE_ARReceipt), //
-	OUTBOUND(X_C_DocType.DOCBASETYPE_APPayment) //
+	INBOUND("ARR"),
+	OUTBOUND("APP")
 	;
 
 	private final String docBaseType;
