@@ -29,6 +29,7 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -217,6 +218,8 @@ public class RemittanceAdviceRepository
 
 		record.setAdditionalNotes(createRemittanceAdviceRequest.getAdditionalNotes());
 		record.setSendAt(TimeUtil.asTimestamp(createRemittanceAdviceRequest.getSendDate()));
+
+		record.setDocStatus(DocStatus.Drafted.getCode());
 
 		return record;
 	}

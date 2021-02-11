@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.remittanceadvice.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -217,14 +218,17 @@ public class CreateRemittanceAdviceService
 	{
 		final BPartnerId bPartnerId = Check.isEmpty(jsonRemittanceAdviceLine.getBpartnerIdentifier())
 				? null
-				: getOptionalBPartnerId(IdentifierString.of(jsonRemittanceAdviceLine.getBpartnerIdentifier()))
-				.orElse(null);
+				: getOptionalBPartnerId(IdentifierString.of(jsonRemittanceAdviceLine.getBpartnerIdentifier())).orElse(null);
+
+		final Instant dateInvoiced = jsonRemittanceAdviceLine.getDateInvoiced() != null
+				? Instant.parse(jsonRemittanceAdviceLine.getDateInvoiced())
+				: null;
 
 		return CreateRemittanceAdviceLineRequest.builder()
 				.remittanceAdviceId(remittanceAdviceId)
 				.invoiceIdentifier(jsonRemittanceAdviceLine.getInvoiceIdentifier())
 				.remittedAmount(jsonRemittanceAdviceLine.getRemittedAmount())
-				.dateInvoiced(Instant.parse(jsonRemittanceAdviceLine.getDateInvoiced()))
+				.dateInvoiced(dateInvoiced)
 				.bpartnerIdentifier(bPartnerId)
 				.externalInvoiceDocBaseType(jsonRemittanceAdviceLine.getInvoiceBaseDocType())
 				.invoiceGrossAmount(jsonRemittanceAdviceLine.getInvoiceGrossAmount())
@@ -331,6 +335,7 @@ public class CreateRemittanceAdviceService
 		return query;
 	}
 
+	@VisibleForTesting
 	public String buildDocumentNo(@NonNull final DocTypeId docTypeId)
 	{
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
@@ -340,7 +345,7 @@ public class CreateRemittanceAdviceService
 				.setFailOnError(true)
 				.build();
 
-		if (documentNo == null || documentNo == IDocumentNoBuilder.NO_DOCUMENTNO)
+		if (documentNo == null)
 		{
 			throw new AdempiereException("Cannot fetch documentNo for " + docTypeId);
 		}

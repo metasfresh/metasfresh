@@ -32,6 +32,7 @@ import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
 import de.metas.common.rest_api.remittanceadvice.RemittanceAdviceType;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.location.CountryId;
@@ -53,6 +54,7 @@ import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -149,7 +151,8 @@ class CreateRemittanceAdviceServiceTest
 		docTypeRMADV.setDocBaseType(X_C_DocType.DOCBASETYPE_RemittanceAdvice);
 		save(docTypeRMADV);
 
-		createRemittanceAdviceService = new CreateRemittanceAdviceService(currencyRepository, remittanceAdviceRepository);
+		createRemittanceAdviceService = Mockito.spy(new CreateRemittanceAdviceService(currencyRepository, remittanceAdviceRepository));
+		Mockito.doReturn("testDocNo").when(createRemittanceAdviceService).buildDocumentNo(Mockito.any(DocTypeId.class));
 	}
 
 	@Test
