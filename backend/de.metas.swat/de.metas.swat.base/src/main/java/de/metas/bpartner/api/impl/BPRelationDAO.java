@@ -103,10 +103,10 @@ public class BPRelationDAO implements IBPRelationDAO
 		queryBuilder.filter(filterDest);
 
 		return queryBL.createQueryBuilder(I_C_BP_Relation.class)
-				.addInSubQueryFilter(I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_ID, queryBuilder.create())
+				.addInSubQueryFilter(I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID, I_C_BP_Relation.COLUMNNAME_C_BP_Relation_ID, queryBuilder.create())
 				.create()
 				.setRequiredAccess(Access.READ)
-				.iterateAndStream()
+				.stream()
 				.map(this::toBPRelation);
 	}
 
