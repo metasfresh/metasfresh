@@ -53,6 +53,6 @@ public class BPartnerRouteBuilder extends RouteBuilder
 				})
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.to("http://{{metasfresh.api.upsert-bpartner.uri}}");
+				.to("http://{{metasfresh.upsert-bpartner.api.uri}}");
 	}
 }

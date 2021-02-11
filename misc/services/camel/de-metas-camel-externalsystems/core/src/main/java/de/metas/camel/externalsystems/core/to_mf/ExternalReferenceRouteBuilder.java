@@ -57,7 +57,7 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.to("http://{{metasfresh.api.post-externalreference.uri}}");
+				.to("http://{{metasfresh.create-externalreference.api.uri}}");
 
 		from("{{" + ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(LOOKUP_ROUTE_ID)
@@ -71,6 +71,6 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.to("http://{{metasfresh.api.lookup-externalreference.uri}}");
+				.to("http://{{metasfresh.lookup-externalreference.api.uri}}");
 	}
 }

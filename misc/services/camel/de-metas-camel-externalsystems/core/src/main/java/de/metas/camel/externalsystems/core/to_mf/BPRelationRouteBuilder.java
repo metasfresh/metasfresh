@@ -58,7 +58,7 @@ public class BPRelationRouteBuilder extends RouteBuilder
 				})
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.to("http://{{metasfresh.api.upsert-bprelation.uri}}/${header.bpartnerIdentifier}");
+				.to("http://{{metasfresh.upsert-bprelation.api.uri}}/" /*here we also need ${header.bpartnerIdentifier}!*/);
 
 	}
 }
