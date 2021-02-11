@@ -54,8 +54,10 @@ import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceId;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -83,6 +85,7 @@ public class CreateRemittanceAdviceService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public CreateRemittanceAdviceService(
 			@NonNull final CurrencyRepository currencyRepository,
@@ -94,6 +97,11 @@ public class CreateRemittanceAdviceService
 
 	@Nullable
 	public JsonCreateRemittanceAdviceResponse createRemittanceAdviceList(@NonNull final JsonCreateRemittanceAdviceRequest request)
+	{
+		return trxManager.callInNewTrx(() -> createRemittanceInTrx(request));
+	}
+
+	private JsonCreateRemittanceAdviceResponse createRemittanceInTrx(@NonNull final JsonCreateRemittanceAdviceRequest request)
 	{
 		final ImmutableList.Builder<RemittanceAdviceId> remittanceAdviceIdList = ImmutableList.builder();
 
@@ -117,25 +125,26 @@ public class CreateRemittanceAdviceService
 					remittanceAdviceRepository.createRemittanceAdviceLine(createRemittanceAdviceLineReq);
 				}
 			}
+
+			final ImmutableList.Builder<JsonCreateRemittanceAdviceResponseItem> ids = ImmutableList.builder();
+			for (final RemittanceAdviceId remittanceAdviceId : remittanceAdviceIdList.build())
+			{
+				final JsonMetasfreshId jsonMetasfreshId = JsonMetasfreshId.of(remittanceAdviceId.getRepoId());
+				final JsonCreateRemittanceAdviceResponseItem item = JsonCreateRemittanceAdviceResponseItem.builder()
+						.remittanceAdviceId(jsonMetasfreshId).build();
+				ids.add(item);
+			}
+
+			return JsonCreateRemittanceAdviceResponse.builder()
+					.ids(ids.build())
+					.build();
 		}
-		catch (final RuntimeException e)
+		catch (final Exception e)
 		{
 			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
-			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", e.getLocalizedMessage(), issueId);
+			logger.error("Could not save the given model; message={}; AD_Issue_ID={}", e.getLocalizedMessage(), issueId);
+			throw  e;
 		}
-
-		final ImmutableList.Builder<JsonCreateRemittanceAdviceResponseItem> ids = ImmutableList.builder();
-		for (final RemittanceAdviceId remittanceAdviceId : remittanceAdviceIdList.build())
-		{
-			final JsonMetasfreshId jsonMetasfreshId = JsonMetasfreshId.of(remittanceAdviceId.getRepoId());
-			final JsonCreateRemittanceAdviceResponseItem item = JsonCreateRemittanceAdviceResponseItem.builder()
-					.remittanceAdviceId(jsonMetasfreshId).build();
-			ids.add(item);
-		}
-
-		return JsonCreateRemittanceAdviceResponse.builder()
-				.ids(ids.build())
-				.build();
 	}
 
 	private CreateRemittanceAdviceRequest buildRemittanceAdviceRequest(@NonNull final JsonRemittanceAdvice jsonRemittanceAdvice)
@@ -180,6 +189,7 @@ public class CreateRemittanceAdviceService
 				Instant.now();
 
 		return CreateRemittanceAdviceRequest.builder()
+				.isImported(Boolean.TRUE)
 				.orgId(orgId)
 				.clientId(clientId)
 				.docTypeId(remittanceDocTypeId)
@@ -205,7 +215,10 @@ public class CreateRemittanceAdviceService
 			@NonNull final JsonRemittanceAdviceLine jsonRemittanceAdviceLine,
 			@NonNull final RemittanceAdviceId remittanceAdviceId)
 	{
-		final BPartnerId bPartnerId = getBPartnerId(IdentifierString.of(jsonRemittanceAdviceLine.getBpartnerIdentifier()));
+		final BPartnerId bPartnerId = Check.isEmpty(jsonRemittanceAdviceLine.getBpartnerIdentifier())
+				? null
+				: getOptionalBPartnerId(IdentifierString.of(jsonRemittanceAdviceLine.getBpartnerIdentifier()))
+				.orElse(null);
 
 		return CreateRemittanceAdviceLineRequest.builder()
 				.remittanceAdviceId(remittanceAdviceId)
@@ -241,10 +254,17 @@ public class CreateRemittanceAdviceService
 	@NonNull
 	private BPartnerId getBPartnerId(final IdentifierString identifierString)
 	{
-		final BPartnerQuery query = buildBPartnerQuery(identifierString);
-		final Optional<BPartnerId> optionalBPartnerId = bPartnerDAO.retrieveBPartnerIdBy(query);
+		final Optional<BPartnerId> optionalBPartnerId = getOptionalBPartnerId(identifierString);
+
 		return optionalBPartnerId.orElseThrow(() -> new AdempiereException("No BPartner found for IdentifierString")
 				.appendParametersToMessage().setParameter("IdentifierString", identifierString));
+	}
+
+	@NonNull
+	private Optional<BPartnerId> getOptionalBPartnerId(@NonNull final IdentifierString identifierString)
+	{
+		final BPartnerQuery query = buildBPartnerQuery(identifierString);
+		return bPartnerDAO.retrieveBPartnerIdBy(query);
 	}
 
 	@NonNull

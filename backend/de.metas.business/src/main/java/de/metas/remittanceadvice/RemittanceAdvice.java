@@ -100,6 +100,8 @@ public class RemittanceAdvice
 	@Nullable
 	private final String additionalNotes;
 
+	private final boolean isImported;
+
 	@Nullable
 	private PaymentId paymentId;
 

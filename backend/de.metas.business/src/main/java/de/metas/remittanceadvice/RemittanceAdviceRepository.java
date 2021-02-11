@@ -171,6 +171,7 @@ public class RemittanceAdviceRepository
 		final I_C_RemittanceAdvice record = InterfaceWrapperHelper.newInstance(I_C_RemittanceAdvice.class);
 
 		record.setAD_Org_ID(createRemittanceAdviceRequest.getOrgId().getRepoId());
+		record.setI_IsImported(createRemittanceAdviceRequest.isImported());
 
 		record.setSource_BPartner_ID(createRemittanceAdviceRequest.getSourceBPartnerId().getRepoId());
 		record.setSource_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(createRemittanceAdviceRequest.getSourceBPartnerBankAccountId()));
@@ -236,6 +237,7 @@ public class RemittanceAdviceRepository
 		return RemittanceAdvice.builder()
 				.remittanceAdviceId(remittanceAdviceId)
 				.isSOTrx(record.isSOTrx())
+				.isImported(record.isI_IsImported())
 
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))

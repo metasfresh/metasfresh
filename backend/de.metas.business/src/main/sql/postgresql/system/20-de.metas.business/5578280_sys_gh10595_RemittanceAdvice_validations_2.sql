@@ -148,11 +148,6 @@ UPDATE AD_Column SET ReadOnlyLogic='@I_IsImported/''N''@ = ''Y'' & ( @C_Invoice_
 UPDATE AD_Column SET DefaultValue='@#Date@',Updated=TO_TIMESTAMP('2021-02-03 19:34:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572613
 ;
 
--- 2021-02-08T14:33:21.643Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_RemittanceAdvice_Line','ALTER TABLE public.C_RemittanceAdvice_Line ADD COLUMN IsInvoiceDocTypeValid CHAR(1) CHECK (IsInvoiceDocTypeValid IN (''Y'',''N''))')
-;
-
 -- 2021-02-08T15:50:25.380Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2021-02-08 17:50:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572594

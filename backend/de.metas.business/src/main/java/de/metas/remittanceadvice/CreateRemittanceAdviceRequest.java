@@ -93,4 +93,6 @@ public class CreateRemittanceAdviceRequest
 
 	@Nullable
 	String additionalNotes;
+
+	boolean isImported;
 }

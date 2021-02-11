@@ -90,6 +90,6 @@ public class C_RemittanceAdvice
 					.setParameter("C_Payment_Doctype_Target_ID", record.getC_Payment_Doctype_Target_ID());
 		}
 
-		record.setIsSOTrx(targetPaymentDocType.isSOTrx()); //todo cp-ps: move to repo once it is ready
+		record.setIsSOTrx(targetPaymentDocType.isSOTrx());
 	}
 }
