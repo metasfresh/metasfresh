@@ -139,6 +139,7 @@ public class RemittanceAdviceRepository
 		record.setIsInvoiceDateValid(remittanceAdviceLine.isInvoiceDateValid());
 		record.setIsBPartnerValid(remittanceAdviceLine.isBPartnerValid());
 		record.setIsServiceColumnsResolved(remittanceAdviceLine.isServiceFeeResolved());
+		record.setIsLineAcknowledged(remittanceAdviceLine.isLineAcknowledged());
 
 		return record;
 	}
@@ -308,6 +309,7 @@ public class RemittanceAdviceRepository
 				.isInvoiceDateValid(record.isInvoiceDateValid())
 				.isInvoiceResolved(record.isInvoiceResolved())
 				.isServiceFeeResolved(record.isServiceColumnsResolved())
+				.isLineAcknowledged(record.isLineAcknowledged())
 
 				.taxId(TaxId.ofRepoIdOrNull(record.getService_Tax_ID()))
 				.serviceFeeBPartnerId(BPartnerId.ofRepoIdOrNull(record.getService_BPartner_ID()))

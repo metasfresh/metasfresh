@@ -24,7 +24,13 @@ package de.metas.remittanceadvice.document;
 
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
+import de.metas.remittanceadvice.RemittanceAdvice;
+import de.metas.remittanceadvice.RemittanceAdviceId;
+import de.metas.remittanceadvice.RemittanceAdviceRepository;
+import de.metas.remittanceadvice.RemittanceAdviceService;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_RemittanceAdvice;
 import org.compiere.model.X_C_RemittanceAdvice;
 import org.compiere.util.TimeUtil;
@@ -33,6 +39,9 @@ import java.time.LocalDate;
 
 public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 {
+	final RemittanceAdviceService remittanceAdviceService = SpringContextHolder.instance.getBean(RemittanceAdviceService.class);
+	final RemittanceAdviceRepository remittanceAdviceRepository = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
+
 	@Override
 	public String getSummary(final DocumentTableFields docFields)
 	{
@@ -62,8 +71,17 @@ public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 	@Override
 	public String completeIt(final DocumentTableFields docFields)
 	{
-		final I_C_RemittanceAdvice remittanceAdvice = extractRemittanceAdvice(docFields);
-		remittanceAdvice.setDocAction(X_C_RemittanceAdvice.DOCACTION_Re_Activate);
+		final I_C_RemittanceAdvice remittanceAdviceRecord = extractRemittanceAdvice(docFields);
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(remittanceAdviceRecord.getC_RemittanceAdvice_ID());
+
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepository.getRemittanceAdvice(remittanceAdviceId);
+
+		remittanceAdviceService.resolveRemittanceAdviceLines(remittanceAdvice);
+		remittanceAdviceRepository.updateRemittanceAdvice(remittanceAdvice);
+
+		remittanceAdvice.validateCompleteAction();
+
+		remittanceAdviceRecord.setDocAction(X_C_RemittanceAdvice.DOCACTION_Re_Activate);
 		return X_C_RemittanceAdvice.DOCSTATUS_Completed;
 	}
 
@@ -71,6 +89,12 @@ public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 	public void reactivateIt(final DocumentTableFields docFields)
 	{
 		final I_C_RemittanceAdvice remittanceAdvice = extractRemittanceAdvice(docFields);
+
+		if (remittanceAdvice.getC_Payment_ID() > 0)
+		{
+			throw new AdempiereException("A payment was already created!");
+		}
+
 		remittanceAdvice.setDocAction(X_C_RemittanceAdvice.DOCACTION_Complete);
 	}
 

@@ -163,3 +163,20 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=630192
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,630192,0,543319,577074,544780,'F',TO_TIMESTAMP('2021-02-08 17:02:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Payment discount amount',15,0,0,TO_TIMESTAMP('2021-02-08 17:02:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2021-02-11T07:43:45.983Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2021-02-11 09:43:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572597
+;
+
+-- 2021-02-11T07:43:48.742Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_remittanceadvice_line','ServiceFeeAmount','NUMERIC',null,null)
+;
+
+-- 2021-02-11T07:43:48.746Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_remittanceadvice_line','ServiceFeeAmount',null,'NULL',null)
+;
+
+
+
