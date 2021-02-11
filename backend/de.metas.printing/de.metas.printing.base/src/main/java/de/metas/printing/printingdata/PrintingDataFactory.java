@@ -23,6 +23,7 @@
 package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.X_AD_PrinterRouting;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
 import de.metas.document.archive.api.ArchiveFileNameService;
@@ -128,19 +129,15 @@ public class PrintingDataFactory
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
-		final String hostKey;
-		if (printingQueueProcessingInfo.isCreateWithSpecificHostKey())
-		{
-			hostKey = printClientsBL.getHostKeyOrNull(Env.getCtx());
-		}
-		else
-		{
-			hostKey = null;
-		}
+
 		if (queueItem.getAD_PrinterHW_ID() <= 0)
 		{
 			final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(queueItem);
 			final List<I_AD_PrinterRouting> printerRoutings = InterfaceWrapperHelper.createList(printerRoutingDAO.fetchPrinterRoutings(query), I_AD_PrinterRouting.class);
+
+			final String hostKey = printingQueueProcessingInfo.isCreateWithSpecificHostKey() ?
+					printClientsBL.getHostKeyOrNull(Env.getCtx()) : null;
+
 			for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 			{
 
@@ -153,7 +150,7 @@ public class PrintingDataFactory
 		}
 		else
 		{
-			final PrintingSegment printingSegment = createPrintingSegment(queueItem, printRecipient, hostKey);
+			final PrintingSegment printingSegment = createPrintingSegmentForQueueItem(queueItem);
 			printingData.segment(printingSegment);
 
 		}
@@ -205,10 +202,8 @@ public class PrintingDataFactory
 		return data;
 	}
 
-	private PrintingSegment createPrintingSegment(
-			@NonNull final I_C_Printing_Queue printingQueue,
-			@Nullable final UserId userToPrintId,
-			@Nullable final String hostKey)
+	private PrintingSegment createPrintingSegmentForQueueItem(
+			@NonNull final I_C_Printing_Queue printingQueue)
 	{
 
 		final int trayRepoId = printingQueue.getAD_PrinterHW_MediaTray_ID();
@@ -221,6 +216,7 @@ public class PrintingDataFactory
 		return PrintingSegment.builder()
 				.printer(hardwarePrinter)
 				.trayId(trayId)
+				.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
 				.build();
 	}
 

@@ -20,8 +20,6 @@ package de.metas.printing.process;/*
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.customs.CustomsInvoiceId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
@@ -33,21 +31,22 @@ import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.PInstanceId;
+
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.compiere.SpringContextHolder;
 
 import java.util.Iterator;
-import java.util.Objects;
+
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class C_Doc_Outbound_Log_PrintSelected extends JavaProcess implements IProcessPrecondition
 {
@@ -59,33 +58,52 @@ public class C_Doc_Outbound_Log_PrintSelected extends JavaProcess implements IPr
 
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
-
 	@Param(parameterName = "AD_PrinterHW_ID")
 	private HardwarePrinterId hwPrinterId;
 
 	@Param(parameterName = "AD_PrinterHW_MediaTray_ID")
-	private HardwareTrayId hwTrayId;
+	private int hwTrayRecordId;
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final PInstanceId pinstanceId = getPinstanceId();
-
-		// Enqueue selected archives as workpackages
-		final Stream<I_C_Doc_Outbound_Log_Line> docOutboundLines = getPrintableDocOutboundLogLinesForSelection(pinstanceId);
-
-		docOutboundLines.forEach(l -> printArchive(l));
-
+		final Iterator<I_C_Doc_Outbound_Log> docOutboundLogRecords = retrieveSelectedDocOutboundLogs();
+		while (docOutboundLogRecords.hasNext())
+		{
+			final I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundLogRecords.next();
+			final I_C_Doc_Outbound_Log_Line docOutboundLogLine = retrieveDocumentLogLine(docOutboundLogRecord);
+			if (docOutboundLogLine != null)
+			{
+				printArchive(docOutboundLogLine);
+			}
+		}
 		return MSG_OK;
 	}
 
 	private void printArchive(final I_C_Doc_Outbound_Log_Line logLine)
 	{
+		if (logLine == null)
+		{
+			//nothing to do
+			return;
+		}
 		final int archiveRecordId = logLine.getAD_Archive_ID();
+		if (archiveRecordId <= 0)
+		{
+			//nothing to do
+			return;
+		}
 
 		final I_AD_Archive archive = archiveDAO.retrieveArchive(ArchiveId.ofRepoId(archiveRecordId), I_AD_Archive.class);
+		if (archive == null)
+		{
+			//nothing to do
+			return;
+		}
 
-		printingQueueBL.printArchive(archive, printOutputFacade, hwPrinterId, hwTrayId );
+		final HardwareTrayId hwTrayId = HardwareTrayId.ofRepoIdOrNull(hwPrinterId, hwTrayRecordId);
+
+		printingQueueBL.printArchive(archive, printOutputFacade, hwPrinterId, hwTrayId);
 
 	}
 
@@ -101,27 +119,18 @@ public class C_Doc_Outbound_Log_PrintSelected extends JavaProcess implements IPr
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private final Stream<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final PInstanceId pinstanceId)
+	private final Iterator<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs()
 	{
-		final Iterator<I_C_Doc_Outbound_Log> iterator = queryBL
+		final IQueryFilter<I_C_Doc_Outbound_Log> filter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
+		final Stream<I_C_Doc_Outbound_Log> stream = queryBL
 				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-				.setOnlySelection(pinstanceId)
+				.addOnlyActiveRecordsFilter()
+				.filter(filter)
 				.create()
-				.iterate(I_C_Doc_Outbound_Log.class);
+				.iterateAndStream();
 
-		final Iterable<I_C_Doc_Outbound_Log> iterable = () -> iterator;
-		return StreamSupport.stream(iterable.spliterator(), false);
-	}
-
-	private final Stream<I_C_Doc_Outbound_Log_Line> getPrintableDocOutboundLogLinesForSelection(final PInstanceId pinstanceId)
-	{
-		final Stream<I_C_Doc_Outbound_Log> logsIterator = retrieveSelectedDocOutboundLogs(pinstanceId);
-
-		return logsIterator
-				.map(this::retrieveDocumentLogLine)
-				.filter(Objects::nonNull)
-				.filter(l -> l.isActive())
-				.filter(l -> l.getAD_Archive_ID() > 0);
+		return stream.iterator();
 	}
 
 	protected I_C_Doc_Outbound_Log_Line retrieveDocumentLogLine(final I_C_Doc_Outbound_Log log)
