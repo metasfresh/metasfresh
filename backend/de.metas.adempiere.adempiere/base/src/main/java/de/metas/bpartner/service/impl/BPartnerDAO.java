@@ -889,6 +889,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return query.first(I_C_BP_Relation.class);
 	}
 
+	@Nullable
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "#" + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault)
 	public I_C_BPartner_Location retrieveBillToLocation(
@@ -932,7 +933,9 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstOnly(I_C_BP_Relation.class); // just added an UC
 		if (billtoRelation != null)
 		{
-			return InterfaceWrapperHelper.create(billtoRelation.getC_BPartnerRelation_Location(), I_C_BPartner_Location.class);
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(billtoRelation.getC_BPartnerRelation_ID(), billtoRelation.getC_BPartnerRelation_Location_ID());
+			final I_C_BPartner_Location partnerRelationLocation = getBPartnerLocationById(bPartnerLocationId);
+			return InterfaceWrapperHelper.create(partnerRelationLocation, I_C_BPartner_Location.class);
 		}
 		return null;
 	}
@@ -1682,5 +1685,4 @@ public class BPartnerDAO implements IBPartnerDAO
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
 	}
-
 }

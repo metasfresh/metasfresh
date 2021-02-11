@@ -704,9 +704,10 @@ public class PaymentBL implements IPaymentBL
 		if (payment.isReconciled())
 		{
 			final PaymentReconcileReference currentReconcileRef = extractPaymentReconcileReference(payment);
-			throw new AdempiereException("Payment was already reconciled")
-					.setParameter("reconcileRef", reconcileRef)
-					.setParameter("currentReconcileRef", currentReconcileRef)
+			throw new AdempiereException("Payment with DocumentNo=" + payment.getDocumentNo() + " is already reconciled. Maybe there is a duplicated bankstatement line?")
+					.setParameter("C_Payment", payment)
+					.setParameter("currentlyExistingReconcileRef", currentReconcileRef)
+					.setParameter("newReconcileRef", reconcileRef)
 					.appendParametersToMessage();
 		}
 
