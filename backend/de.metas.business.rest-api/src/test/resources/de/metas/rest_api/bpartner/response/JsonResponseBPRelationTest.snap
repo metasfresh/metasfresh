@@ -1,0 +1,23 @@
+de.metas.rest_api.bpartner.response.JsonResponseBPRelationTest.serializeDeserializeTest=[
+  {
+    "responseItems": [
+      {
+        "bpartnerId": 123456,
+        "locationId": 234567,
+        "targetBPartnerId": 345678,
+        "targetBPLocationId": 456789,
+        "name": "relName",
+        "description": "relDesc",
+        "externalId": "ext123",
+        "role": "MainProducer",
+        "shipTo": true,
+        "payFrom": true,
+        "billTo": true,
+        "handoverLocation": true,
+        "fetchedFrom": true,
+        "remitTo": true,
+        "active": true
+      }
+    ]
+  }
+]
