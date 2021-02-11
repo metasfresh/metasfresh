@@ -26,7 +26,7 @@ import java.math.BigDecimal;
  * generell ABWEICHENDE Lieferadresse
  */
 @Schema(description = "generell ABWEICHENDE Lieferadresse")
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T09:17:04.753Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
 public class PatientDeliveryAddress {
   @SerializedName("gender")
   private BigDecimal gender = null;

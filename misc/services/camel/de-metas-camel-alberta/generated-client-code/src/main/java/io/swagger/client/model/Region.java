@@ -21,12 +21,12 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
-import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
 /**
  * Region
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T09:17:04.753Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
 public class Region {
   @SerializedName("_id")
   private String _id = null;
@@ -38,7 +38,7 @@ public class Region {
   private String parent = null;
 
   @SerializedName("timestamp")
-  private LocalDate timestamp = null;
+  private OffsetDateTime timestamp = null;
 
   public Region _id(String _id) {
     this._id = _id;
@@ -94,7 +94,7 @@ public class Region {
     this.parent = parent;
   }
 
-  public Region timestamp(LocalDate timestamp) {
+  public Region timestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
     return this;
   }
@@ -104,11 +104,11 @@ public class Region {
    * @return timestamp
   **/
   @Schema(description = "Der Zeitstempel der letzten Änderung")
-  public LocalDate getTimestamp() {
+  public OffsetDateTime getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(LocalDate timestamp) {
+  public void setTimestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
   }
 

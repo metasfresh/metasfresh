@@ -19,4 +19,4 @@ Name | Type | Description | Notes
 **fax** | **String** | Ohne Ländervorwahl |  [optional]
 **email** | **String** |  |  [optional]
 **archived** | **Boolean** | Kennzeichen ob Patientenkontakt archiviert ist oder nicht |  [optional]
-**timestamp** | [**LocalDate**](LocalDate.md) | Der Zeitstempel der letzten Änderung |  [optional]
+**timestamp** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Änderung |  [optional]

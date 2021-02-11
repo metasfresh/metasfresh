@@ -15,4 +15,4 @@ Name | Type | Description | Notes
 **fax** | **String** |  |  [optional]
 **email** | **String** |  |  [optional]
 **website** | **String** |  |  [optional]
-**timestamp** | [**LocalDate**](LocalDate.md) | Der Zeitstempel der letzten Änderung |  [optional]
+**timestamp** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Änderung |  [optional]

@@ -22,12 +22,12 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.util.UUID;
-import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
 /**
  * CustomerMapping
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T09:17:04.753Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
 public class CustomerMapping {
   @SerializedName("_id")
   private UUID _id = null;
@@ -36,7 +36,7 @@ public class CustomerMapping {
   private String customerId = null;
 
   @SerializedName("updated")
-  private LocalDate updated = null;
+  private OffsetDateTime updated = null;
 
   public CustomerMapping _id(UUID _id) {
     this._id = _id;
@@ -74,7 +74,7 @@ public class CustomerMapping {
     this.customerId = customerId;
   }
 
-  public CustomerMapping updated(LocalDate updated) {
+  public CustomerMapping updated(OffsetDateTime updated) {
     this.updated = updated;
     return this;
   }
@@ -83,12 +83,12 @@ public class CustomerMapping {
    * Der Zeitstempel der letzten Änderung
    * @return updated
   **/
-  @Schema(description = "Der Zeitstempel der letzten Änderung")
-  public LocalDate getUpdated() {
+  @Schema(example = "2019-11-28T08:37:39.637Z", description = "Der Zeitstempel der letzten Änderung")
+  public OffsetDateTime getUpdated() {
     return updated;
   }
 
-  public void setUpdated(LocalDate updated) {
+  public void setUpdated(OffsetDateTime updated) {
     this.updated = updated;
   }
 

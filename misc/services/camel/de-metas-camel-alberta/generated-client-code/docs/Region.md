@@ -6,4 +6,4 @@ Name | Type | Description | Notes
 **_id** | **String** | Id | 
 **label** | **String** |  |  [optional]
 **parent** | **String** | Id der übergeordneten Region |  [optional]
-**timestamp** | [**LocalDate**](LocalDate.md) | Der Zeitstempel der letzten Änderung |  [optional]
+**timestamp** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Änderung |  [optional]

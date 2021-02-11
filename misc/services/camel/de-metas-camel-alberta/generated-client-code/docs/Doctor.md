@@ -14,4 +14,4 @@ Name | Type | Description | Notes
 **city** | **String** |  |  [optional]
 **phone** | **String** |  |  [optional]
 **fax** | **String** |  |  [optional]
-**timestamp** | [**LocalDate**](LocalDate.md) | Der Zeitstempel der letzten Änderung |  [optional]
+**timestamp** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Änderung |  [optional]

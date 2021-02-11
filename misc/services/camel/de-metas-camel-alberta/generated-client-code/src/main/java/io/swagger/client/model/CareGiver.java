@@ -23,12 +23,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.UUID;
-import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
 /**
  * CareGiver
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T09:17:04.753Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
 public class CareGiver {
   @SerializedName("_id")
   private UUID _id = null;
@@ -79,7 +79,7 @@ public class CareGiver {
   private Boolean archived = null;
 
   @SerializedName("timestamp")
-  private String timestamp = null;
+  private OffsetDateTime timestamp = null;
 
   public CareGiver _id(UUID _id) {
     this._id = _id;
@@ -373,7 +373,7 @@ public class CareGiver {
     this.archived = archived;
   }
 
-  public CareGiver timestamp(String timestamp) {
+  public CareGiver timestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
     return this;
   }
@@ -382,12 +382,12 @@ public class CareGiver {
    * Der Zeitstempel der letzten Änderung
    * @return timestamp
   **/
-  @Schema(description = "Der Zeitstempel der letzten Änderung")
-  public String getTimestamp() {
+  @Schema(example = "2019-11-28T08:37:39.637Z", description = "Der Zeitstempel der letzten Änderung")
+  public OffsetDateTime getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(String timestamp) {
+  public void setTimestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
   }
 

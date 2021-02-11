@@ -26,7 +26,7 @@ import org.threeten.bp.LocalDate;
  * PatientPayer
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T09:17:04.753Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
 public class PatientPayer {
   @SerializedName("payerId")
   private String payerId = null;
@@ -38,10 +38,10 @@ public class PatientPayer {
   private String numberOfInsured = null;
 
   @SerializedName("copaymentFromDate")
-  private String copaymentFromDate = null;
+  private LocalDate copaymentFromDate = null;
 
   @SerializedName("copaymentToDate")
-  private String copaymentToDate = null;
+  private LocalDate copaymentToDate = null;
 
   public PatientPayer payerId(String payerId) {
     this.payerId = payerId;
@@ -97,7 +97,7 @@ public class PatientPayer {
     this.numberOfInsured = numberOfInsured;
   }
 
-  public PatientPayer copaymentFromDate(String copaymentFromDate) {
+  public PatientPayer copaymentFromDate(LocalDate copaymentFromDate) {
     this.copaymentFromDate = copaymentFromDate;
     return this;
   }
@@ -107,15 +107,15 @@ public class PatientPayer {
    * @return copaymentFromDate
   **/
   @Schema(example = "Mon Jan 01 00:00:00 GMT 2018", description = "Zuzahlungsbefreit ab Datum - Feld bleibt leer, wenn keine Zuzahlungsbefreiung")
-  public String getCopaymentFromDate() {
+  public LocalDate getCopaymentFromDate() {
     return copaymentFromDate;
   }
 
-  public void setCopaymentFromDate(String copaymentFromDate) {
+  public void setCopaymentFromDate(LocalDate copaymentFromDate) {
     this.copaymentFromDate = copaymentFromDate;
   }
 
-  public PatientPayer copaymentToDate(String copaymentToDate) {
+  public PatientPayer copaymentToDate(LocalDate copaymentToDate) {
     this.copaymentToDate = copaymentToDate;
     return this;
   }
@@ -125,11 +125,11 @@ public class PatientPayer {
    * @return copaymentToDate
   **/
   @Schema(example = "Wed Jan 31 00:00:00 GMT 2018", description = "Zuzahlungsbefreit bis Datum - Feld bleibt leer, wenn keine Zuzahlungsbefreiung")
-  public String getCopaymentToDate() {
+  public LocalDate getCopaymentToDate() {
     return copaymentToDate;
   }
 
-  public void setCopaymentToDate(String copaymentToDate) {
+  public void setCopaymentToDate(LocalDate copaymentToDate) {
     this.copaymentToDate = copaymentToDate;
   }
 

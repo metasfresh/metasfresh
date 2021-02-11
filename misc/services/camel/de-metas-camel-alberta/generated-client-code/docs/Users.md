@@ -7,4 +7,4 @@ Name | Type | Description | Notes
 **firstName** | **String** |  |  [optional]
 **lastName** | **String** |  |  [optional]
 **email** | **String** |  |  [optional]
-**timestamp** | [**LocalDate**](LocalDate.md) | Der Zeitstempel der letzten Änderung |  [optional]
+**timestamp** | [**OffsetDateTime**](OffsetDateTime.md) | Der Zeitstempel der letzten Änderung |  [optional]

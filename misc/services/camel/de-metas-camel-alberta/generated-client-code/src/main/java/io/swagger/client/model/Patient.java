@@ -31,11 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
 /**
  * Patient
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T09:17:04.753Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
 public class Patient {
   @SerializedName("_id")
   private UUID _id = null;
@@ -140,19 +141,19 @@ public class Patient {
   private Boolean archived = null;
 
   @SerializedName("createdAt")
-  private String createdAt = null;
+  private OffsetDateTime createdAt = null;
 
   @SerializedName("createdBy")
   private String createdBy = null;
 
   @SerializedName("updatedAt")
-  private String updatedAt = null;
+  private OffsetDateTime updatedAt = null;
 
   @SerializedName("updatedBy")
   private String updatedBy = null;
 
   @SerializedName("timestamp")
-  private String timestamp = null;
+  private OffsetDateTime timestamp = null;
 
   public Patient _id(UUID _id) {
     this._id = _id;
@@ -778,7 +779,7 @@ public class Patient {
     this.archived = archived;
   }
 
-  public Patient createdAt(String createdAt) {
+  public Patient createdAt(OffsetDateTime createdAt) {
     this.createdAt = createdAt;
     return this;
   }
@@ -787,12 +788,12 @@ public class Patient {
    * Der Zeitstempel der Anlage
    * @return createdAt
   **/
-  @Schema(description = "Der Zeitstempel der Anlage")
-  public String getCreatedAt() {
+  @Schema(example = "2019-11-28T12:24:41.324Z", description = "Der Zeitstempel der Anlage")
+  public OffsetDateTime getCreatedAt() {
     return createdAt;
   }
 
-  public void setCreatedAt(String createdAt) {
+  public void setCreatedAt(OffsetDateTime createdAt) {
     this.createdAt = createdAt;
   }
 
@@ -805,7 +806,7 @@ public class Patient {
    * Id des anlegenden Benutzers
    * @return createdBy
   **/
-  @Schema(description = "Id des anlegenden Benutzers")
+  @Schema(example = "b40bae71-b219-45ce-bac6-2d81c2803f39", description = "Id des anlegenden Benutzers")
   public String getCreatedBy() {
     return createdBy;
   }
@@ -814,7 +815,7 @@ public class Patient {
     this.createdBy = createdBy;
   }
 
-  public Patient updatedAt(String updatedAt) {
+  public Patient updatedAt(OffsetDateTime updatedAt) {
     this.updatedAt = updatedAt;
     return this;
   }
@@ -823,12 +824,12 @@ public class Patient {
    * Der Zeitstempel der letzten Änderung
    * @return updatedAt
   **/
-  @Schema(description = "Der Zeitstempel der letzten Änderung")
-  public String getUpdatedAt() {
+  @Schema(example = "2019-11-28T12:24:41.324Z", description = "Der Zeitstempel der letzten Änderung")
+  public OffsetDateTime getUpdatedAt() {
     return updatedAt;
   }
 
-  public void setUpdatedAt(String updatedAt) {
+  public void setUpdatedAt(OffsetDateTime updatedAt) {
     this.updatedAt = updatedAt;
   }
 
@@ -841,7 +842,7 @@ public class Patient {
    * Id des ändernden Benutzers
    * @return updatedBy
   **/
-  @Schema(description = "Id des ändernden Benutzers")
+  @Schema(example = "b40bae71-b219-45ce-bac6-2d81c2803f39", description = "Id des ändernden Benutzers")
   public String getUpdatedBy() {
     return updatedBy;
   }
@@ -850,7 +851,7 @@ public class Patient {
     this.updatedBy = updatedBy;
   }
 
-  public Patient timestamp(String timestamp) {
+  public Patient timestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
     return this;
   }
@@ -859,12 +860,12 @@ public class Patient {
    * Der letzte Zeitstempel in Alberta
    * @return timestamp
   **/
-  @Schema(description = "Der letzte Zeitstempel in Alberta")
-  public String getTimestamp() {
+  @Schema(example = "2019-11-28T12:24:41.324Z", description = "Der letzte Zeitstempel in Alberta")
+  public OffsetDateTime getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(String timestamp) {
+  public void setTimestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
   }
 

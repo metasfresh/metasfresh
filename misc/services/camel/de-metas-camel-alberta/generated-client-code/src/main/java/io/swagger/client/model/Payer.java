@@ -22,12 +22,12 @@ import com.google.gson.stream.JsonWriter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.math.BigDecimal;
-import org.threeten.bp.LocalDate;
+import org.threeten.bp.OffsetDateTime;
 /**
  * Payer
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T09:17:04.753Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
 public class Payer {
   @SerializedName("_id")
   private String _id = null;
@@ -42,7 +42,7 @@ public class Payer {
   private String ikNumber = null;
 
   @SerializedName("timestamp")
-  private LocalDate timestamp = null;
+  private OffsetDateTime timestamp = null;
 
   public Payer _id(String _id) {
     this._id = _id;
@@ -118,7 +118,7 @@ public class Payer {
     this.ikNumber = ikNumber;
   }
 
-  public Payer timestamp(LocalDate timestamp) {
+  public Payer timestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
     return this;
   }
@@ -128,11 +128,11 @@ public class Payer {
    * @return timestamp
   **/
   @Schema(description = "Der Zeitstempel der letzten Änderung")
-  public LocalDate getTimestamp() {
+  public OffsetDateTime getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(LocalDate timestamp) {
+  public void setTimestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
   }
 
