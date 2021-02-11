@@ -22,6 +22,8 @@
 
 package de.metas.remittanceadvice.interceptor;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.logging.LogManager;
 import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceId;
 import de.metas.remittanceadvice.RemittanceAdviceLine;
@@ -34,12 +36,15 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_RemittanceAdvice_Line.class)
 @Component
 public class C_RemittanceAdvice_Line
 {
+	private static Logger log = LogManager.getLogger(C_RemittanceAdvice_Line.class);
+
 	final RemittanceAdviceRepository remittanceAdviceRepo;
 	final RemittanceAdviceService remittanceAdviceService;
 
@@ -52,7 +57,8 @@ public class C_RemittanceAdvice_Line
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
 			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_C_Invoice_ID,
 					I_C_RemittanceAdvice_Line.COLUMNNAME_RemittanceAmt,
-					I_C_RemittanceAdvice_Line.COLUMNNAME_PaymentDiscountAmt })
+					I_C_RemittanceAdvice_Line.COLUMNNAME_PaymentDiscountAmt,
+					I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount})
 	public void resolveRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
 		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
@@ -76,5 +82,26 @@ public class C_RemittanceAdvice_Line
 		}
 
 		remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE },
+			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_RemittanceAmt,
+					I_C_RemittanceAdvice_Line.COLUMNNAME_PaymentDiscountAmt,
+					I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount})
+	public void computeRemittanceSums(@NonNull final I_C_RemittanceAdvice_Line record)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
+		final BooleanWithReason computationDone = remittanceAdvice.recomputeSumsFromLines();
+
+		if (computationDone.isFalse())
+		{
+			log.warn("*** WARN computeRemittanceSums: remittance sums were not recomputed due to: {}", computationDone.getReason());
+		}
+		else
+		{
+			remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
+		}
 	}
 }

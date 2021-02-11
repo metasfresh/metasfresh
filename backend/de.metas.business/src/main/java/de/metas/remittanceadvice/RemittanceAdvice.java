@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -81,8 +82,6 @@ public class RemittanceAdvice
 	@NonNull
 	private final DocTypeId docTypeId;
 
-	@NonNull
-	private final BigDecimal remittedAmountSum;
 
 	@NonNull
 	private final CurrencyId remittedAmountCurrencyId;
@@ -91,18 +90,19 @@ public class RemittanceAdvice
 	private final Instant sendDate;
 
 	@Nullable
-	private final BigDecimal serviceFeeAmount;
-
-	@Nullable
 	private final CurrencyId serviceFeeCurrencyId;
-
-	@Nullable
-	private final BigDecimal paymentDiscountAmountSum;
 
 	@Nullable
 	private final String additionalNotes;
 
 	private final boolean isImported;
+
+	@Nullable
+	private BigDecimal serviceFeeAmount;
+	@NonNull
+	private BigDecimal remittedAmountSum;
+	@Nullable
+	private BigDecimal paymentDiscountAmountSum;
 
 	@Nullable
 	private PaymentId paymentId;
@@ -133,5 +133,44 @@ public class RemittanceAdvice
 					.appendParametersToMessage()
 					.setParameter("Lines", lineIdsWithProblems);
 		}
+	}
+
+	/**
+	 * @return true, if any recompute logic was applied, false otherwise
+	 */
+	@NonNull
+	public BooleanWithReason recomputeSumsFromLines()
+	{
+		if (isImported)
+		{
+			//leave the values as is if the record was imported
+			return BooleanWithReason.falseBecause("The remittance advice is imported!");
+		}
+
+		remittedAmountSum = BigDecimal.ZERO;
+		paymentDiscountAmountSum = BigDecimal.ZERO;
+		serviceFeeAmount = BigDecimal.ZERO;
+
+		for (final RemittanceAdviceLine line : lines)
+		{
+			remittedAmountSum = remittedAmountSum.add(line.getRemittedAmount().toBigDecimal());
+
+			if (line.getPaymentDiscountAmount() != null)
+			{
+				paymentDiscountAmountSum = paymentDiscountAmountSum.add(line.getPaymentDiscountAmount().toBigDecimal());
+			}
+
+			if (line.getServiceFeeAmount() != null)
+			{
+				serviceFeeAmount = serviceFeeAmount.add(line.getServiceFeeAmount().toBigDecimal());
+			}
+		}
+
+		if (serviceFeeAmount.signum() != 0 && serviceFeeCurrencyId == null)
+		{
+			throw new AdempiereException("Missing ServiceFeeCurrencyID!");
+		}
+
+		return BooleanWithReason.TRUE;
 	}
 }
