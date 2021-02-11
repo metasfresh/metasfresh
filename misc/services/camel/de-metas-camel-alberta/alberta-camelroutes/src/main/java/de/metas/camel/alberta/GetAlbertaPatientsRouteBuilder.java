@@ -22,6 +22,7 @@
 
 package de.metas.camel.alberta;
 
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.PatientApi;
@@ -38,10 +39,10 @@ public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 				.process(exchange -> {
 
 					final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
-					var apiKey = request.getParameters().get("APIKey");
-					var tenant = request.getParameters().get("Tenant");
-					var updatedAfter = request.getParameters().get("UpdatedAfter");
-					var basePath = request.getParameters().get("BasePath");
+					var apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
+					var tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
+					var updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
+					var basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 
 					final var apiClient = new ApiClient().setBasePath(basePath);
 
