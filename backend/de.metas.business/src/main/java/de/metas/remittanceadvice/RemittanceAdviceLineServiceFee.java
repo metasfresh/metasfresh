@@ -28,14 +28,15 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class RemittanceAdviceLineServiceFee
 {
-	private BPartnerId serviceBPartnerId;
-	private ProductId serviceProductId;
-	private InvoiceId serviceFeeInvoiceId;
-	private TaxId serviceFeeTaxId;
+	BPartnerId serviceBPartnerId;
+	ProductId serviceProductId;
+	InvoiceId serviceFeeInvoiceId;
+	TaxId serviceFeeTaxId;
 
 }

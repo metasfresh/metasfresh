@@ -47,6 +47,7 @@ public class C_RemittanceAdvice_Resolve extends JavaProcess
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
+
 		final List<RemittanceAdvice> remittanceAdvices = remittanceAdviceRepo.getRemittanceAdvices(processFilter);
 
 		for (final RemittanceAdvice remittanceAdvice : remittanceAdvices)

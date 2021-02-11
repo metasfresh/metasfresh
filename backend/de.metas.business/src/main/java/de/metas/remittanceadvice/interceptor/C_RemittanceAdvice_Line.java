@@ -25,15 +25,16 @@ package de.metas.remittanceadvice.interceptor;
 import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceId;
 import de.metas.remittanceadvice.RemittanceAdviceLine;
+import de.metas.remittanceadvice.RemittanceAdviceLineId;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
 
 @Interceptor(I_C_RemittanceAdvice_Line.class)
 @Component
@@ -49,19 +50,31 @@ public class C_RemittanceAdvice_Line
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
-			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_C_Invoice_ID, I_C_RemittanceAdvice_Line.COLUMNNAME_RemittanceAmt,
+			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_C_Invoice_ID,
+					I_C_RemittanceAdvice_Line.COLUMNNAME_RemittanceAmt,
 					I_C_RemittanceAdvice_Line.COLUMNNAME_PaymentDiscountAmt })
 	public void resolveRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
 
-		if ( record.getC_Invoice_ID() > 0)
+		final RemittanceAdviceLineId remittanceAdviceLineId = RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID());
+
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceAdvice.getLine(remittanceAdviceLineId)
+				.orElseThrow(() -> new AdempiereException("No line found under RemittanceAdviceId: {} with lineId: {}")
+						.appendParametersToMessage()
+						.setParameter("RemittanceAdviceId", remittanceAdviceId)
+						.setParameter("RemittanceAdviceLineId", remittanceAdviceLineId));
+
+		if (record.getC_Invoice_ID() > 0)
 		{
-			final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID()));
-			if(remittanceAdvice != null){
-				final RemittanceAdviceLine remittanceAdviceLine = remittanceAdviceRepo.toRemittanceAdviceLine(record, remittanceAdvice.getRemittedAmountCurrencyId());
-				remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
-				remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
-			}
+			remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
 		}
+		else
+		{
+			remittanceAdviceLine.removeInvoice();
+		}
+
+		remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
 	}
 }

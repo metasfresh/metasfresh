@@ -22,6 +22,7 @@
 
 package de.metas.remittanceadvice;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
@@ -45,10 +46,8 @@ import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,7 +61,7 @@ public class RemittanceAdviceRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public RemittanceAdvice createRemittanceAdvice(@NonNull final CreateRemittanceAdviceRequest remittanceAdviceRequest)
+	public RemittanceAdvice createRemittanceAdviceHeader(@NonNull final CreateRemittanceAdviceRequest remittanceAdviceRequest)
 	{
 		final I_C_RemittanceAdvice record = buildRemittanceAdviceRecord(remittanceAdviceRequest);
 		saveRecord(record);
@@ -78,7 +77,7 @@ public class RemittanceAdviceRepository
 	}
 
 	@NonNull
-	public List<RemittanceAdvice> getRemittanceAdvices(final IQueryFilter<I_C_RemittanceAdvice> filter)
+	public ImmutableList<RemittanceAdvice> getRemittanceAdvices(final IQueryFilter<I_C_RemittanceAdvice> filter)
 	{
 		return queryBL.createQueryBuilder(I_C_RemittanceAdvice.class)
 				.addOnlyActiveRecordsFilter()
@@ -87,105 +86,80 @@ public class RemittanceAdviceRepository
 				.list()
 				.stream()
 				.map(this::toRemittanceAdvice)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 
 	}
 
-	@Nullable
+	@NonNull
 	public RemittanceAdvice getRemittanceAdvice(final RemittanceAdviceId remittanceAdviceId)
 	{
 		final I_C_RemittanceAdvice record = queryBL.createQueryBuilder(I_C_RemittanceAdvice.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_RemittanceAdvice.COLUMN_C_RemittanceAdvice_ID, remittanceAdviceId)
 				.create()
-				.firstOnly(I_C_RemittanceAdvice.class);
+				.firstOnlyNotNull(I_C_RemittanceAdvice.class);
 
-		if (record != null)
-		{
-			return toRemittanceAdvice(record);
-		}
-		else
-		{
-			return null;
-		}
+		return toRemittanceAdvice(record);
 	}
 
-	public void updateRemittanceAdvice(final RemittanceAdvice remittanceAdvice)
+	public void updateRemittanceAdvice(@NonNull final RemittanceAdvice remittanceAdvice) //why support null?
 	{
-		if (remittanceAdvice != null)
-		{
-			final I_C_RemittanceAdvice record = toRemittanceAdvice(remittanceAdvice);
-			if (record != null)
-			{
-				saveRecord(record);
-			}
+		final I_C_RemittanceAdvice record = toRemittanceAdviceRecord(remittanceAdvice);
 
-			final List<I_C_RemittanceAdvice_Line> recordLines = remittanceAdvice.getLines()
-					.stream()
-					.map(this::toRemittanceAdviceLine)
-					.filter(Objects::nonNull)
-					.collect(Collectors.toList());
+		saveRecord(record);
 
-			saveAll(recordLines);
-		}
+		final List<I_C_RemittanceAdvice_Line> recordLines = remittanceAdvice.getLines()
+				.stream()
+				.map(this::toRemittanceAdviceLine)
+				.collect(Collectors.toList());
+
+		saveAll(recordLines);
 	}
 
-	public void updateRemittanceAdviceLine(final RemittanceAdviceLine remittanceAdviceLine){
+	public void updateRemittanceAdviceLine(@NonNull final RemittanceAdviceLine remittanceAdviceLine)
+	{
 		final I_C_RemittanceAdvice_Line record = toRemittanceAdviceLine(remittanceAdviceLine);
-		if(record != null){
-			saveRecord(record);
-		}
+		saveRecord(record);
 	}
 
-	@Nullable
-	private I_C_RemittanceAdvice_Line toRemittanceAdviceLine(final RemittanceAdviceLine remittanceAdviceLine){
+	@NonNull
+	private I_C_RemittanceAdvice_Line toRemittanceAdviceLine(final RemittanceAdviceLine remittanceAdviceLine)
+	{
+		final I_C_RemittanceAdvice_Line record = getLineRecordById(remittanceAdviceLine.getRemittanceAdviceLineId());
 
-		final I_C_RemittanceAdvice_Line record = queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_RemittanceAdvice_Line.COLUMN_C_RemittanceAdvice_Line_ID, remittanceAdviceLine.getRemittanceAdviceLineId())
-				.create()
-				.firstOnly(I_C_RemittanceAdvice_Line.class);
-
-		if(record != null){
-			record.setInvoiceAmt(remittanceAdviceLine.getInvoiceAmt());
-			record.setInvoiceAmtInREMADVCurrency(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency());
-			record.setOverUnderAmt(remittanceAdviceLine.getOverUnderAmt());
-			record.setC_Invoice_Currency_ID(remittanceAdviceLine.getInvoiceCurrencyId() != null ? remittanceAdviceLine.getInvoiceCurrencyId().getRepoId() : record.getC_Invoice_Currency_ID());
-			record.setBill_BPartner_ID(remittanceAdviceLine.getBillBPartnerId() != null ? remittanceAdviceLine.getBillBPartnerId().getRepoId() : record.getBill_BPartner_ID());
-			record.setInvoiceDate(TimeUtil.asTimestamp(remittanceAdviceLine.getDateInvoiced()));
-			record.setService_Fee_Invoice_ID(remittanceAdviceLine.getServiceFeeInvoiceId() != null ? remittanceAdviceLine.getServiceFeeInvoiceId().getRepoId() : record.getService_Fee_Invoice_ID());
-			record.setService_Product_ID(remittanceAdviceLine.getServiceFeeProductId() != null ? remittanceAdviceLine.getServiceFeeProductId().getRepoId() : record.getService_Product_ID());
-			record.setService_BPartner_ID(remittanceAdviceLine.getServiceFeeBPartnerId() != null ? remittanceAdviceLine.getServiceFeeBPartnerId().getRepoId() : record.getService_BPartner_ID());
-			record.setService_Tax_ID(remittanceAdviceLine.getTaxId() != null ? remittanceAdviceLine.getTaxId().getRepoId() : record.getService_Tax_ID());
-			record.setIsInvoiceResolved(remittanceAdviceLine.isInvoiceResolved());
-			record.setIsInvoiceDocTypeValid(remittanceAdviceLine.isInvoiceDocTypeValid());
-			record.setIsAmountValid(remittanceAdviceLine.isAmountValid());
-			record.setIsInvoiceDateValid(remittanceAdviceLine.isInvoiceDateValid());
-			record.setIsBPartnerValid(remittanceAdviceLine.isBPartnerValid());
-			record.setIsServiceColumnsResolved(remittanceAdviceLine.isServiceFeeResolved());
-		}
+		record.setInvoiceAmt(remittanceAdviceLine.getInvoiceAmt());
+		record.setInvoiceAmtInREMADVCurrency(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency());
+		record.setOverUnderAmt(remittanceAdviceLine.getOverUnderAmt());
+		record.setC_Invoice_Currency_ID(remittanceAdviceLine.getInvoiceCurrencyId() != null ? remittanceAdviceLine.getInvoiceCurrencyId().getRepoId() : record.getC_Invoice_Currency_ID());
+		record.setBill_BPartner_ID(remittanceAdviceLine.getBillBPartnerId() != null ? remittanceAdviceLine.getBillBPartnerId().getRepoId() : record.getBill_BPartner_ID());
+		record.setInvoiceDate(TimeUtil.asTimestamp(remittanceAdviceLine.getDateInvoiced()));
+		record.setService_Fee_Invoice_ID(remittanceAdviceLine.getServiceFeeInvoiceId() != null ? remittanceAdviceLine.getServiceFeeInvoiceId().getRepoId() : record.getService_Fee_Invoice_ID());
+		record.setService_Product_ID(remittanceAdviceLine.getServiceFeeProductId() != null ? remittanceAdviceLine.getServiceFeeProductId().getRepoId() : record.getService_Product_ID());
+		record.setService_BPartner_ID(remittanceAdviceLine.getServiceFeeBPartnerId() != null ? remittanceAdviceLine.getServiceFeeBPartnerId().getRepoId() : record.getService_BPartner_ID());
+		record.setService_Tax_ID(remittanceAdviceLine.getTaxId() != null ? remittanceAdviceLine.getTaxId().getRepoId() : record.getService_Tax_ID());
+		record.setIsInvoiceResolved(remittanceAdviceLine.isInvoiceResolved());
+		record.setIsInvoiceDocTypeValid(remittanceAdviceLine.isInvoiceDocTypeValid());
+		record.setIsAmountValid(remittanceAdviceLine.isAmountValid());
+		record.setIsInvoiceDateValid(remittanceAdviceLine.isInvoiceDateValid());
+		record.setIsBPartnerValid(remittanceAdviceLine.isBPartnerValid());
+		record.setIsServiceColumnsResolved(remittanceAdviceLine.isServiceFeeResolved());
 
 		return record;
 	}
 
-	@Nullable
-	private I_C_RemittanceAdvice toRemittanceAdvice(final RemittanceAdvice remittanceAdvice)
+	@NonNull
+	private I_C_RemittanceAdvice toRemittanceAdviceRecord(@NonNull final RemittanceAdvice remittanceAdvice)
 	{
-		final I_C_RemittanceAdvice record = queryBL.createQueryBuilder(I_C_RemittanceAdvice.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_RemittanceAdvice.COLUMN_C_RemittanceAdvice_ID, remittanceAdvice.getRemittanceAdviceId())
-				.create()
-				.firstOnly(I_C_RemittanceAdvice.class);
+		final I_C_RemittanceAdvice record = getRecordById(remittanceAdvice.getRemittanceAdviceId());
 
-		if(record != null){
-			record.setDocStatus(remittanceAdvice.getDocStatus());
-			record.setRemittanceAmt(remittanceAdvice.getRemittedAmountSum());
-			record.setSendAt(TimeUtil.asTimestamp(remittanceAdvice.getSendDate()));
-			record.setServiceFeeAmount(remittanceAdvice.getServiceFeeAmount());
-			record.setPaymentDiscountAmountSum(remittanceAdvice.getPaymentDiscountAmountSum());
-			record.setC_Payment_ID(remittanceAdvice.getPaymentId() != null ? remittanceAdvice.getPaymentId().getRepoId() : record.getC_Payment_ID());
-			record.setIsSOTrx(remittanceAdvice.isSOTrx());
-		}
+		//todo for cif-ps: set all fields that are set when creating the record + your new ones
+		record.setDocStatus(remittanceAdvice.getDocStatus());
+		record.setRemittanceAmt(remittanceAdvice.getRemittedAmountSum());
+		record.setSendAt(TimeUtil.asTimestamp(remittanceAdvice.getSendDate()));
+		record.setServiceFeeAmount(remittanceAdvice.getServiceFeeAmount());
+		record.setPaymentDiscountAmountSum(remittanceAdvice.getPaymentDiscountAmountSum());
+		record.setC_Payment_ID(remittanceAdvice.getPaymentId() != null ? remittanceAdvice.getPaymentId().getRepoId() : record.getC_Payment_ID());
+		record.setIsSOTrx(remittanceAdvice.isSOTrx());
 
 		return record;
 
@@ -294,7 +268,7 @@ public class RemittanceAdviceRepository
 	}
 
 	@NonNull
-	public RemittanceAdviceLine toRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record, @NonNull final CurrencyId remittanceCurrencyId)
+	private RemittanceAdviceLine toRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record, @NonNull final CurrencyId remittanceCurrencyId)
 	{
 		final CurrencyCode remittanceCurrencyCode = currencyDAO.getCurrencyCodeById(remittanceCurrencyId);
 
@@ -302,6 +276,8 @@ public class RemittanceAdviceRepository
 				(amountValue) -> amountValue != null ? Amount.of(amountValue, remittanceCurrencyCode) : null;
 
 		return RemittanceAdviceLine.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+
 				.remittanceAdviceLineId(RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID()))
 
 				.remittanceAdviceId(RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID()))
@@ -359,5 +335,24 @@ public class RemittanceAdviceRepository
 				.stream()
 				.map(line -> toRemittanceAdviceLine(line, currencyId))
 				.collect(Collectors.toList());
+	}
+
+	@NonNull
+	private I_C_RemittanceAdvice_Line getLineRecordById(@NonNull final RemittanceAdviceLineId remittanceAdviceLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_RemittanceAdvice_Line.COLUMN_C_RemittanceAdvice_Line_ID, remittanceAdviceLineId)
+				.create()
+				.firstOnlyNotNull(I_C_RemittanceAdvice_Line.class);
+	}
+
+	@NonNull
+	private I_C_RemittanceAdvice getRecordById(@NonNull final RemittanceAdviceId remittanceAdviceId)
+	{
+		return queryBL.createQueryBuilder(I_C_RemittanceAdvice.class)
+				.addEqualsFilter(I_C_RemittanceAdvice.COLUMNNAME_C_RemittanceAdvice_ID, remittanceAdviceId)
+				.create()
+				.firstOnlyNotNull(I_C_RemittanceAdvice.class);
 	}
 }

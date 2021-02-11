@@ -23,23 +23,40 @@
 package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
-import lombok.Data;
+import lombok.NonNull;
+import lombok.Value;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
 
-@Data
+@Value
 @Builder
 public class RemittanceAdviceLineInvoiceDetails
 {
-	private BPartnerId billBPartnerId;
-	private BigDecimal invoiceAmt;
-	private BigDecimal invoiceAmtInREMADVCurrency;
-	private BigDecimal overUnderAmt;
-	private CurrencyId invoiceCurrencyId;
-	private String invoiceDocType;
-	private Timestamp invoiceDate;
+	@NonNull
+	InvoiceId invoiceId;
 
+	@NonNull
+	BPartnerId billBPartnerId;
+
+	@NonNull
+	BigDecimal invoiceAmt;
+
+	@NonNull
+	BigDecimal invoiceAmtInREMADVCurrency;
+
+	@NonNull
+	BigDecimal overUnderAmt;
+
+	@NonNull
+	CurrencyId invoiceCurrencyId;
+
+	@NonNull
+	String invoiceDocType;
+
+	@NonNull
+	Instant invoiceDate;
 }

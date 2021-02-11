@@ -23,20 +23,30 @@
 package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.Currency;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -44,129 +54,167 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @Service
 public class RemittanceAdviceService
 {
-	final MoneyService moneyService;
-	final RemittanceAdviceRepository remittanceAdviceRepo;
-	final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private static final Logger logger = LogManager.getLogger(RemittanceAdviceService.class);
 
-	public RemittanceAdviceService(final MoneyService moneyService, final RemittanceAdviceRepository remittanceAdviceRepo)
+	private final MoneyService moneyService;
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
+	public RemittanceAdviceService(final MoneyService moneyService)
 	{
 		this.moneyService = moneyService;
-		this.remittanceAdviceRepo = remittanceAdviceRepo;
 	}
 
-	public void resolveRemittanceAdviceLine(final RemittanceAdvice remittanceAdvice, final RemittanceAdviceLine remittanceAdviceLine)
+	public void resolveRemittanceAdviceLine(
+			@NonNull final RemittanceAdvice remittanceAdvice,
+			@NonNull final RemittanceAdviceLine remittanceAdviceLine)
 	{
-		final I_C_Invoice invoice;
-		final InvoiceId invoiceId = remittanceAdviceLine.getInvoiceId();
+		final Optional<I_C_Invoice> invoiceOptional = resolveInvoice(remittanceAdviceLine);
 
-		if (invoiceId == null)
+		if (!invoiceOptional.isPresent())
 		{
-			final String invoiceDocumentNo = getInvoiceDocumentNo(Objects.requireNonNull(remittanceAdviceLine.getInvoiceIdentifier()));
-			invoice = getInvoiceByDocNumber(invoiceDocumentNo, remittanceAdvice.getOrgId());
-		}
-		else
-		{
-			invoice = getInvoice(invoiceId);
+			logger.warn("*** WARN no invoice found for remittanceLine: {}", remittanceAdviceLine);
+			return;
 		}
 
-		if (invoice != null)
-		{
-			final BigDecimal invoiceAmtInREMADVCurrency;
-			if (remittanceAdvice.getRemittedAmountCurrencyId().getRepoId() != invoice.getC_Currency_ID())
-			{
-				invoiceAmtInREMADVCurrency = getInvoiceAmountInRemAdvCurrency(remittanceAdvice, invoice);
-			}
-			else
-			{
-				invoiceAmtInREMADVCurrency = invoice.getGrandTotal();
-			}
+		final I_C_Invoice invoice = invoiceOptional.get();
 
-			BigDecimal overUnderAmt = remittanceAdviceLine.getRemittedAmount().getAsBigDecimal();
-			if (remittanceAdviceLine.getPaymentDiscountAmount() != null)
-			{
-				overUnderAmt = overUnderAmt.add(remittanceAdviceLine.getPaymentDiscountAmount().getAsBigDecimal());
-			}
-			overUnderAmt = overUnderAmt.subtract(invoiceAmtInREMADVCurrency);
+		final RemittanceAdviceLineInvoiceDetails remittanceAdviceLineInvoiceDetails =
+				buildInvoiceDetailsForRemittanceLine(invoice, remittanceAdvice, remittanceAdviceLine);
 
-			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocType_ID());
-
-			final RemittanceAdviceLineInvoiceDetails remittanceAdviceLineInvoiceDetails = RemittanceAdviceLineInvoiceDetails.builder()
-					.billBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
-					.invoiceAmt(invoice.getGrandTotal())
-					.invoiceCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
-					.invoiceAmtInREMADVCurrency(invoiceAmtInREMADVCurrency)
-					.overUnderAmt(overUnderAmt)
-					.invoiceDocType(invoiceDocType != null ? invoiceDocType.getDocBaseType() : null)
-					.invoiceDate(invoice.getDateInvoiced())
-					.build();
-
-			remittanceAdviceLine.processIsBPartnerValid(remittanceAdviceLineInvoiceDetails, remittanceAdvice.getRemittanceAdviceBPartnerId());
-
-			remittanceAdviceLine.syncWithInvoice(remittanceAdviceLineInvoiceDetails);
-		}
+		remittanceAdviceLine.syncWithInvoice(remittanceAdviceLineInvoiceDetails);
 	}
 
 	public void resolveRemittanceAdviceLines(final RemittanceAdvice remittanceAdvice)
 	{
-		final List<RemittanceAdviceLine> remittanceAdviceLines = remittanceAdvice.getLines();
-
-		for (final RemittanceAdviceLine remittanceAdviceLine : remittanceAdviceLines)
-		{
-			resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
-		}
+		remittanceAdvice.getLines().forEach(line -> resolveRemittanceAdviceLine(remittanceAdvice, line));
 	}
 
-	private I_C_Invoice getInvoice(final InvoiceId invoiceId)
+	@NonNull
+	private BigDecimal getInvoiceAmountInRemAdvCurrency(@NonNull final CurrencyId remittanceCurrencyId, @NonNull final I_C_Invoice invoice)
 	{
-		final I_C_Invoice invoice;
-		invoice = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice.class)
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.create()
-				.first();
-		return invoice;
-	}
-
-	private BigDecimal getInvoiceAmountInRemAdvCurrency(final RemittanceAdvice remittanceAdvice, final I_C_Invoice invoice)
-	{
-		final LocalDate conversionDate = TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate());
+		final LocalDate conversionDate = LocalDate.now();
 		final CurrencyConversionContext currencyConversionContext =
 				currencyConversionBL.createCurrencyConversionContext(conversionDate,
 																	 ConversionTypeMethod.Spot,
-																	 remittanceAdvice.getClientId(),
-																	 remittanceAdvice.getOrgId());
+																	 Env.getClientId(),
+																	 OrgId.ofRepoId(invoice.getAD_Org_ID()));
 
-		final Money invoiceAmtInREMADVCurrency = moneyService.convertMoneyToCurrency(Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID())),
-																					 remittanceAdvice.getRemittedAmountCurrencyId(), currencyConversionContext);
+		final Money invoiceGrandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+
+		final Money invoiceAmtInREMADVCurrency = moneyService
+				.convertMoneyToCurrency(invoiceGrandTotal, remittanceCurrencyId, currencyConversionContext);
 
 		return invoiceAmtInREMADVCurrency.toBigDecimal();
 	}
 
-	@Nullable
-	private String getInvoiceDocumentNo(final String invoiceIdentifier)
+	@NonNull
+	private String getInvoiceDocumentNo(@NonNull final String invoiceIdentifier) //todo cif-ps: FIX it!
 	{
-		return invoiceIdentifier != null ? invoiceIdentifier.substring(4).trim() : null;
+		return invoiceIdentifier.substring(4).trim();
 	}
 
-	@Nullable
-	private I_C_Invoice getInvoiceByDocNumber(final String documentNo, final OrgId orgId)
+	@NonNull
+	private Optional<I_C_Invoice> resolveInvoice(@NonNull final RemittanceAdviceLine remittanceAdviceLine)
 	{
-		if (documentNo != null)
+		final InvoiceId invoiceId = remittanceAdviceLine.getInvoiceId();
+
+		if (invoiceId != null)
 		{
-			return Services.get(IQueryBL.class)
-					.createQueryBuilder(I_C_Invoice.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Invoice.COLUMN_DocumentNo, documentNo)
-					.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
-					.create()
-					.firstOnly(I_C_Invoice.class);
+			return Optional.of(invoiceDAO.getByIdInTrx(invoiceId));
 		}
 
-		return null;
+		final String invoiceIdentifier = remittanceAdviceLine.getInvoiceIdentifier();
+
+		if (Check.isEmpty(invoiceIdentifier))
+		{
+			return Optional.empty();
+		}
+
+		final String invoiceDocumentNo = getInvoiceDocumentNo(invoiceIdentifier);
+
+		return invoiceDAO.getByDocumentNo(invoiceDocumentNo, remittanceAdviceLine.getOrgId(), I_C_Invoice.class);
+	}
+
+	private RemittanceAdviceLineInvoiceDetails buildInvoiceDetailsForRemittanceLine(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final RemittanceAdvice remittanceAdvice,
+			@NonNull final RemittanceAdviceLine remittanceAdviceLine)
+	{
+		final Supplier<Boolean> doesRemittanceCurrEqualInvoiceCurr =
+				() -> remittanceAdvice.getRemittedAmountCurrencyId().getRepoId() == invoice.getC_Currency_ID();
+
+		final BigDecimal invoiceAmtInREMADVCurrency = doesRemittanceCurrEqualInvoiceCurr.get()
+				? invoice.getGrandTotal()
+				: getInvoiceAmountInRemAdvCurrency(remittanceAdvice.getRemittedAmountCurrencyId(), invoice);
+
+		BigDecimal overUnderAmt = remittanceAdviceLine.getRemittedAmount().toBigDecimal();
+
+		final BigDecimal serviceFeeInREMADVCurrency = getServiceFeeInREMADVCurrency(remittanceAdviceLine)
+				.orElse(BigDecimal.ZERO);
+
+		overUnderAmt = overUnderAmt.add(serviceFeeInREMADVCurrency);
+
+		if (remittanceAdviceLine.getPaymentDiscountAmount() != null)
+		{
+			overUnderAmt = overUnderAmt.add(remittanceAdviceLine.getPaymentDiscountAmount().toBigDecimal());
+		}
+
+		overUnderAmt = overUnderAmt.subtract(invoiceAmtInREMADVCurrency);
+
+		final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocType_ID());
+
+		return RemittanceAdviceLineInvoiceDetails.builder()
+				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.billBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
+				.invoiceAmt(invoice.getGrandTotal())
+				.invoiceCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
+				.invoiceAmtInREMADVCurrency(invoiceAmtInREMADVCurrency)
+				.overUnderAmt(overUnderAmt)
+				.invoiceDocType(invoiceDocType.getDocBaseType())
+				.invoiceDate(TimeUtil.asInstant(invoice.getDateInvoiced()))
+				.build();
+	}
+
+	@NonNull
+	private Optional<BigDecimal> getServiceFeeInREMADVCurrency(@NonNull final RemittanceAdviceLine remittanceAdviceLine)
+	{
+		if (remittanceAdviceLine.getServiceFeeAmount() == null
+				|| remittanceAdviceLine.getServiceFeeAmount().isZero() )
+		{
+			return Optional.empty();
+		}
+
+		final Amount serviceFeeAmount = remittanceAdviceLine.getServiceFeeAmount();
+
+		if (serviceFeeAmount.getCurrencyCode().equals(remittanceAdviceLine.getRemittedAmount().getCurrencyCode()))
+		{
+			return Optional.of(serviceFeeAmount.toBigDecimal());
+		}
+
+		final LocalDate conversionDate = LocalDate.now();
+		final CurrencyConversionContext currencyConversionContext =
+				currencyConversionBL.createCurrencyConversionContext(conversionDate,
+																	 ConversionTypeMethod.Spot,
+																	 Env.getClientId(),
+																	 remittanceAdviceLine.getOrgId());
+
+		final Currency serviceFeeCurrency = currencyDAO.getByCurrencyCode(serviceFeeAmount.getCurrencyCode());
+		final Currency remittedCurrency = currencyDAO.getByCurrencyCode(remittanceAdviceLine.getRemittedAmount().getCurrencyCode());
+
+		final Money serviceFeeMoney = Money.of(serviceFeeAmount.toBigDecimal(), serviceFeeCurrency.getId());
+
+		final Money serviceFeeInRemittedCurrency = moneyService
+				.convertMoneyToCurrency(serviceFeeMoney, remittedCurrency.getId(), currencyConversionContext);
+
+		return Optional.of(serviceFeeInRemittedCurrency.toBigDecimal());
 	}
 }

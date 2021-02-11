@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Builder
@@ -104,11 +105,13 @@ public class RemittanceAdvice
 
 	private boolean isSOTrx;
 
+	@NonNull
 	private List<RemittanceAdviceLine> lines;
 
-	public BPartnerId getRemittanceAdviceBPartnerId()
+	public Optional<RemittanceAdviceLine> getLine(@NonNull final RemittanceAdviceLineId remittanceAdviceLineId)
 	{
-		return isSOTrx ?
-				sourceBPartnerId : destinationBPartnerId;
+		return lines.stream()
+				.filter(line -> line.getRemittanceAdviceLineId().equals(remittanceAdviceLineId))
+				.findFirst();
 	}
 }

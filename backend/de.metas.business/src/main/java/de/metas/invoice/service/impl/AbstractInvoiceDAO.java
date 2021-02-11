@@ -438,6 +438,19 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		return Optional.empty();
 	}
 
+
+	@Override
+	public <T extends org.compiere.model.I_C_Invoice> Optional<T> getByDocumentNo(final String documentNo, final OrgId orgId, final Class<T> modelClass)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(modelClass)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo)
+				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstOnlyOptional(modelClass);
+	}
+
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);

@@ -75,6 +75,7 @@ import java.util.Optional;
 public class CreateRemittanceAdviceService
 {
 	private static final transient Logger logger = LogManager.getLogger(CreateRemittanceAdviceService.class);
+
 	private final CurrencyRepository currencyRepository;
 	private final RemittanceAdviceRepository remittanceAdviceRepository;
 
@@ -103,7 +104,7 @@ public class CreateRemittanceAdviceService
 			{
 				final CreateRemittanceAdviceRequest remittanceAdviceReq = buildRemittanceAdviceRequest(jsonRemittanceAdvice);
 
-				final RemittanceAdvice remittanceAdvice = remittanceAdviceRepository.createRemittanceAdvice(remittanceAdviceReq);
+				final RemittanceAdvice remittanceAdvice = remittanceAdviceRepository.createRemittanceAdviceHeader(remittanceAdviceReq);
 				final RemittanceAdviceId remittanceAdviceId = remittanceAdvice.getRemittanceAdviceId();
 				remittanceAdviceIdList.add(remittanceAdviceId);
 

@@ -22,22 +22,27 @@
 
 package de.metas.remittanceadvice;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,14 +50,17 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
+import org.jpedal.fonts.tt.Loca;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -88,11 +96,42 @@ public class RemittanceAdviceTest
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
-		remittanceAdviceService = new RemittanceAdviceService(moneyService, remittanceAdviceRepository);
+		remittanceAdviceService = new RemittanceAdviceService(moneyService);
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		chfCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+	}
 
+	/**
+	 * multiplyRate for EURO is set; multiplyRate for CHF is derived
+	 * <p>
+	 * example:
+	 * 1 euro = 10 chf and
+	 * 1 chf  = 0.1 euro (1/10)
+	 */
+	void createConversionRates(final double multiplyRate)
+	{
+		final LocalDate date = LocalDate.now();
+
+		final CurrencyConversionTypeId conversionType = Services.get(ICurrencyDAO.class).getConversionTypeId(ConversionTypeMethod.Spot);
+
+		final I_C_Conversion_Rate euroChfRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
+		euroChfRate.setC_ConversionType_ID(conversionType.getRepoId());
+		euroChfRate.setC_Currency_ID(euroCurrencyId.getRepoId());
+		euroChfRate.setC_Currency_ID_To(chfCurrencyId.getRepoId());
+		euroChfRate.setMultiplyRate(BigDecimal.valueOf(multiplyRate));
+		euroChfRate.setValidFrom(TimeUtil.asTimestamp(date.minusYears(5))); // using +- 5 years because there are different dates used when creating the Invoices and Payments
+		euroChfRate.setValidTo(TimeUtil.asTimestamp(date.plusYears(5)));
+		InterfaceWrapperHelper.save(euroChfRate);
+
+		final I_C_Conversion_Rate chfEuroRate = InterfaceWrapperHelper.newInstance(I_C_Conversion_Rate.class);
+		chfEuroRate.setC_ConversionType_ID(conversionType.getRepoId());
+		chfEuroRate.setC_Currency_ID(chfCurrencyId.getRepoId());
+		chfEuroRate.setC_Currency_ID_To(euroCurrencyId.getRepoId());
+		chfEuroRate.setMultiplyRate(BigDecimal.ONE.divide(BigDecimal.valueOf(multiplyRate), 13, RoundingMode.HALF_UP));
+		chfEuroRate.setValidFrom(TimeUtil.asTimestamp(date.minusYears(5)));
+		chfEuroRate.setValidTo(TimeUtil.asTimestamp(date.plusYears(5)));
+		InterfaceWrapperHelper.save(chfEuroRate);
 	}
 
 	@Builder(builderMethodName = "remittanceLine")
@@ -100,12 +139,15 @@ public class RemittanceAdviceTest
 			@Nullable final String invoiceIdentifier,
 			final int invoiceId,
 			@NonNull final BigDecimal remittanceAmt,
-			@Nullable final CurrencyCode currencyCode
+			@Nullable final CurrencyCode currencyCode,
+			@Nullable final BPartnerId bPartnerId
 	)
 	{
 		final RemittanceAdviceLine remittanceAdviceLine;
 
 		remittanceAdviceLine = RemittanceAdviceLine.builder()
+				.orgId(OrgId.ofRepoId(100))
+				.bpartnerIdentifier(bpartnerId)
 				.remittanceAdviceLineId(RemittanceAdviceLineId.ofRepoId(nextRemittanceLineId++))//
 				.remittanceAdviceId(RemittanceAdviceId.ofRepoId(nextRemittanceId++))//
 				.invoiceIdentifier(invoiceIdentifier)//
@@ -117,7 +159,7 @@ public class RemittanceAdviceTest
 	}
 
 	@Builder(builderMethodName = "remittance")
-	private RemittanceAdvice getRemittance()
+	private RemittanceAdvice getRemittance(@Nullable final CurrencyId remittedCurrencyId)
 	{
 		final RemittanceAdvice remittanceAdvice;
 
@@ -127,15 +169,17 @@ public class RemittanceAdviceTest
 				.clientId(ClientId.ofRepoId(123))
 				.sourceBPartnerId(BPartnerId.ofRepoId(111))
 				.documentDate(Instant.now())
-				.remittedAmountCurrencyId(euroCurrencyId)
+				.remittedAmountCurrencyId(remittedCurrencyId != null ? remittedCurrencyId : euroCurrencyId)
 				.sourceBPartnerBankAccountId(BPartnerBankAccountId.ofRepoId(BPartnerId.ofRepoId(111), 123))
 				.destinationBPartnerBankAccountId(BPartnerBankAccountId.ofRepoId(BPartnerId.ofRepoId(123), 111))
 				.destinationBPartnerId(bpartnerId)
 				.documentNumber("123")
+				.externalDocumentNumber("ext-123")
 				.documentDate(Instant.now())
 				.docStatus("CO")
 				.docTypeId(DocTypeId.ofRepoId(1))
 				.remittedAmountSum(new BigDecimal(100))
+				.lines(ImmutableList.of())
 				.build();
 
 		return remittanceAdvice;
@@ -144,7 +188,7 @@ public class RemittanceAdviceTest
 	@Builder(builderMethodName = "invoice")
 	private I_C_Invoice getInvoice(
 			final InvoiceDocBaseType type,
-			final String open,
+			@NonNull final BigDecimal open,
 			@Nullable final CurrencyId currency)
 	{
 		final Money openAmt = money(open, currency);
@@ -176,11 +220,10 @@ public class RemittanceAdviceTest
 		return invoice;
 	}
 
-	private Money money(final String amount, @Nullable CurrencyId currencyId)
+	private Money money(@NonNull final BigDecimal amount, @Nullable CurrencyId currencyId)
 	{
-		final BigDecimal amountBD = Check.isNotBlank(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
 		currencyId = currencyId == null ? euroCurrencyId : currencyId;
-		return Money.of(amountBD, currencyId);
+		return Money.of(amount, currencyId);
 	}
 
 	private BPartnerId createBPartnerId()
@@ -208,99 +251,148 @@ public class RemittanceAdviceTest
 	@Test
 	public void testResolveRemittanceAdviceLineWithInvoiceSameCurrencyMatchingAmount()
 	{
-		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
+		//given
+		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
 		final RemittanceAdvice remittanceAdvice = remittance().build();
 		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine().invoiceId(invoice.getC_Invoice_ID()).remittanceAmt(new BigDecimal(100)).build();
 
+		//when
 		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt() != null).isTrue();
-		assertThat(remittanceAdviceLine.getOverUnderAmt() != null).isTrue();
+		//then
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt().compareTo(new BigDecimal(100))).isEqualByComparingTo(0);
-		assertThat(remittanceAdviceLine.getOverUnderAmt().compareTo(new BigDecimal(100))).isEqualTo(0);
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(0));
 
 	}
 
 	@Test
 	public void testResolveRemittanceAdviceLineWithInvoiceSameCurrencyOverAmount()
 	{
-		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
+		//given
+		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
 		final RemittanceAdvice remittanceAdvice = remittance().build();
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine().invoiceId(invoice.getC_Invoice_ID()).remittanceAmt(new BigDecimal(120)).build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.remittanceAmt(new BigDecimal(120))
+				.build();
 
+		//when
 		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt() != null).isTrue();
-		assertThat(remittanceAdviceLine.getOverUnderAmt() != null).isTrue();
+		//then
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt().compareTo(new BigDecimal(100))).isEqualByComparingTo(0);
-		assertThat(remittanceAdviceLine.getOverUnderAmt().compareTo(new BigDecimal(100))).isEqualTo(-1);
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(20));
 
 	}
 
 	@Test
 	public void testResolveRemittanceAdviceLineWithInvoiceSameCurrencyUnderAmount()
 	{
-		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
-		final RemittanceAdvice remittanceAdvice = remittance().build();
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine().invoiceId(invoice.getC_Invoice_ID()).remittanceAmt(new BigDecimal(80)).build();
+		//given
+		final I_C_Invoice invoice = invoice()
+				.type(CustomerInvoice)
+				.open(BigDecimal.valueOf(100))
+				.currency(euroCurrencyId)
+				.build();
 
+		final RemittanceAdvice remittanceAdvice = remittance().build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.remittanceAmt(new BigDecimal(80)).build();
+
+		//when
 		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt() != null).isTrue();
-		assertThat(remittanceAdviceLine.getOverUnderAmt() != null).isTrue();
+		//then
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt().compareTo(new BigDecimal(100))).isEqualByComparingTo(0);
-		assertThat(remittanceAdviceLine.getOverUnderAmt().compareTo(new BigDecimal(100))).isEqualTo(1);
-
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(-20));
 	}
 
 	@Test
-	public void testResolveRemittanceAdviceLineWithInvoiceOtherCurrencyOverAmount()
+	public void testResolveRemittanceAdviceLineWithInvoiceOtherCurrencyUnderOverAmountMatch()
 	{
-		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
-		final RemittanceAdvice remittanceAdvice = remittance().build();
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine().currencyCode(CurrencyCode.CHF).invoiceId(invoice.getC_Invoice_ID()).remittanceAmt(new BigDecimal(100)).build();
+		//given
+		createConversionRates(2);
 
+		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
+		final RemittanceAdvice remittanceAdvice = remittance().remittedCurrencyId(chfCurrencyId).build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.currencyCode(CurrencyCode.CHF)
+				.invoiceId(invoice.getC_Invoice_ID())
+				.remittanceAmt(new BigDecimal(200))
+				.build();
+
+		//when
 		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt() != null).isTrue();
-		assertThat(remittanceAdviceLine.getOverUnderAmt() != null).isTrue();
+		//then
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt().compareTo(new BigDecimal(100))).isEqualByComparingTo(0);
-		assertThat(remittanceAdviceLine.getOverUnderAmt().compareTo(new BigDecimal(100))).isEqualTo(-1);
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));;
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.ZERO);;
 
 	}
 
 	@Test
 	public void testResolveRemittanceAdviceLineWithInvoiceOtherCurrencyUnderAmount()
 	{
-		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
-		final RemittanceAdvice remittanceAdvice = remittance().build();
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine().currencyCode(CurrencyCode.CHF).invoiceId(invoice.getC_Invoice_ID()).remittanceAmt(new BigDecimal(1000)).build();
+		//given
+		createConversionRates(2);
 
+		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
+		final RemittanceAdvice remittanceAdvice = remittance().remittedCurrencyId(chfCurrencyId).build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.currencyCode(CurrencyCode.CHF)
+				.invoiceId(invoice.getC_Invoice_ID())
+				.remittanceAmt(new BigDecimal(100))
+				.build();
+
+		//when
 		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt() != null).isTrue();
-		assertThat(remittanceAdviceLine.getOverUnderAmt() != null).isTrue();
+		//then
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt().compareTo(new BigDecimal(100))).isEqualByComparingTo(0);
-		assertThat(remittanceAdviceLine.getOverUnderAmt().compareTo(new BigDecimal(100))).isEqualTo(1);
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isEqualTo(BigDecimal.valueOf(100));
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isEqualTo(BigDecimal.valueOf(-100));
 
 	}
 
 	@Test
 	public void testResolveRemittanceAdviceLineWithInvoiceSameCurrencyMatchingAmount_CheckBooleans()
 	{
-		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open("100").currency(euroCurrencyId).build();
-		final RemittanceAdvice remittanceAdvice = remittance().build();
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine().invoiceId(invoice.getC_Invoice_ID()).remittanceAmt(new BigDecimal(100)).build();
+		//given
+		final I_C_Invoice invoice = invoice()
+				.type(CustomerInvoice)
+				.open(BigDecimal.valueOf(100))
+				.currency(euroCurrencyId)
+				.build();
 
+		final RemittanceAdvice remittanceAdvice = remittance().build();
+
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.bPartnerId(bpartnerId)
+				.remittanceAmt(new BigDecimal(100))
+				.build();
+
+		//when
 		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
 
-		assertThat(remittanceAdviceLine.getInvoiceAmt() != null).isTrue();
-		assertThat(remittanceAdviceLine.getOverUnderAmt() != null).isTrue();
+		//then
+		assertThat(remittanceAdviceLine.getInvoiceAmt()).isNotNull();
+		assertThat(remittanceAdviceLine.getOverUnderAmt()).isNotNull();
 		assertThat(remittanceAdviceLine.isInvoiceResolved()).isTrue();
 		assertThat(remittanceAdviceLine.isAmountValid()).isTrue();
 		assertThat(remittanceAdviceLine.isInvoiceDateValid()).isTrue();

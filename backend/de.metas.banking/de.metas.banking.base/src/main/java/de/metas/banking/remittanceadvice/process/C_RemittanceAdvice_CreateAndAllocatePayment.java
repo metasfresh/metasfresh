@@ -23,6 +23,7 @@
 package de.metas.banking.remittanceadvice.process;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
@@ -33,6 +34,7 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
@@ -54,6 +56,7 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -74,11 +77,14 @@ import java.util.stream.Collectors;
 
 public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 {
-	final RemittanceAdviceRepository remittanceAdviceRepo = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
-	final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
-	final PaymentAllocationService paymentAllocationService = SpringContextHolder.instance.getBean(PaymentAllocationService.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private static final Logger logger = LogManager.getLogger(RemoteServletInvoker.class);
+
+	private final RemittanceAdviceRepository remittanceAdviceRepo = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+
+	private final PaymentAllocationService paymentAllocationService = SpringContextHolder.instance.getBean(PaymentAllocationService.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -95,7 +101,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		{
 			final List<RemittanceAdviceLine> remittanceAdviceLines = remittanceAdvice.getLines();
 
-			if (remittanceAdvice.getPaymentId() == null && X_C_RemittanceAdvice.DOCSTATUS_Completed.equals(remittanceAdvice.getDocStatus()))
+			if ((remittanceAdvice.getPaymentId() == null && X_C_RemittanceAdvice.DOCSTATUS_Completed.equals(remittanceAdvice.getDocStatus())))
 			{
 				final I_C_Payment payment = createPayment(remittanceAdvice);
 
@@ -138,20 +144,22 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.build();
 	}
 
-	private void populateRemittanceWithAllocationData(final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap, final PaymentAllocationResult paymentAllocationResult)
+	private void populateRemittanceWithAllocationData(
+			@NonNull final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap,
+			@NonNull final PaymentAllocationResult paymentAllocationResult)
 	{
 		final Map<Integer, InvoiceId> serviceFeeInvoiceIdsByAssignedInvoiceId =
 				paymentAllocationResult
 						.getPaymentAllocationIds()
 						.values()
 						.stream()
-						.filter(paymentAllocationResultItem -> paymentAllocationResultItem.getType() == AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)
+						.filter(paymentAllocationResultItem -> AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice.equals(paymentAllocationResultItem.getType()))
 						.collect(Collectors.toMap(paymentAllocationResultItem -> paymentAllocationResultItem.getPayableDocumentRef().getRecord_ID(),
 												  paymentAllocationResultItem -> InvoiceId.ofRepoId(paymentAllocationResultItem.getPaymentDocumentRef().getRecord_ID())));
 
 		paymentAllocationResult.getCandidates()
 				.stream()
-				.filter(allocationLineCandidate -> allocationLineCandidate.getType() == AllocationLineCandidate.AllocationLineCandidateType.InvoiceProcessingFee)
+				.filter(allocationLineCandidate -> AllocationLineCandidate.AllocationLineCandidateType.InvoiceProcessingFee.equals(allocationLineCandidate.getType()))
 				.forEach(allocationLineCandidate -> {
 					final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = allocationLineCandidate.getInvoiceProcessingFeeCalculation();
 					if (invoiceProcessingFeeCalculation != null)
@@ -202,17 +210,15 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		return getInvoicesById(invoiceIds);
 	}
 
+	@NonNull
 	private Map<InvoiceId, I_C_Invoice> getInvoicesById(final Set<InvoiceId> invoiceIds)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(de.metas.adempiere.model.I_C_Invoice.class)
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, invoiceIds)
-				.create()
-				.list()
+		return invoiceDAO.getByIdsInTrx(invoiceIds)
 				.stream()
 				.collect(Collectors.toMap(invoice -> InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), invoice -> invoice));
 	}
 
+	@NonNull
 	private I_C_Payment createPayment(final RemittanceAdvice remittanceAdvice)
 	{
 		final DefaultPaymentBuilder paymentBuilder = remittanceAdvice.isSOTrx() ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder();
@@ -237,7 +243,8 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				remittanceAdviceLine.getPaymentDiscountAmount() : Amount.zero(getCurrencyCode(remittanceAdvice.getRemittedAmountCurrencyId().getRepoId()));
 
 		PaymentAllocationPayableItem paymentAllocationPayableItem = null;
-		if(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency() != null){
+		if (remittanceAdviceLine.getInvoiceAmtInREMADVCurrency() != null)
+		{
 			paymentAllocationPayableItem = PaymentAllocationPayableItem.builder()
 					.payAmt(remittanceAdviceLine.getRemittedAmount())
 					.openAmt(Amount.of(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency(), remittanceAdviceLine.getRemittedAmount().getCurrencyCode()))
@@ -255,17 +262,18 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		return paymentAllocationPayableItem;
 	}
 
+	@NonNull
 	private CurrencyCode getCurrencyCode(final int currencyId)
 	{
 		return moneyService.getCurrencyCodeByCurrencyId(CurrencyId.ofRepoId(currencyId));
 	}
 
+	@NonNull
 	private List<I_C_InvoiceLine> getInvoiceLines(final InvoiceId invoiceId)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_InvoiceLine.class)
-				.addInArrayFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.create()
-				.list();
+		return invoiceDAO.retrieveLines(invoiceId)
+				.stream()
+				.map(invoiceLine -> InterfaceWrapperHelper.create(invoiceLine, I_C_InvoiceLine.class))
+				.collect(ImmutableList.toImmutableList());
 	}
 }
