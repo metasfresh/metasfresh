@@ -118,7 +118,7 @@ public class PaymentAllocationService
 	{
 		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
 
-		final Money openAmt = extractPayAmt(payment);
+		final Money openAmt = extractPayAmt(payment).negateIf(paymentDirection.isOutboundPayment());;
 
 		return PaymentDocument.builder()
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
