@@ -1,4 +1,4 @@
-# PatientContact
+# CareGiver
 
 ## Properties
 Name | Type | Description | Notes

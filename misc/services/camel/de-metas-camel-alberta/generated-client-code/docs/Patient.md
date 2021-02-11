@@ -35,7 +35,7 @@ Name | Type | Description | Notes
 **deactivationReason** | [**BigDecimal**](BigDecimal.md) | 0 &#x3D; Unbekannt 1 &#x3D; Patient verstorben, 2 &#x3D; Therapieende (alle Therapien), 3 &#x3D; Leistungserbringerwechsel, 4 &#x3D; Sonstiges |  [optional]
 **deactivationDate** | [**LocalDate**](LocalDate.md) | Datum der Deaktivierung (ggf. Sterbedatum) |  [optional]
 **deactivationComment** | **String** |  |  [optional]
-**patientContacts** | [**List&lt;PatientContact&gt;**](PatientContact.md) |  |  [optional]
+**careGivers** | [**List&lt;CareGiver&gt;**](CareGiver.md) |  |  [optional]
 **archived** | **Boolean** | Kennzeichen ob Patient archiviert ist oder nicht |  [optional]
 **createdAt** | [**LocalDate**](LocalDate.md) | Der Zeitstempel der Anlage |  [optional]
 **createdBy** | [**LocalDate**](LocalDate.md) | Id des anlegenden Benutzers |  [optional]
