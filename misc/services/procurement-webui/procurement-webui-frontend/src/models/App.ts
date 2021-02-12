@@ -1,6 +1,6 @@
 import { types, flow, SnapshotIn } from 'mobx-state-tree';
 
-import { getUserSession, logoutRequest, passwordResetRequest, passwordResetConfirm } from '../api';
+import { getUserSession, logoutRequest, passwordResetRequest, passwordResetConfirm, saveUnconfirmed } from '../api';
 import { formDate, slashSeparatedYYYYmmdd } from '../utils/date';
 
 export const App = types
@@ -91,6 +91,16 @@ export const App = types
       return response;
     });
 
+    const confirmDataEntries = flow(function* confirmDataEntries() {
+      const {
+        data: { countUnconfirmed },
+      } = yield saveUnconfirmed();
+
+      setUnconfirmed(countUnconfirmed);
+
+      return Promise.resolve(countUnconfirmed);
+    });
+
     const setInitialData = function setInitialData(dataToSet: Partial<SnapshotIn<typeof self>>) {
       Object.assign(self, dataToSet);
     };
@@ -132,6 +142,7 @@ export const App = types
       logOut,
       requestPasswordReset,
       confirmPasswordReset,
+      confirmDataEntries,
       getUserSession: getSession,
       setInitialData,
       setResponseError,

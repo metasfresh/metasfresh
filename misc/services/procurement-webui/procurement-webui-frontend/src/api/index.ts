@@ -155,10 +155,10 @@ export function fetchRFQuotations(): Promise<AxiosResponse> {
 /**
  * API: session-rest-controller
  * POST /rest/session/confirmDataEntry
- * @method confirmDataEntry
+ * @method saveUnconfirmed
  * @summary confirm the data that was introduced (Save)
  */
-export function confirmDataEntry(): Promise<AxiosResponse> {
+export function saveUnconfirmed(): Promise<AxiosResponse> {
   return axios.post(`/rest/session/confirmDataEntry`);
 }
 

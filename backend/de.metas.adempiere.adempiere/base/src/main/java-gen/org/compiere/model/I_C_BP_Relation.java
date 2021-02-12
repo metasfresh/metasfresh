@@ -1,262 +1,429 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-import org.compiere.util.KeyNamePair;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BP_Relation
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_BP_Relation 
 {
 
-    /** TableName=C_BP_Relation */
-    public static final String Table_Name = "C_BP_Relation";
+	String Table_Name = "C_BP_Relation";
 
-    /** AD_Table_ID=678 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=678 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 2 - Client 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(2);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** Load Meta Data */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
-	/** Set Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
-	/** Get Business Partner .
-	  * Identifies a Business Partner
-	  */
-	public int getC_BPartner_ID();
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException;
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	/**
+	 * Set Zugehöriger Geschäftspartner.
+	 * Related Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartnerRelation_ID (int C_BPartnerRelation_ID);
 
-	/** Set Partner Location.
-	  * Identifies the (ship to) address for this Business Partner
-	  */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	/**
+	 * Get Zugehöriger Geschäftspartner.
+	 * Related Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartnerRelation_ID();
 
-	/** Get Partner Location.
-	  * Identifies the (ship to) address for this Business Partner
-	  */
-	public int getC_BPartner_Location_ID();
+	String COLUMNNAME_C_BPartnerRelation_ID = "C_BPartnerRelation_ID";
 
-	public I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException;
+	/**
+	 * Set Zugehöriger Standort.
+	 * Location of the related Business Partner
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartnerRelation_Location_ID (int C_BPartnerRelation_Location_ID);
 
-    /** Column name C_BPartnerRelation_ID */
-    public static final String COLUMNNAME_C_BPartnerRelation_ID = "C_BPartnerRelation_ID";
+	/**
+	 * Get Zugehöriger Standort.
+	 * Location of the related Business Partner
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartnerRelation_Location_ID();
 
-	/** Set Related Partner.
-	  * Related Business Partner
-	  */
-	public void setC_BPartnerRelation_ID (int C_BPartnerRelation_ID);
+	String COLUMNNAME_C_BPartnerRelation_Location_ID = "C_BPartnerRelation_Location_ID";
 
-	/** Get Related Partner.
-	  * Related Business Partner
-	  */
-	public int getC_BPartnerRelation_ID();
+	/**
+	 * Set Beziehungen Geschäftspartner.
+	 * Business Partner Relation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Relation_ID (int C_BP_Relation_ID);
 
-	public I_C_BPartner getC_BPartnerRelation() throws RuntimeException;
+	/**
+	 * Get Beziehungen Geschäftspartner.
+	 * Business Partner Relation
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Relation_ID();
 
-    /** Column name C_BPartnerRelation_Location_ID */
-    public static final String COLUMNNAME_C_BPartnerRelation_Location_ID = "C_BPartnerRelation_Location_ID";
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_C_BP_Relation_ID = new ModelColumn<>(I_C_BP_Relation.class, "C_BP_Relation_ID", null);
+	String COLUMNNAME_C_BP_Relation_ID = "C_BP_Relation_ID";
 
-	/** Set Related Partner Location.
-	  * Location of the related Business Partner
-	  */
-	public void setC_BPartnerRelation_Location_ID (int C_BPartnerRelation_Location_ID);
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-	/** Get Related Partner Location.
-	  * Location of the related Business Partner
-	  */
-	public int getC_BPartnerRelation_Location_ID();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_Created = new ModelColumn<>(I_C_BP_Relation.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-	public I_C_BPartner_Location getC_BPartnerRelation_Location() throws RuntimeException;
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-    /** Column name C_BP_Relation_ID */
-    public static final String COLUMNNAME_C_BP_Relation_ID = "C_BP_Relation_ID";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set Partner Relation.
-	  * Business Partner Relation
-	  */
-	public void setC_BP_Relation_ID (int C_BP_Relation_ID);
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
 
-	/** Get Partner Relation.
-	  * Business Partner Relation
-	  */
-	public int getC_BP_Relation_ID();
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_Description = new ModelColumn<>(I_C_BP_Relation.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_BP_Relation.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BP_Relation.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	/**
+	 * Set Vorbelegung Rechnung.
+	 * Rechnungs-Adresse für diesen Geschäftspartner
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsBillTo (boolean IsBillTo);
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Get Vorbelegung Rechnung.
+	 * Rechnungs-Adresse für diesen Geschäftspartner
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBillTo();
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsBillTo = new ModelColumn<>(I_C_BP_Relation.class, "IsBillTo", null);
+	String COLUMNNAME_IsBillTo = "IsBillTo";
 
-    /** Column name IsBillTo */
-    public static final String COLUMNNAME_IsBillTo = "IsBillTo";
+	/**
+	 * Set Pickup Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFetchedFrom (boolean IsFetchedFrom);
 
-	/** Set Invoice Address.
-	  * Business Partner Invoice/Bill Address
-	  */
-	public void setIsBillTo (boolean IsBillTo);
+	/**
+	 * Get Pickup Location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFetchedFrom();
 
-	/** Get Invoice Address.
-	  * Business Partner Invoice/Bill Address
-	  */
-	public boolean isBillTo();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsFetchedFrom = new ModelColumn<>(I_C_BP_Relation.class, "IsFetchedFrom", null);
+	String COLUMNNAME_IsFetchedFrom = "IsFetchedFrom";
 
-    /** Column name IsPayFrom */
-    public static final String COLUMNNAME_IsPayFrom = "IsPayFrom";
+	/**
+	 * Set Zahlungs-Adresse.
+	 * Business Partner pays from that address and we'll send dunning letters there
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPayFrom (boolean IsPayFrom);
 
-	/** Set Pay-From Address.
-	  * Business Partner pays from that address and we'll send dunning letters there
-	  */
-	public void setIsPayFrom (boolean IsPayFrom);
+	/**
+	 * Get Zahlungs-Adresse.
+	 * Business Partner pays from that address and we'll send dunning letters there
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPayFrom();
 
-	/** Get Pay-From Address.
-	  * Business Partner pays from that address and we'll send dunning letters there
-	  */
-	public boolean isPayFrom();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsPayFrom = new ModelColumn<>(I_C_BP_Relation.class, "IsPayFrom", null);
+	String COLUMNNAME_IsPayFrom = "IsPayFrom";
 
-    /** Column name IsRemitTo */
-    public static final String COLUMNNAME_IsRemitTo = "IsRemitTo";
+	/**
+	 * Set Erstattungs-Adresse.
+	 * Business Partner payment address
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRemitTo (boolean IsRemitTo);
 
-	/** Set Remit-To Address.
-	  * Business Partner payment address
-	  */
-	public void setIsRemitTo (boolean IsRemitTo);
+	/**
+	 * Get Erstattungs-Adresse.
+	 * Business Partner payment address
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRemitTo();
 
-	/** Get Remit-To Address.
-	  * Business Partner payment address
-	  */
-	public boolean isRemitTo();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsRemitTo = new ModelColumn<>(I_C_BP_Relation.class, "IsRemitTo", null);
+	String COLUMNNAME_IsRemitTo = "IsRemitTo";
 
-    /** Column name IsShipTo */
-    public static final String COLUMNNAME_IsShipTo = "IsShipTo";
+	/**
+	 * Set Lieferstandard.
+	 * Liefer-Adresse für den Geschäftspartner
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShipTo (boolean IsShipTo);
 
-	/** Set Ship Address.
-	  * Business Partner Shipment Address
-	  */
-	public void setIsShipTo (boolean IsShipTo);
+	/**
+	 * Get Lieferstandard.
+	 * Liefer-Adresse für den Geschäftspartner
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShipTo();
 
-	/** Get Ship Address.
-	  * Business Partner Shipment Address
-	  */
-	public boolean isShipTo();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_IsShipTo = new ModelColumn<>(I_C_BP_Relation.class, "IsShipTo", null);
+	String COLUMNNAME_IsShipTo = "IsShipTo";
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_Name = new ModelColumn<>(I_C_BP_Relation.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	/**
+	 * Set Role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRole (@Nullable java.lang.String Role);
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRole();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_Role = new ModelColumn<>(I_C_BP_Relation.class, "Role", null);
+	String COLUMNNAME_Role = "Role";
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
-	
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_C_BP_Relation, Object> COLUMN_Updated = new ModelColumn<>(I_C_BP_Relation.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
