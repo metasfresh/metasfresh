@@ -146,7 +146,7 @@ public class RemittanceAdviceRepository
 
 		record.setService_Fee_Invoice_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeInvoiceId(), -1));
 		record.setService_Product_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeProductId(), -1));
-		record.setService_BPartner_ID(NumberUtils.asInt(remittanceAdviceLine.getBillBPartnerId(), -1));
+		record.setService_BPartner_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeBPartnerId(), -1));
 		record.setService_Tax_ID(NumberUtils.asInt(remittanceAdviceLine.getTaxId(), -1));
 
 		record.setIsInvoiceResolved(remittanceAdviceLine.isInvoiceResolved());

@@ -23,11 +23,12 @@
 package de.metas.edi.esb.remadvimport.ecosio;
 
 import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class RemadvResponseProcessor implements Processor
 {
@@ -40,7 +41,11 @@ public class RemadvResponseProcessor implements Processor
 		final JsonCreateRemittanceAdviceResponse createRemittanceResponse = exchange.getIn().getBody(JsonCreateRemittanceAdviceResponse.class);
 
 		final String createdRemittanceAdviceIds = createRemittanceResponse.getIds() != null
-				? StringUtils.join(createRemittanceResponse.getIds(), ",")
+				? createRemittanceResponse.getIds()
+				.stream()
+				.map(JsonCreateRemittanceAdviceResponseItem::getRemittanceAdviceId)
+				.map(String::valueOf)
+				.collect(Collectors.joining(","))
 				: "[]";
 
 		logger.info(" Successfully created the following remittance ids: " + createdRemittanceAdviceIds);

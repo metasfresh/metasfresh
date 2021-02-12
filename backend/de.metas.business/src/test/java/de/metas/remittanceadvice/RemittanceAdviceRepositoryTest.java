@@ -109,9 +109,11 @@ public class RemittanceAdviceRepositoryTest
 				.isServiceFeeResolved(true)
 				.processed(true)
 				.dateInvoiced(currentTime)
+				.serviceFeeInvoiceID(11)
 				.serviceFeeBPartnerId(10)
-				.serviceFeeProductId(10)
-				.serviceFeeTaxId(10).build();
+				.serviceFeeProductId(9)
+				.serviceFeeTaxId(8)
+				.build();
 
 		final RemittanceAdvice remittanceAdvice = remittance()
 				.remittanceAdviceId(record.getC_RemittanceAdvice_ID())
@@ -233,7 +235,8 @@ public class RemittanceAdviceRepositoryTest
 			final Instant dateInvoiced,
 			final int serviceFeeBPartnerId,
 			final int serviceFeeProductId,
-			final int serviceFeeTaxId
+			final int serviceFeeTaxId,
+			final int serviceFeeInvoiceID
 	)
 	{
 		final RemittanceAdviceLine remittanceAdviceLine;
@@ -258,8 +261,8 @@ public class RemittanceAdviceRepositoryTest
 				.invoiceCurrencyId(CurrencyId.ofRepoId(102))
 				.billBPartnerId(bpartnerId)
 				.dateInvoiced(dateInvoiced)
-				.serviceFeeInvoiceId(InvoiceId.ofRepoId(serviceFeeBPartnerId))
-				.serviceFeeBPartnerId(bpartnerId)
+				.serviceFeeInvoiceId(InvoiceId.ofRepoId(serviceFeeInvoiceID))
+				.serviceFeeBPartnerId(BPartnerId.ofRepoId(serviceFeeBPartnerId))
 				.serviceFeeProductId(ProductId.ofRepoId(serviceFeeProductId))
 				.taxId(TaxId.ofRepoId(serviceFeeTaxId))
 				.isBPartnerValid(isBPartnerValid)
