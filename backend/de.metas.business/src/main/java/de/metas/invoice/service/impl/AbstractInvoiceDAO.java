@@ -440,7 +440,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 
 	@Override
-	public <T extends org.compiere.model.I_C_Invoice> Optional<T> getByDocumentNo(final String documentNo, final OrgId orgId, final Class<T> modelClass)
+	public <T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(final String documentNo, final OrgId orgId, final Class<T> modelClass)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(modelClass)
@@ -448,7 +448,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo)
 				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
-				.firstOnlyOptional(modelClass);
+				.list(modelClass);
 	}
 
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)

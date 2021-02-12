@@ -41,6 +41,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
@@ -49,7 +50,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RemittanceAdviceService
@@ -135,7 +138,28 @@ public class RemittanceAdviceService
 
 		final String invoiceDocumentNo = getInvoiceDocumentNo(invoiceIdentifier);
 
-		return invoiceDAO.getByDocumentNo(invoiceDocumentNo, remittanceAdviceLine.getOrgId(), I_C_Invoice.class);
+		final List<I_C_Invoice> matchedInvoices = invoiceDAO.getByDocumentNo(invoiceDocumentNo, remittanceAdviceLine.getOrgId(), I_C_Invoice.class);
+
+		if (Check.isEmpty(matchedInvoices))
+		{
+			return Optional.empty();
+		}
+
+		if (matchedInvoices.size() > 1)
+		{
+			final String matchedInvoiceIds = matchedInvoices.stream()
+					.map(I_C_Invoice::getC_Invoice_ID)
+					.map(String::valueOf)
+					.collect(Collectors.joining(","));
+
+			throw new AdempiereException("Multiple invoices found for the target doc number!")
+					.appendParametersToMessage()
+					.setParameter("TargetInvoiceDocNo", invoiceDocumentNo)
+					.setParameter("OrgId", remittanceAdviceLine.getOrgId())
+					.setParameter("MatchedInvoiceIds", matchedInvoiceIds);
+		}
+
+		return Optional.of(matchedInvoices.get(0));
 	}
 
 	private RemittanceAdviceLineInvoiceDetails buildInvoiceDetailsForRemittanceLine(

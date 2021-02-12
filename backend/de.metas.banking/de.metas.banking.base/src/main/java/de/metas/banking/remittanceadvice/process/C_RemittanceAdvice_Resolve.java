@@ -22,20 +22,26 @@
 
 package de.metas.banking.remittanceadvice.process;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
+import de.metas.util.Loggables;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_RemittanceAdvice;
+import org.slf4j.Logger;
 
 import java.util.List;
 
 public class C_RemittanceAdvice_Resolve extends JavaProcess
 {
+	private static final Logger logger = LogManager.getLogger(C_RemittanceAdvice_CreateAndAllocatePayment.class);
+
 	final RemittanceAdviceRepository remittanceAdviceRepo = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
 	final RemittanceAdviceService remittanceAdviceService = SpringContextHolder.instance.getBean(RemittanceAdviceService.class);
 
@@ -52,12 +58,21 @@ public class C_RemittanceAdvice_Resolve extends JavaProcess
 
 		for (final RemittanceAdvice remittanceAdvice : remittanceAdvices)
 		{
-			remittanceAdviceService.resolveRemittanceAdviceLines(remittanceAdvice);
-			remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
+			try
+			{
+				trxManager.runInNewTrx(() ->{
+					remittanceAdviceService.resolveRemittanceAdviceLines(remittanceAdvice);
+					remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
+				});
+			}
+			catch (final Exception exception)
+			{
+				Loggables.withLogger(logger, Level.ERROR)
+						.addLog("Resolve invoice failed for remittanceAdvice: {}, reason: {}",
+								remittanceAdvice.getRemittanceAdviceId(), exception.getLocalizedMessage());
+			}
 		}
-
 
 		return MSG_OK;
 	}
-
 }

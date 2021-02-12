@@ -79,7 +79,7 @@ import java.util.stream.Collectors;
 
 public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 {
-	private static final Logger logger = LogManager.getLogger(RemoteServletInvoker.class);
+	private static final Logger logger = LogManager.getLogger(C_RemittanceAdvice_CreateAndAllocatePayment.class);
 
 	private final RemittanceAdviceRepository remittanceAdviceRepo = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
 	private final RemittanceAdviceService remittanceAdviceService = SpringContextHolder.instance.getBean(RemittanceAdviceService.class);
