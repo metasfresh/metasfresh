@@ -38,13 +38,11 @@ import javax.annotation.Nullable;
 
 public class PrintArchiveParameters
 {
-	@NonNull
-	private final I_AD_Archive archive;
-	@NonNull
-	private final PrintOutputFacade printOutputFacade;
+	@NonNull I_AD_Archive archive;
+	@NonNull PrintOutputFacade printOutputFacade;
 	@Nullable
-	private final HardwarePrinterId hwPrinterId;
+	HardwarePrinterId hwPrinterId;
 	@Nullable
-	private final HardwareTrayId hwTrayId;
-	private final boolean enforceEnqueueToPrintQueue;
+	HardwareTrayId hwTrayId;
+	boolean enforceEnqueueToPrintQueue;
 }
