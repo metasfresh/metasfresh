@@ -8,7 +8,7 @@
     <url>https://github.com/swagger-api/swagger-codegen</url>
 
     <parent>
-        <groupId>de.metas.camel</groupId>
+        <groupId>de.metas.camel.externalsystems</groupId>
         <artifactId>de-metas-camel-alberta</artifactId>
         <version>10.0.0</version>
         <relativePath>../pom.xml</relativePath>
