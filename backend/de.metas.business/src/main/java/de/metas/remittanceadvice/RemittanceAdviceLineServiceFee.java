@@ -27,8 +27,9 @@ import de.metas.invoice.InvoiceId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Value;
+
+import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -38,5 +39,6 @@ public class RemittanceAdviceLineServiceFee
 	ProductId serviceProductId;
 	InvoiceId serviceFeeInvoiceId;
 	TaxId serviceFeeTaxId;
+	BigDecimal serviceVatRate;
 
 }

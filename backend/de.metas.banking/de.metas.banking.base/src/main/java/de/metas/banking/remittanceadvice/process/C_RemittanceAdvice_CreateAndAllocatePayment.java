@@ -32,6 +32,7 @@ import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidat
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -43,12 +44,14 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.process.JavaProcess;
+import de.metas.product.ProductId;
 import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceLine;
 import de.metas.remittanceadvice.RemittanceAdviceLineServiceFee;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
 import de.metas.report.jasper.client.RemoteServletInvoker;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -64,12 +67,14 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_RemittanceAdvice;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_RemittanceAdvice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +93,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	private final PaymentAllocationService paymentAllocationService = SpringContextHolder.instance.getBean(PaymentAllocationService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
@@ -160,25 +166,46 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 						{
 							final InvoiceId serviceFeeInvoiceId = serviceFeeInvoiceIdsByAssignedInvoiceId.get(invoiceProcessingFeeCalculation.getInvoiceId().getRepoId());
 
-							TaxId serviceFeeTaxId = null;
-							final List<I_C_InvoiceLine> serviceFeeInvoiceLines = getInvoiceLines(serviceFeeInvoiceId);
-
-							if (!CollectionUtils.isEmpty(serviceFeeInvoiceLines))
-							{
-								serviceFeeTaxId = TaxId.ofRepoId(serviceFeeInvoiceLines.get(0).getC_Tax_ID());
-							}
-
-							final RemittanceAdviceLineServiceFee remittanceAdviceLineServiceFee = RemittanceAdviceLineServiceFee.builder()
-									.serviceFeeInvoiceId(serviceFeeInvoiceId)
-									.serviceProductId(invoiceProcessingFeeCalculation.getServiceFeeProductId())
-									.serviceBPartnerId(invoiceProcessingFeeCalculation.getServiceCompanyBPartnerId())
-									.serviceFeeTaxId(serviceFeeTaxId)
-									.build();
+							final RemittanceAdviceLineServiceFee remittanceAdviceLineServiceFee = getRemittanceAdviceLineServiceFee(serviceFeeInvoiceId);
 
 							remittanceAdviceLine.setServiceFeeDetails(remittanceAdviceLineServiceFee);
 						}
 					}
 				});
+	}
+
+	@NonNull
+	private RemittanceAdviceLineServiceFee getRemittanceAdviceLineServiceFee(@NonNull final InvoiceId serviceFeeInvoiceId)
+	{
+		TaxId serviceFeeTaxId = null;
+		ProductId serviceFeeProductId = null;
+		BPartnerId serviceFeeBPartnerId = null;
+		BigDecimal serviceFeeTaxVATRate = null;
+		final List<I_C_InvoiceLine> serviceFeeInvoiceLines = getInvoiceLines(serviceFeeInvoiceId);
+
+		if (!CollectionUtils.isEmpty(serviceFeeInvoiceLines))
+		{
+			final I_C_InvoiceLine firstInvoiceLine = serviceFeeInvoiceLines.get(0);
+			serviceFeeTaxId = TaxId.ofRepoId(firstInvoiceLine.getC_Tax_ID());
+			serviceFeeProductId = ProductId.ofRepoId(firstInvoiceLine.getM_Product_ID());
+
+			final I_C_Tax serviceFeeTax = taxDAO.getTaxById(serviceFeeTaxId.getRepoId());
+			serviceFeeTaxVATRate = serviceFeeTax != null ? serviceFeeTax.getRate() : null;
+		}
+
+		final I_C_Invoice serviceFeeInvoice = invoiceDAO.getByIdInTrx(serviceFeeInvoiceId);
+		if(serviceFeeInvoice != null){
+			serviceFeeBPartnerId = BPartnerId.ofRepoId(serviceFeeInvoice.getC_BPartner_ID());
+		}
+
+
+		return RemittanceAdviceLineServiceFee.builder()
+				.serviceFeeInvoiceId(serviceFeeInvoiceId)
+				.serviceProductId(serviceFeeProductId)
+				.serviceBPartnerId(serviceFeeBPartnerId)
+				.serviceFeeTaxId(serviceFeeTaxId)
+				.serviceVatRate(serviceFeeTaxVATRate)
+				.build();
 	}
 
 	private Map<InvoiceId, RemittanceAdviceLine> getRemittanceAdviceLinesByInvoiceId(final List<RemittanceAdviceLine> remittanceAdviceLines)
@@ -224,7 +251,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.bpartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
-				.payAmt(remittanceAdvice.getRemittedAmountSum())
+				.payAmt(remittanceAdvice.getRemittedAmountSum().add(remittanceAdvice.getServiceFeeAmount()))
 				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)

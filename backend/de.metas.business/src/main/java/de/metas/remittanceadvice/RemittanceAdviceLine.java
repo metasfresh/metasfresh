@@ -125,6 +125,8 @@ public class RemittanceAdviceLine
 
 	private boolean isServiceFeeResolved;
 
+	private boolean isServiceFeeVatRateValid;
+
 	private boolean processed;
 
 	@Builder
@@ -237,6 +239,9 @@ public class RemittanceAdviceLine
 		serviceFeeProductId = remittanceAdviceLineServiceFee.getServiceProductId();
 		serviceFeeBPartnerId = remittanceAdviceLineServiceFee.getServiceBPartnerId();
 		taxId = remittanceAdviceLineServiceFee.getServiceFeeTaxId();
+		if(remittanceAdviceLineServiceFee.getServiceVatRate() != null && serviceFeeVatRate != null){
+			isServiceFeeVatRateValid = remittanceAdviceLineServiceFee.getServiceVatRate().compareTo(serviceFeeVatRate) == 0;
+		}
 		isServiceFeeResolved = true;
 	}
 
