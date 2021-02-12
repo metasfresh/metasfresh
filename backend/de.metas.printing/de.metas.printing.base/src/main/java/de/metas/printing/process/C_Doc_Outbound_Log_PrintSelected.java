@@ -27,6 +27,7 @@ import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.HardwareTrayId;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.impl.PrintArchiveParameters;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -103,7 +104,15 @@ public class C_Doc_Outbound_Log_PrintSelected extends JavaProcess implements IPr
 
 		final HardwareTrayId hwTrayId = HardwareTrayId.ofRepoIdOrNull(hwPrinterId, hwTrayRecordId);
 
-		printingQueueBL.printArchive(archive, printOutputFacade, hwPrinterId, hwTrayId);
+		final PrintArchiveParameters printArchiveParameters = PrintArchiveParameters.builder()
+				.archive(archive)
+				.printOutputFacade(printOutputFacade)
+				.hwPrinterId(hwPrinterId)
+				.hwTrayId(hwTrayId)
+				.enforceEnqueueToPrintQueue(true)
+				.build();
+
+		printingQueueBL.printArchive(printArchiveParameters);
 
 	}
 

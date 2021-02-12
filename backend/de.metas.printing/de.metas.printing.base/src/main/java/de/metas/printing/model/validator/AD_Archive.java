@@ -25,6 +25,7 @@ package de.metas.printing.model.validator;
 import de.metas.logging.LogManager;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.impl.PrintArchiveParameters;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Doc_Outbound_Config;
 import de.metas.util.Services;
@@ -83,6 +84,14 @@ public class AD_Archive
 					I_AD_Archive.COLUMNNAME_IsActive })
 	public void printArchive(final I_AD_Archive archive)
 	{
-		printingQueueBL.printArchive(archive, printOutputFacade, null, null);
+		final PrintArchiveParameters printArchiveParameters = PrintArchiveParameters.builder()
+				.archive(archive)
+				.printOutputFacade(printOutputFacade)
+				.hwPrinterId(null)
+				.hwTrayId(null)
+				.enforceEnqueueToPrintQueue(false)
+				.build();
+
+		printingQueueBL.printArchive(printArchiveParameters);
 	}
 }

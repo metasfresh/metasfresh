@@ -93,6 +93,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@Override
 	public I_C_Printing_Queue enqueue(final org.compiere.model.I_AD_Archive archiveRecord)
@@ -167,11 +168,13 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	}
 
 	@Override
-	public void printArchive(@NonNull final de.metas.printing.model.I_AD_Archive archive,
-			@NonNull final PrintOutputFacade printOutputFacade,
-			@Nullable HardwarePrinterId hwPrinterId,
-			@Nullable HardwareTrayId hwTrayId)
+	public void printArchive(final PrintArchiveParameters printArchiveParameters)
 	{
+		final PrintOutputFacade printOutputFacade = printArchiveParameters.getPrintOutputFacade();
+		final de.metas.printing.model.I_AD_Archive archive = printArchiveParameters.getArchive();
+		final HardwarePrinterId hwPrinterId = printArchiveParameters.getHwPrinterId();
+		final HardwareTrayId hwTrayId = printArchiveParameters.getHwTrayId();
+
 		if (!archive.isActive())
 		{
 			return;
@@ -179,7 +182,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		I_C_Printing_Queue item = null;
 
-		final boolean enqueueToPrintQueue = isIsCreatePrintingQueueItem(archive);
+		final boolean enqueueToPrintQueue = isIsCreatePrintingQueueItem(printArchiveParameters);
 		if (enqueueToPrintQueue)
 		{
 			item = enqueue(archive);
@@ -193,16 +196,15 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		if (hwPrinterId != null)
 		{
 			item.setAD_PrinterHW_ID(hwPrinterId.getRepoId());
+
+			if (hwTrayId != null)
+			{
+				item.setAD_PrinterHW_MediaTray_ID(hwTrayId.getRepoId());
+			}
+
+			save(item);
 		}
-
-		if (hwTrayId != null)
-		{
-			item.setAD_PrinterHW_MediaTray_ID(hwTrayId.getRepoId());
-		}
-
-		save(item);
-
-		final boolean createPrintJob = isProcessQueueItem(archive);
+		final boolean createPrintJob = isProcessQueueItem(printArchiveParameters);
 		if (createPrintJob)
 		{
 			forwardToJob(item, printOutputFacade);
@@ -221,12 +223,14 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		printOutputFacade.print(source);
 	}
 
-	private boolean isIsCreatePrintingQueueItem(@NonNull final de.metas.printing.model.I_AD_Archive archive)
+	private boolean isIsCreatePrintingQueueItem(final PrintArchiveParameters printArchiveParameters)
 	{
+		final de.metas.printing.model.I_AD_Archive archive = printArchiveParameters.getArchive();
+
 		try (final MDC.MDCCloseable ignore = TableRecordMDC.putTableRecordReference(archive))
 		{
 			// If we need to create a print job, then we shall enqueue to printing queue first
-			if (isProcessQueueItem(archive))
+			if (isProcessQueueItem(printArchiveParameters))
 			{
 				logger.debug("IsCreatePrintingQueueItem - IsProcessQueueItem returned true; -> return true");
 				return true;
@@ -255,8 +259,20 @@ public class PrintingQueueBL implements IPrintingQueueBL
 		}
 	}
 
-	private boolean isProcessQueueItem(@NonNull final de.metas.printing.model.I_AD_Archive archive)
+	private boolean isGenericArchive(final de.metas.printing.model.I_AD_Archive archive)
 	{
+		return (archive.getAD_Table_ID() <= 0 && archive.getRecord_ID() <= 0);
+	}
+
+	private boolean isProcessQueueItem(final PrintArchiveParameters printArchiveParameters)
+	{
+		if (printArchiveParameters.isEnforceEnqueueToPrintQueue())
+		{
+			return true;
+		}
+
+		final de.metas.printing.model.I_AD_Archive archive = printArchiveParameters.getArchive();
+
 		// If we are explicitly asked to create a print job, then do it
 		if (archive.isDirectProcessQueueItem())
 		{
@@ -285,11 +301,6 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 		logger.debug("IsProcessQueueItem - none of the conditions applied -> return false");
 		return false;
-	}
-
-	private boolean isGenericArchive(final de.metas.printing.model.I_AD_Archive archive)
-	{
-		return (archive.getAD_Table_ID() <= 0 && archive.getRecord_ID() <= 0);
 	}
 
 	@Override
