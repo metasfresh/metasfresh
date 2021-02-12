@@ -22,7 +22,6 @@ package de.metas.printing.model.validator;
  * #L%
  */
 
-import de.metas.logging.LogManager;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.impl.PrintArchiveParameters;
@@ -34,7 +33,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_AD_Archive.class)
