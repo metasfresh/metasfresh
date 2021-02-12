@@ -239,9 +239,11 @@ public class RemittanceAdviceLine
 		serviceFeeProductId = remittanceAdviceLineServiceFee.getServiceProductId();
 		serviceFeeBPartnerId = remittanceAdviceLineServiceFee.getServiceBPartnerId();
 		taxId = remittanceAdviceLineServiceFee.getServiceFeeTaxId();
-		if(remittanceAdviceLineServiceFee.getServiceVatRate() != null && serviceFeeVatRate != null){
-			isServiceFeeVatRateValid = remittanceAdviceLineServiceFee.getServiceVatRate().compareTo(serviceFeeVatRate) == 0;
-		}
+
+		isServiceFeeVatRateValid = serviceFeeVatRate != null
+				&& remittanceAdviceLineServiceFee.getServiceVatRate() != null
+				&& remittanceAdviceLineServiceFee.getServiceVatRate().compareTo(serviceFeeVatRate) == 0;
+
 		isServiceFeeResolved = true;
 	}
 

@@ -79,6 +79,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -179,7 +180,6 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	{
 		TaxId serviceFeeTaxId = null;
 		ProductId serviceFeeProductId = null;
-		BPartnerId serviceFeeBPartnerId = null;
 		BigDecimal serviceFeeTaxVATRate = null;
 		final List<I_C_InvoiceLine> serviceFeeInvoiceLines = getInvoiceLines(serviceFeeInvoiceId);
 
@@ -187,22 +187,18 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		{
 			final I_C_InvoiceLine firstInvoiceLine = serviceFeeInvoiceLines.get(0);
 			serviceFeeTaxId = TaxId.ofRepoId(firstInvoiceLine.getC_Tax_ID());
-			serviceFeeProductId = ProductId.ofRepoId(firstInvoiceLine.getM_Product_ID());
+			serviceFeeProductId = ProductId.ofRepoIdOrNull(firstInvoiceLine.getM_Product_ID());
 
 			final I_C_Tax serviceFeeTax = taxDAO.getTaxById(serviceFeeTaxId.getRepoId());
-			serviceFeeTaxVATRate = serviceFeeTax != null ? serviceFeeTax.getRate() : null;
+			serviceFeeTaxVATRate = serviceFeeTax.getRate();
 		}
 
 		final I_C_Invoice serviceFeeInvoice = invoiceDAO.getByIdInTrx(serviceFeeInvoiceId);
-		if(serviceFeeInvoice != null){
-			serviceFeeBPartnerId = BPartnerId.ofRepoId(serviceFeeInvoice.getC_BPartner_ID());
-		}
-
 
 		return RemittanceAdviceLineServiceFee.builder()
 				.serviceFeeInvoiceId(serviceFeeInvoiceId)
 				.serviceProductId(serviceFeeProductId)
-				.serviceBPartnerId(serviceFeeBPartnerId)
+				.serviceBPartnerId(BPartnerId.ofRepoId(serviceFeeInvoice.getC_BPartner_ID()))
 				.serviceFeeTaxId(serviceFeeTaxId)
 				.serviceVatRate(serviceFeeTaxVATRate)
 				.build();
@@ -246,12 +242,14 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		final BPartnerBankAccountId bPartnerBankAccountId = remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerBankAccountId()
 				: remittanceAdvice.getDestinationBPartnerBankAccountId();
 
+		final Optional<BigDecimal> serviceFeeAmount = Optional.ofNullable(remittanceAdvice.getServiceFeeAmount());
+
 		return paymentBuilder
 				.adOrgId(remittanceAdvice.getOrgId())
 				.bpartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
 				.orgBankAccountId(BankAccountId.ofRepoId(bPartnerBankAccountId.getRepoId()))
 				.currencyId(remittanceAdvice.getRemittedAmountCurrencyId())
-				.payAmt(remittanceAdvice.getRemittedAmountSum().add(remittanceAdvice.getServiceFeeAmount()))
+				.payAmt(remittanceAdvice.getRemittedAmountSum().add(serviceFeeAmount.orElse(BigDecimal.ZERO)))
 				.dateAcct(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.dateTrx(TimeUtil.asLocalDate(remittanceAdvice.getDocumentDate()))
 				.tenderType(TenderType.DirectDeposit)
