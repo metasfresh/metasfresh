@@ -22,18 +22,6 @@
 
 package de.metas.banking.payment.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Set;
-
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -63,6 +51,17 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
@@ -193,7 +192,8 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.payAmt(payAmount.toBigDecimal())
 				.dateAcct(acctLineDate)
 				.dateTrx(acctLineDate) // Note: DateTrx should be the same as Line.DateAcct, and not Line.StatementDate.
-				.tenderType(tenderType);
+				.tenderType(tenderType)
+				.paymentCurrencyContext(bankStatementBL.getPaymentCurrencyContext(bankStatementLine));
 
 		if (invoiceId != null)
 		{

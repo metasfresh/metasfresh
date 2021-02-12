@@ -22,19 +22,25 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.util.Check;
+import de.metas.util.OptionalDeferredException;
+import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,19 +49,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
-import de.metas.money.Money;
-import de.metas.util.Check;
-import de.metas.util.OptionalDeferredException;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Builds one {@link I_C_AllocationHdr} of all given {@link PayableDocument}s and {@link PaymentDocument}s.
@@ -67,7 +65,7 @@ public class PaymentAllocationBuilder
 		DO_NOTHING, WRITE_OFF, DISCOUNT
 	}
 
-	public static final PaymentAllocationBuilder newBuilder()
+	public static PaymentAllocationBuilder newBuilder()
 	{
 		return new PaymentAllocationBuilder();
 	}
@@ -198,10 +196,6 @@ public class PaymentAllocationBuilder
 	}
 
 	/**
-	 * Create and complete one {@link I_C_AllocationHdr} for given candidate.
-	 */
-
-	/**
 	 * Allocate {@link #getPayableDocuments()} and {@link #getPaymentDocuments()}.
 	 *
 	 * @return created allocation candidates
@@ -283,10 +277,7 @@ public class PaymentAllocationBuilder
 		if (paymentVendorDocuments.size() > 1
 				|| payableVendorDocuments_NoCreditMemos.size() > 1)
 		{
-			final List<IPaymentDocument> paymentVendorDocs = new ArrayList<>();
-			paymentVendorDocs.addAll(paymentVendorDocuments);
-
-			throw new MultipleVendorDocumentsException(paymentVendorDocs, payableVendorDocuments_NoCreditMemos);
+			throw new MultipleVendorDocumentsException(paymentVendorDocuments, payableVendorDocuments_NoCreditMemos);
 		}
 	}
 
@@ -549,7 +540,6 @@ public class PaymentAllocationBuilder
 	/**
 	 * Iterate all given payable documents and create an allocation only for Discount and WriteOff amounts.
 	 *
-	 * @param payableDocuments
 	 * @return created allocation candidates.
 	 */
 	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(final List<PayableDocument> payableDocuments)
@@ -629,6 +619,7 @@ public class PaymentAllocationBuilder
 		return allocationLineCandidates;
 	}
 
+	@Nullable
 	private AllocationLineCandidate createAllocationLineCandidate_InvoiceProcessingFee(@NonNull final PayableDocument payable)
 	{
 		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
@@ -765,11 +756,7 @@ public class PaymentAllocationBuilder
 		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
 		final Money invoicePayAmtToAllocate = invoiceAmountsToAllocate.getPayAmt();
 
-		final CurrencyConversionContext conversionContext = moneyService.createConversionContext(
-				payment.getDate(),
-				payment.getCurrencyConversionTypeId(),
-				payment.getClientAndOrgId()
-		);
+		final CurrencyConversionContext conversionContext = getCurrencyConversionContext(payment);
 		final CurrencyRate currencyRate = currencyBL.getCurrencyRate(conversionContext, paymentCurrencyId, invoiceCurrencyId);
 
 		final Money paymentAmountToAllocate = currencyRate.convertAmount(payment.getAmountToAllocate());
@@ -822,6 +809,23 @@ public class PaymentAllocationBuilder
 						.build();
 			}
 		}
+	}
+
+	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final IPaymentDocument payment)
+	{
+		CurrencyConversionContext conversionContext = moneyService.createConversionContext(
+				payment.getDate(),
+				payment.getPaymentCurrencyContext().getCurrencyConversionTypeId(),
+				payment.getClientAndOrgId()
+		);
+
+		final FixedConversionRate fixedConversionRate = payment.getPaymentCurrencyContext().toFixedConversionRateOrNull();
+		if (fixedConversionRate != null)
+		{
+			conversionContext = conversionContext.withFixedConversionRate(fixedConversionRate);
+		}
+
+		return conversionContext;
 	}
 
 	private void markAsBuilt()

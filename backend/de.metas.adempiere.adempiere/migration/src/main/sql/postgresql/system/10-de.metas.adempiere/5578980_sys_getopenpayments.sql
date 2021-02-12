@@ -1,5 +1,13 @@
 DROP FUNCTION IF EXISTS getopenpayments(numeric,
                                         numeric,
+                                        character varying,
+                                        numeric,
+                                        timestamp WITHOUT TIME ZONE,
+                                        numeric)
+;
+
+DROP FUNCTION IF EXISTS getopenpayments(numeric,
+                                        numeric,
                                         timestamp WITHOUT TIME ZONE,
                                         numeric)
 ;
