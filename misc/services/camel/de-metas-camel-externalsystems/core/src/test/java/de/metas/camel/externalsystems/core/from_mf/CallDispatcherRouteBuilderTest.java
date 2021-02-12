@@ -84,7 +84,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 				.wereSentTo("direct:" + externalSystem + "-" + command)
 				.whenDone(1).create();
 
-		final String jsonRequest = "{\"externalSystemName\":\"" + externalSystem + "\",\"command\":\"" + command + "\",\"parameters\":{\"parameterName1\":\"parameterValue1\",\"parameterName2\":\"parameterValue2\"}}";
+		final String jsonRequest = "{\"orgCode\":\"orgCode\",\"externalSystemName\":\"" + externalSystem + "\",\"command\":\"" + command + "\",\"parameters\":{\"parameterName1\":\"parameterValue1\",\"parameterName2\":\"parameterValue2\"}}";
 
 		template.requestBody("direct:dispatch", jsonRequest);
 

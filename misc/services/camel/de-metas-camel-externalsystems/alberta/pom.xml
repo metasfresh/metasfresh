@@ -19,8 +19,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>alberta-camelroutes</module>
-        <module>generated-client-code</module>
+        <module>de-metas-camel-alberta-camelroutes</module>
+        <module>alberta-api-client</module>
     </modules>
 
    

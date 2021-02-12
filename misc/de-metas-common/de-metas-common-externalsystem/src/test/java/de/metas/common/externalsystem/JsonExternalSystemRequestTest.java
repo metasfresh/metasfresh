@@ -38,6 +38,7 @@ class JsonExternalSystemRequestTest
 	void serializeDeserialize() throws IOException
 	{
 		final JsonExternalSystemRequest request = JsonExternalSystemRequest.builder().externalSystemName(JsonExternalSystemName.of("externalSystem"))
+				.orgCode("orgCode")
 				.command("command")
 				.parameter("parameterName1", "parameterValue1")
 				.parameter("parameterName2", "parameterValue2")
