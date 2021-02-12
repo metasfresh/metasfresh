@@ -73,7 +73,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -81,6 +83,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
@@ -100,6 +103,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public I_M_HU getById(@NonNull final HuId huId)
@@ -122,58 +133,48 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public IMutableHUContext createMutableHUContext()
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext();
 	}
 
 	@Override
 	public IMutableHUContext createMutableHUContext(final IContextAware contextProvider)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(contextProvider);
 	}
 
 	@Override
 	public IMutableHUContext createMutableHUContextForProcessing(final IContextAware contextProvider)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContextForProcessing(contextProvider);
 	}
 
 	@Override
 	public IMutableHUContext createMutableHUContextForProcessing()
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newWithThreadInheritedTrx());
 	}
-
 
 	@Override
 	public IMutableHUContext createMutableHUContext(final Properties ctx, final @NonNull ClientAndOrgId clientAndOrgId)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(ctx, clientAndOrgId);
 	}
 
 	@Override
 	public IMutableHUContext createMutableHUContext(final Properties ctx, final String trxName)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(ctx, trxName);
 	}
 
 	@Override
 	public I_C_UOM getHandlingUOM(final I_M_Product product)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
 		return productBL.getStockUOM(product);
 	}
 
 	@Override
 	public I_C_UOM getC_UOM(final I_M_Transaction mtrx)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		final ProductId productId = ProductId.ofRepoId(mtrx.getM_Product_ID());
 		return productBL.getStockUOM(productId);
 	}
@@ -184,12 +185,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		//
 		// Create HU Context
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(huToDestroy);
-		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContext(context);
+		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContext(context);
 
 		//
 		// Try to destroy given HU (or some of it's children)
 		final Mutable<Boolean> destroyed = new Mutable<>(false);
-		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContextInitial)
+		huTrxBL.createHUContextProcessorExecutor(huContextInitial)
 				.run(huContext -> {
 					if (destroyIfEmptyStorage(huContext, huToDestroy))
 					{
@@ -206,10 +207,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU huToDestroy)
 	{
-		Services.get(ITrxManager.class).assertTrxNotNull(huContext);
-
-		// Service(s)
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		trxManager.assertTrxNotNull(huContext);
 
 		//
 		// Check given HU and also iterate downstream and destroy all HUs which are empty
@@ -256,8 +254,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(final IHUContext huContext, final I_M_HU hu)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
 		handlingUnitsRepo.saveHU(hu);
@@ -267,7 +263,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public void markDestroyed(final IHUContext huContext, final Collection<I_M_HU> hus)
 	{
 		// services
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor(huContext)
 				.run(huContext1 -> {
 					for (final I_M_HU hu : hus)
@@ -539,7 +534,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu)
 	{
 		// this was done in extreme haste.
-		final List<I_M_ShipmentSchedule_QtyPicked> scheduleQtyPickeds = Services.get(IHUShipmentScheduleDAO.class).retrieveSchedsQtyPickedForHU(hu);
+		final List<I_M_ShipmentSchedule_QtyPicked> scheduleQtyPickeds = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
 
 		for (final I_M_ShipmentSchedule_QtyPicked scheduleQtyPicked : scheduleQtyPickeds)
 		{
@@ -908,8 +903,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
 	{
-		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 
@@ -923,7 +916,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider, @NonNull final String huStatus)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHUContext huContext = createMutableHUContext(contextProvider);
 
 		huStatusBL.setHUStatus(huContext, hu, huStatus);
@@ -955,4 +947,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.getSingleItem()
 				.getNewHU();
 	}
+
+	@Override
+	public AttributeSetInstanceId createASIFromHUAttributes(@NonNull final ProductId productId, @NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+		return createASIFromHUAttributes(productId, hu);
+	}
+
+	@Override
+	public AttributeSetInstanceId createASIFromHUAttributes(@NonNull final ProductId productId, @NonNull final I_M_HU hu)
+	{
+		final ImmutableAttributeSet attributes = attributeStorageFactoryService.createHUAttributeStorageFactory()
+				.getImmutableAttributeSet(hu);
+
+		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIWithASFromProductAndInsertAttributeSet(productId, attributes);
+		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+	}
+
 }

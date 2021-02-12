@@ -39,12 +39,12 @@ import lombok.Value;
 @Value
 public class ActivityControlCreateRequest
 {
-	I_PP_Order order;
-	PPOrderRoutingActivity orderActivity;
-	ZonedDateTime movementDate;
-	Quantity qtyMoved;
-	Duration durationSetup;
-	Duration duration;
+	@NonNull I_PP_Order order;
+	@NonNull PPOrderRoutingActivity orderActivity;
+	@NonNull ZonedDateTime movementDate;
+	@NonNull Quantity qtyMoved;
+	@NonNull Duration durationSetup;
+	@NonNull Duration duration;
 
 	@Builder
 	private ActivityControlCreateRequest(

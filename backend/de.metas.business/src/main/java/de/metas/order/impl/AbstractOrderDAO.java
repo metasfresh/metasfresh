@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -26,7 +25,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +61,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 public abstract class AbstractOrderDAO implements IOrderDAO
 {
+	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
@@ -74,23 +74,11 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return order;
 	}
 
-	@Nullable
-	private I_C_Order getByExternalId(@Nullable final ExternalId externalId)
-	{
-		final I_C_Order order = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId.getValue())
-				.create()
-				.first();
-
-		return order;
-	}
-
 	private List<I_C_Order> getOrdersByExternalIds(@NonNull final List<ExternalId> externalIds)
 	{
 		final List<String> externalIdsAsStrings = externalIds.stream().map(ExternalId::getValue).collect(Collectors.toList());
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_ExternalId, externalIdsAsStrings)
 				.create()
@@ -100,7 +88,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds)
 	{
-		Map<ExternalId, OrderId> externalIdOrderIdMap = new HashMap<ExternalId, OrderId>();
+		final Map<ExternalId, OrderId> externalIdOrderIdMap = new HashMap<>();
 		final List<I_C_Order> ordersWithExternalIds = getOrdersByExternalIds(externalIds);
 		for (final I_C_Order order : ordersWithExternalIds)
 		{
@@ -197,7 +185,8 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			@CacheTrx final String trxName,
 			@NonNull final Class<T> clazz)
 	{
-		final List<T> orderLines = Services.get(IQueryBL.class)
+
+		return queryBL
 				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, ctx, trxName)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID, orderId)
 				.orderBy()
@@ -206,51 +195,45 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.endOrderBy()
 				.create()
 				.list(clazz);
-
-		return orderLines;
 	}
 
 	@Override
-	public final ImmutableList<OrderLineId> retrieveAllOrderLineIds(@NonNull final OrderId orderId)
+	public final ImmutableList<OrderAndLineId> retrieveAllOrderLineIds(@NonNull final OrderId orderId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID, orderId)
 				.create()
 				.listIds()
 				.stream()
-				.map(OrderLineId::ofRepoId)
+				.map(orderLineRepoId -> OrderAndLineId.ofRepoIds(orderId, orderLineRepoId))
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
 	public <T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(final I_C_Order order, final int lineNo, final Class<T> clazz)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		return queryBL.createQueryBuilder(org.compiere.model.I_C_OrderLine.class, order)
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_C_Order_ID, order.getC_Order_ID())
 				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMN_Line, lineNo)
 				.create()
-				.firstOnly(clazz);
+				.firstOnlyNotNull(clazz);
 	}
 
 	@Override
-	public boolean hasCompletedOrders(final Properties ctx, final int bpartnerId)
+	public List<I_C_OrderLine> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addInArrayOrAllFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
-				.create()
-				.anyMatch();
-	}
+		if(orderIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-	@Override
-	public List<I_M_InOut> retrieveInOuts(final I_C_Order order)
-	{
-		return retrieveInOutsQuery(order)
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderIds)
+				.orderBy(I_C_OrderLine.COLUMNNAME_C_Order_ID)
+				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
 				.create()
-				.list(I_M_InOut.class);
+				.listImmutable(I_C_OrderLine.class);
 	}
 
 	@Override
@@ -263,7 +246,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 
 	private IQueryBuilder<I_M_InOut> retrieveInOutsQuery(final I_C_Order order)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InOut.class, order)
+		return queryBL.createQueryBuilder(I_M_InOut.class, order)
 				.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.filterByClientId()
 				.addOnlyActiveRecordsFilter()
@@ -278,7 +261,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			return ImmutableSet.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
@@ -295,7 +278,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public <T extends I_C_Order> List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
+	public <T extends I_C_Order> List<T> getByIds(final Collection<OrderId> orderIds, final Class<T> clazz)
 	{
 		return loadByRepoIdAwares(ImmutableSet.copyOf(orderIds), clazz);
 	}
@@ -303,7 +286,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public Stream<OrderId> streamOrderIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_Order.class)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()

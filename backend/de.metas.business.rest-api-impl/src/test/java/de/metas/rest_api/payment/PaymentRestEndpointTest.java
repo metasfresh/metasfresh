@@ -23,7 +23,9 @@
 package de.metas.rest_api.payment;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.currency.CurrencyCode;
 import de.metas.money.CurrencyId;
+import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
@@ -56,7 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class PaymentRestEndpointTest
 {
-	public static final String CURRENCY_CODE_EUR = "EUR";
+	public static final CurrencyCode CURRENCY_CODE_EUR = CurrencyCode.EUR;
 	public static final BigDecimal PAYMENT_AMOUNT = BigDecimal.valueOf(123.456);
 	public static final String TARGET_IBAN = "012345678901234";
 	public static final String AD_Org_Value = "orgCode";
@@ -90,7 +92,7 @@ class PaymentRestEndpointTest
 				.orgCode(AD_Org_Value)
 				.externalOrderId(externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
-				.currencyCode(CURRENCY_CODE_EUR)
+				.currencyCode(CURRENCY_CODE_EUR.toThreeLetterCode())
 				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
 				.build();
@@ -99,7 +101,7 @@ class PaymentRestEndpointTest
 				.orgCode(AD_Org_Value)
 				.externalOrderId("Order")
 				.bpartnerIdentifier("ext-bPartner")
-				.currencyCode(CURRENCY_CODE_EUR)
+				.currencyCode(CURRENCY_CODE_EUR.toThreeLetterCode())
 				.amount(PAYMENT_AMOUNT)
 				.targetIBAN(TARGET_IBAN)
 				.build(),
@@ -121,7 +123,7 @@ class PaymentRestEndpointTest
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
 
 		// run the "before_complete" interceptor
-		C_Order.INSTANCE.linkWithPaymentByExternalOrderId(salesOrder);
+		new C_Order(new OrderLineDetailRepository()).linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment
 		assertEquals(payment.getC_Payment_ID(), salesOrder.getC_Payment_ID());
@@ -169,7 +171,7 @@ class PaymentRestEndpointTest
 
 	private void createBpBankAccount(final int bPartnerId)
 	{
-		final CurrencyId currencyId = currencyService.getCurrencyId(CURRENCY_CODE_EUR);
+		final CurrencyId currencyId = currencyService.getCurrencyId(CURRENCY_CODE_EUR.toThreeLetterCode());
 		assertNotNull(currencyId);
 
 		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);

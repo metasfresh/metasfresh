@@ -10,6 +10,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -40,6 +42,7 @@ public class CurrencyId implements RepoIdAware
 		return new CurrencyId(repoId);
 	}
 
+	@Nullable
 	public static CurrencyId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -69,7 +72,7 @@ public class CurrencyId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final CurrencyId currencyId1, final CurrencyId currencyId2)
+	public static boolean equals(@Nullable final CurrencyId currencyId1, @Nullable final CurrencyId currencyId2)
 	{
 		return Objects.equals(currencyId1, currencyId2);
 	}

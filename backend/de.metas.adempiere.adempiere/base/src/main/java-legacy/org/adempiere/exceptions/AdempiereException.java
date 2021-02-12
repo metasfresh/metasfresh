@@ -1,16 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 2008 SC ARHIPAC SERVICE SRL. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- *****************************************************************************/
 package org.adempiere.exceptions;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
@@ -53,7 +40,6 @@ import lombok.NonNull;
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-@SuppressWarnings("serial")
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
@@ -63,7 +49,6 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @return {@link AdempiereException} or <code>null</code> if the throwable was null.
 	 */
-	@Nullable
 	public static AdempiereException wrapIfNeeded(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
@@ -418,11 +403,10 @@ public class AdempiereException extends RuntimeException
 	 * Convenient method to throw this exception or just log it as {@link Level#WARN}.
 	 *
 	 * @param throwIt <code>true</code> if the exception shall be thrown
-	 * @return always returns <code>false</code>.
 	 */
-	public final boolean throwOrLogWarning(final boolean throwIt, final Logger logger)
+	public final void throwOrLogWarning(final boolean throwIt, final Logger logger)
 	{
-		return throwOrLog(throwIt, Level.WARN, logger);
+		throwOrLog(throwIt, Level.WARN, logger);
 	}
 
 	/**
@@ -519,9 +503,9 @@ public class AdempiereException extends RuntimeException
 				: null;
 	}
 
-	public AdempiereException setIssueCategory(@NonNull final IssueCategory issueCategory)
+	public void setIssueCategory(@NonNull final IssueCategory issueCategory)
 	{
-		return setParameter(PARAMETER_IssueCategory, issueCategory);
+		setParameter(PARAMETER_IssueCategory, issueCategory);
 	}
 
 	@NonNull
@@ -548,34 +532,6 @@ public class AdempiereException extends RuntimeException
 		}
 
 		parameters.put(name, Null.box(value));
-		resetMessageBuilt();
-
-		return this;
-	}
-
-	protected final AdempiereException putParametetersFrom(@Nullable final Throwable ex)
-	{
-		if (ex instanceof AdempiereException)
-		{
-			this.putParameteters(((AdempiereException)ex).parameters);
-		}
-
-		return this;
-	}
-
-	private AdempiereException putParameteters(@Nullable final Map<String, Object> parameters)
-	{
-		if (parameters == null || parameters.isEmpty())
-		{
-			return this;
-		}
-
-		if (this.parameters == null)
-		{
-			this.parameters = new LinkedHashMap<>();
-		}
-
-		parameters.forEach((name, value) -> this.parameters.put(name, Null.box(value)));
 		resetMessageBuilt();
 
 		return this;

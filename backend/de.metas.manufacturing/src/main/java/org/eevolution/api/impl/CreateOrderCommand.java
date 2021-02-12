@@ -18,8 +18,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -27,11 +27,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -75,7 +75,6 @@ final class CreateOrderCommand
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final PPOrderCreateRequest request;
@@ -113,7 +112,7 @@ final class CreateOrderCommand
 
 		//
 		// Document Type & Status
-		final DocTypeId docTypeId = getDocTypeId(request.getClientAndOrgId());
+		final DocTypeId docTypeId = getDocTypeId(request.getDocBaseType(), request.getClientAndOrgId());
 
 		ppOrderRecord.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrderRecord.setC_DocType_ID(docTypeId.getRepoId());
@@ -127,7 +126,7 @@ final class CreateOrderCommand
 
 		//
 		// BOM & Workflow
-		ppOrderRecord.setPP_Product_BOM_ID(getBOMId(request, productPlanning).getRepoId());
+		ppOrderRecord.setPP_Product_BOM_ID(getBOMId(productPlanning).getRepoId());
 		ppOrderRecord.setAD_Workflow_ID(getRoutingId(productPlanning).getRepoId());
 
 		//
@@ -149,9 +148,10 @@ final class CreateOrderCommand
 		ppOrderRecord.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
 
 		//
-		// Inherit values from MRP demand
+		// Dimensions / References
 		ppOrderRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderRecord.setC_BPartner_ID(BPartnerId.toRepoId(getCustomerIdOrNull(request)));
+		ppOrderRecord.setC_Project_ID(ProjectId.toRepoId(request.getProjectId()));
 
 		ppOrderRecord.setIsPickingOrder(productPlanning != null && productPlanning.isPickingOrder());
 
@@ -213,9 +213,7 @@ final class CreateOrderCommand
 		return null;
 	}
 
-	private ProductBOMId getBOMId(
-			@NonNull final PPOrderCreateRequest request,
-			@Nullable final I_PP_Product_Planning productPlanning)
+	private ProductBOMId getBOMId(@Nullable final I_PP_Product_Planning productPlanning)
 	{
 		if (request.getBomId() != null)
 		{
@@ -244,8 +242,13 @@ final class CreateOrderCommand
 				.setParameter("productPlanning", productPlanning);
 	}
 
-	private static PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
+	private PPRoutingId getRoutingId(@Nullable final I_PP_Product_Planning productPlanning)
 	{
+		if (request.getRoutingId() != null)
+		{
+			return request.getRoutingId();
+		}
+
 		if (productPlanning != null)
 		{
 			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());
@@ -276,10 +279,12 @@ final class CreateOrderCommand
 		}
 	}
 
-	private DocTypeId getDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
+	private DocTypeId getDocTypeId(
+			@NonNull final PPOrderDocBaseType docBaseType,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder)
+				.docBaseType(docBaseType.getCode())
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build());

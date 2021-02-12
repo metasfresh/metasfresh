@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M_HU_PackingMaterial, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1571247170L;
+	private static final long serialVersionUID = 439819935L;
 
     /** Standard Constructor */
     public X_M_HU_PackingMaterial (final Properties ctx, final int M_HU_PackingMaterial_ID, @Nullable final String trxName)
@@ -36,7 +36,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setAllowedPackingVolume (final BigDecimal AllowedPackingVolume)
+	public void setAllowedPackingVolume (final @Nullable BigDecimal AllowedPackingVolume)
 	{
 		set_Value (COLUMNNAME_AllowedPackingVolume, AllowedPackingVolume);
 	}
@@ -49,7 +49,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setAllowedPackingWeight (final BigDecimal AllowedPackingWeight)
+	public void setAllowedPackingWeight (final @Nullable BigDecimal AllowedPackingWeight)
 	{
 		set_Value (COLUMNNAME_AllowedPackingWeight, AllowedPackingWeight);
 	}
@@ -92,7 +92,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -104,7 +104,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setExcessVolumeTolerance (final BigDecimal ExcessVolumeTolerance)
+	public void setExcessVolumeTolerance (final @Nullable BigDecimal ExcessVolumeTolerance)
 	{
 		set_Value (COLUMNNAME_ExcessVolumeTolerance, ExcessVolumeTolerance);
 	}
@@ -117,7 +117,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setExcessWeightTolerance (final BigDecimal ExcessWeightTolerance)
+	public void setExcessWeightTolerance (final @Nullable BigDecimal ExcessWeightTolerance)
 	{
 		set_Value (COLUMNNAME_ExcessWeightTolerance, ExcessWeightTolerance);
 	}
@@ -130,7 +130,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setFillingLevel (final BigDecimal FillingLevel)
+	public void setFillingLevel (final @Nullable BigDecimal FillingLevel)
 	{
 		set_Value (COLUMNNAME_FillingLevel, FillingLevel);
 	}
@@ -143,7 +143,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setHeight (final BigDecimal Height)
+	public void setHeight (final @Nullable BigDecimal Height)
 	{
 		set_Value (COLUMNNAME_Height, Height);
 	}
@@ -168,7 +168,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setLength (final BigDecimal Length)
+	public void setLength (final @Nullable BigDecimal Length)
 	{
 		set_Value (COLUMNNAME_Length, Length);
 	}
@@ -235,7 +235,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setWidth (final BigDecimal Width)
+	public void setWidth (final @Nullable BigDecimal Width)
 	{
 		set_Value (COLUMNNAME_Width, Width);
 	}

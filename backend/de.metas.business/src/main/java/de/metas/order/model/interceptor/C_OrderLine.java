@@ -6,14 +6,15 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.product.IProductDAO;
+import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -28,17 +29,12 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.temporal.ChronoUnit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -66,42 +62,47 @@ import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
-@Component
 public class C_OrderLine
 {
+	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
+
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
-
+	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
+	private final OrderLineDetailRepository orderLineDetailRepository;
 
-	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
-	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
-	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.producthadexerror");
-
-
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
-	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
+	C_OrderLine(
+			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
+			@NonNull final OrderLineDetailRepository orderLineDetailRepository)
 	{
 		this.groupChangesHandler = groupChangesHandler;
+		this.orderLineDetailRepository = orderLineDetailRepository;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void beforeDelete(@NonNull final I_C_OrderLine orderLine)
+	{
+		unlinkReferencedOrderLines(orderLine);
+		orderLineDetailRepository.deleteByOrderLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()));
 	}
 
 	/**
 	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
 	 * FRESH-386: likewise, also make sure that counter document lines are unlinked as well.
-	 *
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
+	 * Task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
+	private void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		// 09557
 		queryBL
 				.createQueryBuilder(I_C_OrderLine.class, orderLine)
@@ -136,51 +137,31 @@ public class C_OrderLine
 	})
 	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
 		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_M_Product_ID
 	})
-	public void checkHaddexDate(final I_C_OrderLine orderLine)
+	public void validateHaddex(final I_C_OrderLine orderLine)
 	{
-		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		if (!order.isSOTrx())
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		if (!orderBL.isHaddexOrder(order))
 		{
 			return;
 		}
 
-		final I_M_Product product = productDAO.getById(orderLine.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 
-		if (product.isHaddexCheck() && product.getDateHaddexCheck() != null)
+		if (productBL.isHaddexProduct(productId))
 		{
-			final long differenceBetweenHaddexCheckDateAndPromisedDateInMonths = Math.abs(
-					ChronoUnit.MONTHS.between(
-							TimeUtil.asZonedDateTime(product.getDateHaddexCheck()),
-							TimeUtil.asZonedDateTime(order.getDatePromised())
-							));
-
-
-			if (differenceBetweenHaddexCheckDateAndPromisedDateInMonths > getMaxHaddexAgeInMonths(orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID()))
-			{
-				throw new AdempiereException(MSG_HADDEX_CHECK_ERROR).markAsUserValidationError();
-			}
+			orderBL.validateHaddexDate(order);
 		}
-
-	}
-
-	private int getMaxHaddexAgeInMonths(int clientID, int orgID)
-	{
-		final int months = sysConfigBL.getIntValue(SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS, 24, clientID, orgID);
-		if (months > 0)
-		{
-			return months;
-		}
-		return Integer.MAX_VALUE;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -195,7 +176,7 @@ public class C_OrderLine
 
 	/**
 	 * Set qtyOrdered, to make sure is up2date. Note that this value is also set in
-	 * {@link CalloutOrder#amt(java.util.Properties, int, org.compiere.model.GridTab, org.compiere.model.GridField, Object)}.
+	 * {@link CalloutOrder#amt(org.adempiere.ad.callout.api.ICalloutField))}.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -205,14 +186,12 @@ public class C_OrderLine
 	})
 	public void setQtyOrdered(final I_C_OrderLine orderLine)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final Quantity qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
 		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 	}
 
 	/**
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
+	 * Task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
@@ -220,7 +199,7 @@ public class C_OrderLine
 			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateQtyReserved(orderLine);
+		orderLineBL.updateQtyReserved(orderLine);
 	}
 
 	/**
@@ -240,7 +219,7 @@ public class C_OrderLine
 		ol.setQtyReserved(BigDecimal.ZERO);
 
 		// task: 08665 ts: but only log when in developer mode. i don't see how this warning should help the user
-		if (Services.get(IDeveloperModeBL.class).isEnabled())
+		if (developerModeBL.isEnabled())
 		{
 			final AdempiereException ex = new AdempiereException("@" + ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
 					+ "\nStorage: " + ol);
@@ -249,7 +228,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/3298
+	 * Task https://github.com/metasfresh/metasfresh/issues/3298
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -280,8 +259,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
+	 * Task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_QtyOrdered,
@@ -290,7 +268,7 @@ public class C_OrderLine
 	})
 	public void updateQuantities(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());
+		orderBL.updateOrderQtySums(orderLine.getC_Order());
 	}
 
 	@CalloutMethod(columnNames = {
@@ -328,7 +306,7 @@ public class C_OrderLine
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID, I_C_OrderLine.COLUMNNAME_IsTempPricingConditions })
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLinePricingConditions.class).updateNoPriceConditionsColor(orderLine);
+		orderLinePricingConditions.updateNoPriceConditionsColor(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -342,7 +320,7 @@ public class C_OrderLine
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
-		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
+		partnerProductBL.assertNotExcludedFromSaleToCustomer(productId, partnerId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -361,7 +339,6 @@ public class C_OrderLine
 		// make the BL revalidate the discounts..the new QtyEntered might also mean a new discount schema break
 		orderLine.setM_DiscountSchemaBreak(null);
 
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(orderLine)
 				.resultUOM(ResultUOM.PRICE_UOM)
@@ -376,8 +353,6 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void ensureOrderLineHasShipper(final I_C_OrderLine orderLine)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 		if (orderLine.getM_Shipper_ID() <= 0)
 		{
 			logger.debug("Making sure {} has a M_Shipper_ID", orderLine);
@@ -389,13 +364,13 @@ public class C_OrderLine
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void updateProductDescriptionFromProductBOMIfConfigured(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
+		orderLineBL.updateProductDescriptionFromProductBOMIfConfigured(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateProductDocumentNote(orderLine);
+		orderLineBL.updateProductDocumentNote(orderLine);
 	}
 }

@@ -22,10 +22,13 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
@@ -47,6 +50,7 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -55,6 +59,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -63,6 +68,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 public class HUInOutBL implements IHUInOutBL
 {
@@ -336,4 +342,26 @@ public class HUInOutBL implements IHUInOutBL
 			huAssignmentBL.copyHUAssignments(lineRecord, lineRecord.getReversalLine());
 		}
 	}
+
+	@Override
+	public ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutLineIds(@NonNull final Set<InOutLineId> inoutLineIds)
+	{
+		if (inoutLineIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final ImmutableSet<TableRecordReference> recordRefs = inoutLineIds.stream()
+				.map(inoutLineId -> TableRecordReference.of(I_M_InOutLine.Table_Name, inoutLineId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSetMultimap<TableRecordReference, HuId> huIdsByRecordRefs = huAssignmentBL.getHUsByRecordRefs(recordRefs);
+
+		return huIdsByRecordRefs.entries()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						entry -> entry.getKey().getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId),
+						entry -> entry.getValue()));
+	}
+
 }

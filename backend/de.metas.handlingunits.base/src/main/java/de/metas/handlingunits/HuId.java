@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -51,22 +52,22 @@ public class HuId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final HuId huId)
+	public static int toRepoId(@Nullable final HuId huId)
 	{
 		return huId != null ? huId.getRepoId() : -1;
 	}
 
-	public static Set<HuId> ofRepoIds(final Collection<Integer> repoIds)
+	public static Set<HuId> ofRepoIds(@NonNull final Collection<Integer> repoIds)
 	{
 		return repoIds.stream().map(HuId::ofRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static Set<Integer> toRepoIds(final Collection<HuId> huIds)
+	public static Set<Integer> toRepoIds(@NonNull final Collection<HuId> huIds)
 	{
 		return huIds.stream().map(HuId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static Set<HuId> fromRepoIds(final Collection<Integer> huRepoIds)
+	public static Set<HuId> fromRepoIds(@Nullable final Collection<Integer> huRepoIds)
 	{
 		if (huRepoIds == null || huRepoIds.isEmpty())
 		{
@@ -90,7 +91,7 @@ public class HuId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final HuId o1, final HuId o2)
+	public static boolean equals(@Nullable final HuId o1, @Nullable final HuId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

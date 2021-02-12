@@ -156,8 +156,6 @@
         <module>de.metas.shipper.gateway.dhl</module>
         <module>de.metas.shipper.gateway.dpd</module>
 
-        <module>de.metas.ui.web.base</module>
-
         <module>de.metas.util</module>
         <module>de.metas.util.web</module>
 
@@ -181,6 +179,11 @@
         <module>vertical-healthcare_ch</module>
         <module>de.metas.issue.tracking.github</module>
         <module>de.metas.issue.tracking.everhour</module>
+
+        <module>de.metas.ui.web.base</module>
+
+        <module>de.metas.servicerepair.base</module>
+        <module>de.metas.servicerepair.webui</module>
 
         <module>metasfresh-webui-api</module>
         <module>metasfresh-dist</module>
@@ -470,7 +473,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -484,7 +487,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -497,7 +500,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -510,7 +513,7 @@
         <extensions>
             <extension>
                 <!-- Enabling the use of external ssh commands to deliver artifacts to
-                    our repo. We are using putty, which means that authentification is done by
+                    our repo. We are using putty, which means that authentication is done by
                     pageant :-) -->
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>

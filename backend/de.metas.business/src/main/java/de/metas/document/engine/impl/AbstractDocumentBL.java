@@ -180,7 +180,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		// is a different instance. If we save 'document' in that case, the changes to 'doc' will be lost.
 		final Object documentModel = doc.getDocumentModel();
 		InterfaceWrapperHelper.save(documentModel);
-		InterfaceWrapperHelper.refresh(document);
+		InterfaceWrapperHelper.refresh(documentModel);
 
 		if (expectedDocStatus != null && !expectedDocStatus.equals(doc.getDocStatus()))
 		{

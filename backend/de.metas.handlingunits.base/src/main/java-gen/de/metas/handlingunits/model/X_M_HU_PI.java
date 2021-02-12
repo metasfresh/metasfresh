@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PI extends org.compiere.model.PO implements I_M_HU_PI, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -115502887L;
+	private static final long serialVersionUID = 979131992L;
 
     /** Standard Constructor */
     public X_M_HU_PI (final Properties ctx, final int M_HU_PI_ID, @Nullable final String trxName)
@@ -35,7 +35,7 @@ public class X_M_HU_PI extends org.compiere.model.PO implements I_M_HU_PI, org.c
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}

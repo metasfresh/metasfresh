@@ -1,7 +1,7 @@
 package org.eevolution.callout;
 
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -49,7 +49,7 @@ public class PP_Order extends CalloutEngine
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -63,17 +63,15 @@ public class PP_Order extends CalloutEngine
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 	}
 
-
 	/**
 	 * When document type (target) is changed, update the DocumentNo.
 	 */
 	@CalloutMethod(columnNames = I_PP_Order.COLUMNNAME_C_DocTypeTarget_ID)
 	public void onC_DocTypeTarget_ID(final I_PP_Order ppOrder)
 	{
-		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocTypeTarget_ID());
-		final I_C_DocType docTypeTarget = docTypeTargetId != null
-				? docTypeDAO.getById(docTypeTargetId)
-				: null;
+		final I_C_DocType docTypeTarget = DocTypeId.optionalOfRepoId(ppOrder.getC_DocTypeTarget_ID())
+				.map(docTypeBL::getById)
+				.orElse(null);
 
 		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
 				.createPreliminaryDocumentNoBuilder()

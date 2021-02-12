@@ -23,7 +23,6 @@ import java.util.Objects;
  * @author Armen Rizal, GOODWILL CONSULTING FR [2789943] Better DBException handling for PostgreSQL https://sourceforge.net/tracker/?func=detail&aid=2789943&group_id=176962&atid=879335
  * @version $Id: DBException.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
  */
-@SuppressWarnings("serial")
 public class DBException extends AdempiereException
 {
 	/**
@@ -31,7 +30,6 @@ public class DBException extends AdempiereException
 	 *
 	 * @return {@link DBException} or null if throwable is null
 	 */
-	@Nullable
 	public static DBException wrapIfNeeded(final Throwable throwable)
 	{
 		if (throwable == null)

@@ -1,18 +1,32 @@
 package org.eevolution.mrp.api.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.impl.PlainDocumentBL;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.logging.LogManager;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.PPRoutingType;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
+import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.product.ResourceId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.util.Services;
+import de.metas.workflow.WFDurationUnit;
 import de.metas.workflow.interceptors.AD_Workflow;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -40,79 +54,28 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
-import org.compiere.model.X_AD_Workflow;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.eevolution.LiberoConstants;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_PP_MRP;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.X_DD_Order;
-import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.expectations.MRPExpectation;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
-import org.junit.Assume;
 import org.slf4j.Logger;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.engine.impl.PlainDocumentBL;
-import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.logging.LogManager;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.eventbus.MaterialEventConverter;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
-import de.metas.material.planning.DurationUnitCodeUtils;
-import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.impl.MRPContext;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.material.replenish.ReplenishInfoRepository;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfoUpdateRequest;
-import de.metas.product.ResourceId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMConversionDAO;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+import java.util.Properties;
 
 public class MRPTestHelper
 {
@@ -120,7 +83,7 @@ public class MRPTestHelper
 	// Context
 	private ZonedDateTime _today = ZonedDateTime.now();
 	public Properties ctx;
-	private String trxName;
+	@Nullable private String trxName;
 	public final IContextAware contextProvider = new IContextAware()
 	{
 		@Override
@@ -197,7 +160,7 @@ public class MRPTestHelper
 		this.queryBL = Services.get(IQueryBL.class);
 		this.docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 
-		setupContext(initEnvironment);
+		setupContext();
 		setupMRPExecutorService();
 
 		registerModelValidators();
@@ -205,7 +168,7 @@ public class MRPTestHelper
 		createMasterData();
 	}
 
-	private void setupContext(final boolean initEnvironment)
+	private void setupContext()
 	{
 		ctx = Env.getCtx();
 		trxName = ITrx.TRXNAME_None;
@@ -265,7 +228,7 @@ public class MRPTestHelper
 		this.bpGroupDefault = createBPGroup("Default");
 
 		createDocType(X_C_DocType.DOCBASETYPE_DistributionOrder);
-		createDocType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		createDocType(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode());
 		createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 
 		createMRPMessage(ErrorCodes.MRP_ERROR_999_Unknown);
@@ -320,7 +283,8 @@ public class MRPTestHelper
 		return new org.eevolution.model.LiberoValidator(
 				ppOrderConverter,
 				postMaterialEventService,
-				new DocumentNoBuilderFactory(Optional.empty()));
+				new DocumentNoBuilderFactory(Optional.empty()),
+				new PPOrderBOMBL());
 	}
 
 	public Timestamp getToday()
@@ -329,26 +293,13 @@ public class MRPTestHelper
 	}
 
 	public void setToday(
-			int year,
-			int month,
-			int day)
+			final int year,
+			final int month,
+			final int day)
 	{
 		this._today = LocalDate.of(year, month, day)
 				.atStartOfDay()
 				.atZone(ZoneId.systemDefault());
-	}
-
-	public IMutableMRPContext createMutableMRPContext()
-	{
-		final IMutableMRPContext mrpContext = new MRPContext();
-		mrpContext.setCtx(ctx);
-		mrpContext.setTrxName(ITrx.TRXNAME_None);
-
-		// mrpContext.setPlanner_User_ID(p_Planner_ID);
-		mrpContext.setDate(getToday());
-		mrpContext.setAD_Client_ID(adClient.getAD_Client_ID());
-
-		return mrpContext;
 	}
 
 	public I_AD_Org createOrg(final String name)
@@ -395,8 +346,8 @@ public class MRPTestHelper
 	}
 
 	public I_S_Resource createResource(
-			String name,
-			String manufacturingResourceType,
+			final String name,
+			final String manufacturingResourceType,
 			final I_S_ResourceType resourceType)
 	{
 		final I_S_Resource resource = InterfaceWrapperHelper.newInstance(I_S_Resource.class, contextProvider);
@@ -423,14 +374,14 @@ public class MRPTestHelper
 	public I_M_Warehouse createWarehouse(
 			final String name,
 			final I_AD_Org org,
-			final I_S_Resource plant)
+			@Nullable final I_S_Resource plant)
 	{
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class, contextProvider);
 		warehouse.setAD_Org_ID(org.getAD_Org_ID());
 		warehouse.setValue(name);
 		warehouse.setName(name);
 		warehouse.setIsInTransit(false);
-		warehouse.setPP_Plant(plant);
+		warehouse.setPP_Plant_ID(plant != null ? plant.getS_Resource_ID() : -1);
 		InterfaceWrapperHelper.save(warehouse);
 
 		return warehouse;
@@ -494,83 +445,6 @@ public class MRPTestHelper
 		InterfaceWrapperHelper.save(productCategory);
 
 		return productCategory;
-	}
-
-	/**
-	 * Creates a dummy MRP firm demand.
-	 *
-	 * @param product
-	 * @param qty
-	 * @param date
-	 * @param plant
-	 * @param warehouse
-	 * @return
-	 * @see #createMRPDemand(I_M_Product, BigDecimal, Date, I_S_Resource, I_M_Warehouse, I_C_BPartner)
-	 */
-	public I_PP_MRP createMRPDemand(
-			final I_M_Product product,
-			final BigDecimal qty,
-			final Date date,
-			final I_S_Resource plant,
-			final I_M_Warehouse warehouse)
-	{
-		final I_C_BPartner bpartner = null;
-		return createMRPDemand(product, qty, date, plant, warehouse, bpartner);
-	}
-
-	/**
-	 * Creates a dummy MRP firm demand.
-	 * <p>
-	 * NOTE:
-	 * <ul>
-	 * <li>DocStatus will be Completed
-	 * <li>OrderType will be SalesOrder
-	 * </ul>
-	 *
-	 * @param product
-	 * @param qty
-	 * @param date
-	 * @param plant
-	 * @param warehouse
-	 * @return demand MRP record
-	 */
-	public I_PP_MRP createMRPDemand(
-			final I_M_Product product,
-			final BigDecimal qty,
-			final Date date,
-			final I_S_Resource plant,
-			final I_M_Warehouse warehouse,
-			final I_C_BPartner bpartner)
-	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final I_PP_MRP mrp = InterfaceWrapperHelper.newInstance(I_PP_MRP.class, contextProvider);
-		mrp.setAD_Org_ID(warehouse.getAD_Org_ID());
-		mrp.setS_Resource(plant);
-		mrp.setM_Warehouse(warehouse);
-		mrp.setC_BPartner(bpartner);
-		//
-		final Timestamp dateTS = TimeUtil.asTimestamp(date);
-		mrp.setDatePromised(dateTS);
-		mrp.setDateStartSchedule(dateTS);
-		mrp.setDateFinishSchedule(dateTS);
-		//
-		mrp.setTypeMRP(X_PP_MRP.TYPEMRP_Demand);
-		mrp.setDocStatus(X_PP_MRP.DOCSTATUS_Completed); // Firm Demand
-		mrp.setOrderType(X_PP_MRP.ORDERTYPE_SalesOrder); // Sales Order
-		mrp.setIsAvailable(true);
-		//
-		mrp.setM_Product(product);
-
-		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
-
-		Services.get(IMRPBL.class).setQty(mrp, qty, qty, uom);
-		//
-		// mrp.setC_BPartner(C_BPartner);
-
-		InterfaceWrapperHelper.save(mrp);
-
-		return mrp;
 	}
 
 	private void createMRPMessage(final String code)
@@ -647,7 +521,7 @@ public class MRPTestHelper
 				.shipper(shipperDefault);
 	}
 
-	private I_C_DocType createDocType(final String docBaseType)
+	private void createDocType(final String docBaseType)
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
 		docType.setAD_Org_ID(adOrg01.getAD_Org_ID());
@@ -655,24 +529,11 @@ public class MRPTestHelper
 		docType.setName(docBaseType);
 
 		InterfaceWrapperHelper.save(docType);
-		return docType;
-	}
-
-	public void dumpMRPRecords()
-	{
-		MRPTracer.dumpMRPRecords();
 	}
 
 	public void dumpMRPRecords(final String message)
 	{
 		MRPTracer.dumpMRPRecords(message);
-	}
-
-	public MRPExpectation<Object> newMRPExpectation()
-	{
-		final MRPExpectation<Object> e = MRPExpectation.newMRPExpectation();
-		e.setContext(this.contextProvider);
-		return e;
 	}
 
 	public ProductBOMBuilder newProductBOM()
@@ -686,13 +547,13 @@ public class MRPTestHelper
 		final I_AD_Workflow wf = InterfaceWrapperHelper.newInstance(I_AD_Workflow.class, contextProvider);
 		wf.setValue(name);
 		wf.setName(name);
-		wf.setWorkflowType(X_AD_Workflow.WORKFLOWTYPE_Manufacturing);
-		wf.setDurationUnit(DurationUnitCodeUtils.toDurationUnitCode(ChronoUnit.HOURS));
+		wf.setWorkflowType(PPRoutingType.Manufacturing.getCode());
+		wf.setDurationUnit(WFDurationUnit.Hour.getCode());
 		InterfaceWrapperHelper.save(wf);
 		return wf;
 	}
 
-	public I_AD_WF_Node createWorkflowNode(
+	public void createWorkflowNode(
 			final I_AD_Workflow wf,
 			final String nodeName,
 			final boolean startNode,
@@ -711,55 +572,11 @@ public class MRPTestHelper
 			InterfaceWrapperHelper.save(wf);
 		}
 
-		return node;
 	}
 
 	public final Logger getMRPLogger()
 	{
 		return LogManager.getLogger(IMaterialPlanningContext.LOGGERNAME);
-	}
-
-	public void completeAllMRPDocuments()
-	{
-		completeMRPDocuments(I_PP_Order.class);
-		completeMRPDocuments(I_DD_Order.class);
-	}
-
-	/**
-	 * @param documentClass
-	 * @return completed documents
-	 */
-	public <T> List<T> completeMRPDocuments(final Class<T> documentClass)
-	{
-		final List<T> documentModels = queryBL.createQueryBuilder(documentClass, contextProvider)
-				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				.create()
-				.list();
-		final List<T> documentModelsCompleted = new ArrayList<>(documentModels.size());
-		for (final T documentModel : documentModels)
-		{
-			final IDocument document = docActionBL.getDocument(documentModel);
-			docActionBL.processEx(document, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-
-			documentModelsCompleted.add(documentModel);
-		}
-
-		return documentModelsCompleted;
-	}
-
-	public I_DD_Order retrieveSingleForwardDDOrder(final I_PP_Order ppOrder)
-	{
-		return Services.get(IDDOrderDAO.class)
-				.retrieveForwardDDOrderLinesQuery(ppOrder)
-				.andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
-				.create()
-				.firstOnly(I_DD_Order.class);
-	}
-
-	public final void assumeMRP_POQ_Enabled()
-	{
-		Assume.assumeFalse("Skip this test because MRP_POQ_Disabled", LiberoConstants.isMRP_POQ_Disabled());
 	}
 
 	public I_PP_Order createPP_Order(
@@ -774,7 +591,7 @@ public class MRPTestHelper
 
 		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
 		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
-		ppOrder.setAD_Workflow(this.workflow_Standard);
+		ppOrder.setAD_Workflow_ID(this.workflow_Standard.getAD_Workflow_ID());
 		ppOrder.setM_Warehouse_ID(this.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(this.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
@@ -789,7 +606,7 @@ public class MRPTestHelper
 
 	private void setCommonProperties(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, null);
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
 		final Timestamp t1 = SystemTime.asTimestamp();

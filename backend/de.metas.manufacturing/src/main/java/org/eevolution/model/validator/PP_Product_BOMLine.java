@@ -24,6 +24,7 @@ package org.eevolution.model.validator;
 
 import java.util.List;
 
+import de.metas.product.IProductBL;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -130,7 +131,8 @@ public class PP_Product_BOMLine
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void updateProductLowestLevelCode(final I_PP_Product_BOMLine bomLine)
 	{
-		final I_M_Product product = bomLine.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		final I_M_Product product = Services.get(IProductBL.class).getById(productId);
 		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
 
 		product.setLowLevel(lowLevel); // update lowlevel

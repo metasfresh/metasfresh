@@ -147,7 +147,7 @@ class PMMWebuiRfQResponsePublisherInstance
 		//
 		// Push new RfQs
 		final List<SyncRfQ> syncRfQsCopy = copyAndClear(this.syncRfQs);
-		if (!syncRfQs.isEmpty())
+		if (!syncRfQsCopy.isEmpty())
 		{
 			webuiPush.pushRfQs(syncRfQsCopy);
 		}

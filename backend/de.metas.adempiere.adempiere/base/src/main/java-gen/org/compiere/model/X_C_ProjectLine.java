@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_ProjectLine extends org.compiere.model.PO implements I_C_ProjectLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -154819190L;
+	private static final long serialVersionUID = 1421375660L;
 
     /** Standard Constructor */
     public X_C_ProjectLine (final Properties ctx, final int C_ProjectLine_ID, @Nullable final String trxName)
@@ -243,7 +243,7 @@ public class X_C_ProjectLine extends org.compiere.model.PO implements I_C_Projec
 	}
 
 	@Override
-	public void setCommittedAmt (final BigDecimal CommittedAmt)
+	public void setCommittedAmt (final @Nullable BigDecimal CommittedAmt)
 	{
 		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
 	}
@@ -256,7 +256,7 @@ public class X_C_ProjectLine extends org.compiere.model.PO implements I_C_Projec
 	}
 
 	@Override
-	public void setCommittedQty (final BigDecimal CommittedQty)
+	public void setCommittedQty (final @Nullable BigDecimal CommittedQty)
 	{
 		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
 	}
@@ -269,7 +269,7 @@ public class X_C_ProjectLine extends org.compiere.model.PO implements I_C_Projec
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -281,7 +281,7 @@ public class X_C_ProjectLine extends org.compiere.model.PO implements I_C_Projec
 	}
 
 	@Override
-	public void setDoPricing (final java.lang.String DoPricing)
+	public void setDoPricing (final @Nullable java.lang.String DoPricing)
 	{
 		set_Value (COLUMNNAME_DoPricing, DoPricing);
 	}

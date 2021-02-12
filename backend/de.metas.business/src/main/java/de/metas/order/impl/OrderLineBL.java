@@ -1,6 +1,5 @@
 package de.metas.order.impl;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -19,6 +18,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.PriceAndDiscount;
 import de.metas.organization.IOrgDAO;
@@ -30,15 +30,14 @@ import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -57,6 +56,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -67,9 +67,11 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import static de.metas.util.Check.assume;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -100,16 +102,30 @@ import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
 public class OrderLineBL implements IOrderLineBL
 {
-	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
-
-	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 	private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
-
 	private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
 
-	private transient final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private transient final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private transient final IProductBL productBL = Services.get(IProductBL.class);
+	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private IOrderBL orderBL() { return Services.get(IOrderBL.class); }
+
+	@Override
+	public List<I_C_OrderLine> getByOrderIds(@NonNull final Set<OrderId> orderIds)
+	{
+		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
+	}
 
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -139,8 +155,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public Quantity getQtyOrdered(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 		return getQtyOrdered(orderLine);
 	}
 
@@ -155,8 +170,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public Quantity getQtyToDeliver(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 		return getQtyToDeliver(orderLine);
 	}
 
@@ -174,8 +188,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public Map<OrderAndLineId, Quantity> getQtyToDeliver(@NonNull final Collection<OrderAndLineId> orderAndLineIds)
 	{
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		return ordersRepo.getOrderLinesByIds(orderAndLineIds)
+		return orderDAO.getOrderLinesByIds(orderAndLineIds)
 				.entrySet()
 				.stream()
 				.map(GuavaCollectors.mapValue(this::getQtyToDeliver))
@@ -198,7 +211,6 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision.toInt());
 		ol.setTaxAmtInfo(taxAmtInfo);
 	}
@@ -225,7 +237,7 @@ public class OrderLineBL implements IOrderLineBL
 				return;
 			}
 
-			final ShipperId shipperId = Services.get(IBPartnerDAO.class).getShipperId(bpartnerId);
+			final ShipperId shipperId = bpartnerDAO.getShipperId(bpartnerId);
 			if (shipperId == null)
 			{
 				// task 07034: nothing to do
@@ -275,7 +287,7 @@ public class OrderLineBL implements IOrderLineBL
 			final int bpartnerId = order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
 			ol.setC_BPartner_ID(bpartnerId);
 
-			final BPartnerLocationId deliveryLocationId = Services.get(IOrderBL.class).getShipToLocationId(order);
+			final BPartnerLocationId deliveryLocationId = orderBL().getShipToLocationId(order);
 			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryLocationId));
 
 			final int contactIdRepo = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
@@ -315,7 +327,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public <T extends I_C_OrderLine> T createOrderLine(I_C_Order order, Class<T> orderLineClass)
+	public <T extends I_C_OrderLine> T createOrderLine(final I_C_Order order, final Class<T> orderLineClass)
 	{
 		final I_C_OrderLine orderLine = createOrderLine(order);
 		return InterfaceWrapperHelper.create(orderLine, orderLineClass);
@@ -398,8 +410,6 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-
 		final I_C_Order order = orderLine.getC_Order();
 		final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
 		if (!orderDocStatus.isInProgressCompletedOrClosed())
@@ -417,7 +427,7 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
+		final org.compiere.model.I_M_Product product = productBL.getById(productId);
 		if (!product.isStocked())
 		{
 			logger.debug("Given orderLine {} has M_Product {} which is not stocked; setting QtyReserved=0.", orderLine, product);
@@ -429,7 +439,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyReserved = BigDecimal.ZERO.max(qtyReservedRaw); // not less than zero
 
 		logger.debug("Given orderLine {} has QtyOrdered={} and QtyDelivered={}; setting QtyReserved={}.",
-				new Object[] { orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved });
+				orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved);
 		orderLine.setQtyReserved(qtyReserved);
 	}
 
@@ -446,12 +456,12 @@ public class OrderLineBL implements IOrderLineBL
 	public void setProductId(
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine,
 			@NonNull final ProductId productId,
-			boolean setUOM)
+			final boolean setUOM)
 	{
 		orderLine.setM_Product_ID(productId.getRepoId());
 		if (setUOM)
 		{
-			final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
+			final UomId uomId = productBL.getStockUOMId(productId);
 			orderLine.setC_UOM_ID(uomId.getRepoId());
 		}
 
@@ -459,7 +469,7 @@ public class OrderLineBL implements IOrderLineBL
 	}    // setM_Product_ID
 
 	@Override
-	public I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine)
+	public I_M_PriceList_Version getPriceListVersion(final I_C_OrderLine orderLine)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
@@ -474,9 +484,8 @@ public class OrderLineBL implements IOrderLineBL
 			final I_C_Order order = orderLine.getC_Order();
 
 			final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-			final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-			return priceListsRepo.retrievePriceListVersionOrNull(
-					priceListsRepo.getById(order.getM_PriceList_ID()),
+			return priceListDAO.retrievePriceListVersionOrNull(
+					priceListDAO.getById(order.getM_PriceList_ID()),
 					getPriceDate(orderLine, order),
 					processedPLVFiltering);
 		}
@@ -484,10 +493,6 @@ public class OrderLineBL implements IOrderLineBL
 
 	/**
 	 * task 07080
-	 *
-	 * @param orderLine
-	 * @param order
-	 * @return
 	 */
 	static ZonedDateTime getPriceDate(
 			final org.compiere.model.I_C_OrderLine orderLine,
@@ -558,8 +563,7 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			throw new AdempiereException(TranslatableStrings.constant("for TU-UOMs, we must have qtyItemCapacity"));// TODO: nice user message
 		}
-		final BigDecimal qtyOrdered = orderLine.getQtyEntered().multiply(qtyItemCapacity);
-		return qtyOrdered;
+		return orderLine.getQtyEntered().multiply(qtyItemCapacity);
 	}
 
 	@Override
@@ -626,31 +630,31 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(orderLine.getC_Tax_ID());
+		final I_C_Tax tax = taxBL.getTaxById(TaxId.ofRepoId(orderLine.getC_Tax_ID()));
 
 		final I_C_Order order = orderLine.getC_Order();
-		return Services.get(IOrderBL.class).isTaxIncluded(order, tax);
+		return orderBL().isTaxIncluded(order, tax);
 	}
 
 	@Override
 	public CurrencyPrecision getPricePrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderLine.getC_Order();
-		return Services.get(IOrderBL.class).getPricePrecision(order);
+		return orderBL().getPricePrecision(order);
 	}
 
 	@Override
 	public CurrencyPrecision getAmountPrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderLine.getC_Order();
-		return Services.get(IOrderBL.class).getAmountPrecision(order);
+		return orderBL().getAmountPrecision(order);
 	}
 
 	@Override
 	public CurrencyPrecision getTaxPrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderLine.getC_Order();
-		return Services.get(IOrderBL.class).getTaxPrecision(order);
+		return orderBL().getTaxPrecision(order);
 	}
 
 	@Override
@@ -677,20 +681,17 @@ public class OrderLineBL implements IOrderLineBL
 		final ProductId lineProductId = ProductId.ofRepoIdOrNull(line.getM_Product_ID());
 		if (lineProductId != null)      // task 09700
 		{
-			final IProductDAO productsRepo = Services.get(IProductDAO.class);
-			final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-
-			final I_AD_Org lineOrg = orgsRepo.getById(line.getAD_Org_ID());
-			final I_M_Product lineProduct = productsRepo.getById(lineProductId, I_M_Product.class);
+			final I_AD_Org lineOrg = orgDAO.getById(line.getAD_Org_ID());
+			final I_M_Product lineProduct = productBL.getById(lineProductId);
 
 			final OrgId productOrgId = OrgId.ofRepoIdOrAny(lineProduct.getAD_Org_ID());
 			if (!productOrgId.isAny())
 			{
 				// task 09700 the product from the original order is org specific, so we need to substitute it with the product from the counter-org.
-				final ProductId counterProductId = productsRepo.retrieveMappedProductIdOrNull(lineProductId, productOrgId);
+				final ProductId counterProductId = productBL.retrieveMappedProductIdOrNull(lineProductId, productOrgId);
 				if (counterProductId == null)
 				{
-					final I_AD_Org productOrg = orgsRepo.getById(productOrgId);
+					final I_AD_Org productOrg = orgDAO.getById(productOrgId);
 					throw new AdempiereException(
 							MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT,
 							lineProduct.getValue(), productOrg.getName(), lineOrg.getName());
@@ -709,7 +710,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal poCostPrice = orderLine.getPriceCost();
 		if (poCostPrice != null && poCostPrice.signum() != 0)
 		{
-			final UomId productUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+			final UomId productUomId = productBL.getStockUOMId(productId);
 
 			return ProductPrice.builder()
 					.productId(productId)
@@ -724,7 +725,7 @@ public class OrderLineBL implements IOrderLineBL
 			priceUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		}
 
-		BigDecimal priceActual = orderLine.getPriceActual();
+		final BigDecimal priceActual = orderLine.getPriceActual();
 		if (!isTaxIncluded(orderLine))
 		{
 			return ProductPrice.builder()
@@ -756,7 +757,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
-		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
+		final BigDecimal taxAmt = taxBL.calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return ProductPrice.builder()
 				.productId(productId)
@@ -770,7 +771,7 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final UomId productUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		final UomId productUomId = productBL.getStockUOMId(productId);
 		final BigDecimal priceActual = orderLine.getPriceActual();
 
 		return ProductPrice.builder()
@@ -816,7 +817,6 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 		final String description = productBOMBL.getBOMDescriptionForProductId(productId);
 		if (Check.isEmpty(description, true))
 		{
@@ -828,7 +828,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	private boolean isSetBOMDescription()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SetBOMDescription, false);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_SetBOMDescription, false);
 	}
 
 	@Override
@@ -843,15 +843,16 @@ public class OrderLineBL implements IOrderLineBL
 		final I_C_Order order = orderLine.getC_Order();
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final org.compiere.model.I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		final org.compiere.model.I_C_BPartner partner = bpartnerDAO.getById(bpartnerId);
 		final String adLanguage = partner.getAD_Language();
 
-		final org.compiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final org.compiere.model.I_M_Product product = productBL.getById(productId);
 		final org.compiere.model.I_M_Product translatedProduct = translate(product, org.compiere.model.I_M_Product.class, adLanguage);
 
 		orderLine.setM_Product_DocumentNote(translatedProduct.getDocumentNote());
 	}
 
+	@Override
 	public BigDecimal computeQtyNetPriceFromOrderLine(
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine,
 			@NonNull final Quantity qty)
@@ -860,7 +861,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = orderLine.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
-		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
+		final CurrencyPrecision netPrecision = priceListBL.getAmountPrecision(PriceListId.ofRepoId(priceListId));
 
 		BigDecimal lineNetAmt = qtyInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual());
 		lineNetAmt = netPrecision.roundIfNeeded(lineNetAmt);

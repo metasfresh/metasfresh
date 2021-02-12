@@ -10,10 +10,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.order.impl.OrderLineDetailRepository;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -69,6 +71,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 	{
 		private int updatePricesCallCount;
 
+		@Override
 		public void updatePrices(org.compiere.model.I_C_OrderLine orderLine)
 		{
 			// mock IOrderLineBL.updatePrices() because
@@ -91,6 +94,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 
 		orderLineBL = new MockedOrderLineBL();
 		Services.registerService(IOrderLineBL.class, orderLineBL);
+		SpringContextHolder.registerJUnitBean(new OrderLineDetailRepository());
 	}
 
 	private I_C_UOM createUOM(final String name)

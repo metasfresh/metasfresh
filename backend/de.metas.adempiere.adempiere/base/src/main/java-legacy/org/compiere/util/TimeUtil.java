@@ -1,6 +1,7 @@
 package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Range;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -1729,6 +1730,12 @@ public class TimeUtil
 	}
 
 	@Nullable
+	public static ZonedDateTime asZonedDateTime(@Nullable final Instant instant)
+	{
+		return instant != null ? instant.atZone(SystemTime.zoneId()) : null;
+	}
+
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1977,4 +1984,26 @@ public class TimeUtil
 	{
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
+
+	public static Range<LocalDate> toLocalDateRange(
+			@Nullable final java.sql.Timestamp from,
+			@Nullable final java.sql.Timestamp to)
+	{
+		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+	}
+
+	public static Range<LocalDate> toLocalDateRange(
+			@Nullable final LocalDate from,
+			@Nullable final LocalDate to)
+	{
+		if (from == null)
+		{
+			return to == null ? Range.all() : Range.lessThan(to);
+		}
+		else
+		{
+			return to == null ? Range.atLeast(from) : Range.closedOpen(from, to);
+		}
+	}
+
 }    // TimeUtil
