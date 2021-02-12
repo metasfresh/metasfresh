@@ -48,6 +48,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -77,8 +78,7 @@ public class PaymentAllocationBuilder
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 
 	// Parameters
-	private LocalDate _dateTrx;
-	private LocalDate _dateAcct;
+	private LocalDate _defaultDateTrx;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<PaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean allowPartialAllocations = false;
@@ -322,6 +322,7 @@ public class PaymentAllocationBuilder
 				final Money paymentOverUnderAmt = computePaymentOverUnderAmtInInvoiceCurrency(payment, amountsToAllocate);
 
 				// Create new Allocation Line
+				final LocalDate dateTrx = TimeUtil.max(payable.getDate(), payment.getDate());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(type)
 						//
@@ -331,8 +332,8 @@ public class PaymentAllocationBuilder
 						.payableDocumentRef(payable.getReference())
 						.paymentDocumentRef(payment.getReference())
 						//
-						.dateTrx(getDateTrx())
-						.dateAcct(getDateAcct())
+						.dateTrx(dateTrx)
+						.dateAcct(dateTrx)
 						//
 						// Amounts:
 						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
@@ -508,6 +509,7 @@ public class PaymentAllocationBuilder
 				final Money paymentOverUnderAmt = paymentIn.calculateProjectedOverUnderAmt(amtToAllocate.negate()).negate();
 
 				// Create new Allocation Line
+				final LocalDate dateTrx = TimeUtil.max(paymentOut.getDate(), paymentIn.getDate());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 						//
@@ -517,8 +519,8 @@ public class PaymentAllocationBuilder
 						.payableDocumentRef(paymentOut.getReference())
 						.paymentDocumentRef(paymentIn.getReference())
 						//
-						.dateTrx(getDateTrx())
-						.dateAcct(getDateAcct())
+						.dateTrx(dateTrx)
+						.dateAcct(dateTrx)
 						//
 						// Amounts:
 						.amounts(AllocationAmounts.ofPayAmt(amtToAllocate))
@@ -574,6 +576,7 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
+		final LocalDate dateTrx = getDefaultDateTrx();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
@@ -584,8 +587,8 @@ public class PaymentAllocationBuilder
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
 				//
-				.dateTrx(getDateTrx())
-				.dateAcct(getDateAcct())
+				.dateTrx(dateTrx)
+				.dateAcct(dateTrx)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
@@ -630,6 +633,7 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
+		final LocalDate dateTrx = getDefaultDateTrx();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceProcessingFee)
@@ -640,8 +644,8 @@ public class PaymentAllocationBuilder
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
 				//
-				.dateTrx(getDateTrx())
-				.dateAcct(getDateAcct())
+				.dateTrx(dateTrx)
+				.dateAcct(dateTrx)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
@@ -839,29 +843,16 @@ public class PaymentAllocationBuilder
 		Check.assume(!_built, "Not already built");
 	}
 
-	private LocalDate getDateTrx()
+	private LocalDate getDefaultDateTrx()
 	{
-		Check.assumeNotNull(_dateTrx, "date not null");
-		return _dateTrx;
+		Check.assumeNotNull(_defaultDateTrx, "date not null");
+		return _defaultDateTrx;
 	}
 
-	public PaymentAllocationBuilder dateTrx(final LocalDate dateTrx)
+	public PaymentAllocationBuilder defaultDateTrx(final LocalDate defaultDateTrx)
 	{
 		assertNotBuilt();
-		_dateTrx = dateTrx;
-		return this;
-	}
-
-	private LocalDate getDateAcct()
-	{
-		Check.assumeNotNull(_dateAcct, "date not null");
-		return _dateAcct;
-	}
-
-	public PaymentAllocationBuilder dateAcct(final LocalDate dateAcct)
-	{
-		assertNotBuilt();
-		_dateAcct = dateAcct;
+		_defaultDateTrx = defaultDateTrx;
 		return this;
 	}
 

@@ -136,9 +136,9 @@ public class PaymentAllocationBuilderTest
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 	}
 
-	private Money money(final String amount, CurrencyId currencyId)
+	private Money money(@Nullable final String amount, @Nullable CurrencyId currencyId)
 	{
-		final BigDecimal amountBD = Check.isNotBlank(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
+		final BigDecimal amountBD = amount != null && Check.isNotBlank(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
 		currencyId = currencyId == null ? euroCurrencyId : currencyId;
 		return Money.of(amountBD, currencyId);
 	}
@@ -192,8 +192,7 @@ public class PaymentAllocationBuilderTest
 	private PaymentAllocationBuilder newPaymentAllocationBuilder()
 	{
 		return PaymentAllocationBuilder.newBuilder()
-				.dateTrx(date)
-				.dateAcct(date);
+				.defaultDateTrx(date);
 	}
 
 	private PaymentAllocationBuilder newPaymentAllocationBuilder(
