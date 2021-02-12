@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements I_C_RemittanceAdvice_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -217874888L;
+	private static final long serialVersionUID = 1398935408L;
 
     /** Standard Constructor */
     public X_C_RemittanceAdvice_Line (final Properties ctx, final int C_RemittanceAdvice_Line_ID, final String trxName)
@@ -355,6 +355,18 @@ public class X_C_RemittanceAdvice_Line extends org.compiere.model.PO implements 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PaymentDiscountAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override

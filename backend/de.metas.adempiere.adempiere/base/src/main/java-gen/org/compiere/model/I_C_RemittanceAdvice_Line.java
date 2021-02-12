@@ -384,7 +384,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is amount valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsAmountValid (boolean IsAmountValid);
@@ -393,7 +393,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is amount valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isAmountValid();
@@ -405,7 +405,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is business partner valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsBPartnerValid (boolean IsBPartnerValid);
@@ -414,7 +414,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is business partner valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isBPartnerValid();
@@ -426,7 +426,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is invoice date valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsInvoiceDateValid (boolean IsInvoiceDateValid);
@@ -435,7 +435,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is invoice date valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isInvoiceDateValid();
@@ -447,7 +447,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is invoice doc type valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsInvoiceDocTypeValid (boolean IsInvoiceDocTypeValid);
@@ -456,7 +456,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is invoice doc type valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isInvoiceDocTypeValid();
@@ -468,7 +468,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is invoice resolved.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsInvoiceResolved (boolean IsInvoiceResolved);
@@ -477,7 +477,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is invoice resolved.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isInvoiceResolved();
@@ -489,7 +489,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is line acknowledged.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsLineAcknowledged (boolean IsLineAcknowledged);
@@ -498,7 +498,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is line acknowledged.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isLineAcknowledged();
@@ -510,7 +510,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is service columns resolved.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsServiceColumnsResolved (boolean IsServiceColumnsResolved);
@@ -519,7 +519,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is service columns resolved.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isServiceColumnsResolved();
@@ -531,7 +531,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Set Is service fee VAT valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsServiceFeeVatRateValid (boolean IsServiceFeeVatRateValid);
@@ -540,7 +540,7 @@ public interface I_C_RemittanceAdvice_Line
 	 * Get Is service fee VAT valid.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isServiceFeeVatRateValid();
@@ -591,6 +591,27 @@ public interface I_C_RemittanceAdvice_Line
 
 	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_PaymentDiscountAmt = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "PaymentDiscountAmt", null);
 	String COLUMNNAME_PaymentDiscountAmt = "PaymentDiscountAmt";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_C_RemittanceAdvice_Line, Object> COLUMN_Processed = new ModelColumn<>(I_C_RemittanceAdvice_Line.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Remittance amount.

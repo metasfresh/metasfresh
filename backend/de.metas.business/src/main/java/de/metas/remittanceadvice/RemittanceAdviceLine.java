@@ -125,12 +125,14 @@ public class RemittanceAdviceLine
 
 	private boolean isServiceFeeResolved;
 
+	private boolean processed;
+
 	@Builder
 	public RemittanceAdviceLine(@NonNull final OrgId orgId, @NonNull final RemittanceAdviceLineId remittanceAdviceLineId, @NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final Amount remittedAmount, @Nullable final Amount invoiceGrossAmount, @Nullable final Amount paymentDiscountAmount, @Nullable final Amount serviceFeeAmount, @Nullable final String externalInvoiceDocBaseType,
 			@Nullable final String invoiceIdentifier,
 			@Nullable final BPartnerId bpartnerIdentifier, @Nullable final BigDecimal serviceFeeVatRate, final boolean isLineAcknowledged, @Nullable final BigDecimal invoiceAmt, @Nullable final Amount invoiceAmtInREMADVCurrency, @Nullable final Amount overUnderAmt, @Nullable final CurrencyId invoiceCurrencyId, @Nullable final BPartnerId billBPartnerId, @Nullable final Instant dateInvoiced,
 			@Nullable final InvoiceId serviceFeeInvoiceId,
-			@Nullable final BPartnerId serviceFeeBPartnerId, @Nullable final ProductId serviceFeeProductId, @Nullable final TaxId taxId, @Nullable final InvoiceId invoiceId, final boolean isBPartnerValid, final boolean isInvoiceResolved, final boolean isAmountValid, final boolean isInvoiceDocTypeValid, final boolean isInvoiceDateValid, final boolean isServiceFeeResolved)
+			@Nullable final BPartnerId serviceFeeBPartnerId, @Nullable final ProductId serviceFeeProductId, @Nullable final TaxId taxId, @Nullable final InvoiceId invoiceId, final boolean isBPartnerValid, final boolean isInvoiceResolved, final boolean isAmountValid, final boolean isInvoiceDocTypeValid, final boolean isInvoiceDateValid, final boolean isServiceFeeResolved, final boolean processed)
 	{
 
 		Amount.assertSameCurrency(Stream.of(remittedAmount, overUnderAmt, paymentDiscountAmount)
@@ -172,6 +174,7 @@ public class RemittanceAdviceLine
 		this.isInvoiceDocTypeValid = isInvoiceDocTypeValid;
 		this.isInvoiceDateValid = isInvoiceDateValid;
 		this.isServiceFeeResolved = isServiceFeeResolved;
+		this.processed = processed;
 	}
 
 	public void syncWithInvoice(@NonNull final RemittanceAdviceLineInvoiceDetails remittanceAdviceLineInvoiceDetails)
@@ -240,5 +243,10 @@ public class RemittanceAdviceLine
 	public boolean isReadyForCompletion()
 	{
 		return isInvoiceResolved && (isLineAcknowledged || isAmountValid);
+	}
+
+	public void setProcessed(final boolean processed)
+	{
+		this.processed = processed;
 	}
 }

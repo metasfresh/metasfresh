@@ -205,6 +205,27 @@ public interface I_C_RemittanceAdvice
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set CurrencyReadOnlyFlag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCurrenciesReadOnlyFlag (boolean CurrenciesReadOnlyFlag);
+
+	/**
+	 * Get CurrencyReadOnlyFlag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCurrenciesReadOnlyFlag();
+
+	ModelColumn<I_C_RemittanceAdvice, Object> COLUMN_CurrenciesReadOnlyFlag = new ModelColumn<>(I_C_RemittanceAdvice.class, "CurrenciesReadOnlyFlag", null);
+	String COLUMNNAME_CurrenciesReadOnlyFlag = "CurrenciesReadOnlyFlag";
+
+	/**
 	 * Set Document Date.
 	 *
 	 * <br>Type: Date
@@ -463,6 +484,27 @@ public interface I_C_RemittanceAdvice
 
 	ModelColumn<I_C_RemittanceAdvice, Object> COLUMN_PaymentDiscountAmountSum = new ModelColumn<>(I_C_RemittanceAdvice.class, "PaymentDiscountAmountSum", null);
 	String COLUMNNAME_PaymentDiscountAmountSum = "PaymentDiscountAmountSum";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_C_RemittanceAdvice, Object> COLUMN_Processed = new ModelColumn<>(I_C_RemittanceAdvice.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Remittance amount.

@@ -26,6 +26,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.remittanceadvice.RemittanceAdvice;
+import de.metas.remittanceadvice.RemittanceAdviceId;
+import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -47,6 +50,13 @@ import org.springframework.stereotype.Component;
 public class C_RemittanceAdvice
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
+	private final RemittanceAdviceRepository remittanceAdviceRepository;
+
+	public C_RemittanceAdvice(final RemittanceAdviceRepository remittanceAdviceRepository)
+	{
+		this.remittanceAdviceRepository = remittanceAdviceRepository;
+	}
 
 	@Init
 	public void registerCallout()
@@ -91,5 +101,17 @@ public class C_RemittanceAdvice
 		}
 
 		record.setIsSOTrx(targetPaymentDocType.isSOTrx());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			ifColumnsChanged = I_C_RemittanceAdvice.COLUMNNAME_Processed)
+	public void setProcessedFlag(@NonNull final I_C_RemittanceAdvice record)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepository.getRemittanceAdvice(remittanceAdviceId);
+
+		remittanceAdvice.setProcessedFlag(record.isProcessed());
+
+		remittanceAdviceRepository.updateRemittanceAdvice(remittanceAdvice);
 	}
 }

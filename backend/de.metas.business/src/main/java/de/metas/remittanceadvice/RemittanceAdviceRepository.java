@@ -111,7 +111,7 @@ public class RemittanceAdviceRepository
 
 		final List<I_C_RemittanceAdvice_Line> recordLines = remittanceAdvice.getLines()
 				.stream()
-				.map(this::toRemittanceAdviceLine)
+				.map(this::toRemittanceAdviceLineRecord)
 				.collect(Collectors.toList());
 
 		saveAll(recordLines);
@@ -119,12 +119,12 @@ public class RemittanceAdviceRepository
 
 	public void updateRemittanceAdviceLine(@NonNull final RemittanceAdviceLine remittanceAdviceLine)
 	{
-		final I_C_RemittanceAdvice_Line record = toRemittanceAdviceLine(remittanceAdviceLine);
+		final I_C_RemittanceAdvice_Line record = toRemittanceAdviceLineRecord(remittanceAdviceLine);
 		saveRecord(record);
 	}
 
 	@NonNull
-	private I_C_RemittanceAdvice_Line toRemittanceAdviceLine(final RemittanceAdviceLine remittanceAdviceLine)
+	private I_C_RemittanceAdvice_Line toRemittanceAdviceLineRecord(final RemittanceAdviceLine remittanceAdviceLine)
 	{
 		final I_C_RemittanceAdvice_Line record = getLineRecordById(remittanceAdviceLine.getRemittanceAdviceLineId());
 
@@ -161,6 +161,8 @@ public class RemittanceAdviceRepository
 		record.setServiceFeeVatRate(remittanceAdviceLine.getServiceFeeVatRate());
 		record.setIsLineAcknowledged(remittanceAdviceLine.isLineAcknowledged());
 
+		record.setProcessed(remittanceAdviceLine.isProcessed());
+
 		return record;
 	}
 
@@ -194,6 +196,10 @@ public class RemittanceAdviceRepository
 		record.setRemittanceAmt_Currency_ID(remittanceAdvice.getRemittedAmountCurrencyId().getRepoId());
 		record.setServiceFeeAmount_Currency_ID(CurrencyId.toRepoId(remittanceAdvice.getServiceFeeCurrencyId()));
 		record.setAdditionalNotes(remittanceAdvice.getAdditionalNotes());
+
+		record.setIsDocumentAcknowledged(remittanceAdvice.isDocumentAcknowledged());
+		record.setCurrenciesReadOnlyFlag(remittanceAdvice.isCurrenciesReadOnlyFlag());
+		record.setProcessed(remittanceAdvice.isProcessed());
 
 		return record;
 
@@ -302,13 +308,19 @@ public class RemittanceAdviceRepository
 
 				.sendDate(TimeUtil.asInstant(record.getSendAt()))
 				.additionalNotes(record.getAdditionalNotes())
+
+				.isDocumentAcknowledged(record.isDocumentAcknowledged())
+				.currenciesReadOnlyFlag(record.isCurrenciesReadOnlyFlag())
+				.processed(record.isProcessed())
+
 				.lines(retrieveLines(remittanceAdviceId, remittanceCurrencyId, serviceFeeCurrencyId ))
 				.build();
 	}
 
 	@NonNull
-	private RemittanceAdviceLine toRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record,
-			final CurrencyId remittanceCurrencyId, @Nullable final CurrencyId serviceFeeCurrencyId)
+	private RemittanceAdviceLine toRemittanceAdviceLineRecord(@NonNull final I_C_RemittanceAdvice_Line record,
+			@NonNull final CurrencyId remittanceCurrencyId,
+			@Nullable final CurrencyId serviceFeeCurrencyId)
 	{
 		if (record.getServiceFeeAmount() != null
 				&& record.getServiceFeeAmount().signum() != 0
@@ -365,6 +377,8 @@ public class RemittanceAdviceRepository
 				.isServiceFeeResolved(record.isServiceColumnsResolved())
 				.isLineAcknowledged(record.isLineAcknowledged())
 
+				.processed(record.isProcessed())
+
 				.taxId(TaxId.ofRepoIdOrNull(record.getService_Tax_ID()))
 				.serviceFeeBPartnerId(BPartnerId.ofRepoIdOrNull(record.getService_BPartner_ID()))
 				.serviceFeeInvoiceId(InvoiceId.ofRepoIdOrNull(record.getService_Fee_Invoice_ID()))
@@ -380,7 +394,8 @@ public class RemittanceAdviceRepository
 
 	@NonNull
 	private List<RemittanceAdviceLine> retrieveLines(@NonNull final RemittanceAdviceId remittanceAdviceId,
-			final CurrencyId remittanceCurrencyId, @Nullable final CurrencyId serviceFeeCurrencyId)
+			@NonNull final CurrencyId remittanceCurrencyId,
+			@Nullable final CurrencyId serviceFeeCurrencyId)
 	{
 		return queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
 				.addOnlyActiveRecordsFilter()
@@ -388,7 +403,7 @@ public class RemittanceAdviceRepository
 				.create()
 				.list()
 				.stream()
-				.map(line -> toRemittanceAdviceLine(line, remittanceCurrencyId, serviceFeeCurrencyId))
+				.map(line -> toRemittanceAdviceLineRecord(line, remittanceCurrencyId, serviceFeeCurrencyId))
 				.collect(Collectors.toList());
 	}
 

@@ -68,7 +68,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-public class RemittanceAdviceTest
+public class RemittanceAdviceServiceTest
 {
 	private RemittanceAdviceService remittanceAdviceService;
 	private int nextRemittanceLineId = 1;

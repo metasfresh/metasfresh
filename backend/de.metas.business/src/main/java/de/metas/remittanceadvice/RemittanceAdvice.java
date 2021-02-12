@@ -25,6 +25,7 @@ package de.metas.remittanceadvice;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
@@ -43,7 +44,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-@Builder
 @Getter
 @EqualsAndHashCode
 public class RemittanceAdvice
@@ -84,7 +84,6 @@ public class RemittanceAdvice
 	@NonNull
 	private final DocTypeId docTypeId;
 
-
 	@NonNull
 	private final CurrencyId remittedAmountCurrencyId;
 
@@ -99,20 +98,67 @@ public class RemittanceAdvice
 
 	private final boolean isImported;
 
-	@Nullable
-	private BigDecimal serviceFeeAmount;
+	private final boolean isSOTrx;
+
 	@NonNull
 	private BigDecimal remittedAmountSum;
 	@Nullable
+	private BigDecimal serviceFeeAmount;
+	@Nullable
 	private BigDecimal paymentDiscountAmountSum;
-
 	@Nullable
 	private PaymentId paymentId;
 
-	private boolean isSOTrx;
+	private boolean isDocumentAcknowledged;
+
+	private boolean currenciesReadOnlyFlag;
+
+	private boolean processed;
 
 	@NonNull
 	private final List<RemittanceAdviceLine> lines;
+
+	@Builder
+	public RemittanceAdvice(@NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final OrgId orgId, @NonNull final ClientId clientId, @NonNull final BPartnerId sourceBPartnerId, @NonNull final BPartnerBankAccountId sourceBPartnerBankAccountId, @NonNull final BPartnerId destinationBPartnerId, @NonNull final BPartnerBankAccountId destinationBPartnerBankAccountId,
+			@NonNull final String documentNumber,
+			@NonNull final Instant documentDate, @Nullable final String externalDocumentNumber, @NonNull final String docStatus, @NonNull final DocTypeId docTypeId, @NonNull final CurrencyId remittedAmountCurrencyId, @Nullable final Instant sendDate, @Nullable final CurrencyId serviceFeeCurrencyId, @Nullable final String additionalNotes, final boolean isImported,
+			@Nullable final BigDecimal serviceFeeAmount,
+			@NonNull final BigDecimal remittedAmountSum, @Nullable final BigDecimal paymentDiscountAmountSum, @Nullable final PaymentId paymentId, final boolean isSOTrx,
+			final boolean isDocumentAcknowledged, final boolean currenciesReadOnlyFlag, final boolean processed, @NonNull final List<RemittanceAdviceLine> lines)
+	{
+		if (serviceFeeAmount != null && serviceFeeAmount.signum() != 0 && serviceFeeCurrencyId == null)
+		{
+			throw new AdempiereException("Missing ServiceFeeCurrencyID!");
+		}
+
+
+		this.remittanceAdviceId = remittanceAdviceId;
+		this.orgId = orgId;
+		this.clientId = clientId;
+		this.sourceBPartnerId = sourceBPartnerId;
+		this.sourceBPartnerBankAccountId = sourceBPartnerBankAccountId;
+		this.destinationBPartnerId = destinationBPartnerId;
+		this.destinationBPartnerBankAccountId = destinationBPartnerBankAccountId;
+		this.documentNumber = documentNumber;
+		this.documentDate = documentDate;
+		this.externalDocumentNumber = externalDocumentNumber;
+		this.docStatus = docStatus;
+		this.docTypeId = docTypeId;
+		this.remittedAmountCurrencyId = remittedAmountCurrencyId;
+		this.sendDate = sendDate;
+		this.serviceFeeCurrencyId = serviceFeeCurrencyId;
+		this.additionalNotes = additionalNotes;
+		this.isImported = isImported;
+		this.serviceFeeAmount = serviceFeeAmount;
+		this.remittedAmountSum = remittedAmountSum;
+		this.paymentDiscountAmountSum = paymentDiscountAmountSum;
+		this.paymentId = paymentId;
+		this.isSOTrx = isSOTrx;
+		this.lines = lines;
+		this.processed = processed;
+		this.isDocumentAcknowledged = isDocumentAcknowledged;
+		this.currenciesReadOnlyFlag = currenciesReadOnlyFlag;
+	}
 
 	@NonNull
 	public Optional<RemittanceAdviceLine> getLine(@NonNull final RemittanceAdviceLineId remittanceAdviceLineId)
@@ -149,26 +195,36 @@ public class RemittanceAdvice
 			return BooleanWithReason.falseBecause("The remittance advice is imported!");
 		}
 
-		remittedAmountSum = BigDecimal.ZERO;
-		paymentDiscountAmountSum = BigDecimal.ZERO;
-		serviceFeeAmount = BigDecimal.ZERO;
+		Amount remittedAmountSumAmount = null;
+		Amount paymentDiscountAmountSumAmount = null;
+		Amount serviceFeeSumAmount = null;
 
 		for (final RemittanceAdviceLine line : lines)
 		{
-			remittedAmountSum = remittedAmountSum.add(line.getRemittedAmount().toBigDecimal());
+			remittedAmountSumAmount = remittedAmountSumAmount == null
+					? line.getRemittedAmount()
+					: remittedAmountSumAmount.add(line.getRemittedAmount());
 
 			if (line.getPaymentDiscountAmount() != null)
 			{
-				paymentDiscountAmountSum = paymentDiscountAmountSum.add(line.getPaymentDiscountAmount().toBigDecimal());
+				paymentDiscountAmountSumAmount = paymentDiscountAmountSumAmount == null
+						? line.getPaymentDiscountAmount()
+						: paymentDiscountAmountSumAmount.add(line.getPaymentDiscountAmount());
 			}
 
 			if (line.getServiceFeeAmount() != null)
 			{
-				serviceFeeAmount = serviceFeeAmount.add(line.getServiceFeeAmount().toBigDecimal());
+				serviceFeeSumAmount = serviceFeeSumAmount == null
+						? line.getServiceFeeAmount()
+						: serviceFeeSumAmount.add(line.getServiceFeeAmount());
 			}
 		}
 
-		if (serviceFeeAmount.signum() != 0 && serviceFeeCurrencyId == null)
+		remittedAmountSum = remittedAmountSumAmount != null ? remittedAmountSumAmount.toBigDecimal() : BigDecimal.ZERO;
+		paymentDiscountAmountSum = paymentDiscountAmountSumAmount != null ? paymentDiscountAmountSumAmount.toBigDecimal() : null;
+		serviceFeeAmount = serviceFeeSumAmount != null ? serviceFeeSumAmount.toBigDecimal() : null;
+
+		if (serviceFeeAmount != null && serviceFeeAmount.signum() != 0 && serviceFeeCurrencyId == null)
 		{
 			throw new AdempiereException("Missing ServiceFeeCurrencyID!");
 		}
@@ -179,5 +235,40 @@ public class RemittanceAdvice
 	public void setPaymentId(@NonNull final PaymentId paymentId)
 	{
 		this.paymentId = paymentId;
+	}
+
+	/**
+	 * @return true, if acknowledged status changed, false otherwise
+	 */
+	public boolean recomputeIsDocumentAcknowledged()
+	{
+		final boolean isDocumentAcknowledged_refreshedValue = lines.stream().allMatch(RemittanceAdviceLine::isReadyForCompletion);
+
+		final boolean hasAcknowledgedStatusChanged = isDocumentAcknowledged != isDocumentAcknowledged_refreshedValue;
+
+		this.isDocumentAcknowledged = isDocumentAcknowledged_refreshedValue;
+
+		return hasAcknowledgedStatusChanged;
+	}
+
+	/**
+	 * @return true, if read only currencies flag changed, false otherwise
+	 */
+	public boolean recomputeCurrenciesReadOnlyFlag()
+	{
+		final boolean currenciesReadOnlyFlag_refreshedValue = lines.stream().anyMatch(RemittanceAdviceLine::isInvoiceResolved);
+
+		final boolean currenciesReadOnlyFlagChanged = currenciesReadOnlyFlag != currenciesReadOnlyFlag_refreshedValue;
+
+		this.currenciesReadOnlyFlag = currenciesReadOnlyFlag_refreshedValue;
+
+		return currenciesReadOnlyFlagChanged;
+	}
+
+	public void setProcessedFlag(final boolean processed)
+	{
+		this.processed = processed;
+
+		getLines().forEach(line -> line.setProcessed(processed));
 	}
 }

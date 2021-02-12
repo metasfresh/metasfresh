@@ -82,6 +82,7 @@ public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 		remittanceAdvice.validateCompleteAction();
 
 		remittanceAdviceRecord.setDocAction(X_C_RemittanceAdvice.DOCACTION_Re_Activate);
+		remittanceAdviceRecord.setProcessed(true);
 		return X_C_RemittanceAdvice.DOCSTATUS_Completed;
 	}
 
@@ -95,6 +96,7 @@ public class C_RemittanceAdvice_DocHandler  implements DocumentHandler
 			throw new AdempiereException("A payment was already created!");
 		}
 
+		remittanceAdvice.setProcessed(false);
 		remittanceAdvice.setDocAction(X_C_RemittanceAdvice.DOCACTION_Complete);
 	}
 

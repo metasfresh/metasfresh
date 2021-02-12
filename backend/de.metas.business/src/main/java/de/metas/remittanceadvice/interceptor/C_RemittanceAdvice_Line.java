@@ -88,7 +88,16 @@ public class C_RemittanceAdvice_Line
 			remittanceAdviceLine.removeInvoice();
 		}
 
-		remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
+		final boolean readOnlyCurrencyFlagChanged = remittanceAdvice.recomputeCurrenciesReadOnlyFlag();
+
+		if (readOnlyCurrencyFlagChanged)
+		{
+			remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
+		}
+		else //update only the changed line
+		{
+			remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE },
@@ -116,16 +125,7 @@ public class C_RemittanceAdvice_Line
 			ifColumnsChanged = {I_C_RemittanceAdvice_Line.COLUMNNAME_C_BPartner_ID, I_C_RemittanceAdvice_Line.COLUMNNAME_Bill_BPartner_ID})
 	public void validateRemittanceAdviceLineBPartner(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
-		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
-		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
-
-		final RemittanceAdviceLineId remittanceAdviceLineId = RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID());
-
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceAdvice.getLine(remittanceAdviceLineId)
-				.orElseThrow(() -> new AdempiereException("No line found under RemittanceAdviceId: {} with lineId: {}")
-						.appendParametersToMessage()
-						.setParameter("RemittanceAdviceId", remittanceAdviceId)
-						.setParameter("RemittanceAdviceLineId", remittanceAdviceLineId));
+		final RemittanceAdviceLine remittanceAdviceLine = getLineOrFail(record);
 
 		remittanceAdviceLine.validateBPartner();
 
@@ -137,16 +137,7 @@ public class C_RemittanceAdvice_Line
 			ifColumnsChanged = I_C_RemittanceAdvice_Line.COLUMNNAME_ExternalInvoiceDocBaseType)
 	public void validateRemittanceAdviceLineInvoiceDocType(@NonNull final I_C_RemittanceAdvice_Line record)
 	{
-		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
-		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
-
-		final RemittanceAdviceLineId remittanceAdviceLineId = RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID());
-
-		final RemittanceAdviceLine remittanceAdviceLine = remittanceAdvice.getLine(remittanceAdviceLineId)
-				.orElseThrow(() -> new AdempiereException("No line found under RemittanceAdviceId: {} with lineId: {}")
-						.appendParametersToMessage()
-						.setParameter("RemittanceAdviceId", remittanceAdviceId)
-						.setParameter("RemittanceAdviceLineId", remittanceAdviceLineId));
+		final RemittanceAdviceLine remittanceAdviceLine = getLineOrFail(record);
 
 		if (remittanceAdviceLine.getInvoiceId() != null)
 		{
@@ -157,5 +148,51 @@ public class C_RemittanceAdvice_Line
 
 			remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_IsLineAcknowledged,
+			I_C_RemittanceAdvice_Line.COLUMNNAME_IsInvoiceResolved,
+			I_C_RemittanceAdvice_Line.COLUMNNAME_IsAmountValid})
+	public void recomputeIsDocumentAcknowledged(@NonNull final I_C_RemittanceAdvice_Line record)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
+
+		final boolean hasAcknowledgedStatusChanged = remittanceAdvice.recomputeIsDocumentAcknowledged();
+
+		if (hasAcknowledgedStatusChanged)
+		{
+			remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void recomputeReadOnlyCurrenciesFlagOnDelete(@NonNull final I_C_RemittanceAdvice_Line record)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
+
+		final boolean readOnlyCurrenciesFlagChanged = remittanceAdvice.recomputeCurrenciesReadOnlyFlag();
+
+		if (readOnlyCurrenciesFlagChanged)
+		{
+			remittanceAdviceRepo.updateRemittanceAdvice(remittanceAdvice);
+		}
+	}
+
+	@NonNull
+	private RemittanceAdviceLine getLineOrFail(@NonNull final I_C_RemittanceAdvice_Line record)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
+
+		final RemittanceAdviceLineId remittanceAdviceLineId = RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID());
+
+		return remittanceAdvice.getLine(remittanceAdviceLineId)
+				.orElseThrow(() -> new AdempiereException("No line found under RemittanceAdviceId: {} with lineId: {}")
+						.appendParametersToMessage()
+						.setParameter("RemittanceAdviceId", remittanceAdviceId)
+						.setParameter("RemittanceAdviceLineId", remittanceAdviceLineId));
 	}
 }

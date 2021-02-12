@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_RemittanceAdvice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 191657098L;
+	private static final long serialVersionUID = -457144040L;
 
     /** Standard Constructor */
     public X_C_RemittanceAdvice (final Properties ctx, final int C_RemittanceAdvice_ID, final String trxName)
@@ -116,6 +116,18 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	public int getC_RemittanceAdvice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_RemittanceAdvice_ID);
+	}
+
+	@Override
+	public void setCurrenciesReadOnlyFlag (final boolean CurrenciesReadOnlyFlag)
+	{
+		set_Value (COLUMNNAME_CurrenciesReadOnlyFlag, CurrenciesReadOnlyFlag);
+	}
+
+	@Override
+	public boolean isCurrenciesReadOnlyFlag() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_CurrenciesReadOnlyFlag);
 	}
 
 	@Override
@@ -319,6 +331,18 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PaymentDiscountAmountSum);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override
