@@ -103,7 +103,7 @@ public class RemittanceAdviceRepository
 		return toRemittanceAdvice(record);
 	}
 
-	public void updateRemittanceAdvice(@NonNull final RemittanceAdvice remittanceAdvice) //why support null?
+	public void updateRemittanceAdvice(@NonNull final RemittanceAdvice remittanceAdvice)
 	{
 		final I_C_RemittanceAdvice record = toRemittanceAdviceRecord(remittanceAdvice);
 
@@ -130,6 +130,8 @@ public class RemittanceAdviceRepository
 
 		final Function<Amount, BigDecimal> asBigDecimalOrNll = (amount) -> amount != null ? amount.toBigDecimal() : null;
 
+		record.setAD_Org_ID(remittanceAdviceLine.getOrgId().getRepoId());
+
 		record.setInvoiceAmtInREMADVCurrency(asBigDecimalOrNll.apply(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency()));
 		record.setOverUnderAmt(asBigDecimalOrNll.apply(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()));
 		record.setPaymentDiscountAmt(asBigDecimalOrNll.apply(remittanceAdviceLine.getPaymentDiscountAmount()));
@@ -140,6 +142,7 @@ public class RemittanceAdviceRepository
 		record.setC_Invoice_Currency_ID(NumberUtils.asInt(remittanceAdviceLine.getInvoiceCurrencyId(), -1));
 		record.setBill_BPartner_ID(NumberUtils.asInt(remittanceAdviceLine.getBillBPartnerId(), -1));
 		record.setInvoiceDate(TimeUtil.asTimestamp(remittanceAdviceLine.getDateInvoiced()));
+		record.setInvoiceGrossAmount(asBigDecimalOrNll.apply(remittanceAdviceLine.getInvoiceGrossAmount()));
 
 		record.setService_Fee_Invoice_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeInvoiceId(), -1));
 		record.setService_Product_ID(NumberUtils.asInt(remittanceAdviceLine.getServiceFeeProductId(), -1));

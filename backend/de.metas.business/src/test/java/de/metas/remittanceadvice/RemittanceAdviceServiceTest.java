@@ -165,7 +165,6 @@ public class RemittanceAdviceServiceTest
 				.orgId(OrgId.ofRepoId(123))
 				.clientId(ClientId.ofRepoId(123))
 				.sourceBPartnerId(BPartnerId.ofRepoId(111))
-				.documentDate(Instant.now())
 				.remittedAmountCurrencyId(remittedCurrencyId != null ? remittedCurrencyId : euroCurrencyId)
 				.sourceBPartnerBankAccountId(BPartnerBankAccountId.ofRepoId(BPartnerId.ofRepoId(111), 123))
 				.destinationBPartnerBankAccountId(BPartnerBankAccountId.ofRepoId(BPartnerId.ofRepoId(123), 111))
