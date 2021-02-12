@@ -22,7 +22,9 @@
 
 package de.metas.remittanceadvice.interceptor;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.remittanceadvice.RemittanceAdvice;
 import de.metas.remittanceadvice.RemittanceAdviceId;
@@ -30,10 +32,13 @@ import de.metas.remittanceadvice.RemittanceAdviceLine;
 import de.metas.remittanceadvice.RemittanceAdviceLineId;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
@@ -43,7 +48,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_RemittanceAdvice_Line
 {
-	private static Logger log = LogManager.getLogger(C_RemittanceAdvice_Line.class);
+	private static final Logger log = LogManager.getLogger(C_RemittanceAdvice_Line.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	final RemittanceAdviceRepository remittanceAdviceRepo;
 	final RemittanceAdviceService remittanceAdviceService;
@@ -124,5 +131,31 @@ public class C_RemittanceAdvice_Line
 
 		remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
 
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			ifColumnsChanged = I_C_RemittanceAdvice_Line.COLUMNNAME_ExternalInvoiceDocBaseType)
+	public void validateRemittanceAdviceLineInvoiceDocType(@NonNull final I_C_RemittanceAdvice_Line record)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
+
+		final RemittanceAdviceLineId remittanceAdviceLineId = RemittanceAdviceLineId.ofRepoId(record.getC_RemittanceAdvice_Line_ID());
+
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceAdvice.getLine(remittanceAdviceLineId)
+				.orElseThrow(() -> new AdempiereException("No line found under RemittanceAdviceId: {} with lineId: {}")
+						.appendParametersToMessage()
+						.setParameter("RemittanceAdviceId", remittanceAdviceId)
+						.setParameter("RemittanceAdviceLineId", remittanceAdviceLineId));
+
+		if (remittanceAdviceLine.getInvoiceId() != null)
+		{
+			final I_C_Invoice lineResolvedInvoice = invoiceDAO.getByIdInTrx(remittanceAdviceLine.getInvoiceId());
+			final I_C_DocType invoiceDocType = docTypeDAO.getById(lineResolvedInvoice.getC_DocTypeTarget_ID());
+
+			remittanceAdviceLine.validateInvoiceDocBaseType(invoiceDocType.getDocBaseType());
+
+			remittanceAdviceRepo.updateRemittanceAdviceLine(remittanceAdviceLine);
+		}
 	}
 }

@@ -206,6 +206,10 @@ public class RemittanceAdviceLine
 		isBPartnerValid = billBPartnerId != null && billBPartnerId.equals(bpartnerIdentifier);
 	}
 
+	public void validateInvoiceDocBaseType(@NonNull final String invoiceDocType){
+		isInvoiceDocTypeValid = invoiceDocType.equalsIgnoreCase(externalInvoiceDocBaseType);
+	}
+
 	public void removeInvoice()
 	{
 		invoiceId = null;
