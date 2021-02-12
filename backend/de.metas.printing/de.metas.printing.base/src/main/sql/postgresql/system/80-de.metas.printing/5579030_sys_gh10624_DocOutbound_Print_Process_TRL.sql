@@ -43,3 +43,23 @@ UPDATE AD_Process_Trl SET Description='Hinweis: Es muss entweder ein Drucker aus
 UPDATE AD_Process SET ShowHelp='Y',Updated=TO_TIMESTAMP('2021-02-12 14:31:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584801
 ;
 
+-- 2021-02-12T13:25:36.739Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='A printer must be selected or assigned to the respective user.', Help='A printer must be selected or assigned to the respective user.',Updated=TO_TIMESTAMP('2021-02-12 15:25:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584801
+;
+
+-- 2021-02-12T13:25:57.330Z
+-- URL zum Konzept
+UPDATE AD_Process SET Description='Es muss entweder ein Drucker ausgewählt oder dem jeweiligen Benutzer zugewiesen werden.', Help='Es muss entweder ein Drucker ausgewählt oder dem jeweiligen Benutzer zugewiesen werden.',Updated=TO_TIMESTAMP('2021-02-12 15:25:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584801
+;
+
+-- 2021-02-12T13:26:06.012Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='Es muss entweder ein Drucker ausgewählt oder dem jeweiligen Benutzer zugewiesen werden.', Help='Es muss entweder ein Drucker ausgewählt oder dem jeweiligen Benutzer zugewiesen werden.',Updated=TO_TIMESTAMP('2021-02-12 15:26:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584801
+;
+
+-- 2021-02-12T13:26:10.756Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='Es muss entweder ein Drucker ausgewählt oder dem jeweiligen Benutzer zugewiesen werden.', Help='Es muss entweder ein Drucker ausgewählt oder dem jeweiligen Benutzer zugewiesen werden.',Updated=TO_TIMESTAMP('2021-02-12 15:26:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584801
+;
+
