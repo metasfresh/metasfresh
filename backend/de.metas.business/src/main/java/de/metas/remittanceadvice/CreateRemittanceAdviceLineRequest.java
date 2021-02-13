@@ -23,6 +23,7 @@
 package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,6 +38,9 @@ public class CreateRemittanceAdviceLineRequest
 {
 	@NonNull
 	RemittanceAdviceId remittanceAdviceId;
+
+	@NonNull
+	OrgId orgId;
 
 	@NonNull
 	BigDecimal remittedAmount;

@@ -129,7 +129,7 @@ public class JsonRemittanceAdviceProducer
 		return document.getDocumentDate()
 				.toGregorianCalendar()
 				.toZonedDateTime()
-				.withZoneSameInstant(ZoneId.of(DOCUMENT_ZONE_ID))
+				.withZoneSameLocal(ZoneId.of(DOCUMENT_ZONE_ID))
 				.toInstant()
 				.toString();
 	}

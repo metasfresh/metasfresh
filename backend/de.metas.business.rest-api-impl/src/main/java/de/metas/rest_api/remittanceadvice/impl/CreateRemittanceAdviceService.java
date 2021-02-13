@@ -120,7 +120,7 @@ public class CreateRemittanceAdviceService
 				for (final JsonRemittanceAdviceLine jsonRemittanceAdviceLine : jsonRemittanceAdviceLines)
 				{
 					final CreateRemittanceAdviceLineRequest createRemittanceAdviceLineReq = buildRemittanceAdviceLineRequest(
-							jsonRemittanceAdviceLine, remittanceAdviceId);
+							jsonRemittanceAdviceLine, remittanceAdviceId, remittanceAdvice.getOrgId());
 
 					remittanceAdviceRepository.createRemittanceAdviceLine(createRemittanceAdviceLineReq);
 				}
@@ -221,7 +221,8 @@ public class CreateRemittanceAdviceService
 
 	private CreateRemittanceAdviceLineRequest buildRemittanceAdviceLineRequest(
 			@NonNull final JsonRemittanceAdviceLine jsonRemittanceAdviceLine,
-			@NonNull final RemittanceAdviceId remittanceAdviceId)
+			@NonNull final RemittanceAdviceId remittanceAdviceId,
+			@NonNull final OrgId orgId)
 	{
 		final BPartnerId bPartnerId = Check.isEmpty(jsonRemittanceAdviceLine.getBpartnerIdentifier())
 				? null
@@ -233,6 +234,7 @@ public class CreateRemittanceAdviceService
 
 		return CreateRemittanceAdviceLineRequest.builder()
 				.remittanceAdviceId(remittanceAdviceId)
+				.orgId(orgId)
 				.invoiceIdentifier(jsonRemittanceAdviceLine.getInvoiceIdentifier())
 				.remittedAmount(jsonRemittanceAdviceLine.getRemittedAmount())
 				.dateInvoiced(dateInvoiced)

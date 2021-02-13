@@ -180,7 +180,7 @@ public class JsonRemittanceAdviceLineProducer
 
 		final Instant instantDateInvoice = dateInvoice.toGregorianCalendar()
 				.toZonedDateTime()
-				.withZoneSameInstant(ZoneId.of(DOCUMENT_ZONE_ID))
+				.withZoneSameLocal(ZoneId.of(DOCUMENT_ZONE_ID))
 				.toInstant();
 
 		return Optional.of(instantDateInvoice.toString());

@@ -250,6 +250,8 @@ public class RemittanceAdviceRepository
 	{
 		final I_C_RemittanceAdvice_Line record = InterfaceWrapperHelper.newInstance(I_C_RemittanceAdvice_Line.class);
 
+		record.setAD_Org_ID(remittanceAdviceLineRequest.getOrgId().getRepoId());
+
 		record.setC_RemittanceAdvice_ID(remittanceAdviceLineRequest.getRemittanceAdviceId().getRepoId());
 		record.setInvoiceIdentifier(remittanceAdviceLineRequest.getInvoiceIdentifier());
 		record.setC_BPartner_ID(BPartnerId.toRepoId(remittanceAdviceLineRequest.getBpartnerIdentifier()));
@@ -321,7 +323,7 @@ public class RemittanceAdviceRepository
 	}
 
 	@NonNull
-	private RemittanceAdviceLine toRemittanceAdviceLineRecord(@NonNull final I_C_RemittanceAdvice_Line record,
+	private RemittanceAdviceLine toRemittanceAdviceLine(@NonNull final I_C_RemittanceAdvice_Line record,
 			@NonNull final CurrencyId remittanceCurrencyId,
 			@Nullable final CurrencyId serviceFeeCurrencyId)
 	{
@@ -406,7 +408,7 @@ public class RemittanceAdviceRepository
 				.create()
 				.list()
 				.stream()
-				.map(line -> toRemittanceAdviceLineRecord(line, remittanceCurrencyId, serviceFeeCurrencyId))
+				.map(line -> toRemittanceAdviceLine(line, remittanceCurrencyId, serviceFeeCurrencyId))
 				.collect(Collectors.toList());
 	}
 

@@ -103,15 +103,6 @@ public class EcosioRemadvRoute extends RouteBuilder
 	@NonNull
 	public JaxbDataFormat setupECOSIOXMLFormat()
 	{
-		// final XmlMapper xmlMapper = new XmlMapper();
-		// xmlMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		//
-		// context.getRegistry().bind("REMADV-XmlMapper", xmlMapper);
-		// final var jacksonXMLDataFormat = new JacksonXMLDataFormat();
-		// jacksonXMLDataFormat.setUnmarshalType(ErpelMessageType.class);
-		// jacksonXMLDataFormat.setXmlMapper("REMADV-XmlMapper");
-		// return jacksonXMLDataFormat;
-
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(ErpelMessageType.class.getPackage().getName());
 		dataFormat.setCamelContext(getContext());
 		dataFormat.setEncoding(StandardCharsets.UTF_8.name());

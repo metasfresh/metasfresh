@@ -196,15 +196,7 @@ public class RemittanceAdviceLine
 
 		isInvoiceDocTypeValid = remittanceAdviceLineInvoiceDetails.getInvoiceDocType().equals(externalInvoiceDocBaseType);
 
-		if (dateInvoiced == null)
-		{
-			dateInvoiced = remittanceAdviceLineInvoiceDetails.getInvoiceDate();
-			isInvoiceDateValid = true;
-		}
-		else
-		{
-			isInvoiceDateValid = dateInvoiced.equals(remittanceAdviceLineInvoiceDetails.getInvoiceDate());
-		}
+		isInvoiceDateValid = remittanceAdviceLineInvoiceDetails.getInvoiceDate().equals(dateInvoiced);
 	}
 
 	public void validateBPartner(){
@@ -223,7 +215,6 @@ public class RemittanceAdviceLine
 		invoiceCurrencyId = null;
 		invoiceAmtInREMADVCurrency = null;
 		overUnderAmtInREMADVCurrency = null;
-		dateInvoiced = null;
 
 		isInvoiceResolved = false;
 		isAmountValid = false;
