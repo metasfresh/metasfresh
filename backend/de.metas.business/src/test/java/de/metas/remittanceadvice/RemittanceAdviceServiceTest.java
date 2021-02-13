@@ -52,6 +52,7 @@ import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
+import org.jpedal.fonts.tt.Loca;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -137,7 +138,8 @@ public class RemittanceAdviceServiceTest
 			final int invoiceId,
 			@NonNull final BigDecimal remittanceAmt,
 			@Nullable final CurrencyCode currencyCode,
-			@Nullable final BPartnerId bPartnerId
+			@Nullable final BPartnerId bPartnerId,
+			@Nullable final LocalDate targetInvoicedDate
 	)
 	{
 		final RemittanceAdviceLine remittanceAdviceLine;
@@ -149,6 +151,7 @@ public class RemittanceAdviceServiceTest
 				.remittanceAdviceId(RemittanceAdviceId.ofRepoId(nextRemittanceId++))//
 				.invoiceIdentifier(invoiceIdentifier)//
 				.invoiceId(InvoiceId.ofRepoIdOrNull(invoiceId))//
+				.dateInvoiced(targetInvoicedDate != null ? TimeUtil.asInstant(targetInvoicedDate) : null)
 				.remittedAmount(Amount.of(remittanceAmt, currencyCode != null ? currencyCode : CurrencyCode.EUR))//
 				.build();
 
@@ -185,17 +188,20 @@ public class RemittanceAdviceServiceTest
 	private I_C_Invoice getInvoice(
 			final InvoiceDocBaseType type,
 			@NonNull final BigDecimal open,
-			@Nullable final CurrencyId currency)
+			@Nullable final CurrencyId currency,
+			@Nullable final LocalDate invoicedDate)
 	{
 		final Money openAmt = money(open, currency);
-
-		final LocalDate acctDate = LocalDate.parse("2020-09-04");
 
 		final I_C_Invoice invoice;
 
 		final Money invoiceGrandTotal = openAmt
 				.negateIf(type.isCreditMemo())
 				.negateIf(!type.isSales());
+
+		final LocalDate invoicedDateToUse = invoicedDate != null
+				? invoicedDate
+				: LocalDate.now();
 
 		final int invoiceId = nextInvoiceId++;
 		final I_C_DocType docType = getInvoiceDocType(type);
@@ -204,13 +210,13 @@ public class RemittanceAdviceServiceTest
 		invoice.setDocumentNo("InvoiceDocNo" + invoiceId);
 		invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 		invoice.setIsSOTrx(docType.isSOTrx());
-		invoice.setDateInvoiced(TimeUtil.asTimestamp(acctDate));
+		invoice.setDateInvoiced(TimeUtil.asTimestamp(invoicedDateToUse));
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 		invoice.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 		invoice.setGrandTotal(invoiceGrandTotal.toBigDecimal());
 		invoice.setProcessed(true);
 		invoice.setDocStatus(IDocument.STATUS_Completed);
-		invoice.setDateAcct(TimeUtil.asTimestamp(acctDate));
+		invoice.setDateAcct(TimeUtil.asTimestamp(invoicedDateToUse));
 		InterfaceWrapperHelper.saveRecord(invoice);
 
 		return invoice;
@@ -368,7 +374,10 @@ public class RemittanceAdviceServiceTest
 	public void testResolveRemittanceAdviceLineWithInvoiceSameCurrencyMatchingAmount_CheckBooleans()
 	{
 		//given
+		final LocalDate invoicedDate = LocalDate.now();
+
 		final I_C_Invoice invoice = invoice()
+				.invoicedDate(invoicedDate)
 				.type(CustomerInvoice)
 				.open(BigDecimal.valueOf(100))
 				.currency(euroCurrencyId)
@@ -377,6 +386,7 @@ public class RemittanceAdviceServiceTest
 		final RemittanceAdvice remittanceAdvice = remittance().build();
 
 		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.targetInvoicedDate(invoicedDate)
 				.invoiceId(invoice.getC_Invoice_ID())
 				.bPartnerId(bpartnerId)
 				.remittanceAmt(new BigDecimal(100))
@@ -393,7 +403,6 @@ public class RemittanceAdviceServiceTest
 		assertThat(remittanceAdviceLine.isInvoiceDateValid()).isTrue();
 		assertThat(remittanceAdviceLine.isServiceFeeResolved()).isFalse();
 		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isFalse();
-
 	}
 
 }
