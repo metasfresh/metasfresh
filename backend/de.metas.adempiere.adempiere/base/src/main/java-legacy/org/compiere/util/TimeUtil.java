@@ -1610,6 +1610,10 @@ public class TimeUtil
 		return localDate;
 	}
 
+	/**
+	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
+	 */
+	@Deprecated
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
 		return ts != null
