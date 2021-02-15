@@ -13,7 +13,7 @@
         <version>10.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <scm>
         <connection>scm:git:git@github.com:swagger-api/swagger-codegen.git</connection>
         <developerConnection>scm:git:git@github.com:swagger-api/swagger-codegen.git</developerConnection>
@@ -42,6 +42,14 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -139,14 +147,14 @@
     </build>
 
     <dependencies>
-        
+
         <!-- neede to we can compile this with java-version > 11-->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <version>1.3.5</version>
         </dependency>
-        
+
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
