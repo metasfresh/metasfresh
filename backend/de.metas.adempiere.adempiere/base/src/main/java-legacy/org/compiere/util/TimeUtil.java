@@ -1651,6 +1651,14 @@ public class TimeUtil
 				: null;
 	}
 
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime)
+	{
+		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
+	}
+
+
 	public static LocalTime asLocalTime(final Object obj)
 	{
 		if (obj == null)
