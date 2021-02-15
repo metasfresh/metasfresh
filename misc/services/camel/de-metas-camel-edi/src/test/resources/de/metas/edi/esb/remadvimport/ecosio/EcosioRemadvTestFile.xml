@@ -88,7 +88,7 @@
                     <document:Quantity document:Unit="PCE">0</document:Quantity><!-- ignore -->
                     <document:Delivery><!-- ignore -->
                         <document:DeliveryRecipient>
-                            <document:FurtherIdentification document:IdentificationType="GLN">7610253000004</document:FurtherIdentification><!-- ignore -->
+                            <document:FurtherIdentification document:IdentificationType="GLN">ignoredGLN</document:FurtherIdentification><!-- ignore -->
                         </document:DeliveryRecipient>
                     </document:Delivery>
                     <erpel:ListLineItemExtension>
