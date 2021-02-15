@@ -1,13 +1,3 @@
--- 2021-02-11T14:44:08.963Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_EntityType (AD_Client_ID,AD_EntityType_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,ModelPackage,Name,Processing,Updated,UpdatedBy) VALUES (0,540266,0,TO_TIMESTAMP('2021-02-11 16:44:08','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','Y','de.metas.externalsystem','de.metas.externalsystem','N',TO_TIMESTAMP('2021-02-11 16:44:08','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2021-02-11T14:44:57.034Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_EntityType SET Description='Entity type for interacting with external systems',Updated=TO_TIMESTAMP('2021-02-11 16:44:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_EntityType_ID=540266
-;
-
 -- 2021-02-11T15:01:58.179Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584802,'Y','de.metas.externalsystem.process.InvokeAlbertaAction','N',TO_TIMESTAMP('2021-02-11 17:01:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalreference','Y','N','N','N','N','N','N','Y','Y',0,'Call External System','json','N','N','Java',TO_TIMESTAMP('2021-02-11 17:01:58','YYYY-MM-DD HH24:MI:SS'),100,'Call_External_System_Alberta')
