@@ -322,8 +322,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		dimensionService.updateRecord(this, orderlineDimension);
 
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
-		setUser1_ID(oLine.getUser1_ID());
-		setUser2_ID(oLine.getUser2_ID());
 		//
 		setRRAmt(oLine.getRRAmt());
 		setRRStartDate(oLine.getRRStartDate());

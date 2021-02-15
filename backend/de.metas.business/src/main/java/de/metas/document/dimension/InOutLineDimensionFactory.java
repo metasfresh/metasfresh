@@ -51,6 +51,8 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.userElementString5(record.getUserElementString5())
 				.userElementString6(record.getUserElementString6())
 				.userElementString7(record.getUserElementString7())
+				.user1_ID(record.getUser1_ID())
+				.user2_ID(record.getUser2_ID())
 				.build();
 	}
 
@@ -67,5 +69,7 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		record.setUserElementString5(from.getUserElementString5());
 		record.setUserElementString6(from.getUserElementString6());
 		record.setUserElementString7(from.getUserElementString7());
+		record.setUser1_ID(from.getUser1_ID());
+		record.setUser2_ID(from.getUser2_ID());
 	}
 }

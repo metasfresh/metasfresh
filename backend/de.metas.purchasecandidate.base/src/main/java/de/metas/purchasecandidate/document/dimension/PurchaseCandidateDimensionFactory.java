@@ -51,7 +51,6 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 		record.setUserElementString5(from.getUserElementString5());
 		record.setUserElementString6(from.getUserElementString6());
 		record.setUserElementString7(from.getUserElementString7());
-
 	}
 
 	@Override

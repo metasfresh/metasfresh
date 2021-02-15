@@ -377,8 +377,6 @@ public class CalloutInOut extends CalloutEngine
 			inoutLine.setC_ProjectPhase_ID(ol.getC_ProjectPhase_ID());
 			inoutLine.setC_ProjectTask_ID(ol.getC_ProjectTask_ID());
 			inoutLine.setAD_OrgTrx_ID(ol.getAD_OrgTrx_ID());
-			inoutLine.setUser1_ID(ol.getUser1_ID());
-			inoutLine.setUser2_ID(ol.getUser2_ID());
 
 			final Dimension orderLineDimensions = dimensionService.getFromRecord(ol);
 			dimensionService.updateRecord(inoutLine, orderLineDimensions);

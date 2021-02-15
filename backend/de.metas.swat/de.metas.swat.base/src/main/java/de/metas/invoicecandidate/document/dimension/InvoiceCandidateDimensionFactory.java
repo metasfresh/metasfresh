@@ -31,7 +31,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
 @Component
-public class InvoiceCandidateDimensionFactory  implements DimensionFactory<I_C_Invoice_Candidate>
+public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_Invoice_Candidate>
 {
 	@Override
 	public String getHandledTableName()
@@ -69,6 +69,5 @@ public class InvoiceCandidateDimensionFactory  implements DimensionFactory<I_C_I
 		record.setUserElementString5(from.getUserElementString5());
 		record.setUserElementString6(from.getUserElementString6());
 		record.setUserElementString7(from.getUserElementString7());
-
 	}
 }

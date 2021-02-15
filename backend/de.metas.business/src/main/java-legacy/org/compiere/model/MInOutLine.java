@@ -183,8 +183,6 @@ public class MInOutLine extends X_M_InOutLine
 		setC_ProjectPhase_ID(oLine.getC_ProjectPhase_ID());
 		setC_ProjectTask_ID(oLine.getC_ProjectTask_ID());
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
-		setUser1_ID(oLine.getUser1_ID());
-		setUser2_ID(oLine.getUser2_ID());
 
 		final Dimension orderLineDimensions = dimensionService.getFromRecord(oLine);
 		dimensionService.updateRecord(this, orderLineDimensions);
@@ -233,8 +231,6 @@ public class MInOutLine extends X_M_InOutLine
 		setC_ProjectTask_ID(iLine.getC_ProjectTask_ID());
 
 		setAD_OrgTrx_ID(iLine.getAD_OrgTrx_ID());
-		setUser1_ID(iLine.getUser1_ID());
-		setUser2_ID(iLine.getUser2_ID());
 
 		final Dimension invoiceLineDimension = dimensionService.getFromRecord(iLine);
 		dimensionService.updateRecord(this,invoiceLineDimension);
