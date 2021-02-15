@@ -7,11 +7,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -85,6 +92,12 @@ public class M_InOutLine_HandlerTest
 	{
 		AdempiereTestHelper.get().init();
 		BusinessTestHelper.createDefaultBusinessRecords();
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InOutLineDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		save(bPartner);
