@@ -130,7 +130,8 @@ public final class Fact
 	 * @param creditAmt  credit amount, can be null
 	 * @return Fact Line
 	 */
-	public FactLine createLine(final DocLine<?> docLine,
+	public FactLine createLine(
+			@Nullable final DocLine<?> docLine,
 			final MAccount account,
 			final CurrencyId currencyId,
 			@Nullable final BigDecimal debitAmt, @Nullable final BigDecimal creditAmt)

@@ -1,21 +1,8 @@
-package de.metas.banking.payment.paymentallocation;
-
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
-import de.metas.payment.PaymentId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
-
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,17 +20,25 @@ import java.time.ZonedDateTime;
  * #L%
  */
 
+package de.metas.currency;
+
+import de.metas.money.CurrencyId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.math.BigDecimal;
+
 @Value
 @Builder
-public class PaymentToAllocateQuery
+public class FixedConversionRate
 {
-	@Nullable
-	BPartnerId bpartnerId;
+	@NonNull
+	CurrencyId fromCurrencyId;
 
 	@NonNull
-	ZonedDateTime evaluationDate;
+	CurrencyId toCurrencyId;
 
 	@NonNull
-	@Singular("additionalPaymentIdToInclude")
-	ImmutableSet<PaymentId> additionalPaymentIdsToInclude;
+	BigDecimal multiplyRate;
 }
