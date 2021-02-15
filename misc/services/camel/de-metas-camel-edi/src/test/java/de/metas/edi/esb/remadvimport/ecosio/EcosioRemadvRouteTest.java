@@ -57,7 +57,7 @@ public class EcosioRemadvRouteTest extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(EcosioRemadvRouteTest.class.getClassLoader().getResourceAsStream("remadv.properties"));
+			properties.load(EcosioRemadvRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)

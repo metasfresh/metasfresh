@@ -26,6 +26,7 @@ import at.erpel.schemas._1p0.messaging.message.ErpelMessageType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
 import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -34,8 +35,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -43,17 +42,14 @@ import java.nio.charset.StandardCharsets;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.AUTHORIZATION;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.CREATE_REMADV_MF_URL;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ECOSIO_AUTH_TOKEN;
-import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ECOSIO_REMADV_SFTP_URL;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ECOSIO_REMADV_XML_TO_JSON_ROUTE;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.INPUT_REMADV_LOCAL;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.INPUT_REMADV_REMOTE;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.NUMBER_OF_ITEMS;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.REMADV_XML_TO_JSON_PROCESSOR;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.http;
 
 @Component
-@PropertySources(value = {
-		@PropertySource(value = "classpath:/remadv.properties"),
-		@PropertySource(value = "file:./remadv", ignoreResourceNotFound = true)
-})
 public class EcosioRemadvRoute extends RouteBuilder
 {
 	@Override
@@ -63,8 +59,17 @@ public class EcosioRemadvRoute extends RouteBuilder
 		final JacksonDataFormat responseJacksonDataFormat = setupMetasfreshJSONFormat(getContext(), JsonCreateRemittanceAdviceResponse.class);
 		final JaxbDataFormat jacksonXMLDataFormat = setupECOSIOXMLFormat();
 
+		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_REMADV_REMOTE, "");
+		if (!Util.isEmpty(remoteEndpoint))
+		{
+			from(remoteEndpoint)
+					.routeId("ecosio-Remote-XML-Orders-To-Local")
+					.log(LoggingLevel.INFO, "Getting remote file")
+					.to("{{" + INPUT_REMADV_LOCAL + "}}");
+		}
+		
 		// @formatter:off
-		from(ECOSIO_REMADV_SFTP_URL)
+		from(INPUT_REMADV_LOCAL)
 				.routeId(ECOSIO_REMADV_XML_TO_JSON_ROUTE)
 				.streamCaching()
 				.unmarshal(jacksonXMLDataFormat)

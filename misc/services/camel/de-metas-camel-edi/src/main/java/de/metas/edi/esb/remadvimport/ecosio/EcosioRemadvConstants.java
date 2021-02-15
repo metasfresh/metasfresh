@@ -25,10 +25,12 @@ package de.metas.edi.esb.remadvimport.ecosio;
 public interface EcosioRemadvConstants
 {
 	String REMADV_XML_TO_JSON_PROCESSOR = "remadv-xml-to-json-processor-id";
-	String ECOSIO_REMADV_XML_TO_JSON_ROUTE = "remadv-xml-to-json-route-id";
-
-	String ECOSIO_REMADV_SFTP_URL = "{{edi.ecosio.remadv.source}}";
-	String ECOSIO_AUTH_TOKEN = "{{edi.ecosio.remadv-import.auth}}";
+	String ECOSIO_REMADV_XML_TO_JSON_ROUTE = "ecosio-XML-Remadv-To-MF-RESTAPI";
+	
+	String INPUT_REMADV_REMOTE = "{{edi.file.remadv.ecosio.remote}}";
+	String INPUT_REMADV_LOCAL =  "{{edi.file.remadv.ecosio}}";
+	
+	String ECOSIO_AUTH_TOKEN = "{{metasfresh.api.auth}}";
 	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payment/remittanceAdvice";
 
 	String NUMBER_OF_ITEMS = "NumberOfItems";
