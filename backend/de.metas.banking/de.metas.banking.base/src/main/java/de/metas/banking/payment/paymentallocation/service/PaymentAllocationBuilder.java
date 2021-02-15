@@ -32,10 +32,13 @@ import de.metas.currency.CurrencyRate;
 import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.OptionalDeferredException;
 import de.metas.util.Services;
@@ -75,6 +78,7 @@ public class PaymentAllocationBuilder
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 
 	// Parameters
@@ -633,12 +637,14 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
-		final LocalDate dateTrx = getDefaultDateTrx();
+		final OrgId orgId = payable.getClientAndOrgId().getOrgId();
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = payable.getInvoiceProcessingFeeCalculation();
+		final LocalDate dateTrx = TimeUtil.asLocalDate(invoiceProcessingFeeCalculation.getEvaluationDate(), orgDAO.getTimeZone(orgId));
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceProcessingFee)
 				//
-				.orgId(payable.getClientAndOrgId().getOrgId())
+				.orgId(orgId)
 				.bpartnerId(payable.getBpartnerId())
 				//
 				.payableDocumentRef(payable.getReference())
@@ -650,7 +656,7 @@ public class PaymentAllocationBuilder
 				// Amounts:
 				.amounts(amountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)
-				.invoiceProcessingFeeCalculation(payable.getInvoiceProcessingFeeCalculation())
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				//
 				.build();
 
@@ -845,8 +851,12 @@ public class PaymentAllocationBuilder
 
 	private LocalDate getDefaultDateTrx()
 	{
-		Check.assumeNotNull(_defaultDateTrx, "date not null");
-		return _defaultDateTrx;
+		final LocalDate defaultDateTrx = _defaultDateTrx;
+		if (defaultDateTrx == null)
+		{
+			throw new AdempiereException("Default DateTrx was not defined for " + this);
+		}
+		return defaultDateTrx;
 	}
 
 	public PaymentAllocationBuilder defaultDateTrx(final LocalDate defaultDateTrx)
