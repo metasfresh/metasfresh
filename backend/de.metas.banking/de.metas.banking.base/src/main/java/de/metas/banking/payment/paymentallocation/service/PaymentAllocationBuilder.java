@@ -24,6 +24,7 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
@@ -126,29 +127,29 @@ public class PaymentAllocationBuilder
 
 		//
 		// Create & process allocation documents
-		final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
+		final ImmutableMap<PaymentAllocationId,AllocationLineCandidate> paymentAllocations;
 		if (!candidates.isEmpty() && !dryRun)
 		{
-			paymentAllocationIds = processCandidates(candidates);
+			paymentAllocations = processCandidates(candidates);
 		}
 		else
 		{
-			paymentAllocationIds = ImmutableSet.of();
+			paymentAllocations= ImmutableMap.of();
 		}
 
 		return PaymentAllocationResult.builder()
 				.candidates(candidates)
 				.fullyAllocatedCheck(fullyAllocatedCheck)
-				.paymentAllocationIds(paymentAllocationIds)
+				.paymentAllocationIds(paymentAllocations)
 				.build();
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidates(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidates(final Collection<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> processCandidatesInTrx(candidates));
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
 	{
 		try
 		{

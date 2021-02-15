@@ -810,7 +810,7 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public CurrencyConversionContext extractCurrencyConversionContext(@NonNull final I_C_Payment payment)
 	{
-		final PaymentCurrencyContext paymentCurrencyContext = extractPaymentCurrencyContext(payment);
+		final PaymentCurrencyContext paymentCurrencyContext = PaymentCurrencyContext.ofPaymentRecord(payment);
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 				TimeUtil.asLocalDate(payment.getDateAcct()),
 				paymentCurrencyContext.getCurrencyConversionTypeId(),
@@ -825,24 +825,4 @@ public class PaymentBL implements IPaymentBL
 
 		return conversionCtx;
 	}
-
-	private static PaymentCurrencyContext extractPaymentCurrencyContext(@NonNull final I_C_Payment payment)
-	{
-		final PaymentCurrencyContext.PaymentCurrencyContextBuilder resultBuilder = PaymentCurrencyContext.builder()
-				.paymentCurrencyId(CurrencyId.ofRepoId(payment.getC_Currency_ID()))
-				.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()));
-
-		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(payment.getSource_Currency_ID());
-		final BigDecimal currencyRate = payment.getCurrencyRate();
-		if (sourceCurrencyId != null
-				&& currencyRate != null
-				&& currencyRate.signum() != 0)
-		{
-			resultBuilder.sourceCurrencyId(sourceCurrencyId)
-					.currencyRate(currencyRate);
-		}
-
-		return resultBuilder.build();
-	}
-
 }

@@ -39,8 +39,10 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -58,6 +60,7 @@ import java.util.Optional;
 @Service
 public class PaymentAllocationService
 {
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 
@@ -102,8 +105,7 @@ public class PaymentAllocationService
 		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx());
 		final PaymentAllocationBuilder builder = PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
-				.dateTrx(dateTrx)
-				.dateAcct(dateTrx)
+				.defaultDateTrx(dateTrx)
 				.paymentDocuments(ImmutableList.of(paymentDocument))
 				.payableDocuments(invoiceDocuments)
 				.allowPartialAllocations(paymentAllocationCriteria.isAllowPartialAllocations())
@@ -118,7 +120,7 @@ public class PaymentAllocationService
 	{
 		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
 
-		final Money openAmt = extractPayAmt(payment).negateIf(paymentDirection.isOutboundPayment());;
+		final Money openAmt = extractPayAmt(payment).negateIf(paymentDirection.isOutboundPayment());
 
 		return PaymentDocument.builder()
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
@@ -129,7 +131,7 @@ public class PaymentAllocationService
 				.amountToAllocate(openAmt)
 				.dateTrx(TimeUtil.asLocalDate(payment.getDateTrx()))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(payment.getAD_Client_ID(), payment.getAD_Org_ID()))
-				.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID())) // ??
+				.paymentCurrencyContext(PaymentCurrencyContext.ofPaymentRecord(payment))
 				.build();
 	}
 
