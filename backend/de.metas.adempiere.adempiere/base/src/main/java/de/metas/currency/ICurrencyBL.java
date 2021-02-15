@@ -154,7 +154,8 @@ public interface ICurrencyBL extends ISingletonService
 	CurrencyRate getCurrencyRate(
 			CurrencyConversionContext conversionCtx,
 			CurrencyId currencyFromId,
-			CurrencyId currencyToId);
+			CurrencyId currencyToId)
+			throws NoCurrencyRateFoundException;
 
 	@NonNull
 	CurrencyCode getCurrencyCodeById(@NonNull CurrencyId currencyId);

@@ -3,32 +3,17 @@
  */
 package org.compiere.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.util.time.FixedTimeSource;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,6 +39,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.NonNull;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Teo Sarca
@@ -630,6 +617,17 @@ public class TimeUtilTest
 
 		final LocalDate localDate = TimeUtil.asLocalDate(timestamp, ZoneId.of("UTC-8"));
 		assertThat(localDate).isEqualTo("2020-04-30");
+	}
+
+	@Test
+	public void testMaxLocalDate()
+	{
+		assertThat(TimeUtil.maxOfNullables(null, LocalDate.parse("2021-02-10")))
+				.isEqualTo(LocalDate.parse("2021-02-10"));
+		assertThat(TimeUtil.maxOfNullables(LocalDate.parse("2021-02-10"), null))
+				.isEqualTo(LocalDate.parse("2021-02-10"));
+		assertThat(TimeUtil.max(LocalDate.parse("2021-02-10"), LocalDate.parse("2021-02-11")))
+				.isEqualTo(LocalDate.parse("2021-02-11"));
 	}
 
 }

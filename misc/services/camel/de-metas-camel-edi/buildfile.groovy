@@ -23,7 +23,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 
         final Nexus nexus = new Nexus()
         final String dockerImageName = 'metasfresh/de-metas-edi-esb-camel'
-        final String latestDockerImageName = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
+        final String latestDockerImageName = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}") {
 
         currentBuild.description = """${currentBuild.description}<p/>
 					No changes happened in EDI; latest docker image: <code>${latestDockerImageName}</code>
@@ -38,8 +38,9 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // set the artifact version of everything below de.metas.esb/pom.xml
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set"
 
-    // update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
+    // resolve the version property ${metasfresh-common.version} in the pom.xml
+    final String commonPropertyParam = "-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
+    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DallowDowngrade=true ${commonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
     // build and install
     // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property

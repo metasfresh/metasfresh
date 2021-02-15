@@ -32,6 +32,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
@@ -42,6 +43,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ArchiveDAO implements IArchiveDAO
 {
@@ -133,4 +136,17 @@ public class ArchiveDAO implements IArchiveDAO
 	{
 		return InterfaceWrapperHelper.load(archiveId, I_AD_Archive.class);
 	}
+
+	@Override
+	public <T extends I_AD_Archive> T retrieveArchive(@NonNull final ArchiveId archiveId, @NonNull final Class<T> modelClass)
+	{
+		final T archive = loadOutOfTrx(archiveId, modelClass);
+
+		if (archive == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Archive_ID@: " + archiveId);
+		}
+		return archive;
+	}
+
 }

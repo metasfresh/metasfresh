@@ -26,6 +26,8 @@
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
+        <jaxb.remadv.packageName>de.metas.edi.esb.jaxb.ecosio.remadv</jaxb.remadv.packageName>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -70,6 +72,17 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-http</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.rest_api</groupId>
+            <artifactId>de-metas-common-rest_api</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -162,7 +175,6 @@
             <version>${smooks.version}</version>
         </dependency>
 
-        <!-- needed by smooks -->
         <dependency>
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
@@ -305,6 +317,18 @@
                             <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
                             <generatePackage>${jaxb.invoic.packageName}</generatePackage>
                             <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_invoic</generateDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-schema-remadv</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/ecosio</source>
+                            </sources>
+                            <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
                 </executions>
