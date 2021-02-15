@@ -32,7 +32,6 @@ import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -161,7 +160,7 @@ public class PaymentsViewAllocateCommandTest
 				.isEqualByComparingTo(expectedAllocatedAmt);
 	}
 
-	@Builder(builderMethodName = "paymentRow", builderClassName = "PaymentRowBuilder")
+	@Builder(builderMethodName = "paymentRow", builderClassName = "$PaymentRowBuilder")
 	private PaymentRow createPaymentRow(
 			@NonNull final PaymentDirection direction,
 			@NonNull final Amount payAmt,
@@ -172,19 +171,21 @@ public class PaymentsViewAllocateCommandTest
 		saveRecord(paymentRecord);
 		final PaymentId paymentId = PaymentId.ofRepoId(paymentRecord.getC_Payment_ID());
 
+		final BPartnerId bpartnerIdEffective = bpartnerId != null ? bpartnerId : this.bpartnerId;
+
 		return PaymentRow.builder()
 				.paymentId(paymentId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.documentNo("paymentNo_" + paymentId.getRepoId())
 				.dateTrx(paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx)
-				.bpartner(IntegerLookupValue.of(CoalesceUtil.coalesce(bpartnerId, this.bpartnerId).getRepoId(), "BPartner"))
+				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
 			.payAmt(payAmt)
 			.openAmt(payAmt)
 			.paymentDirection(direction)
 			.build();
 	}
 
-	@Builder(builderMethodName = "invoiceRow", builderClassName = "InvoiceRowBuilder")
+	@Builder(builderMethodName = "invoiceRow", builderClassName = "$InvoiceRowBuilder")
 	private InvoiceRow createInvoiceRow(
 			@NonNull final InvoiceDocBaseType docBaseType,
 			@NonNull final Amount openAmt,
@@ -306,14 +307,15 @@ public class PaymentsViewAllocateCommandTest
 				serviceFeeProductId = ProductId.ofRepoId(333);
 				feeCompanyId1 = BPartnerId.ofRepoId(6661);
 
-				final ConfigBuilder configBuilder = processingServiceCompanyConfig()
+				processingServiceCompanyConfig()
 						.customerId(bpartnerId)
-						.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")));
-
-				configBuilder.feePercentageOfGrandTotal("1").serviceCompanyBPartnerId(feeCompanyId1).build();
+						.validFrom(LocalDate.parse("2020-02-11").atStartOfDay(ZoneId.of("UTC+5")))
+						.feePercentageOfGrandTotal("1")
+						.serviceCompanyBPartnerId(feeCompanyId1)
+						.build();
 			}
 
-			@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "ConfigBuilder")
+			@Builder(builderMethodName = "processingServiceCompanyConfig", builderClassName = "$ConfigBuilder")
 			private void createConfig(
 					@NonNull final String feePercentageOfGrandTotal,
 					@NonNull final BPartnerId customerId,
@@ -368,7 +370,7 @@ public class PaymentsViewAllocateCommandTest
 										.build())
 								.invoiceProcessingFeeCalculation(InvoiceProcessingFeeCalculation.builder()
 										.orgId(orgId)
-										.evaluationDate(TimeUtil.asZonedDateTime(LocalDate.parse(paymentDateStr)))
+										.evaluationDate(LocalDate.parse(paymentDateStr).atStartOfDay(SystemTime.zoneId()))
 										.customerId(bpartnerId)
 										.invoiceId(invoiceRow.getInvoiceId())
 										.serviceCompanyBPartnerId(feeCompanyId1)
@@ -475,7 +477,6 @@ public class PaymentsViewAllocateCommandTest
 					.paymentRow(paymentRow)
 					.invoiceRow(invoiceRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
-					.defaultDateTrx(LocalDate.parse("2999-04-30"))
 					.build()
 					.run();
 
@@ -508,7 +509,6 @@ public class PaymentsViewAllocateCommandTest
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
-					.defaultDateTrx(LocalDate.parse("2999-04-30"))
 					.build()
 					.run();
 
@@ -547,7 +547,6 @@ public class PaymentsViewAllocateCommandTest
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
-					.defaultDateTrx(LocalDate.parse("2999-04-30"))
 					.build()
 					.run();
 
@@ -588,7 +587,6 @@ public class PaymentsViewAllocateCommandTest
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
-					.defaultDateTrx(LocalDate.parse("2999-04-30"))
 					.build()
 					.run();
 
@@ -639,7 +637,6 @@ public class PaymentsViewAllocateCommandTest
 					.invoiceRow(invoiceRow)
 					.invoiceRow(creditMemoRow)
 					.allowPurchaseSalesInvoiceCompensation(false)
-					.defaultDateTrx(LocalDate.parse("2999-04-30"))
 					.build()
 					.run();
 
