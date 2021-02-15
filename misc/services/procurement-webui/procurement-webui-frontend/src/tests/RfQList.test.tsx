@@ -5,8 +5,6 @@ import { Store, RootStoreContext } from '../models/Store';
 import { Provider } from 'mobx-react';
 import { createMemoryHistory } from 'history';
 import './testsSetup'; // this is where the adapter is configured
-import { MemoryRouter, Route } from 'react-router';
-import RFQList from '../models/RFQList';
 
 const history = createMemoryHistory();
 const forcedState = {
