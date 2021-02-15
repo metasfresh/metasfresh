@@ -10,6 +10,7 @@ import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Nexus
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
+    
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
     currentBuild.description = """${currentBuild.description}<p/>
@@ -42,24 +43,24 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     final String commonPropertyParam = "-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DallowDowngrade=true ${commonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
-    // build and install
-    // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-    // maven.test.failure.ignore=true: see metasfresh stage
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
-
-    final DockerConf dockerConf = new DockerConf(
-            'de-metas-camel-externalsystems', // artifactName
-            env.BRANCH_NAME, // branchName
-            env.MF_VERSION, // versionSuffix
-            './') // workDir
-    final String publishedDockerImageName = dockerBuildAndPush(dockerConf)
-
+    withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
+        withCredentials([usernamePassword(credentialsId: 'nexus.metasfresh.com_jenkins', passwordVariable: 'DOCKER_PUSH_REGISTRY_PASSWORD', usernameVariable: 'DOCKER_PUSH_REGISTRY_USERNAME')]) {
+            // build and install
+            // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+            // maven.test.failure.ignore=true: see metasfresh stage
+            sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
+        }
+    }
+    final def dockerInfo = readJSON file: 'core/target/jib-image.json'
+    
     currentBuild.description = """${currentBuild.description}<p/>
 		This build's main artifact (if not yet cleaned up) is
 <ul>
-<li>a docker image with name <code>${publishedDockerImageName}</code>; Note that you can also use the tag <code>${env.BRANCH_NAME}_LATEST</code></li>
+<li>a docker image with name<br>
+<code>${dockerInfo.image}</code></li>
+<li>Alternative tag: <code>${dockerInfo.tags.last()}</code></li>
+<li>Image-Id: <code>${dockerInfo.imageId}</code></li>
 </ul>
-<p/>
 """
 }
 
