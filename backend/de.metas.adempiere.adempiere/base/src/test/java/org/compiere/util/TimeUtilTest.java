@@ -1,10 +1,6 @@
-/**
- *
- */
 package org.compiere.util;
 
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
@@ -28,17 +24,6 @@ import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.common.util.time.SystemTime;
-import org.junit.Assert;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
-import lombok.NonNull;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

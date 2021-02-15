@@ -68,7 +68,7 @@ public class PaymentsViewAllocateCommand
 	private final List<InvoiceRow> invoiceRows;
 	private final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy;
 	private final boolean allowPurchaseSalesInvoiceCompensation;
-	private final LocalDate dateTrx;
+	private final LocalDate defaultDateTrx;
 
 	@Builder
 	private PaymentsViewAllocateCommand(
@@ -79,7 +79,7 @@ public class PaymentsViewAllocateCommand
 			@NonNull @Singular final ImmutableList<InvoiceRow> invoiceRows,
 			@Nullable final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy,
 			@NonNull final Boolean allowPurchaseSalesInvoiceCompensation,
-			@Nullable final LocalDate dateTrx)
+			@Nullable final LocalDate defaultDateTrx)
 	{
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
@@ -88,7 +88,7 @@ public class PaymentsViewAllocateCommand
 		this.invoiceRows = invoiceRows;
 		this.payableRemainingOpenAmtPolicy = CoalesceUtil.coalesce(payableRemainingOpenAmtPolicy, PayableRemainingOpenAmtPolicy.DO_NOTHING);
 		this.allowPurchaseSalesInvoiceCompensation = allowPurchaseSalesInvoiceCompensation;
-		this.dateTrx = dateTrx != null ? dateTrx : SystemTime.asLocalDate();
+		this.defaultDateTrx = defaultDateTrx != null ? defaultDateTrx : SystemTime.asLocalDate();
 	}
 
 	public Optional<PaymentAllocationResult> dryRun()
@@ -136,8 +136,7 @@ public class PaymentsViewAllocateCommand
 		return PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
 				//
-				.dateTrx(dateTrx)
-				.dateAcct(dateTrx)
+				.defaultDateTrx(defaultDateTrx)
 				.paymentDocuments(paymentDocuments)
 				.payableDocuments(invoiceDocuments)
 				.allowPartialAllocations(true)
@@ -280,7 +279,7 @@ public class PaymentsViewAllocateCommand
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())
 				.clientAndOrgId(row.getClientAndOrgId())
-				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
+				.paymentCurrencyContext(row.getPaymentCurrencyContext())
 				.build();
 	}
 
