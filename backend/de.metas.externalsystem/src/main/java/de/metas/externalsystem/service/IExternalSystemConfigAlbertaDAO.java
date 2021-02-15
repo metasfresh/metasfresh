@@ -22,11 +22,12 @@
 
 package de.metas.externalsystem.service;
 
+import de.metas.externalsystem.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.ExternalSystemChildConfig;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.ISingletonService;
 
 public interface IExternalSystemConfigAlbertaDAO extends ISingletonService
 {
-	ExternalSystemChildConfig getConfigFor(MetasfreshId id);
+	ExternalSystemChildConfig getById(ExternalSystemAlbertaConfigId id);
 }

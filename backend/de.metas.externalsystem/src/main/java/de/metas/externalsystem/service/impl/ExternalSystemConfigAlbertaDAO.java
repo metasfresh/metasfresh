@@ -22,7 +22,9 @@
 
 package de.metas.externalsystem.service.impl;
 
+import de.metas.externalsystem.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.ExternalSystemChildConfig;
+import de.metas.externalsystem.ExternalSystemConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.service.IExternalSystemConfigAlbertaDAO;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -31,12 +33,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 public class ExternalSystemConfigAlbertaDAO implements IExternalSystemConfigAlbertaDAO
 {
 	@Override
-	public ExternalSystemChildConfig getConfigFor(MetasfreshId id)
+	public ExternalSystemChildConfig getById(ExternalSystemAlbertaConfigId id)
 	{
-		final I_ExternalSystem_Config_Alberta config = InterfaceWrapperHelper.load(id.getValue(), I_ExternalSystem_Config_Alberta.class);
+		final I_ExternalSystem_Config_Alberta config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Alberta.class);
 		return ExternalSystemChildConfig.builder()
-				.id(id)
-				.parentId(MetasfreshId.of(config.getExternalSystem_Config_ID()))
+				.id(ExternalSystemAlbertaConfigId.ofRepoId(config.getExternalSystem_Config_Alberta_ID()))
+				.parentId(ExternalSystemConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
 				.apiKey(config.getApiKey())
 				.baseUrl(config.getBaseURL())
 				.name(config.getName())

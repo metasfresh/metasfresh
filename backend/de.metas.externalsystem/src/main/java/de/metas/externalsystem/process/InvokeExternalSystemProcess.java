@@ -44,12 +44,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
@@ -82,13 +80,14 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@Override
 	protected String doIt() throws Exception
 	{
-
+		addLog("Calling with params: configId {}, since {}, command {}", configId, since.toInstant(), externalRequest);
 		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
 		{
 			return aDefault.execute(getRequest(), response -> {
 				final int statusCode = response.getStatusLine().getStatusCode();
 
-				return statusCode == 200 ? JavaProcess.MSG_OK : JavaProcess.MSG_Error +" request returned code: " + response.toString();
+				addLog("Status code from camel:" + 200);
+				return statusCode == 200 ? JavaProcess.MSG_OK : JavaProcess.MSG_Error + " request returned code: " + response.toString();
 			});
 		}
 	}

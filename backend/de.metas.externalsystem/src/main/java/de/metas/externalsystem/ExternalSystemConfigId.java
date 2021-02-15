@@ -22,24 +22,41 @@
 
 package de.metas.externalsystem;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
-@Value
-public class ExternalSystemParentConfig
-{
-	@NonNull ExternalSystemConfigId id;
-	@NonNull String camelUrl;
-	@NonNull String name;
+import javax.annotation.Nullable;
 
-	@Builder
-	public ExternalSystemParentConfig(final @NonNull ExternalSystemConfigId id,
-			final @NonNull String camelUrl,
-			final @NonNull String name)
+@Value
+public class ExternalSystemConfigId implements RepoIdAware
+{
+	int repoId;
+
+	@JsonCreator
+	@NonNull
+	public static ExternalSystemConfigId ofRepoId(final int repoId)
 	{
-		this.id = id;
-		this.camelUrl = camelUrl;
-		this.name = name;
+		return new ExternalSystemConfigId(repoId);
+	}
+
+	@Nullable
+	public static ExternalSystemConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new ExternalSystemConfigId(repoId) : null;
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
+
+	private ExternalSystemConfigId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "ExternalSystem_Config_ID");
 	}
 }

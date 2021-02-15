@@ -22,11 +22,11 @@
 
 package de.metas.externalsystem.process;
 
+import de.metas.externalsystem.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.ExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.service.IExternalSystemConfigAlbertaDAO;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -45,12 +45,13 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	@Override
 	protected ExternalSystemChildConfig getExternalConfig()
 	{
-		return externalSystemConfigDAO.getConfigFor(getRecordId());
+		return externalSystemConfigDAO.getById(getRecordId());
 	}
 
-	private MetasfreshId getRecordId()
+	private ExternalSystemAlbertaConfigId getRecordId()
 	{
-		return this.configId != null ? this.configId : MetasfreshId.of(getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get());
+		final Integer id = this.configId != null ? this.configId.getValue() : getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+		return ExternalSystemAlbertaConfigId.ofRepoId(id);
 	}
 
 	@NonNull

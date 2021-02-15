@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.service.impl;
 
+import de.metas.externalsystem.ExternalSystemConfigId;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.service.IExternalSystemConfigDAO;
@@ -31,11 +32,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 public class ExternalSystemConfigDAO implements IExternalSystemConfigDAO
 {
 	@Override
-	public ExternalSystemParentConfig getById(MetasfreshId id)
+	public ExternalSystemParentConfig getById(ExternalSystemConfigId id)
 	{
-		final I_ExternalSystem_Config externalSystemConfig = InterfaceWrapperHelper.load(id.getValue(), I_ExternalSystem_Config.class);
+		final I_ExternalSystem_Config externalSystemConfig = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 		return ExternalSystemParentConfig.builder()
-				.id(MetasfreshId.of(externalSystemConfig.getExternalSystem_Config_ID()))
+				.id(ExternalSystemConfigId.ofRepoId(externalSystemConfig.getExternalSystem_Config_ID()))
 				.camelUrl(externalSystemConfig.getCamelURL())
 				.name(externalSystemConfig.getName())
 				.build();
