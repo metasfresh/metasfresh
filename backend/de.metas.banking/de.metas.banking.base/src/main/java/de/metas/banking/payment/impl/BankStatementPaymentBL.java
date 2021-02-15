@@ -41,6 +41,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -69,6 +70,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBankStatementBL bankStatementBL;
 	private final MoneyService moneyService;
 
@@ -169,7 +171,9 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 		// final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
 		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
-		final LocalDate acctLineDate = TimeUtil.asLocalDate(bankStatementLine.getDateAcct());
+		final LocalDate dateTrx = TimeUtil.asLocalDate(
+				bankStatementLine.getValutaDate(),
+				orgDAO.getTimeZone(orgId));
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 
 		final Money trxAmt = extractTrxAmt(bankStatementLine);
@@ -190,8 +194,8 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.orgBankAccountId(orgBankAccountId)
 				.currencyId(payAmount.getCurrencyId())
 				.payAmt(payAmount.toBigDecimal())
-				.dateAcct(acctLineDate)
-				.dateTrx(acctLineDate) // Note: DateTrx should be the same as Line.DateAcct, and not Line.StatementDate.
+				.dateAcct(dateTrx)
+				.dateTrx(dateTrx)
 				.tenderType(tenderType)
 				.paymentCurrencyContext(bankStatementBL.getPaymentCurrencyContext(bankStatementLine));
 
