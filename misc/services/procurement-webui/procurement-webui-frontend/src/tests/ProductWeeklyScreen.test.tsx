@@ -1,8 +1,7 @@
 import React from 'react';
 import { render } from 'enzyme';
 import ProductWeeklyScreen from '../components/ProductWeeklyScreen';
-import { Store, RootStoreContext} from '../models/Store';
-import { Provider } from 'mobx-react';
+import { Store, RootStoreContext } from '../models/Store';
 import { createMemoryHistory } from 'history';
 import './testsSetup'; // this is where the adapter is configured
 import { MemoryRouter, Route } from 'react-router';
