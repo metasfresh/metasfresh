@@ -248,6 +248,39 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                 <configuration>
+                    <to>
+                        <!-- we expect those environment variables to be set from the outside world -->
+                        <!-- without specifying the tag in the image name, jib will push "latest", thx https://github.com/GoogleContainerTools/jib/issues/2237#issuecomment-575967019 -->
+                        <image>docker.metasfresh.com/metasfresh/de-metas-camel-externalsystems:${env.MF_VERSION_DOCKERIZED}
+                        </image>
+                        <tags>
+                            <tag>${env.BRANCH_NAME_DOCKERIZED}_LATEST</tag>
+                        </tags>
+                        <auth>
+                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <username>${env.DOCKER_PUSH_REGISTRY_USERNAME}</username>
+                            <password>${env.DOCKER_PUSH_REGISTRY_PASSWORD}</password>
+                        </auth>
+                    </to>
+                    <from>
+                        <!-- specify the exact base image for a reproducible build-->
+                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                    </from>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <!-- Create tests JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
