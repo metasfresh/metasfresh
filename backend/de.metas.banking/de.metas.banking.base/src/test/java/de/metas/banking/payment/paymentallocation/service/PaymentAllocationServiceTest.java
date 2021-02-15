@@ -114,7 +114,7 @@ public class PaymentAllocationServiceTest
 	private CurrencyId euroCurrencyId;
 	private int nextInvoiceId = 10000;
 	private int nextPaymentId = 1;
-	private final OrgId adOrgId = OrgId.ofRepoId(1000000); // just a dummy value
+	private OrgId adOrgId;
 	private final ClientId clientId = ClientId.ofRepoId(1000000); // just a dummy value
 	private BPartnerId bpartnerId;
 	private DocTypeId serviceInvoiceDocTypeId;
@@ -135,6 +135,7 @@ public class PaymentAllocationServiceTest
 		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService);
 
 		invoiceDocTypes = new HashMap<>();
+		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		paymentBL = Services.get(IPaymentBL.class);
 		bpartnerId = createBPartnerId();
