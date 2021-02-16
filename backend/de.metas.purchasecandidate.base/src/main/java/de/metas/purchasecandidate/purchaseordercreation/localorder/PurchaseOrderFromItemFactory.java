@@ -149,7 +149,8 @@ import java.util.Set;
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
 		purchaseOrderItem.setPurchaseOrderLineId(orderLineBuilder.getCreatedOrderAndLineId());
-		if (docTypeBL.isRequisition(orderFactory.getDocTypeTargetId()))
+		final DocTypeId docTypeTargetId = orderFactory.getDocTypeTargetId();
+		if (docTypeTargetId != null && docTypeBL.isRequisition(docTypeTargetId))
 		{
 			purchaseOrderItem.markReqCreatedIfNeeded();
 		}
