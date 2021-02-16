@@ -40,6 +40,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -324,13 +325,14 @@ public class UserBL implements IUserBL
 			final boolean haveInvalidEMails = emails.stream().anyMatch(email -> EMailAddress.checkEMailValid(email.getAsString()) != null);
 			return !haveInvalidEMails;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			return false;
 		}
 	}    // isEMailValid
 
 	@Override
+	@Nullable
 	public ITranslatableString checkCanSendEMail(final UserEMailConfig userEmailConfig)
 	{
 		// Email
@@ -347,17 +349,17 @@ public class UserBL implements IUserBL
 		if (clientEmailConfig.isSmtpAuthorization())
 		{
 			// SMTP user
-			final String emailUser = userEmailConfig.getUsername();
+			final String emailUser = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getUsername(), clientEmailConfig.getUsername());
 			if (Check.isEmpty(emailUser, true))
 			{
-				return TranslatableStrings.constant("no STMP user configured");
+				return TranslatableStrings.constant("no SMTP user configured in AD_User or AD_Client");
 			}
 
 			// SMTP password
-			final String emailPassword = userEmailConfig.getPassword();
+			final String emailPassword = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getPassword(), clientEmailConfig.getPassword());
 			if (Check.isEmpty(emailPassword, false))
 			{
-				return TranslatableStrings.constant("STMP authorization is required but no STMP password configured");
+				return TranslatableStrings.constant("SMTP authorization is required but no SMTP password set in AD_User or AD_Client");
 			}
 		}
 
