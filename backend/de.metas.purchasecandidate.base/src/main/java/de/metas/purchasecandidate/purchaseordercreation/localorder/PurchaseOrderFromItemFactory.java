@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
@@ -74,6 +75,8 @@ import java.util.Set;
 			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised");
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	private final OrderFactory orderFactory;
 
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
@@ -145,7 +148,15 @@ import java.util.Set;
 			@NonNull final PurchaseOrderItem purchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		purchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
+		purchaseOrderItem.setPurchaseOrderLineId(orderLineBuilder.getCreatedOrderAndLineId());
+		if (docTypeBL.isRequisition(orderFactory.getDocTypeTargetId()))
+		{
+			purchaseOrderItem.markReqCreatedIfNeeded();
+		}
+		else
+		{
+			purchaseOrderItem.markPurchasedIfNeeded();
+		}
 	}
 
 	@Nullable

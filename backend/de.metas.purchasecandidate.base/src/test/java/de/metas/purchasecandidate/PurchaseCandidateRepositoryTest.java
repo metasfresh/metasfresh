@@ -93,9 +93,9 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateRecord.setVendor_ID(VENDOR_ID);
 		purchaseCandidateRecord.setProcessed(true);
 		purchaseCandidateRecord.setM_WarehousePO_ID(30);
-		purchaseCandidateRecord.setM_Product(productRecord);
+		purchaseCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseCandidateRecord.setDemandReference("DemandReference");
-		purchaseCandidateRecord.setC_UOM(uom);
+		purchaseCandidateRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		purchaseCandidateRecord.setQtyToPurchase(TEN);
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
 		saveRecord(purchaseCandidateRecord);

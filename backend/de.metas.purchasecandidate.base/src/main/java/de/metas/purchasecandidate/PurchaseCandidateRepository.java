@@ -339,6 +339,7 @@ public class PurchaseCandidateRepository
 		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfoOrNull());
 
 		record.setIsPrepared(purchaseCandidate.isPrepared());
+		record.setIsRequisitionCreated(purchaseCandidate.isReqCreated());
 		record.setProcessed(purchaseCandidate.isProcessed());
 
 		saveRecord(record);
@@ -416,6 +417,7 @@ public class PurchaseCandidateRepository
 				.groupReference(DemandGroupReference.ofReference(record.getDemandReference()))
 				.salesOrderAndLineIdOrNull(salesOrderAndLineId)
 				.processed(record.isProcessed())
+				.reqCreated(record.isRequisitionCreated())
 				//
 				.purchaseDatePromised(purchaseDatePromised)
 				.reminderTime(reminderTime)
@@ -436,7 +438,6 @@ public class PurchaseCandidateRepository
 				.aggregatePOs(record.isAggregatePO())
 				//
 				.build();
-
 		purchaseItemRepository.loadPurchaseItems(purchaseCandidate);
 
 		return purchaseCandidate;
@@ -497,7 +498,7 @@ public class PurchaseCandidateRepository
 		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_Processed, false) // not processed
-				.addNotNull(I_C_PurchaseCandidate.COLUMN_Vendor_ID)
+				.addNotNull(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID)
 				.addNotNull(I_C_PurchaseCandidate.COLUMN_ReminderDate)
 				.create()
 				.listDistinct(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID, I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)
