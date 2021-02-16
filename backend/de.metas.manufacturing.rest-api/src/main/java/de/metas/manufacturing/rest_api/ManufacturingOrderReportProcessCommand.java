@@ -1,5 +1,27 @@
 package de.metas.manufacturing.rest_api;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Trace;
+import org.eevolution.api.PPCostCollectorId;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -471,7 +493,8 @@ class ManufacturingOrderReportProcessCommand
 	}
 
 	@NonNull
-	private HuId resolveHUId(
+	@VisibleForTesting
+	HuId resolveHUId(
 			@NonNull final ProductId productId,
 			@NonNull final JsonRequestHULookup request)
 	{
@@ -479,6 +502,10 @@ class ManufacturingOrderReportProcessCommand
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithProductId(productId);
 
+		if(!Check.isBlank(request.getHuValue()))
+		{
+			queryBuilder.addOnlyHUValue(request.getHuValue());
+		}
 		if (!Check.isBlank(request.getLotNumber()))
 		{
 			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_LotNumber, request.getLotNumber());
@@ -486,6 +513,10 @@ class ManufacturingOrderReportProcessCommand
 		if (request.getBestBeforeDate() != null)
 		{
 			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_BestBeforeDate, request.getBestBeforeDate());
+		}
+		if(!Check.isBlank(request.getSerialNo()))
+		{
+			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, request.getSerialNo());
 		}
 
 		final HuId huId = queryBuilder.createQueryBuilder()
