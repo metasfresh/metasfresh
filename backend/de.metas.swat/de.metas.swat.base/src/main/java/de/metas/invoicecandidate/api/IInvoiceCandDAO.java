@@ -121,10 +121,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Loads those invoice candidates
 	 * <ul>
-	 * <li>whose Bill_BPartner references he given invoiceSchedule and
-	 * <li>that have their InvoiceRule_Override/InvoiceRule_Override set to 'S'
+	 * <li>are not yet processed</li>
+	 * <li>whose Bill_BPartner references he given invoiceSchedule and</li>
+	 * <li>that have their InvoiceRule_Override/InvoiceRule_Override set to 'S'(=> Schedule)</li>
+	 * </ul>
 	 */
-	List<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
+	Iterator<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
 
 	/**
 	 * Returns all ICs that have the given <code>headerAggregationKey</code>.
@@ -200,7 +202,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId)}, but updates the <code>DateAcct</code> column.
 	 *
-	 * @task 08437
+	 * task 08437
 	 */
 	void updateDateAcct(LocalDate dateAcct, PInstanceId selectionId);
 

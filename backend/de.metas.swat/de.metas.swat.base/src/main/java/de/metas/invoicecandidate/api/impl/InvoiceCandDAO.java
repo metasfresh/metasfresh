@@ -1124,15 +1124,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
+	public Iterator<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
 	{
 		final IQuery<I_C_BPartner> bpartnersQuery = queryBL.createQueryBuilder(I_C_BPartner.class, invoiceSchedule)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMN_C_InvoiceSchedule_ID, invoiceSchedule.getC_InvoiceSchedule_ID())
 				.create();
 
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, invoiceSchedule)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnersQuery)
 				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
@@ -1143,7 +1145,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.endOrderBy()
 				//
 				.create()
-				.list(I_C_Invoice_Candidate.class);
+				.setOption(IQuery.OPTION_IteratorBufferSize, 2000)
+				.iterate(I_C_Invoice_Candidate.class);
 	}
 
 	@Override
