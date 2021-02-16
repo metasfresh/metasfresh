@@ -75,7 +75,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@Param(parameterName = PARAM_EXTERNAL_REQUEST)
 	protected String externalRequest;
 
-	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -86,7 +86,14 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 			return aDefault.execute(getRequest(), response -> {
 				final int statusCode = response.getStatusLine().getStatusCode();
 
-				addLog("Status code from camel:" + 200);
+				if (statusCode != 200)
+				{
+					addLog("Camel request error message: {}", response);
+				}
+				else
+				{
+					addLog("Status code from camel: {}", statusCode);
+				}
 				return statusCode == 200 ? JavaProcess.MSG_OK : JavaProcess.MSG_Error + " request returned code: " + response.toString();
 			});
 		}
@@ -94,7 +101,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 	protected HttpPut getRequest() throws UnsupportedEncodingException
 	{
-		final ExternalSystemChildConfig config = getExternalConfig();
+		final ExternalSystemChildConfig config = getExternalChildConfig();
 		final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(config.getParentId());
 
 		final Map<String, String> parameters = new HashMap<>();
@@ -116,7 +123,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return request;
 	}
 
-	protected abstract ExternalSystemChildConfig getExternalConfig();
+	protected abstract ExternalSystemChildConfig getExternalChildConfig();
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)

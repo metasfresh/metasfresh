@@ -27,7 +27,7 @@ import de.metas.externalsystem.ExternalSystemChildConfig;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.ISingletonService;
 
-public interface IExternalSystemConfigAlbertaDAO extends ISingletonService
+public interface IExternalSystemConfigAlbertaDAO<T extends ExternalSystemAlbertaConfigId> extends ISingletonService
 {
-	ExternalSystemChildConfig getById(ExternalSystemAlbertaConfigId id);
+	ExternalSystemChildConfig<T> getById(ExternalSystemAlbertaConfigId id);
 }

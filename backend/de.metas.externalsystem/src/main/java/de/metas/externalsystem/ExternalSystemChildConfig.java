@@ -22,15 +22,16 @@
 
 package de.metas.externalsystem;
 
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class ExternalSystemChildConfig
+public class ExternalSystemChildConfig<T extends RepoIdAware>
 {
 	@NonNull
-	ExternalSystemAlbertaConfigId id;
+	T id;
 	@NonNull
 	ExternalSystemConfigId parentId;
 	@NonNull
@@ -43,7 +44,7 @@ public class ExternalSystemChildConfig
 	String tenant;
 
 	@Builder
-	public ExternalSystemChildConfig(final @NonNull ExternalSystemAlbertaConfigId id,
+	public ExternalSystemChildConfig(final @NonNull T id,
 			final @NonNull ExternalSystemConfigId parentId,
 			final @NonNull String name,
 			final @NonNull String apiKey,

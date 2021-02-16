@@ -43,14 +43,14 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	}
 
 	@Override
-	protected ExternalSystemChildConfig getExternalConfig()
+	protected ExternalSystemChildConfig getExternalChildConfig()
 	{
 		return externalSystemConfigDAO.getById(getRecordId());
 	}
 
 	private ExternalSystemAlbertaConfigId getRecordId()
 	{
-		final Integer id = this.configId != null ? this.configId.getValue() : getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+		final int id = this.configId != null ? this.configId.getValue() : getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
 		return ExternalSystemAlbertaConfigId.ofRepoId(id);
 	}
 
