@@ -153,3 +153,148 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-02-16 14:06:53','Y
 UPDATE AD_Process SET Classname='de.metas.purchasecandidate.process.C_Order_CreatePOFromRequisition',Updated=TO_TIMESTAMP('2021-02-16 15:37:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584794
 ;
  
+ -- 2021-02-16T15:16:32.931Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-02-16 17:16:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='nl_NL'
+;
+
+-- 2021-02-16T15:16:33.017Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'nl_NL') 
+;
+
+-- 2021-02-16T15:16:34.437Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-02-16 17:16:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='de_CH'
+;
+
+-- 2021-02-16T15:16:34.439Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'de_CH') 
+;
+
+-- 2021-02-16T15:16:35.915Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-02-16 17:16:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='de_DE'
+;
+
+-- 2021-02-16T15:16:35.917Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'de_DE') 
+;
+
+-- 2021-02-16T15:16:35.924Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578760,'de_DE') 
+;
+
+-- 2021-02-16T15:17:41.237Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Bedarfsmeldung erstellt',Updated=TO_TIMESTAMP('2021-02-16 17:17:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='de_CH'
+;
+
+-- 2021-02-16T15:17:41.239Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'de_CH') 
+;
+
+-- 2021-02-16T15:17:42.552Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Bedarfsmeldung erstellt',Updated=TO_TIMESTAMP('2021-02-16 17:17:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='de_DE'
+;
+
+-- 2021-02-16T15:17:42.554Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'de_DE') 
+;
+
+-- 2021-02-16T15:17:42.562Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578760,'de_DE') 
+;
+
+-- 2021-02-16T15:17:42.565Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsRequisitionCreated', Name='Bedarfsmeldung erstellt', Description=NULL, Help=NULL WHERE AD_Element_ID=578760
+;
+
+-- 2021-02-16T15:17:42.567Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsRequisitionCreated', Name='Bedarfsmeldung erstellt', Description=NULL, Help=NULL, AD_Element_ID=578760 WHERE UPPER(ColumnName)='ISREQUISITIONCREATED' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-02-16T15:17:42.569Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsRequisitionCreated', Name='Bedarfsmeldung erstellt', Description=NULL, Help=NULL WHERE AD_Element_ID=578760 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-02-16T15:17:42.570Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Bedarfsmeldung erstellt', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=578760) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 578760)
+;
+
+-- 2021-02-16T15:17:42.583Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Bedarfsmeldung erstellt', Name='Bedarfsmeldung erstellt' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=578760)
+;
+
+-- 2021-02-16T15:17:42.585Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Bedarfsmeldung erstellt', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 578760
+;
+
+-- 2021-02-16T15:17:42.588Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Bedarfsmeldung erstellt', Description=NULL, Help=NULL WHERE AD_Element_ID = 578760
+;
+
+-- 2021-02-16T15:17:42.589Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Bedarfsmeldung erstellt', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578760
+;
+
+-- 2021-02-16T15:17:44.827Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Bedarfsmeldung erstellt',Updated=TO_TIMESTAMP('2021-02-16 17:17:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='nl_NL'
+;
+
+-- 2021-02-16T15:17:44.829Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'nl_NL') 
+;
+
+-- 2021-02-16T15:17:47.869Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2021-02-16 17:17:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='de_CH'
+;
+
+-- 2021-02-16T15:17:47.871Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'de_CH') 
+;
+
+-- 2021-02-16T15:17:48.484Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2021-02-16 17:17:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='de_DE'
+;
+
+-- 2021-02-16T15:17:48.485Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'de_DE') 
+;
+
+-- 2021-02-16T15:17:48.493Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578760,'de_DE') 
+;
+
+-- 2021-02-16T15:17:49.636Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2021-02-16 17:17:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578760 AND AD_Language='nl_NL'
+;
+
+-- 2021-02-16T15:17:49.638Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578760,'nl_NL') 
+;
+  
