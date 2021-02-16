@@ -1,63 +1,8 @@
 package de.metas.process.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.adempiere.model.InterfaceWrapperHelper.setValue;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_AD_PInstance_Log;
-import org.compiere.model.I_AD_PInstance_Para;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -74,8 +19,41 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_PInstance_Log;
+import org.compiere.model.I_AD_PInstance_Para;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 
 public class ADPInstanceDAO implements IADPInstanceDAO
 {
@@ -85,6 +63,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	public static final int RESULT_OK = 1;
 	/** Result FALSE = 0 */
 	public static final int RESULT_ERROR = 0;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private List<I_AD_PInstance_Para> retrieveAD_PInstance_Params(final PInstanceId pinstanceId)
 	{
@@ -93,7 +72,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			return ImmutableList.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_PInstance_Para.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_PInstance_Para.COLUMNNAME_AD_PInstance_ID, pinstanceId)
@@ -112,7 +91,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	// package level for testing
-	/* package */final ProcessInfoParameter createProcessInfoParameter(final I_AD_PInstance_Para adPInstancePara)
+	/* package */
+	final ProcessInfoParameter createProcessInfoParameter(final I_AD_PInstance_Para adPInstancePara)
 	{
 		final String ParameterName = adPInstancePara.getParameterName();
 		// Info
@@ -137,7 +117,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// NOTE: keep this one last because getP_Number() is always returning not null
 		if (Parameter == null && Parameter_To == null
 				&& (!isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number)
-						|| !isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number_To)))
+				|| !isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number_To)))
 		{
 			Parameter = adPInstancePara.getP_Number();
 			if (isNull(adPInstancePara, I_AD_PInstance_Para.COLUMNNAME_P_Number_To))
@@ -161,8 +141,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		try
 		{
 			DB.getConstraints() // 02625
-			.setOnlyAllowedTrxNamePrefixes(true)
-			.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
+					.setOnlyAllowedTrxNamePrefixes(true)
+					.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 
 			saveParametersToDB0(pinstanceId, piParams);
 		}
@@ -173,8 +153,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	/**
-	 *
-	 * Called by {@link #saveParameterToDB(ProcessInfo)} to do the actual work.
+	 * Called by {@link #saveParameterToDB(PInstanceId, List)} to do the actual work.
 	 */
 	private void saveParametersToDB0(@NonNull final PInstanceId pinstanceId, final List<ProcessInfoParameter> piParams)
 	{
@@ -404,7 +383,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	public void loadResultSummary(final ProcessExecutionResult result)
 	{
 		//
-		final int sleepTime = 1000;	// 1 seconds
+		final int sleepTime = 1000;    // 1 seconds
 		final int noRetry = 5;        // 10 seconds total
 		//
 		final String sql = "SELECT Result, ErrorMsg FROM AD_PInstance "
@@ -474,13 +453,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	@Override
 	public void lock(final PInstanceId pinstanceId)
 	{
-		Services.get(IQueryBL.class)
-		.createQueryBuilderOutOfTrx(I_AD_PInstance.class)
-		.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceId)
-		.create()
-		.updateDirectly()
-		.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
-		.execute();
+		queryBL
+				.createQueryBuilderOutOfTrx(I_AD_PInstance.class)
+				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
+				.execute();
 	}
 
 	@Override
@@ -594,7 +573,19 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		return adPInstance;
 	}
 
-
+	@Override
+	@Nullable
+	public Timestamp getLastRunDate(@NonNull final AdProcessId adProcessId, @Nullable final PInstanceId pinstanceToExclude)
+	{
+		final IQueryBuilder<I_AD_PInstance> queryBuilder = queryBL.createQueryBuilder(I_AD_PInstance.class)
+				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_Process_ID, adProcessId)
+				.orderByDescending(I_AD_PInstance.COLUMN_Created);
+		if (pinstanceToExclude != null)
+		{
+			queryBuilder.addNotEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceToExclude);
+		}
+		return queryBuilder.create().first().getCreated();
+	}
 
 	@Override
 	public I_AD_PInstance getById(@NonNull final PInstanceId pinstanceId)
