@@ -109,7 +109,7 @@ public class CommissionTriggerDocumentService
 			final boolean candidateDeleted,
 			@NonNull final CommissionInstance instance)
 	{
-		try (final MDCCloseable instanceMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Instance.Table_Name, instance.getId()))
+		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_Commission_Instance.Table_Name, instance.getId()))
 		{
 			final int repoId = commissionTriggerDocument.getId().getRepoIdAware().getRepoId(); // will be used in logging
 

@@ -38,6 +38,8 @@ import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit_Item;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
 import org.adempiere.ad.dao.QueryLimit;
@@ -74,6 +76,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -568,6 +571,9 @@ class ShipmentCandidateAPIServiceTest
 
 	}
 
+	/**
+	 * Verifies that shipment scheds are not exported if one of them has canBeExported in the future
+	 */
 	@Test
 	void exportShipmentCandidates_O1_S4_Past_S1_Future_O2_S1_Past_Limit2()
 	{
@@ -651,10 +657,154 @@ class ShipmentCandidateAPIServiceTest
 		assertThat(shipmentScheduleRecord2.getExportStatus()).isEqualTo(Exported.getCode());
 
 		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord2.getM_ShipmentSchedule_ID());
-
 	}
 
-	private I_M_ShipmentSchedule createShipmentScheduleRecord(final I_C_OrderLine orderLineRecord,
+	/**
+	 * Verifies that shipment scheds are exported if one of them has canBeExported in the future, but that one is already exported
+	 */
+	@Test
+	void exportShipmentCandidates_O1_S4_Past_S1_FutureAlreadyExported_O2_S1_Past_Limit2()
+	{
+		// given
+		final I_C_Currency eur = createCurrency("EUR", 2);
+		final I_M_PriceList pricelist = createPricelist(eur);
+
+		final I_C_Order order1 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
+
+		// Schedule 1
+		final I_C_OrderLine orderLine1_1 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_1 = createShipmentScheduleRecord(orderLine1_1,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		// Schedule 2
+		final I_C_OrderLine orderLine1_2 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_2 = createShipmentScheduleRecord(orderLine1_2,
+				TimeUtil.asTimestamp(SystemTime.asInstant().plusMillis(1000)));
+		shipmentScheduleRecord1_2.setExportStatus(X_M_ShipmentSchedule.EXPORTSTATUS_EXPORTED_AND_FORWARDED);
+		saveRecord(shipmentScheduleRecord1_2);
+
+		// Schedule 3
+		final I_C_OrderLine orderLine1_3 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_3 = createShipmentScheduleRecord(orderLine1_3,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		// Schedule 4
+		final I_C_OrderLine orderLine1_4 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_4 = createShipmentScheduleRecord(orderLine1_4,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		// Schedule 5
+		final I_C_OrderLine orderLine1_5 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_5 = createShipmentScheduleRecord(orderLine1_5,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		final I_C_Order order2 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
+		final I_C_OrderLine orderLine2 = createOrderLine(order2);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord2 = createShipmentScheduleRecord(orderLine2,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		location.setAddress1("Teststrasse 2a");
+		location.setPostal("postal");
+		location.setCity("city");
+		saveRecord(location);
+
+		// when
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(QueryLimit.ONE);
+
+		// assertThat(result.isHasMoreItems()).isFalse();
+		assertThat(result.getItems()).hasSize(4);
+		assertThat(result.getItems().get(0).getShipBPartner().getCompanyName()).isEqualTo("bpartnerOverride"); // expecting C_BPartner.Name because companyName is not set
+
+		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
+		assertThat(exportAudits).hasSize(1);
+		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
+		assertThat(exportAudits.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+
+		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
+		assertThat(exportAuditItems).hasSize(4);
+		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
+
+		refresh(shipmentScheduleRecord1_1);
+		assertThat(shipmentScheduleRecord1_1.getExportStatus()).isEqualTo(Exported.getCode());
+		refresh(shipmentScheduleRecord1_2);
+		assertThat(shipmentScheduleRecord1_2.getExportStatus()).isEqualTo(ExportedAndForwarded.getCode()); // unchanged
+		refresh(shipmentScheduleRecord1_3);
+		assertThat(shipmentScheduleRecord1_3.getExportStatus()).isEqualTo(Exported.getCode());
+		refresh(shipmentScheduleRecord1_3);
+		assertThat(shipmentScheduleRecord1_3.getExportStatus()).isEqualTo(Exported.getCode());
+		refresh(shipmentScheduleRecord1_4);
+		assertThat(shipmentScheduleRecord1_4.getExportStatus()).isEqualTo(Exported.getCode());
+		refresh(shipmentScheduleRecord1_5);
+		assertThat(shipmentScheduleRecord1_5.getExportStatus()).isEqualTo(Exported.getCode());
+
+		refresh(shipmentScheduleRecord2);
+		assertThat(shipmentScheduleRecord2.getExportStatus()).isEqualTo(Pending.getCode()); // ..because limit=1, and shipmentScheduleRecord1_* were exported
+
+		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord1_1.getM_ShipmentSchedule_ID());
+	}
+
+
+	/**
+	 * Verifies that shipment scheds of the same order are not exported if one of them is flagged as invalid
+	 */
+	@Test
+	void exportShipmentCandidates_O2_S1_Invalid()
+	{
+		// given
+		final I_C_Currency eur = createCurrency("EUR", 2);
+		final I_M_PriceList pricelist = createPricelist(eur);
+
+		final I_C_Order order1 = createOrder(X_C_Order.DOCSTATUS_Completed, pricelist);
+
+		// Schedule 1
+		final I_C_OrderLine orderLine1_1 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_1 = createShipmentScheduleRecord(orderLine1_1,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		// Schedule 2
+		final I_C_OrderLine orderLine1_2 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_2 = createShipmentScheduleRecord(orderLine1_2,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		// Schedule 3
+		final I_C_OrderLine orderLine1_3 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_3 = createShipmentScheduleRecord(orderLine1_3,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		// Schedule 4
+		final I_C_OrderLine orderLine1_4 = createOrderLine(order1);
+
+		final I_M_ShipmentSchedule shipmentScheduleRecord1_4 = createShipmentScheduleRecord(orderLine1_4,
+				TimeUtil.asTimestamp(SystemTime.asInstant().minusMillis(1000)));
+
+		final I_M_ShipmentSchedule_Recompute invalidMarker = newInstance(I_M_ShipmentSchedule_Recompute.class);
+		invalidMarker.setM_ShipmentSchedule_ID(shipmentScheduleRecord1_4.getM_ShipmentSchedule_ID());
+		saveRecord(invalidMarker);
+
+		location.setAddress1("Teststrasse 2a");
+		location.setPostal("postal");
+		location.setCity("city");
+		saveRecord(location);
+
+		// when
+		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(QueryLimit.ONE);
+
+		// then
+		assertThat(result.getItems()).hasSize(0);
+		assertThat(result.getItems()).isEmpty();
+	}
+
+	private I_M_ShipmentSchedule createShipmentScheduleRecord(
+			final I_C_OrderLine orderLineRecord,
 															  final Timestamp canBeExportedFrom)
 	{
 		final I_M_ShipmentSchedule record = newInstance(I_M_ShipmentSchedule.class);
@@ -718,5 +868,4 @@ class ShipmentCandidateAPIServiceTest
 
 		return record;
 	}
-
 }
