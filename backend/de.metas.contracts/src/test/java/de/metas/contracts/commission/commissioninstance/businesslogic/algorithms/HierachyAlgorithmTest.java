@@ -278,7 +278,6 @@ class HierachyAlgorithmTest
 				.config(config)
 				.hierarchy(hierarchy)
 				.trigger(trigger)
-				.startingHierarchyLevel(HierarchyLevel.ZERO)
 				.build();
 
 		// invoke the method under test

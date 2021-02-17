@@ -150,6 +150,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		}
 	}
 
+	/**
+	 *
+	 * @param request
+	 * @param shadowParentDocumentEvaluatee optional shadowParentDocumentEvaluatee which will be
+	 * @return
+	 */
 	private IProcessInstanceController createNewProcessInstance0(
 			@NonNull final CreateProcessInstanceRequest request,
 			@Nullable final IDocumentEvaluatee evalCtx)
@@ -160,9 +166,13 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		Services.get(IADPInstanceDAO.class).saveProcessInfo(processInfo);
 		final DocumentId adPInstanceId = DocumentId.of(processInfo.getPinstanceId());
 
-		final Object processClassInstance = processInfo.newProcessClassInstance();
+		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
+		if (processClassInstance == null)
+		{
+			throw new AdempiereException("No process instance created for " + processInfo);
+		}
 
-		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
+		try (final IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
 		{
 			//
 			// Build the parameters document

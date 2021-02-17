@@ -25,6 +25,7 @@ package de.metas.util;
  * #L%
  */
 
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,18 +42,14 @@ public final class FileUtil
 
 	public static final void copy(File from, OutputStream out) throws IOException
 	{
-		try (final InputStream in = new FileInputStream(from))
-		{
-			copy(in, out);
-		}
+		InputStream in = new FileInputStream(from);
+		copy(in, out);
 	}
 
 	public static final void copy(InputStream in, File to) throws IOException
 	{
-		try (final FileOutputStream out = new FileOutputStream(to))
-		{
-			copy(in, out);
-		}
+		final FileOutputStream out = new FileOutputStream(to);
+		copy(in, out);
 	}
 
 	public static final void copy(InputStream in, OutputStream out) throws IOException

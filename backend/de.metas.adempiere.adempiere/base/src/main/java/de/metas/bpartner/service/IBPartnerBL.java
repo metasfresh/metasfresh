@@ -162,8 +162,6 @@ public interface IBPartnerBL extends ISingletonService
 
 	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
 
-	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId,BPartnerId salesRepBPartnerId);
-
 	/**
 	 * @return previous sales rep or null
 	 */

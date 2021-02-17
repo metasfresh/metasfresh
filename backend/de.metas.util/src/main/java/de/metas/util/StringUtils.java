@@ -1,5 +1,3 @@
-package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
@@ -22,7 +20,7 @@ package de.metas.util;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
+package de.metas.util;
 
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
@@ -95,28 +93,6 @@ public final class StringUtils
 		}
 
 		return strTrim;
-	}
-
-	/**
-	 * TODO: consider using this method to improve {@link de.metas.util.lang.RepoIdAwares#ofCommaSeparatedList(String, Class)}.
-	 */
-	public static ImmutableList<Integer> tokenizeStringToIntegers(@Nullable final String str)
-	{
-		if (Check.isBlank(str))
-		{
-			return ImmutableList.of();
-		}
-		final ImmutableList.Builder<Integer> result = ImmutableList.builder();
-		final String[] integerStrings = str.split("[^0-9]");
-		for (final String integerString : integerStrings)
-		{
-			if (Check.isBlank(integerString))
-			{
-				continue;
-			}
-			result.add(Integer.parseInt(integerString));
-		}
-		return result.build();
 	}
 
 	public enum TruncateAt

@@ -387,12 +387,10 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
 	{
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-
-		// Always extract an ASI. Even if the product has no ASI, the HUs that we might want to match with might have Attributes that need to be matched against importRecord
-		// if (!productBL.isInstanceAttribute(productId))
-		// {
-		// 	return AttributeSetInstanceId.NONE;
-		// }
+		if (!productBL.isInstanceAttribute(productId))
+		{
+			return AttributeSetInstanceId.NONE;
+		}
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());

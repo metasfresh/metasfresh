@@ -112,15 +112,6 @@ public class RepoIdAwares
 				repoIdStr -> ofRepoId(repoIdStr, repoIdClass));
 	}
 
-	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)
-	{
-		if (repoIdAware == null)
-		{
-			return -1;
-		}
-		return repoIdAware.getRepoId();
-	}
-
 	@VisibleForTesting
 	static RepoIdAwareDescriptor getRepoIdAwareDescriptor(final Class<? extends RepoIdAware> repoIdClass)
 	{
