@@ -100,6 +100,13 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return new LookupValuesList(valuesById, ordered, DebugProperties.EMPTY);
 	}
 
+	public static LookupValuesList of(@NonNull final LookupValue lookupValue)
+	{
+		final ImmutableListMultimap<Object, LookupValue> valuesById = ImmutableListMultimap.of(lookupValue.getId(), lookupValue);
+		final boolean ordered = true;
+		return new LookupValuesList(valuesById, ordered, DebugProperties.EMPTY);
+	}
+
 	private static LookupValuesList build(
 			@NonNull final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder,
 			@Nullable final DebugProperties debugProperties)
