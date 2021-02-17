@@ -38,22 +38,20 @@ import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ArchiveDAO implements IArchiveDAO
 {
@@ -157,7 +155,7 @@ public class ArchiveDAO implements IArchiveDAO
 
 		return queryBuilder.create()
 				.iterateAndStream()
-				.map(log -> retrieveLastArchives(Env.getCtx(), TableRecordReference.ofReferenced(log), QueryLimit.ofInt(1)).stream().findFirst())
+				.map(log -> retrieveLastArchives(Env.getCtx(), TableRecordReference.ofReferenced(log), 1).stream().findFirst())
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.map(arch -> AdArchive.builder().id(ArchiveId.ofRepoId(arch.getAD_Archive_ID())).archiveData(archiveBL.getBinaryData(arch)).build());
