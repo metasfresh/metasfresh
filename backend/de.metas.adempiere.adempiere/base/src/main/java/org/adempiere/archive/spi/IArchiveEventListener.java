@@ -38,11 +38,6 @@ import org.compiere.model.I_AD_Archive;
  */
 public interface IArchiveEventListener
 {
-	default void onPdfUpdate(I_AD_Archive archive, UserId userId)
-	{
-		// nothing
-	}
-
 	default void onPdfUpdate(
 			final I_AD_Archive archive,
 			final UserId userId)

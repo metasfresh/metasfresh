@@ -22,21 +22,16 @@ package org.adempiere.archive.api;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.archive.AdArchive;
+import org.adempiere.ad.dao.QueryLimit;
+import lombok.NonNull;
 import org.adempiere.archive.ArchiveId;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * Archive related DAO
@@ -79,10 +74,6 @@ public interface IArchiveDAO extends ISingletonService
 	<T> T retrieveReferencedModel(I_AD_Archive archive, Class<T> modelClass);
 
 	I_AD_Archive retrieveArchive(ArchiveId archiveId);
-
-	<T> Stream<AdArchive> streamArchivesForFilter(IQueryFilter<T> outboundLogFilter, Class<T> objectClass);
-
-	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 
 	<T extends I_AD_Archive> T retrieveArchive(@NonNull ArchiveId archiveId, @NonNull Class<T> modelClass);
 }
