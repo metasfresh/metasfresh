@@ -44,8 +44,9 @@ public interface IArchiveEventListener
 	}
 
 	default void onPdfUpdate(
-			final I_AD_Archive archive,
-			final UserId userId)
+			I_AD_Archive archive,
+			UserId userId,
+			String action)
 	{
 		// nothing
 	}
