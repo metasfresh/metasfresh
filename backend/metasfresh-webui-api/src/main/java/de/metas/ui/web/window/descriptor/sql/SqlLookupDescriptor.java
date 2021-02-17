@@ -65,6 +65,7 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.DisplayType;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -329,8 +330,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	public static final class Builder
 	{
 		// Parameters
-		private String ctxColumnName;
-		private String ctxTableName;
+		@Nullable private String ctxColumnName;
+		@Nullable private String ctxTableName;
 
 		private DocumentFieldWidgetType widgetType;
 		private Integer displayType;
@@ -374,8 +375,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		}
 
 		private static LookupDescriptorProvider buildProvider(
-				final String sqlTableName,
-				final String sqlColumnName,
+				@Nullable final String sqlTableName,
+				@Nullable final String sqlColumnName,
 				final DocumentFieldWidgetType widgetType, final int displayType,
 				final int AD_Reference_Value_ID,
 				final int AD_Val_Rule_ID,
@@ -706,13 +707,13 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return postQueryPredicate;
 		}
 
-		public Builder setCtxColumnName(final String columnName)
+		public Builder setCtxColumnName(@Nullable final String columnName)
 		{
 			this.ctxColumnName = columnName;
 			return this;
 		}
 
-		public Builder setCtxTableName(final String tableName)
+		public Builder setCtxTableName(@Nullable final String tableName)
 		{
 			this.ctxTableName = tableName;
 			return this;
