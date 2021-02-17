@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.util.web
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.util.web.exception;
+package de.metas.rest_api.exception;
 
 import de.metas.Profiles;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
@@ -29,7 +29,7 @@ import de.metas.dao.selection.pagination.PageNotFoundException;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.security.permissions2.PermissionNotGrantedException;
+import de.metas.security.PermissionNotGrantedException;
 import lombok.NonNull;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.compiere.util.Env;
