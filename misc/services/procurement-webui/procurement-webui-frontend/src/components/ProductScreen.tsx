@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, RouteComponentProps } from 'react-router';
 import { getSnapshot } from 'mobx-state-tree';
+
 import { formDate, prettyDate } from '../utils/date';
 import DailyNav from './DailyNav';
 import View from './View';
@@ -23,7 +24,7 @@ interface Props extends RouteComponentProps<MatchParams> {
 class ProductScreen extends React.Component<Props> {
   private qtyInput = React.createRef<HTMLInputElement>();
 
-  componentDidMount() {
+  componentDidMount(): void {
     document.addEventListener('focusout', this.handleFocusOut);
 
     const { store, match } = this.props;
@@ -34,11 +35,11 @@ class ProductScreen extends React.Component<Props> {
     store.navigation.setViewNames(product.productName);
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     document.removeEventListener('focusout', this.handleFocusOut);
   }
 
-  saveQty = (newQty: number) => {
+  saveQty = (newQty: number): void => {
     const { store, match } = this.props;
     const { productId, targetDay } = match.params;
     const products = getSnapshot(store.dailyProducts.products);
@@ -56,7 +57,7 @@ class ProductScreen extends React.Component<Props> {
     });
   };
 
-  handleFocusOut = () => {
+  handleFocusOut = (): void => {
     const { store, history } = this.props;
     const { navigation } = store;
 
@@ -65,12 +66,12 @@ class ProductScreen extends React.Component<Props> {
     history.goBack();
   };
 
-  render() {
+  render(): ReactElement {
     const { store, match } = this.props;
+    const { lang } = store.i18n;
     const { productId, targetDay, targetDayCaption } = match.params;
     const products = getSnapshot(store.dailyProducts.products);
     const product = products.find((prod) => prod.productId === productId);
-    const { lang } = store.i18n;
     const currentDay = targetDay ? targetDay : store.app.currentDay;
     const currentCaption = targetDayCaption ? targetDayCaption : store.app.dayCaption;
     const productQty = product.qty.toString();
@@ -101,7 +102,7 @@ class ProductScreen extends React.Component<Props> {
                   value={productQty.length > 1 ? productQty.replace(/^0+/, '') : productQty}
                   onKeyUp={(e) => {
                     if (e.key === 'Enter') {
-                      this.qtyInput.current.blur();
+                      this.handleFocusOut();
                     }
                   }}
                   onChange={(e) => {

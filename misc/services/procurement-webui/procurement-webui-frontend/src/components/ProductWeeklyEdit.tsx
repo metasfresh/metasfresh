@@ -106,7 +106,7 @@ class ProductWeeklyEdit extends React.Component<Props> {
                   }}
                   onKeyUp={(e) => {
                     if (e.key === 'Enter') {
-                      this.qtyInput.current.blur();
+                      this.handleFocusOut();
                     }
                   }}
                   step="1"
