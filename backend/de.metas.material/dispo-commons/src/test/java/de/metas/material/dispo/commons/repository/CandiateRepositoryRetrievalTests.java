@@ -96,9 +96,8 @@ public class CandiateRepositoryRetrievalTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(dimensionService);
-
 		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
 
