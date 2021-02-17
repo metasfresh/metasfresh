@@ -104,6 +104,11 @@ class ProductWeeklyEdit extends React.Component<Props> {
                     this.qtyInput.current.focus();
                     this.qtyInput.current.select();
                   }}
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') {
+                      this.qtyInput.current.blur();
+                    }
+                  }}
                   step="1"
                   value={dailyQty.length > 1 ? dailyQty.replace(/^0+/, '') : dailyQty}
                   onChange={(e) => {
