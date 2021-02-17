@@ -660,7 +660,7 @@ class ShipmentCandidateAPIServiceTest
 	}
 
 	/**
-	 * Verifies that shipment scheds are exported if one of them has canBeExported in the future, but that one is already exported
+	 * Verifies that shipment scheds are exported if one of them has canBeExported in the future, but that one *is* already exported
 	 */
 	@Test
 	void exportShipmentCandidates_O1_S4_Past_S1_FutureAlreadyExported_O2_S1_Past_Limit2()
@@ -736,8 +736,6 @@ class ShipmentCandidateAPIServiceTest
 		assertThat(shipmentScheduleRecord1_2.getExportStatus()).isEqualTo(ExportedAndForwarded.getCode()); // unchanged
 		refresh(shipmentScheduleRecord1_3);
 		assertThat(shipmentScheduleRecord1_3.getExportStatus()).isEqualTo(Exported.getCode());
-		refresh(shipmentScheduleRecord1_3);
-		assertThat(shipmentScheduleRecord1_3.getExportStatus()).isEqualTo(Exported.getCode());
 		refresh(shipmentScheduleRecord1_4);
 		assertThat(shipmentScheduleRecord1_4.getExportStatus()).isEqualTo(Exported.getCode());
 		refresh(shipmentScheduleRecord1_5);
@@ -746,9 +744,13 @@ class ShipmentCandidateAPIServiceTest
 		refresh(shipmentScheduleRecord2);
 		assertThat(shipmentScheduleRecord2.getExportStatus()).isEqualTo(Pending.getCode()); // ..because limit=1, and shipmentScheduleRecord1_* were exported
 
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord1_1.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems).extracting(i -> i.getM_ShipmentSchedule_ID())
+				.containsExactlyInAnyOrder(
+						shipmentScheduleRecord1_1.getM_ShipmentSchedule_ID(),
+						shipmentScheduleRecord1_3.getM_ShipmentSchedule_ID(),
+						shipmentScheduleRecord1_4.getM_ShipmentSchedule_ID(),
+						shipmentScheduleRecord1_5.getM_ShipmentSchedule_ID());
 	}
-
 
 	/**
 	 * Verifies that shipment scheds of the same order are not exported if one of them is flagged as invalid
@@ -805,7 +807,7 @@ class ShipmentCandidateAPIServiceTest
 
 	private I_M_ShipmentSchedule createShipmentScheduleRecord(
 			final I_C_OrderLine orderLineRecord,
-															  final Timestamp canBeExportedFrom)
+			final Timestamp canBeExportedFrom)
 	{
 		final I_M_ShipmentSchedule record = newInstance(I_M_ShipmentSchedule.class);
 
