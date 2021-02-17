@@ -26,7 +26,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -87,6 +86,7 @@ public class OrderFactory
 
 	private final I_C_Order order;
 	private boolean built = false;
+	private DocTypeId docTypeTargetId = null;
 
 	private final List<OrderLineBuilder> orderLineBuilders = new ArrayList<>();
 
@@ -231,6 +231,7 @@ public class OrderFactory
 
 	public OrderFactory docType(final DocTypeId docTypeTargetId)
 	{
+		this.docTypeTargetId = docTypeTargetId;
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			assertNotBuilt();
@@ -346,5 +347,15 @@ public class OrderFactory
 		assertNotBuilt();
 		order.setC_Campaign_ID(campaignId);
 		return this;
+	}
+
+	public DocTypeId getDocTypeTargetId()
+	{
+		return docTypeTargetId;
+	}
+
+	public void setDocTypeTargetId(final DocTypeId docTypeTargetId)
+	{
+		this.docTypeTargetId = docTypeTargetId;
 	}
 }

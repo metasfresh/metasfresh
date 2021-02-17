@@ -176,11 +176,11 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setAD_Org_ID(orgId.getRepoId());
-		purchaseCandidateRecord.setVendor(vendorRecord);
+		purchaseCandidateRecord.setVendor_ID(vendorRecord.getC_BPartner_ID());
 		purchaseCandidateRecord.setM_WarehousePO_ID(30);
-		purchaseCandidateRecord.setM_Product(productRecord);
+		purchaseCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseCandidateRecord.setDemandReference("DemandReference");
-		purchaseCandidateRecord.setC_UOM(uomRecord);
+		purchaseCandidateRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		purchaseCandidateRecord.setQtyToPurchase(QTY_TO_PURCHASE_NINE);
 		purchaseCandidateRecord.setPurchaseDatePromised(de.metas.common.util.time.SystemTime.asTimestamp());
 		saveRecord(purchaseCandidateRecord);

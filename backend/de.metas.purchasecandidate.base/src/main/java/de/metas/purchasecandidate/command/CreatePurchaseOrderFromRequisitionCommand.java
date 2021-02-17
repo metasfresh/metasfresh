@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.purchasecandidate.command
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.order.createFrom;
+package de.metas.purchasecandidate.command;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -29,10 +29,14 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
@@ -50,6 +54,7 @@ public class CreatePurchaseOrderFromRequisitionCommand
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final OrderId fromRequisitionId;
 	private final DocTypeId newOrderDocTypeId;
@@ -138,7 +143,35 @@ public class CreatePurchaseOrderFromRequisitionCommand
 
 			newOrderLine.setRef_ProposalLine_ID(fromProposalLine.getC_OrderLine_ID());
 			orderDAO.save(newOrderLine);
+			createPurchaseOrderAllocRecord(newOrderLine, fromProposalLine);
 		}
+	}
+
+	private void createPurchaseOrderAllocRecord(final I_C_OrderLine newOrderLine, final I_C_OrderLine fromOrderLine)
+	{
+
+		final I_C_PurchaseCandidate_Alloc alloc = queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_OrderLinePO_ID, fromOrderLine.getC_OrderLine_ID())
+				.create().first();
+		Check.assumeNotNull(alloc, "Could not find an allocation for line C_OrderLinePO_ID {}", fromOrderLine.getC_OrderLine_ID());
+		final I_C_PurchaseCandidate_Alloc purchaseCandidateAlloc = InterfaceWrapperHelper.copy()
+				.setFrom(alloc)
+				.copyToNew(I_C_PurchaseCandidate_Alloc.class);
+		purchaseCandidateAlloc.setC_OrderPO_ID(newOrderLine.getC_Order_ID());
+		purchaseCandidateAlloc.setC_OrderLinePO_ID(newOrderLine.getC_OrderLine_ID());
+		InterfaceWrapperHelper.save(purchaseCandidateAlloc);
+		markProcessed(PurchaseCandidateId.ofRepoId(purchaseCandidateAlloc.getC_PurchaseCandidate_ID()));
+	}
+
+	private void markProcessed(final PurchaseCandidateId cPurchaseCandidateId)
+	{
+		final I_C_PurchaseCandidate candidate = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, cPurchaseCandidateId)
+				.create()
+				.first();
+		Check.assumeNotNull(candidate, "Could not find a Purchase candidate for line C_PurchaseCandidate_ID {}", cPurchaseCandidateId);
+		candidate.setProcessed(true);
+		InterfaceWrapperHelper.save(candidate);
 	}
 
 	private void completePurchaseOrderIfNeeded(final I_C_Order newOrder)

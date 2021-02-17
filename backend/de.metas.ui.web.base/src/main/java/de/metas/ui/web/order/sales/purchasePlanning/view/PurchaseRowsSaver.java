@@ -95,6 +95,7 @@ class PurchaseRowsSaver
 				.peek(candidate -> {
 					candidate.setQtyToPurchase(candidate.getQtyToPurchase().toZero());
 					candidate.setPrepared(false);
+					candidate.setReqCreated(false);
 				})
 				.collect(ImmutableList.toImmutableList());
 		purchaseCandidatesRepo.saveAll(purchaseCandidatesToZero);

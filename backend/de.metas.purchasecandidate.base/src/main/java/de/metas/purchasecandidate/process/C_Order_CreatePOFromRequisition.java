@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.purchasecandidate.process
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,16 +20,17 @@
  * #L%
  */
 
-package de.metas.order.process;
+package de.metas.purchasecandidate.process;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.createFrom.CreatePurchaseOrderFromRequisitionCommand;
+import de.metas.order.process.C_Order_CreationProcess;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.purchasecandidate.command.CreatePurchaseOrderFromRequisitionCommand;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;

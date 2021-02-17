@@ -108,6 +108,7 @@ public class PurchaseCandidate
 			final boolean prepared,
 			final boolean processed,
 			final boolean locked,
+			final boolean reqCreated,
 			//
 			@NonNull final BPartnerId vendorId,
 			//
@@ -147,6 +148,7 @@ public class PurchaseCandidate
 				.prepared(prepared)
 				.processed(processed)
 				.locked(locked)
+				.reqCreated(reqCreated)
 				.build();
 
 		this.qtyToPurchase = qtyToPurchase;
@@ -274,6 +276,16 @@ public class PurchaseCandidate
 	public boolean isProcessed()
 	{
 		return state.isProcessed();
+	}
+
+	public void setReqCreated(final boolean reqCreated)
+	{
+		state.setReqCreated(reqCreated);
+	}
+
+	public boolean isReqCreated()
+	{
+		return state.isReqCreated();
 	}
 
 	public boolean hasChanges()

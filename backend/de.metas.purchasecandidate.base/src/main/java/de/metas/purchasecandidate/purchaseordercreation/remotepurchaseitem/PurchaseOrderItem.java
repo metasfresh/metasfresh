@@ -1,15 +1,8 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.base.Objects;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -24,6 +17,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -52,7 +50,6 @@ import lombok.ToString;
  * for which the system now needs to create a {@code C_Order} etc.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString(exclude = "purchaseCandidate") // exclude purchaseCandidate to avoid stacktrace, since purchaseCandidate can hold a reference to this
 public class PurchaseOrderItem implements PurchaseItem
@@ -199,13 +196,24 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;
 	}
 
-	public void setPurchaseOrderLineIdAndMarkProcessed(@NonNull final OrderAndLineId purchaseOrderAndLineId)
+	public void setPurchaseOrderLineId(@NonNull final OrderAndLineId purchaseOrderAndLineId)
 	{
 		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
+	}
 
+	public void markPurchasedIfNeeded()
+	{
 		if (purchaseMatchesOrExceedsRequiredQty())
 		{
 			purchaseCandidate.markProcessed();
+		}
+	}
+
+	public void markReqCreatedIfNeeded()
+	{
+		if (purchaseMatchesOrExceedsRequiredQty())
+		{
+			purchaseCandidate.setReqCreated(true);
 		}
 	}
 }
