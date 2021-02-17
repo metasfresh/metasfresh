@@ -501,8 +501,6 @@ public class InventoryRepository
 			{
 				deleteInventoryLineHUs(inventoryLine.getId());
 			}
-
-			return;
 		}
 		else
 		{

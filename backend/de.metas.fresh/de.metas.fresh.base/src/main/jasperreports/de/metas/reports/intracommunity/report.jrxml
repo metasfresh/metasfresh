@@ -15,11 +15,15 @@
 	<parameter name="C_Period_ID" class="java.lang.Integer"/>
 	<parameter name="C_BPartner_ID" class="java.lang.Integer"/>
 	<parameter name="IsToEULocation" class="java.lang.String"/>
+	<parameter name="AD_Org_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[1000000]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[select i.*, p.name as Period from de_metas_endcustomer_fresh_reports.C_Invoice_V i
 join C_Period p on i.dateinvoiced >= p.startdate
     and i.dateinvoiced <= p.enddate
     and p.c_period_id = $P{C_Period_ID}
+    and i.AD_Org_ID = $P{AD_Org_ID}
     and
      ( case when $P{C_BPartner_ID} is not null then i.C_BPartner_id = $P{C_BPartner_ID} else 1=1 end)
     and
@@ -64,6 +68,12 @@ join C_Period p on i.dateinvoiced >= p.startdate
 	</field>
 	<field name="iseutax" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="iseutax"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="orgname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="orgname"/>
 	</field>
 	<field name="period" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="period"/>
@@ -116,9 +126,9 @@ join C_Period p on i.dateinvoiced >= p.startdate
 		</groupFooter>
 	</group>
 	<pageHeader>
-		<band height="136">
+		<band height="177">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="23" y="111" width="77" height="15" forecolor="#000000" uuid="bc0c873c-2d79-4802-a06e-fe6d51c8b562"/>
+				<reportElement key="textField-13" x="23" y="151" width="77" height="15" forecolor="#000000" uuid="bc0c873c-2d79-4802-a06e-fe6d51c8b562"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -129,7 +139,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{CreditorValue}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="100" y="111" width="170" height="15" forecolor="#000000" uuid="1c58aa42-8a29-473a-9002-c37f38659eed"/>
+				<reportElement key="textField-13" x="100" y="151" width="170" height="15" forecolor="#000000" uuid="1c58aa42-8a29-473a-9002-c37f38659eed"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -140,7 +150,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{CustomerAddr}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="270" y="111" width="86" height="15" forecolor="#000000" uuid="531a54d9-7974-442c-b2b9-f3524f16eb57"/>
+				<reportElement key="textField-13" x="270" y="151" width="86" height="15" forecolor="#000000" uuid="531a54d9-7974-442c-b2b9-f3524f16eb57"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -150,7 +160,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{VAT}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="356" y="111" width="86" height="15" forecolor="#000000" uuid="cf4fefa3-119d-4eda-a0b7-1df443d731ab"/>
+				<reportElement key="textField-13" x="356" y="151" width="86" height="15" forecolor="#000000" uuid="cf4fefa3-119d-4eda-a0b7-1df443d731ab"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -160,7 +170,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{InvoiceDate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="442" y="111" width="78" height="15" forecolor="#000000" uuid="1b72454c-4e56-44f8-91cd-50d698f79923"/>
+				<reportElement key="textField-13" x="442" y="151" width="78" height="15" forecolor="#000000" uuid="1b72454c-4e56-44f8-91cd-50d698f79923"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -170,7 +180,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{InvoiceNo}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="520" y="111" width="59" height="15" forecolor="#000000" uuid="bf1caf75-0b46-41f1-808d-38f4614d8bc2"/>
+				<reportElement key="textField-13" x="520" y="151" width="59" height="15" forecolor="#000000" uuid="bf1caf75-0b46-41f1-808d-38f4614d8bc2"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -180,7 +190,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{Currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="579" y="111" width="100" height="15" forecolor="#000000" uuid="1c133352-75e0-4289-ba94-8e06886ddd1e"/>
+				<reportElement key="textField-13" x="579" y="151" width="100" height="15" forecolor="#000000" uuid="1c133352-75e0-4289-ba94-8e06886ddd1e"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -190,7 +200,7 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="687" y="111" width="100" height="15" forecolor="#000000" uuid="c9f98823-0817-4bc2-9354-65c1935bdd62"/>
+				<reportElement key="textField-13" x="687" y="151" width="100" height="15" forecolor="#000000" uuid="c9f98823-0817-4bc2-9354-65c1935bdd62"/>
 				<box>
 					<pen lineWidth="0.5"/>
 				</box>
@@ -200,21 +210,21 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				<textFieldExpression><![CDATA[$R{Euro_Amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="23" y="45" width="547" height="14" uuid="dabf32c7-dcf1-4188-b1c1-4e1ffca83928"/>
+				<reportElement x="23" y="83" width="547" height="14" uuid="dabf32c7-dcf1-4188-b1c1-4e1ffca83928"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Month}+" " + $F{period}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="23" y="62" width="663" height="14" uuid="20d3ca8f-b29b-4e8d-8324-d4137000b945"/>
+				<reportElement x="23" y="100" width="663" height="14" uuid="20d3ca8f-b29b-4e8d-8324-d4137000b945"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Partner}+"  " + ( $P{C_BPartner_ID}!=null ? $F{bpname} : "")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="23" y="79" width="267" height="14" uuid="97825f94-3c21-449a-84e5-d448c582d930"/>
+				<reportElement x="23" y="117" width="267" height="14" uuid="97825f94-3c21-449a-84e5-d448c582d930"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
@@ -227,6 +237,15 @@ join C_Period p on i.dateinvoiced >= p.startdate
 					<font fontName="Arial" size="14" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="23" y="66" width="523" height="14" uuid="fa473de6-d4b9-4b33-9e8d-0631c0974588">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -374,6 +393,9 @@ join C_Period p on i.dateinvoiced >= p.startdate
 				</subreportParameter>
 				<subreportParameter name="IsEuTax">
 					<subreportParameterExpression><![CDATA[$P{IsToEULocation}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="AD_Org_ID">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/intracommunity/report_summary.jasper"]]></subreportExpression>
