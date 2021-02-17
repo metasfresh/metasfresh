@@ -100,16 +100,17 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
+
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
 		dimensionFactories.add(new ForecastLineDimensionFactory());
 		dimensionService = new DimensionService(dimensionFactories);
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
+
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
-
 		forecastLine = createForecastLine(61);
 	}
 
