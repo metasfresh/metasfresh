@@ -122,8 +122,6 @@ public class OrderLineBL implements IOrderLineBL
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
-
 	private IOrderBL orderBL()
 	{
 		return Services.get(IOrderBL.class);
@@ -266,6 +264,8 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public TaxCategoryId getTaxCategoryId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
+
 		final ChargeId chargeId = ChargeId.ofRepoIdOrNull(orderLine.getC_Charge_ID());
 		// In case we have a charge, use the tax category from charge
 		if (chargeId != null)
