@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
@@ -82,7 +83,7 @@ public class WebuiMailRepository
 	public WebuiEmail createNewEmail(
 			@NonNull final UserId ownerUserId,
 			final LookupValue from,
-			final LookupValue to,
+			@Nullable final LookupValue to,
 			final DocumentPath contextDocumentPath)
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
@@ -127,8 +128,6 @@ public class WebuiMailRepository
 
 	/**
 	 * Called when the email was removed from our internal cache.
-	 *
-	 * @param email
 	 */
 	private void onEmailRemoved(final WebuiEmail email)
 	{
@@ -144,6 +143,7 @@ public class WebuiMailRepository
 		return emailToLookup.findEntities(ctx, query);
 	}
 
+	@Nullable
 	public LookupValue getToByUserId(final Integer adUserId)
 	{
 		return emailToLookup.findById(adUserId);
@@ -180,9 +180,8 @@ public class WebuiMailRepository
 
 	@Value
 	@AllArgsConstructor
-	public static final class WebuiEmailRemovedEvent
+	public static class WebuiEmailRemovedEvent
 	{
-		@NonNull
-		private final WebuiEmail email;
+		@NonNull WebuiEmail email;
 	}
 }
