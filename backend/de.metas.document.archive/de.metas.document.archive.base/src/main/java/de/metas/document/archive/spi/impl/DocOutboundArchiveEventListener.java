@@ -61,13 +61,9 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId)
-	{
-		onPdfUpdate(archive, userId, X_C_Doc_Outbound_Log_Line.ACTION_PdfExport);
-	}
-
-	@Override
-	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId, @NonNull final String action)
+	public void onPdfUpdate(
+			@Nullable final I_AD_Archive archive,
+			@Nullable final UserId userId)
 	{
 		if (!isLoggableArchive(archive))
 		{
@@ -81,10 +77,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			docExchangeLine.setAD_User_ID(userId.getRepoId());
 		}
 		save(docExchangeLine);
-
-		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
-		log.setDateLastPrint(SystemTime.asTimestamp());
-		save(log);
 	}
 
 	@Override
