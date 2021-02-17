@@ -26,6 +26,7 @@ import com.google.gson.Gson;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemChildConfig;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.service.IExternalSystemConfigDAO;
@@ -38,6 +39,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -115,6 +117,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.parameters(parameters)
 				.orgCode(orgDAO.getById(getOrgId()).getValue())
 				.command(externalRequest)
+				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
 				.build();
 
 		final HttpPut request = new HttpPut(parentConfig.getCamelUrl());

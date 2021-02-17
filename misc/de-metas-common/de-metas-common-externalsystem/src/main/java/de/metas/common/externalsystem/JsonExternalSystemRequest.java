@@ -23,13 +23,17 @@
 package de.metas.common.externalsystem;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -44,6 +48,11 @@ public class JsonExternalSystemRequest
 
 	String command;
 
+	@ApiModelProperty("Optional `AD_PInstance_ID` of the process instance which created this request. Can be used when reporting errors or the current status back to metasfresh")
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonMetasfreshId adPInstanceId;
+
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	Map<String, String> parameters;
 
@@ -53,11 +62,13 @@ public class JsonExternalSystemRequest
 			@JsonProperty("orgCode") @NonNull final String orgCode,
 			@JsonProperty("externalSystemName") @NonNull final JsonExternalSystemName externalSystemName,
 			@JsonProperty("command") @NonNull final String command,
+			@JsonProperty("adPInstanceId") @Nullable final JsonMetasfreshId adPInstanceId,
 			@JsonProperty("parameters") @Singular final Map<String, String> parameters)
 	{
 		this.orgCode = orgCode;
 		this.externalSystemName = externalSystemName;
 		this.command = command;
+		this.adPInstanceId = adPInstanceId;
 		this.parameters = parameters;
 	}
 }
