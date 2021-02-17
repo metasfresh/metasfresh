@@ -1,18 +1,8 @@
 package de.metas.material.dispo.commons;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
-import de.metas.document.dimension.OrderLineDimensionFactory;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -22,9 +12,16 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -51,6 +48,7 @@ import java.util.List;
 public class RepositoryTestHelperTest
 {
 	private RepositoryTestHelper repositoryTestHelper;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
@@ -59,9 +57,9 @@ public class RepositoryTestHelperTest
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
 	}
@@ -102,7 +100,7 @@ public class RepositoryTestHelperTest
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
-						candidateId.getRepoId())
+								 candidateId.getRepoId())
 				.create().firstOnly(I_MD_Candidate.class);
 	}
 
@@ -110,7 +108,7 @@ public class RepositoryTestHelperTest
 	public void constructor_sets_up_candidates_correctly_and_queries_work()
 	{
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper.mkQueryForStockUntilDate(EventTestHelper.NOW);
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
 		final Candidate retrievedStockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockCandidatequery);
 		assertThat(retrievedStockCandidate).isNotNull();
 		assertThat(retrievedStockCandidate).isEqualTo(repositoryTestHelper.stockCandidate);

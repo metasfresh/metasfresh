@@ -62,7 +62,7 @@ public class CandidateServiceTests
 		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		requestMaterialOrderService = new RequestMaterialOrderService(
-				new CandidateRepositoryRetrieval(),
+				new CandidateRepositoryRetrieval(dimensionService),
 				postMaterialEventService,
 				dimensionService);
 	}

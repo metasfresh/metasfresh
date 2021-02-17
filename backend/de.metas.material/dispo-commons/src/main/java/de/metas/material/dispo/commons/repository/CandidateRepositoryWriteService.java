@@ -86,7 +86,7 @@ public class CandidateRepositoryWriteService
 {
 	private final DimensionService dimensionService;
 
-	private CandidateRepositoryWriteService(final DimensionService dimensionService)
+	public CandidateRepositoryWriteService(final DimensionService dimensionService)
 	{
 		this.dimensionService = dimensionService;
 	}

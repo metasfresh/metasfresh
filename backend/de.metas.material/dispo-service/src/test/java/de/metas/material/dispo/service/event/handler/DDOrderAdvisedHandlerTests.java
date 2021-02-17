@@ -49,7 +49,7 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptorWithProductId;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -108,6 +108,8 @@ public class DDOrderAdvisedHandlerTests
 
 	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
@@ -116,13 +118,13 @@ public class DDOrderAdvisedHandlerTests
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();

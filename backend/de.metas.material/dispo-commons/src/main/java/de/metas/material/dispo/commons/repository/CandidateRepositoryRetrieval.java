@@ -85,7 +85,7 @@ public class CandidateRepositoryRetrieval
 {
 	private final DimensionService dimensionService;
 
-	private CandidateRepositoryRetrieval(@NonNull final DimensionService dimensionService)
+	public CandidateRepositoryRetrieval(@NonNull final DimensionService dimensionService)
 	{
 		this.dimensionService = dimensionService;
 	}

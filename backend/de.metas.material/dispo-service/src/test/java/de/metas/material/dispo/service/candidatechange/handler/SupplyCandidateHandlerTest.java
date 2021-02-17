@@ -38,7 +38,7 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -72,6 +72,7 @@ public class SupplyCandidateHandlerTest
 	private SupplyCandidateHandler supplyCandiateHandler;
 
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
@@ -80,10 +81,11 @@ public class SupplyCandidateHandlerTest
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionFactories);
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,

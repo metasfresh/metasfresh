@@ -28,7 +28,7 @@ import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -59,6 +59,8 @@ public class ShipmentScheduleDeletedHandlerTests
 
 	private ShipmentScheduleDeletedHandler shipmentScheduleDeletedHandler;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
@@ -66,11 +68,12 @@ public class ShipmentScheduleDeletedHandlerTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 

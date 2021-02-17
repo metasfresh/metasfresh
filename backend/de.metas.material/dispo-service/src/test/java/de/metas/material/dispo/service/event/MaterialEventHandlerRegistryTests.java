@@ -98,6 +98,8 @@ public class MaterialEventHandlerRegistryTests
 	private EventLogUserService eventLogUserService;
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
@@ -105,17 +107,17 @@ public class MaterialEventHandlerRegistryTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		eventLogUserService = Mockito.spy(EventLogUserService.class);
 		availableToPromiseRepository = Mockito.mock(AvailableToPromiseRepository.class);
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,

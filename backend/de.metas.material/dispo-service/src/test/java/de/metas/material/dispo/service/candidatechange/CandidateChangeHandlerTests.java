@@ -112,6 +112,8 @@ public class CandidateChangeHandlerTests
 	private StockCandidateService stockCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
@@ -119,10 +121,12 @@ public class CandidateChangeHandlerTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
-		candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
+		candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -206,10 +210,10 @@ public class CandidateChangeHandlerTests
 
 			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
-							.type(CandidateType.STOCK)
-							.clientAndOrgId(CLIENT_AND_ORG_ID)
-							.materialDescriptor(earlierMaterialDescriptor)
-							.build())
+															 .type(CandidateType.STOCK)
+															 .clientAndOrgId(CLIENT_AND_ORG_ID)
+															 .materialDescriptor(earlierMaterialDescriptor)
+															 .build())
 					.getCandidate();
 
 			final MaterialDescriptor laterMaterialDescriptor = materialDescriptor.withDate(t3);
@@ -577,11 +581,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-						.transactionId(50)
-						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-						.transactionDate(BEFORE_NOW)
-						.complete(true)
-						.build())
+										   .transactionId(50)
+										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+										   .transactionDate(BEFORE_NOW)
+										   .complete(true)
+										   .build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -637,11 +641,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-						.transactionId(50)
-						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-						.transactionDate(BEFORE_NOW)
-						.complete(true)
-						.build())
+										   .transactionId(50)
+										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+										   .transactionDate(BEFORE_NOW)
+										   .complete(true)
+										   .build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -734,10 +738,10 @@ public class CandidateChangeHandlerTests
 
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.businessCaseDetail(PurchaseDetail.builder()
-						.qty(qty)
-						.advised(Flag.TRUE)
-						.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
-						.build())
+											.qty(qty)
+											.advised(Flag.TRUE)
+											.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
+											.build())
 				.build();
 
 		return candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);

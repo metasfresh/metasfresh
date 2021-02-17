@@ -53,7 +53,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -95,6 +95,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
@@ -103,12 +104,13 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -326,25 +328,25 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(groupId)
 				.line(PPOrderLine.builder()
-						.ppOrderLineId(ppOrderId * 5)
-						.description("descr1")
-						.productDescriptor(rawProductDescriptor1)
-						.issueOrReceiveDate(NOW)
-						.qtyRequired(TEN)
-						.qtyDelivered(ONE)
-						.productBomLineId(1020)
-						.receipt(false)
-						.build())
+							  .ppOrderLineId(ppOrderId * 5)
+							  .description("descr1")
+							  .productDescriptor(rawProductDescriptor1)
+							  .issueOrReceiveDate(NOW)
+							  .qtyRequired(TEN)
+							  .qtyDelivered(ONE)
+							  .productBomLineId(1020)
+							  .receipt(false)
+							  .build())
 				.line(PPOrderLine.builder()
-						.ppOrderLineId(ppOrderId * 6)
-						.description("descr2")
-						.productDescriptor(rawProductDescriptor2)
-						.issueOrReceiveDate(NOW)
-						.qtyRequired(ELEVEN)
-						.qtyDelivered(ONE)
-						.productBomLineId(1030)
-						.receipt(false)
-						.build())
+							  .ppOrderLineId(ppOrderId * 6)
+							  .description("descr2")
+							  .productDescriptor(rawProductDescriptor2)
+							  .issueOrReceiveDate(NOW)
+							  .qtyRequired(ELEVEN)
+							  .qtyDelivered(ONE)
+							  .productBomLineId(1030)
+							  .receipt(false)
+							  .build())
 				.build();
 		return ppOrder;
 	}

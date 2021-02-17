@@ -23,6 +23,7 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -83,6 +84,7 @@ public class StockCandidateServiceTests
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	private int parentIdSequence;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	void init()
@@ -91,13 +93,14 @@ public class StockCandidateServiceTests
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
-		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		parentIdSequence = 1;
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryWriteService);
