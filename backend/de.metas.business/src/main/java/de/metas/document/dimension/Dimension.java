@@ -72,7 +72,7 @@ public class Dimension implements Comparable<Dimension>
 	}
 
 	@Override
-	public int compareTo(final Dimension o)
+	public int compareTo(@Nullable final Dimension o)
 	{
 		return this.equals(o) ? 0 : -1;
 	}
