@@ -76,7 +76,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static LookupValuesList fromNullable(final LookupValue lookupValue)
+	public static LookupValuesList fromNullable(@Nullable final LookupValue lookupValue)
 	{
 		if (lookupValue == null)
 		{
