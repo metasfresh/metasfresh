@@ -27,7 +27,6 @@ import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
-import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
