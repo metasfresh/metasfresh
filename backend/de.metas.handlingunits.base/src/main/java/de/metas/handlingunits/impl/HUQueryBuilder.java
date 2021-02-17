@@ -1068,6 +1068,13 @@ import java.util.Set;
 	}
 
 	@Override
+	public HUQueryBuilder addOnlyHUValue(@NonNull final String huValue)
+	{
+		final HuId huId = HuId.ofHUValue(huValue);
+		return addOnlyHUIds(ImmutableSet.of(huId.getRepoId()));
+	}
+
+	@Override
 	public HUQueryBuilder addOnlyHUIds(@Nullable final Collection<Integer> onlyHUIds)
 	{
 		if (onlyHUIds == null)
