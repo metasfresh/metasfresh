@@ -9,16 +9,22 @@ import static org.assertj.core.api.Assertions.tuple;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
@@ -103,6 +109,11 @@ public class OnePurchase_SeveralReceipts_Test
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
 		setupServices();
 	}
 

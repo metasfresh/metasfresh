@@ -5,6 +5,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -43,6 +45,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -127,6 +130,8 @@ public class CandidateRepositoryRetrieval
 	@VisibleForTesting
 	Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull) || candidateRecordOrNull.getMD_Candidate_ID() <= 0)
 		{
 			return Optional.empty();
@@ -158,6 +163,10 @@ public class CandidateRepositoryRetrieval
 		}
 
 		builder.transactionDetails(createTransactionDetails(candidateRecordOrNull));
+
+		final Dimension candidateDimension= dimensionService.getFromRecord(candidateRecordOrNull);
+		builder.dimension(candidateDimension);
+
 
 		return Optional.of(builder.build());
 	}

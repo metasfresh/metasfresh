@@ -246,6 +246,7 @@ class PurchaseRowsSaver
 					.aggregatePOs(candidatesGroup.isAggregatePOs())
 					//
 					.profitInfoOrNull(profitInfo)
+					.dimension(candidatesGroup.getDimension())
 					//
 					.build();
 

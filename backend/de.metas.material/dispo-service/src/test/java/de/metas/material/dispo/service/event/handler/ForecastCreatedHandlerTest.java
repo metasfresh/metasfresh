@@ -4,17 +4,26 @@ import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.ForecastLineDimensionFactory;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_ForecastLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,15 +81,23 @@ public class ForecastCreatedHandlerTest
 	private AvailableToPromiseRepository stockRepository;
 	private PostMaterialEventService postMaterialEventService;
 
+
+	int forecastLineId;
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionFactories.add(new ForecastLineDimensionFactory());
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+
 		candidateRepository = Mockito.mock(CandidateRepositoryRetrieval.class);
 		stockRepository = Mockito.mock(AvailableToPromiseRepository.class);
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
+		forecastLineId = createForecastline().getM_ForecastLine_ID();
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		forecastCreatedHandler = new ForecastCreatedHandler(
 				new CandidateChangeService(ImmutableList.of(
@@ -90,6 +107,14 @@ public class ForecastCreatedHandlerTest
 								stockRepository))));
 	}
 
+	private I_M_ForecastLine createForecastline()
+	{
+		final I_M_ForecastLine forecastLine = newInstance(I_M_ForecastLine.class);
+
+		save(forecastLine);
+
+		return forecastLine;
+	}
 	/**
 	 * We create a forecast event with quantity = 8, and there is no projected stock quantity.<br>
 	 * We assert that the method under test fires a MaterialDemandEvent with a quantity of 8 - 0 = 8.
@@ -158,7 +183,7 @@ public class ForecastCreatedHandlerTest
 	private ForecastCreatedEvent createForecastWithQtyOfEight()
 	{
 		final ForecastLine forecastLine = ForecastLine.builder()
-				.forecastLineId(300)
+				.forecastLineId(forecastLineId)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)

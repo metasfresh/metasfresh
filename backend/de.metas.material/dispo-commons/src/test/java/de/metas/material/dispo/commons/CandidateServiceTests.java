@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.document.dimension.DimensionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -58,10 +59,12 @@ public class CandidateServiceTests
 	@BeforeEach
 	public void init()
 	{
+		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				postMaterialEventService);
+				postMaterialEventService,
+				dimensionService);
 	}
 
 	@Test
@@ -86,6 +89,7 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
+				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(ProductionDetail.builder()
 						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
@@ -100,6 +104,7 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
+				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(ProductionDetail.builder()
 						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
@@ -148,6 +153,7 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
+				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
@@ -161,6 +167,7 @@ public class CandidateServiceTests
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
+				.withDimension(candidate.getDimension())
 				.withBusinessCaseDetail(DistributionDetail.builder()
 						.productPlanningId(220)
 						.plantId(230)
