@@ -4,6 +4,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.costing.ChargeId;
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -50,6 +52,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Order;
@@ -119,7 +122,12 @@ public class OrderLineBL implements IOrderLineBL
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private IOrderBL orderBL() { return Services.get(IOrderBL.class); }
+	private final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
+
+	private IOrderBL orderBL()
+	{
+		return Services.get(IOrderBL.class);
+	}
 
 	@Override
 	public List<I_C_OrderLine> getByOrderIds(@NonNull final Set<OrderId> orderIds)
@@ -258,11 +266,12 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public TaxCategoryId getTaxCategoryId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		final ChargeId chargeId = ChargeId.ofRepoIdOrNull(orderLine.getC_Charge_ID());
 		// In case we have a charge, use the tax category from charge
-		if (orderLine.getC_Charge_ID() > 0)
+		if (chargeId != null)
 		{
 			// TODO get rid of C_Charge from C_OrderLine alltogether
-			final I_C_Charge chargeRecord = loadOutOfTrx(orderLine.getC_Charge_ID(), I_C_Charge.class);
+			final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
 			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
@@ -439,7 +448,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyReserved = BigDecimal.ZERO.max(qtyReservedRaw); // not less than zero
 
 		logger.debug("Given orderLine {} has QtyOrdered={} and QtyDelivered={}; setting QtyReserved={}.",
-				orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved);
+					 orderLine, orderLine.getQtyOrdered(), orderLine.getQtyDelivered(), qtyReserved);
 		orderLine.setQtyReserved(qtyReserved);
 	}
 
@@ -532,7 +541,7 @@ public class OrderLineBL implements IOrderLineBL
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
 
 		assume(uomId != null || productId != null,
-				"For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
+			   "For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
 		if (productId == null)
 		{
 			return Quantitys.create(qtyEntered, uomId);

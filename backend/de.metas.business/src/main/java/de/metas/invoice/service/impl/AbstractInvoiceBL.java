@@ -19,6 +19,8 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.costing.ChargeId;
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -1224,6 +1226,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
 
 		// // Make sure QtyInvoicedInPriceUOM is up2date
 		invoiceLineBL.setQtyInvoicedInPriceUOM(invoiceLine);
@@ -1251,9 +1254,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			if (invoiceLine.getM_Product_ID() > 0)
 			{
-				if (invoiceLine.getC_Charge_ID() > 0)    // Charge
+				final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
+				if (chargeId != null)    // Charge
 				{
-					final I_C_Charge chargeRecord = loadOutOfTrx(invoiceLine.getC_Charge_ID(), I_C_Charge.class);
+					final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
 					final I_C_TaxCategory taxCategoryRecord = taxDAO.getTaxCategoryById(TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID()));
 					stdTax = createTax(ctx, taxDAO.getDefaultTax(taxCategoryRecord).getC_Tax_ID(), trxName);
 				}
@@ -1714,10 +1718,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final TaxCategoryId getTaxCategoryId(final I_C_InvoiceLine invoiceLine)
 	{
+		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
 		// In case we have a charge, use the tax category from charge
-		if (invoiceLine.getC_Charge_ID() > 0)
+		final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
+		if (chargeId  != null)
 		{
-			final I_C_Charge chargeRecord = loadOutOfTrx(invoiceLine.getC_Charge_ID(), I_C_Charge.class);
+			final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
 			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
