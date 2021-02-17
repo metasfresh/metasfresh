@@ -221,7 +221,8 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	{
 		if (huAggregationType == null)
 		{
-			return DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
+			// #10656 There is no inventory doctype without a subtype. Consider the AggregatedHUInventory as a default
+			return AggregationType.MULTIPLE_HUS.getDocBaseAndSubType();
 		}
 		else
 		{

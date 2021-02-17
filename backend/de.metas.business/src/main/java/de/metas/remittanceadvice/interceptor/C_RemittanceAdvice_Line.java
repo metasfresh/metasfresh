@@ -34,6 +34,11 @@ import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,6 +50,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_RemittanceAdvice_Line.class)
+@Callout(I_C_RemittanceAdvice_Line.class)
 @Component
 public class C_RemittanceAdvice_Line
 {
@@ -60,6 +66,27 @@ public class C_RemittanceAdvice_Line
 		this.remittanceAdviceRepo = remittanceAdviceRepo;
 		this.remittanceAdviceService = remittanceAdviceService;
 	}
+
+
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@CalloutMethod(columnNames = I_C_RemittanceAdvice_Line.COLUMNNAME_ServiceFeeAmount)
+	public void updateFromDocType(final I_C_RemittanceAdvice_Line record, final ICalloutField field)
+	{
+		final RemittanceAdviceId remittanceAdviceId = RemittanceAdviceId.ofRepoId(record.getC_RemittanceAdvice_ID());
+
+		final RemittanceAdvice remittanceAdvice = remittanceAdviceRepo.getRemittanceAdvice(remittanceAdviceId);
+
+		if (remittanceAdvice.getServiceFeeCurrencyId() == null)
+		{
+			throw new AdempiereException("Missing C_RemittanceAdvice.C_ServiceFeeAmount_Currency_ID");
+		}
+	}
+
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW },
 			ifColumnsChanged = { I_C_RemittanceAdvice_Line.COLUMNNAME_C_Invoice_ID,
