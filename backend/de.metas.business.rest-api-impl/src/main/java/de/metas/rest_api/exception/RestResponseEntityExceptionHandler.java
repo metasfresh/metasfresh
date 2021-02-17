@@ -1,31 +1,8 @@
-package de.metas.rest_api.exception;
-
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import de.metas.bpartner.service.BPartnerIdNotFoundException;
-import de.metas.dao.selection.pagination.PageNotFoundException;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.common.rest_api.JsonError;
-import de.metas.rest_api.utils.JsonErrors;
-import de.metas.security.PermissionNotGrantedException;
-import lombok.NonNull;
-
 /*
  * #%L
- * de.metas.ordercandidate.rest-api-impl
+ * de.metas.util.web
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,7 +20,33 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.util.web.exception;
+
+import de.metas.Profiles;
+import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.common.rest_api.JsonError;
+import de.metas.dao.selection.pagination.PageNotFoundException;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
+import de.metas.rest_api.utils.JsonErrors;
+import de.metas.security.permissions2.PermissionNotGrantedException;
+import lombok.NonNull;
+import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+
 @ControllerAdvice
+@Profile(Profiles.PROFILE_App)
 public class RestResponseEntityExceptionHandler
 {
 	private static final Logger logger = LogManager.getLogger(RestResponseEntityExceptionHandler.class);
@@ -105,6 +108,11 @@ public class RestResponseEntityExceptionHandler
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<JsonError> handleException(@NonNull final Exception e)
 	{
+		final ResponseStatus responseStatus = e.getClass().getAnnotation(ResponseStatus.class);
+		if (responseStatus != null)
+		{
+			return logAndCreateError(e, responseStatus.reason(), responseStatus.code());
+		}
 		return logAndCreateError(e, HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
