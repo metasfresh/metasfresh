@@ -1,94 +1,7 @@
 package de.metas.letters.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getPO;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLEditorKit;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
-import org.compiere.model.GridTab;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_A_Asset;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Campaign;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_C_Project;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_RMA;
-import org.compiere.model.I_R_Request;
-import org.compiere.model.Lookup;
-import org.compiere.model.MLookupFactory;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.MRequest;
-import org.compiere.model.MTable;
-import org.compiere.model.PO;
-import org.compiere.model.Query;
-import org.compiere.print.ReportEngine;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -107,6 +20,64 @@ import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_A_Asset;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Campaign;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_RMA;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.Lookup;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MOrderLine;
+import org.compiere.model.MRequest;
+import org.compiere.model.PO;
+import org.compiere.model.Query;
+import org.compiere.print.ReportEngine;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLEditorKit;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getPO;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -127,8 +98,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	public static final String FUNCTION_upperCase = "upperCase";
 	public static final String FUNCTION_lowerCase = "lowerCase";
 
-	private static CCache<Integer, MADBoilerPlate> s_cache = new CCache<>(Table_Name, 20);
+	private static final CCache<Integer, MADBoilerPlate> s_cache = new CCache<>(Table_Name, 20);
 
+	@Nullable
 	public static MADBoilerPlate get(final Properties ctx, final int AD_BoilerPlate_ID)
 	{
 		if (AD_BoilerPlate_ID <= 0)
@@ -167,8 +139,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				.executeSync()
 				.getProcessInfo();
 
-		final ReportEngine re = ReportEngine.get(ctx, pi);
-		return re;
+		return ReportEngine.get(ctx, pi);
 	}
 
 	public static File getPDF(final String fileNamePrefix, final String html, final BoilerPlateContext context)
@@ -233,7 +204,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
 		final Integer SalesRep_ID = context.getSalesRep_ID();
 		final MRequest requestRecord = new MRequest(Env.getCtx(),
-				SalesRep_ID == null ? 0 : SalesRep_ID.intValue(),
+				SalesRep_ID == null ? 0 : SalesRep_ID,
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForEMail),
 				email.getSubject(),
 				false, // isSelfService,
@@ -280,7 +251,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
 		final Integer SalesRep_ID = context.getSalesRep_ID();
 		final MRequest requestRecord = new MRequest(Env.getCtx(),
-				SalesRep_ID == null ? 0 : SalesRep_ID.intValue(),
+				SalesRep_ID == null ? 0 : SalesRep_ID,
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForLetter),
 				Services.get(IMsgBL.class).translate(Env.getCtx(), "de.metas.letter.RequestLetterSubject"),
 				false, // isSelfService,
@@ -374,14 +345,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		else if (parent_table_id == getTableId(I_C_OrderLine.class))
 		{
 			final MOrderLine oLine = new MOrderLine(Env.getCtx(), parent_record_id, null);
-			if (oLine != null)
-			{
-				rq.setC_Order_ID(oLine.getC_Order_ID());
-			}
+			rq.setC_Order_ID(oLine.getC_Order_ID());
 		}
 	}
 
-	public MADBoilerPlate(final Properties ctx, final int AD_BoilerPlate_ID, final String trxName)
+	public MADBoilerPlate(final Properties ctx, final int AD_BoilerPlate_ID, @Nullable final String trxName)
 	{
 		super(ctx, AD_BoilerPlate_ID, trxName);
 	}
@@ -391,24 +359,25 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		super(ctx, rs, trxName);
 	}
 
-	public static Query getByNameQuery(final Properties ctx, final String name, final String trxName)
+	private static Query getByNameQuery(final Properties ctx, final String name, @Nullable final String trxName)
 	{
 		final String whereClause = COLUMNNAME_Name + "=? AND AD_Client_ID=?";
 		return new Query(ctx, Table_Name, whereClause, trxName)
-				.setParameters(new Object[] { name, Env.getAD_Client_ID(ctx) });
+				.setParameters(name, Env.getAD_Client_ID(ctx));
 	}
 
-	public static int getIdByName(final Properties ctx, final String name, final String trxName)
+	public static int getIdByName(final Properties ctx, final String name, @Nullable final String trxName)
 	{
 		return getByNameQuery(ctx, name, trxName).firstIdOnly();
 	}
 
-	public static MADBoilerPlate getByName(final Properties ctx, final String name, final String trxName)
+	@Nullable
+	public static MADBoilerPlate getByName(final Properties ctx, final String name, @Nullable final String trxName)
 	{
 		return getByNameQuery(ctx, name, trxName).firstOnly();
 	}
 
-	public static KeyNamePair[] getDependsOn(final Properties ctx, final int AD_BoilerPlate_ID, final String trxName)
+	public static KeyNamePair[] getDependsOn(final Properties ctx, final int AD_BoilerPlate_ID, @Nullable final String trxName)
 	{
 		final String sql = "SELECT " + COLUMNNAME_AD_BoilerPlate_ID + "," + COLUMNNAME_Name
 				+ " FROM " + Table_Name
@@ -420,20 +389,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public KeyNamePair toKeyNamePair()
 	{
-		return new KeyNamePair(getAD_BoilerPlate_ID(), getName());
-	}
-
-	public static KeyNamePair[] getAllSnippetsKeyNamePair()
-	{
-		final List<MADBoilerPlate> allSnippets = getAll(Env.getCtx());
-		final KeyNamePair[] result = new KeyNamePair[allSnippets.size()];
-		final int i = 0;
-		for (final MADBoilerPlate bp : allSnippets)
-		{
-			s_cache.put(bp.getAD_BoilerPlate_ID(), bp);
-			result[i] = bp.toKeyNamePair();
-		}
-		return result;
+		return KeyNamePair.of(getAD_BoilerPlate_ID(), getName());
 	}
 
 	public static Lookup getAllLookup(final int windowNo)
@@ -460,28 +416,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return lookup;
 	}
 
-	/**
-	 * @return all snippets, ordered by name
-	 */
-	public static SortedMap<String, String> getAllSnippetsMap()
-	{
-		final SortedMap<String, String> result = new TreeMap<>();
-
-		for (final MADBoilerPlate boilerPlate : getAll(Env.getCtx()))
-		{
-			if (boilerPlate.getTextSnippet() != null)
-			{
-				result.put(boilerPlate.getName(), boilerPlate.getTextSnippet());
-			}
-			else
-			{
-				log.warn("boilerPlate entry '" + boilerPlate.getName() + "' has null value as snippet");
-				continue;
-			}
-		}
-		return result;
-	}
-
 	// TODO: cache it
 	public static List<MADBoilerPlate> getAll(final Properties ctx)
 	{
@@ -496,7 +430,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				.list(MADBoilerPlate.class);
 	}
 
-	private void checkCycles(int AD_BoilerPlate_ID, Collection<KeyNamePair> trace)
+	private void checkCycles(int AD_BoilerPlate_ID, @Nullable Collection<KeyNamePair> trace)
 	{
 		if (trace == null)
 		{
@@ -563,18 +497,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	/**
 	 * Get Parsed Text
 	 *
-	 * @param ctx
-	 * @param text
-	 * @param AD_Language
 	 * @param isEmbeded   will this text be embeded (i.e. shoud we strip html, head, body tags?
-	 * @param attrs       variables map. If null, no variable replacement will be made
-	 * @param trxName
-	 * @return
 	 */
+	@Nullable
 	public static String parseText(final Properties ctx, final String text,
 			final boolean isEmbeded,
 			final BoilerPlateContext context,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		if (text == null)
 		{
@@ -693,13 +622,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 	}
 
-	/**
-	 * @param AD_Language
-	 * @param isEmbeded
-	 * @param attrs
-	 * @return
-	 * @see #getTextSnippetParsed(String, boolean, Map) and consider isEmbeded = true
-	 */
+	@Nullable
 	public String getTextSnippetParsed(final BoilerPlateContext context)
 	{
 		return getTextSnippetParsed(false, context);
@@ -708,11 +631,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	/**
 	 * Get Parsed Text
 	 *
-	 * @param AD_Language
-	 * @param attrs       variables map. If null, no variable repacement will be made
 	 * @param isEmbeded   will this text be embeded (i.e. shoud we strip html, head, body tags?
 	 * @return parsed text
 	 */
+	@Nullable
 	public String getTextSnippetParsed(final boolean isEmbeded, final BoilerPlateContext context)
 	{
 		final String AD_Language = getAD_Language(Env.getCtx(), context);
@@ -797,13 +719,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	protected static String getTagName(final Matcher m)
 	{
 		final String[] parts = getTagString(m).split(FunctionSeparator);
-		return parts != null && parts.length > 0 ? parts[0] : "";
+		return parts.length > 0 ? parts[0] : "";
 	}
 
 	protected static String[] getTagNameAndFunctions(final Matcher m)
 	{
-		final String[] parts = getTagString(m).split(FunctionSeparator);
-		return parts;
+		return getTagString(m).split(FunctionSeparator);
 	}
 
 	public void rebuildReferences()
@@ -829,7 +750,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	/**
 	 * Create Context
 	 */
-	public static BoilerPlateContext createEditorContext(final SourceDocument sourceDocument)
+	public static BoilerPlateContext createEditorContext(@Nullable final SourceDocument sourceDocument)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -845,7 +766,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		int C_BPartner_ID = -1;
 		int C_BPartner_Location_ID = -1;
-		I_AD_User user = null;
+		final I_AD_User user;
 		final int AD_User_ID = sourceDocument != null ? sourceDocument.getFieldValueAsInt("AD_User_ID", -1) : -1;
 		String email = null;
 		//
@@ -941,6 +862,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return attributesBuilder.build();
 	}
 
+	@Nullable
 	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final I_C_BPartner bpartner)
 	{
 		final IUserBL userBL = Services.get(IUserBL.class);
@@ -978,9 +900,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	/**
 	 * Get Language from attributes
-	 *
-	 * @param attributes
-	 * @return
 	 */
 	public static String getAD_Language(final Properties ctx, final BoilerPlateContext context)
 	{
@@ -998,24 +917,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	@Override
 	public String toString()
 	{
-		final StringBuilder result = new StringBuilder();
-		result.append(super.toString());
-		result.append(' ');
-		result.append(getName());
-		result.append(" (");
-		result.append(getTextSnippet().substring(0, 20));
-		result.append("...)");
-		return result.toString();
+		return super.toString()
+				+ ' '
+				+ getName()
+				+ " ("
+				+ getTextSnippet().substring(0, 20)
+				+ "...)";
 	}
 
 	/**
 	 * Create record into T_BoilerPlate_Spool table
-	 *
-	 * @param ctx
-	 * @param AD_Client_ID
-	 * @param AD_PInstance_ID
-	 * @param text
-	 * @param trxName
 	 */
 	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final PInstanceId pinstanceId, final String text, final String trxName)
 	{
@@ -1160,6 +1071,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 
+		@Nullable
 		public SourceDocument getSourceDocumentOrNull()
 		{
 			return SourceDocument.toSourceDocumentOrNull(get(VAR_SourceDocument));
@@ -1184,7 +1096,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return new BoilerPlateContext(ImmutableMap.copyOf(attributes));
 			}
 
-			private void setAttribute(final String attributeName, final Object value)
+			private void setAttribute(final String attributeName, @Nullable final Object value)
 			{
 				if (value == null)
 				{
@@ -1202,7 +1114,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return this;
 			}
 
-			public Builder setSourceDocument(final SourceDocument sourceDocument)
+			public Builder setSourceDocument(@Nullable final SourceDocument sourceDocument)
 			{
 				setAttribute(VAR_SourceDocument, sourceDocument);
 				return this;
@@ -1258,12 +1170,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				setAttribute(VAR_AD_Org_ID, adOrgId);
 				return this;
 			}
-
-			public Builder setCustomAttribute(final String attributeName, final Object value)
-			{
-				setAttribute(attributeName, value);
-				return this;
-			}
 		}
 	}
 
@@ -1278,6 +1184,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		boolean hasFieldValue(String fieldName);
 
+		@Nullable
 		Object getFieldValue(String fieldName);
 
 		default int getFieldValueAsInt(final String fieldName, final int defaultValue)
@@ -1286,6 +1193,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			return value != null ? (int)value : defaultValue;
 		}
 
+		@Nullable
 		static SourceDocument toSourceDocumentOrNull(final Object obj)
 		{
 			if (obj == null)
@@ -1321,24 +1229,4 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			return po.get_Value(fieldName);
 		}
 	}
-
-	@AllArgsConstructor
-	private static final class GridTabSourceDocument implements SourceDocument
-	{
-		@NonNull
-		private final GridTab gridTab;
-
-		@Override
-		public boolean hasFieldValue(final String fieldName)
-		{
-			return gridTab.getField(fieldName) != null;
-		}
-
-		@Override
-		public Object getFieldValue(final String fieldName)
-		{
-			return gridTab.getValue(fieldName);
-		}
-	}
-
 }
