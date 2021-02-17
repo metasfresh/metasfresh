@@ -214,13 +214,24 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;
 	}
 
-	public void setPurchaseOrderLineIdAndMarkProcessed(@NonNull final OrderAndLineId purchaseOrderAndLineId)
+	public void setPurchaseOrderLineId(@NonNull final OrderAndLineId purchaseOrderAndLineId)
 	{
 		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
+	}
 
+	public void markPurchasedIfNeeded()
+	{
 		if (purchaseMatchesOrExceedsRequiredQty())
 		{
 			purchaseCandidate.markProcessed();
+		}
+	}
+
+	public void markReqCreatedIfNeeded()
+	{
+		if (purchaseMatchesOrExceedsRequiredQty())
+		{
+			purchaseCandidate.setReqCreated(true);
 		}
 	}
 }
