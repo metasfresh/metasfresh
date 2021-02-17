@@ -25,7 +25,6 @@ package org.adempiere.ad.table.api;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,8 +48,6 @@ public interface IADTableDAO extends ISingletonService
 	I_AD_Column retrieveColumn(String tableName, String columnName);
 
 	I_AD_Column retrieveColumn(AdTableId tableId, String columnName);
-
-	AdColumnId retrieveColumnId(AdTableId tableId, String columnName);
 
 	/**
 	 * @return the element with the given <code>columnName</code> or <code>null</code>. Note that {@link I_AD_Element#COLUMNNAME_ColumnName} is unique.
@@ -94,8 +91,6 @@ public interface IADTableDAO extends ISingletonService
 	 * @return AD_Table_ID or -1
 	 */
 	int retrieveTableId(String tableName);
-
-	AdTableId retrieveAdTableId(String tableName);
 
 	List<I_AD_Table> retrieveAllTables(Properties ctx, String trxName);
 

@@ -58,12 +58,11 @@ public class ShipmentCandidatesRestController
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@ApiParam("Max number orders per request for which shipmentSchedules shall be returned.\n"
-					+ "ShipmentSchedules without an order count as one.") //
-			@RequestParam(name = "limit", required = false, defaultValue = "10") //
+			@ApiParam("Max number of items to be returned in one request.") //
+			@RequestParam(name = "limit", required = false, defaultValue = "500") //
 			@Nullable final Integer limit)
 	{
-		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(10);
+		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(500);
 		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(limitEff);
 		return ResponseEntity.ok(result);
 	}

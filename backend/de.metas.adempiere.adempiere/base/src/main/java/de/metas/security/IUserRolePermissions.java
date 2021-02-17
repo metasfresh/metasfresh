@@ -23,8 +23,6 @@ import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
 
-import javax.annotation.Nullable;
-
 public interface IUserRolePermissions
 {
 	Permission PERMISSION_AccessAllOrgs = ResourceAsPermission.ofName("IsAccessAllOrgs");
@@ -104,8 +102,8 @@ public interface IUserRolePermissions
 	/*************************************************************************
 	 * Appends where clause to SQL statement for Table
 	 *
-	 * @param sql existing SQL statement
-	 * @param tableNameIn Table Name or list of table names AAA, BBB or AAA a, BBB b
+	 * @param SQL existing SQL statement
+	 * @param TableNameIn Table Name or list of table names AAA, BBB or AAA a, BBB b
 	 * @param fullyQualified fullyQualified names
 	 * @param access read/write; if read, includes System Data
 	 * @return updated SQL statement
@@ -157,7 +155,7 @@ public interface IUserRolePermissions
 	 * @param Record_ID record id
 	 * @return true if you can view
 	 *
-	 * @deprecated consider using {@link #checkCanView(ClientId, OrgId, int, int)}
+	 * @deprecated consider using {@link #checkCanView(int, int, int, int)}
 	 **/
 	@Deprecated
 	boolean canView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
@@ -165,6 +163,10 @@ public interface IUserRolePermissions
 	/**
 	 * Checks if given record can be viewed by this role.
 	 *
+	 * @param clientId
+	 * @param orgId
+	 * @param AD_Table_ID
+	 * @param Record_ID
 	 * @return error message or <code>null</code> if it's OK and can be viewed
 	 */
 	String checkCanView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
@@ -205,9 +207,9 @@ public interface IUserRolePermissions
 
 	boolean isOrgAccess(OrgId OrgId, Access access);
 
-	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
+	String getClientWhere(String tableName, String tableAlias, Access access);
 
-	String getOrgWhere(@Nullable String tableName, Access access);
+	String getOrgWhere(String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 

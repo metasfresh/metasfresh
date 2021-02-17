@@ -1,6 +1,15 @@
 package de.metas.bpartner.service;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.organization.OrgId;
@@ -10,12 +19,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.Set;
-
-import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -61,9 +64,6 @@ public class BPartnerQuery
 
 	boolean failIfNotExists;
 
-	@Nullable
-	Boolean userSalesRepSet;
-
 	@Builder(toBuilder = true)
 	private BPartnerQuery(
 			@Nullable final BPartnerId bPartnerId,
@@ -74,8 +74,7 @@ public class BPartnerQuery
 			//
 			@NonNull @Singular final Set<OrgId> onlyOrgIds,
 			//
-			@Nullable final Boolean failIfNotExists,
-			@Nullable final Boolean userSalesRepSet)
+			@Nullable final Boolean failIfNotExists)
 	{
 
 		this.bPartnerId = bPartnerId;
@@ -87,8 +86,6 @@ public class BPartnerQuery
 		this.onlyOrgIds = ImmutableSet.copyOf(onlyOrgIds);
 
 		this.failIfNotExists = coalesce(failIfNotExists, false);
-
-		this.userSalesRepSet = userSalesRepSet;
 
 		validate();
 	}
@@ -107,8 +104,7 @@ public class BPartnerQuery
 				&& Check.isEmpty(bpartnerValue, true)
 				&& Check.isEmpty(bpartnerName, true)
 				&& externalId == null
-				&& Check.isEmpty(glns)
-				&& userSalesRepSet == null;
+				&& Check.isEmpty(glns);
 	}
 
 	public BPartnerQuery withNoGLNs()

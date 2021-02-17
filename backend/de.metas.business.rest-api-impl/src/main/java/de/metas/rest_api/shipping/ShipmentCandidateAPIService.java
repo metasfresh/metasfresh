@@ -602,7 +602,7 @@ class ShipmentCandidateAPIService
 				.map(OrderAndLineId::getOrderId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return queryBL.createQueryBuilder(I_C_Order.class)
+		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
@@ -610,6 +610,7 @@ class ShipmentCandidateAPIService
 				.collect(ImmutableMap.toImmutableMap(
 						orderRecord -> OrderId.ofRepoId(orderRecord.getC_Order_ID()),
 						Function.identity()));
+		return orderIdToOrderRecord;
 	}
 
 	@NonNull
@@ -686,11 +687,10 @@ class ShipmentCandidateAPIService
 				.build();
 
 		final List<ShipmentSchedule> shipmentSchedulesOrderedByOrderId = shipmentScheduleRepository.getBy(shipmentScheduleQuery);
-		final List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
+		List<ShipmentSchedule> schedulesToBeExported = new ArrayList<>();
 
-		// add possible shipmentSchedule which don't reference an order
 		int counter = 0;
-		for (final ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
+		for (ShipmentSchedule schedule : shipmentSchedulesOrderedByOrderId)
 		{
 			if (schedule.getOrderAndLineId() == null && counter < limit.toInt() - 1)
 			{
@@ -702,30 +702,26 @@ class ShipmentCandidateAPIService
 				break;
 			}
 		}
-		logger.info("loadShipmentSchedulesToExport - Added {} shipmentSchedules that have no C_Order_ID", schedulesToBeExported.size());
-		if (counter >= limit.toInt())
+
+		if (counter == limit.toInt())
 		{
 			return schedulesToBeExported;
 		}
 
-		// add shipmentSchedules which reference an oder
 		final List<ShipmentSchedule> nonNullOrderShipmentSchedules = shipmentSchedulesOrderedByOrderId.stream()
 				.filter(sched -> sched.getOrderAndLineId() != null)
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableListMultimap<OrderId, ShipmentSchedule> schedulesForOrderIds = Multimaps.index(nonNullOrderShipmentSchedules, sched -> sched.getOrderAndLineId().getOrderId());
+
 		int ordersLeftToExport = limit.toInt() - counter;
 
-		final ImmutableSet<OrderId> orderIds = schedulesForOrderIds.keySet();
-		logger.info("loadShipmentSchedulesToExport - the exportable shipmentSchedules have {} different C_Order_IDs; ordersLeftToExport={}", orderIds.size(), ordersLeftToExport);
+		final UnmodifiableIterator<OrderId> orderIdIterator = schedulesForOrderIds.keySet().iterator();
 
-		final UnmodifiableIterator<OrderId> orderIdIterator = orderIds.iterator();
 		while (orderIdIterator.hasNext() && ordersLeftToExport > 0)
 		{
 			final OrderId currentOrderId = orderIdIterator.next();
-			final ImmutableList<ShipmentSchedule> shipmentSchedules = schedulesForOrderIds.get(currentOrderId);
-			schedulesToBeExported.addAll(shipmentSchedules);
-			logger.info("loadShipmentSchedulesToExport - Added {} shipmentSchedules for C_Order_ID={} to the schedulesToBeExported", shipmentSchedules.size(), currentOrderId.getRepoId());
+			schedulesToBeExported.addAll(schedulesForOrderIds.get(currentOrderId));
 			ordersLeftToExport--;
 		}
 

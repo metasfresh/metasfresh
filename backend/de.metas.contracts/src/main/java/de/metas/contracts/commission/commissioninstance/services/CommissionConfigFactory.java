@@ -33,17 +33,11 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product_Category;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
@@ -153,107 +147,103 @@ public class CommissionConfigFactory
 			@NonNull final BPartnerId customerBPartnerId,
 			@NonNull final ProductId salesProductId)
 	{
-		try (final MDCCloseable ignore = MDC.putCloseable("salesProductId", Integer.toString(RepoIdAwares.toRepoId(salesProductId)));
-				final MDCCloseable ignore1 = MDC.putCloseable("customerBPartnerId", Integer.toString(RepoIdAwares.toRepoId(customerBPartnerId))))
+		final StagingData stagingData = commissionConfigStagingDataService.retrieveStagingData(termRecords);
+
+		final ImmutableListMultimap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = stagingData.getBPartnerId2FlatrateTermIds();
+		final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = stagingData.getConditionRecordId2BPartnerIds();
+
+		final ProductCategoryId salesProductCategory = productDAO.retrieveProductCategoryByProductId(salesProductId);
+		final BPGroupId customerGroupId = bPartnerDAO.getBPGroupIdByBPartnerId(customerBPartnerId);
+
+		final ImmutableSet<Entry<Integer, Collection<Integer>>> settingsIdWithTermId = stagingData.getSettingsId2termIds()
+				.asMap()
+				.entrySet();
+
+		final ArrayList<HierarchyConfig> hierarchyConfigs = new ArrayList<>();
+
+		// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method. or with big "request"-classes that i use as params.
+		for (final Entry<Integer, Collection<Integer>> settingsId2TermsIds : settingsIdWithTermId)
 		{
-			final StagingData stagingData = commissionConfigStagingDataService.retrieveStagingData(termRecords);
+			final Integer settingsId = settingsId2TermsIds.getKey();
 
-			final ImmutableListMultimap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = stagingData.getBPartnerId2FlatrateTermIds();
-			final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = stagingData.getConditionRecordId2BPartnerIds();
-
-			final ProductCategoryId salesProductCategoryId = productDAO.retrieveProductCategoryByProductId(salesProductId);
-			final BPGroupId customerGroupId = bPartnerDAO.getBPGroupIdByBPartnerId(customerBPartnerId);
-
-			final ImmutableSet<Entry<Integer, Collection<Integer>>> settingsIdWithTermId = stagingData.getSettingsId2termIds()
-					.asMap()
-					.entrySet();
-
-			final ArrayList<HierarchyConfig> hierarchyConfigs = new ArrayList<>();
-
-			// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method. or with big "request"-classes that i use as params.
-			for (final Entry<Integer, Collection<Integer>> settingsId2TermsIds : settingsIdWithTermId)
+			final I_C_HierarchyCommissionSettings settingsRecord = stagingData.getId2SettingsRecord().get(settingsId);
+			try (final MDCCloseable settingsRecordMDC = TableRecordMDC.putTableRecordReference(settingsRecord))
 			{
-				final Integer settingsId = settingsId2TermsIds.getKey();
+				final HierarchyConfigBuilder builder = HierarchyConfig
+						.builder()
+						.id(HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()))
+						.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
+						.subtractLowerLevelCommissionFromBase(settingsRecord.isSubtractLowerLevelCommissionFromBase());
 
-				final I_C_HierarchyCommissionSettings settingsRecord = stagingData.getId2SettingsRecord().get(settingsId);
-				try (final MDCCloseable ignore2 = TableRecordMDC.putTableRecordReference(settingsRecord))
+				for (final Integer termRepoId : settingsId2TermsIds.getValue())
 				{
-					final HierarchyConfigBuilder builder = HierarchyConfig
-							.builder()
-							.id(HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()))
-							.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
-							.subtractLowerLevelCommissionFromBase(settingsRecord.isSubtractLowerLevelCommissionFromBase());
-
-					for (final Integer termRepoId : settingsId2TermsIds.getValue())
+					final I_C_Flatrate_Term termRecord = stagingData.getId2TermRecord().get(termRepoId);
+					try (final MDCCloseable termRecordMDC = TableRecordMDC.putTableRecordReference(termRecord))
 					{
-						final I_C_Flatrate_Term termRecord = stagingData.getId2TermRecord().get(termRepoId);
-						try (final MDCCloseable ignore3 = TableRecordMDC.putTableRecordReference(termRecord))
+						final FlatrateTermId termId = FlatrateTermId.ofRepoId(termRepoId);
+
+						final ImmutableList<BPartnerId> bPartnerIds = conditionRecordId2BPartnerIds.get(termRecord.getC_Flatrate_Conditions_ID());
+						for (final BPartnerId bPartnerId : bPartnerIds)
 						{
-							final FlatrateTermId termId = FlatrateTermId.ofRepoId(termRepoId);
-
-							final ImmutableList<BPartnerId> bPartnerIds = conditionRecordId2BPartnerIds.get(termRecord.getC_Flatrate_Conditions_ID());
-							for (final BPartnerId bPartnerId : bPartnerIds)
+							if (!bPartnerId2FlatrateTermIds.get(bPartnerId).contains(termId))
 							{
-								if (!bPartnerId2FlatrateTermIds.get(bPartnerId).contains(termId))
-								{
-									continue;
-								}
-								final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
-										.id(termId)
-										.isSimulation(termRecord.isSimulation())
-										.pointsPrecision(settingsRecord.getPointsPrecision());
+								continue;
+							}
+							final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
+									.id(termId)
+									.isSimulation(termRecord.isSimulation())
+									.pointsPrecision(settingsRecord.getPointsPrecision());
 
-								boolean foundMatchingSettingsLine = false;
-								final ImmutableListMultimap<Integer, Integer> settingsId2settingsLineIds = stagingData.getSettingsId2settingsLineIds();
-								for (final Integer settingsLineId : settingsId2settingsLineIds.get(settingsId))
+							boolean foundMatchingSettingsLine = false;
+							final ImmutableListMultimap<Integer, Integer> settingsId2settingsLineIds = stagingData.getSettingsId2settingsLineIds();
+							for (final Integer settingsLineId : settingsId2settingsLineIds.get(settingsId))
+							{
+								final I_C_CommissionSettingsLine settingsLineRecord = stagingData.getId2SettingsLineRecord().get(settingsLineId);
+								try (final MDCCloseable settingsLineRecordMDC = TableRecordMDC.putTableRecordReference(settingsLineRecord))
 								{
-									final I_C_CommissionSettingsLine settingsLineRecord = stagingData.getId2SettingsLineRecord().get(settingsLineId);
-									try (final MDCCloseable ignore4 = TableRecordMDC.putTableRecordReference(settingsLineRecord))
+									final boolean settingsLineMatches = settingsLineRecordMatches(
+											salesProductCategory,
+											customerGroupId,
+											customerBPartnerId,
+											settingsLineRecord);
+									if (settingsLineMatches)
 									{
-										final boolean settingsLineMatches = settingsLineRecordMatches(
-												salesProductCategoryId,
-												customerGroupId,
-												customerBPartnerId,
-												settingsLineRecord);
-										if (settingsLineMatches)
-										{
-											logger.debug("Settings line matches; -> commissionPercent={}", settingsLineRecord.getPercentOfBasePoints());
-											contractBuilder
-													.commissionSettingsLineId(CommissionSettingsLineId.ofRepoId(settingsLineRecord.getC_CommissionSettingsLine_ID()))
-													.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
-											foundMatchingSettingsLine = true;
-											break;
-										}
+										logger.debug("Settings line matches; -> commissionPercent={}", settingsLineRecord.getPercentOfBasePoints());
+										contractBuilder
+												.commissionSettingsLineId(CommissionSettingsLineId.ofRepoId(settingsLineRecord.getC_CommissionSettingsLine_ID()))
+												.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
+										foundMatchingSettingsLine = true;
+										break;
 									}
 								}
-								if (foundMatchingSettingsLine)
-								{
-									builder.beneficiary2HierarchyContract(Beneficiary.of(bPartnerId), contractBuilder);
-								}
+							}
+							if (foundMatchingSettingsLine)
+							{
+								builder.beneficiary2HierarchyContract(Beneficiary.of(bPartnerId), contractBuilder);
 							}
 						}
 					}
-
-					final HierarchyConfig config = builder.build();
-					if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
-					{
-						hierarchyConfigs.add(config);
-					}
 				}
-			}
 
-			// finally index the configs by contract-Id
-			final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> result = ImmutableMap.<FlatrateTermId, CommissionConfig>builder();
-			for (final HierarchyConfig hierarchyConfig : hierarchyConfigs)
-			{
-				final int settingsRepoId = hierarchyConfig.getId().getRepoId();
-				for (final Integer contractId : stagingData.getSettingsId2termIds().get(settingsRepoId))
+				final HierarchyConfig config = builder.build();
+				if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
 				{
-					result.put(FlatrateTermId.ofRepoId(contractId), hierarchyConfig);
+					hierarchyConfigs.add(config);
 				}
 			}
-			return result.build();
 		}
+
+		// finally index the configs by contract-Id
+		final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> result = ImmutableMap.<FlatrateTermId, CommissionConfig> builder();
+		for (final HierarchyConfig hierarchyConfig : hierarchyConfigs)
+		{
+			final int settingsRepoId = hierarchyConfig.getId().getRepoId();
+			for (final Integer contractId : stagingData.getSettingsId2termIds().get(settingsRepoId))
+			{
+				result.put(FlatrateTermId.ofRepoId(contractId), hierarchyConfig);
+			}
+		}
+		return result.build();
 	}
 
 	private boolean settingsLineRecordMatches(
@@ -262,27 +252,27 @@ public class CommissionConfigFactory
 			@NonNull final BPartnerId customerPartnerId,
 			@NonNull final I_C_CommissionSettingsLine settingsLineRecord)
 	{
+
 		final ProductCategoryId settingsProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
-		String logMessagePrefix = new StringBuilder("SeqNo ").append(settingsLineRecord.getSeqNo()).append(": ").toString();
+		StringBuilder logMessage = new StringBuilder("SeqNo ").append(settingsLineRecord.getSeqNo()).append(": ");
 		final boolean productMatches;
 		if (settingsProductCategoryId == null)
 		{
-			logger.debug(logMessagePrefix + "settingsProductCategoryId is null; ->productMatches=true;");
+			logMessage.append("settingsProductCategoryId is null; ->productMatches=true;");
 			productMatches = true;
 		}
 		else
 		{
 			final boolean productCategoryIdEquals = settingsProductCategoryId.equals(salesProductCategoryId);
 			productMatches = settingsLineRecord.isExcludeProductCategory() ? !productCategoryIdEquals : productCategoryIdEquals;
-			logger.debug(logMessagePrefix + "settingsProductCategoryId={} and salesProductCategoryId={} match={}; excludeProductCategory={}; -> productMatches={}",
-					RepoIdAwares.toRepoId(settingsProductCategoryId), RepoIdAwares.toRepoId(salesProductCategoryId), productCategoryIdEquals, settingsLineRecord.isExcludeProductCategory(), productMatches);
+			logger.debug("productCategoryIds match and excludeProductCategory={}; -> productMatches={}",settingsLineRecord.isExcludeProductCategory(),productMatches);
 		}
 		final boolean customerMatches;
 		final BPGroupId settingsCustomerGroupId = BPGroupId.ofRepoIdOrNull(settingsLineRecord.getCustomer_Group_ID());
 		final BPartnerId settingsCustomerId = BPartnerId.ofRepoIdOrNull(settingsLineRecord.getC_BPartner_Customer_ID());
 		if (settingsCustomerGroupId == null && settingsCustomerId == null)
 		{
-			logger.debug(logMessagePrefix + "settingsCustomerGroupId and settingsCustomerId are null; => customerMatches=true");
+			logger.debug("settingsCustomerGroupId and settingsCustomerId are null; => customerMatches=true");
 			customerMatches = true;
 		}
 		else
@@ -291,12 +281,10 @@ public class CommissionConfigFactory
 			final boolean partnerIdEquals = Objects.equals(settingsCustomerId, customerPartnerId);
 			final boolean groupOrPartnerEquals = groupIdEquals || partnerIdEquals;
 			customerMatches = settingsLineRecord.isExcludeBPGroup() ? !groupOrPartnerEquals : groupOrPartnerEquals;
-			logger.debug(logMessagePrefix + "settingsCustomerGroupId={} and customerGroupId={} match={}; settingsCustomerId={} and customerPartnerId{} match={}; excludeBPGroup={}; -> customerMatches={}",
-					RepoIdAwares.toRepoId(settingsCustomerGroupId), RepoIdAwares.toRepoId(customerGroupId), groupIdEquals, RepoIdAwares.toRepoId(settingsCustomerId), RepoIdAwares.toRepoId(customerPartnerId), partnerIdEquals, settingsLineRecord.isExcludeBPGroup(), customerMatches);
-		}
+			logger.debug("bpartnerGroupIds match={}; partnerIds match={}; excludeBPGroup={}; -> customerMatches={}",groupIdEquals,partnerIdEquals,settingsLineRecord.isExcludeBPGroup(), customerMatches);}
 
 		final boolean settingsLineMatches = customerMatches && productMatches;
-		logger.debug(logMessagePrefix + "customerMatches={}; productMatches={}; -> settingsLineMatches={}", customerMatches, productMatches, settingsLineMatches);
+		logger.debug("customerMatches={}; productMatches={}; -> settingsLineMatches={}", customerMatches, productMatches, settingsLineMatches);
 		return settingsLineMatches;
 	}
 
@@ -307,15 +295,11 @@ public class CommissionConfigFactory
 		@NonNull
 		BPartnerId salesRepBPartnerId;
 
-		/**
-		 * Needed because config settings can be specific to the customer's group.
-		 */
+		/** Needed because config settings can be specific to the customer's group. */
 		@NonNull
 		BPartnerId customerBPartnerId;
 
-		/**
-		 * Needed because config settings can be specific to the product's category.
-		 */
+		/** Needed because config settings can be specific to the product's category. */
 		@NonNull
 		ProductId salesProductId;
 

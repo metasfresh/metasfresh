@@ -96,8 +96,8 @@ public class CommissionConfigStagingDataService
 		// 2. create additional mappings between different records' IDs
 		//
 		final ListMultimap<Integer, Integer> settingsId2termIds = MultimapBuilder.hashKeys().arrayListValues().build();
-		final ImmutableListMultimap.Builder<Integer, BPartnerId> conditionRecordId2BPartnerIds = ImmutableListMultimap.builder();
-		final ImmutableListMultimap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableListMultimap.builder();
+		final ImmutableListMultimap.Builder<Integer, BPartnerId> conditionRecordId2BPartnerIds = ImmutableListMultimap.<Integer, BPartnerId> builder();
+		final ImmutableListMultimap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableListMultimap.<BPartnerId, FlatrateTermId> builder();
 
 		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
 		{
@@ -113,7 +113,7 @@ public class CommissionConfigStagingDataService
 		}
 
 		final ImmutableListMultimap.Builder<Integer, Integer> settingsId2settingsLineIds = ImmutableListMultimap
-				.builder(); // the list is and arraylist, so the settingsLines' ordering is preserved
+				.<Integer, Integer> builder(); // the list is and arraylist, so the settingsLines' ordering is preserved
 		for (final I_C_CommissionSettingsLine settingsLineRecord : settingsLineRecords)
 		{
 			settingsId2settingsLineIds.put(settingsLineRecord.getC_HierarchyCommissionSettings_ID(), settingsLineRecord.getC_CommissionSettingsLine_ID());
@@ -144,7 +144,7 @@ public class CommissionConfigStagingDataService
 	{
 		final Collection<List<I_C_CommissionSettingsLine>> allRecords = commissionSettingsLineRecordCache.getAllOrLoad(
 				settingsRecordIds,
-				this::retrieveHierarchySettings0);
+				notYetCachedIds -> retrieveHierarchySettings0(notYetCachedIds));
 
 		return allRecords
 				.stream()
@@ -162,7 +162,7 @@ public class CommissionConfigStagingDataService
 				.create()
 				.list();
 
-		final HashMap<Integer, List<I_C_CommissionSettingsLine>> result = new HashMap<>();
+		HashMap<Integer, List<I_C_CommissionSettingsLine>> result = new HashMap<Integer, List<I_C_CommissionSettingsLine>>();
 		for (final I_C_CommissionSettingsLine settingsLineRecord : settingsLineRecords)
 		{
 			final List<I_C_CommissionSettingsLine> settingsLines = result.computeIfAbsent(settingsLineRecord.getC_HierarchyCommissionSettings_ID(), ignored -> new ArrayList<I_C_CommissionSettingsLine>());

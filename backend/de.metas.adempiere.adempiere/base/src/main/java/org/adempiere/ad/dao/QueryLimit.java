@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -64,7 +62,7 @@ public final class QueryLimit
 		}
 	}
 
-	public static QueryLimit ofNullableOrNoLimit(@Nullable final Integer limit)
+	public static QueryLimit ofNullableOrNoLimit(final Integer limit)
 	{
 		return limit != null ? ofInt(limit) : NO_LIMIT;
 	}

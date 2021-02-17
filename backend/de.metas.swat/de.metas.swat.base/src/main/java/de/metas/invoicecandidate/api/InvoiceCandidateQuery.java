@@ -6,8 +6,6 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import de.metas.lang.SOTrx;
-import de.metas.util.time.InstantInterval;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.bpartner.BPartnerId;
@@ -32,10 +30,6 @@ public class InvoiceCandidateQuery
 	BPartnerId billBPartnerId;
 	LocalDate dateToInvoice;
 	String headerAggregationKey;
-	BPartnerId salesRepBPartnerId;
-	InstantInterval dateOrderedInterval;
-
-	SOTrx soTrx;
 
 	// Any of the following properties may or may not be part of a valid query.
 	InvoiceCandidateId excludeC_Invoice_Candidate_ID;
@@ -50,12 +44,9 @@ public class InvoiceCandidateQuery
 			@Nullable final ExternalHeaderIdWithExternalLineIds externalIds,
 			@Nullable final BPartnerId billBPartnerId,
 			@Nullable final LocalDate dateToInvoice,
-			@Nullable final BPartnerId salesRepBPartnerId,
-			@Nullable final InstantInterval dateOrderedInterval,
 			@Nullable final String headerAggregationKey,
 			@Nullable final InvoiceCandidateId excludeC_Invoice_Candidate_ID,
 			@Nullable final InvoiceCandidateId maxManualC_Invoice_Candidate_ID,
-			@Nullable final SOTrx soTrx,
 			@Nullable final Boolean processed,
 			@Nullable final Boolean error)
 	{
@@ -64,12 +55,9 @@ public class InvoiceCandidateQuery
 		this.externalIds = externalIds;
 		this.billBPartnerId = billBPartnerId;
 		this.dateToInvoice = dateToInvoice;
-		this.salesRepBPartnerId = salesRepBPartnerId;
-		this.dateOrderedInterval = dateOrderedInterval;
 		this.headerAggregationKey = headerAggregationKey;
 		this.excludeC_Invoice_Candidate_ID = excludeC_Invoice_Candidate_ID;
 		this.maxManualC_Invoice_Candidate_ID = maxManualC_Invoice_Candidate_ID;
-		this.soTrx = soTrx;
 		this.processed = processed;
 		this.error = error;
 
@@ -85,13 +73,11 @@ public class InvoiceCandidateQuery
 				&& externalIds == null
 				&& billBPartnerId == null
 				&& dateToInvoice == null
-				&& salesRepBPartnerId == null
-				&& dateOrderedInterval == null
 				&& isEmpty(headerAggregationKey, true))
 		{
 			throw new AdempiereException("Invalid invoiceCandidateQuery. "
 					+ "To restrict the number of results, at least one of the following properties has to be specified: "
-					+ "invoiceCandidateId or externalIds or billBPartnerId or dateToInvoice or headerAggregationKey or salesRepBPartnerId or dateOrderedInterval")
+					+ "invoiceCandidateId or externalIds or billBPartnerId or dateToInvoice or headerAggregationKey")
 							.appendParametersToMessage()
 							.setParameter("invoiceCandidateQuery", this);
 		}
@@ -103,12 +89,9 @@ public class InvoiceCandidateQuery
 				.orgId(orgId)
 				.billBPartnerId(billBPartnerId)
 				.dateToInvoice(dateToInvoice)
-				.salesRepBPartnerId(salesRepBPartnerId)
-				.dateOrderedInterval(dateOrderedInterval)
 				.headerAggregationKey(headerAggregationKey)
 				.excludeC_Invoice_Candidate_ID(excludeC_Invoice_Candidate_ID)
 				.maxManualC_Invoice_Candidate_ID(maxManualC_Invoice_Candidate_ID)
-				.soTrx(soTrx)
 				.processed(processed)
 				.error(error)
 				.build();
@@ -127,4 +110,5 @@ public class InvoiceCandidateQuery
 		}
 		return orgId;
 	}
+
 }

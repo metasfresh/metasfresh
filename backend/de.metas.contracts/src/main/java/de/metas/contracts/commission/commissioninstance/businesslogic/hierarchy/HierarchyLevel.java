@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -33,7 +32,7 @@ import lombok.Value;
  */
 
 @Value
-public class HierarchyLevel implements Comparable<HierarchyLevel>
+public class HierarchyLevel
 {
 	public static final HierarchyLevel ZERO = of(0);
 
@@ -60,11 +59,5 @@ public class HierarchyLevel implements Comparable<HierarchyLevel>
 	public HierarchyLevel incByOne()
 	{
 		return of(this.toInt() + 1);
-	}
-
-	@Override
-	public int compareTo(@NonNull final HierarchyLevel other)
-	{
-		return Integer.compare(this.level, other.level);
 	}
 }
