@@ -8,6 +8,7 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -257,7 +258,7 @@ public class InventoryImportProcessTest
 					.ctx(Env.getCtx())
 					.name("Inventory DocType for " + orgId)
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-					.docSubType(null)
+					.docSubType(InventoryDocSubType.AggregatedHUInventory.getCode())
 					.adOrgId(orgId.getRepoId())
 					.build());
 		}
