@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+import { reaction } from 'mobx';
 import { observer, inject } from 'mobx-react';
 
 import { translate } from '../utils/translate';
@@ -15,6 +16,8 @@ interface Props {
 @inject('store')
 @observer
 class DailyNav extends React.Component<Props> {
+  private navigationReaction;
+
   componentDidMount(): void {
     const { store, isStatic } = this.props;
 
@@ -26,15 +29,19 @@ class DailyNav extends React.Component<Props> {
 
       store.fetchDailyReport(store.app.currentDay);
     }
+
+    this.navigationReaction = reaction(
+      () => store.i18n.messages,
+      (messages) => {
+        const translatedCaption = messages['DailyReportingView.caption'];
+
+        store.navigation.setViewNames(translatedCaption);
+      }
+    );
   }
 
-  componentDidUpdate(): void {
-    const { store } = this.props;
-    const translatedCaption = translate('DailyReportingView.caption');
-    if (this['updatedCaption'] !== translatedCaption) {
-      store.navigation.setViewNames(translatedCaption);
-      this['updatedCaption'] = translatedCaption;
-    }
+  componentWillUnmount(): void {
+    this.navigationReaction();
   }
 
   updateCurrentDay = (to: string): void => {
