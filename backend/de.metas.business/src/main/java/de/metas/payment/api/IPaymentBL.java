@@ -26,6 +26,7 @@
 package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -146,4 +147,6 @@ public interface IPaymentBL extends ISingletonService
 	TenderType getTenderType(@NonNull BankAccountId bankAccountId);
 
 	Optional<PaymentId> getByExtIdOrgId(ExternalId externalId, OrgId orgId);
+
+	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
 }

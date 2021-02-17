@@ -1,0 +1,5 @@
+-- 2021-02-01T12:42:24.540Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2021-02-01 14:42:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=256
+;
+

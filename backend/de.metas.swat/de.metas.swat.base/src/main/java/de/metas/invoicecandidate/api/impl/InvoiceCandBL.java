@@ -856,12 +856,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void invalidateForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
+	public void invalidateForInvoiceSchedule(@NonNull final I_C_InvoiceSchedule invoiceSchedule)
 	{
-		final List<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDAO.retrieveForInvoiceSchedule(invoiceSchedule);
+		final Iterator<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDAO.retrieveForInvoiceSchedule(invoiceSchedule);
 
-		for (final I_C_Invoice_Candidate ic : candsForBPartner)
+		while (candsForBPartner.hasNext())
 		{
+			final I_C_Invoice_Candidate ic = candsForBPartner.next();
 			invoiceCandDAO.invalidateCand(ic);
 		}
 	}

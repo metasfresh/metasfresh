@@ -1611,6 +1611,10 @@ public class TimeUtil
 		return localDate;
 	}
 
+	/**
+	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
+	 */
+	@Deprecated
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
@@ -1656,7 +1660,14 @@ public class TimeUtil
 				: null;
 	}
 
+	@Deprecated
 	@Nullable
+	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime)
+	{
+		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
+	}
+
+
 	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1896,7 +1907,6 @@ public class TimeUtil
 			@Nullable final Instant instant1,
 			@Nullable final Instant instant2)
 	{
-
 		if (instant1 == null)
 		{
 			return instant2;
@@ -1913,8 +1923,35 @@ public class TimeUtil
 		{
 			return instant2;
 		}
-
 	}
+
+	@Nullable
+	public static LocalDate maxOfNullables(
+			@Nullable final LocalDate d1,
+			@Nullable final LocalDate d2)
+	{
+		if (d1 == null)
+		{
+			return d2;
+		}
+		else if (d2 == null)
+		{
+			return d1;
+		}
+		else
+		{
+			return max(d1, d2);
+		}
+	}
+
+	public static LocalDate max(
+			@NonNull final LocalDate d1,
+			@NonNull final LocalDate d2)
+	{
+
+		return d1.isAfter(d2) ? d1 : d2;
+	}
+
 
 	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
 	{

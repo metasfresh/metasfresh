@@ -76,8 +76,6 @@ public class InvoiceToAllocate
 	@NonNull
 	Amount grandTotal;
 	@NonNull
-	Amount grandTotalConverted;
-	@NonNull
 	Amount openAmountConverted;
 	@NonNull
 	Amount discountAmountConverted;

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-edi
+  ~ %%
+  ~ Copyright (C) 2021 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:erpel="http://erpel.at/schemas/1p0/messaging/message" xmlns:header="http://erpel.at/schemas/1p0/messaging/header" xmlns:body="http://erpel.at/schemas/1p0/messaging/body" xmlns:document="http://erpel.at/schemas/1p0/documents" targetNamespace="http://erpel.at/schemas/1p0/messaging/message" elementFormDefault="qualified" attributeFormDefault="qualified">
+	<xs:annotation>
+		<xs:documentation>
+			ERPEL message version: 1p0
+			last update: 2017-03-01
+			last update by: pl
+			documentation: https://docs.ecosio.com (ask contact (at) ecosio.com for access credentials)
+		</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://erpel.at/schemas/1p0/messaging/header" schemaLocation="EBDH.xsd"/>
+	<xs:import namespace="http://erpel.at/schemas/1p0/documents" schemaLocation="Document.xsd"/>
+	<!-- ROOT Element -->
+	<xs:element name="ErpelMessage" type="erpel:ErpelMessageType">
+		<xs:annotation>
+			<xs:documentation>An ERPEL message serves as a container for ERPEL documents. It is structured similar to a SOAP message, comprising a header and a body part. The header part is represented by an ErpelBusinessDocumentHeader containing routing- and meta-information.
+				The actual documents are located under Document.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<!-- Element declarations -->
+	<!-- Attribute declarations -->
+	<!-- Simple types -->
+	<!-- Complex types -->
+	<xs:complexType name="ErpelMessageType">
+		<xs:sequence>
+			<xs:element ref="header:ErpelBusinessDocumentHeader" minOccurs="0"/>
+			<xs:element ref="document:Document" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

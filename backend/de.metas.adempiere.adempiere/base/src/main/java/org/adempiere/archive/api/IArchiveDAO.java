@@ -24,6 +24,7 @@ package org.adempiere.archive.api;
 
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.QueryLimit;
+import lombok.NonNull;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
@@ -73,4 +74,6 @@ public interface IArchiveDAO extends ISingletonService
 	<T> T retrieveReferencedModel(I_AD_Archive archive, Class<T> modelClass);
 
 	I_AD_Archive retrieveArchive(ArchiveId archiveId);
+
+	<T extends I_AD_Archive> T retrieveArchive(@NonNull ArchiveId archiveId, @NonNull Class<T> modelClass);
 }

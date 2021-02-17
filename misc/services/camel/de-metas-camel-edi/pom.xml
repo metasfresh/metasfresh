@@ -26,6 +26,7 @@
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -70,6 +71,17 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-http</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.rest_api</groupId>
+            <artifactId>de-metas-common-rest_api</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -162,7 +174,6 @@
             <version>${smooks.version}</version>
         </dependency>
 
-        <!-- needed by smooks -->
         <dependency>
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
@@ -305,6 +316,21 @@
                             <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
                             <generatePackage>${jaxb.invoic.packageName}</generatePackage>
                             <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_invoic</generateDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-schema-remadv</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
+                            <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
+                            <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
+                            
+                            because it will end with "Two declarations cause a collision in the ObjectFactory class."
+                            -->
+                            <generateDirectory>${project.build.directory}/generated-sources/xjc_ecosio_remadv</generateDirectory>
                         </configuration>
                     </execution>
                 </executions>

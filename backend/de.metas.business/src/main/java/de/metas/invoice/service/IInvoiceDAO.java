@@ -32,6 +32,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -186,4 +187,6 @@ public interface IInvoiceDAO extends ISingletonService
 	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
 
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+
+	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 }
