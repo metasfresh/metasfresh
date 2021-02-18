@@ -79,7 +79,10 @@ export const getRoutes = (store, auth, plugins) => {
   const logout = () => {
     logoutRequest()
       .then(() => logoutSuccess(auth))
-      .then(() => store.dispatch(push('/login')));
+      .then(() => {
+        store.dispatch(setBreadcrumb([]));
+        store.dispatch(push('/login'));
+      });
   };
 
   function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
