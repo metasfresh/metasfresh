@@ -112,6 +112,7 @@ public final class ProductsToPickRowsDataFactory
 	public static final AttributeCode ATTR_RepackNumber = AttributeCode.ofString(ATTR_RepackNumber_String);
 
 	private static final ImmutableSet<AttributeCode> ATTRIBUTES = ImmutableSet.of(
+			ATTR_SerialNo,
 			ATTR_LotNumber,
 			ATTR_BestBeforeDate,
 			ATTR_RepackNumber);
@@ -485,7 +486,7 @@ public final class ProductsToPickRowsDataFactory
 				.locator(locator)
 				//
 				// Attributes:
-				.huValue(pickFromHUId != null ? String.valueOf(pickFromHUId.getRepoId()) : null)
+				.huCode(pickFromHUId != null ? String.valueOf(pickFromHUId.getRepoId()) : null)
 				.serialNo(attributes.getValueAsStringIfExists(ATTR_SerialNo).orElse(null))
 				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElseGet(() -> buildLotNumberFromHuId(pickFromHUId)))
 				.expiringDate(attributes.getValueAsLocalDateIfExists(ATTR_BestBeforeDate).orElse(null))
