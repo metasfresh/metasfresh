@@ -84,6 +84,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Service
 public class CandidateRepositoryWriteService
 {
+	private final DimensionService dimensionService;
+
+	public CandidateRepositoryWriteService(final DimensionService dimensionService)
+	{
+		this.dimensionService = dimensionService;
+	}
+
 	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
@@ -349,6 +356,8 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
+		final IForecastDAO forecastRepo = Services.get(IForecastDAO.class);
+
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
