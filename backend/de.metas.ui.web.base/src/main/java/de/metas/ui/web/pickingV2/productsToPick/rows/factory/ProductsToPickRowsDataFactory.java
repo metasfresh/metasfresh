@@ -486,7 +486,7 @@ public final class ProductsToPickRowsDataFactory
 				.locator(locator)
 				//
 				// Attributes:
-				.huValue(pickFromHUId != null ? String.valueOf(pickFromHUId.getRepoId()) : null)
+				.huCode(pickFromHUId != null ? String.valueOf(pickFromHUId.getRepoId()) : null)
 				.serialNo(attributes.getValueAsStringIfExists(ATTR_SerialNo).orElse(null))
 				.lotNumber(attributes.getValueAsStringIfExists(ATTR_LotNumber).orElseGet(() -> buildLotNumberFromHuId(pickFromHUId)))
 				.expiringDate(attributes.getValueAsLocalDateIfExists(ATTR_BestBeforeDate).orElse(null))
