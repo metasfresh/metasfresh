@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
 
+import de.metas.document.dimension.Dimension;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
@@ -43,11 +44,16 @@ public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrd
 	private final WarehouseId warehouseId;
 	private final BPartnerId vendorId;
 	private final ZonedDateTime datePromised;
+	private final int forecastLineId;
+	private final Dimension dimension;
+
 
 	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
-			.thenComparing(PurchaseOrderAggregationKey::getDatePromised);
+			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
+			.thenComparing(PurchaseOrderAggregationKey::getForecastLineId)
+			.thenComparing(PurchaseOrderAggregationKey::getDimension);
 
 	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
@@ -56,6 +62,9 @@ public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrd
 				.warehouseId(purchaseOrderItem.getWarehouseId())
 				.vendorId(purchaseOrderItem.getVendorId())
 				.datePromised(purchaseOrderItem.getDatePromised())
+				.forecastLineId(purchaseOrderItem.getForecastLineId())
+				.dimension(purchaseOrderItem.getDimension())
+
 				.build();
 	}
 
@@ -66,6 +75,8 @@ public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrd
 				.warehouseId(purchaseCandidate.getWarehouseId())
 				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())
+				.forecastLineId(purchaseCandidate.getForecastLineId())
+				.dimension(purchaseCandidate.getDimension())
 				.build();
 	}
 
