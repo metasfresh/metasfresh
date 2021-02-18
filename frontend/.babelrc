@@ -1,5 +1,14 @@
 {
-  "presets": ["@babel/preset-env", "@babel/preset-react"],
+  "presets": [
+    ["@babel/preset-env",
+      {
+        "useBuiltIns": "entry",
+        "targets": "defaults",
+        "corejs": "3.9"
+      }
+    ],
+    "@babel/preset-react"
+  ],
   "plugins": [
       ["@babel/plugin-proposal-class-properties", { "spec": true }],
       "@babel/plugin-syntax-dynamic-import",

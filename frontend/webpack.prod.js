@@ -43,7 +43,12 @@ if (!fs.existsSync(path.join(__dirname, 'dist/plugins.js'))) {
 module.exports = {
   mode: 'production',
   devtool: 'cheap-module-source-map',
-  entry: ['@babel/polyfill', './src/index.jsx', './favicon.png'],
+  entry: [
+    'core-js/stable',
+    'regenerator-runtime/runtime',
+    './src/index.jsx',
+    './favicon.png'
+  ],
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle-[hash]-git-[githash].js',
