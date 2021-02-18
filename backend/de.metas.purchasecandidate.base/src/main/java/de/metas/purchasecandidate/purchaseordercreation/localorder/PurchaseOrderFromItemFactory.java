@@ -110,10 +110,12 @@ import java.util.Set;
 						purchaseOrderItem.getProductId(),
 						UomId.ofRepoId(purchaseOrderItem.getUomId()))
 				.orElseGet(() -> orderFactory
-						.newOrderLine()
-						.productId(purchaseOrderItem.getProductId()));
+						.newOrderLine())
+						.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
+
+		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}

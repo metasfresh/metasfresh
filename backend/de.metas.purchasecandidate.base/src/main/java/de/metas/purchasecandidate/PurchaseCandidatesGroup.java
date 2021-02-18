@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.Dimension;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -89,6 +90,8 @@ public class PurchaseCandidatesGroup
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				.reminderTime(purchaseCandidate.getReminderTime())
 				//
+				.dimension(purchaseCandidate.getDimension())
+				//
 				.profitInfoOrNull(purchaseCandidate.getProfitInfoOrNull())
 				//
 				.readonly(purchaseCandidate.isProcessedOrLocked());
@@ -137,6 +140,9 @@ public class PurchaseCandidatesGroup
 	ZonedDateTime purchaseDatePromised;
 	@Nullable
 	Duration reminderTime;
+
+	@Nullable
+	Dimension dimension;
 
 	@Nullable
 	PurchaseProfitInfo profitInfoOrNull;
