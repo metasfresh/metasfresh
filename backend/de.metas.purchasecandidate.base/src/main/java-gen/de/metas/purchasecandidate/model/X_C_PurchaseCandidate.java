@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1978157551L;
+	private static final long serialVersionUID = 101399441L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
@@ -264,6 +264,33 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_ForecastLine getM_ForecastLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ForecastLine_ID, org.compiere.model.I_M_ForecastLine.class);
+	}
+
+	@Override
+	public void setM_ForecastLine(final org.compiere.model.I_M_ForecastLine M_ForecastLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ForecastLine_ID, org.compiere.model.I_M_ForecastLine.class, M_ForecastLine);
+	}
+
+	@Override
+	public void setM_ForecastLine_ID (final int M_ForecastLine_ID)
+	{
+		if (M_ForecastLine_ID < 1) 
+			set_Value (COLUMNNAME_M_ForecastLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ForecastLine_ID, M_ForecastLine_ID);
+	}
+
+	@Override
+	public int getM_ForecastLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ForecastLine_ID);
 	}
 
 	@Override

@@ -355,7 +355,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_IsPrepared = "IsPrepared";
 
 	/**
-	 * Set Requisition Created.
+	 * Set RfQ Created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -364,7 +364,7 @@ public interface I_C_PurchaseCandidate
 	void setIsRequisitionCreated (boolean IsRequisitionCreated);
 
 	/**
-	 * Get Requisition Created.
+	 * Get RfQ Created.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -401,6 +401,33 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Forecast Line.
+	 * Forecast Line
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ForecastLine_ID (int M_ForecastLine_ID);
+
+	/**
+	 * Get Forecast Line.
+	 * Forecast Line
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ForecastLine_ID();
+
+	@Nullable org.compiere.model.I_M_ForecastLine getM_ForecastLine();
+
+	void setM_ForecastLine(@Nullable org.compiere.model.I_M_ForecastLine M_ForecastLine);
+
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_ForecastLine> COLUMN_M_ForecastLine_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "M_ForecastLine_ID", org.compiere.model.I_M_ForecastLine.class);
+	String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
 
 	/**
 	 * Set Product.

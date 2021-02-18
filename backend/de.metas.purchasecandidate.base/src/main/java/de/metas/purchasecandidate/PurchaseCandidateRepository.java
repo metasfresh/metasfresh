@@ -343,7 +343,7 @@ public class PurchaseCandidateRepository
 
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
-	//	record.setM_ForecastLine_ID(purchaseCandidate.getForecastLineId());
+		record.setM_ForecastLine_ID(purchaseCandidate.getForecastLineId());
 
 		dimensionService.updateRecord(record, purchaseCandidate.getDimension());
 
