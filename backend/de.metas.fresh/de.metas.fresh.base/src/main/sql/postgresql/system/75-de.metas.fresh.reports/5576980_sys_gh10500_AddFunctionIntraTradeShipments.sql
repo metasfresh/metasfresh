@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.IntraTradeShipment
 
     RETURNS TABLE
             (
-                "Pos"                 bigint,
+                "Pos"                 varchar,
                 "Produkt"             text,
                 "Warennumer"          varchar,
                 "Land geliefert von"  char(2),
@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.IntraTradeShipment
             )
 AS
 $$
-select row_number,
+select (pos::varchar) as position,
        productName ||  E'\n' || productDescription as product,
        commoditynumber,
        deliveredFromCountry,
@@ -31,12 +31,12 @@ select row_number,
        Period
 from (
          select row_number()
-                over (order by deliveryCountry, commoditynumber, deliveredFromCountry, OriginCountry, UOMSymbol, cursymbol, C_Period_ID),
+                over (order by deliveryCountry, commoditynumber, deliveredFromCountry, OriginCountry, UOMSymbol, cursymbol, C_Period_ID) as Pos,
                 *
          from de_metas_endcustomer_fresh_reports.M_InOut_V i
          where C_Period_ID = p_C_Period_ID
      ) as v
-order by row_number;
+order by pos;
 $$
     LANGUAGE sql
     STABLE;

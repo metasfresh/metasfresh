@@ -107,7 +107,7 @@ public interface IQueryBL extends ISingletonService
 	/**
 	 * @param tableName name of the table in question. <b>Can</b> be null
  */
-	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(String tableName);
+	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(@Nullable String tableName);
 
 	<T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass);
 

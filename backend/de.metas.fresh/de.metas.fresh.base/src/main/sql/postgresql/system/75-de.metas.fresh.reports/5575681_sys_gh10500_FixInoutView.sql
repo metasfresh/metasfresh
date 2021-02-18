@@ -24,13 +24,13 @@ from (
                 coalesce((case
                               when qtydeliveredcatch is not null
                                   then qtydeliveredcatch
-                              when uomConvert(iol.M_Product_ID, iol.C_UOM_ID, 540017, iol.qtyentered) != null
-                                  then uomConvert(iol.M_Product_ID, iol.C_UOM_ID, 540017, iol.qtyentered) -- hard coded UOM for KG
+                              when uomConvert(iol.M_Product_ID, iol.C_UOM_ID, (select C_UOM_ID from C_UOM where x12de355='KGM' and isactive='Y' order by isdefault desc limit 1), iol.qtyentered) is not null
+                                  then uomConvert(iol.M_Product_ID, iol.C_UOM_ID, (select C_UOM_ID from C_UOM where x12de355='KGM' and isactive='Y' order by isdefault desc limit 1), iol.qtyentered) -- hard coded UOM for KG
                               else iol.qtyentered
                     end), 0)    as movementqty,
 
                 (case
-                     when uomConvert(iol.M_Product_ID, iol.C_UOM_ID, 540017, iol.qtyentered) != null
+                     when uomConvert(iol.M_Product_ID, iol.C_UOM_ID, (select C_UOM_ID from C_UOM where x12de355='KGM' and isactive='Y' order by isdefault desc limit 1), iol.qtyentered) is not null
                          then uom.UOMSymbol
                      else uom_iol.UOMSymbol
                     end)
@@ -55,7 +55,7 @@ from (
                   join C_country co on co.c_country_id = l.c_country_id
                   join c_currency c on i.c_currency_id = c.C_Currency_id
 
-                  LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = coalesce(iol.catch_uom_id, 540017) -- fallback to KG
+                  LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = coalesce(iol.catch_uom_id, (select C_UOM_ID from C_UOM where x12de355='KGM' and isactive='Y' order by isdefault desc limit 1)) -- fallback to KG
                   LEFT OUTER JOIN C_UOM uom_iol ON uom_iol.C_UOM_ID = iol.C_UOM_ID
 
 

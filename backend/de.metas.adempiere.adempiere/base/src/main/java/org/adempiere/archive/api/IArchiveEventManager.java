@@ -47,7 +47,10 @@ public interface IArchiveEventManager extends ISingletonService
 
 	void firePdfUpdate(
 			I_AD_Archive archive,
-			UserId userId);
+			UserId userId,
+			String action);
+
+	void firePdfUpdate(I_AD_Archive archive, UserId userId);
 
 	void fireEmailSent(
 			I_AD_Archive archive,
