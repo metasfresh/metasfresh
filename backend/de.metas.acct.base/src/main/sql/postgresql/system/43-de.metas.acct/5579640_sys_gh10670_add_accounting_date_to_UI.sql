@@ -150,7 +150,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=1095
 
 -- 2021-02-18T14:22:36.121Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,SortNo,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,ColumnDisplayLength,IncludedTabHeight,Updated,UpdatedBy,Help,AD_Field_ID,IsDisplayedGrid,SeqNo,SeqNoGrid,SpanX,SpanY,AD_Column_ID,Name,Description,AD_Org_ID,EntityType) VALUES (186,'Y',0,0,'N','N','N','N',0,'Y',TO_TIMESTAMP('2021-02-18 16:22:35','YYYY-MM-DD HH24:MI:SS'),100,'N',0,0,TO_TIMESTAMP('2021-02-18 16:22:35','YYYY-MM-DD HH24:MI:SS'),100,'The Accounting Date indicates the date to be used on the General Ledger account entries generated from this document. It is also used for any currency conversion.',631843,'Y',720,720,1,1,2183,'Buchungsdatum','Accounting Date',0,'D')
+INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,SortNo,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,ColumnDisplayLength,IncludedTabHeight,Updated,UpdatedBy,Help,AD_Field_ID,IsDisplayedGrid,SeqNo,SeqNoGrid,SpanX,SpanY,AD_Column_ID,Name,Description,AD_Org_ID,EntityType) VALUES (186,'Y',0,0,'N','N','N','N',0,'Y',TO_TIMESTAMP('2021-02-18 16:22:35','YYYY-MM-DD HH24:MI:SS'),100,'Y',0,0,TO_TIMESTAMP('2021-02-18 16:22:35','YYYY-MM-DD HH24:MI:SS'),100,'The Accounting Date indicates the date to be used on the General Ledger account entries generated from this document. It is also used for any currency conversion.',631843,'Y',720,720,1,1,2183,'Buchungsdatum','Accounting Date',0,'D')
 ;
 
 -- 2021-02-18T14:22:36.123Z
