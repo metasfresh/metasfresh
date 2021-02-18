@@ -362,6 +362,29 @@ public interface I_AD_Window
 	String COLUMNNAME_IsEnableRemoteCacheInvalidation = "IsEnableRemoteCacheInvalidation";
 
 	/**
+	 * Set Exclude from Zoom Targets.
+	 * Exclude from zoom targets / related documents
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludeFromZoomTargets (boolean IsExcludeFromZoomTargets);
+
+	/**
+	 * Get Exclude from Zoom Targets.
+	 * Exclude from zoom targets / related documents
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromZoomTargets();
+
+	ModelColumn<I_AD_Window, Object> COLUMN_IsExcludeFromZoomTargets = new ModelColumn<>(I_AD_Window.class, "IsExcludeFromZoomTargets", null);
+	String COLUMNNAME_IsExcludeFromZoomTargets = "IsExcludeFromZoomTargets";
+
+	/**
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *

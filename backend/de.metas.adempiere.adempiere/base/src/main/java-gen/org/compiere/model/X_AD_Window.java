@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1919078552L;
+	private static final long serialVersionUID = -1095504350L;
 
     /** Standard Constructor */
     public X_AD_Window (final Properties ctx, final int AD_Window_ID, @Nullable final String trxName)
@@ -217,6 +217,18 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	public boolean isEnableRemoteCacheInvalidation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEnableRemoteCacheInvalidation);
+	}
+
+	@Override
+	public void setIsExcludeFromZoomTargets (final boolean IsExcludeFromZoomTargets)
+	{
+		set_Value (COLUMNNAME_IsExcludeFromZoomTargets, IsExcludeFromZoomTargets);
+	}
+
+	@Override
+	public boolean isExcludeFromZoomTargets() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromZoomTargets);
 	}
 
 	@Override
