@@ -32,21 +32,21 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class ExternalSystemAlbertaConfigId implements RepoIdAware
+public class ExternalSystemParentConfigId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
 	@NonNull
-	public static ExternalSystemAlbertaConfigId ofRepoId(final int repoId)
+	public static ExternalSystemParentConfigId ofRepoId(final int repoId)
 	{
-		return new ExternalSystemAlbertaConfigId(repoId);
+		return new ExternalSystemParentConfigId(repoId);
 	}
 
 	@Nullable
-	public static ExternalSystemAlbertaConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static ExternalSystemParentConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new ExternalSystemAlbertaConfigId(repoId) : null;
+		return repoId != null && repoId > 0 ? new ExternalSystemParentConfigId(repoId) : null;
 	}
 
 	@JsonValue
@@ -55,8 +55,8 @@ public class ExternalSystemAlbertaConfigId implements RepoIdAware
 		return getRepoId();
 	}
 
-	private ExternalSystemAlbertaConfigId(final int repoId)
+	private ExternalSystemParentConfigId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "ExternalSystem_Config_Alberta_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "ExternalSystem_Config_ID");
 	}
 }

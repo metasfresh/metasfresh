@@ -22,18 +22,21 @@
 
 package de.metas.externalsystem.process;
 
-import de.metas.externalsystem.ExternalSystemAlbertaConfigId;
-import de.metas.externalsystem.ExternalSystemChildConfig;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
+import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
-import de.metas.externalsystem.service.IExternalSystemConfigAlbertaDAO;
 import de.metas.process.IProcessPreconditionsContext;
-import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 {
-	public final IExternalSystemConfigAlbertaDAO externalSystemConfigDAO = Services.get(IExternalSystemConfigAlbertaDAO.class);
-
 	protected long getSelectedRecordCount(final IProcessPreconditionsContext context)
 	{
 		return context.getSelectedIncludedRecords()
@@ -43,20 +46,32 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	}
 
 	@Override
-	protected ExternalSystemChildConfig getExternalChildConfig()
+	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
-		return externalSystemConfigDAO.getById(getRecordId());
+		// note: we can blindly get the first I_ExternalSystem_Config_Alberta, because the checkPreconditionsApplicable impl made sure there is exactly one.
+		final int id = this.configId != null
+				? this.configId.getValue()
+				: getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+		return ExternalSystemAlbertaConfigId.ofRepoId(id);
 	}
 
-	private ExternalSystemAlbertaConfigId getRecordId()
+	@Override
+	protected Map<String, String> extractExternalSystemParameters(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
 	{
-		final int id = this.configId != null ? this.configId.getValue() : getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
-		return ExternalSystemAlbertaConfigId.ofRepoId(id);
+		final ExternalSystemAlbertaConfig albertaConfig = ExternalSystemAlbertaConfig.cast(externalSystemParentConfig.getChildConfig());
+
+		final Map<String, String> parameters = new HashMap<>();
+		parameters.put(ExternalSystemConstants.PARAM_API_KEY, albertaConfig.getApiKey());
+		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, albertaConfig.getBaseUrl());
+		parameters.put(ExternalSystemConstants.PARAM_TENANT, albertaConfig.getTenant());
+		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, since.toInstant().toString());
+
+		return parameters;
 	}
 
 	@NonNull
 	protected String getTabName()
 	{
-		return "Alberta";
+		return ExternalSystemType.Alberta.getName();
 	}
 }

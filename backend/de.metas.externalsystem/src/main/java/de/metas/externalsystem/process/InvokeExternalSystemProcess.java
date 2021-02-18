@@ -23,13 +23,12 @@
 package de.metas.externalsystem.process;
 
 import com.google.gson.Gson;
-import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.externalsystem.ExternalSystemChildConfig;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.service.IExternalSystemConfigDAO;
+import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.IOrgDAO;
@@ -50,11 +49,11 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class InvokeExternalSystemProcess extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
@@ -62,7 +61,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	public final static AdMessageKey MSG_ERR_NO_EXTERNAL_SELECTION = AdMessageKey.of("NoExternalSelection");
 	public final static AdMessageKey MSG_ERR_MULTIPLE_EXTERNAL_SELECTION = AdMessageKey.of("MultipleExternalSelection");
 
-	public final IExternalSystemConfigDAO externalSystemConfigDAO = Services.get(IExternalSystemConfigDAO.class);
+	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	public final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	private static final String PARAM_CONFIG_ID = "configId";
@@ -103,18 +102,11 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 	protected HttpPut getRequest() throws UnsupportedEncodingException
 	{
-		final ExternalSystemChildConfig config = getExternalChildConfig();
-		final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(config.getParentId());
-
-		final Map<String, String> parameters = new HashMap<>();
-		parameters.put(ExternalSystemConstants.PARAM_API_KEY, config.getApiKey());
-		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, config.getBaseUrl());
-		parameters.put(ExternalSystemConstants.PARAM_TENANT, config.getTenant());
-		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, since.toInstant().toString());
-
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(getExternalChildConfigId());
+		
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonExternalSystemRequest.builder()
 				.externalSystemName(JsonExternalSystemName.of(parentConfig.getName()))
-				.parameters(parameters)
+				.parameters(extractExternalSystemParameters(parentConfig))
 				.orgCode(orgDAO.getById(getOrgId()).getValue())
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
@@ -126,8 +118,10 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return request;
 	}
 
-	protected abstract ExternalSystemChildConfig getExternalChildConfig();
+	protected abstract IExternalSystemChildConfigId getExternalChildConfigId();
 
+	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);
+	
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{

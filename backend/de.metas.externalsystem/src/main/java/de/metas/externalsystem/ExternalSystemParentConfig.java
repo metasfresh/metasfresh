@@ -29,17 +29,24 @@ import lombok.Value;
 @Value
 public class ExternalSystemParentConfig
 {
-	@NonNull ExternalSystemConfigId id;
-	@NonNull String camelUrl;
-	@NonNull String name;
+	ExternalSystemParentConfigId id;
+	ExternalSystemType type;
+	String camelUrl;
+	String name;
+	IExternalSystemChildConfig childConfig;
 
 	@Builder
-	public ExternalSystemParentConfig(final @NonNull ExternalSystemConfigId id,
-			final @NonNull String camelUrl,
-			final @NonNull String name)
+	public ExternalSystemParentConfig(
+			@NonNull final ExternalSystemParentConfigId id,
+			@NonNull final ExternalSystemType type,
+			@NonNull final String camelUrl,
+			@NonNull final String name,
+			@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		this.id = id;
+		this.type = type;
 		this.camelUrl = camelUrl;
 		this.name = name;
+		this.childConfig = childConfig;
 	}
 }

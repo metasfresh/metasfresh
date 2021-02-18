@@ -23,39 +23,8 @@
 package de.metas.externalsystem;
 
 import de.metas.util.lang.RepoIdAware;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
-@Value
-public class ExternalSystemChildConfig<T extends RepoIdAware>
+public interface IExternalSystemChildConfigId extends RepoIdAware
 {
-	@NonNull
-	T id;
-	@NonNull
-	ExternalSystemConfigId parentId;
-	@NonNull
-	String name;
-	@NonNull
-	String apiKey;
-	@NonNull
-	String baseUrl;
-	@NonNull
-	String tenant;
-
-	@Builder
-	public ExternalSystemChildConfig(final @NonNull T id,
-			final @NonNull ExternalSystemConfigId parentId,
-			final @NonNull String name,
-			final @NonNull String apiKey,
-			final @NonNull String baseUrl,
-			final @NonNull String tenant)
-	{
-		this.id = id;
-		this.parentId = parentId;
-		this.name = name;
-		this.apiKey = apiKey;
-		this.baseUrl = baseUrl;
-		this.tenant = tenant;
-	}
+	ExternalSystemType getType();
 }

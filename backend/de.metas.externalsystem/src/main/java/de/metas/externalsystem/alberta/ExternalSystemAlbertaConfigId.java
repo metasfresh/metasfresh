@@ -20,33 +20,39 @@
  * #L%
  */
 
-package de.metas.externalsystem;
+package de.metas.externalsystem.alberta;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
-public class ExternalSystemConfigId implements RepoIdAware
+public class ExternalSystemAlbertaConfigId implements IExternalSystemChildConfigId
 {
 	int repoId;
 
 	@JsonCreator
 	@NonNull
-	public static ExternalSystemConfigId ofRepoId(final int repoId)
+	public static ExternalSystemAlbertaConfigId ofRepoId(final int repoId)
 	{
-		return new ExternalSystemConfigId(repoId);
+		return new ExternalSystemAlbertaConfigId(repoId);
 	}
 
 	@Nullable
-	public static ExternalSystemConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static ExternalSystemAlbertaConfigId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new ExternalSystemConfigId(repoId) : null;
+		return repoId != null && repoId > 0 ? new ExternalSystemAlbertaConfigId(repoId) : null;
+	}
+
+	public static ExternalSystemAlbertaConfigId cast(@NonNull final IExternalSystemChildConfigId id)
+	{
+		return (ExternalSystemAlbertaConfigId)id;
 	}
 
 	@JsonValue
@@ -55,8 +61,14 @@ public class ExternalSystemConfigId implements RepoIdAware
 		return getRepoId();
 	}
 
-	private ExternalSystemConfigId(final int repoId)
+	private ExternalSystemAlbertaConfigId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "ExternalSystem_Config_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "ExternalSystem_Config_Alberta_ID");
+	}
+
+	@Override
+	public ExternalSystemType getType()
+	{
+		return ExternalSystemType.Alberta;
 	}
 }
