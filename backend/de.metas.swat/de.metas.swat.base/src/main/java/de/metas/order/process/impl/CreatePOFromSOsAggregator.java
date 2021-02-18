@@ -1,9 +1,15 @@
 package de.metas.order.process.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.i18n.IMsgBL;
+import de.metas.order.IOrderBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.collections.MapReduceAggregator;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -14,15 +20,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
-import de.metas.order.IOrderBL;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.collections.MapReduceAggregator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /*
  * #%L
@@ -50,7 +50,6 @@ import de.metas.util.collections.MapReduceAggregator;
  * Created new purchase orders for sales order lines and contains one instance of {@link CreatePOLineFromSOLinesAggregator} for each created purchase order line.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_C_OrderLine>
 {
@@ -68,8 +67,8 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
 	public CreatePOFromSOsAggregator(final IContextAware context,
-			final boolean p_IsDropShip,
-			final String purchaseQtySource)
+									 final boolean p_IsDropShip,
+									 final String purchaseQtySource)
 	{
 		this.context = context;
 		this.p_IsDropShip = p_IsDropShip;
@@ -94,6 +93,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
 		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
+		if (vendor == null)
+		{
+			throw new AdempiereException("No vendor found for Value=" + vendorBPartnerValue + " or vendor is not active.");
+		}
 
 		final I_C_Order purchaseOrder = createPurchaseOrder(vendor, salesOrder);
 
@@ -166,8 +169,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		return orderLinesAggregator;
 	}
 
-	private I_C_Order createPurchaseOrder(final I_C_BPartner vendor,
-			final I_C_Order salesOrder)
+	private I_C_Order createPurchaseOrder(
+			@NonNull final I_C_BPartner vendor,
+			@NonNull final I_C_Order salesOrder)
 	{
 
 		final I_C_Order purchaseOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
@@ -256,7 +260,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		InterfaceWrapperHelper.save(purchaseOrder);
 		return purchaseOrder;
-	}	// createPOForVendor
+	}    // createPOForVendor
 
 	private int findWareousePOId(final I_C_Order salesOrder)
 	{
