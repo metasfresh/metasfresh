@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,36 +20,32 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
+package de.metas.common.rest_api.issue;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonError.JsonErrorBuilder.class)
-public class JsonError
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class JsonCreateIssueResponse
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
-
-	List<JsonErrorItem> errors;
+	@JsonProperty("ids")
+	List<JsonCreateIssueResponseItem> ids;
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	private JsonCreateIssueResponse(
+			@NonNull @JsonProperty("ids") final List<JsonCreateIssueResponseItem> ids
+	)
 	{
-		this.errors = errors;
+		this.ids = ids;
 	}
 }
