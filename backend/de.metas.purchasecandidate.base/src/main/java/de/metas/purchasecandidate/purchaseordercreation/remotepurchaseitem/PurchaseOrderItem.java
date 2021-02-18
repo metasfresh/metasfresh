@@ -199,6 +199,11 @@ public class PurchaseOrderItem implements PurchaseItem
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
+	public int getForecastLineId()
+	{
+		return getPurchaseCandidate().getForecastLineId();
+	}
+
 	private Quantity getQtyToPurchase()
 	{
 		return getPurchaseCandidate().getQtyToPurchase();

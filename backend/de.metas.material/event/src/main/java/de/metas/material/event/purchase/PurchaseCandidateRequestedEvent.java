@@ -59,6 +59,8 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 	 */
 	int salesOrderRepoId;
 
+	int forecastLineId;
+
 	// Dimensions
 	int activityId;
 	int campaignId;
@@ -80,6 +82,7 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
 			@JsonProperty("salesOrderLineRepoId") @Nullable final int salesOrderLineRepoId,
 			@JsonProperty("salesOrderRepoId") @Nullable final int salesOrderRepoId,
+			@JsonProperty("forecastLineId") @Nullable final int forecastLineId,
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("activityId") @Nullable final int activityId,
 			@JsonProperty("campaignId") @Nullable final int campaignId,
@@ -99,6 +102,8 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 		this.salesOrderLineRepoId = salesOrderLineRepoId;
 		this.salesOrderRepoId = salesOrderRepoId;
 		this.eventDescriptor = eventDescriptor;
+
+		this.forecastLineId = forecastLineId;
 
 		this.activityId = activityId;
 		this.campaignId = campaignId;

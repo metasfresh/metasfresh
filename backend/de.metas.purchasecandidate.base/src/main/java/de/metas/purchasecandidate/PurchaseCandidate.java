@@ -131,6 +131,8 @@ public class PurchaseCandidate
 			//
 			final boolean aggregatePOs,
 			//
+			final int forecastLineId,
+			//
 			@Nullable final Dimension dimension)
 	{
 		this.id = id;
@@ -145,6 +147,7 @@ public class PurchaseCandidate
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(vendorProductNo)
 				.aggregatePOs(aggregatePOs)
+				.forecastLineId(forecastLineId)
 				.dimension(dimension)
 				.build();
 
@@ -236,6 +239,11 @@ public class PurchaseCandidate
 	public OrderAndLineId getSalesOrderAndLineIdOrNull()
 	{
 		return getImmutableFields().getSalesOrderAndLineIdOrNull();
+	}
+
+	public int getForecastLineId()
+	{
+		return getImmutableFields().getForecastLineId();
 	}
 
 	public Dimension getDimension ()

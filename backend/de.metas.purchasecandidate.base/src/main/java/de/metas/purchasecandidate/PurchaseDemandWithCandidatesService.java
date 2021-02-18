@@ -259,6 +259,7 @@ public class PurchaseDemandWithCandidatesService
 				.vendorId(candidate.getVendorId())
 				.productId(candidate.getProductId())
 				.readOnly(candidate.isProcessedOrLocked())
+				.forecastLineId(candidate.getForecastLineId())
 				.dimension(candidate.getDimension())
 				.build();
 	}
@@ -273,6 +274,7 @@ public class PurchaseDemandWithCandidatesService
 		ProductId productId;
 		boolean readOnly;
 		Dimension dimension;
+		int forecastLineId;
 	}
 
 	@VisibleForTesting

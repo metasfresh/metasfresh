@@ -108,7 +108,6 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final I_C_UOM uomRecord = loadOutOfTrx(product.getUomId().getRepoId(), I_C_UOM.class);
 
-
 		final Dimension dimension = Dimension.builder()
 				.activityId(ActivityId.ofRepoIdOrNull(event.getActivityId()))
 				.campaignId(event.getCampaignId())
@@ -142,6 +141,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
 
 				.warehouseId(materialDescriptor.getWarehouseId())
+				.forecastLineId(event.getForecastLineId())
 				.build();
 
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);

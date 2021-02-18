@@ -65,5 +65,7 @@ class PurchaseCandidateImmutableFields
 
 	boolean aggregatePOs;
 
+	int forecastLineId;
+
 	Dimension dimension;
 }
