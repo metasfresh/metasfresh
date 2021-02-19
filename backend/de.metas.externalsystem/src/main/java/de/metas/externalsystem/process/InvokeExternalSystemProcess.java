@@ -104,17 +104,17 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 	protected HttpPut getRequest() throws UnsupportedEncodingException, JsonProcessingException
 	{
-		final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(getExternalChildConfigId());
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
 		
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonExternalSystemRequest.builder()
-				.externalSystemName(JsonExternalSystemName.of(parentConfig.getName()))
-				.parameters(extractExternalSystemParameters(parentConfig))
+				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
+				.parameters(extractExternalSystemParameters(config))
 				.orgCode(orgDAO.getById(getOrgId()).getValue())
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
 				.build();
 
-		final HttpPut request = new HttpPut(parentConfig.getCamelUrl());
+		final HttpPut request = new HttpPut(config.getCamelUrl());
 		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
 
 		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
