@@ -64,7 +64,7 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 		parameters.put(ExternalSystemConstants.PARAM_API_KEY, albertaConfig.getApiKey());
 		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, albertaConfig.getBaseUrl());
 		parameters.put(ExternalSystemConstants.PARAM_TENANT, albertaConfig.getTenant());
-		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, since.toInstant().toString());
+		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, extractEffectiveSinceTimestamp().toInstant().toString());
 
 		return parameters;
 	}

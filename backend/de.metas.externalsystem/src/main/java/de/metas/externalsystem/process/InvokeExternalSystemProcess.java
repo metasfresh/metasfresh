@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
@@ -55,6 +56,7 @@ import org.compiere.SpringContextHolder;
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Map;
 
 public abstract class InvokeExternalSystemProcess extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
@@ -71,7 +73,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 	private static final String PARAM_SINCE = "since";
 	@Param(parameterName = PARAM_SINCE)
-	protected Timestamp since;
+	private Timestamp since;
 
 	private static final String PARAM_EXTERNAL_REQUEST = "External_Request";
 	@Param(parameterName = PARAM_EXTERNAL_REQUEST)
@@ -82,7 +84,9 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@Override
 	protected String doIt() throws Exception
 	{
-		addLog("Calling with params: configId {}, since {}, command {}", configId, since.toInstant(), externalRequest);
+		final Timestamp sinceEff = extractEffectiveSinceTimestamp();
+
+		addLog("Calling with params: configId {}, since {}, command {}", configId, sinceEff.toInstant(), externalRequest);
 		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
 		{
 			return aDefault.execute(getRequest(), response -> {
@@ -103,7 +107,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	protected HttpPut getRequest() throws UnsupportedEncodingException, JsonProcessingException
 	{
 		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
-		
+
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonExternalSystemRequest.builder()
 				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
 				.parameters(extractExternalSystemParameters(config))
@@ -120,10 +124,6 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return request;
 	}
 
-	protected abstract IExternalSystemChildConfigId getExternalChildConfigId();
-
-	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);
-	
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
@@ -146,16 +146,32 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	}
 
 	@Nullable
-	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
 		if (PARAM_SINCE.equals(parameter.getColumnName()))
 		{
-			final ProcessInfo processInfo = getProcessInfo();
-			return pInstanceDAO.getLastRunDate(processInfo.getAdProcessId(), processInfo.getPinstanceId());
+			return retrieveSinceValue();
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
+	/** Needed so we also have a "since" when the process is run via AD_Scheduler */
+	@Nullable
+	protected Timestamp extractEffectiveSinceTimestamp()
+	{
+		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue());
+	}
+	
+	private Timestamp retrieveSinceValue()
+	{
+		final ProcessInfo processInfo = getProcessInfo();
+		return pInstanceDAO.getLastRunDate(processInfo.getAdProcessId(), processInfo.getPinstanceId());
+	}
+
+	protected abstract IExternalSystemChildConfigId getExternalChildConfigId();
+
+	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);
+	
 	protected abstract String getTabName();
 
 	protected abstract long getSelectedRecordCount(final IProcessPreconditionsContext context);
