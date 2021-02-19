@@ -53,7 +53,8 @@ public class BPRelationRouteBuilder extends RouteBuilder
 						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPRelationsCamelRequest. However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 
-					final var bpRelationsCamelRequest = (BPRelationsCamelRequest)lookupRequest;
+					final BPRelationsCamelRequest bpRelationsCamelRequest = (BPRelationsCamelRequest)lookupRequest;
+					log.info("Route invoked");
 					exchange.getIn().setHeader("bpartnerIdentifier", bpRelationsCamelRequest.getBpartnerIdentifier());
 					exchange.getIn().setBody(bpRelationsCamelRequest.getJsonRequestBPRelationsUpsert());
 				})

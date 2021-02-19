@@ -53,11 +53,14 @@ public class BPartnerRouteBuilder extends RouteBuilder
 					if (!(lookupRequest instanceof BPUpsertCamelRequest))
 					{
 						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPUpsertCamelRequest."
-																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
+								+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 
 					exchange.getIn().setHeader(HEADER_ORG_CODE, ((BPUpsertCamelRequest)lookupRequest).getOrgCode());
-					exchange.getIn().setBody(((BPUpsertCamelRequest)lookupRequest).getJsonRequestBPartnerUpsert());
+					final var jsonRequestBPartnerUpsert = ((BPUpsertCamelRequest)lookupRequest).getJsonRequestBPartnerUpsert();
+
+					log.info("Route invoked with " + jsonRequestBPartnerUpsert.getRequestItems().size() + " requestItems");
+					exchange.getIn().setBody(jsonRequestBPartnerUpsert);
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPartnerUpsert.class))
 				.removeHeaders("CamelHttp*")

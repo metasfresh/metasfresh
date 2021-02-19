@@ -54,8 +54,10 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 					if (!(lookupRequest instanceof JsonExternalReferenceCreateRequest))
 					{
 						throw new RuntimeCamelException("The route " + CREATE_ROUTE_ID + " requires the body to be instanceof JsonExternalReferenceCreateRequest. "
-																+ "However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
+								+ "However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
+					final JsonExternalReferenceCreateRequest lookupRequest1 = (JsonExternalReferenceCreateRequest)lookupRequest;
+					log.info("Route invoked with " + lookupRequest1.getItems().size() + " request items");
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceCreateRequest.class))
 				.removeHeaders("CamelHttp*")
@@ -67,12 +69,14 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				.routeId(LOOKUP_ROUTE_ID)
 				.streamCaching()
 				.process(exchange -> {
-					final var lookupRequest = exchange.getIn().getBody();
+					final Object lookupRequest = exchange.getIn().getBody();
 					if (!(lookupRequest instanceof JsonExternalReferenceLookupRequest))
 					{
 						throw new RuntimeCamelException("The route " + LOOKUP_ROUTE_ID + " requires the body to be instanceof JsonExternalReferenceLookupRequest. "
-																+ "However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
+								+ "However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
+					final JsonExternalReferenceLookupRequest lookupRequest1 = (JsonExternalReferenceLookupRequest)lookupRequest;
+					log.info("Route invoked with " + lookupRequest1.getItems().size() + " request items");
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupRequest.class))
 				.removeHeaders("CamelHttp*")

@@ -24,13 +24,12 @@ package de.metas.externalsystem.process;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.IOrgDAO;
@@ -88,7 +87,6 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		{
 			return aDefault.execute(getRequest(), response -> {
 				final int statusCode = response.getStatusLine().getStatusCode();
-
 				if (statusCode != 200)
 				{
 					addLog("Camel request error message: {}", response);
