@@ -90,7 +90,7 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 		// given
 		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
 
-		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV.xml");
+		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered.xml");
 		assertThat(inputStr).isNotNull();
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
@@ -116,7 +116,7 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(desadvOutput)
-				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_expected_output.txt")));
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered_expected_output.txt")));
 	}
 
 	@Test

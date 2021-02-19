@@ -295,7 +295,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setDetailPrice(voidString);
 		p100.setUnitCode(voidString);
 		// p100.setDiffDeliveryDate(EDIDesadvBean.voidDate);
-		p100.setEanTU(voidString);
+		p100.setEanTU(xmlDesadvLine.getEANTU());
 		p100.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		// 05768
 		if (xmlDesadv.getPOReference() != null && !xmlDesadv.getPOReference().isEmpty())

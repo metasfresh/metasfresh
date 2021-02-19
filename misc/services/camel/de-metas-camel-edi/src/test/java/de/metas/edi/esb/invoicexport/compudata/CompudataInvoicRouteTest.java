@@ -91,7 +91,7 @@ class CompudataInvoicRouteTest extends CamelTestSupport
 		// given
 		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
 
-		final var inputStr = CompudataInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/compudata/INVOIC.xml");
+		final var inputStr = CompudataInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/compudata/INVOIC_as_ordered.xml");
 		assertThat(inputStr).isNotNull();
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
@@ -117,7 +117,7 @@ class CompudataInvoicRouteTest extends CamelTestSupport
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var invoicOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(invoicOutput)
-				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/invoicexport/compudata/INVOIC_expected_output.txt")));
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/invoicexport/compudata/INVOIC_as_ordered_expected_output.txt")));
 	}
 
 	@Test
