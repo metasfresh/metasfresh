@@ -35,6 +35,7 @@ import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.apache.camel.component.jackson.JacksonDataFormat;
@@ -49,6 +50,10 @@ public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 	@Override
 	public void configure()
 	{
+		errorHandler(defaultErrorHandler());
+		onException(Exception.class)
+				.to("direct:Error-Route");
+
 		//@formatter:off
 		// this EP's name is matching the JsonExternalSystemRequest's ExternalSystem and Command
 		from(StaticEndpointBuilders.direct(GET_PATIENTS_ROUTE_ID))
@@ -63,16 +68,19 @@ public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 				.routeId(PROCESS_PATIENT_ROUTE_ID)
 				.process(new CreateESRQueryProcessor())
 
+				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to query ESR records: ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupResponse.class))
 				.process(new CreateBPartnerReqProcessor())
 
+				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}")
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 				.process(new CreateBPRelationReqProcessor())
 
+				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPRelations: ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}");
 		//@formatter:on
 	}
