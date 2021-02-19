@@ -251,8 +251,8 @@ public class BPartnerUpsertRequestProducer
 		location.setCity(patientDeliveryAddress.getCity());
 		location.setCountryCode(COUNTRY_CODE_DE);
 		location.setBpartnerName(patientDeliveryAddress.getName());
-		location.setBillToDefault(true);
-		location.setBillTo(true);
+		location.setShipTo(true);
+		location.setShipToDefault(true);
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(EXTERNAL_ID_PREFIX + SHIPPING_ADDR_PREFIX + patientId)
@@ -547,7 +547,7 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setExternalId(JsonExternalId.of(doctor.getId()));
-		jsonRequestBPartner.setName(doctor.getFirstName() + " " + doctor.getLastName().toString());
+		jsonRequestBPartner.setName(doctor.getFirstName() + " " + doctor.getLastName());
 		jsonRequestBPartner.setPhone(doctor.getPhone());
 		jsonRequestBPartner.setCustomer(true);
 		// jsonRequestBPartner.setEmail(nursingService.getEmail()); //todo
