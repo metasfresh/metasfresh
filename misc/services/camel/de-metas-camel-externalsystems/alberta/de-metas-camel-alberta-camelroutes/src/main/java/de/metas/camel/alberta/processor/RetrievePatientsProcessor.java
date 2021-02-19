@@ -27,8 +27,17 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.PatientApi;
+import io.swagger.client.model.Patient;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static de.metas.camel.alberta.GetPatientsRouteConstants.HEADER_ORG_CODE;
 import static de.metas.camel.alberta.GetPatientsRouteConstants.PatientStatus.CREATED;
@@ -51,8 +60,24 @@ public class RetrievePatientsProcessor implements Processor
 		final var apiClient = new ApiClient().setBasePath(basePath);
 
 		final var patientApi = new PatientApi(apiClient);
-		final var patients = patientApi.getCreatedPatients(apiKey, tenant, CREATED.getValue(), updatedAfter);
-		patients.addAll(patientApi.getCreatedPatients(apiKey, tenant, UPDATED.getValue(), updatedAfter));
+		final var createdPatients = patientApi.getCreatedPatients(apiKey, tenant, CREATED.getValue(), updatedAfter);
+
+		final List<Patient> patientsToImport = createdPatients == null || createdPatients.isEmpty()
+				? new ArrayList<>()
+				: createdPatients;
+
+		final Set<String> createdPatientIds = createdPatients == null || createdPatients.isEmpty()
+		? new HashSet<>()
+		: createdPatients.stream().map(Patient::getId).filter(Objects::nonNull).map(UUID::toString).collect(Collectors.toSet());
+
+		final List<Patient> updatedPatients = patientApi.getCreatedPatients(apiKey, tenant, UPDATED.getValue(), updatedAfter);
+
+		if (updatedPatients != null && !updatedPatients.isEmpty())
+		{
+			updatedPatients.stream()
+					.filter(patient -> patient.getId() != null && !createdPatientIds.contains(patient.getId().toString()))
+					.forEach(patientsToImport::add);
+		}
 
 		final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
 				.apiKey(apiKey)
@@ -63,6 +88,6 @@ public class RetrievePatientsProcessor implements Processor
 		exchange.getIn().setHeader(HEADER_ORG_CODE, request.getOrgCode());
 		exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
 		exchange.setProperty(ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, albertaConnectionDetails);
-		exchange.getIn().setBody(patients);
+		exchange.getIn().setBody(patientsToImport);
 	}
 }
