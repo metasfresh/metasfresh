@@ -75,7 +75,7 @@ public class ErrorManager implements IErrorManager
 		return trxManager.callInNewTrx(() -> insertRemoteIssueInTrx(request));
 	}
 
-	private AdIssueId insertRemoteIssueInTrx(final InsertRemoteIssueRequest request)
+	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
 	{
 		final I_AD_Issue issue = newInstance(I_AD_Issue.class);
 

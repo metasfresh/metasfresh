@@ -31,22 +31,19 @@ import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.error.AdIssueId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.organization.OrgQuery;
-import de.metas.organization.impl.OrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -77,7 +74,6 @@ public class AD_Issue_StepDef
 												  "POST", payload, userAuthToken);
 	}
 
-
 	@Given("I_AD_PInstance with id {string} is created")
 	public void new_PInstanceId_is_created(final String PInstanceIdString)
 	{
@@ -90,45 +86,41 @@ public class AD_Issue_StepDef
 	}
 
 	@Then("a new metasfresh AD issue is created")
-	public void new_metasfresh_ad_issue_is_created()
+	public void new_metasfresh_ad_issue_is_created() throws IOException
 	{
 		final String responseJson = apiResponse.getContent();
 		final ObjectMapper mapper = new ObjectMapper();
-		try
-		{
-			final JsonCreateIssueResponse response = mapper.readValue(responseJson, JsonCreateIssueResponse.class);
-			final JsonErrorItem request = mapper.readValue(apiRequest, JsonError.class).getErrors().get(0);
-			assertThat(request).isNotNull();
 
-			final AdIssueId adIssueId = AdIssueId.ofRepoId(response.getIds().get(0).getIssueId().getValue());
-			final I_AD_Issue issue = queryBL
-					.createQueryBuilderOutOfTrx(I_AD_Issue.class)
-					.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, adIssueId)
-					.create()
-					.firstOnlyOptional(I_AD_Issue.class).orElse(null);
+		final JsonCreateIssueResponse response = mapper.readValue(responseJson, JsonCreateIssueResponse.class);
+		final List<JsonErrorItem> requestErrorItemList = mapper.readValue(apiRequest, JsonError.class).getErrors();
+		assertThat(requestErrorItemList).isNotNull();
+		final JsonErrorItem request = requestErrorItemList.get(0);
+		assertThat(request).isNotNull();
 
-			I_AD_Org adOrg = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_AD_Org.class)
-					.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, request.getOrgCode())
-					.create()
-					.firstOnly(I_AD_Org.class);
+		final AdIssueId adIssueId = AdIssueId.ofRepoId(response.getIds().get(0).getIssueId().getValue());
+		final I_AD_Issue issue = queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+				.addEqualsFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, adIssueId)
+				.create()
+				.firstOnlyOptional(I_AD_Issue.class).orElse(null);
 
-			final OrgId orgId = adOrg != null ? OrgId.ofRepoId(adOrg.getAD_Org_ID()) : OrgId.ANY;
+		final I_AD_Org adOrg = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class)
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, request.getOrgCode())
+				.create()
+				.firstOnly(I_AD_Org.class);
 
-			assertThat(issue).isNotNull();
-			assertThat(issue.getStackTrace()).isEqualTo(request.getStackTrace().replace("java.lang.", ""));
-			assertThat(issue.getSourceMethodName()).isEqualTo(request.getSourceMethodName());
-			assertThat(issue.getSourceClassName()).isEqualTo(request.getSourceClassName());
-			assertThat(issue.getIssueSummary()).isEqualTo(request.getIssueSummary());
-			assertThat(issue.getIssueCategory()).isEqualTo(request.getIssueCategory());
-			assertThat(issue.getAD_PInstance_ID()).isEqualTo(pInstanceId.getRepoId());
-			assertThat(orgId).isNotNull();
-			assertThat(issue.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
+		final OrgId orgId = adOrg != null ? OrgId.ofRepoId(adOrg.getAD_Org_ID()) : OrgId.ANY;
 
-		}
-		catch (final IOException e)
-		{
-			e.printStackTrace();
-		}
+		assertThat(issue).isNotNull();
+		assertThat(issue.getStackTrace()).isEqualTo(request.getStackTrace().replace("java.lang.", ""));
+		assertThat(issue.getSourceMethodName()).isEqualTo(request.getSourceMethodName());
+		assertThat(issue.getSourceClassName()).isEqualTo(request.getSourceClassName());
+		assertThat(issue.getIssueSummary()).isEqualTo(request.getIssueSummary());
+		assertThat(issue.getIssueCategory()).isEqualTo(request.getIssueCategory());
+		assertThat(issue.getAD_PInstance_ID()).isEqualTo(pInstanceId.getRepoId());
+		assertThat(orgId).isNotNull();
+		assertThat(issue.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
+
 	}
 }

@@ -148,7 +148,7 @@ public class ProcessRestController
 				.body(response);
 	}
 
-	@ApiOperation("Create an issue")
+	@ApiOperation("Create an AD_Issue")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully created issue"),
 			@ApiResponse(code = 401, message = "You are not authorized to create new issue"),

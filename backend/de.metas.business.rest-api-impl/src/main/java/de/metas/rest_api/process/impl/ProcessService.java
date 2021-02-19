@@ -195,15 +195,15 @@ public class ProcessService
 	@NonNull
 	private OrgId retrieveOrgId(@Nullable final String orgCode)
 	{
-		Optional<OrgId> orgId = Optional.empty();
-
-		if(!StringUtils.isEmpty(orgCode))
+		if(StringUtils.isEmpty(orgCode))
 		{
-			final OrgQuery query = OrgQuery.builder()
-					.orgValue(orgCode)
-					.build();
-			orgId = orgDAO.retrieveOrgIdBy(query);
+			return Env.getOrgId();
 		}
-		return orgId.orElse(Env.getOrgId());
+
+		final OrgQuery query = OrgQuery.builder()
+				.orgValue(orgCode)
+				.build();
+
+		return orgDAO.retrieveOrgIdBy(query).orElse(Env.getOrgId());
 	}
 }
