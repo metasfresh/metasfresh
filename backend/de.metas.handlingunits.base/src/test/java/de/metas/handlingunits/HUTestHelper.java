@@ -27,6 +27,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -425,6 +431,15 @@ public class HUTestHelper
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);

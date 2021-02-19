@@ -49,6 +49,13 @@ public enum AcctSegmentType
 	UserList2(AcctSchemaElementType.UserList2), //
 	UserElement1(AcctSchemaElementType.UserElement1), //
 	UserElement2(AcctSchemaElementType.UserElement2),  //
+	UserElementString1(AcctSchemaElementType.UserElementString1),
+	UserElementString2(AcctSchemaElementType.UserElementString2),
+	UserElementString3(AcctSchemaElementType.UserElementString3),
+	UserElementString4(AcctSchemaElementType.UserElementString4),
+	UserElementString5(AcctSchemaElementType.UserElementString5),
+	UserElementString6(AcctSchemaElementType.UserElementString6),
+	UserElementString7(AcctSchemaElementType.UserElementString7)
 	;
 
 	// private final AcctSchemaElementType elementType;
