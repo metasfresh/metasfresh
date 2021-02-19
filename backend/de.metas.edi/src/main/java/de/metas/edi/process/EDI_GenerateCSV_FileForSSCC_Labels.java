@@ -48,6 +48,8 @@ public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess imp
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private static final AdMessageKey MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED = AdMessageKey.of("WEBUI_ZebraConfigError");
+	private final ZebraPrinterService zebraPrinterService = SpringContextHolder.instance.getBean(ZebraPrinterService.class);
+	private final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 
 	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
 	{
@@ -92,8 +94,6 @@ public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess imp
 
 	void generateCSV_FileForSSCC_Labels(final Collection<Integer> desadvLinePackIDsToPrint)
 	{
-		final ZebraPrinterService zebraPrinterService = SpringContextHolder.instance.getBean(ZebraPrinterService.class);
-		final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 		final ZebraConfigId zebraConfigId = zebraConfigRepository.getZebraConfigForDesadvLinePackID(desadvLinePackIDsToPrint.stream().findFirst().get());
 		final ReportResultData reportResultData = zebraPrinterService
 				.createCSV_FileForSSCC18_Labels(desadvLinePackIDsToPrint, zebraConfigId, getProcessInfo().getPinstanceId());
