@@ -217,7 +217,7 @@ class Header extends PureComponent {
 
   /**
    * @method handleDashboardLink
-   * @summary ToDo: Describe the method
+   * @summary Reset breadcrumbs after clicking the logo
    */
   handleDashboardLink = () => {
     const { dispatch } = this.props;

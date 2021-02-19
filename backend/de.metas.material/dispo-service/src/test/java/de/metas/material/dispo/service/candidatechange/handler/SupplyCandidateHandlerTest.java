@@ -1,6 +1,9 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -15,11 +18,13 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -33,7 +38,7 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -67,14 +72,20 @@ public class SupplyCandidateHandlerTest
 	private SupplyCandidateHandler supplyCandiateHandler;
 
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionFactories);
+
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,

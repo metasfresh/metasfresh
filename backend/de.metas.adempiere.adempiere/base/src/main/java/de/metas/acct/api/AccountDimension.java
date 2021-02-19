@@ -26,15 +26,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
  * Immutable {@link AccountDimension} implementation
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class AccountDimension
 {
@@ -47,7 +50,7 @@ public final class AccountDimension
 
 	private final String alias;
 	private final AcctSchemaId acctSchemaId;
-	private final ImmutableMap<AcctSegmentType, Integer> segmentValues;
+	private final ImmutableMap<AcctSegmentType, Object> segmentValues;
 
 	private AccountDimension(final Builder builder)
 	{
@@ -71,10 +74,11 @@ public final class AccountDimension
 		return alias;
 	}
 
-	public final int getSegmentValue(final AcctSegmentType segmentType)
+	public final Object getSegmentValue(final AcctSegmentType segmentType)
 	{
-		final Integer value = segmentValues.get(segmentType);
-		return value == null ? 0 : value;
+		final Object value = segmentValues.get(segmentType);
+
+		return value;
 	}
 
 	public final boolean isSegmentValueSet(final AcctSegmentType segmentType)
@@ -97,12 +101,12 @@ public final class AccountDimension
 
 	public int getAD_Client_ID()
 	{
-		return getSegmentValue(AcctSegmentType.Client);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Client),0);
 	}
 
 	public int getAD_Org_ID()
 	{
-		return getSegmentValue(AcctSegmentType.Organization);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Organization),0);
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -112,91 +116,128 @@ public final class AccountDimension
 
 	public int getC_ElementValue_ID()
 	{
-		return getSegmentValue(AcctSegmentType.Account);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Account),0);
 	}
 
 	public int getC_SubAcct_ID()
 	{
-		return getSegmentValue(AcctSegmentType.SubAccount);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SubAccount),0);
 	}
 
 	public int getM_Product_ID()
 	{
-		return getSegmentValue(AcctSegmentType.Product);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Product),0);
 	}
 
 	public int getC_BPartner_ID()
 	{
-		return getSegmentValue(AcctSegmentType.BPartner);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.BPartner),0);
 	}
 
 	public int getAD_OrgTrx_ID()
 	{
-		return getSegmentValue(AcctSegmentType.OrgTrx);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.OrgTrx),0);
 	}
 
 	public int getC_LocFrom_ID()
 	{
-		return getSegmentValue(AcctSegmentType.LocationFrom);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationFrom),0);
 	}
 
 	public int getC_LocTo_ID()
 	{
-		return getSegmentValue(AcctSegmentType.LocationTo);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.LocationTo),0);
 	}
 
 	public int getC_SalesRegion_ID()
 	{
-		return getSegmentValue(AcctSegmentType.SalesRegion);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesRegion),0);
 	}
 
 	public int getC_Project_ID()
 	{
-		return getSegmentValue(AcctSegmentType.Project);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Project),0);
 	}
 
 	public int getC_Campaign_ID()
 	{
-		return getSegmentValue(AcctSegmentType.Campaign);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Campaign),0);
 	}
 
 	public int getC_Activity_ID()
 	{
-		return getSegmentValue(AcctSegmentType.Activity);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
 	}
 
 	public int getUser1_ID()
 	{
-		return getSegmentValue(AcctSegmentType.UserList1);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList1),0);
 	}
 
 	public int getUser2_ID()
 	{
-		return getSegmentValue(AcctSegmentType.UserList2);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList2),0);
 	}
 
 	public int getUserElement1_ID()
 	{
-		return getSegmentValue(AcctSegmentType.UserElement1);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement1),0);
 	}
 
 	public int getUserElement2_ID()
 	{
-		return getSegmentValue(AcctSegmentType.UserElement2);
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement2),0);
+	}
+
+	public String getUserElementString1()
+	{
+		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString1));
+	}
+
+	public String getUserElementString2()
+	{
+		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString2));
+	}
+
+	public String getUserElementString3()
+	{
+		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString3));
+	}
+
+	public String getUserElementString4()
+	{
+		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString4));
+	}
+
+	public String getUserElementString5()
+	{
+		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString5));
+	}
+
+	public String getUserElementString6()
+	{
+		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString6));
+	}
+
+	public String getUserElementString7()
+	{
+		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString7));
 	}
 
 	public static final class Builder
 	{
 		private String alias = null;
 		private AcctSchemaId acctSchemaId;
-		private final Map<AcctSegmentType, Integer> segmentValues = new HashMap<>();
+		private final Map<AcctSegmentType, Object> segmentValues = new HashMap<>();
 
 		private Builder()
 		{
 			super();
 		}
 
-		/** Constructor used to initialize the builder with the values of given dimension */
+		/**
+		 * Constructor used to initialize the builder with the values of given dimension
+		 */
 		private Builder(final AccountDimension dim)
 		{
 			alias = dim.alias;
@@ -215,9 +256,21 @@ public final class AccountDimension
 			return this;
 		}
 
-		public final Builder setSegmentValue(final AcctSegmentType segmentType, final int value)
+		public final Builder setSegmentValue(final AcctSegmentType segmentType, final Object value)
 		{
-			segmentValues.put(segmentType, value);
+			final Object valueConverted;
+
+			if(value instanceof Integer)
+			{
+				final int intValue = NumberUtils.asInt(value, 0);
+				segmentValues.put(segmentType, intValue);
+			}
+			else
+			{
+				final String stringValue = String.valueOf(value);
+				segmentValues.put(segmentType, Strings.nullToEmpty(stringValue));
+			}
+
 			return this;
 		}
 
@@ -245,7 +298,7 @@ public final class AccountDimension
 				{
 					continue;
 				}
-				final int segmentValue = overrides.getSegmentValue(segmentType);
+				final Object segmentValue = overrides.getSegmentValue(segmentType);
 				setSegmentValue(segmentType, segmentValue);
 			}
 
@@ -363,6 +416,48 @@ public final class AccountDimension
 		public Builder setUserElement2_ID(final int userElement2_ID)
 		{
 			setSegmentValue(AcctSegmentType.UserElement2, userElement2_ID);
+			return this;
+		}
+
+		public Builder setUserElementString1(final String userElementString1)
+		{
+			setSegmentValue(AcctSegmentType.UserElementString1, userElementString1);
+			return this;
+		}
+
+		public Builder setUserElementString2(final String userElementString2)
+		{
+			setSegmentValue(AcctSegmentType.UserElementString2, userElementString2);
+			return this;
+		}
+
+		public Builder setUserElementString3(final String userElementString3)
+		{
+			setSegmentValue(AcctSegmentType.UserElementString3, userElementString3);
+			return this;
+		}
+
+		public Builder setUserElementString4(final String userElementString4)
+		{
+			setSegmentValue(AcctSegmentType.UserElementString4, userElementString4);
+			return this;
+		}
+
+		public Builder setUserElementString5(final String userElementString5)
+		{
+			setSegmentValue(AcctSegmentType.UserElementString5, userElementString5);
+			return this;
+		}
+
+		public Builder setUserElementString6(final String userElementString6)
+		{
+			setSegmentValue(AcctSegmentType.UserElementString6, userElementString6);
+			return this;
+		}
+
+		public Builder setUserElementString7(final String userElementString7)
+		{
+			setSegmentValue(AcctSegmentType.UserElementString7, userElementString7);
 			return this;
 		}
 	}

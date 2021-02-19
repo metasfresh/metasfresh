@@ -53,7 +53,7 @@ public class CurrencyId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final CurrencyId currencyId)
+	public static int toRepoId(@Nullable final CurrencyId currencyId)
 	{
 		return currencyId != null ? currencyId.getRepoId() : -1;
 	}

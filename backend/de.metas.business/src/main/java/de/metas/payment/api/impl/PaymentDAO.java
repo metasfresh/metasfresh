@@ -1,46 +1,23 @@
 package de.metas.payment.api.impl;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import de.metas.payment.PaymentId;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import de.metas.payment.PaymentId;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PaymentDAO extends AbstractPaymentDAO
 {
 	@Override
-	public BigDecimal getAvailableAmount(PaymentId paymentId)
+	public BigDecimal getAvailableAmount(@NonNull final PaymentId paymentId)
 	{
 		final BigDecimal amt = DB.getSQLValueBDEx(ITrx.TRXNAME_ThreadInherited,
 				"SELECT paymentAvailable(?)",
@@ -52,35 +29,24 @@ public class PaymentDAO extends AbstractPaymentDAO
 	@Override
 	public BigDecimal getAllocatedAmt(final I_C_Payment payment)
 	{
-		if (payment.getC_Charge_ID() > 0)
-		{
-			return payment.getPayAmt();
-		}
-
-		final String trxName = InterfaceWrapperHelper.getTrxName(payment);
-		final String sql = "SELECT "
-				// task 09342/09373: also take into account the payment-writeoff-amount, i.e. "al.PaymentWriteOffAmt"
-				+ "SUM(currencyConvert(al.Amount + al.PaymentWriteOffAmt, ah.C_Currency_ID, p.C_Currency_ID, ah.DateTrx, p.C_ConversionType_ID, al.AD_Client_ID, al.AD_Org_ID))"
-				+ "FROM C_AllocationLine al"
-				+ "   INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID) "
-				+ "   INNER JOIN C_Payment p ON (al.C_Payment_ID=p.C_Payment_ID) "
-				+ "WHERE al.C_Payment_ID=?"
-				+ "   AND ah.IsActive='Y' AND al.IsActive='Y'";
-
-		final BigDecimal sqlValueBD = DB.getSQLValueBD(trxName,
-				sql,
-				payment.getC_Payment_ID());
-		if (sqlValueBD == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		return sqlValueBD;
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+		return getAllocatedAmt(paymentId);
 	}
 
 	@Override
-	public void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType)
+	public BigDecimal getAllocatedAmt(final PaymentId paymentId)
 	{
-		String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
+		final BigDecimal amt = DB.getSQLValueBDEx(ITrx.TRXNAME_ThreadInherited,
+				"SELECT paymentAllocatedAmt(?)",
+				paymentId);
+
+		return amt != null ? amt : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void updateDiscountAndPayment(final I_C_Payment payment, final int c_Invoice_ID, final I_C_DocType c_DocType)
+	{
+		final String sql = "SELECT C_BPartner_ID,C_Currency_ID," // 1..2
 				+ " invoiceOpen(C_Invoice_ID, ?)," // 3 #1
 				+ " invoiceDiscount(C_Invoice_ID,?,?), IsSOTrx " // 4..5 #2/3
 				+ "FROM C_Invoice WHERE C_Invoice_ID=?"; // #4
@@ -131,7 +97,7 @@ public class PaymentDAO extends AbstractPaymentDAO
 				payment.setDiscountAmt(DiscountAmt);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql);
 		}

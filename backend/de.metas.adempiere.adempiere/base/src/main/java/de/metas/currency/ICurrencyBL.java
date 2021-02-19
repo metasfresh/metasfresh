@@ -139,6 +139,8 @@ public interface ICurrencyBL extends ISingletonService
 			ClientId clientId,
 			OrgId orgId);
 
+	CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull ConversionTypeMethod type);
+
 	CurrencyRate getCurrencyRate(
 			@NonNull CurrencyId currencyFromId,
 			@NonNull CurrencyId currencyToId,
@@ -147,14 +149,12 @@ public interface ICurrencyBL extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
-	/**
-	 * @throws NoCurrencyRateFoundException
-	 */
 	@NonNull
 	CurrencyRate getCurrencyRate(
 			CurrencyConversionContext conversionCtx,
 			CurrencyId currencyFromId,
-			CurrencyId currencyToId);
+			CurrencyId currencyToId)
+			throws NoCurrencyRateFoundException;
 
 	@NonNull
 	CurrencyCode getCurrencyCodeById(@NonNull CurrencyId currencyId);

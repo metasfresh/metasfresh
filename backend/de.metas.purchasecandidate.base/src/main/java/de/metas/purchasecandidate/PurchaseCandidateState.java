@@ -40,17 +40,25 @@ class PurchaseCandidateState
 	@Setter(AccessLevel.NONE)
 	private boolean processedInitial;
 
+	private boolean reqCreated;
+	@Setter(AccessLevel.NONE)
+	private boolean reqCreatedInitial;
+
 	@Builder
 	private PurchaseCandidateState(
 			final boolean prepared,
 			final boolean processed,
-			final boolean locked)
+			final boolean locked,
+			final boolean reqCreated)
 	{
 		this.prepared = prepared;
 		this.preparedInitial = prepared;
 
 		this.processed = processed;
 		this.processedInitial = processed;
+
+		this.reqCreated = reqCreated;
+		this.reqCreatedInitial = reqCreated;
 
 		this.locked = locked;
 	}
@@ -62,6 +70,9 @@ class PurchaseCandidateState
 
 		this.processed = from.processed;
 		this.processedInitial = from.processedInitial;
+
+		this.reqCreated = from.reqCreated;
+		this.reqCreatedInitial = from.reqCreatedInitial;
 
 		this.locked = from.locked;
 	}
@@ -79,7 +90,8 @@ class PurchaseCandidateState
 	public boolean hasChanges()
 	{
 		return prepared != preparedInitial
-				|| processed != processedInitial;
+				|| processed != processedInitial
+				|| reqCreated != reqCreatedInitial;
 
 	}
 
@@ -87,6 +99,7 @@ class PurchaseCandidateState
 	{
 		preparedInitial = prepared;
 		processedInitial = processed;
+		reqCreatedInitial = reqCreated;
 	}
 
 }

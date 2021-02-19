@@ -221,7 +221,8 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	{
 		if (huAggregationType == null)
 		{
-			return DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
+			// #10656 There is no inventory doctype without a subtype. Consider the AggregatedHUInventory as a default
+			return AggregationType.MULTIPLE_HUS.getDocBaseAndSubType();
 		}
 		else
 		{
@@ -387,10 +388,12 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
 	{
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-		if (!productBL.isInstanceAttribute(productId))
-		{
-			return AttributeSetInstanceId.NONE;
-		}
+
+		// Always extract an ASI. Even if the product has no ASI, the HUs that we might want to match with might have Attributes that need to be matched against importRecord
+		// if (!productBL.isInstanceAttribute(productId))
+		// {
+		// 	return AttributeSetInstanceId.NONE;
+		// }
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());

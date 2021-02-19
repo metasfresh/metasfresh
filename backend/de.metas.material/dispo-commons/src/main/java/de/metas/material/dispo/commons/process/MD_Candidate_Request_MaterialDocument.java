@@ -66,7 +66,8 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 
 		final String status = r.getMD_Candidate_Status();
 
-		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status) || X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
+		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status)
+		|| X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
 	};
 
 	@Override

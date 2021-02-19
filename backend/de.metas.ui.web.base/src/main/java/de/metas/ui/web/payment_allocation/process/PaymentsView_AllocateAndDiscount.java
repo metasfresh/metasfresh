@@ -1,15 +1,17 @@
 package de.metas.ui.web.payment_allocation.process;
 
-import org.compiere.util.DisplayType;
-
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationResult;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.payment_allocation.process.PaymentsViewAllocateCommand.PaymentsViewAllocateCommandBuilder;
 import lombok.NonNull;
+import org.compiere.util.DisplayType;
+
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -21,12 +23,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,10 +37,14 @@ import lombok.NonNull;
 
 public class PaymentsView_AllocateAndDiscount extends PaymentsView_Allocate_Template implements IProcessPrecondition
 {
+	@Param(parameterName = "DateTrx", mandatory = true)
+	private LocalDate dateTrx;
+
 	@Override
 	protected void customizePaymentsViewAllocateCommandBuilder(@NonNull final PaymentsViewAllocateCommandBuilder builder)
 	{
-		builder.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.DISCOUNT);
+		builder.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.DISCOUNT)
+				.defaultDateTrx(dateTrx);
 	}
 
 	@Override

@@ -67,7 +67,7 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 			return properties;
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}

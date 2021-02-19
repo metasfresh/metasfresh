@@ -1,6 +1,7 @@
 package de.metas.invoice.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -8,10 +9,14 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.costing.ChargeId;
+import de.metas.costing.impl.ChargeRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -240,9 +245,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	{
 		// FIXME: we need to retrieve the C_TaxCategory_ID by using Pricing Engine
 
-		if (invoiceLine.getC_Charge_ID() > 0)
+		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
+
+		final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
+		if (chargeId != null)
 		{
-			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
+			final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
+			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
