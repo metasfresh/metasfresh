@@ -79,17 +79,15 @@ public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess imp
 
 			if (formatLinesWithNoZebraConfig.size() > 0 && zebraConfigIds.size() > 0)
 			{
-				ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
+				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
 			}
 
 			if (zebraConfigIds.size() > 1)
 			{
-				ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
+				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
 			}
 		}
-
 		return ProcessPreconditionsResolution.accept();
-
 	}
 
 	void generateCSV_FileForSSCC_Labels(final Collection<Integer> desadvLinePackIDsToPrint)
