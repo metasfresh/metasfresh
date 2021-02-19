@@ -269,6 +269,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
 	/** ServiceRepairOrder = MRO */
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance advice = RM */
+	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
 	@Override
 	public void setDocBaseType (final java.lang.String DocBaseType)
 	{

@@ -1,14 +1,21 @@
 package de.metas.inoutcandidate.api.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.I_M_Warehouse;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -51,7 +58,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 	/**
 	 * Regression integration test for http://dewiki908/mediawiki/index.php/05946_Wareneingang_Lagerumbuchung_%28101188685084%29
-	 *
+	 * <p>
 	 * Case:
 	 * <ul>
 	 * <li>checks if M_Warehouse_ID and M_Warehouse_Dest_ID are set correctly in M_ReceiptSchedule and M_InOut
@@ -83,21 +90,21 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		//
 		// Check Schedule's Warehouses
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_ID",
-				order1.getM_Warehouse_ID(),
-				schedule.getM_Warehouse_ID());
+							order1.getM_Warehouse_ID(),
+							schedule.getM_Warehouse_ID());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.C_BPartner",
-				order1_line1_product1_wh1.getC_BPartner_ID(),
-				schedule.getC_BPartner_ID());
+							order1_line1_product1_wh1.getC_BPartner_ID(),
+							schedule.getC_BPartner_ID());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Override_ID",
-				0, // shall not be set
-				schedule.getM_Warehouse_Override_ID());
+							0, // shall not be set
+							schedule.getM_Warehouse_Override_ID());
 
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID",
-				extractProductWarehouseId(order1_line1_product1_wh1),
-				WarehouseId.ofRepoIdOrNull(schedule.getM_Warehouse_Dest_ID()));
+							extractProductWarehouseId(order1_line1_product1_wh1),
+							WarehouseId.ofRepoIdOrNull(schedule.getM_Warehouse_Dest_ID()));
 		// Guard agaist testing error
 		Assert.assertFalse("M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule,
-				schedule.getM_Warehouse_ID() == schedule.getM_Warehouse_Dest_ID());
+						   schedule.getM_Warehouse_ID() == schedule.getM_Warehouse_Dest_ID());
 
 		//
 		// Generate Receipt
@@ -114,8 +121,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 		// Check receipt's warehouse
 		Assert.assertEquals("Invalid M_InOut.M_Warehouse_ID",
-				order1.getM_Warehouse_ID(),
-				receipt.getM_Warehouse_ID());
+							order1.getM_Warehouse_ID(),
+							receipt.getM_Warehouse_ID());
 
 		//
 		// Generate Movement from receipt
@@ -131,18 +138,18 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		final I_M_MovementLine movementLine = movementLines.get(0);
 		// Check Movement Line warehouses
 		Assert.assertEquals("Invalid movement line Locator (from)",
-				receipt.getM_Warehouse(),
-				movementLine.getM_Locator().getM_Warehouse());
+							receipt.getM_Warehouse(),
+							movementLine.getM_Locator().getM_Warehouse());
 		Assert.assertEquals("Invalid movement line Locator (to)",
-				schedule.getM_Warehouse_Dest_ID(),
-				movementLine.getM_LocatorTo().getM_Warehouse_ID());
+							schedule.getM_Warehouse_Dest_ID(),
+							movementLine.getM_LocatorTo().getM_Warehouse_ID());
 		// Check Movement Line product & qty
 		Assert.assertEquals("Invalid movement line product (compared with order line's product)",
-				order1_line1_product1_wh1.getM_Product_ID(),
-				movementLine.getM_Product_ID());
+							order1_line1_product1_wh1.getM_Product_ID(),
+							movementLine.getM_Product_ID());
 		Assert.assertThat("Invalid movement line Qty (compared with order line's qty)",
-				movementLine.getMovementQty(), // actual
-				Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));
+						  movementLine.getMovementQty(), // actual
+						  Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));
 	}
 
 	private WarehouseId extractProductWarehouseId(final I_C_OrderLine orderLine)

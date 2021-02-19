@@ -4,6 +4,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.Collection;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
@@ -105,6 +108,22 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final I_C_UOM uomRecord = loadOutOfTrx(product.getUomId().getRepoId(), I_C_UOM.class);
 
+
+		final Dimension dimension = Dimension.builder()
+				.activityId(ActivityId.ofRepoIdOrNull(event.getActivityId()))
+				.campaignId(event.getCampaignId())
+				.projectId(ProjectId.ofRepoIdOrNull(event.getProjectId()))
+				.userElement1Id(event.getUserElementId1())
+				.userElement2Id(event.getUserElementId2())
+				.userElementString1(event.getUserElementString1())
+				.userElementString2(event.getUserElementString2())
+				.userElementString3(event.getUserElementString3())
+				.userElementString4(event.getUserElementString4())
+				.userElementString5(event.getUserElementString5())
+				.userElementString6(event.getUserElementString6())
+				.userElementString7(event.getUserElementString7())
+				.build();
+
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate
 				.builder()
 				.groupReference(DemandGroupReference.EMPTY)
@@ -112,6 +131,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
 				.purchaseDatePromised(TimeUtil.asZonedDateTime(materialDescriptor.getDate())) // dateRequired
 
+				.dimension(dimension)
 				.orgId(orgId)
 				.processed(false)
 				.productId(product.getId())

@@ -316,7 +316,7 @@ public class ProductDAO implements IProductDAO
 		}
 
 		final I_M_Product product = getById(productId);
-		return product != null && product.isActive() ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
+		return product != null ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
 	}
 
 	@Nullable

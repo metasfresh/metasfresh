@@ -345,17 +345,6 @@ public final class MPayment extends X_C_Payment
 	}    // beforeSave
 
 	/**
-	 * Get Allocated Amt in Payment Currency
-	 *
-	 * @return amount, never <code>null</code>, even if there are no allocations
-	 */
-	@Deprecated
-	public BigDecimal getAllocatedAmt()
-	{
-		return Services.get(IPaymentDAO.class).getAllocatedAmt(this);
-	}    // getAllocatedAmt
-
-	/**
 	 * Test Allocation (and set allocated flag)
 	 *
 	 * @return true if updated

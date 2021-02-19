@@ -1,0 +1,16 @@
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta=[
+  {
+    "id": 100001,
+    "type": "Alberta",
+    "camelUrl": "camelUrl",
+    "name": "name",
+    "childConfig": {
+      "id": 100002,
+      "parentId": 100001,
+      "name": "name",
+      "apiKey": "apiKey",
+      "baseUrl": "baseUrl",
+      "tenant": "tenant"
+    }
+  }
+]

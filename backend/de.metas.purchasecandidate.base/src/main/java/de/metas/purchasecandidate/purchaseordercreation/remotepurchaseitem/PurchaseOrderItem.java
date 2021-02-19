@@ -4,12 +4,14 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.Dimension;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.base.Objects;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -24,6 +26,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -88,6 +95,9 @@ public class PurchaseOrderItem implements PurchaseItem
 	@Getter
 	private OrderAndLineId purchaseOrderAndLineId;
 
+	@Getter
+	private Dimension dimension;
+
 	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
 			final PurchaseItemId purchaseItemId,
@@ -96,7 +106,8 @@ public class PurchaseOrderItem implements PurchaseItem
 			@NonNull final ZonedDateTime datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
-			final OrderAndLineId purchaseOrderAndLineId)
+			final OrderAndLineId purchaseOrderAndLineId,
+			@Nullable Dimension dimension)
 	{
 		this.purchaseItemId = purchaseItemId;
 
@@ -113,6 +124,8 @@ public class PurchaseOrderItem implements PurchaseItem
 				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
 				remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
+
+		this.dimension = dimension;
 	}
 
 	private PurchaseOrderItem(final PurchaseOrderItem from, final PurchaseCandidate newPurchaseCandidate)
@@ -128,6 +141,8 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.purchaseOrderAndLineId = from.purchaseOrderAndLineId;
 
 		this.transactionReference = from.transactionReference;
+
+		this.dimension = from.dimension;
 	}
 
 	public PurchaseOrderItem copy(final PurchaseCandidate newPurchaseCandidate)
@@ -199,13 +214,24 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;
 	}
 
-	public void setPurchaseOrderLineIdAndMarkProcessed(@NonNull final OrderAndLineId purchaseOrderAndLineId)
+	public void setPurchaseOrderLineId(@NonNull final OrderAndLineId purchaseOrderAndLineId)
 	{
 		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
+	}
 
+	public void markPurchasedIfNeeded()
+	{
 		if (purchaseMatchesOrExceedsRequiredQty())
 		{
 			purchaseCandidate.markProcessed();
+		}
+	}
+
+	public void markReqCreatedIfNeeded()
+	{
+		if (purchaseMatchesOrExceedsRequiredQty())
+		{
+			purchaseCandidate.setReqCreated(true);
 		}
 	}
 }

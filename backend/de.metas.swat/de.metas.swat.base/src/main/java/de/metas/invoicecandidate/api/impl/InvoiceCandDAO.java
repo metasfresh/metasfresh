@@ -1,28 +1,58 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutDAO;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
+import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
+import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
+import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.model.I_M_ProductGroup;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.time.InstantInterval;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -47,7 +77,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency_Acct;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
@@ -58,55 +87,25 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
-import ch.qos.logback.classic.Level;
-import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.inout.IInOutDAO;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
-import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
-import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
-import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
-import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
-import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
-import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
-import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.model.I_M_ProductGroup;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
 
 /*
  * #%L
@@ -1124,15 +1123,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
+	public Iterator<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
 	{
 		final IQuery<I_C_BPartner> bpartnersQuery = queryBL.createQueryBuilder(I_C_BPartner.class, invoiceSchedule)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMN_C_InvoiceSchedule_ID, invoiceSchedule.getC_InvoiceSchedule_ID())
 				.create();
 
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, invoiceSchedule)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnersQuery)
 				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
@@ -1143,7 +1144,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.endOrderBy()
 				//
 				.create()
-				.list(I_C_Invoice_Candidate.class);
+				.setOption(IQuery.OPTION_IteratorBufferSize, 2000)
+				.iterate(I_C_Invoice_Candidate.class);
 	}
 
 	@Override
@@ -1736,6 +1738,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, orgId);
 		}
 
+		final SOTrx soTrx = query.getSoTrx();
+		if (soTrx != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx, soTrx.isSales());
+		}
+
 		final InvoiceCandidateId invoiceCandidateId = query.getInvoiceCandidateId();
 		if (invoiceCandidateId != null)
 		{
@@ -1746,6 +1754,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		if (billBPartnerId != null)
 		{
 			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID, billBPartnerId);
+		}
+
+		final BPartnerId salesRepBPartnerId = query.getSalesRepBPartnerId();
+		if (salesRepBPartnerId != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId);
+		}
+
+		final InstantInterval dateOrderedInterval = query.getDateOrderedInterval();
+		if (dateOrderedInterval != null)
+		{
+			final Timestamp from = TimeUtil.asTimestamp(dateOrderedInterval.getFrom());
+			final Timestamp to = TimeUtil.asTimestamp(dateOrderedInterval.getTo());
+
+			filter.addBetweenFilter(I_C_Invoice_Candidate.COLUMNNAME_DateOrdered, from, to);
 		}
 
 		final LocalDate dateToInvoice = query.getDateToInvoice();

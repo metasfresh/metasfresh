@@ -19,11 +19,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.ForecastLineDimensionFactory;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_ForecastLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +60,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import org.mockito.Mockito;
 
 /*
  * #%L
@@ -81,14 +91,37 @@ public class CandidateRepositoryWriteServiceTests
 
 	private RepositoryTestHelper repositoryTestHelper;
 
+	private I_M_ForecastLine forecastLine;
+
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionFactories.add(new ForecastLineDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
+		forecastLine = createForecastLine(61);
+	}
+
+	private I_M_ForecastLine createForecastLine(final int forecastLineId)
+	{
+		final I_M_ForecastLine forecastLine = newInstance(I_M_ForecastLine.class);
+		forecastLine.setM_ForecastLine_ID(61);
+		save(forecastLine);
+
+		return forecastLine;
+
 	}
 
 	@Test
@@ -191,7 +224,7 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void addOrReplace_update()
 	{
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
 
 		// guard
 		final CandidatesQuery queryForStockUntilDate = repositoryTestHelper.mkQueryForStockUntilDate(NOW);
@@ -226,17 +259,17 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor())
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.businessCaseDetail(ProductionDetail.builder()
-						.description("description")
-						.plantId(ResourceId.ofRepoId(60))
-						.productBomLineId(70)
-						.productPlanningId(80)
-						.ppOrderId(100)
-						.ppOrderLineId(110)
-						.ppOrderDocStatus(DocStatus.Completed)
-						.advised(Flag.TRUE)
-						.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
-						.qty(TEN)
-						.build())
+											.description("description")
+											.plantId(ResourceId.ofRepoId(60))
+											.productBomLineId(70)
+											.productPlanningId(80)
+											.ppOrderId(100)
+											.ppOrderLineId(110)
+											.ppOrderDocStatus(DocStatus.Completed)
+											.advised(Flag.TRUE)
+											.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+											.qty(TEN)
+											.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(productionCandidate)
@@ -335,15 +368,15 @@ public class CandidateRepositoryWriteServiceTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DistributionDetail.builder()
-						.productPlanningId(80)
-						.plantId(85)
-						.networkDistributionLineId(90)
-						.ddOrderId(100)
-						.ddOrderLineId(110)
-						.shipperId(120)
-						.ddOrderDocStatus("ddOrderDocStatus")
-						.qty(TEN)
-						.build())
+											.productPlanningId(80)
+											.plantId(85)
+											.networkDistributionLineId(90)
+											.ddOrderId(100)
+											.ddOrderLineId(110)
+											.shipperId(120)
+											.ddOrderDocStatus("ddOrderDocStatus")
+											.qty(TEN)
+											.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(distributionCandidate)
@@ -405,7 +438,7 @@ public class CandidateRepositoryWriteServiceTests
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor()
-						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
+											.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
 				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(33).transactionDate(NOW).complete(true).build())
 				.build();

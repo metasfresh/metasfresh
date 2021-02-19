@@ -271,7 +271,7 @@ public abstract class AbstractTrx implements ITrx
 
 	@Nullable
 	@Override
-	public ITrxSavepoint createTrxSavepoint(final String name)
+	public ITrxSavepoint createTrxSavepoint(@Nullable final String name)
 	{
 		final ITrxSavepoint savepoint;
 		try
@@ -320,6 +320,8 @@ public abstract class AbstractTrx implements ITrx
 
 	/**
 	 * Release native savepoint
+	 *
+	 * @return true if released or if it was already released
 	 */
 	protected abstract boolean releaseSavepointNative(ITrxSavepoint savepoint) throws Exception;
 

@@ -137,10 +137,10 @@ public interface IProductDAO extends ISingletonService
 	Stream<I_M_Product> streamAllProducts();
 
 	/**
-	 * @return product category or null
+	 * @return product category or null if the productId is null
 	 */
 	@Nullable
-	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
+	ProductCategoryId retrieveProductCategoryByProductId(@Nullable ProductId productId);
 
 	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
