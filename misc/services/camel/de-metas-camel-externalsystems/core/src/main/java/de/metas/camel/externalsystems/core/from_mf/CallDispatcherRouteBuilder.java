@@ -66,6 +66,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 					exchange.getIn().setHeader("targetRoute", request.getExternalSystemName().getName() + "-" + request.getCommand());
 				})
 				.log("routing request to route ${header.targetRoute}")
-				.toD("direct:${header.targetRoute}", false);
+				.toD("direct:${header.targetRoute}", false)
+				.process(exchange -> exchange.getIn().setBody("OK")); //FIXME with the TODO from line 56
 	}
 }
