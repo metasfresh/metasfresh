@@ -709,7 +709,7 @@ public class CandidateRepositoryWriteService
 				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
 				.seqNo(candidateRecord.getSeqNo())
 				.build(),
-														   candidateRecord.getQty());
+				candidateRecord.getQty());
 
 		deleteRecord(candidateRecord);
 		return deleteResult;

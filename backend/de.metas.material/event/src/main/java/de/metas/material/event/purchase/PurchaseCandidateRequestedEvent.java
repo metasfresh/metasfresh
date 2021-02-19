@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.forecast.ForecastLine;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,6 +60,9 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 	 */
 	int salesOrderRepoId;
 
+	int forecastId;
+	int forecastLineId;
+
 	// Dimensions
 	int activityId;
 	int campaignId;
@@ -80,6 +84,8 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
 			@JsonProperty("salesOrderLineRepoId") @Nullable final int salesOrderLineRepoId,
 			@JsonProperty("salesOrderRepoId") @Nullable final int salesOrderRepoId,
+			@JsonProperty("forecastId") @Nullable final int forecastId,
+			@JsonProperty("forecastLineId") @Nullable final int forecastLineId,
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("activityId") @Nullable final int activityId,
 			@JsonProperty("campaignId") @Nullable final int campaignId,
@@ -99,6 +105,9 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 		this.salesOrderLineRepoId = salesOrderLineRepoId;
 		this.salesOrderRepoId = salesOrderRepoId;
 		this.eventDescriptor = eventDescriptor;
+
+		this.forecastId = forecastId;
+		this.forecastLineId = forecastLineId;
 
 		this.activityId = activityId;
 		this.campaignId = campaignId;

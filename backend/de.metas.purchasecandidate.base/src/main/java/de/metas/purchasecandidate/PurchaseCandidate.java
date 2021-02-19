@@ -1,24 +1,10 @@
 package de.metas.purchasecandidate;
 
-import static java.util.stream.Collectors.toCollection;
-
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import de.metas.document.dimension.Dimension;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -40,6 +26,18 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import static java.util.stream.Collectors.toCollection;
 
 /*
  * #%L
@@ -131,6 +129,8 @@ public class PurchaseCandidate
 			//
 			final boolean aggregatePOs,
 			//
+			@Nullable final ForecastLineId forecastLineId,
+			//
 			@Nullable final Dimension dimension)
 	{
 		this.id = id;
@@ -145,6 +145,7 @@ public class PurchaseCandidate
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(vendorProductNo)
 				.aggregatePOs(aggregatePOs)
+				.forecastLineId(forecastLineId)
 				.dimension(dimension)
 				.build();
 
@@ -236,6 +237,11 @@ public class PurchaseCandidate
 	public OrderAndLineId getSalesOrderAndLineIdOrNull()
 	{
 		return getImmutableFields().getSalesOrderAndLineIdOrNull();
+	}
+
+	public ForecastLineId getForecastLineId()
+	{
+		return getImmutableFields().getForecastLineId();
 	}
 
 	public Dimension getDimension ()

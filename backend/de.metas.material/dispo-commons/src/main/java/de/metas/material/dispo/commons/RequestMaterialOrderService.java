@@ -281,6 +281,8 @@ public class RequestMaterialOrderService
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
 				.salesOrderRepoId(singleCandidate.getAdditionalDemandDetail().getOrderId())
+				.forecastId(singleCandidate.getAdditionalDemandDetail().getForecastId())
+				.forecastLineId(singleCandidate.getAdditionalDemandDetail().getForecastLineId())
 
 				.projectId(dimension.getProjectId().getRepoId())
 				.campaignId(dimension.getCampaignId())
@@ -315,6 +317,8 @@ public class RequestMaterialOrderService
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
 				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
 				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
+				.forecastId(singleCandidate.getDemandDetail().getForecastId())
+				.forecastLineId(singleCandidate.getDemandDetail().getForecastLineId())
 
 				.campaignId(dimension.getCampaignId())
 				.activityId(dimension.getActivityId() == null ? -1 : dimension.getActivityId().getRepoId())

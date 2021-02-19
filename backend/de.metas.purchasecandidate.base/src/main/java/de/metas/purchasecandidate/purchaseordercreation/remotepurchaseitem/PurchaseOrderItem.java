@@ -1,17 +1,9 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import de.metas.document.dimension.Dimension;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.base.Objects;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.DocTypeId;
+import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -59,7 +51,6 @@ import java.time.ZonedDateTime;
  * for which the system now needs to create a {@code C_Order} etc.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString(exclude = "purchaseCandidate") // exclude purchaseCandidate to avoid stacktrace, since purchaseCandidate can hold a reference to this
 public class PurchaseOrderItem implements PurchaseItem
@@ -121,8 +112,8 @@ public class PurchaseOrderItem implements PurchaseItem
 
 		final boolean remotePurchaseExists = !Objects.equal(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
-				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
-				remotePurchaseOrderId);
+					  "If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
+					  remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
 
 		this.dimension = dimension;
@@ -197,6 +188,11 @@ public class PurchaseOrderItem implements PurchaseItem
 		final OrderAndLineId salesOrderAndLineId = getPurchaseCandidate().getSalesOrderAndLineIdOrNull();
 
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
+	}
+
+	public ForecastLineId getForecastLineId()
+	{
+		return getPurchaseCandidate().getForecastLineId();
 	}
 
 	private Quantity getQtyToPurchase()
