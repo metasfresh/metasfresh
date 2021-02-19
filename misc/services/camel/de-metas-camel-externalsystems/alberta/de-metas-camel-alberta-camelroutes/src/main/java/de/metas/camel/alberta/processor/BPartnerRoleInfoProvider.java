@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-camel-alberta-camelroutes
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,18 +20,35 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.alberta.processor;
 
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.stereotype.Component;
+import de.metas.common.bprelation.JsonBPRelationRole;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
-@Component
-public class ErrorReportRouteBuilder extends RouteBuilder
+import java.util.Map;
+import java.util.Optional;
+
+@Value
+@Builder
+public class BPartnerRoleInfoProvider
 {
-	@Override
-	public void configure()
+	@NonNull
+	String sourceBPartnerIdentifier;
+
+	@NonNull
+	String sourceBPartnerLocationIdentifier;
+
+	@NonNull
+	@Getter(AccessLevel.PRIVATE)
+	Map<String, JsonBPRelationRole> bpIdentifier2Role;
+
+	@NonNull
+	public Optional<JsonBPRelationRole> getRoleByBPIdentifier(@NonNull final String bPartnerIdentifier)
 	{
-		from("direct:Error-Route") //FIXME: temporary
-			.to("file://error_report.txt"); // TODO later: add AD_Issue creating Metasfresh-REST-EP
+		return Optional.ofNullable(bpIdentifier2Role.get(bPartnerIdentifier));
 	}
 }

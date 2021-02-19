@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core.to_mf;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
@@ -50,11 +51,14 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
-					if (lookupRequest instanceof JsonExternalReferenceCreateRequest)
+					if (!(lookupRequest instanceof JsonExternalReferenceCreateRequest))
 					{
-						throw new RuntimeCamelException("The route " + CREATE_ROUTE_ID + " requires the body to be instanceof JsonExternalReferenceCreateRequest. However, it is " + lookupRequest == null ? "null" : lookupRequest.getClass().getName());
+						throw new RuntimeCamelException("The route " + CREATE_ROUTE_ID + " requires the body to be instanceof JsonExternalReferenceCreateRequest. "
+																+ "However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 				})
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceCreateRequest.class))
+				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.to("http://{{metasfresh.create-externalreference.api.uri}}");
@@ -64,13 +68,16 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
-					if (lookupRequest instanceof JsonExternalReferenceLookupRequest)
+					if (!(lookupRequest instanceof JsonExternalReferenceLookupRequest))
 					{
-						throw new RuntimeCamelException("The route " + LOOKUP_ROUTE_ID + " requires the body to be instanceof JsonExternalReferenceLookupRequest. However, it is " + lookupRequest == null ? "null" : lookupRequest.getClass().getName());
+						throw new RuntimeCamelException("The route " + LOOKUP_ROUTE_ID + " requires the body to be instanceof JsonExternalReferenceLookupRequest. "
+																+ "However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 				})
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupRequest.class))
+				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.to("http://{{metasfresh.lookup-externalreference.api.uri}}");
+				.toD("http://{{metasfresh.lookup-externalreference.api.uri}}/${header.orgCode}");
 	}
 }

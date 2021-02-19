@@ -34,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.rest_api.SyncAdvise;
@@ -42,7 +43,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Singular;
 import lombok.Value;
 
 @ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")
@@ -76,8 +76,12 @@ public class JsonRequestComposite
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestBankAccountsUpsert bankAccounts;
 
+	@ApiModelProperty(value = "Ids of the business partner from external systems", position = 60)
+	@JsonInclude(Include.NON_NULL)
+	JsonExternalReferenceCreateRequest bPartnerReferenceCreateRequest;
+
 	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
-			+ READ_ONLY_SYNC_ADVISE_DOC, position = 50)
+			+ READ_ONLY_SYNC_ADVISE_DOC, position = 70)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -89,6 +93,7 @@ public class JsonRequestComposite
 			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
 			@JsonProperty("bankAccounts") @Nullable JsonRequestBankAccountsUpsert bankAccounts,
+			@JsonProperty("bpartnerReferenceCreateRequest") @Nullable final JsonExternalReferenceCreateRequest bPartnerReferenceCreateRequest,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;
@@ -96,6 +101,7 @@ public class JsonRequestComposite
 		this.locations = locations;
 		this.contacts = contacts;
 		this.bankAccounts = bankAccounts;
+		this.bPartnerReferenceCreateRequest = bPartnerReferenceCreateRequest;
 		this.syncAdvise = syncAdvise;
 	}
 

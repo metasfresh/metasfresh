@@ -41,9 +41,14 @@ import de.metas.common.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBu
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
+import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfExists;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -53,13 +58,12 @@ import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
-import de.metas.common.rest_api.SyncAdvise;
-import de.metas.common.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
@@ -68,6 +72,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -76,6 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -111,6 +117,7 @@ public class JsonPersisterService
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
+	private final transient ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient CurrencyRepository currencyRepository;
@@ -127,10 +134,12 @@ public class JsonPersisterService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
@@ -192,7 +201,41 @@ public class JsonPersisterService
 				bpartnerComposite,
 				effectiveSyncAdvise);
 
+		if (jsonRequestComposite.getBPartnerReferenceCreateRequest() != null
+				&& !Check.isEmpty(jsonRequestComposite.getBPartnerReferenceCreateRequest().getItems()))
+		{
+			final JsonExternalReferenceCreateRequest createRequest =
+					buildExternalReferenceCreateRequestWithBPId(jsonRequestComposite.getBPartnerReferenceCreateRequest(), bpartnerComposite);
+
+			externalReferenceRestControllerService.performInsert(orgCode, createRequest);
+		}
+
 		return resultBuilder.build();
+	}
+
+	@NonNull
+	private JsonExternalReferenceCreateRequest buildExternalReferenceCreateRequestWithBPId(
+			@NonNull final JsonExternalReferenceCreateRequest bPartnerReferenceCreateRequest,
+			@NonNull final BPartnerComposite bPartnerComposite)
+	{
+		if (bPartnerComposite.getBpartner() == null || bPartnerComposite.getBpartner().getId() == null)
+		{
+			throw new AdempiereException("bPartnerComposite.getBpartner().getId() shound never be null at this stage!")
+					.appendParametersToMessage()
+					.setParameter("BPartnerComposite", bPartnerComposite);
+		}
+
+		final JsonMetasfreshId bPartnerId = JsonMetasfreshId.of(bPartnerComposite.getBpartner().getId().getRepoId());
+
+		final List<JsonExternalReferenceItem> updateReferenceItems = bPartnerReferenceCreateRequest.getItems()
+				.stream()
+				.map(item -> JsonExternalReferenceItem.of(item.getLookupItem(), bPartnerId))
+				.collect(Collectors.toList());
+
+		return JsonExternalReferenceCreateRequest.builder()
+				.systemName(bPartnerReferenceCreateRequest.getSystemName())
+				.items(updateReferenceItems)
+				.build();
 	}
 
 	@Data

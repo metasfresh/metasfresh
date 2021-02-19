@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,18 +20,20 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.externalsystems.common;
 
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.stereotype.Component;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@Component
-public class ErrorReportRouteBuilder extends RouteBuilder
+@Value
+@Builder
+public class BPUpsertCamelRequest
 {
-	@Override
-	public void configure()
-	{
-		from("direct:Error-Route") //FIXME: temporary
-			.to("file://error_report.txt"); // TODO later: add AD_Issue creating Metasfresh-REST-EP
-	}
+	@NonNull
+	String orgCode;
+
+	@NonNull
+	JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert;
 }

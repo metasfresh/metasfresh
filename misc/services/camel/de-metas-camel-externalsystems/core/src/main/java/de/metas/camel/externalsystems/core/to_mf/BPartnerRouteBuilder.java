@@ -23,7 +23,9 @@
 package de.metas.camel.externalsystems.core.to_mf;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
 import org.apache.camel.Exchange;
@@ -31,6 +33,8 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 
 @Component
 public class BPartnerRouteBuilder extends RouteBuilder
@@ -46,13 +50,19 @@ public class BPartnerRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
-					if (lookupRequest instanceof JsonRequestBPartnerUpsert)
+					if (!(lookupRequest instanceof BPUpsertCamelRequest))
 					{
-						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof JsonRequestBPartnerUpsert. However, it is " + lookupRequest == null ? "null" : lookupRequest.getClass().getName());
+						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPUpsertCamelRequest."
+																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
+
+					exchange.getIn().setHeader(HEADER_ORG_CODE, ((BPUpsertCamelRequest)lookupRequest).getOrgCode());
+					exchange.getIn().setBody(((BPUpsertCamelRequest)lookupRequest).getJsonRequestBPartnerUpsert());
 				})
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPartnerUpsert.class))
+				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.to("http://{{metasfresh.upsert-bpartner.api.uri}}");
+				.toD("http://{{metasfresh.upsert-bpartner.api.uri}}/${header." + HEADER_ORG_CODE + "}");
 	}
 }

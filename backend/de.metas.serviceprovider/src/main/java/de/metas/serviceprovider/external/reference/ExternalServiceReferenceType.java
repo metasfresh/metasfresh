@@ -24,7 +24,6 @@ package de.metas.serviceprovider.external.reference;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.model.I_S_Milestone;
@@ -35,7 +34,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_IssueID;
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_MilestoneId;

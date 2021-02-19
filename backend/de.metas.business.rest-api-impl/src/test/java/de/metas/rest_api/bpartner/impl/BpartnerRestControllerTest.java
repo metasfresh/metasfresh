@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -44,6 +45,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -162,7 +164,8 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				currencyRepository);
+				currencyRepository,
+				Mockito.mock(ExternalReferenceRestControllerService.class));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

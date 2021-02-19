@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de.metas.externalreference
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,18 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.externalreference;
 
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
 
-@Component
-public class ErrorReportRouteBuilder extends RouteBuilder
+@AllArgsConstructor
+@Getter
+public enum AlbertaExternalSystem implements IExternalSystem
 {
-	@Override
-	public void configure()
+	ALBERTA("ALBERTA");
+
+	public String code;
+
+	public static AlbertaExternalSystem ofCode(final String code)
 	{
-		from("direct:Error-Route") //FIXME: temporary
-			.to("file://error_report.txt"); // TODO later: add AD_Issue creating Metasfresh-REST-EP
+		if (ALBERTA.getCode().equals(code))
+		{
+			return ALBERTA;
+		}
+		throw new AdempiereException("Unsupported code " + code + " for AlbertaExternalSystem. Hint: only 'ALBERTA' is allowed");
 	}
 }

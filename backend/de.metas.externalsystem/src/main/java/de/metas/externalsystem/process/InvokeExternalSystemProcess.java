@@ -22,7 +22,8 @@
 
 package de.metas.externalsystem.process;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -101,7 +102,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		}
 	}
 
-	protected HttpPut getRequest() throws UnsupportedEncodingException
+	protected HttpPut getRequest() throws UnsupportedEncodingException, JsonProcessingException
 	{
 		final ExternalSystemChildConfig config = getExternalChildConfig();
 		final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(config.getParentId());
@@ -121,8 +122,10 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.build();
 
 		final HttpPut request = new HttpPut(parentConfig.getCamelUrl());
-		final String jsonExternalSystemRequestString = new Gson().toJson(jsonExternalSystemRequest);
+		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
+
 		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
+
 		return request;
 	}
 

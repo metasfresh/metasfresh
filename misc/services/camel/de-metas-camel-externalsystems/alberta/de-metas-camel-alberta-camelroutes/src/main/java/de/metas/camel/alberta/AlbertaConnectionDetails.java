@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-camel-alberta-camelroutes
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,18 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.alberta;
 
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.stereotype.Component;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@Component
-public class ErrorReportRouteBuilder extends RouteBuilder
+@Value
+@Builder
+public class AlbertaConnectionDetails
 {
-	@Override
-	public void configure()
-	{
-		from("direct:Error-Route") //FIXME: temporary
-			.to("file://error_report.txt"); // TODO later: add AD_Issue creating Metasfresh-REST-EP
-	}
+	@NonNull
+	String apiKey;
+
+	@NonNull
+	String tenant;
+
+	@NonNull
+	String basePath;
 }

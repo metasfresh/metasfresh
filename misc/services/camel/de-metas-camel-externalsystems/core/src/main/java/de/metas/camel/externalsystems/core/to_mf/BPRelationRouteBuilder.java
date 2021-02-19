@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.core.to_mf;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
 import org.apache.camel.Exchange;
@@ -47,18 +48,20 @@ public class BPRelationRouteBuilder extends RouteBuilder
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
-					if (lookupRequest instanceof BPRelationsCamelRequest)
+					if (!(lookupRequest instanceof BPRelationsCamelRequest))
 					{
-						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPRelationsCamelRequest. However, it is " + lookupRequest == null ? "null" : lookupRequest.getClass().getName());
+						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPRelationsCamelRequest. However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 
 					final var bpRelationsCamelRequest = (BPRelationsCamelRequest)lookupRequest;
 					exchange.getIn().setHeader("bpartnerIdentifier", bpRelationsCamelRequest.getBpartnerIdentifier());
 					exchange.getIn().setBody(bpRelationsCamelRequest.getJsonRequestBPRelationsUpsert());
 				})
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPRelationsUpsert.class))
+				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.to("http://{{metasfresh.upsert-bprelation.api.uri}}/" /*here we also need the path ${header.bpartnerIdentifier}! check the http component's docu, i think it can be set as header. */);
+				.toD("http://{{metasfresh.upsert-bprelation.api.uri}}/${header.bpartnerIdentifier}");
 
 	}
 }
