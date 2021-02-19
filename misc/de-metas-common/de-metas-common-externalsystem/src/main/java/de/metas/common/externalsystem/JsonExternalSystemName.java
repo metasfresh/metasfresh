@@ -40,7 +40,7 @@ public class JsonExternalSystemName
 	}
 
 	@JsonCreator
-	private JsonExternalSystemName(@NonNull final String name)
+	public JsonExternalSystemName(@NonNull final String name)
 	{
 		this.name = name;
 	}
