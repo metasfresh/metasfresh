@@ -2,7 +2,6 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, RouteComponentProps } from 'react-router';
 import { getSnapshot } from 'mobx-state-tree';
-
 import { formDate, prettyDate } from '../utils/date';
 import DailyNav from './DailyNav';
 import View from './View';
@@ -69,7 +68,6 @@ class ProductScreen extends React.Component<Props> {
   render() {
     const { store, match } = this.props;
     const { productId, targetDay, targetDayCaption } = match.params;
-
     const products = getSnapshot(store.dailyProducts.products);
     const product = products.find((prod) => prod.productId === productId);
     const { lang } = store.i18n;
@@ -101,6 +99,11 @@ class ProductScreen extends React.Component<Props> {
                   ref={this.qtyInput}
                   step="1"
                   value={productQty.length > 1 ? productQty.replace(/^0+/, '') : productQty}
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') {
+                      this.qtyInput.current.blur();
+                    }
+                  }}
                   onChange={(e) => {
                     let updatedQty = parseInt(e.target.value, 10);
                     updatedQty = isNaN(updatedQty) ? 0 : updatedQty;

@@ -90,6 +90,8 @@ public interface IPaymentDAO extends ISingletonService
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);
 
+	BigDecimal getAllocatedAmt(PaymentId paymentId);
+
 	/**
 	 * Retrieve all the payments that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either PayAmt or OverUnderAmt. These entries will produce 0 in posting

@@ -4,7 +4,7 @@ import App from '../App';
 import { store } from '../models/Store';
 import { Provider } from 'mobx-react';
 
-test('renders learn react link', () => {
+test('renders the App component and login button is present', () => {
   render(
     <Provider store={store}>
       <App />

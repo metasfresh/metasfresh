@@ -1,14 +1,13 @@
 package de.metas.invoicecandidate.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
-
-import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Invoice_Candidate 
 {
 
@@ -330,6 +329,33 @@ public interface I_C_Invoice_Candidate
 	int getC_BPartner_SalesRep_ID();
 
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
+
+	/**
+	 * Set Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Campaign_ID (int C_Campaign_ID);
+
+	/**
+	 * Get Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Campaign_ID();
+
+	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
+
+	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
 	 * Set Kosten.
@@ -762,6 +788,28 @@ public interface I_C_Invoice_Candidate
 	int getC_PaymentTerm_Override_ID();
 
 	String COLUMNNAME_C_PaymentTerm_Override_ID = "C_PaymentTerm_Override_ID";
+
+	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Get Created.
@@ -3148,4 +3196,151 @@ public interface I_C_Invoice_Candidate
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 }

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,6 +33,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.form.IClientUI;
@@ -334,6 +337,7 @@ public class CalloutInOut extends CalloutEngine
 	 */
 	public String orderLine(final ICalloutField calloutField)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 		final I_M_InOutLine inoutLine = calloutField.getModel(I_M_InOutLine.class);
 
 		final int C_OrderLine_ID = inoutLine.getC_OrderLine_ID();
@@ -370,14 +374,12 @@ public class CalloutInOut extends CalloutEngine
 
 			//
 			// Dimensions
-			inoutLine.setC_Activity_ID(ol.getC_Activity_ID());
-			inoutLine.setC_Campaign_ID(ol.getC_Campaign_ID());
-			inoutLine.setC_Project_ID(ol.getC_Project_ID());
 			inoutLine.setC_ProjectPhase_ID(ol.getC_ProjectPhase_ID());
 			inoutLine.setC_ProjectTask_ID(ol.getC_ProjectTask_ID());
 			inoutLine.setAD_OrgTrx_ID(ol.getAD_OrgTrx_ID());
-			inoutLine.setUser1_ID(ol.getUser1_ID());
-			inoutLine.setUser2_ID(ol.getUser2_ID());
+
+			final Dimension orderLineDimensions = dimensionService.getFromRecord(ol);
+			dimensionService.updateRecord(inoutLine, orderLineDimensions);
 		}
 
 		return NO_ERROR;
@@ -698,12 +700,6 @@ public class CalloutInOut extends CalloutEngine
 
 	/**
 	 * M_InOutLine - ASI.
-	 *
-	 * @param ctx      context
-	 * @param WindowNo window no
-	 * @param mTab     tab model
-	 * @param mField   field model
-	 * @param value    new value
 	 * @return error message or ""
 	 */
 	public String asi(final ICalloutField calloutField)

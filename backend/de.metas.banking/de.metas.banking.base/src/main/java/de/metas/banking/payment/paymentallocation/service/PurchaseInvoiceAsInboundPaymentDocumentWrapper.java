@@ -24,17 +24,16 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
@@ -162,10 +161,12 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 		return purchaseInvoicePayableDoc.getDate();
 	}
 
-	@Nullable
 	@Override
-	public CurrencyConversionTypeId getCurrencyConversionTypeId()
+	public PaymentCurrencyContext getPaymentCurrencyContext()
 	{
-		return purchaseInvoicePayableDoc.getCurrencyConversionTypeId();
+		return PaymentCurrencyContext.builder()
+				.paymentCurrencyId(purchaseInvoicePayableDoc.getCurrencyId())
+				.currencyConversionTypeId(purchaseInvoicePayableDoc.getCurrencyConversionTypeId())
+				.build();
 	}
 }

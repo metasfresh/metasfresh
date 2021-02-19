@@ -136,8 +136,9 @@ public class ReconcilePaymentsCommandTest
 		bankStatementListenerService.addListener(new PaySelectionBankStatementListener(paySelectionBL));
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
+		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService, moneyService)
 		{
+			@Override
 			public void unpost(I_C_BankStatement bankStatement)
 			{
 				System.out.println("In JUnit test BankStatementBL.unpost() does nothing"

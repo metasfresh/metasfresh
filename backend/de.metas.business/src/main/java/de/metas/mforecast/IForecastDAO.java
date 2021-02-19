@@ -31,4 +31,6 @@ import de.metas.util.ISingletonService;
 public interface IForecastDAO extends ISingletonService
 {
 	List<I_M_ForecastLine> retrieveLinesByForecastId(int forecastId);
+
+	I_M_ForecastLine getForecastLineById (int forecastLineRecordId);
 }

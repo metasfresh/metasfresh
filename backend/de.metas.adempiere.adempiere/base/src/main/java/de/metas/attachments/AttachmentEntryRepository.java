@@ -1,7 +1,7 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
+//import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
 import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -153,7 +153,7 @@ public class AttachmentEntryRepository
 	{
 		final AttachmentEntry attachmentEntry = attachmentEntryFactory.toAttachmentEntry(attachmentEntryRecord);
 
-		final AttachmentEntryBuilder builder = attachmentEntry.toBuilder();
+		final AttachmentEntry.AttachmentEntryBuilder builder = attachmentEntry.toBuilder();
 		for (final I_AD_Attachment_MultiRef attachmentMultiRefRecord : attachmentMultiRefRecords)
 		{
 			final TableRecordReference referencedRecord = TableRecordReference.of(
