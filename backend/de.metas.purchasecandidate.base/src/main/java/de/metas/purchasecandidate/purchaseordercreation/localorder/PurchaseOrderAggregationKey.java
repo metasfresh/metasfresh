@@ -47,12 +47,10 @@ public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrd
 	private final ForecastLineId forecastLineId;
 	private final Dimension dimension;
 
-
 	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
-			.thenComparing(PurchaseOrderAggregationKey::getForecastLineId)
 			.thenComparing(PurchaseOrderAggregationKey::getDimension);
 
 	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)

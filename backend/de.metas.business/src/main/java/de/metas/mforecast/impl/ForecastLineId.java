@@ -22,6 +22,7 @@
 
 package de.metas.mforecast.impl;
 
+import de.metas.document.dimension.Dimension;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -31,17 +32,12 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Value
-public class ForecastLineId implements RepoIdAware
+public class ForecastLineId
 {
 	int repoId;
 
 	@NonNull
 	ForecastId forecastId;
-
-	public static ForecastLineId cast(@Nullable final RepoIdAware repoIdAware)
-	{
-		return (ForecastLineId)repoIdAware;
-	}
 
 	public static ForecastLineId ofRepoId(@NonNull final ForecastId forecasteId, final int forecastlineId)
 	{
@@ -79,4 +75,5 @@ public class ForecastLineId implements RepoIdAware
 	{
 		return Objects.equals(id1, id2);
 	}
+
 }
