@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -245,6 +246,8 @@ public class PurchaseDemandWithCandidatesService
 				.profitInfoOrNull(profitInfo)
 				//
 				.purchaseCandidateIds(purchaseCandidateIds)
+
+				.forecastLineId(groupKey.getForecastLineId())
 				.dimension(groupKey.getDimension())
 				.salesOrderAndLineIds(salesOrderAndLineIds);
 
@@ -274,7 +277,7 @@ public class PurchaseDemandWithCandidatesService
 		ProductId productId;
 		boolean readOnly;
 		Dimension dimension;
-		int forecastLineId;
+		ForecastLineId forecastLineId;
 	}
 
 	@VisibleForTesting

@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -153,7 +154,8 @@ public class PurchaseCandidatesGroup
 	@Nullable
 	Duration reminderTime;
 
-	int forecastLineId;
+	@Nullable
+	ForecastLineId forecastLineId;
 
 	@Nullable
 	Dimension dimension;

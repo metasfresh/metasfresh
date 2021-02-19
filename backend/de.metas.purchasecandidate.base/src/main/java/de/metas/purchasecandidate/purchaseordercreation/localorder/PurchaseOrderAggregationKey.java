@@ -1,18 +1,18 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.ZonedDateTime;
-import java.util.Comparator;
-
-import de.metas.document.dimension.Dimension;
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.time.ZonedDateTime;
+import java.util.Comparator;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ public final class PurchaseOrderAggregationKey implements Comparable<PurchaseOrd
 	private final WarehouseId warehouseId;
 	private final BPartnerId vendorId;
 	private final ZonedDateTime datePromised;
-	private final int forecastLineId;
+	private final ForecastLineId forecastLineId;
 	private final Dimension dimension;
 
 

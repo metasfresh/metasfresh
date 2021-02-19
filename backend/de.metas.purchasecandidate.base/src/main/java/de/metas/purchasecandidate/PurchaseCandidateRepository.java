@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.mforecast.impl.ForecastLineId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,6 +31,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.util.Objects;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -343,7 +345,9 @@ public class PurchaseCandidateRepository
 
 		record.setIsAggregatePO(purchaseCandidate.isAggregatePOs());
 
-		record.setM_ForecastLine_ID(purchaseCandidate.getForecastLineId());
+		final ForecastLineId forecastLineId = purchaseCandidate.getForecastLineId();
+		record.setM_Forecast_ID(forecastLineId == null ? -1 : forecastLineId.getForecastId().getRepoId());
+		record.setM_ForecastLine_ID(forecastLineId == null ? -1 : forecastLineId.getRepoId());
 
 		dimensionService.updateRecord(record, purchaseCandidate.getDimension());
 
@@ -429,6 +433,7 @@ public class PurchaseCandidateRepository
 				.id(PurchaseCandidateId.ofRepoIdOrNull(record.getC_PurchaseCandidate_ID()))
 				.groupReference(DemandGroupReference.ofReference(record.getDemandReference()))
 				.salesOrderAndLineIdOrNull(salesOrderAndLineId)
+				.forecastLineId(ForecastLineId.ofRepoIdOrNull(record.getM_Forecast_ID(), record.getM_ForecastLine_ID()))
 				.processed(record.isProcessed())
 				.reqCreated(record.isRequisitionCreated())
 				//

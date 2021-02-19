@@ -3,6 +3,7 @@ package de.metas.purchasecandidate;
 import javax.annotation.Nullable;
 
 import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -65,7 +66,7 @@ class PurchaseCandidateImmutableFields
 
 	boolean aggregatePOs;
 
-	int forecastLineId;
+	@Nullable ForecastLineId forecastLineId;
 
 	Dimension dimension;
 }
