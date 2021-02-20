@@ -94,8 +94,8 @@ public class AD_Issue_StepDef
 		final JsonCreateIssueResponse response = mapper.readValue(responseJson, JsonCreateIssueResponse.class);
 		final List<JsonErrorItem> requestErrorItemList = mapper.readValue(apiRequest, JsonError.class).getErrors();
 		assertThat(requestErrorItemList).isNotNull();
-		final JsonErrorItem request = requestErrorItemList.get(0);
-		assertThat(request).isNotNull();
+		final JsonErrorItem jsonErrorItem = requestErrorItemList.get(0);
+		assertThat(jsonErrorItem).isNotNull();
 
 		final AdIssueId adIssueId = AdIssueId.ofRepoId(response.getIds().get(0).getIssueId().getValue());
 		final I_AD_Issue issue = queryBL
@@ -106,18 +106,18 @@ public class AD_Issue_StepDef
 
 		final I_AD_Org adOrg = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Org.class)
-				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, request.getOrgCode())
+				.addEqualsFilter(I_AD_Org.COLUMNNAME_Value, jsonErrorItem.getOrgCode())
 				.create()
 				.firstOnly(I_AD_Org.class);
 
 		final OrgId orgId = adOrg != null ? OrgId.ofRepoId(adOrg.getAD_Org_ID()) : OrgId.ANY;
 
 		assertThat(issue).isNotNull();
-		assertThat(issue.getStackTrace()).isEqualTo(request.getStackTrace().replace("java.lang.", ""));
-		assertThat(issue.getSourceMethodName()).isEqualTo(request.getSourceMethodName());
-		assertThat(issue.getSourceClassName()).isEqualTo(request.getSourceClassName());
-		assertThat(issue.getIssueSummary()).isEqualTo(request.getIssueSummary());
-		assertThat(issue.getIssueCategory()).isEqualTo(request.getIssueCategory());
+		assertThat(issue.getStackTrace()).isEqualTo(jsonErrorItem.getStackTrace().replace("java.lang.", ""));
+		assertThat(issue.getSourceMethodName()).isEqualTo(jsonErrorItem.getSourceMethodName());
+		assertThat(issue.getSourceClassName()).isEqualTo(jsonErrorItem.getSourceClassName());
+		assertThat(issue.getIssueSummary()).isEqualTo(jsonErrorItem.getMessage());
+		assertThat(issue.getIssueCategory()).isEqualTo(jsonErrorItem.getIssueCategory());
 		assertThat(issue.getAD_PInstance_ID()).isEqualTo(pInstanceId.getRepoId());
 		assertThat(orgId).isNotNull();
 		assertThat(issue.getAD_Org_ID()).isEqualTo(orgId.getRepoId());

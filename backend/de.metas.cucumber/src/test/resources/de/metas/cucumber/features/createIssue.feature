@@ -17,7 +17,7 @@ Feature: issue creation using metasfresh api
 			"sourceMethodName": "test",
 			"stackTrace": "java.lang.NullPointerException at AnotherClassLoader.loadClass(test.java:58) at test.main(test.java:30) at Main.main(Main.java:68)",
 			"orgCode": "001",
-			"issueSummary": "unexpected NPE"
+			"message": "unexpected NPE"
 		}
 	]
 }

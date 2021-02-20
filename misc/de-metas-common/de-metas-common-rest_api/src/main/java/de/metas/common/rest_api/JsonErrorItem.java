@@ -65,9 +65,6 @@ public class JsonErrorItem
 	String orgCode;
 
 	@Nullable
-	String issueSummary;
-
-	@Nullable
 	String sourceClassName;
 
 	@Nullable
@@ -94,7 +91,6 @@ public class JsonErrorItem
 			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,
 			@JsonProperty("sourceMethodName") @Nullable final String sourceMethodName,
-			@JsonProperty("issueSummary") @Nullable final String issueSummary,
 			@JsonProperty("issueCategory") @Nullable final String issueCategory,
 			@Nullable final Throwable throwable)
 	{
@@ -107,7 +103,6 @@ public class JsonErrorItem
 		this.sourceMethodName = sourceMethodName;
 		this.issueCategory = issueCategory;
 		this.orgCode = orgCode;
-		this.issueSummary = issueSummary;
 		this.throwable = throwable;
 	}
 

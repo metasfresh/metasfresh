@@ -38,6 +38,9 @@ public class InsertRemoteIssueRequest
 	OrgId orgId;
 
 	@NonNull
+	PInstanceId pInstance_ID;
+
+	@NonNull
 	String issueSummary;
 
 	@Nullable
@@ -51,7 +54,4 @@ public class InsertRemoteIssueRequest
 
 	@Nullable
 	String stacktrace;
-
-	@NonNull
-	PInstanceId pInstance_ID;
 }

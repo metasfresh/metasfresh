@@ -183,7 +183,7 @@ public class ProcessService
 	private InsertRemoteIssueRequest createInsertRemoteIssueRequest(final JsonErrorItem jsonErrorItem, final PInstanceId pInstanceId){
 		return InsertRemoteIssueRequest.builder()
 				.issueCategory(jsonErrorItem.getIssueCategory())
-				.issueSummary(StringUtils.isEmpty(jsonErrorItem.getIssueSummary()) ? DEFAULT_ISSUE_SUMMARY : jsonErrorItem.getIssueSummary())
+				.issueSummary(StringUtils.isEmpty(jsonErrorItem.getMessage()) ? DEFAULT_ISSUE_SUMMARY : jsonErrorItem.getMessage())
 				.sourceClassName(jsonErrorItem.getSourceClassName())
 				.sourceMethodName(jsonErrorItem.getSourceMethodName())
 				.stacktrace(jsonErrorItem.getStackTrace())
