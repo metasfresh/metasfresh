@@ -39,6 +39,9 @@ import static de.metas.camel.alberta.GetPatientsRouteConstants.ALBERTA_SYSTEM_NA
 import static de.metas.camel.alberta.GetPatientsRouteConstants.ESR_TYPE_BPARTNER;
 import static de.metas.camel.alberta.GetPatientsRouteConstants.ROUTE_PROPERTY_CURRENT_PATIENT;
 
+/**
+ * Note: ESR stands for External System Reference
+ */
 public class CreateESRQueryProcessor implements Processor
 {
 	@Override

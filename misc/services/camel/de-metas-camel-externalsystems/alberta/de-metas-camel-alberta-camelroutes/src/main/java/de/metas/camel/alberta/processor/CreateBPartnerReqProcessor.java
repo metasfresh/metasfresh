@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DoctorApi;
@@ -117,21 +118,21 @@ public class CreateBPartnerReqProcessor implements Processor
 				.stream()
 				.filter(item -> item.getMetasfreshId() != null)
 				.collect(Collectors.toMap(item -> item.getLookupItem().getId(),
-										  JsonExternalReferenceItem::getMetasfreshId));
+						JsonExternalReferenceItem::getMetasfreshId));
 	}
 
 	@Nullable
 	private Doctor getDoctorOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final String doctorId) throws ApiException
 	{
-		if (doctorId == null)
+		if (EmptyUtil.isBlank(doctorId))
 		{
 			return null;
 		}
 		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
 		final DoctorApi doctorApi = new DoctorApi(apiClient);
-
+		
 		final Doctor doctor = doctorApi.getDoctor(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), doctorId);
-
+	
 		if (doctor == null)
 		{
 			throw new RuntimeException("No info returned for doctorId: " + doctorId);
@@ -143,7 +144,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Nullable
 	private NursingHome getNursingHomeOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final String nursingHomeId) throws ApiException
 	{
-		if (nursingHomeId == null)
+		if (EmptyUtil.isBlank(nursingHomeId))
 		{
 			return null;
 		}
@@ -163,7 +164,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Nullable
 	private NursingService getNursingServiceOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final String nursingServiceId) throws ApiException
 	{
-		if (nursingServiceId == null)
+		if (EmptyUtil.isBlank(nursingServiceId))
 		{
 			return null;
 		}
@@ -183,7 +184,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Nullable
 	private Hospital getHospital(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final PatientHospital patientHospital) throws ApiException
 	{
-		if (patientHospital == null || patientHospital.getHospitalId() == null)
+		if (patientHospital == null || EmptyUtil.isBlank(patientHospital.getHospitalId()))
 		{
 			return null;
 		}
