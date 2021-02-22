@@ -91,7 +91,10 @@ public class ZebraConfigRepository
 				.firstOnly(I_C_BP_PrintFormat.class);
 
 		if (printFormat != null) {
-			return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
+			if (printFormat.getAD_Zebra_Config_ID() > 0)
+			{
+				return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
+			}
 		}
 		return defaultZebraConfigId;
 	}
