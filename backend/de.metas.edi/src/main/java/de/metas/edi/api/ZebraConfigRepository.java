@@ -24,8 +24,6 @@ package de.metas.edi.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ZebraConfigId;
-import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
@@ -34,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Zebra_Config;
 import org.compiere.model.I_C_BP_PrintFormat;
-import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -67,19 +64,6 @@ public class ZebraConfigRepository
 		}
 
 		return defaultZebraConfigId;
-	}
-
-	public ZebraConfigId getZebraConfigForDesadvLinePackID(@NonNull final Integer desadvLinePackID)
-	{
-		return queryBL
-				.createQueryBuilder(I_EDI_DesadvLine_Pack.class)
-				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_EDI_DesadvLine_Pack_ID, desadvLinePackID)
-				.andCollect(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID, I_EDI_Desadv.class)
-				.andCollect(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
-				.andCollectChildren(I_C_BPartner.COLUMNNAME_C_BPartner_ID, I_C_BP_PrintFormat.class)
-				.andCollect(I_C_BP_PrintFormat.COLUMNNAME_AD_Zebra_Config_ID, I_AD_Zebra_Config.class)
-				.create()
-				.firstId(ZebraConfigId::ofRepoIdOrNull);
 	}
 
 	public ZebraConfigId retrieveZebraConfigId(final BPartnerId partnerId, final ZebraConfigId defaultZebraConfigId)
