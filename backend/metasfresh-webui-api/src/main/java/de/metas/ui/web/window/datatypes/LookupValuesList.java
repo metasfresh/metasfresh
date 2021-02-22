@@ -56,8 +56,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 {
 	/**
 	 * Collects {@link LookupValue}s and builds a {@link LookupValuesList} with those values.
-	 *
-	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
 	 */
 	public static Collector<LookupValue, ?, LookupValuesList> collect()
 	{
@@ -78,7 +76,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static LookupValuesList fromNullable(final LookupValue lookupValue)
+	public static LookupValuesList fromNullable(@Nullable final LookupValue lookupValue)
 	{
 		if (lookupValue == null)
 		{
@@ -102,6 +100,13 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return new LookupValuesList(valuesById, ordered, DebugProperties.EMPTY);
 	}
 
+	public static LookupValuesList of(@NonNull final LookupValue lookupValue)
+	{
+		final ImmutableListMultimap<Object, LookupValue> valuesById = ImmutableListMultimap.of(lookupValue.getId(), lookupValue);
+		final boolean ordered = true;
+		return new LookupValuesList(valuesById, ordered, DebugProperties.EMPTY);
+	}
+
 	private static LookupValuesList build(
 			@NonNull final ImmutableListMultimap.Builder<Object, LookupValue> valuesByIdBuilder,
 			@Nullable final DebugProperties debugProperties)
@@ -113,8 +118,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		}
 
 		final boolean ordered = true;
-		final LookupValuesList result = new LookupValuesList(valuesById, ordered, debugProperties);
-		return result;
+		return new LookupValuesList(valuesById, ordered, debugProperties);
 	}
 
 	public static final LookupValuesList EMPTY = new LookupValuesList();
@@ -203,7 +207,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	}
 
 	/**
-	 * @param id
 	 * @return true if this list contains an {@link LookupValue} with given <code>id</code>
 	 * @see LookupValue#getId()
 	 */
@@ -213,15 +216,16 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	}
 
 	/**
-	 * @param id
 	 * @return first lookup value found for <code>id</code> or null
 	 */
+	@Nullable
 	public LookupValue getById(final Object id)
 	{
 		final ImmutableList<LookupValue> values = valuesById.get(normalizeId(id));
 		return values.isEmpty() ? null : values.get(0);
 	}
 
+	@Nullable
 	private static Object normalizeId(final Object id)
 	{
 		if (id == null)
@@ -244,7 +248,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	}
 
 	/**
-	 * @param maxSize
 	 * @return a {@link LookupValuesList} which has the given maximum size
 	 */
 	public LookupValuesList limit(final int maxSize)
@@ -262,7 +265,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 
 	public LookupValuesList offsetAndLimit(final int offset, final int maxSize)
 	{
-		final int offsetEffective = offset <= 0 ? 0 : offset;
+		final int offsetEffective = Math.max(offset, 0);
 		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
 
 		if (offsetEffective <= 0 && valuesById.size() <= maxSizeEffective)
@@ -280,15 +283,10 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	 * Filters, skips <code>offset</code> items and limits the result to <code>maxSize</code>.
 	 * <p>
 	 * NOTE: please mind the operations order, i.e. first we filter and then we skip and limit.
-	 *
-	 * @param filter
-	 * @param offset
-	 * @param maxSize
-	 * @return
 	 */
 	public LookupValuesList filter(final Predicate<LookupValue> filter, final int offset, final int maxSize)
 	{
-		final int offsetEffective = offset <= 0 ? 0 : offset;
+		final int offsetEffective = Math.max(offset, 0);
 		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
 
 		return stream()

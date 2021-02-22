@@ -35,19 +35,21 @@ import lombok.Value;
 @Value
 public class WebuiEmail
 {
-	@NonNull
-	private final String emailId;
-	private final UserId ownerUserId;
+	@NonNull String emailId;
+	UserId ownerUserId;
 
-	private final LookupValue from;
+	LookupValue from;
+
 	@Default
-	private final LookupValuesList to = LookupValuesList.EMPTY;
-	private final String subject;
-	private final String message;
+	LookupValuesList to = LookupValuesList.EMPTY;
+
+	String subject;
+	String message;
+
 	@Default
-	private final LookupValuesList attachments = LookupValuesList.EMPTY;
+	LookupValuesList attachments = LookupValuesList.EMPTY;
 
-	private final boolean sent;
+	boolean sent;
 
-	private final DocumentPath contextDocumentPath;
+	DocumentPath contextDocumentPath;
 }
