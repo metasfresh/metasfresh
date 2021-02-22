@@ -61,6 +61,18 @@ public class JsonErrorItem
 	@JsonInclude(Include.NON_EMPTY)
 	JsonMetasfreshId adIssueId;
 
+	@Nullable
+	String orgCode;
+
+	@Nullable
+	String sourceClassName;
+
+	@Nullable
+	String sourceMethodName;
+
+	@Nullable
+	String issueCategory;
+
 	/**
 	 * Local exception.
 	 * It won't be serialized. It's just used for local troubleshooting.
@@ -76,6 +88,10 @@ public class JsonErrorItem
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
 			@JsonProperty("adIssueId") @Nullable final JsonMetasfreshId adIssueId,
+			@JsonProperty("orgCode") @Nullable final String orgCode,
+			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,
+			@JsonProperty("sourceMethodName") @Nullable final String sourceMethodName,
+			@JsonProperty("issueCategory") @Nullable final String issueCategory,
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
@@ -83,6 +99,10 @@ public class JsonErrorItem
 		this.stackTrace = stackTrace;
 		this.parameters = CoalesceUtil.coalesce(parameters, ImmutableMap.of());
 		this.adIssueId = adIssueId;
+		this.sourceClassName = sourceClassName;
+		this.sourceMethodName = sourceMethodName;
+		this.issueCategory = issueCategory;
+		this.orgCode = orgCode;
 		this.throwable = throwable;
 	}
 

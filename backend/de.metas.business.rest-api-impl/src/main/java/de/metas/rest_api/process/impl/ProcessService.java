@@ -26,9 +26,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
+import de.metas.common.rest_api.issue.JsonCreateIssueResponseItem;
+import de.metas.error.IErrorManager;
+import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgQuery;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessBasicInfo;
 import de.metas.process.ProcessParamBasicInfo;
 import de.metas.process.ProcessType;
@@ -45,11 +56,14 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Reference;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,7 +73,12 @@ public class ProcessService
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADElementDAO elementDAO = Services.get(IADElementDAO.class);
 	private final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
+
+	private static final String DEFAULT_ISSUE_SUMMARY = "No summary provided.";
 
 	@NonNull
 	public ImmutableList<ProcessBasicInfo> getProcessesByType(@NonNull final Set<ProcessType> processTypes)
@@ -142,5 +161,49 @@ public class ProcessService
 				.type(ProcessType.ofCode(adProcess.getType()))
 				.parameters(paramBasicInfos)
 				.build();
+	}
+
+	@NonNull
+	public JsonCreateIssueResponse createIssue(final @NonNull JsonError jsonError, final @NonNull PInstanceId pInstanceId)
+	{
+		final List<JsonCreateIssueResponseItem> adIssueIds = jsonError
+				.getErrors()
+				.stream()
+				.map(error -> createInsertRemoteIssueRequest(error, pInstanceId))
+				.map(errorManager::insertRemoteIssue)
+				.map(id -> JsonCreateIssueResponseItem.builder().issueId(JsonMetasfreshId.of(id.getRepoId())).build())
+				.collect(Collectors.toList());
+
+		return JsonCreateIssueResponse.builder()
+				.ids(adIssueIds)
+				.build();
+	}
+
+	@NonNull
+	private InsertRemoteIssueRequest createInsertRemoteIssueRequest(final JsonErrorItem jsonErrorItem, final PInstanceId pInstanceId){
+		return InsertRemoteIssueRequest.builder()
+				.issueCategory(jsonErrorItem.getIssueCategory())
+				.issueSummary(StringUtils.isEmpty(jsonErrorItem.getMessage()) ? DEFAULT_ISSUE_SUMMARY : jsonErrorItem.getMessage())
+				.sourceClassName(jsonErrorItem.getSourceClassName())
+				.sourceMethodName(jsonErrorItem.getSourceMethodName())
+				.stacktrace(jsonErrorItem.getStackTrace())
+				.pInstance_ID(pInstanceId)
+				.orgId(retrieveOrgId(jsonErrorItem.getOrgCode()))
+				.build();
+	}
+
+	@NonNull
+	private OrgId retrieveOrgId(@Nullable final String orgCode)
+	{
+		if(StringUtils.isEmpty(orgCode))
+		{
+			return Env.getOrgId();
+		}
+
+		final OrgQuery query = OrgQuery.builder()
+				.orgValue(orgCode)
+				.build();
+
+		return orgDAO.retrieveOrgIdBy(query).orElse(Env.getOrgId());
 	}
 }

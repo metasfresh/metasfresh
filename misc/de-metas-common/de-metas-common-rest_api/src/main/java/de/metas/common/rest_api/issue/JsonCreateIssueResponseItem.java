@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,36 +20,28 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
-
-import java.util.List;
+package de.metas.common.rest_api.issue;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = JsonError.JsonErrorBuilder.class)
-public class JsonError
+public class JsonCreateIssueResponseItem
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
 
-	List<JsonErrorItem> errors;
+	@JsonProperty("issueId")
+	JsonMetasfreshId issueId;
 
 	@Builder
 	@JsonCreator
-	private JsonError(@JsonProperty("errors") @Singular final List<JsonErrorItem> errors)
+	private JsonCreateIssueResponseItem(@JsonProperty("issueId") @NonNull final JsonMetasfreshId issueId)
 	{
-		this.errors = errors;
+		this.issueId = issueId;
 	}
 }
