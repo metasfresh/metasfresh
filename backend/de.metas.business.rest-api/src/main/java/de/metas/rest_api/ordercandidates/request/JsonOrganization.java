@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.common.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -58,6 +58,4 @@ public class JsonOrganization
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 		this.bpartner = bpartner;
 	}
-
-
 }

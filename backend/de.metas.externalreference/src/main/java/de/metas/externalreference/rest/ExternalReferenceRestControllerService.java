@@ -44,6 +44,7 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +71,7 @@ public class ExternalReferenceRestControllerService
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName())
+		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
 		final ImmutableList<ExternalReferenceQuery> queries = extractRepoQueries(request, orgId, externalSystem);
@@ -133,11 +134,11 @@ public class ExternalReferenceRestControllerService
 		return result.build();
 	}
 
-	void performInsert(@NonNull final String orgCode, @NonNull final JsonExternalReferenceCreateRequest request)
+	public void performInsert(@Nullable final String orgCode, @NonNull final JsonExternalReferenceCreateRequest request)
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName())
+		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
 		final List<JsonExternalReferenceItem> references = request.getItems();

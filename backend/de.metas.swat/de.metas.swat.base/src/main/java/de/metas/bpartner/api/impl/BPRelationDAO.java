@@ -144,7 +144,10 @@ public class BPRelationDAO implements IBPRelationDAO
 		}
 		else
 		{
-			final Optional<I_C_BP_Relation> bpartnerRelation = getRelationsForSourceBpartner(rel.getBpartnerId()).filter(r -> r.getC_BPartnerRelation_ID() == rel.getTargetBPartnerId().getRepoId()).findFirst();
+			final Optional<I_C_BP_Relation> bpartnerRelation = getRelationsForSourceBpartner(rel.getBpartnerId())
+					.filter(r -> r.getC_BPartnerRelation_ID() == rel.getTargetBPartnerId().getRepoId())
+					.findFirst();
+
 			relation = bpartnerRelation.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_BP_Relation.class));
 		}
 		relation.setAD_Org_ID(orgId.getRepoId());

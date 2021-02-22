@@ -50,6 +50,12 @@
             <artifactId>de-metas-common-rest_api</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.common.externalsystem</groupId>
+            <artifactId>de-metas-common-externalsystem</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

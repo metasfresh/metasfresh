@@ -12,7 +12,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.JsonExternalId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;

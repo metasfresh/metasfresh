@@ -255,6 +255,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.externalsystem</groupId>
+            <artifactId>de.metas.externalsystem</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        
+        <dependency>
             <groupId>de.metas.fresh</groupId>
             <artifactId>de.metas.fresh.base</artifactId>
             <version>${metasfresh.version}</version>

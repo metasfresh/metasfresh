@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
+import lombok.With;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 
@@ -18,7 +19,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.common.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.uom.IUOMDAO;
@@ -89,7 +90,7 @@ final class ProductMasterDataProvider
 		@NonNull
 		UomId uomId;
 
-		@Wither
+		@With
 		boolean justCreated;
 	}
 
@@ -159,9 +160,7 @@ final class ProductMasterDataProvider
 				productType = X_M_Product.PRODUCTTYPE_Item;
 				break;
 			default:
-				Check.fail("Unexpected type={}; jsonProductInfo={}", jsonProductInfo.getType(), jsonProductInfo);
-				productType = null;
-				break;
+				throw Check.fail("Unexpected type={}; jsonProductInfo={}", jsonProductInfo.getType(), jsonProductInfo);
 		}
 		productRecord.setProductType(productType);
 

@@ -1,7 +1,7 @@
 package de.metas.rest_api.utils;
 
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.JsonExternalId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;

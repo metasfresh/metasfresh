@@ -11,9 +11,11 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -37,13 +39,13 @@ import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
+import de.metas.common.bpartner.request.JsonRequestBPartner;
+import de.metas.common.bpartner.request.JsonRequestLocation;
+import de.metas.common.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.BPartnerLookupAdvise;
 import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -246,7 +248,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				currencyRepository);
+				currencyRepository,
+				Mockito.mock(ExternalReferenceRestControllerService.class));
 		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
 				jsonServiceFactory,
@@ -437,7 +440,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		private JsonOLCand importOLCandWithVatId(
 				final String currentVatId,
-				final Optional<String> newVatId)
+				@Nullable final Optional<String> newVatId)
 		{
 			testMasterdata.prepareBPartnerAndLocation()
 					.orgId(defaultOrgId)
@@ -791,7 +794,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		final JsonOLCand olCand = olCands.get(0);
 
-		final MetasfreshId bpartnerMetasfreshId = olCand.getBpartner().getBpartner().getMetasfreshId();
+		final JsonMetasfreshId bpartnerMetasfreshId = JsonMetasfreshId.of(olCand.getBpartner().getBpartner().getMetasfreshId().getValue());
 		assertThat(olCand.getBillBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);
 		assertThat(olCand.getDropShipBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId); // same bpartner, but different location
 		assertThat(olCand.getHandOverBPartner().getBpartner().getMetasfreshId()).isEqualTo(bpartnerMetasfreshId);

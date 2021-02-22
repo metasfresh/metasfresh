@@ -117,6 +117,12 @@
             <version>${metasfresh.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.externalreference</groupId>
+            <artifactId>de.metas.externalreference</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>

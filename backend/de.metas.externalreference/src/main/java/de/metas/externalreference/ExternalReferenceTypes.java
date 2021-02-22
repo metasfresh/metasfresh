@@ -22,8 +22,8 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -38,6 +38,7 @@ public class ExternalReferenceTypes
 	public ExternalReferenceTypes()
 	{
 		registerType(NullExternalReferenceType.NULL);
+		registerType(BPartnerExternalReferenceType.BPARTNER);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)
