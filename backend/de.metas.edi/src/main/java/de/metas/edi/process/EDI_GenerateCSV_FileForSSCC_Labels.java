@@ -22,7 +22,9 @@
 
 package de.metas.edi.process;
 
-import de.metas.edi.api.ZebraConfigId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.ZebraConfigId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.edi.api.ZebraConfigRepository;
 import de.metas.edi.api.ZebraPrinterService;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -37,12 +39,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Zebra_Config;
-import org.compiere.model.I_C_BP_PrintFormat;
-import org.compiere.model.I_C_BPartner;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess implements IProcessPrecondition
 {
@@ -50,6 +49,7 @@ public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess imp
 	private static final AdMessageKey MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED = AdMessageKey.of("WEBUI_ZebraConfigError");
 	private final ZebraPrinterService zebraPrinterService = SpringContextHolder.instance.getBean(ZebraPrinterService.class);
 	private final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
 	{
@@ -60,34 +60,22 @@ public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess imp
 		else  if (context.getSelectionSize().isMoreThanOneSelected())
 		{
 			final IQueryFilter<I_EDI_Desadv> selectedRecordsFilter = context.getQueryFilter(I_EDI_Desadv.class);
-			final List<Integer> formatLinesWithNoZebraConfig = queryBL
+			Integer differentConfigsSize = queryBL
 					.createQueryBuilder(I_EDI_Desadv.class)
 					.filter(selectedRecordsFilter)
-					.andCollect(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
-					.andCollectChildren(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, I_C_BP_PrintFormat.class)
-					.addEqualsFilter(I_C_BP_PrintFormat.COLUMN_AD_Zebra_Config_ID, null)
 					.create()
-					.listDistinct(I_C_BP_PrintFormat.COLUMNNAME_C_BP_PrintFormat_ID, Integer.class);
+					.list()
+					.stream()
+					.map(ediDesadv -> BPartnerId.ofRepoId(ediDesadv.getC_BPartner_ID()))
+					.map(bpartnerId -> zebraConfigRepository.retrieveZebraConfigId(bpartnerId))
+					.collect(Collectors.toSet())
+					.size();
 
-
-			final List<Integer> zebraConfigIds = queryBL
-					.createQueryBuilder(I_EDI_Desadv.class)
-					.filter(selectedRecordsFilter)
-					.andCollect(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
-					.andCollectChildren(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, I_C_BP_PrintFormat.class)
-					.andCollect(I_C_BP_PrintFormat.COLUMNNAME_AD_Zebra_Config_ID, I_AD_Zebra_Config.class)
-					.create()
-					.listDistinct(I_AD_Zebra_Config.COLUMNNAME_AD_Zebra_Config_ID, Integer.class);
-
-			if (formatLinesWithNoZebraConfig.size() > 0 && zebraConfigIds.size() > 0)
+			if (differentConfigsSize != 1)
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
 			}
 
-			if (zebraConfigIds.size() > 1)
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
-			}
 		}
 		return ProcessPreconditionsResolution.accept();
 	}

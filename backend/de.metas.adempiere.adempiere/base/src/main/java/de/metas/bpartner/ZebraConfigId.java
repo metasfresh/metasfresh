@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.edi.api;
+package de.metas.bpartner;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

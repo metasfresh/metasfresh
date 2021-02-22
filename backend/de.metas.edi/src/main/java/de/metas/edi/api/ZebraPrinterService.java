@@ -24,6 +24,7 @@ package de.metas.edi.api;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.ZebraConfigId;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.process.PInstanceId;
 import de.metas.report.ReportResultData;
@@ -48,6 +49,8 @@ public class ZebraPrinterService
 	private static final String TIMESTAMP_PLACEHOLDER = ":timestamp";
 	private static final String CSV_FORMAT = "text/csv";
 
+	private final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
+
 	/**
 	 * Creates a CSV file for SSCC18 labels based on given {@link I_EDI_DesadvLine_Pack} IDs.
 	 *
@@ -57,7 +60,6 @@ public class ZebraPrinterService
 															final ZebraConfigId zebraConfigId,
 															final PInstanceId pInstanceId )
 	{
-		final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 		final I_AD_Zebra_Config zebraConfig = zebraConfigRepository.getZebraConfigByIdOrDefault(zebraConfigId);
 
 		DB.createT_Selection(pInstanceId, desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited);

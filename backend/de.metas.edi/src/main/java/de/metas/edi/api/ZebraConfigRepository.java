@@ -22,6 +22,8 @@
 
 package de.metas.edi.api;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.ZebraConfigId;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.i18n.AdMessageKey;
@@ -86,5 +88,20 @@ public class ZebraConfigRepository
 				.andCollect(I_C_BP_PrintFormat.COLUMNNAME_AD_Zebra_Config_ID, I_AD_Zebra_Config.class)
 				.create()
 				.firstId(ZebraConfigId::ofRepoIdOrNull);
+	}
+
+	public ZebraConfigId retrieveZebraConfigId(final BPartnerId partnerId)
+	{
+		I_C_BP_PrintFormat printFormat =  queryBL
+				.createQueryBuilder(I_C_BP_PrintFormat.class)
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, partnerId)
+				.create()
+				.firstOnly(I_C_BP_PrintFormat.class);
+
+		if (printFormat != null) {
+			//.firstId(ZebraConfigId::ofRepoIdOrNull);
+			return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
+		}
+		return null;
 	}
 }
