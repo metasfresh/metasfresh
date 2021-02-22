@@ -99,7 +99,6 @@ public class ZebraConfigRepository
 				.firstOnly(I_C_BP_PrintFormat.class);
 
 		if (printFormat != null) {
-			//.firstId(ZebraConfigId::ofRepoIdOrNull);
 			return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
 		}
 		return null;
