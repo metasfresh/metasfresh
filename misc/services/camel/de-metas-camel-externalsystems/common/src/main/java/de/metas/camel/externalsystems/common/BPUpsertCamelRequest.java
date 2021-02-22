@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,29 +20,20 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.camel.externalsystems.common;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class JsonExternalSystemName
+@Builder
+public class BPUpsertCamelRequest
 {
-	@JsonValue
-	String name;
+	@NonNull
+	String orgCode;
 
-	public static JsonExternalSystemName of(final String systemName)
-	{
-		return new JsonExternalSystemName(systemName);
-	}
-
-	@JsonCreator
-	public JsonExternalSystemName(@NonNull final String name)
-	{
-		this.name = name;
-	}
-	
+	@NonNull
+	JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert;
 }

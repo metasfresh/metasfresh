@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de-metas-camel-alberta-camelroutes
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,29 +20,35 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.camel.alberta.processor;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.common.bprelation.JsonBPRelationRole;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Map;
+import java.util.Optional;
+
 @Value
-public class JsonExternalSystemName
+@Builder
+public class BPartnerRoleInfoProvider
 {
-	@JsonValue
-	String name;
+	@NonNull
+	String sourceBPartnerIdentifier;
 
-	public static JsonExternalSystemName of(final String systemName)
-	{
-		return new JsonExternalSystemName(systemName);
-	}
+	@NonNull
+	String sourceBPartnerLocationIdentifier;
 
-	@JsonCreator
-	public JsonExternalSystemName(@NonNull final String name)
+	@NonNull
+	@Getter(AccessLevel.PRIVATE)
+	Map<String, JsonBPRelationRole> bpIdentifier2Role;
+
+	@NonNull
+	public Optional<JsonBPRelationRole> getRoleByBPIdentifier(@NonNull final String bPartnerIdentifier)
 	{
-		this.name = name;
+		return Optional.ofNullable(bpIdentifier2Role.get(bPartnerIdentifier));
 	}
-	
 }

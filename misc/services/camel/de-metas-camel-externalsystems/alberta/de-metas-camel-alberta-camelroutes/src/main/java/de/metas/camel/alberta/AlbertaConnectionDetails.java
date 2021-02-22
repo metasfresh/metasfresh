@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de-metas-camel-alberta-camelroutes
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,29 +20,22 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.camel.alberta;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class JsonExternalSystemName
+@Builder
+public class AlbertaConnectionDetails
 {
-	@JsonValue
-	String name;
+	@NonNull
+	String apiKey;
 
-	public static JsonExternalSystemName of(final String systemName)
-	{
-		return new JsonExternalSystemName(systemName);
-	}
+	@NonNull
+	String tenant;
 
-	@JsonCreator
-	public JsonExternalSystemName(@NonNull final String name)
-	{
-		this.name = name;
-	}
-	
+	@NonNull
+	String basePath;
 }

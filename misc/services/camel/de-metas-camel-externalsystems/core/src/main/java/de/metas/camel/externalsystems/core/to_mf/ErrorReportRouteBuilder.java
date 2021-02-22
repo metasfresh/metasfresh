@@ -22,17 +22,56 @@
 
 package de.metas.camel.externalsystems.core.to_mf;
 
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.springframework.stereotype.Component;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class ErrorReportRouteBuilder extends RouteBuilder
 {
+	public final String ERROR_ROUTE_ID = "Error-Route";
+	private final DateTimeFormatter FILE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS");
+
 	@Override
 	public void configure()
 	{
-		from("{{" + ExternalSystemCamelConstants.MF_REPORT_ERROR_CAMEL_URI + "}}")
-				.to("file://error_report.txt"); // TODO later: add AD_Issue creating Metasfresh-REST-EP
+		from(StaticEndpointBuilders.direct(ERROR_ROUTE_ID)) //FIXME: temporary
+				.routeId(ERROR_ROUTE_ID)
+				.process(this::prepareErrorFile)
+				.to("{{metasfresh.error-report.folder}}"); // TODO later: add AD_Issue creating Metasfresh-REST-EP
+	}
+
+	private void prepareErrorFile(@NonNull final Exchange exchange)
+	{
+		final StringBuilder content = new StringBuilder();
+
+		content.append(" Exchange body when error occurred: ")
+				.append(exchange.getIn().getBody(String.class))
+				.append("\n");
+
+		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		if (exception == null)
+		{
+			content.append(" No info available!");
+		}
+		else
+		{
+			final StringWriter sw = new StringWriter();
+			final PrintWriter pw = new PrintWriter(sw);
+			exception.printStackTrace(pw);
+
+			content.append(" Error Message: ").append(exception.getLocalizedMessage()).append("\n");
+			content.append(" Error Stacktrace: ").append(sw.toString());
+		}
+
+		exchange.getIn().setBody(content.toString());
+		exchange.getIn().setHeader(Exchange.FILE_NAME, FILE_TIMESTAMP_FORMATTER.format(ZonedDateTime.now()) + "_error.txt");
 	}
 }

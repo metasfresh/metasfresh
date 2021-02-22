@@ -44,6 +44,7 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -133,7 +134,7 @@ public class ExternalReferenceRestControllerService
 		return result.build();
 	}
 
-	void performInsert(@NonNull final String orgCode, @NonNull final JsonExternalReferenceCreateRequest request)
+	public void performInsert(@Nullable final String orgCode, @NonNull final JsonExternalReferenceCreateRequest request)
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 

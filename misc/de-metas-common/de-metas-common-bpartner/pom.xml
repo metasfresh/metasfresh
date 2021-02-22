@@ -110,7 +110,13 @@
             <version>2.5</version>
             <scope>test</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>de.metas.common.externalreference</groupId>
+            <artifactId>de-metas-common-externalreference</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

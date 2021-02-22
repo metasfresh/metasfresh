@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-externalsystem
+ * de.metas.externalreference
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,29 +20,26 @@
  * #L%
  */
 
-package de.metas.common.externalsystem;
+package de.metas.externalreference;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
 
-@Value
-public class JsonExternalSystemName
+@AllArgsConstructor
+@Getter
+public enum AlbertaExternalSystem implements IExternalSystem
 {
-	@JsonValue
-	String name;
+	ALBERTA("ALBERTA");
 
-	public static JsonExternalSystemName of(final String systemName)
-	{
-		return new JsonExternalSystemName(systemName);
-	}
+	public String code;
 
-	@JsonCreator
-	public JsonExternalSystemName(@NonNull final String name)
+	public static AlbertaExternalSystem ofCode(final String code)
 	{
-		this.name = name;
+		if (ALBERTA.getCode().equals(code))
+		{
+			return ALBERTA;
+		}
+		throw new AdempiereException("Unsupported code " + code + " for AlbertaExternalSystem. Hint: only 'ALBERTA' is allowed");
 	}
-	
 }

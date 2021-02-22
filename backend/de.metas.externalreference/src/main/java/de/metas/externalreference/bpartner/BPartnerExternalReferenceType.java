@@ -20,34 +20,29 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.externalreference.bpartner;
 
+import de.metas.externalreference.IExternalReferenceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
 
 @AllArgsConstructor
 @Getter
-public enum NullExternalReferenceType implements IExternalReferenceType
+public enum BPartnerExternalReferenceType implements IExternalReferenceType
 {
-	NULL("NULL", "NULL");
+	BPARTNER("BPartner", I_C_BPartner.Table_Name);
 
-	/**
-	 * Used by the external system (e.g. {code customer})
-	 */
 	private final String code;
-
-	/**
-	 * metasfresh {@link org.compiere.model.I_AD_Table#Table_Name} (e.g. {@code C_BPartner}) of the records that are referenced by an external reference with tis type
-	 */
 	private final String tableName;
 
-	public static NullExternalReferenceType ofCode(final String code)
+	public static BPartnerExternalReferenceType ofCode(final String code)
 	{
-		if ("NULL" .equals(code))
+		if (BPARTNER.getCode().equals(code))
 		{
-			return NULL;
+			return BPARTNER;
 		}
-		throw new AdempiereException("Unsupported code " + code + " for NullExternalReferenceType. Hint: only 'NULL' is allowed");
+		throw new AdempiereException("Unsupported code " + code + " for BPartnerExternalReferenceType. Hint: only 'BPartner' is allowed");
 	}
 }

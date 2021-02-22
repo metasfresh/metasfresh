@@ -171,6 +171,12 @@
             <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.common.externalreference</groupId>
+            <artifactId>de-metas-common-externalreference</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
