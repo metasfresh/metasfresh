@@ -9,7 +9,12 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.161 - WIP
+# Current master - metasfresh 5.162 - WIP
+
+## Reatures
+* [#10683](https://github.com/metasfresh/metasfresh/issues/10683) AD_Issue - Insert REST Endpoint
+
+# Current RC - metasfresh 5.161 - WIP
 
 https://github.com/metasfresh/metasfresh/issues/10595
 https://github.com/metasfresh/metasfresh/pull/10659
