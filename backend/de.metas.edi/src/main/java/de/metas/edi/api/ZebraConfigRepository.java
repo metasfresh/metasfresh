@@ -29,6 +29,7 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Zebra_Config;
@@ -36,7 +37,7 @@ import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 @Repository
 public class ZebraConfigRepository
@@ -45,39 +46,30 @@ public class ZebraConfigRepository
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private static final AdMessageKey MSG_NO_ZEBRA_CONFIG = AdMessageKey.of("WEBUI_NoZebraConfigDefined");
 
-	@Nullable
-	public I_AD_Zebra_Config getZebraConfigByIdOrDefault(@Nullable final ZebraConfigId zebraConfigId)
+	public I_AD_Zebra_Config getById(@NonNull final ZebraConfigId zebraConfigId)
 	{
-		I_AD_Zebra_Config item = null;
-		if (zebraConfigId == null)
-		{
-			item = queryBL
-					.createQueryBuilderOutOfTrx(I_AD_Zebra_Config.class)
-					.addEqualsFilter(I_AD_Zebra_Config.COLUMNNAME_IsDefault, true)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient()
-					.create()
-					.firstOnly(I_AD_Zebra_Config.class);
-			if (item == null)
-			{
-				throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_NO_ZEBRA_CONFIG));
-			}
-		}
-		else
-		{
-
-			item = queryBL
-					.createQueryBuilderOutOfTrx(I_AD_Zebra_Config.class)
-					.addEqualsFilter(I_AD_Zebra_Config.COLUMNNAME_AD_Zebra_Config_ID, zebraConfigId)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient()
-					.create()
-					.firstOnly(I_AD_Zebra_Config.class);
-		}
-		return item;
+		return loadOutOfTrx(zebraConfigId.getRepoId(), I_AD_Zebra_Config.class);
 	}
 
-	public ZebraConfigId getZebraConfigForDesadvLinePackID(Integer desadvLinePackID)
+	public ZebraConfigId getDefaultZebraConfigId()
+	{
+		final ZebraConfigId defaultZebraConfigId = queryBL
+				.createQueryBuilderOutOfTrx(I_AD_Zebra_Config.class)
+				.addEqualsFilter(I_AD_Zebra_Config.COLUMNNAME_IsDefault, true)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.firstId(ZebraConfigId::ofRepoIdOrNull);
+
+		if (defaultZebraConfigId == null)
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_NO_ZEBRA_CONFIG));
+		}
+
+		return defaultZebraConfigId;
+	}
+
+	public ZebraConfigId getZebraConfigForDesadvLinePackID(@NonNull final Integer desadvLinePackID)
 	{
 		return queryBL
 				.createQueryBuilder(I_EDI_DesadvLine_Pack.class)
@@ -90,7 +82,7 @@ public class ZebraConfigRepository
 				.firstId(ZebraConfigId::ofRepoIdOrNull);
 	}
 
-	public ZebraConfigId retrieveZebraConfigId(final BPartnerId partnerId)
+	public ZebraConfigId retrieveZebraConfigId(final BPartnerId partnerId, final ZebraConfigId defaultZebraConfigId)
 	{
 		I_C_BP_PrintFormat printFormat =  queryBL
 				.createQueryBuilder(I_C_BP_PrintFormat.class)
@@ -101,6 +93,6 @@ public class ZebraConfigRepository
 		if (printFormat != null) {
 			return ZebraConfigId.ofRepoIdOrNull(printFormat.getAD_Zebra_Config_ID());
 		}
-		return null;
+		return defaultZebraConfigId;
 	}
 }

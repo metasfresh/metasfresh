@@ -60,7 +60,8 @@ public class ZebraPrinterService
 															final ZebraConfigId zebraConfigId,
 															final PInstanceId pInstanceId )
 	{
-		final I_AD_Zebra_Config zebraConfig = zebraConfigRepository.getZebraConfigByIdOrDefault(zebraConfigId);
+		final ZebraConfigId zebraConfigToUse = zebraConfigId != null ? zebraConfigId : zebraConfigRepository.getDefaultZebraConfigId();
+		final I_AD_Zebra_Config zebraConfig = zebraConfigRepository.getById(zebraConfigToUse);
 
 		DB.createT_Selection(pInstanceId, desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited);
 

@@ -60,18 +60,18 @@ public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess imp
 		else  if (context.getSelectionSize().isMoreThanOneSelected())
 		{
 			final IQueryFilter<I_EDI_Desadv> selectedRecordsFilter = context.getQueryFilter(I_EDI_Desadv.class);
-			Integer differentConfigsSize = queryBL
+			final int differentConfigsSize = queryBL
 					.createQueryBuilder(I_EDI_Desadv.class)
 					.filter(selectedRecordsFilter)
 					.create()
 					.list()
 					.stream()
 					.map(ediDesadv -> BPartnerId.ofRepoId(ediDesadv.getC_BPartner_ID()))
-					.map(bpartnerId -> zebraConfigRepository.retrieveZebraConfigId(bpartnerId))
+					.map(bpartnerId -> zebraConfigRepository.retrieveZebraConfigId(bpartnerId, zebraConfigRepository.getDefaultZebraConfigId()))
 					.collect(Collectors.toSet())
 					.size();
 
-			if (differentConfigsSize != 1)
+			if (differentConfigsSize > 1)
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
 			}
