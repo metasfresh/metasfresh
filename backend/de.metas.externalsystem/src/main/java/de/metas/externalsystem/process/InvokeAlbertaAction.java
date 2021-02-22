@@ -50,7 +50,7 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	{
 		final int id;
 
-		if (this.childConfigId != null && this.childConfigId > 0)
+		if (this.childConfigId > 0)
 		{
 			id = this.childConfigId;
 		}

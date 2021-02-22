@@ -67,9 +67,9 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	public final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
-	private static final String PARAM_CONFIG_ID = "configId";
+	private static final String PARAM_CONFIG_ID = "ChildConfigId";
 	@Param(parameterName = PARAM_CONFIG_ID)
-	protected Integer childConfigId;
+	protected int childConfigId;
 
 	private static final String PARAM_SINCE = "since";
 	@Param(parameterName = PARAM_SINCE)
@@ -127,7 +127,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (childConfigId != null)
+		if (childConfigId > 0)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
