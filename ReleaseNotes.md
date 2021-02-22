@@ -12,7 +12,7 @@ Here come the actual release notes:
 # Current master - metasfresh 5.162 - WIP
 
 ## Reatures
-* [#10683](https://github.com/metasfresh/metasfresh/issues/10683) AD_Issue - Insert REST Endpoint
+
 
 # Current RC - metasfresh 5.161 - WIP
 
@@ -20,10 +20,10 @@ https://github.com/metasfresh/metasfresh/issues/10595
 https://github.com/metasfresh/metasfresh/pull/10659
   https://github.com/metasfresh/metasfresh/issues/10540
 
-
-
 ## Features
-* metasfresh
+* [#10683](https://github.com/metasfresh/metasfresh/issues/10683) AD_Issue - Insert REST Endpoint
+https://github.com/metasfresh/metasfresh/issues/10676
+https://github.com/metasfresh/metasfresh/issues/10676
   https://github.com/metasfresh/metasfresh/issues/10566
   * [#10535](https://github.com/metasfresh/metasfresh/issues/10535) Additional String Accounting Dimensions
   https://github.com/metasfresh/metasfresh/issues/10555
