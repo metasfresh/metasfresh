@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.JSONObjectMapper;
 
 /*

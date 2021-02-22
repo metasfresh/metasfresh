@@ -1,26 +1,5 @@
 package de.metas.purchasecandidate;
 
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
@@ -28,8 +7,9 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -44,6 +24,25 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 /*
  * #%L
@@ -247,6 +246,9 @@ public class PurchaseDemandWithCandidatesService
 				.profitInfoOrNull(profitInfo)
 				//
 				.purchaseCandidateIds(purchaseCandidateIds)
+
+				.forecastLineId(groupKey.getForecastLineId())
+				.dimension(groupKey.getDimension())
 				.salesOrderAndLineIds(salesOrderAndLineIds);
 
 		return builder.build();
@@ -260,6 +262,8 @@ public class PurchaseDemandWithCandidatesService
 				.vendorId(candidate.getVendorId())
 				.productId(candidate.getProductId())
 				.readOnly(candidate.isProcessedOrLocked())
+				.forecastLineId(candidate.getForecastLineId())
+				.dimension(candidate.getDimension())
 				.build();
 	}
 
@@ -272,6 +276,8 @@ public class PurchaseDemandWithCandidatesService
 		BPartnerId vendorId;
 		ProductId productId;
 		boolean readOnly;
+		Dimension dimension;
+		ForecastLineId forecastLineId;
 	}
 
 	@VisibleForTesting

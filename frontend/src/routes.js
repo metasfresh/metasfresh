@@ -79,7 +79,10 @@ export const getRoutes = (store, auth, plugins) => {
   const logout = () => {
     logoutRequest()
       .then(() => logoutSuccess(auth))
-      .then(() => store.dispatch(push('/login')));
+      .then(() => {
+        store.dispatch(setBreadcrumb([]));
+        store.dispatch(push('/login'));
+      });
   };
 
   function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
@@ -143,7 +146,12 @@ export const getRoutes = (store, auth, plugins) => {
       path: '/window/:windowType/:docId',
       component: MasterWindow,
       onEnter: ({ params }) =>
-        store.dispatch(createWindow(params.windowType, params.docId)),
+        store.dispatch(
+          createWindow({
+            windowId: params.windowType,
+            docId: params.docId,
+          })
+        ),
     },
     {
       path: '/sitemap',

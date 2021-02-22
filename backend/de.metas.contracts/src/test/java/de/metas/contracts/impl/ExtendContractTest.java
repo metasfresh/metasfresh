@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.pricing.PricingSystemId;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -158,8 +159,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		for (int i = 0; i < 5; i++)
 		{
 			final I_C_Flatrate_Conditions condition = newInstance(I_C_Flatrate_Conditions.class);
-			condition.setM_PricingSystem(productAndPricingSystem.getPricingSystem());
-			condition.setInvoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort);
+			condition.setM_PricingSystem_ID(productAndPricingSystem.getPricingSystem().getM_PricingSystem_ID());
+			condition.setInvoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Immediate);
 			condition.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
 			condition.setOnFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice);
 			condition.setName("Abo " + i);

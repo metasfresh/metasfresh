@@ -1,122 +1,80 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Assignment
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_Assignment, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 190025053L;
+	private static final long serialVersionUID = 935131328L;
 
     /** Standard Constructor */
-    public X_M_HU_Assignment (Properties ctx, int M_HU_Assignment_ID, String trxName)
+    public X_M_HU_Assignment (final Properties ctx, final int M_HU_Assignment_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_Assignment_ID, trxName);
-      /** if (M_HU_Assignment_ID == 0)
-        {
-			setAD_Table_ID (0);
-			setIsTransferPackingMaterials (true); // Y
-			setM_HU_Assignment_ID (0);
-			setM_HU_ID (0);
-			setRecord_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_Assignment (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_Assignment (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
-	/** Set Transfer Packing Materials.
-		@param IsTransferPackingMaterials 
-		Shall we transfer packing materials along with the HU
-	  */
 	@Override
-	public void setIsTransferPackingMaterials (boolean IsTransferPackingMaterials)
+	public void setIsTransferPackingMaterials (final boolean IsTransferPackingMaterials)
 	{
-		set_Value (COLUMNNAME_IsTransferPackingMaterials, Boolean.valueOf(IsTransferPackingMaterials));
+		set_Value (COLUMNNAME_IsTransferPackingMaterials, IsTransferPackingMaterials);
 	}
 
-	/** Get Transfer Packing Materials.
-		@return Shall we transfer packing materials along with the HU
-	  */
 	@Override
-	public boolean isTransferPackingMaterials () 
+	public boolean isTransferPackingMaterials() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsTransferPackingMaterials);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsTransferPackingMaterials);
 	}
 
-	/** Set M_HU_Assignment.
-		@param M_HU_Assignment_ID M_HU_Assignment	  */
 	@Override
-	public void setM_HU_Assignment_ID (int M_HU_Assignment_ID)
+	public void setM_HU_Assignment_ID (final int M_HU_Assignment_ID)
 	{
 		if (M_HU_Assignment_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Assignment_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Assignment_ID, Integer.valueOf(M_HU_Assignment_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Assignment_ID, M_HU_Assignment_ID);
 	}
 
-	/** Get M_HU_Assignment.
-		@return M_HU_Assignment	  */
 	@Override
-	public int getM_HU_Assignment_ID () 
+	public int getM_HU_Assignment_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Assignment_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Assignment_ID);
 	}
 
 	@Override
@@ -126,31 +84,24 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_Value (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 
 	@Override
@@ -160,34 +111,24 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public void setM_LU_HU(de.metas.handlingunits.model.I_M_HU M_LU_HU)
+	public void setM_LU_HU(final de.metas.handlingunits.model.I_M_HU M_LU_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_LU_HU);
 	}
 
-	/** Set LU.
-		@param M_LU_HU_ID 
-		Loading Unit
-	  */
 	@Override
-	public void setM_LU_HU_ID (int M_LU_HU_ID)
+	public void setM_LU_HU_ID (final int M_LU_HU_ID)
 	{
 		if (M_LU_HU_ID < 1) 
 			set_Value (COLUMNNAME_M_LU_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_LU_HU_ID, Integer.valueOf(M_LU_HU_ID));
+			set_Value (COLUMNNAME_M_LU_HU_ID, M_LU_HU_ID);
 	}
 
-	/** Get LU.
-		@return Loading Unit
-	  */
 	@Override
-	public int getM_LU_HU_ID () 
+	public int getM_LU_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_LU_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_ID);
 	}
 
 	@Override
@@ -197,96 +138,63 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public void setM_TU_HU(de.metas.handlingunits.model.I_M_HU M_TU_HU)
+	public void setM_TU_HU(final de.metas.handlingunits.model.I_M_HU M_TU_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_TU_HU);
 	}
 
-	/** Set TU.
-		@param M_TU_HU_ID 
-		Trading Unit
-	  */
 	@Override
-	public void setM_TU_HU_ID (int M_TU_HU_ID)
+	public void setM_TU_HU_ID (final int M_TU_HU_ID)
 	{
 		if (M_TU_HU_ID < 1) 
 			set_Value (COLUMNNAME_M_TU_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_TU_HU_ID, Integer.valueOf(M_TU_HU_ID));
+			set_Value (COLUMNNAME_M_TU_HU_ID, M_TU_HU_ID);
 	}
 
-	/** Get TU.
-		@return Trading Unit
-	  */
 	@Override
-	public int getM_TU_HU_ID () 
+	public int getM_TU_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_TU_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_TU_HU_ID);
 	}
 
-	/** Set Produkte.
-		@param Products Produkte	  */
 	@Override
-	public void setProducts (java.lang.String Products)
+	public void setProducts (final @Nullable java.lang.String Products)
 	{
 		throw new IllegalArgumentException ("Products is virtual column");	}
 
-	/** Get Produkte.
-		@return Produkte	  */
 	@Override
-	public java.lang.String getProducts () 
+	public java.lang.String getProducts() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Products);
+		return get_ValueAsString(COLUMNNAME_Products);
 	}
 
-	/** Set Menge.
-		@param Qty 
-		Menge
-	  */
 	@Override
-	public void setQty (java.math.BigDecimal Qty)
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}
 
-	/** Get Menge.
-		@return Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQty () 
+	public BigDecimal getQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
 	@Override
-	public void setRecord_ID (int Record_ID)
+	public void setRecord_ID (final int Record_ID)
 	{
 		if (Record_ID < 0) 
 			set_Value (COLUMNNAME_Record_ID, null);
 		else 
-			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+			set_Value (COLUMNNAME_Record_ID, Record_ID);
 	}
 
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
 	@Override
-	public int getRecord_ID () 
+	public int getRecord_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
 
 	@Override
@@ -296,33 +204,23 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public void setVHU(de.metas.handlingunits.model.I_M_HU VHU)
+	public void setVHU(final de.metas.handlingunits.model.I_M_HU VHU)
 	{
 		set_ValueFromPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class, VHU);
 	}
 
-	/** Set CU.
-		@param VHU_ID 
-		Customer Unit
-	  */
 	@Override
-	public void setVHU_ID (int VHU_ID)
+	public void setVHU_ID (final int VHU_ID)
 	{
 		if (VHU_ID < 1) 
 			set_Value (COLUMNNAME_VHU_ID, null);
 		else 
-			set_Value (COLUMNNAME_VHU_ID, Integer.valueOf(VHU_ID));
+			set_Value (COLUMNNAME_VHU_ID, VHU_ID);
 	}
 
-	/** Get CU.
-		@return Customer Unit
-	  */
 	@Override
-	public int getVHU_ID () 
+	public int getVHU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_VHU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_VHU_ID);
 	}
 }

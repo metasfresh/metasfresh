@@ -22,28 +22,26 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.util.Collection;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 /**
  * Abstract implementation of {@link IAttributeStorageFactory} which is oriented by having an underlying data-type from which we can get the {@link IAttributeStorage} in a standard way.
  *
- * @author tsa
- *
- * @param <ModelType> underlying data-type
+ * @param <ModelType>            underlying data-type
  * @param <AttributeStorageType> attribute storage type
+ * @author tsa
  */
 public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeStorageType extends IAttributeStorage>
 		extends AbstractAttributeStorageFactory
@@ -56,14 +54,9 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	 * </ul>
 	 */
 	private final Cache<ArrayKey, AttributeStorageType> key2storage = CacheBuilder.newBuilder()
-			.removalListener(new RemovalListener<ArrayKey, AttributeStorageType>()
-			{
-				@Override
-				public void onRemoval(final RemovalNotification<ArrayKey, AttributeStorageType> notification)
-				{
-					final AttributeStorageType attributeStorage = notification.getValue();
-					onAttributeStorageRemovedFromCache(attributeStorage);
-				}
+			.removalListener((RemovalListener<ArrayKey, AttributeStorageType>)notification -> {
+				final AttributeStorageType attributeStorage = notification.getValue();
+				onAttributeStorageRemovedFromCache(attributeStorage);
 			})
 			.build();
 
@@ -79,9 +72,7 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	/**
 	 * Gets the underlying data-type from given <code>modelObj</code>
 	 *
-	 * @param modelObj
-	 * @return
-	 *         <ul>
+	 * @return <ul>
 	 *         <li>underlying data-type model
 	 *         <li><code>null</code> if this modelObj cannot be handled by this factory
 	 *         <li>a null marker if this modelObj is actually handled by this factory but there is no underlying data-type model for it. In this case {@link #isNullModel(Object)} shall return true for
@@ -117,7 +108,6 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	/**
 	 * Creates a key from underlying data model to be used when caching current storages. Note that the implementation does only need to create a key that is unique per <code>ModelType</code>.
 	 *
-	 * @param model
 	 * @return key
 	 */
 	protected abstract ArrayKey mkKey(final ModelType model);
@@ -125,18 +115,14 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	/**
 	 * Checks if given <code>model</code> is null.
 	 *
-	 * @param model
 	 * @return true if given model is conceptually null (e.g. is actually null, is a null marker etc)
 	 */
 	protected boolean isNullModel(final ModelType model)
 	{
-		if (model == null)
-		{
-			return true;
-		}
-		return false;
+		return model == null;
 	}
 
+	@Nullable
 	protected IAttributeStorage getAttributeStorageForModel(final ModelType model)
 	{
 		final ArrayKey key = mkKey(model);
@@ -168,33 +154,20 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	/**
 	 * Create attribute storage for underlying model
 	 *
-	 * @param model
 	 * @return attribute storage
 	 */
 	protected abstract AttributeStorageType createAttributeStorage(final ModelType model);
 
-	/**
-	 * Clears internal attribute storages cache and flushes pending saves on {@link #getHUAttributesDAO()}.
-	 */
-	public final void clearCache()
+	@Override
+	public void flush()
 	{
-		// First thing, clear the cached attribute storages.
-		// We do this first because in case the attribute storages are disposed while clearing the cache,
-		// we want to make sure no more changes will be pushed to be saved.
-		key2storage.invalidateAll();
-		key2storage.cleanUp();
-
-		// Also flush and clear the HUAttributesDAO cache because if we are not doing this,
-		// next time when we will load an Attributes Storage we will get the cached ones.
-		getHUAttributesDAO().flushAndClearCache();
+		getHUAttributesDAO().flush();
 	}
 
 	/**
 	 * Method called when an {@link IAttributeStorage} is removed from cache.
-	 *
+	 * <p>
 	 * If needed you could do some cleanup work like, {@link #removeListenersFromAttributeStorage(IAttributeStorage)}, destroy it etc.
-	 *
-	 * @param attributeStorage
 	 */
 	protected void onAttributeStorageRemovedFromCache(final AttributeStorageType attributeStorage)
 	{

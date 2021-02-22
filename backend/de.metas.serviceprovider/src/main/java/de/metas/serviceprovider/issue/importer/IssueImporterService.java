@@ -25,18 +25,19 @@ package de.metas.serviceprovider.issue.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.externalreference.ExternalId;
+import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.reflist.ReferenceId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalId;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.external.reference.ExternalReference;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
-import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -131,7 +132,7 @@ public class IssueImporterService
 	{
 		try
 		{
-			final IssueId existingIssueId = getIssueIdByExternalId(importIssueInfo.getExternalIssueId());
+			final IssueId existingIssueId = getIssueIdByExternalId(importIssueInfo.getExternalIssueId(), importIssueInfo.getOrgId());
 			final Optional<IssueEntity> existingEffortIssue = existingIssueId != null
 					? Optional.of(issueRepository.getById(existingIssueId))
 					: Optional.empty();
@@ -150,7 +151,6 @@ public class IssueImporterService
 				importMilestone(importIssueInfo.getMilestone());
 			}
 
-
 			final IssueEntity issueEntity = existingEffortIssue
 					.map(issue -> mergeIssueInfoWithEntity(importIssueInfo, issue))
 					.orElseGet(() -> buildIssue(importIssueInfo));
@@ -162,7 +162,7 @@ public class IssueImporterService
 				final ExternalReference issueExternalRef = ExternalReference
 						.builder()
 						.externalSystem(importIssueInfo.getExternalIssueId().getExternalSystem())
-						.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+						.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 						.externalReference(importIssueInfo.getExternalIssueId().getId())
 						.orgId(issueEntity.getOrgId())
 						.recordId(issueEntity.getIssueId().getRepoId())
@@ -198,7 +198,7 @@ public class IssueImporterService
 			final ExternalReference externalReference = ExternalReference
 					.builder()
 					.externalSystem(importMilestoneInfo.getExternalId().getExternalSystem())
-					.externalReferenceType(ExternalReferenceType.MILESTONE_ID)
+					.externalReferenceType(ExternalServiceReferenceType.MILESTONE_ID)
 					.externalReference(importMilestoneInfo.getExternalId().getId())
 					.recordId(milestone.getMilestoneId().getRepoId())
 					.orgId(milestone.getOrgId())
@@ -211,7 +211,7 @@ public class IssueImporterService
 	private Milestone buildMilestone(@NonNull final ImportMilestoneInfo milestone)
 	{
 		return Milestone.builder()
-				.milestoneId(getMilestoneIdByExternalId(milestone.getExternalId()))
+				.milestoneId(getMilestoneIdByExternalId(milestone.getExternalId(), milestone.getOrgId()))
 				.name(milestone.getName())
 				.description(milestone.getDescription())
 				.externalURL(milestone.getExternalURL())
@@ -231,7 +231,7 @@ public class IssueImporterService
 
 		final IssueId parentIssueId = importIssueInfo.getParentIssueId() != null
 				? importIssueInfo.getParentIssueId()
-				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId());
+				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId(), importIssueInfo.getOrgId());
 
 		return IssueEntity.builder()
 				.orgId(importIssueInfo.getOrgId())
@@ -267,7 +267,7 @@ public class IssueImporterService
 	{
 		final IssueId parentIssueId = importIssueInfo.getParentIssueId() != null
 				? importIssueInfo.getParentIssueId()
-				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId());
+				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId(), importIssueInfo.getOrgId());
 
 		final MilestoneId milestoneId = importIssueInfo.getMilestone() != null
 				? importIssueInfo.getMilestone().getMilestoneId()
@@ -304,7 +304,8 @@ public class IssueImporterService
 	}
 
 	@Nullable
-	private IssueId getIssueIdByExternalId(@Nullable final ExternalId externalId)
+	private IssueId getIssueIdByExternalId(@Nullable final ExternalId externalId,
+			@NonNull final OrgId orgId)
 	{
 		if (externalId == null)
 		{
@@ -312,23 +313,26 @@ public class IssueImporterService
 		}
 
 		final Integer issueId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
-				GetReferencedIdRequest.builder()
+				ExternalReferenceQuery.builder()
+						.orgId(orgId)
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
-						.externalReferenceType(ExternalReferenceType.ISSUE_ID)
+						.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
 						.build());
 
 		return IssueId.ofRepoIdOrNull(issueId);
 	}
 
 	@Nullable
-	private MilestoneId getMilestoneIdByExternalId(@NonNull final ExternalId externalId)
+	private MilestoneId getMilestoneIdByExternalId(@NonNull final ExternalId externalId,
+			@NonNull final OrgId orgId)
 	{
 		final Integer milestoneId = externalReferenceRepository.getReferencedRecordIdOrNullBy(
-				GetReferencedIdRequest.builder()
+				ExternalReferenceQuery.builder()
+						.orgId(orgId)
 						.externalSystem(externalId.getExternalSystem())
 						.externalReference(externalId.getId())
-						.externalReferenceType(ExternalReferenceType.MILESTONE_ID)
+						.externalReferenceType(ExternalServiceReferenceType.MILESTONE_ID)
 						.build());
 
 		return MilestoneId.ofRepoIdOrNull(milestoneId);

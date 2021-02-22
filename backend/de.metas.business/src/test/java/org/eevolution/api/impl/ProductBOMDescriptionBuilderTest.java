@@ -11,6 +11,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.BOMUse;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.junit.Before;
@@ -129,6 +131,8 @@ public class ProductBOMDescriptionBuilderTest
 			bom = newInstance(I_PP_Product_BOM.class);
 			bom.setM_Product_ID(bomProductId.getRepoId());
 			bom.setValue(bomProduct.getValue());
+			bom.setBOMType(BOMType.CurrentActive.getCode());
+			bom.setBOMUse(BOMUse.Manufacturing.getCode());
 			saveRecord(bom);
 		}
 

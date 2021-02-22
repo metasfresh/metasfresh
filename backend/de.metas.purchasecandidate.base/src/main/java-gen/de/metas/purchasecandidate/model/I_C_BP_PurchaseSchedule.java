@@ -1,101 +1,74 @@
 package de.metas.purchasecandidate.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BP_PurchaseSchedule
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_BP_PurchaseSchedule 
 {
 
-    /** TableName=C_BP_PurchaseSchedule */
-    public static final String Table_Name = "C_BP_PurchaseSchedule";
+	String Table_Name = "C_BP_PurchaseSchedule";
 
-    /** AD_Table_ID=540975 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540975 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_Client>(I_C_BP_PurchaseSchedule.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_Org>(I_C_BP_PurchaseSchedule.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-
-	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_BPartner>(I_C_BP_PurchaseSchedule.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set BPartner's purchase schedule.
@@ -104,7 +77,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID);
+	void setC_BP_PurchaseSchedule_ID (int C_BP_PurchaseSchedule_ID);
 
 	/**
 	 * Get BPartner's purchase schedule.
@@ -113,94 +86,83 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BP_PurchaseSchedule_ID();
+	int getC_BP_PurchaseSchedule_ID();
 
-    /** Column definition for C_BP_PurchaseSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_C_BP_PurchaseSchedule_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "C_BP_PurchaseSchedule_ID", null);
-    /** Column name C_BP_PurchaseSchedule_ID */
-    public static final String COLUMNNAME_C_BP_PurchaseSchedule_ID = "C_BP_PurchaseSchedule_ID";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_C_BP_PurchaseSchedule_ID = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "C_BP_PurchaseSchedule_ID", null);
+	String COLUMNNAME_C_BP_PurchaseSchedule_ID = "C_BP_PurchaseSchedule_ID";
 
 	/**
-	 * Set Kalender.
-	 * Bezeichnung des Buchführungs-Kalenders
+	 * Set Calendar.
+	 * Accounting Calendar Name
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Calendar_ID (int C_Calendar_ID);
+	void setC_Calendar_ID (int C_Calendar_ID);
 
 	/**
-	 * Get Kalender.
-	 * Bezeichnung des Buchführungs-Kalenders
+	 * Get Calendar.
+	 * Accounting Calendar Name
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Calendar_ID();
+	int getC_Calendar_ID();
 
-	public org.compiere.model.I_C_Calendar getC_Calendar();
+	@Nullable org.compiere.model.I_C_Calendar getC_Calendar();
 
-	public void setC_Calendar(org.compiere.model.I_C_Calendar C_Calendar);
+	void setC_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Calendar);
 
-    /** Column definition for C_Calendar_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_Calendar> COLUMN_C_Calendar_ID = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_Calendar>(I_C_BP_PurchaseSchedule.class, "C_Calendar_ID", org.compiere.model.I_C_Calendar.class);
-    /** Column name C_Calendar_ID */
-    public static final String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
+	ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_C_Calendar> COLUMN_C_Calendar_ID = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "C_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Created = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_User>(I_C_BP_PurchaseSchedule.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Description = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Häufigkeit.
@@ -210,7 +172,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFrequency (int Frequency);
+	void setFrequency (int Frequency);
 
 	/**
 	 * Get Häufigkeit.
@@ -220,12 +182,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getFrequency();
+	int getFrequency();
 
-    /** Column definition for Frequency */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Frequency = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "Frequency", null);
-    /** Column name Frequency */
-    public static final String COLUMNNAME_Frequency = "Frequency";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Frequency = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "Frequency", null);
+	String COLUMNNAME_Frequency = "Frequency";
 
 	/**
 	 * Set Häufigkeitsart.
@@ -235,7 +195,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setFrequencyType (java.lang.String FrequencyType);
+	void setFrequencyType (java.lang.String FrequencyType);
 
 	/**
 	 * Get Häufigkeitsart.
@@ -245,37 +205,33 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFrequencyType();
+	java.lang.String getFrequencyType();
 
-    /** Column definition for FrequencyType */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_FrequencyType = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "FrequencyType", null);
-    /** Column name FrequencyType */
-    public static final String COLUMNNAME_FrequencyType = "FrequencyType";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_FrequencyType = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "FrequencyType", null);
+	String COLUMNNAME_FrequencyType = "FrequencyType";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Lead Time Offset.
@@ -285,7 +241,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLeadTimeOffset (int LeadTimeOffset);
+	void setLeadTimeOffset (int LeadTimeOffset);
 
 	/**
 	 * Get Lead Time Offset.
@@ -295,37 +251,33 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getLeadTimeOffset();
+	int getLeadTimeOffset();
 
-    /** Column definition for LeadTimeOffset */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_LeadTimeOffset = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "LeadTimeOffset", null);
-    /** Column name LeadTimeOffset */
-    public static final String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_LeadTimeOffset = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "LeadTimeOffset", null);
+	String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
 
 	/**
 	 * Set Day of the Month.
-	 * Day of the month 1 to 28/29/30/31
+	 * Tag des Monats 1 to 28/29/30/31
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMonthDay (int MonthDay);
+	void setMonthDay (int MonthDay);
 
 	/**
 	 * Get Day of the Month.
-	 * Day of the month 1 to 28/29/30/31
+	 * Tag des Monats 1 to 28/29/30/31
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getMonthDay();
+	int getMonthDay();
 
-    /** Column definition for MonthDay */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_MonthDay = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "MonthDay", null);
-    /** Column name MonthDay */
-    public static final String COLUMNNAME_MonthDay = "MonthDay";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_MonthDay = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "MonthDay", null);
+	String COLUMNNAME_MonthDay = "MonthDay";
 
 	/**
 	 * Set Freitag.
@@ -335,7 +287,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnFriday (boolean OnFriday);
+	void setOnFriday (boolean OnFriday);
 
 	/**
 	 * Get Freitag.
@@ -345,12 +297,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnFriday();
+	boolean isOnFriday();
 
-    /** Column definition for OnFriday */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnFriday = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "OnFriday", null);
-    /** Column name OnFriday */
-    public static final String COLUMNNAME_OnFriday = "OnFriday";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnFriday = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "OnFriday", null);
+	String COLUMNNAME_OnFriday = "OnFriday";
 
 	/**
 	 * Set Montag.
@@ -360,7 +310,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnMonday (boolean OnMonday);
+	void setOnMonday (boolean OnMonday);
 
 	/**
 	 * Get Montag.
@@ -370,12 +320,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnMonday();
+	boolean isOnMonday();
 
-    /** Column definition for OnMonday */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnMonday = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "OnMonday", null);
-    /** Column name OnMonday */
-    public static final String COLUMNNAME_OnMonday = "OnMonday";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnMonday = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "OnMonday", null);
+	String COLUMNNAME_OnMonday = "OnMonday";
 
 	/**
 	 * Set Samstag.
@@ -385,7 +333,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnSaturday (boolean OnSaturday);
+	void setOnSaturday (boolean OnSaturday);
 
 	/**
 	 * Get Samstag.
@@ -395,12 +343,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnSaturday();
+	boolean isOnSaturday();
 
-    /** Column definition for OnSaturday */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnSaturday = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "OnSaturday", null);
-    /** Column name OnSaturday */
-    public static final String COLUMNNAME_OnSaturday = "OnSaturday";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnSaturday = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "OnSaturday", null);
+	String COLUMNNAME_OnSaturday = "OnSaturday";
 
 	/**
 	 * Set Sonntag.
@@ -410,7 +356,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnSunday (boolean OnSunday);
+	void setOnSunday (boolean OnSunday);
 
 	/**
 	 * Get Sonntag.
@@ -420,12 +366,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnSunday();
+	boolean isOnSunday();
 
-    /** Column definition for OnSunday */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnSunday = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "OnSunday", null);
-    /** Column name OnSunday */
-    public static final String COLUMNNAME_OnSunday = "OnSunday";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnSunday = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "OnSunday", null);
+	String COLUMNNAME_OnSunday = "OnSunday";
 
 	/**
 	 * Set Donnerstag.
@@ -435,7 +379,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnThursday (boolean OnThursday);
+	void setOnThursday (boolean OnThursday);
 
 	/**
 	 * Get Donnerstag.
@@ -445,12 +389,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnThursday();
+	boolean isOnThursday();
 
-    /** Column definition for OnThursday */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnThursday = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "OnThursday", null);
-    /** Column name OnThursday */
-    public static final String COLUMNNAME_OnThursday = "OnThursday";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnThursday = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "OnThursday", null);
+	String COLUMNNAME_OnThursday = "OnThursday";
 
 	/**
 	 * Set Dienstag.
@@ -460,7 +402,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnTuesday (boolean OnTuesday);
+	void setOnTuesday (boolean OnTuesday);
 
 	/**
 	 * Get Dienstag.
@@ -470,12 +412,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnTuesday();
+	boolean isOnTuesday();
 
-    /** Column definition for OnTuesday */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnTuesday = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "OnTuesday", null);
-    /** Column name OnTuesday */
-    public static final String COLUMNNAME_OnTuesday = "OnTuesday";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnTuesday = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "OnTuesday", null);
+	String COLUMNNAME_OnTuesday = "OnTuesday";
 
 	/**
 	 * Set Mittwoch.
@@ -485,7 +425,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnWednesday (boolean OnWednesday);
+	void setOnWednesday (boolean OnWednesday);
 
 	/**
 	 * Get Mittwoch.
@@ -495,12 +435,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnWednesday();
+	boolean isOnWednesday();
 
-    /** Column definition for OnWednesday */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnWednesday = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "OnWednesday", null);
-    /** Column name OnWednesday */
-    public static final String COLUMNNAME_OnWednesday = "OnWednesday";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_OnWednesday = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "OnWednesday", null);
+	String COLUMNNAME_OnWednesday = "OnWednesday";
 
 	/**
 	 * Set Bereitstellungszeit Mo.
@@ -510,7 +448,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationTime_1 (java.sql.Timestamp PreparationTime_1);
+	void setPreparationTime_1 (@Nullable java.sql.Timestamp PreparationTime_1);
 
 	/**
 	 * Get Bereitstellungszeit Mo.
@@ -520,12 +458,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationTime_1();
+	@Nullable java.sql.Timestamp getPreparationTime_1();
 
-    /** Column definition for PreparationTime_1 */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_1 = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "PreparationTime_1", null);
-    /** Column name PreparationTime_1 */
-    public static final String COLUMNNAME_PreparationTime_1 = "PreparationTime_1";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_1 = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "PreparationTime_1", null);
+	String COLUMNNAME_PreparationTime_1 = "PreparationTime_1";
 
 	/**
 	 * Set Bereitstellungszeit Di.
@@ -535,7 +471,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationTime_2 (java.sql.Timestamp PreparationTime_2);
+	void setPreparationTime_2 (@Nullable java.sql.Timestamp PreparationTime_2);
 
 	/**
 	 * Get Bereitstellungszeit Di.
@@ -545,12 +481,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationTime_2();
+	@Nullable java.sql.Timestamp getPreparationTime_2();
 
-    /** Column definition for PreparationTime_2 */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_2 = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "PreparationTime_2", null);
-    /** Column name PreparationTime_2 */
-    public static final String COLUMNNAME_PreparationTime_2 = "PreparationTime_2";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_2 = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "PreparationTime_2", null);
+	String COLUMNNAME_PreparationTime_2 = "PreparationTime_2";
 
 	/**
 	 * Set Bereitstellungszeit Mi.
@@ -560,7 +494,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationTime_3 (java.sql.Timestamp PreparationTime_3);
+	void setPreparationTime_3 (@Nullable java.sql.Timestamp PreparationTime_3);
 
 	/**
 	 * Get Bereitstellungszeit Mi.
@@ -570,12 +504,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationTime_3();
+	@Nullable java.sql.Timestamp getPreparationTime_3();
 
-    /** Column definition for PreparationTime_3 */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_3 = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "PreparationTime_3", null);
-    /** Column name PreparationTime_3 */
-    public static final String COLUMNNAME_PreparationTime_3 = "PreparationTime_3";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_3 = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "PreparationTime_3", null);
+	String COLUMNNAME_PreparationTime_3 = "PreparationTime_3";
 
 	/**
 	 * Set Bereitstellungszeit Do.
@@ -585,7 +517,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationTime_4 (java.sql.Timestamp PreparationTime_4);
+	void setPreparationTime_4 (@Nullable java.sql.Timestamp PreparationTime_4);
 
 	/**
 	 * Get Bereitstellungszeit Do.
@@ -595,12 +527,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationTime_4();
+	@Nullable java.sql.Timestamp getPreparationTime_4();
 
-    /** Column definition for PreparationTime_4 */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_4 = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "PreparationTime_4", null);
-    /** Column name PreparationTime_4 */
-    public static final String COLUMNNAME_PreparationTime_4 = "PreparationTime_4";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_4 = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "PreparationTime_4", null);
+	String COLUMNNAME_PreparationTime_4 = "PreparationTime_4";
 
 	/**
 	 * Set Bereitstellungszeit Fr.
@@ -610,7 +540,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationTime_5 (java.sql.Timestamp PreparationTime_5);
+	void setPreparationTime_5 (@Nullable java.sql.Timestamp PreparationTime_5);
 
 	/**
 	 * Get Bereitstellungszeit Fr.
@@ -620,12 +550,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationTime_5();
+	@Nullable java.sql.Timestamp getPreparationTime_5();
 
-    /** Column definition for PreparationTime_5 */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_5 = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "PreparationTime_5", null);
-    /** Column name PreparationTime_5 */
-    public static final String COLUMNNAME_PreparationTime_5 = "PreparationTime_5";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_5 = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "PreparationTime_5", null);
+	String COLUMNNAME_PreparationTime_5 = "PreparationTime_5";
 
 	/**
 	 * Set Bereitstellungszeit Sa.
@@ -635,7 +563,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationTime_6 (java.sql.Timestamp PreparationTime_6);
+	void setPreparationTime_6 (@Nullable java.sql.Timestamp PreparationTime_6);
 
 	/**
 	 * Get Bereitstellungszeit Sa.
@@ -645,12 +573,10 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationTime_6();
+	@Nullable java.sql.Timestamp getPreparationTime_6();
 
-    /** Column definition for PreparationTime_6 */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_6 = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "PreparationTime_6", null);
-    /** Column name PreparationTime_6 */
-    public static final String COLUMNNAME_PreparationTime_6 = "PreparationTime_6";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_6 = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "PreparationTime_6", null);
+	String COLUMNNAME_PreparationTime_6 = "PreparationTime_6";
 
 	/**
 	 * Set Bereitstellungszeit So.
@@ -660,7 +586,7 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationTime_7 (java.sql.Timestamp PreparationTime_7);
+	void setPreparationTime_7 (@Nullable java.sql.Timestamp PreparationTime_7);
 
 	/**
 	 * Get Bereitstellungszeit So.
@@ -670,88 +596,75 @@ public interface I_C_BP_PurchaseSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationTime_7();
+	@Nullable java.sql.Timestamp getPreparationTime_7();
 
-    /** Column definition for PreparationTime_7 */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_7 = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "PreparationTime_7", null);
-    /** Column name PreparationTime_7 */
-    public static final String COLUMNNAME_PreparationTime_7 = "PreparationTime_7";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_PreparationTime_7 = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "PreparationTime_7", null);
+	String COLUMNNAME_PreparationTime_7 = "PreparationTime_7";
 
 	/**
-	 * Set Wiedervorlage (min).
+	 * Set Wiedervorlage.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setReminderTimeInMin (int ReminderTimeInMin);
+	void setReminderTimeInMin (int ReminderTimeInMin);
 
 	/**
-	 * Get Wiedervorlage (min).
+	 * Get Wiedervorlage.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getReminderTimeInMin();
+	int getReminderTimeInMin();
 
-    /** Column definition for ReminderTimeInMin */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_ReminderTimeInMin = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "ReminderTimeInMin", null);
-    /** Column name ReminderTimeInMin */
-    public static final String COLUMNNAME_ReminderTimeInMin = "ReminderTimeInMin";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_ReminderTimeInMin = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "ReminderTimeInMin", null);
+	String COLUMNNAME_ReminderTimeInMin = "ReminderTimeInMin";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_Updated = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, org.compiere.model.I_AD_User>(I_C_BP_PurchaseSchedule.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Gültig ab.
-	 * Gültig ab inklusiv (erster Tag)
+	 * Set Valid From.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
+	void setValidFrom (java.sql.Timestamp ValidFrom);
 
 	/**
-	 * Get Gültig ab.
-	 * Gültig ab inklusiv (erster Tag)
+	 * Get Valid From.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidFrom();
+	java.sql.Timestamp getValidFrom();
 
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_C_BP_PurchaseSchedule, Object>(I_C_BP_PurchaseSchedule.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	ModelColumn<I_C_BP_PurchaseSchedule, Object> COLUMN_ValidFrom = new ModelColumn<>(I_C_BP_PurchaseSchedule.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 }

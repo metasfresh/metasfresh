@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
@@ -75,6 +76,8 @@ public interface IPricingResult
 	BooleanWithReason getEnforcePriceLimit();
 
 	void setEnforcePriceLimit(BooleanWithReason enforcePriceLimit);
+
+	Money getPriceStdAsMoney();
 
 	/**
 	 * @return discount (between 0 and 100); never null

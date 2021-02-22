@@ -41,10 +41,11 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 
+import de.metas.project.ProjectType;
 import org.compiere.model.MAchievement;
 import org.compiere.model.MGoal;
+import org.compiere.model.MMeasure;
 import org.compiere.model.MMeasureCalc;
-import org.compiere.model.MProjectType;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRequestType;
 import org.slf4j.Logger;
@@ -117,7 +118,7 @@ public class GraphColumn
 	 * 	Project Type Constructor
 	 *	@param pt Project Type
 	 */
-	public GraphColumn (MProjectType pt, BigDecimal data, int id)
+	public GraphColumn (ProjectType pt, BigDecimal data, int id)
 	{
 		this ("", data == null ? 0 : data.doubleValue());
 		m_pt = pt;
@@ -132,7 +133,7 @@ public class GraphColumn
 	private MGoal			m_goal = null;
 
 	private MRequestType	m_rt = null;
-	private MProjectType	m_pt = null;
+	private ProjectType	m_pt = null;
 	private int				m_id = 0;
 
 	/** Display						*/
@@ -190,7 +191,7 @@ public class GraphColumn
 		return m_rt;
 	}
 
-	public MProjectType getProjectType()
+	public ProjectType getProjectType()
 	{
 		return m_pt;
 	}
@@ -354,8 +355,8 @@ public class GraphColumn
 		}
 		else if (getProjectType() != null)	//	Document
 		{
-			MProjectType pt = getProjectType();
-			query = pt.getQuery(mGoal.getRestrictions(false),
+			ProjectType pt = getProjectType();
+			query = MMeasure.getQuery(pt, mGoal.getRestrictions(false),
 					getMeasureDisplay(), getDate(), getID(),
 					Env.getUserRolePermissions());	// logged in role
 		}

@@ -1,18 +1,14 @@
 package org.eevolution.api.impl;
 
-import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.DDOrderLineId;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
@@ -21,10 +17,8 @@ import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
-import org.slf4j.Logger;
 
 import java.util.List;
 
@@ -54,7 +48,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class DDOrderDAO implements IDDOrderDAO
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final  IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -91,13 +84,7 @@ public class DDOrderDAO implements IDDOrderDAO
 	}	// getLines
 
 	@Override
-	public IQueryFilter<I_DD_Order> getDDOrdersForTargetWarehouseQueryFilter(final int targetWarehouseId)
-	{
-		return new DDOrdersForTargetWarehouseQueryFilter(targetWarehouseId);
-	}
-
-	@Override
-	public List<I_DD_OrderLine_Alternative> retrieveAllAlternatives(I_DD_OrderLine ddOrderLine)
+	public List<I_DD_OrderLine_Alternative> retrieveAllAlternatives(final I_DD_OrderLine ddOrderLine)
 	{
 		Check.assumeNotNull(ddOrderLine, "ddOrderLine not null");
 
@@ -110,29 +97,8 @@ public class DDOrderDAO implements IDDOrderDAO
 		queryBuilder.orderBy()
 				.addColumn(I_DD_OrderLine_Alternative.COLUMN_M_Product_ID);
 
-		final List<I_DD_OrderLine_Alternative> ddOrderLineAlternatives = queryBuilder.create()
+		return queryBuilder.create()
 				.list(I_DD_OrderLine_Alternative.class);
-		return ddOrderLineAlternatives;
-	}
-
-	@Override
-	public <T extends I_M_MovementLine> List<T> retriveMovementLines(final I_DD_OrderLine ddOrderLine, Class<T> movementLineClass)
-	{
-		Check.assumeNotNull(ddOrderLine, "ddOrderLine not null");
-
-		final IQueryBuilder<T> queryBuilder = queryBL
-				.createQueryBuilder(movementLineClass, ddOrderLine)
-				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID, ddOrderLine.getDD_OrderLine_ID())
-				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_Alternative_ID, null) // exclude alternatives
-		;
-
-		// Order By: just to have a predictible ordering
-		queryBuilder.orderBy()
-				.addColumn(I_M_MovementLine.COLUMNNAME_M_MovementLine_ID);
-
-		return queryBuilder
-				.create()
-				.list(movementLineClass);
 	}
 
 	@Override
@@ -141,7 +107,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		Check.assumeNotNull(ddOrder, LiberoException.class, "ddOrder not null");
 		final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
-		final IQueryBuilder<I_DD_OrderLine> queryBuilder = mrpDAO
+		return mrpDAO
 				// Retrieve MRP Supplies for DD_Order
 				.retrieveQueryBuilder(ddOrder, X_PP_MRP.TYPEMRP_Supply, X_PP_MRP.ORDERTYPE_DistributionOrder)
 				.createQueryBuilder()
@@ -153,8 +119,6 @@ public class DDOrderDAO implements IDDOrderDAO
 				//
 				// Collect DD_OrderLines from those MRP Demands
 				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
-
-		return queryBuilder;
 	}
 
 	@Override
@@ -163,7 +127,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		Check.assumeNotNull(ddOrder, LiberoException.class, "ddOrder not null");
 		final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
-		final IQueryBuilder<I_DD_OrderLine> queryBuilder = mrpDAO
+		return mrpDAO
 				// Retrieve MRP Demands
 				.retrieveQueryBuilder(ddOrder, X_PP_MRP.TYPEMRP_Demand, X_PP_MRP.ORDERTYPE_DistributionOrder)
 				.createQueryBuilder()
@@ -175,8 +139,6 @@ public class DDOrderDAO implements IDDOrderDAO
 				//
 				// Collect DD_OrderLines from those MRP Demands
 				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
-
-		return queryBuilder;
 	}
 
 	@Override
@@ -185,7 +147,7 @@ public class DDOrderDAO implements IDDOrderDAO
 		Check.assumeNotNull(forecast, LiberoException.class, "forecast not null");
 		final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 
-		final IQueryBuilder<I_DD_OrderLine> queryBuilder = mrpDAO
+		return mrpDAO
 				// Retrieve MRP Demands for document
 				.retrieveQueryBuilder(forecast, X_PP_MRP.TYPEMRP_Demand, X_PP_MRP.ORDERTYPE_Forecast)
 				.createQueryBuilder()
@@ -196,36 +158,6 @@ public class DDOrderDAO implements IDDOrderDAO
 				.addEqualsFilter(I_PP_MRP.COLUMN_TypeMRP, X_PP_MRP.TYPEMRP_Supply) // just to be sure
 				//
 				// Collect DD_OrderLines from those MRP Demands
-				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
-
-		return queryBuilder;
-	}
-
-	@Override
-	public IQueryBuilder<I_DD_OrderLine> retrieveForwardDDOrderLinesQuery(final I_PP_Order ppOrder)
-	{
-		Check.assumeNotNull(ppOrder, LiberoException.class, "ppOrder not null");
-		final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
-
-		//
-		// Retrieve supply from this manufacturing order
-		final I_PP_MRP mrpSupply = mrpDAO.retrieveQueryBuilder(ppOrder, X_PP_MRP.TYPEMRP_Supply, X_PP_MRP.ORDERTYPE_ManufacturingOrder)
-				.firstOnly();
-
-		//
-		// Corner case: in some circumstances, there is no MRP supply generated (maybe the Qty was zero or it was some error while generating it)
-		// => return an query builder which actually returns no result.
-		if (mrpSupply == null)
-		{
-			final LiberoException ex = new LiberoException("No MRP supply record found for " + ppOrder);
-			logger.warn(ex.getLocalizedMessage() + " [SKIPPED]", ex);
-			// NOTE: we are returing a query builder which actually does nothing
-			return queryBL
-					.createQueryBuilder(I_DD_OrderLine.class, ppOrder)
-					.filter(ConstantQueryFilter.<I_DD_OrderLine> of(false));
-		}
-
-		return mrpDAO.retrieveForwardMRPDemandsForSupplyQuery(mrpSupply)
 				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
 	}
 
@@ -254,6 +186,7 @@ public class DDOrderDAO implements IDDOrderDAO
 	}
 
 
+	@Override
 	@NonNull
 	public I_DD_OrderLine getLineById(@NonNull final DDOrderLineId ddOrderLineID)
 	{

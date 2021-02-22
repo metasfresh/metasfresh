@@ -9,7 +9,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContact.BPartnerContactBuilder;
-import de.metas.rest_api.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;

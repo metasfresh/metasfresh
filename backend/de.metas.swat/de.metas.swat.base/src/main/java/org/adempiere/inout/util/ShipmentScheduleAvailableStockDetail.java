@@ -35,8 +35,8 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOMLine;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;

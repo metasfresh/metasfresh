@@ -9,22 +9,25 @@ import { Shortcut } from '../keyshortcuts';
  * @extends Component
  */
 class ModalContextShortcuts extends Component {
-  handlers = {
-    DONE: (event) => {
-      event.preventDefault();
+  doneAction = (event) => {
+    event.preventDefault();
 
-      const { visibleFilter, done } = this.props;
+    const { visibleFilter, done } = this.props;
 
-      this.blurActiveElement();
-      done && done();
+    this.blurActiveElement();
+    done && done();
 
-      // if filter is displayed, apply shortcut to filter first
-      if (visibleFilter) {
-        return true;
-      }
-
+    // if filter is displayed, apply shortcut to filter first
+    if (visibleFilter) {
       return true;
-    },
+    }
+
+    return true;
+  };
+
+  handlers = {
+    OPEN_PRINT_RAPORT: (event) => this.doneAction(event),
+    DONE: (event) => this.doneAction(event),
     CANCEL: (event) => {
       event.preventDefault();
 
@@ -52,6 +55,11 @@ class ModalContextShortcuts extends Component {
    */
   render() {
     return [
+      <Shortcut
+        key="OPEN_PRINT_RAPORT"
+        name="OPEN_PRINT_RAPORT"
+        handler={this.handlers.DONE}
+      />,
       <Shortcut key="DONE" name="DONE" handler={this.handlers.DONE} />,
       <Shortcut key="CANCEL" name="CANCEL" handler={this.handlers.CANCEL} />,
     ];

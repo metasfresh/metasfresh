@@ -22,17 +22,16 @@
 
 package de.metas.handlingunits.movement.api;
 
-import static de.metas.business.BusinessTestHelper.createLocator;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.Consumer;
-
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
+import de.metas.interfaces.I_M_Movement;
+import de.metas.util.Services;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -45,15 +44,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 
-import de.metas.acct.AcctSchemaTestHelper;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
-import de.metas.interfaces.I_M_Movement;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static de.metas.business.BusinessTestHelper.createLocator;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.hamcrest.Matchers.hasXPath;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class HUMovementBuilderTests
 {
@@ -63,17 +62,20 @@ public class HUMovementBuilderTests
 	@BeforeEach
 	public void init()
 	{
-		testsupport = new LUTUProducerDestinationTestSupport();
+		testsupport = new LUTUProducerDestinationTestSupport()
+		{
+			@Override
+			public void beforeRegisteringServices()
+			{
+				AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(AcctSchemaId.ofRepoId(1));
+			}
+		};
 
 		// we need this to make sure that movementLine.getAD_Org() does not fail with the created M_MovementLines.
 		org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
 		InterfaceWrapperHelper.save(org);
 
 		Env.setContext(testsupport.helper.ctx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
-
-		// final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(1);
-		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 	}
 
 	@Test
@@ -108,8 +110,8 @@ public class HUMovementBuilderTests
 	}
 
 	private void performTest(final BigDecimal loadCuQty,
-			Consumer<I_M_HU> huGuard,
-			final BigDecimal expectedTULineQty)
+							 Consumer<I_M_HU> huGuard,
+							 final BigDecimal expectedTULineQty)
 	{
 
 		final I_M_Warehouse warehouseFrom = createWarehouse("testWarehouseFrom");
@@ -148,24 +150,24 @@ public class HUMovementBuilderTests
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movement);
 		assertThat(movementLines.size(), is(3));
 		assertThat(movementLines.stream()
-				.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
-				.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pTomato.getM_Product_ID()
-						&& l.getMovementQty().compareTo(loadCuQty) == 0
-						&& !l.isPackagingMaterial()),
+						.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
+						.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pTomato.getM_Product_ID()
+								&& l.getMovementQty().compareTo(loadCuQty) == 0
+								&& !l.isPackagingMaterial()),
 				is(true));
 
 		assertThat(movementLines.stream()
-				.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
-				.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pIFCO.getM_Product_ID()
-						&& l.getMovementQty().compareTo(expectedTULineQty) == 0
-						&& l.isPackagingMaterial()),
+						.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
+						.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pIFCO.getM_Product_ID()
+								&& l.getMovementQty().compareTo(expectedTULineQty) == 0
+								&& l.isPackagingMaterial()),
 				is(true));
 
 		assertThat(movementLines.stream()
-				.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
-				.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pPalet.getM_Product_ID()
-						&& l.getMovementQty().compareTo(BigDecimal.ONE) == 0
-						&& l.isPackagingMaterial()),
+						.map(l -> InterfaceWrapperHelper.create(l, de.metas.handlingunits.model.I_M_MovementLine.class))
+						.anyMatch(l -> l.getM_Product_ID() == testsupport.helper.pPalet.getM_Product_ID()
+								&& l.getMovementQty().compareTo(BigDecimal.ONE) == 0
+								&& l.isPackagingMaterial()),
 				is(true));
 	}
 }

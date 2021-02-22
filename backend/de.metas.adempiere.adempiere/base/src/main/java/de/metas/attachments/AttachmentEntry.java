@@ -47,7 +47,7 @@ public final class AttachmentEntry
 	/** The records to which this instance is attached. */
 	Set<TableRecordReference> linkedRecords;
 
-	@Builder(toBuilder = true)
+	@lombok.Builder(toBuilder = true)
 	private AttachmentEntry(
 			@Nullable final AttachmentEntryId id,
 			@Nullable final String name,
@@ -55,7 +55,7 @@ public final class AttachmentEntry
 			@Nullable final String filename,
 			@Nullable final String mimeType,
 			@Nullable final URI url,
-			@Nullable AttachmentTags tags,
+			@Nullable final AttachmentTags tags,
 			@Singular final Set<TableRecordReference> linkedRecords)
 	{
 		this.id = id;

@@ -70,7 +70,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.i18n.Msg;
 import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;

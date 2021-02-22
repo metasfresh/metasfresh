@@ -22,7 +22,6 @@ import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
@@ -41,10 +40,10 @@ import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.JsonInvoiceRule;
 import de.metas.rest_api.common.JsonPrice;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.exception.InvalidEntityException;
-import de.metas.rest_api.exception.MissingPropertyException;
-import de.metas.rest_api.exception.MissingResourceException;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.util.web.exception.InvalidEntityException;
+import de.metas.util.web.exception.MissingPropertyException;
+import de.metas.util.web.exception.MissingResourceException;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
@@ -458,31 +457,7 @@ public class CreateInvoiceCandidatesService
 			@NonNull final NewManualInvoiceCandidateBuilder candidate,
 			@Nullable final JsonInvoiceRule invoiceRuleOverride)
 	{
-		candidate.invoiceRuleOverride(createInvoiceRule(invoiceRuleOverride));
-	}
-
-	private InvoiceRule createInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
-	{
-		if (jsonInvoiceRule == null)
-		{
-			return null;
-		}
-		final InvoiceRule invoiceRule;
-		switch (jsonInvoiceRule)
-		{
-			case AfterDelivery:
-				invoiceRule = InvoiceRule.AfterDelivery;
-				break;
-			case CustomerScheduleAfterDelivery:
-				invoiceRule = InvoiceRule.CustomerScheduleAfterDelivery;
-				break;
-			case Immediate:
-				invoiceRule = InvoiceRule.Immediate;
-				break;
-			default:
-				throw new AdempiereException("Unsupported JsonInvliceRule " + jsonInvoiceRule);
-		}
-		return invoiceRule;
+		candidate.invoiceRuleOverride(BPartnerCompositeRestUtils.getInvoiceRule(invoiceRuleOverride));
 	}
 
 	private void syncPriceEnteredOverrideToCandidate(

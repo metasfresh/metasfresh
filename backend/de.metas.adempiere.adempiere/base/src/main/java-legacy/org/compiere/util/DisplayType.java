@@ -748,7 +748,7 @@ public final class DisplayType
 	 * Delegates to {@link StringUtils#toBoolean(Object, Boolean)}.
 	 */
 	@Nullable
-	public static Boolean toBoolean(final Object value, @Nullable final Boolean defaultValue)
+	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
 	{
 		return StringUtils.toBoolean(value, defaultValue);
 	}

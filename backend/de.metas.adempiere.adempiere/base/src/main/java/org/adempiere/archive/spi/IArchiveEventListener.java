@@ -25,7 +25,6 @@ package org.adempiere.archive.spi;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.user.UserId;
-import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
@@ -38,9 +37,15 @@ import org.compiere.model.I_AD_Archive;
  */
 public interface IArchiveEventListener
 {
+	default void onPdfUpdate(I_AD_Archive archive, UserId userId)
+	{
+		// nothing
+	}
+
 	default void onPdfUpdate(
-			final I_AD_Archive archive,
-			final UserId userId)
+			I_AD_Archive archive,
+			UserId userId,
+			String action)
 	{
 		// nothing
 	}

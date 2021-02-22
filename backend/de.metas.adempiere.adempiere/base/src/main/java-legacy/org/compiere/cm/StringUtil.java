@@ -215,7 +215,7 @@ public class StringUtil {
 	}
 	
 	/**
-	 * Remove String toBeRemoved from oroginal
+	 * Remove String toBeRemoved from original
 	 * @param original String to look in
 	 * @param toBeRemoved String to get removed
 	 * @param ignoreCase should we take care of case

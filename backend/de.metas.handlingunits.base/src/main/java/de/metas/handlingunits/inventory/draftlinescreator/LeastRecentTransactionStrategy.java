@@ -1,12 +1,21 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -17,22 +26,12 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.ProductId;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -58,7 +57,7 @@ import lombok.Value;
 
 /**
  * Used to inventory those locators that have the "oldest" items.
- *
+ * <p>
  * Builds up a list of HUs for (when maxLocators was specified):
  * <ul>
  * <li>list the locators, ordered by the date they were last inventoried</li>
@@ -68,7 +67,7 @@ import lombok.Value;
  * <li>take for all products from those locators</li>
  * <li>and stream HUs</li>
  * </ul>
- *
+ * <p>
  * Builds up a list of HUs for (when minimumPrice was specified):
  * <ul>
  * <li>get all products that have a priceActual of > <code>1000€</code></li>
@@ -78,7 +77,6 @@ import lombok.Value;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
@@ -88,10 +86,11 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 	BigDecimal minimumPrice;
 	@NonNull
 	LocalDate movementDate;
+	boolean onlyStockedProducts;
 	@NonNull
 	HuForInventoryLineFactory huForInventoryLineFactory;
 
-	static final Map<String, Integer> MOVEMENT_TYPE_ORDERING = ImmutableMap.<String, Integer> builder()
+	static final Map<String, Integer> MOVEMENT_TYPE_ORDERING = ImmutableMap.<String, Integer>builder()
 			.put(X_M_Transaction.MOVEMENTTYPE_InventoryIn, 1)
 			.put(X_M_Transaction.MOVEMENTTYPE_InventoryOut, 2)
 			.put(X_M_Transaction.MOVEMENTTYPE_CustomerShipment, 3)
@@ -107,10 +106,10 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 			.build();
 
 	final Comparator<TransactionContext> TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR = //
-			Comparator.<TransactionContext, Integer> comparing(transaction -> MOVEMENT_TYPE_ORDERING.get(transaction.getMovementType())).reversed();
+			Comparator.<TransactionContext, Integer>comparing(transaction -> MOVEMENT_TYPE_ORDERING.get(transaction.getMovementType())).reversed();
 
 	final Comparator<TransactionContext> TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR = //
-			Comparator.<TransactionContext, LocalDate> comparing(transaction -> transaction.getMovementDate());
+			Comparator.<TransactionContext, LocalDate>comparing(transaction -> transaction.getMovementDate());
 
 	final Comparator<TransactionContext> TRANSACTIONS_COMPARATOR = TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR
 			.thenComparing(TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR);
@@ -120,11 +119,13 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 			final int maxLocators,
 			@NonNull final BigDecimal minimumPrice,
 			@NonNull final LocalDate movementDate,
+			final boolean onlyStockedProducts,
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory)
 	{
 		this.maxLocators = maxLocators;
 		this.minimumPrice = minimumPrice;
 		this.movementDate = movementDate;
+		this.onlyStockedProducts = onlyStockedProducts;
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
 	}
 
@@ -147,8 +148,9 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 
 		huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
 		huQueryBuilder.addOnlyInLocatorIds(locatorIds);
+		huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
 
-		huQueryBuilder.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+		huQueryBuilder.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
 		// Order by
 		final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class).createQueryOrderByBuilder(I_M_HU.class)
@@ -191,7 +193,7 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 		final ImmutableSetMultimap<Integer, ProductId> productsByLocatorIds = queryBuilder
 				.create()
 				.listDistinct(I_M_Transaction.COLUMNNAME_M_Locator_ID, I_M_Transaction.COLUMNNAME_M_Product_ID,
-						I_M_Transaction.COLUMNNAME_MovementDate, I_M_Transaction.COLUMNNAME_MovementType)
+							  I_M_Transaction.COLUMNNAME_MovementDate, I_M_Transaction.COLUMNNAME_MovementType)
 				.stream()
 				.map(record -> {
 					return TransactionContext.builder()

@@ -119,7 +119,7 @@ public class FlatrateTermDataFactory
 			@NonNull final I_M_PricingSystem pricingSystem, final String extensionType, final boolean isCreateNoInvoice)
 	{
 		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		conditions.setM_PricingSystem(pricingSystem);
+		conditions.setM_PricingSystem_ID(pricingSystem == null ? null : pricingSystem.getM_PricingSystem_ID());
 		conditions.setInvoiceRule(invoiceRule);
 		conditions.setType_Conditions(typeConditions);
 		conditions.setOnFlatrateTermExtend(onFlatrateTermExtend);

@@ -190,7 +190,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.14</version>
+                <version>1.18.18</version>
             </dependency>
 
             <dependency>
@@ -212,11 +212,6 @@
                 <artifactId>xmlunit-assertj</artifactId>
                 <version>${xmlunit.version}</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.14</version>
             </dependency>
 
             <dependency>
@@ -316,7 +311,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.3.0</version>
                 </plugin>
 
                 <!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
@@ -333,18 +328,10 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.2.0</version>
                     <configuration>
                         <encoding>UTF-8</encoding>
                     </configuration>
-                </plugin>
-
-                <!-- note that currently we prefer org.jvnet.jaxb2.maven2:maven-jaxb2-plugin,
-                    but don't have time to kick out this one  -->
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>jaxb2-maven-plugin</artifactId>
-                    <version>2.5.0</version> <!-- https://github.com/metasfresh/metasfresh/issues/1598 -->
                 </plugin>
 
                 <plugin>
@@ -388,7 +375,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>2.4</version>
+                    <version>3.2.0</version>
                     <configuration>
                         <archive>
                             <manifest>
@@ -406,8 +393,9 @@
                 </plugin>
 
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.0</version>
+                    <version>3.0.0-M5</version>
                     <configuration>
                         <!-- Jacoco prepare-agent builds some command-line params without which jacoco will not instrument.
                              Hence it is important to add those command-line params where @{argLine} holds those params.
@@ -427,6 +415,8 @@
                              Again, see Spring boot related tests fail on jenkins sometimes https://github.com/metasfresh/metasfresh/issues/2988 -->
                         <runOrder>filesystem</runOrder>
                         <!-- runOrder>random</runOrder -->
+
+                        <trimStackTrace>false</trimStackTrace>
 
                         <systemPropertyVariables>
                             <concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
@@ -482,7 +472,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.5</version>
+                    <version>0.8.6 </version>
                 </plugin>
 
                 <!--This plugin's configuration is used to store Eclipse m2e settings
@@ -509,7 +499,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -522,7 +512,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -535,7 +525,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -613,7 +603,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <!-- org.jboss.client:jbossall-client and partially geronimo specs -->
                                         <ignoreClass>javax.annotation.*</ignoreClass>
                                         <ignoreClass>javax.ejb.*</ignoreClass>
-                                        <ignoreClass>javax.jms.*</ignoreClass>
                                         <ignoreClass>javax.management.j2ee.*</ignoreClass>
                                         <ignoreClass>javax.xml.*</ignoreClass>
                                         <ignoreClass>javax.transaction.*</ignoreClass>
@@ -732,7 +721,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                             <dependency>
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -773,7 +762,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
                                 <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -809,12 +798,12 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                 </property>
             </activation>
             <properties>
-                <!-- This property is set by jacoco and used in the surefire config fourther down
+                <!-- This property is set by jacoco and used in the surefire config further down
                     Set it to empty to avoid JVM startup error Could not find or load main class @{argLine} when run without jacoco
                     thx to
                     * https://github.com/metasfresh/metasfresh/issues/3073
                     * http://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-                <argLine></argLine>
+                <argLine/>
 
                 <env.MF_VERSION>10.0.0-LOCAL-NO-RELEASE</env.MF_VERSION>
                 <env.BRANCH_NAME>LOCAL-NO-RELEASE</env.BRANCH_NAME>
@@ -902,15 +891,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                 </property>
             </activation>
 
-            <repositories>
-                <!-- this additional repo's parameters can be set from outside. It usually corresponds to a (task-)branch -->
-                <repository>
-                    <id>${deploy-repo-id}</id>
-                    <name>${deploy-repo-name}</name>
-                    <url>${deploy-repo-url}</url>
-                </repository>
-            </repositories>
-
             <build>
                 <plugins>
                     <plugin>
@@ -954,8 +934,8 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                     <!-- outputDirectory is the same as jasperreports-maven-plugin's outputDirectory -->
                     <!-- jrxmls are compiled into jasper files, they don't need to be copied, so we exclude *.jrxml -->
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <version>2.6</version>
                         <executions>
                             <execution>
                                 <id>copy-resources</id>
@@ -1051,7 +1031,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <groupId>de.metas</groupId>
                                 <artifactId>metasfresh-assemblies</artifactId>
                                 <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>[1.0.0,10.0.0]</version>
+                                <version>10.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>

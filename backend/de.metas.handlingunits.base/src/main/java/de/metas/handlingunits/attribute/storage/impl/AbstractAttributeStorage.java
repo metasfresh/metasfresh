@@ -63,6 +63,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractAttributeStorage implements IAttributeStorage
 {
 	// Services
@@ -388,7 +390,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final void generateInitialAttributes(final Map<AttributeId, Object> defaultAttributesValue)
+	public final void generateInitialAttributes(@Nullable final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		assertNotDisposed();
 
@@ -1144,7 +1146,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		return callout.isDisplayedUI(this, attribute);
 	}
 
-	protected final Object getDefaultAttributeValue(final Map<AttributeId, Object> defaultAttributesValue, final AttributeId attributeId)
+	protected final Object getDefaultAttributeValue(@Nullable final Map<AttributeId, Object> defaultAttributesValue, final AttributeId attributeId)
 	{
 		if (defaultAttributesValue == null || defaultAttributesValue.isEmpty())
 		{

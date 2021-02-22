@@ -58,6 +58,8 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId,
+			@JsonProperty("inventoryId") final int inventoryId,
+			@JsonProperty("inventoryLineId") final int inventoryLineId,
 			@JsonProperty("transactionId") final int transactionId,
 			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse,
 			@JsonProperty("huOnHandQtyChangeDescriptor") final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
@@ -73,6 +75,8 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 				ppOrderLineId,
 				ddOrderId,
 				ddOrderLineId,
+				inventoryId,
+				inventoryLineId,
 				transactionId,
 				directMovementWarehouse,
 				huOnHandQtyChangeDescriptors);

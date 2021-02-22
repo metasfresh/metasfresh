@@ -1,24 +1,23 @@
 package de.metas.procurement.base.rfq.model.interceptor;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
+import de.metas.common.procurement.sync.protocol.dto.SyncRfQCloseEvent;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.impl.SyncObjectsFactory;
 import de.metas.procurement.base.rfq.model.I_C_RfQ;
 import de.metas.procurement.base.rfq.model.I_C_RfQResponseLine;
-import de.metas.procurement.sync.SyncRfQCloseEvent;
 import de.metas.rfq.event.RfQEventListenerAdapter;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -112,6 +111,7 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 		//
 		// Create and collect RfQ close events (winner unknown)
 		final List<SyncRfQCloseEvent> syncRfQCloseEvents = new ArrayList<>();
+
 		final SyncObjectsFactory syncObjectsFactory = SyncObjectsFactory.newFactory();
 		final IPMM_RfQ_DAO pmmRfqDAO = Services.get(IPMM_RfQ_DAO.class);
 		for (final I_C_RfQResponseLine rfqResponseLine : pmmRfqDAO.retrieveResponseLines(rfqResponse))

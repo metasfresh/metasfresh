@@ -1,13 +1,13 @@
 package de.metas.procurement.base.event.impl;
 
-import java.util.Date;
-
+import de.metas.procurement.base.model.I_PMM_Week;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 
-import de.metas.procurement.base.model.I_PMM_Week;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -37,7 +37,7 @@ public class PMM_Week_Expectation
 	Integer M_Product_ID;
 	Integer M_AttributeSetInstance_ID;
 	//
-	Date dateWeek;
+	LocalDate dateWeek;
 	//
 	String PMM_Trend;
 
@@ -67,7 +67,7 @@ public class PMM_Week_Expectation
 		expectationNew.C_BPartner_ID = C_BPartner_ID;
 		expectationNew.M_Product_ID = M_Product_ID;
 		expectationNew.M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;
-		expectationNew.dateWeek = (Date)(dateWeek == null ? null : dateWeek.clone());
+		expectationNew.dateWeek = dateWeek;
 		expectationNew.PMM_Trend = PMM_Trend;
 		return expectationNew;
 	}
@@ -83,7 +83,7 @@ public class PMM_Week_Expectation
 		Assert.assertEquals("M_Product_ID - " + msgToUse, M_Product_ID, (Integer)actual.getM_Product_ID());
 		Assert.assertEquals("M_AttributeSetInstance_ID - " + msgToUse, M_AttributeSetInstance_ID, (Integer)actual.getM_AttributeSetInstance_ID());
 
-		Assert.assertEquals("DateWeek - " + msgToUse, dateWeek, actual.getWeekDate());
+		Assert.assertEquals("DateWeek - " + msgToUse, dateWeek, TimeUtil.asLocalDate(actual.getWeekDate()));
 
 		Assert.assertEquals("PMM_Trend - " + msgToUse, PMM_Trend, actual.getPMM_Trend());
 
@@ -126,7 +126,7 @@ public class PMM_Week_Expectation
 		return this;
 	}
 
-	public PMM_Week_Expectation dateWeek(final Date dateWeek)
+	public PMM_Week_Expectation dateWeek(final LocalDate dateWeek)
 	{
 		this.dateWeek = dateWeek;
 		return this;

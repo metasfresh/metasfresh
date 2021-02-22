@@ -1,14 +1,12 @@
 package de.metas.procurement.base.impl;
 
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-
 import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.common.procurement.sync.util.UUIDs;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
-import de.metas.procurement.sync.util.UUIDs;
 import de.metas.rfq.model.I_C_RfQResponseLine;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 
 /*
  * #%L

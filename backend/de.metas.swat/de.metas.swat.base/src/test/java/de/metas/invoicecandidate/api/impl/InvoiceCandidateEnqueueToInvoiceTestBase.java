@@ -34,11 +34,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.InvoiceLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_AD_User;
@@ -79,7 +87,6 @@ import de.metas.util.Services;
  * </ul>
  *
  * @author tsa
- *
  */
 public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 {
@@ -97,6 +104,8 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 	@BeforeEach
 	public void init()
 	{
+		POJOWrapper.setDefaultStrictValues(false);
+
 		icTestSupport = new AbstractICTestSupport();
 		icTestSupport.initStuff();
 		icTestSupport.registerModelInterceptors();

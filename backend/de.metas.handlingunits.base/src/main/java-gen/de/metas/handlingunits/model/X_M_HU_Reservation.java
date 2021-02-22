@@ -1,71 +1,53 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Reservation
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_Reservation, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -567224801L;
+	private static final long serialVersionUID = 1748134686L;
 
     /** Standard Constructor */
-    public X_M_HU_Reservation (Properties ctx, int M_HU_Reservation_ID, String trxName)
+    public X_M_HU_Reservation (final Properties ctx, final int M_HU_Reservation_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_Reservation_ID, trxName);
-      /** if (M_HU_Reservation_ID == 0)
-        {
-			setC_BPartner_Customer_ID (0);
-			setC_UOM_ID (0);
-			setM_HU_Reservation_ID (0);
-			setQtyReserved (BigDecimal.ZERO);
-			setVHU_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_Reservation (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_Reservation (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Kunde.
-		@param C_BPartner_Customer_ID Kunde	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_Customer_ID (final int C_BPartner_Customer_ID)
 	{
 		if (C_BPartner_Customer_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Customer_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Customer_ID, Integer.valueOf(C_BPartner_Customer_ID));
+			set_Value (COLUMNNAME_C_BPartner_Customer_ID, C_BPartner_Customer_ID);
 	}
 
-	/** Get Kunde.
-		@return Kunde	  */
 	@Override
-	public int getC_BPartner_Customer_ID () 
+	public int getC_BPartner_Customer_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Customer_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Customer_ID);
 	}
 
 	@Override
@@ -75,103 +57,82 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	}
 
 	@Override
-	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO)
+	public void setC_OrderLineSO(final org.compiere.model.I_C_OrderLine C_OrderLineSO)
 	{
 		set_ValueFromPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLineSO);
 	}
 
-	/** Set Auftragsposition.
-		@param C_OrderLineSO_ID 
-		Auftragsposition
-	  */
 	@Override
-	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID)
+	public void setC_OrderLineSO_ID (final int C_OrderLineSO_ID)
 	{
 		if (C_OrderLineSO_ID < 1) 
 			set_Value (COLUMNNAME_C_OrderLineSO_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_OrderLineSO_ID, Integer.valueOf(C_OrderLineSO_ID));
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, C_OrderLineSO_ID);
 	}
 
-	/** Get Auftragsposition.
-		@return Auftragsposition
-	  */
 	@Override
-	public int getC_OrderLineSO_ID () 
+	public int getC_OrderLineSO_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLineSO_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_OrderLineSO_ID);
 	}
 
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
-	/** Set M_HU_Reservation.
-		@param M_HU_Reservation_ID M_HU_Reservation	  */
 	@Override
-	public void setM_HU_Reservation_ID (int M_HU_Reservation_ID)
+	public void setM_HU_Reservation_ID (final int M_HU_Reservation_ID)
 	{
 		if (M_HU_Reservation_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Reservation_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Reservation_ID, Integer.valueOf(M_HU_Reservation_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Reservation_ID, M_HU_Reservation_ID);
 	}
 
-	/** Get M_HU_Reservation.
-		@return M_HU_Reservation	  */
 	@Override
-	public int getM_HU_Reservation_ID () 
+	public int getM_HU_Reservation_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Reservation_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Reservation_ID);
 	}
 
-	/** Set Offen.
-		@param QtyReserved 
-		Offene Menge
-	  */
 	@Override
-	public void setQtyReserved (java.math.BigDecimal QtyReserved)
+	public void setQtyReserved (final BigDecimal QtyReserved)
 	{
 		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Offen.
-		@return Offene Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQtyReserved () 
+	public BigDecimal getQtyReserved() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReserved);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -181,33 +142,23 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	}
 
 	@Override
-	public void setVHU(de.metas.handlingunits.model.I_M_HU VHU)
+	public void setVHU(final de.metas.handlingunits.model.I_M_HU VHU)
 	{
 		set_ValueFromPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class, VHU);
 	}
 
-	/** Set CU.
-		@param VHU_ID 
-		Customer Unit
-	  */
 	@Override
-	public void setVHU_ID (int VHU_ID)
+	public void setVHU_ID (final int VHU_ID)
 	{
 		if (VHU_ID < 1) 
 			set_Value (COLUMNNAME_VHU_ID, null);
 		else 
-			set_Value (COLUMNNAME_VHU_ID, Integer.valueOf(VHU_ID));
+			set_Value (COLUMNNAME_VHU_ID, VHU_ID);
 	}
 
-	/** Get CU.
-		@return Customer Unit
-	  */
 	@Override
-	public int getVHU_ID () 
+	public int getVHU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_VHU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_VHU_ID);
 	}
 }

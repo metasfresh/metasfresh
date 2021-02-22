@@ -41,6 +41,7 @@ class InlineFilterItem extends Component {
 
   mergeData = (property, value, valueTo) => {
     this.setState((prevState) => ({
+      // @TODO: This has to be rewritten to just use object spread
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map((param) => {
           if (param.parameterName === property) {

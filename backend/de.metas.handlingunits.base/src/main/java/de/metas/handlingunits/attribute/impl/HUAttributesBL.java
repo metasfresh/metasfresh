@@ -1,46 +1,12 @@
 package de.metas.handlingunits.attribute.impl;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Env;
-
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -49,16 +15,36 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
 
+	private final static transient Logger logger = LogManager.getLogger(HUAttributesBL.class);
+
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	public I_M_HU getM_HU_OrNull(@Nullable final IAttributeSet attributeSet)
@@ -87,6 +73,20 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	@Override
+	public void updateHUAttributeRecursive(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue, @Nullable final String onlyHUStatus)
+	{
+		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
+		if (attribute == null)
+		{
+			logger.debug("M_Attribute with Value={} does not exis of is inactive; -> do nothing", attributeCode.getCode());
+			return;
+		}
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		updateHUAttributeRecursive(hu, attribute, attributeValue, onlyHUStatus);
+	}
+
+	@Override
+	@Deprecated
 	public void updateHUAttributeRecursive(final I_M_HU hu,
 			final I_M_Attribute attribute,
 			final Object attributeValue,
@@ -94,12 +94,8 @@ public class HUAttributesBL implements IHUAttributesBL
 	{
 		final ILoggable loggable = Loggables.get();
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService
-				.createHUAttributeStorageFactory(storageFactory);
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
 
 		final HUIterator iterator = new HUIterator();
 		// I'm not 100% sure which time to pick, but i think for the iterator itself it makes no difference, and i also don't need it in the beforeHU implementation.
@@ -114,10 +110,13 @@ public class HUAttributesBL implements IHUAttributesBL
 				{
 					final IAttributeStorage attributeStorage = huAttributeStorageFactory.getAttributeStorage(currentHU);
 
-					attributeStorage.setValueNoPropagate(attribute, attributeValue);
-					attributeStorage.saveChangesIfNeeded();
-					final String msg = "Updated IAttributeStorage " + attributeStorage + " of M_HU " + currentHU;
-					loggable.addLog(msg);
+					if (attributeStorage.hasAttribute(attribute))
+					{
+						attributeStorage.setValueNoPropagate(attribute, attributeValue);
+						attributeStorage.saveChangesIfNeeded();
+						final String msg = "Updated IAttributeStorage " + attributeStorage + " of M_HU " + currentHU;
+						loggable.addLog(msg);
+					}
 				}
 
 				return Result.CONTINUE;
@@ -132,11 +131,11 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
-		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctxAware);
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
 		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
 
-		final I_M_Attribute attr_QualityDiscountPercent = Services.get(IAttributeDAO.class).retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityDiscountPercent_Value);
+		final I_M_Attribute attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_QualityDiscountPercent_Value);
 
 		if (!attributeStorage.hasAttribute(attr_QualityDiscountPercent))
 		{

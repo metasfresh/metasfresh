@@ -1,17 +1,5 @@
 package de.metas.invoicecandidate.api.impl;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_DocType;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -19,14 +7,23 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_DocType;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * {@link InvoiceHeaderImpl} builder class used to collect invoice header values and make sure they match.
- *
+ * <p>
  * It creates the actual {@link InvoiceHeaderImpl} when calling {@link #build()}.
  *
  * @author tsa
- *
  */
 public class InvoiceHeaderImplBuilder
 {
@@ -60,6 +57,8 @@ public class InvoiceHeaderImplBuilder
 
 	// 06630
 	private final Set<Integer> M_InOut_IDs = new LinkedHashSet<>();
+
+	private String externalId;
 
 	private Boolean taxIncluded = null;
 
@@ -109,8 +108,14 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Order_ID(getC_Order_ID());
 		invoiceHeader.setM_InOut_ID(getM_InOut_ID());
 		invoiceHeader.setPOReference(getPOReference());
+		invoiceHeader.setExternalId(getExternalId());
 
 		return invoiceHeader;
+	}
+
+	private String getExternalId()
+	{
+		return externalId;
 	}
 
 	public I_C_DocType getC_DocTypeInvoice()
@@ -181,10 +186,9 @@ public class InvoiceHeaderImplBuilder
 	}
 
 	/**
-	 *
 	 * @return the <code>M_PriceList_ID</code> to use.
-	 *         If different <code>M_PriceList_ID</code>s were added using {@link #setM_PriceList_ID(int)},
-	 *         then {@link IPriceListDAO#M_PriceList_ID_None} is returned instead.
+	 * If different <code>M_PriceList_ID</code>s were added using {@link #setM_PriceList_ID(int)},
+	 * then {@link IPriceListDAO#M_PriceList_ID_None} is returned instead.
 	 */
 	public int getM_PriceList_ID()
 	{
@@ -193,8 +197,6 @@ public class InvoiceHeaderImplBuilder
 
 	/**
 	 * Sets/adds the given pricelist for this header. See {@link #getM_PriceList_ID()} for how conflicts are resolved.
-	 *
-	 * @param priceListId
 	 */
 	public void setM_PriceList_ID(final int priceListId)
 	{
@@ -422,5 +424,10 @@ public class InvoiceHeaderImplBuilder
 		throw new AdempiereException("Overriding field " + name + " not allowed"
 				+ "\n Current value: " + value
 				+ "\n New value: " + valueNew);
+	}
+
+	public void setExternalId(final String externalId)
+	{
+		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
 }

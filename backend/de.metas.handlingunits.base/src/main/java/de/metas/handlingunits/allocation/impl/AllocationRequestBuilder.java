@@ -20,6 +20,8 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 @ToString
 /* package */class AllocationRequestBuilder implements IAllocationRequestBuilder
 {
@@ -29,7 +31,7 @@ import lombok.ToString;
 	private Quantity quantity = null;
 	private ZonedDateTime date = null;
 	private Boolean forceQtyAllocation = null;
-	private TableRecordReference fromReferencedTableRecord;
+	@Nullable private TableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
 	private List<EmptyHUListener> emptyHUListeners = null;
 
@@ -172,7 +174,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public IAllocationRequestBuilder setFromReferencedTableRecord(final TableRecordReference fromReferencedTableRecord)
+	public IAllocationRequestBuilder setFromReferencedTableRecord(@Nullable final TableRecordReference fromReferencedTableRecord)
 	{
 		this.fromReferencedTableRecord = fromReferencedTableRecord;
 		fromReferencedTableRecordSet = true;
@@ -181,7 +183,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public IAllocationRequestBuilder setFromReferencedModel(final Object referenceModel)
+	public IAllocationRequestBuilder setFromReferencedModel(@Nullable final Object referenceModel)
 	{
 		final TableRecordReference fromReferencedTableRecord = TableRecordReference.ofOrNull(referenceModel);
 		return setFromReferencedTableRecord(fromReferencedTableRecord);

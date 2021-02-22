@@ -60,6 +60,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractHUIterator implements IHUIterator
 {
 	//
@@ -480,6 +482,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 		 * @param node
 		 * @return downstream nodes iterator or <code>null</code>
 		 */
+		@Nullable
 		public abstract AbstractNodeIterator<?> getDownstreamNodeIterator(T node);
 
 		/**

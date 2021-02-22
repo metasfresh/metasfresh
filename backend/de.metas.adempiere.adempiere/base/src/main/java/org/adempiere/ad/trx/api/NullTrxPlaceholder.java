@@ -3,10 +3,12 @@ package org.adempiere.ad.trx.api;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.adempiere.exceptions.DBException;
 
-import com.google.common.base.Supplier;
+import javax.annotation.Nullable;
+
 
 /*
  * #%L
@@ -40,12 +42,13 @@ public final class NullTrxPlaceholder implements ITrx
 {
 	public static final transient NullTrxPlaceholder instance = new NullTrxPlaceholder();
 
-	public static final ITrx boxNotNull(final ITrx trx)
+	public static ITrx boxNotNull(@Nullable final ITrx trx)
 	{
 		return trx != null ? trx : instance;
 	}
 
-	public static final ITrx unboxToNull(final ITrx trx)
+	@Nullable
+	public static ITrx unboxToNull(@Nullable final ITrx trx)
 	{
 		return trx != instance ? trx : null;
 	}

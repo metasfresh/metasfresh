@@ -1,2 +1,0 @@
-it repeatedly occurs that this eclipse-maven project has an error, because this folder is missing. 
-It shouldn't be, but is an annoying problem, so i'm now adding the folder with this file.

@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -85,6 +87,8 @@ import lombok.NonNull;
  */
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
 	 */
@@ -208,23 +212,13 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
-		// 07442 activity and tax
+		//
+		// Dimension
+		Dimension orderLineDimension = extractDimension(orderLine);
+		dimensionService.updateRecord(icRecord, orderLineDimension);
 
-		final ActivityId activityId;
-		if (orderLine.getC_Activity_ID() > 0)
-		{
-			// https://github.com/metasfresh/metasfresh/issues/2299
-			activityId = ActivityId.ofRepoId(orderLine.getC_Activity_ID());
-		}
-		else
-		{
-			activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
-					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
-					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-					ProductId.ofRepoId(orderLine.getM_Product_ID()));
-		}
-		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
-
+		//
+		// Tax
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				icRecord,
@@ -250,6 +244,20 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// InterfaceWrapperHelper.save(ic);
 
 		return icRecord;
+	}
+
+	private Dimension extractDimension(final I_C_OrderLine orderLine)
+	{
+		Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
+		if(orderLineDimension.getActivityId() == null)
+		{
+			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
+					OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+					ProductId.ofRepoId(orderLine.getM_Product_ID()));
+			orderLineDimension = orderLineDimension.withActivityId(activityId);
+		}
+		return orderLineDimension;
 	}
 
 	@Override

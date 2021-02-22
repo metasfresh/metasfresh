@@ -57,8 +57,8 @@ class MigrationScriptApplier
 	final DBConnectionMaker dbconnectionMaker;
 
 	public void applyMigrationScripts(
-			@NonNull final Config config,
-			@NonNull final Settings settings,
+			@NonNull final RolloutMigrationConfig config,
+			@NonNull final DBConnectionSettings dbConnectionSettings,
 			@NonNull final String dbName)
 	{
 		logger.info("Just mark the script as executed: " + config.isJustMarkScriptAsExecuted());
@@ -131,7 +131,7 @@ class MigrationScriptApplier
 			@Override
 			protected IDatabase createDatabase()
 			{
-				return dbconnectionMaker.createDb(settings, dbName);
+				return dbconnectionMaker.createDb(dbConnectionSettings, dbName);
 			}
 		};
 		scriptApplier.run();

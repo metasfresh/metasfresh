@@ -181,7 +181,6 @@ public class OLCandsProcessorExecutor
 		if (currentOrder != null)
 		{
 			currentOrder.completeOrDelete();
-			currentOrder = null;
 		}
 
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");

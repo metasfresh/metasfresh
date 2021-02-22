@@ -66,66 +66,65 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	{
 		final CommissionTrigger trigger = request.getTrigger();
 		final CommissionTriggerData triggerData = trigger.getCommissionTriggerData();
+
 		final Hierarchy hierarchy = request.getHierarchy();
 
-		final ImmutableList.Builder<SalesCommissionShare> result = ImmutableList.builder();
+		final ImmutableList<HierarchyConfig> hierarchyConfigs = request.getConfigs().stream()
+				.filter(HierarchyConfig::isInstance)
+				.map(HierarchyConfig::cast)
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<CommissionConfig> configs = request.getConfigs();
-		for (final CommissionConfig config : configs)
-		{
-			if (!HierarchyConfig.isInstance(config))
-			{
-				logger.debug("Skipping commissionConfig because it is not a HierarchyConfig; config={}", config);
-				continue;
-			}
-			final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
+		final Beneficiary directBeneficiary = trigger.getBeneficiary();
 
-			final ImmutableList<SalesCommissionShare> shares = createNewShares(hierarchyConfig, hierarchy, trigger);
+		final ImmutableList<SalesCommissionShare> shares =
+				createNewShares(hierarchyConfigs, hierarchy.getUpStream(directBeneficiary), request.getStartingHierarchyLevel());
 
-			createAndAddFacts(shares,
-					triggerData.getTimestamp(),
-					triggerData.getForecastedBasePoints(),
-					triggerData.getInvoiceableBasePoints(),
-					triggerData.getInvoicedBasePoints(),
-					triggerData.getTradedCommissionPercent());
+		createAndAddFacts(shares,
+						  triggerData.getTimestamp(),
+						  triggerData.getForecastedBasePoints(),
+						  triggerData.getInvoiceableBasePoints(),
+						  triggerData.getInvoicedBasePoints(),
+						  triggerData.getTradedCommissionPercent());
 
-			result.addAll(shares);
-		}
-
-		return result.build();
+		return shares;
 	}
 
 	private ImmutableList<SalesCommissionShare> createNewShares(
-			@NonNull final HierarchyConfig config,
-			@NonNull final Hierarchy hierarchy,
-			@NonNull final CommissionTrigger trigger)
+			@NonNull final ImmutableList<HierarchyConfig> hierarchyConfigs,
+			@NonNull final Iterable<HierarchyNode> beneficiaryUpStream,
+			@NonNull final HierarchyLevel startingHierarchyLevel)
 	{
 		final ImmutableList.Builder<SalesCommissionShare> shares = ImmutableList.builder();
 
-		HierarchyLevel currentLevel = HierarchyLevel.ZERO;
+		HierarchyLevel currentHierarchyLevel = startingHierarchyLevel;
 
-		for (final HierarchyNode node : hierarchy.getUpStream(trigger.getBeneficiary()))
+		for (final HierarchyNode beneficiaryNode : beneficiaryUpStream)
 		{
-			try (final MDCCloseable beneficiaryMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, node.getBeneficiary().getBPartnerId()))
+			final Beneficiary beneficiary = beneficiaryNode.getBeneficiary();
+
+			for (final HierarchyConfig hierarchyConfig : hierarchyConfigs)
 			{
-				final Beneficiary beneficiary = node.getBeneficiary();
-				final CommissionContract contract = config.getContractFor(beneficiary);
-				if (contract == null)
+				try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, beneficiary.getBPartnerId()))
 				{
-					logger.debug("Beneficiary is part of hierarchy but has no contract; -> skip level={}", currentLevel);
-					continue;
+					final CommissionContract contract = hierarchyConfig.getContractFor(beneficiary);
+					if (contract == null)
+					{
+						logger.debug("Beneficiary C_BPartner_ID={} is part of hierarchy but has no contract; -> skip level={}", beneficiary.getBPartnerId().getRepoId(), currentHierarchyLevel);
+						continue;
+					}
+
+					final SalesCommissionShare share = SalesCommissionShare.builder()
+							.beneficiary(beneficiary)
+							.level(currentHierarchyLevel)
+							.config(hierarchyConfig)
+							.build();
+					shares.add(share);
+
+					currentHierarchyLevel = currentHierarchyLevel.incByOne();
 				}
-
-				final SalesCommissionShare share = SalesCommissionShare.builder()
-						.beneficiary(beneficiary)
-						.level(currentLevel)
-						.config(config)
-						.build();
-				shares.add(share);
-
-				currentLevel = currentLevel.incByOne();
 			}
 		}
+
 		return shares.build();
 	}
 
@@ -173,7 +172,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				}
 
 				final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(share.getConfig());
-				try (final MDCCloseable configSettingsMDC = TableRecordMDC.putTableRecordReference(I_C_HierarchyCommissionSettings.Table_Name, hierarchyConfig.getId()))
+				try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_HierarchyCommissionSettings.Table_Name, hierarchyConfig.getId()))
 				{
 					logger.debug("Create commission shares and facts");
 

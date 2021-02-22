@@ -1,115 +1,103 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_Trx_Attribute
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_Trx_Attribute 
 {
 
-    /** TableName=M_HU_Trx_Attribute */
-    public static final String Table_Name = "M_HU_Trx_Attribute";
+	String Table_Name = "M_HU_Trx_Attribute";
 
-    /** AD_Table_ID=540513 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540513 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Merkmal.
@@ -119,7 +107,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Attribute_ID (int M_Attribute_ID);
+	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
 	 * Get Merkmal.
@@ -129,10 +117,9 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Attribute_ID();
+	int getM_Attribute_ID();
 
-    /** Column name M_Attribute_ID */
-    public static final String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
+	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
 	 * Set Handling Unit Attribute.
@@ -141,7 +128,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Attribute_ID (int M_HU_Attribute_ID);
+	void setM_HU_Attribute_ID (int M_HU_Attribute_ID);
 
 	/**
 	 * Get Handling Unit Attribute.
@@ -150,16 +137,14 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Attribute_ID();
+	int getM_HU_Attribute_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_Attribute getM_HU_Attribute();
+	@Nullable de.metas.handlingunits.model.I_M_HU_Attribute getM_HU_Attribute();
 
-	public void setM_HU_Attribute(de.metas.handlingunits.model.I_M_HU_Attribute M_HU_Attribute);
+	void setM_HU_Attribute(@Nullable de.metas.handlingunits.model.I_M_HU_Attribute M_HU_Attribute);
 
-    /** Column definition for M_HU_Attribute_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Attribute> COLUMN_M_HU_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Attribute>(I_M_HU_Trx_Attribute.class, "M_HU_Attribute_ID", de.metas.handlingunits.model.I_M_HU_Attribute.class);
-    /** Column name M_HU_Attribute_ID */
-    public static final String COLUMNNAME_M_HU_Attribute_ID = "M_HU_Attribute_ID";
+	ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Attribute> COLUMN_M_HU_Attribute_ID = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "M_HU_Attribute_ID", de.metas.handlingunits.model.I_M_HU_Attribute.class);
+	String COLUMNNAME_M_HU_Attribute_ID = "M_HU_Attribute_ID";
 
 	/**
 	 * Set Handling Unit.
@@ -168,7 +153,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -177,16 +162,14 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-	public de.metas.handlingunits.model.I_M_HU getM_HU();
+	@Nullable de.metas.handlingunits.model.I_M_HU getM_HU();
 
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	void setM_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_HU);
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU>(I_M_HU_Trx_Attribute.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
 	 * Set Handling Units Packing Instructions Attribute.
@@ -195,7 +178,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Attribute_ID (int M_HU_PI_Attribute_ID);
+	void setM_HU_PI_Attribute_ID (int M_HU_PI_Attribute_ID);
 
 	/**
 	 * Get Handling Units Packing Instructions Attribute.
@@ -204,10 +187,9 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_Attribute_ID();
+	int getM_HU_PI_Attribute_ID();
 
-    /** Column name M_HU_PI_Attribute_ID */
-    public static final String COLUMNNAME_M_HU_PI_Attribute_ID = "M_HU_PI_Attribute_ID";
+	String COLUMNNAME_M_HU_PI_Attribute_ID = "M_HU_PI_Attribute_ID";
 
 	/**
 	 * Set Handling Units Transaction Attribute.
@@ -216,7 +198,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Trx_Attribute_ID (int M_HU_Trx_Attribute_ID);
+	void setM_HU_Trx_Attribute_ID (int M_HU_Trx_Attribute_ID);
 
 	/**
 	 * Get Handling Units Transaction Attribute.
@@ -225,12 +207,10 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Trx_Attribute_ID();
+	int getM_HU_Trx_Attribute_ID();
 
-    /** Column definition for M_HU_Trx_Attribute_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_M_HU_Trx_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "M_HU_Trx_Attribute_ID", null);
-    /** Column name M_HU_Trx_Attribute_ID */
-    public static final String COLUMNNAME_M_HU_Trx_Attribute_ID = "M_HU_Trx_Attribute_ID";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_M_HU_Trx_Attribute_ID = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "M_HU_Trx_Attribute_ID", null);
+	String COLUMNNAME_M_HU_Trx_Attribute_ID = "M_HU_Trx_Attribute_ID";
 
 	/**
 	 * Set HU-Transaktionskopf.
@@ -239,7 +219,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID);
+	void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID);
 
 	/**
 	 * Get HU-Transaktionskopf.
@@ -248,43 +228,39 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Trx_Hdr_ID();
+	int getM_HU_Trx_Hdr_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_Trx_Hdr getM_HU_Trx_Hdr();
+	de.metas.handlingunits.model.I_M_HU_Trx_Hdr getM_HU_Trx_Hdr();
 
-	public void setM_HU_Trx_Hdr(de.metas.handlingunits.model.I_M_HU_Trx_Hdr M_HU_Trx_Hdr);
+	void setM_HU_Trx_Hdr(de.metas.handlingunits.model.I_M_HU_Trx_Hdr M_HU_Trx_Hdr);
 
-    /** Column definition for M_HU_Trx_Hdr_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Trx_Hdr> COLUMN_M_HU_Trx_Hdr_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Trx_Hdr>(I_M_HU_Trx_Attribute.class, "M_HU_Trx_Hdr_ID", de.metas.handlingunits.model.I_M_HU_Trx_Hdr.class);
-    /** Column name M_HU_Trx_Hdr_ID */
-    public static final String COLUMNNAME_M_HU_Trx_Hdr_ID = "M_HU_Trx_Hdr_ID";
+	ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Trx_Hdr> COLUMN_M_HU_Trx_Hdr_ID = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "M_HU_Trx_Hdr_ID", de.metas.handlingunits.model.I_M_HU_Trx_Hdr.class);
+	String COLUMNNAME_M_HU_Trx_Hdr_ID = "M_HU_Trx_Hdr_ID";
 
 	/**
-	 * Set HU-Transaktionszeile.
+	 * Set HU Transaction Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID);
+	void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID);
 
 	/**
-	 * Get HU-Transaktionszeile.
+	 * Get HU Transaction Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Trx_Line_ID();
+	int getM_HU_Trx_Line_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_Trx_Line getM_HU_Trx_Line();
+	@Nullable de.metas.handlingunits.model.I_M_HU_Trx_Line getM_HU_Trx_Line();
 
-	public void setM_HU_Trx_Line(de.metas.handlingunits.model.I_M_HU_Trx_Line M_HU_Trx_Line);
+	void setM_HU_Trx_Line(@Nullable de.metas.handlingunits.model.I_M_HU_Trx_Line M_HU_Trx_Line);
 
-    /** Column definition for M_HU_Trx_Line_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Trx_Line> COLUMN_M_HU_Trx_Line_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Trx_Line>(I_M_HU_Trx_Attribute.class, "M_HU_Trx_Line_ID", de.metas.handlingunits.model.I_M_HU_Trx_Line.class);
-    /** Column name M_HU_Trx_Line_ID */
-    public static final String COLUMNNAME_M_HU_Trx_Line_ID = "M_HU_Trx_Line_ID";
+	ModelColumn<I_M_HU_Trx_Attribute, de.metas.handlingunits.model.I_M_HU_Trx_Line> COLUMN_M_HU_Trx_Line_ID = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "M_HU_Trx_Line_ID", de.metas.handlingunits.model.I_M_HU_Trx_Line.class);
+	String COLUMNNAME_M_HU_Trx_Line_ID = "M_HU_Trx_Line_ID";
 
 	/**
 	 * Set Arbeitsvorgang .
@@ -294,7 +270,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setOperation (java.lang.String Operation);
+	void setOperation (java.lang.String Operation);
 
 	/**
 	 * Get Arbeitsvorgang .
@@ -304,113 +280,100 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getOperation();
+	java.lang.String getOperation();
 
-    /** Column definition for Operation */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Operation = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "Operation", null);
-    /** Column name Operation */
-    public static final String COLUMNNAME_Operation = "Operation";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Operation = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "Operation", null);
+	String COLUMNNAME_Operation = "Operation";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Processed = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (@Nullable java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	@Nullable java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_Value = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 
 	/**
-	 * Set Datum.
+	 * Set Date Value.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueDate (java.sql.Timestamp ValueDate);
+	void setValueDate (@Nullable java.sql.Timestamp ValueDate);
 
 	/**
-	 * Get Datum.
+	 * Get Date Value.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValueDate();
+	@Nullable java.sql.Timestamp getValueDate();
 
-    /** Column definition for ValueDate */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueDate = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "ValueDate", null);
-    /** Column name ValueDate */
-    public static final String COLUMNNAME_ValueDate = "ValueDate";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueDate = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "ValueDate", null);
+	String COLUMNNAME_ValueDate = "ValueDate";
 
 	/**
 	 * Set Datum (initial).
@@ -419,7 +382,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueDateInitial (java.sql.Timestamp ValueDateInitial);
+	void setValueDateInitial (@Nullable java.sql.Timestamp ValueDateInitial);
 
 	/**
 	 * Get Datum (initial).
@@ -428,12 +391,10 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValueDateInitial();
+	@Nullable java.sql.Timestamp getValueDateInitial();
 
-    /** Column definition for ValueDateInitial */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueDateInitial = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "ValueDateInitial", null);
-    /** Column name ValueDateInitial */
-    public static final String COLUMNNAME_ValueDateInitial = "ValueDateInitial";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueDateInitial = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "ValueDateInitial", null);
+	String COLUMNNAME_ValueDateInitial = "ValueDateInitial";
 
 	/**
 	 * Set Merkmals-Wert (initial).
@@ -443,7 +404,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueInitial (java.lang.String ValueInitial);
+	void setValueInitial (@Nullable java.lang.String ValueInitial);
 
 	/**
 	 * Get Merkmals-Wert (initial).
@@ -453,37 +414,33 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValueInitial();
+	@Nullable java.lang.String getValueInitial();
 
-    /** Column definition for ValueInitial */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueInitial = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "ValueInitial", null);
-    /** Column name ValueInitial */
-    public static final String COLUMNNAME_ValueInitial = "ValueInitial";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueInitial = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "ValueInitial", null);
+	String COLUMNNAME_ValueInitial = "ValueInitial";
 
 	/**
-	 * Set Zahlwert.
+	 * Set Numeric Value.
 	 * Numeric Value
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueNumber (java.math.BigDecimal ValueNumber);
+	void setValueNumber (@Nullable BigDecimal ValueNumber);
 
 	/**
-	 * Get Zahlwert.
+	 * Get Numeric Value.
 	 * Numeric Value
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getValueNumber();
+	BigDecimal getValueNumber();
 
-    /** Column definition for ValueNumber */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueNumber = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "ValueNumber", null);
-    /** Column name ValueNumber */
-    public static final String COLUMNNAME_ValueNumber = "ValueNumber";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueNumber = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "ValueNumber", null);
+	String COLUMNNAME_ValueNumber = "ValueNumber";
 
 	/**
 	 * Set Zahlwert (initial).
@@ -493,7 +450,7 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueNumberInitial (java.math.BigDecimal ValueNumberInitial);
+	void setValueNumberInitial (@Nullable BigDecimal ValueNumberInitial);
 
 	/**
 	 * Get Zahlwert (initial).
@@ -503,10 +460,8 @@ public interface I_M_HU_Trx_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getValueNumberInitial();
+	BigDecimal getValueNumberInitial();
 
-    /** Column definition for ValueNumberInitial */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueNumberInitial = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Attribute, Object>(I_M_HU_Trx_Attribute.class, "ValueNumberInitial", null);
-    /** Column name ValueNumberInitial */
-    public static final String COLUMNNAME_ValueNumberInitial = "ValueNumberInitial";
+	ModelColumn<I_M_HU_Trx_Attribute, Object> COLUMN_ValueNumberInitial = new ModelColumn<>(I_M_HU_Trx_Attribute.class, "ValueNumberInitial", null);
+	String COLUMNNAME_ValueNumberInitial = "ValueNumberInitial";
 }

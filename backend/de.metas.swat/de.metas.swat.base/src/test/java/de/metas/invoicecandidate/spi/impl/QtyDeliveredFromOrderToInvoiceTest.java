@@ -28,9 +28,15 @@ import java.math.BigDecimal;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -78,7 +84,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	protected final Properties ctx = Env.getCtx();
 	protected final String trxName = ITrx.TRXNAME_None;
 
-	protected final C_OrderLine_Handler olHandler = new C_OrderLine_Handler();
+	protected C_OrderLine_Handler olHandler;
 	protected I_C_ILCandHandler handler;
 
 	// task 07442
@@ -103,6 +109,15 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		AdempiereTestHelper.get().init();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, clientId.getRepoId());
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		olHandler = new C_OrderLine_Handler();
 		initHandlers();
 
 		final I_C_UOM stockUom = newInstance(I_C_UOM.class);
@@ -133,6 +148,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		mockTaxAndProductAcctServices();
 
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+
 	}
 
 	private void mockTaxAndProductAcctServices()

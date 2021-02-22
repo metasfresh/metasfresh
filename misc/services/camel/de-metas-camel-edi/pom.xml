@@ -23,9 +23,10 @@
         <jackson.version>2.11.0</jackson.version>
         <org.apache.poi.version>3.15</org.apache.poi.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
-        <jaxb.order.packageName>de.metas.edi.esb.jaxb.stepcom.order</jaxb.order.packageName>
-        <jaxb.invoice.packageName>de.metas.edi.esb.jaxb.stepcom.invoice</jaxb.invoice.packageName>
+        <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
+        <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
@@ -70,6 +71,17 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-http</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.rest_api</groupId>
+            <artifactId>de-metas-common-rest_api</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -162,7 +174,6 @@
             <version>${smooks.version}</version>
         </dependency>
 
-        <!-- needed by smooks -->
         <dependency>
             <artifactId>commons-logging</artifactId>
             <groupId>commons-logging</groupId>
@@ -255,74 +266,80 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
                 <executions>
                     <execution>
                         <id>xjc-schema-metasfresh</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <sources>
-                                <source>src/main/xsd/metasfresh</source>
-                            </sources>
-
-                            <packageName>${jaxb.packageName}</packageName>
-                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
+                            <schemaDirectory>src/main/xsd/metasfresh</schemaDirectory>
+                            <generatePackage>${jaxb.packageName}</generatePackage>
+                            <generateDirectory>${project.build.directory}/generated-sources/xjc_metasfresh
+                            </generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-schema-order</id>
+                        <id>xjc-stepcom-orders</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <sources>
-                                <source>src/main/xsd/stepcom/order</source>
-                            </sources>
-
-                            <packageName>${jaxb.order.packageName}</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
+                            <schemaDirectory>src/main/xsd/stepcom/orders</schemaDirectory>
+                            <generatePackage>${jaxb.orders.packageName}</generatePackage>
+                            <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_orders</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-schema-invoice</id>
+                        <id>xjc-stepcom-desadv</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <sources>
-                                <source>src/main/xsd/stepcom/invoice</source>
-                            </sources>
-
-                            <packageName>${jaxb.invoice.packageName}</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
+                            <schemaDirectory>src/main/xsd/stepcom/desadv</schemaDirectory>
+                            <generatePackage>${jaxb.desadv.packageName}</generatePackage>
+                            <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_desadv</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>xjc-schema-desadv</id>
+                        <id>xjc-stepcom-invoic</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <sources>
-                                <source>src/main/xsd/stepcom/desadv</source>
-                            </sources>
-
-                            <packageName>${jaxb.desadv.packageName}</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                            <outputDirectory>target/generated-sources/jaxb</outputDirectory>
+                            <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
+                            <generatePackage>${jaxb.invoic.packageName}</generatePackage>
+                            <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_invoic</generateDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-schema-remadv</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
+                            <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
+                            <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
+                            
+                            because it will end with "Two declarations cause a collision in the ObjectFactory class."
+                            -->
+                            <generateDirectory>${project.build.directory}/generated-sources/xjc_ecosio_remadv</generateDirectory>
                         </configuration>
                     </execution>
                 </executions>
                 <dependencies>
+                    <!-- without this dependency, XJC fails with a very obscur error! Thx to https://stackoverflow.com/a/58800280/1012103-->
                     <dependency>
-                        <groupId>jakarta.xml.bind</groupId>
-                        <artifactId>jakarta.xml.bind-api</artifactId>
-                        <version>2.3.2</version>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>2.2.11</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -333,6 +350,7 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
                 </configuration>
             </plugin>
 

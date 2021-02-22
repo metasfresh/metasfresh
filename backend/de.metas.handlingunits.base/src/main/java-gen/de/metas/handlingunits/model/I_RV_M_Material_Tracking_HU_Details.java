@@ -1,113 +1,102 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for RV_M_Material_Tracking_HU_Details
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_RV_M_Material_Tracking_HU_Details 
 {
 
-    /** TableName=RV_M_Material_Tracking_HU_Details */
-    public static final String Table_Name = "RV_M_Material_Tracking_HU_Details";
+	String Table_Name = "RV_M_Material_Tracking_HU_Details";
 
-    /** AD_Table_ID=540682 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540682 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	@Nullable java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Created = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Gebinde Status.
@@ -116,7 +105,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHUStatus (java.lang.String HUStatus);
+	void setHUStatus (@Nullable java.lang.String HUStatus);
 
 	/**
 	 * Get Gebinde Status.
@@ -125,37 +114,33 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHUStatus();
+	@Nullable java.lang.String getHUStatus();
 
-    /** Column definition for HUStatus */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_HUStatus = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "HUStatus", null);
-    /** Column name HUStatus */
-    public static final String COLUMNNAME_HUStatus = "HUStatus";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_HUStatus = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "HUStatus", null);
+	String COLUMNNAME_HUStatus = "HUStatus";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_IsActive = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Waschprobe.
@@ -164,7 +149,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsQualityInspection (boolean IsQualityInspection);
+	void setIsQualityInspection (boolean IsQualityInspection);
 
 	/**
 	 * Get Waschprobe.
@@ -173,12 +158,10 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isQualityInspection();
+	boolean isQualityInspection();
 
-    /** Column definition for IsQualityInspection */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_IsQualityInspection = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "IsQualityInspection", null);
-    /** Column name IsQualityInspection */
-    public static final String COLUMNNAME_IsQualityInspection = "IsQualityInspection";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_IsQualityInspection = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "IsQualityInspection", null);
+	String COLUMNNAME_IsQualityInspection = "IsQualityInspection";
 
 	/**
 	 * Set Los-Nr..
@@ -188,7 +171,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLot (java.lang.String Lot);
+	void setLot (@Nullable java.lang.String Lot);
 
 	/**
 	 * Get Los-Nr..
@@ -198,12 +181,10 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getLot();
+	@Nullable java.lang.String getLot();
 
-    /** Column definition for Lot */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Lot = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "Lot", null);
-    /** Column name Lot */
-    public static final String COLUMNNAME_Lot = "Lot";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Lot = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "Lot", null);
+	String COLUMNNAME_Lot = "Lot";
 
 	/**
 	 * Set Handling Unit.
@@ -212,7 +193,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -221,93 +202,86 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-	public de.metas.handlingunits.model.I_M_HU getM_HU();
+	@Nullable de.metas.handlingunits.model.I_M_HU getM_HU();
 
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	void setM_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_HU);
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, de.metas.handlingunits.model.I_M_HU>(I_RV_M_Material_Tracking_HU_Details.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Material Receipt.
+	 * Set m_inout_receipt_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InOut_Receipt_ID (int M_InOut_Receipt_ID);
+	void setM_InOut_Receipt_ID (int M_InOut_Receipt_ID);
 
 	/**
-	 * Get Material Receipt.
+	 * Get m_inout_receipt_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InOut_Receipt_ID();
+	int getM_InOut_Receipt_ID();
 
-	public org.compiere.model.I_M_InOut getM_InOut_Receipt();
+	@Nullable org.compiere.model.I_M_InOut getM_InOut_Receipt();
 
-	public void setM_InOut_Receipt(org.compiere.model.I_M_InOut M_InOut_Receipt);
+	void setM_InOut_Receipt(@Nullable org.compiere.model.I_M_InOut M_InOut_Receipt);
 
-    /** Column definition for M_InOut_Receipt_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_InOut> COLUMN_M_InOut_Receipt_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_InOut>(I_RV_M_Material_Tracking_HU_Details.class, "M_InOut_Receipt_ID", org.compiere.model.I_M_InOut.class);
-    /** Column name M_InOut_Receipt_ID */
-    public static final String COLUMNNAME_M_InOut_Receipt_ID = "M_InOut_Receipt_ID";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_InOut> COLUMN_M_InOut_Receipt_ID = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "M_InOut_Receipt_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_Receipt_ID = "M_InOut_Receipt_ID";
 
 	/**
-	 * Set Shipment.
+	 * Set m_inout_shipment_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InOut_Shipment_ID (int M_InOut_Shipment_ID);
+	void setM_InOut_Shipment_ID (int M_InOut_Shipment_ID);
 
 	/**
-	 * Get Shipment.
+	 * Get m_inout_shipment_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InOut_Shipment_ID();
+	int getM_InOut_Shipment_ID();
 
-	public org.compiere.model.I_M_InOut getM_InOut_Shipment();
+	@Nullable org.compiere.model.I_M_InOut getM_InOut_Shipment();
 
-	public void setM_InOut_Shipment(org.compiere.model.I_M_InOut M_InOut_Shipment);
+	void setM_InOut_Shipment(@Nullable org.compiere.model.I_M_InOut M_InOut_Shipment);
 
-    /** Column definition for M_InOut_Shipment_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_InOut> COLUMN_M_InOut_Shipment_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_InOut>(I_RV_M_Material_Tracking_HU_Details.class, "M_InOut_Shipment_ID", org.compiere.model.I_M_InOut.class);
-    /** Column name M_InOut_Shipment_ID */
-    public static final String COLUMNNAME_M_InOut_Shipment_ID = "M_InOut_Shipment_ID";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_InOut> COLUMN_M_InOut_Shipment_ID = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "M_InOut_Shipment_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_Shipment_ID = "M_InOut_Shipment_ID";
 
 	/**
-	 * Set Lagerort.
-	 * Lagerort im Lager
+	 * Set Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Locator_ID (int M_Locator_ID);
+	void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
-	 * Lagerort im Lager
+	 * Get Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Locator_ID();
+	int getM_Locator_ID();
 
-    /** Column name M_Locator_ID */
-    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
 	 * Set Material-Vorgang-ID.
@@ -316,7 +290,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Material_Tracking_ID (int M_Material_Tracking_ID);
+	void setM_Material_Tracking_ID (int M_Material_Tracking_ID);
 
 	/**
 	 * Get Material-Vorgang-ID.
@@ -325,79 +299,73 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Material_Tracking_ID();
+	int getM_Material_Tracking_ID();
 
-    /** Column definition for M_Material_Tracking_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_M_Material_Tracking_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "M_Material_Tracking_ID", null);
-    /** Column name M_Material_Tracking_ID */
-    public static final String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_M_Material_Tracking_ID = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "M_Material_Tracking_ID", null);
+	String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set MO Issue Doc Status.
+	 * Set pp_order_issue_docstatus.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Issue_DocStatus (java.lang.String PP_Order_Issue_DocStatus);
+	void setPP_Order_Issue_DocStatus (@Nullable java.lang.String PP_Order_Issue_DocStatus);
 
 	/**
-	 * Get MO Issue Doc Status.
+	 * Get pp_order_issue_docstatus.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPP_Order_Issue_DocStatus();
+	@Nullable java.lang.String getPP_Order_Issue_DocStatus();
 
-    /** Column definition for PP_Order_Issue_DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_PP_Order_Issue_DocStatus = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Issue_DocStatus", null);
-    /** Column name PP_Order_Issue_DocStatus */
-    public static final String COLUMNNAME_PP_Order_Issue_DocStatus = "PP_Order_Issue_DocStatus";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_PP_Order_Issue_DocStatus = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Issue_DocStatus", null);
+	String COLUMNNAME_PP_Order_Issue_DocStatus = "PP_Order_Issue_DocStatus";
 
 	/**
-	 * Set MO Issue DocType.
+	 * Set pp_order_issue_doctype_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Issue_DocType_ID (int PP_Order_Issue_DocType_ID);
+	void setPP_Order_Issue_DocType_ID (int PP_Order_Issue_DocType_ID);
 
 	/**
-	 * Get MO Issue DocType.
+	 * Get pp_order_issue_doctype_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_Issue_DocType_ID();
+	int getPP_Order_Issue_DocType_ID();
 
-    /** Column name PP_Order_Issue_DocType_ID */
-    public static final String COLUMNNAME_PP_Order_Issue_DocType_ID = "PP_Order_Issue_DocType_ID";
+	String COLUMNNAME_PP_Order_Issue_DocType_ID = "PP_Order_Issue_DocType_ID";
 
 	/**
 	 * Set Zugeteilt zu Prod.-Auftrag.
@@ -406,7 +374,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Issue_ID (int PP_Order_Issue_ID);
+	void setPP_Order_Issue_ID (int PP_Order_Issue_ID);
 
 	/**
 	 * Get Zugeteilt zu Prod.-Auftrag.
@@ -415,60 +383,55 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_Issue_ID();
+	int getPP_Order_Issue_ID();
 
-	public org.eevolution.model.I_PP_Order getPP_Order_Issue();
+	@Nullable org.eevolution.model.I_PP_Order getPP_Order_Issue();
 
-	public void setPP_Order_Issue(org.eevolution.model.I_PP_Order PP_Order_Issue);
+	void setPP_Order_Issue(@Nullable org.eevolution.model.I_PP_Order PP_Order_Issue);
 
-    /** Column definition for PP_Order_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_Issue_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Issue_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_Issue_ID */
-    public static final String COLUMNNAME_PP_Order_Issue_ID = "PP_Order_Issue_ID";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_Issue_ID = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Issue_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_Issue_ID = "PP_Order_Issue_ID";
 
 	/**
-	 * Set MO Receipt DocStatus.
+	 * Set pp_order_receipt_docstatus.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Receipt_DocStatus (java.lang.String PP_Order_Receipt_DocStatus);
+	void setPP_Order_Receipt_DocStatus (@Nullable java.lang.String PP_Order_Receipt_DocStatus);
 
 	/**
-	 * Get MO Receipt DocStatus.
+	 * Get pp_order_receipt_docstatus.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPP_Order_Receipt_DocStatus();
+	@Nullable java.lang.String getPP_Order_Receipt_DocStatus();
 
-    /** Column definition for PP_Order_Receipt_DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_PP_Order_Receipt_DocStatus = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Receipt_DocStatus", null);
-    /** Column name PP_Order_Receipt_DocStatus */
-    public static final String COLUMNNAME_PP_Order_Receipt_DocStatus = "PP_Order_Receipt_DocStatus";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_PP_Order_Receipt_DocStatus = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Receipt_DocStatus", null);
+	String COLUMNNAME_PP_Order_Receipt_DocStatus = "PP_Order_Receipt_DocStatus";
 
 	/**
-	 * Set MO Receipt DocType.
+	 * Set pp_order_receipt_doctype_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Receipt_DocType_ID (int PP_Order_Receipt_DocType_ID);
+	void setPP_Order_Receipt_DocType_ID (int PP_Order_Receipt_DocType_ID);
 
 	/**
-	 * Get MO Receipt DocType.
+	 * Get pp_order_receipt_doctype_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_Receipt_DocType_ID();
+	int getPP_Order_Receipt_DocType_ID();
 
-    /** Column name PP_Order_Receipt_DocType_ID */
-    public static final String COLUMNNAME_PP_Order_Receipt_DocType_ID = "PP_Order_Receipt_DocType_ID";
+	String COLUMNNAME_PP_Order_Receipt_DocType_ID = "PP_Order_Receipt_DocType_ID";
 
 	/**
 	 * Set Empf. aus Prod.-Auftrag.
@@ -477,7 +440,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Receipt_ID (int PP_Order_Receipt_ID);
+	void setPP_Order_Receipt_ID (int PP_Order_Receipt_ID);
 
 	/**
 	 * Get Empf. aus Prod.-Auftrag.
@@ -486,64 +449,58 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_Receipt_ID();
+	int getPP_Order_Receipt_ID();
 
-	public org.eevolution.model.I_PP_Order getPP_Order_Receipt();
+	@Nullable org.eevolution.model.I_PP_Order getPP_Order_Receipt();
 
-	public void setPP_Order_Receipt(org.eevolution.model.I_PP_Order PP_Order_Receipt);
+	void setPP_Order_Receipt(@Nullable org.eevolution.model.I_PP_Order PP_Order_Receipt);
 
-    /** Column definition for PP_Order_Receipt_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_Receipt_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Receipt_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_Receipt_ID */
-    public static final String COLUMNNAME_PP_Order_Receipt_ID = "PP_Order_Receipt_ID";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_Receipt_ID = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Receipt_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_Receipt_ID = "PP_Order_Receipt_ID";
 
 	/**
-	 * Set Menge.
-	 * Menge
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	void setQty (@Nullable BigDecimal Qty);
 
 	/**
-	 * Get Menge.
-	 * Menge
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Qty = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set Waschprobe.
+	 * Set qualityinspectioncycle.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQualityInspectionCycle (java.lang.String QualityInspectionCycle);
+	void setQualityInspectionCycle (@Nullable java.lang.String QualityInspectionCycle);
 
 	/**
-	 * Get Waschprobe.
+	 * Get qualityinspectioncycle.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getQualityInspectionCycle();
+	@Nullable java.lang.String getQualityInspectionCycle();
 
-    /** Column definition for QualityInspectionCycle */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_QualityInspectionCycle = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "QualityInspectionCycle", null);
-    /** Column name QualityInspectionCycle */
-    public static final String COLUMNNAME_QualityInspectionCycle = "QualityInspectionCycle";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_QualityInspectionCycle = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "QualityInspectionCycle", null);
+	String COLUMNNAME_QualityInspectionCycle = "QualityInspectionCycle";
 
 	/**
 	 * Set RV_M_Material_Tracking_HU_Details_ID.
@@ -552,7 +509,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRV_M_Material_Tracking_HU_Details_ID (int RV_M_Material_Tracking_HU_Details_ID);
+	void setRV_M_Material_Tracking_HU_Details_ID (int RV_M_Material_Tracking_HU_Details_ID);
 
 	/**
 	 * Get RV_M_Material_Tracking_HU_Details_ID.
@@ -561,38 +518,33 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getRV_M_Material_Tracking_HU_Details_ID();
+	int getRV_M_Material_Tracking_HU_Details_ID();
 
-    /** Column definition for RV_M_Material_Tracking_HU_Details_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_RV_M_Material_Tracking_HU_Details_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "RV_M_Material_Tracking_HU_Details_ID", null);
-    /** Column name RV_M_Material_Tracking_HU_Details_ID */
-    public static final String COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID = "RV_M_Material_Tracking_HU_Details_ID";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_RV_M_Material_Tracking_HU_Details_ID = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "RV_M_Material_Tracking_HU_Details_ID", null);
+	String COLUMNNAME_RV_M_Material_Tracking_HU_Details_ID = "RV_M_Material_Tracking_HU_Details_ID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	@Nullable java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object>(I_RV_M_Material_Tracking_HU_Details.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_RV_M_Material_Tracking_HU_Details, Object> COLUMN_Updated = new ModelColumn<>(I_RV_M_Material_Tracking_HU_Details.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

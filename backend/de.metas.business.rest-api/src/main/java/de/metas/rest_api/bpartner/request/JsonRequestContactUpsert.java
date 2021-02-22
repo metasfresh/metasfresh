@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
+import static de.metas.common.rest_api.SwaggerDocConstants.*;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.List;

@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.RestUtils;
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
@@ -27,7 +28,6 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -50,12 +50,12 @@ import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsert
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfExists;
-import de.metas.rest_api.exception.InvalidIdentifierException;
-import de.metas.rest_api.exception.MissingPropertyException;
-import de.metas.rest_api.exception.MissingResourceException;
+import de.metas.util.web.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.MissingPropertyException;
+import de.metas.util.web.exception.MissingResourceException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.rest_api.utils.JsonConverters;
@@ -75,8 +75,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils.retrieveOrgIdOrDefault;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 
@@ -760,7 +760,7 @@ public class JsonPersisterService
 			}
 			else
 			{
-				bpartner.setInvoiceRule(InvoiceRule.ofCode(jsonBPartner.getInvoiceRule().toString()));
+				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
 			}
 		}
 		else if (isUpdateRemove)

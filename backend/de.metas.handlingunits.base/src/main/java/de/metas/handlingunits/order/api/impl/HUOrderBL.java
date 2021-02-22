@@ -86,7 +86,7 @@ public class HUOrderBL implements IHUOrderBL
 		final boolean isCounterDoc = ol.getRef_OrderLine_ID() > 0;
 
 		// in case the order line already has a packing instruction, it should be kept as is, excepting the lines of counter documents
-		if (pip != null && !isCounterDoc)
+		if (pip != null && !isCounterDoc && !isProductChanged(olPO,columnName))
 		{
 			// nothing to do. Keep the old packing instructions
 		}

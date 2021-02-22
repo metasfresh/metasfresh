@@ -40,10 +40,16 @@ import lombok.Value;
 public class JsonRequestHULookup
 {
 	@Nullable
+	String huValue;
+
+	@Nullable
 	String lotNumber;
 
 	@Nullable
 	LocalDate bestBeforeDate;
+
+	@Nullable
+	String serialNo;
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonRequestHULookupBuilder

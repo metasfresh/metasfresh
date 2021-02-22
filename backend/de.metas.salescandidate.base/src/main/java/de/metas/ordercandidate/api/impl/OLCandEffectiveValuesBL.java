@@ -55,9 +55,14 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(@NonNull final I_C_OLCand olCand)
 	{
+		final int bPartnerId = getC_BPartner_Effective_ID(olCand);
+		if (bPartnerId <= 0)
+		{
+			return null;
+		}
 		return InterfaceWrapperHelper.create(
 				InterfaceWrapperHelper.getCtx(olCand),
-				getC_BPartner_Effective_ID(olCand),
+				bPartnerId,
 				I_C_BPartner.class,
 				InterfaceWrapperHelper.getTrxName(olCand));
 	}
@@ -189,9 +194,12 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public I_M_Product getM_Product_Effective(@NonNull final I_C_OLCand olCand)
 	{
-		return load(
-				getM_Product_Effective_ID(olCand),
-				I_M_Product.class);
+		final ProductId productId = getM_Product_Effective_ID(olCand);
+		if (productId == null)
+		{
+			return null;
+		}
+		return load(productId, I_M_Product.class);
 	}
 
 	@Override
