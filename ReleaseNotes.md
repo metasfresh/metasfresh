@@ -9,6 +9,105 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.161 - WIP
+
+https://github.com/metasfresh/metasfresh/issues/10595
+https://github.com/metasfresh/metasfresh/pull/10659
+  https://github.com/metasfresh/metasfresh/issues/10540
+
+
+
+## Features
+* metasfresh
+  https://github.com/metasfresh/metasfresh/issues/10566
+  * [#10535](https://github.com/metasfresh/metasfresh/issues/10535) Additional String Accounting Dimensions
+  https://github.com/metasfresh/metasfresh/issues/10555
+  https://github.com/metasfresh/metasfresh/issues/10624
+  https://github.com/metasfresh/metasfresh/pull/10645
+  https://github.com/metasfresh/metasfresh/issues/10524
+  https://github.com/metasfresh/metasfresh/issues/10573
+  https://github.com/metasfresh/metasfresh/issues/10249
+  https://github.com/metasfresh/metasfresh/issues/10426
+https://github.com/metasfresh/metasfresh/issues/10424
+https://github.com/metasfresh/metasfresh/issues/10419
+https://github.com/metasfresh/metasfresh/issues/10393
+https://github.com/metasfresh/metasfresh/issues/10389
+https://github.com/metasfresh/metasfresh/pull/10301
+https://github.com/metasfresh/metasfresh/issues/10269
+https://github.com/metasfresh/metasfresh/pull/10432
+https://github.com/metasfresh/metasfresh/issues/10436
+https://github.com/metasfresh/metasfresh/issues/10438
+https://github.com/metasfresh/metasfresh/issues/10446
+https://github.com/metasfresh/metasfresh/issues/10448
+https://github.com/metasfresh/metasfresh/issues/10450
+https://github.com/metasfresh/metasfresh/issues/10457
+https://github.com/metasfresh/metasfresh/issues/10464
+https://github.com/metasfresh/metasfresh/pull/10466
+https://github.com/metasfresh/metasfresh/issues/10467
+https://github.com/metasfresh/metasfresh/issues/10471
+https://github.com/metasfresh/metasfresh/issues/10478
+https://github.com/metasfresh/metasfresh/pull/10488
+https://github.com/metasfresh/metasfresh/issues/10493
+https://github.com/metasfresh/metasfresh/issues/10500
+https://github.com/metasfresh/metasfresh/issues/10501
+https://github.com/metasfresh/metasfresh/issues/10515
+https://github.com/metasfresh/metasfresh/issues/10526
+https://github.com/metasfresh/metasfresh/issues/10521
+https://github.com/metasfresh/metasfresh/issues/10531
+https://github.com/metasfresh/metasfresh/issues/10536
+https://github.com/metasfresh/metasfresh/issues/10538
+https://github.com/metasfresh/metasfresh/issues/10556
+https://github.com/metasfresh/metasfresh/issues/10560
+https://github.com/metasfresh/metasfresh/pull/10569
+https://github.com/metasfresh/metasfresh/pull/10570
+https://github.com/metasfresh/metasfresh/issues/10575
+https://github.com/metasfresh/metasfresh/issues/10582
+https://github.com/metasfresh/metasfresh/issues/10581
+https://github.com/metasfresh/metasfresh/issues/10590
+https://github.com/metasfresh/metasfresh/issues/10594
+https://github.com/metasfresh/metasfresh/issues/10607
+https://github.com/metasfresh/metasfresh/issues/10618
+https://github.com/metasfresh/metasfresh/pull/10619
+https://github.com/metasfresh/metasfresh/pull/10634
+https://github.com/metasfresh/metasfresh/issues/10642
+
+## Fixes
+* metasfresh
+  * [#10652](https://github.com/metasfresh/metasfresh/issues/10652) Incorrect breadcrumb after logout & login
+  https://github.com/metasfresh/metasfresh/issues/10649
+  https://github.com/metasfresh/metasfresh/issues/10149
+  https://github.com/metasfresh/metasfresh/issues/10422
+  https://github.com/metasfresh/metasfresh/issues/10434
+  https://github.com/metasfresh/metasfresh/issues/10455
+  https://github.com/metasfresh/metasfresh/issues/10459
+  https://github.com/metasfresh/metasfresh/issues/10469
+  https://github.com/metasfresh/metasfresh/issues/10474
+  https://github.com/metasfresh/metasfresh/pull/10481
+  https://github.com/metasfresh/metasfresh/pull/10482
+  https://github.com/metasfresh/metasfresh/issues/10483
+  https://github.com/metasfresh/metasfresh/issues/10490
+  https://github.com/metasfresh/metasfresh/issues/10491
+  https://github.com/metasfresh/metasfresh/issues/10497
+  https://github.com/metasfresh/metasfresh/issues/10503
+  https://github.com/metasfresh/metasfresh/issues/10507
+  https://github.com/metasfresh/metasfresh/pull/10511
+  https://github.com/metasfresh/metasfresh/issues/10513
+  https://github.com/metasfresh/metasfresh/issues/10529
+  https://github.com/metasfresh/metasfresh/issues/10547
+https://github.com/metasfresh/metasfresh/issues/10578
+https://github.com/metasfresh/metasfresh/issues/10580
+https://github.com/metasfresh/metasfresh/issues/10589
+https://github.com/metasfresh/metasfresh/issues/10591
+https://github.com/metasfresh/metasfresh/pull/10598
+https://github.com/metasfresh/metasfresh/issues/10599
+https://github.com/metasfresh/metasfresh/issues/10609
+https://github.com/metasfresh/metasfresh/pull/10612
+https://github.com/metasfresh/metasfresh/issues/10614
+https://github.com/metasfresh/metasfresh/pull/10617
+https://github.com/metasfresh/metasfresh/issues/10630
+https://github.com/metasfresh/metasfresh/pull/10635
+
+
 # metasfresh 5.160
 ## Features
 * metasfresh
