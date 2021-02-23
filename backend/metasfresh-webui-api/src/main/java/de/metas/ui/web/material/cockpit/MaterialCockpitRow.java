@@ -20,7 +20,9 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+
 import java.util.Objects;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -83,7 +85,9 @@ import lombok.ToString;
 @EqualsAndHashCode(of = "documentId")
 public class MaterialCockpitRow implements IViewRow
 {
-	/** Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows} */
+	/**
+	 * Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows}
+	 */
 	public static final String SYSCFG_PREFIX = "de.metas.ui.web.material.cockpit.field";
 
 	public static MaterialCockpitRow cast(final IViewRow row)
@@ -119,13 +123,16 @@ public class MaterialCockpitRow implements IViewRow
 	private final DimensionSpecGroup dimensionGroupOrNull;
 
 	public static final String FIELDNAME_Manufacturer_ID = I_M_Product.COLUMNNAME_Manufacturer_ID;
+
+	/**
+	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB.
+	 */
 	@ViewColumn(fieldName = FIELDNAME_Manufacturer_ID, //
 			captionKey = FIELDNAME_Manufacturer_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 32, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
-	/** Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB. */
 	private final Supplier<LookupValue> manufacturer;
 
 	public static final String FIELDNAME_PackageSize = I_M_Product.COLUMNNAME_PackageSize;
@@ -138,13 +145,16 @@ public class MaterialCockpitRow implements IViewRow
 	private final String packageSize;
 
 	public static final String FIELDNAME_C_UOM_ID = I_M_Product.COLUMNNAME_C_UOM_ID;
+
+	/**
+	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB.
+	 */
 	@ViewColumn(fieldName = FIELDNAME_C_UOM_ID, //
 			captionKey = FIELDNAME_C_UOM_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 32, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
-	/** Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB. */
 	private final Supplier<LookupValue> uom;
 
 	// Zusage Lieferant
@@ -239,15 +249,15 @@ public class MaterialCockpitRow implements IViewRow
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
-		// Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
+		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
 
 		this.rowType = DefaultRowType.Row;
 
-		this.date = extractDateOrNull(includedRows);
+		this.date = extractDate(includedRows);
 
 		this.dimensionGroupOrNull = null;
 
-		this.productId = extractProductIdOrMinusOne(includedRows);
+		this.productId = extractProductId(includedRows);
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"main",
@@ -279,7 +289,7 @@ public class MaterialCockpitRow implements IViewRow
 				.findById(productRecord.getManufacturer_ID());
 
 		this.packageSize = productRecord.getPackageSize();
-
+		
 		this.includedRows = includedRows;
 
 		this.pmmQtyPromised = Quantity.toBigDecimal(pmmQtyPromised);
@@ -315,14 +325,14 @@ public class MaterialCockpitRow implements IViewRow
 		Check.errorIf(notOK, "Some of the given quantities have different UOMs; quantities={}", quantitiesToVerify);
 	}
 
-	private static LocalDate extractDateOrNull(@NonNull final List<MaterialCockpitRow> includedRows)
+	private static LocalDate extractDate(@NonNull final List<MaterialCockpitRow> includedRows)
 	{
-		return CollectionUtils.extractSingleElementOrDefault(includedRows, row -> row.date, null);
+		return CollectionUtils.extractSingleElement(includedRows, row -> row.date);
 	}
 
-	private static int extractProductIdOrMinusOne(@NonNull final List<MaterialCockpitRow> includedRows)
+	private static int extractProductId(@NonNull final List<MaterialCockpitRow> includedRows)
 	{
-		return CollectionUtils.extractSingleElementOrDefault(includedRows, MaterialCockpitRow::getProductId, -1);
+		return CollectionUtils.extractSingleElement(includedRows, MaterialCockpitRow::getProductId);
 	}
 
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
