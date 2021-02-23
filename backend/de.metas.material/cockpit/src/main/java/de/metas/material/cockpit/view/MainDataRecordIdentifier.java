@@ -1,12 +1,5 @@
 package de.metas.material.cockpit.view;
 
-import java.time.Instant;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.util.TimeUtil;
-
-import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -15,6 +8,12 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.util.TimeUtil;
+
+import java.time.Instant;
+import java.time.ZoneId;
 
 /*
  * #%L
@@ -42,15 +41,18 @@ import lombok.Value;
 @Builder
 public class MainDataRecordIdentifier
 {
+	/**
+	 * @param timeZone needed because we have to know it. Otherwise we might end up at the previous day (23:00 o'clock) instead of the day we are expecting.
+	 */
 	public static MainDataRecordIdentifier createForMaterial(
-			@NonNull final MaterialDescriptor material)
+			@NonNull final MaterialDescriptor material,
+			@NonNull final ZoneId timeZone)
 	{
-		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
+		return MainDataRecordIdentifier.builder()
 				.productDescriptor(material)
-				.date(TimeUtil.getDay(material.getDate(), CockpitConstants.TIME_ZONE))
+				.date(TimeUtil.getDay(material.getDate(), timeZone))
 				.plantId(0)
 				.build();
-		return identifier;
 	}
 
 	ProductDescriptor productDescriptor;
@@ -65,7 +67,7 @@ public class MainDataRecordIdentifier
 	public MainDataRecordIdentifier(
 			@NonNull final ProductDescriptor productDescriptor,
 			@NonNull final Instant date,
-			int plantId)
+			final int plantId)
 	{
 		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
 		this.productDescriptor = productDescriptor;

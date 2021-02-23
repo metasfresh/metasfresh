@@ -239,15 +239,15 @@ public class MaterialCockpitRow implements IViewRow
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
-		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
+		// Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
 
 		this.rowType = DefaultRowType.Row;
 
-		this.date = extractDate(includedRows);
+		this.date = extractDateOrNull(includedRows);
 
 		this.dimensionGroupOrNull = null;
 
-		this.productId = extractProductId(includedRows);
+		this.productId = extractProductIdOrMinusOne(includedRows);
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"main",
@@ -315,14 +315,14 @@ public class MaterialCockpitRow implements IViewRow
 		Check.errorIf(notOK, "Some of the given quantities have different UOMs; quantities={}", quantitiesToVerify);
 	}
 
-	private static LocalDate extractDate(final List<MaterialCockpitRow> includedRows)
+	private static LocalDate extractDateOrNull(@NonNull final List<MaterialCockpitRow> includedRows)
 	{
-		return CollectionUtils.extractSingleElement(includedRows, row -> row.date);
+		return CollectionUtils.extractSingleElementOrDefault(includedRows, row -> row.date, null);
 	}
 
-	private static int extractProductId(final List<MaterialCockpitRow> includedRows)
+	private static int extractProductIdOrMinusOne(@NonNull final List<MaterialCockpitRow> includedRows)
 	{
-		return CollectionUtils.extractSingleElement(includedRows, MaterialCockpitRow::getProductId);
+		return CollectionUtils.extractSingleElementOrDefault(includedRows, MaterialCockpitRow::getProductId, -1);
 	}
 
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
