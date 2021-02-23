@@ -108,7 +108,7 @@ describe('ViewActions thunks', () => {
   const limitedModalLayout = fixtures.modalLayout1;
   const limitedModalData = fixtures.basicModalData1;
 
-  it(`dispatches 'FETCH_LAYOUT_PENDING/SUCCESS' when fetching layout data`, () => {
+  it.skip(`dispatches 'FETCH_LAYOUT_PENDING/SUCCESS' when fetching layout data`, () => {
     const { windowId } = limitedViewLayout;
     const state = createStore();
     const store = mockStore(state);
