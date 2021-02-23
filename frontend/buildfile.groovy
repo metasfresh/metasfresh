@@ -62,9 +62,7 @@ Map build(final MvnConf mvnConf,
 		env.PATH = "${nodeHome}/bin:${env.PATH}"
 
 		sh 'yarn install'
-
-		// commenting this out now, because frontend builds everywhere seem to start failing because of this
-		//sh 'yarn lint --quiet'
+		sh 'yarn lint --quiet'
 							
 		if(params.MF_MF_SKIP_UNIT_TESTS)
 		{
