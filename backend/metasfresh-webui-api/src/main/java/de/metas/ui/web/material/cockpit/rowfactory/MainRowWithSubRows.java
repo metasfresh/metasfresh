@@ -182,7 +182,7 @@ public class MainRowWithSubRows
 			addStockRecordToCounting(stockRecord);
 			addedToAtLeastOneBucket = true;
 		}
-		addedToAtLeastOneBucket = addedToAtLeastOneBucket || addStockRecordToDimensionGroups(stockRecord, dimensionSpec);
+		addedToAtLeastOneBucket = addStockRecordToDimensionGroups(stockRecord, dimensionSpec) || addedToAtLeastOneBucket;
 
 		if (!addedToAtLeastOneBucket)
 		{
@@ -211,7 +211,7 @@ public class MainRowWithSubRows
 		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
 		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addStockRecord(dataRecord));
-		
+
 		return !subRowBuckets.isEmpty();
 	}
 
