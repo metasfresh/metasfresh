@@ -206,9 +206,7 @@ public final class CollectionUtils
 	 *
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
 	 *
-	 * @param collection
 	 * @param defaultValue value to be returned in case there are more then one elements or no element
-	 * @return element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	public static <T> T singleElementOrDefault(final Collection<T> collection, final T defaultValue)
@@ -291,8 +289,8 @@ public final class CollectionUtils
 	/**
 	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
 	 *
-	 * @param list input list (i.e. list to convert)
-	 * @param converter converter to be used to convert elements
+	 * @param collection input list (i.e. list to convert)
+	 * @param extractFuntion converter to be used to convert elements
 	 * @return list of OutputTypes.
 	 */
 	public static <R, T> ImmutableList<R> convert(
